@@ -13,13 +13,11 @@ import codedriver.framework.deploy.exception.profile.DeployProfileIsNotFoundExce
 import com.alibaba.fastjson.JSONArray;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static java.util.Comparator.comparing;
@@ -63,6 +61,11 @@ public class DeployProfileServiceImpl implements DeployProfileService {
     @Override
     public List<AutoexecParamVo> getProfileConfig(List<Long> toolIdList, List<Long> scriptIdList, JSONArray paramList) {
 
+//         说明：
+//         新的参数列表：工具和脚本参数的去重集合（name唯一键）
+//         旧的参数列表：数据库存的
+//         新旧名称和类型都相同时，将继续使用旧参数值，不做值是否存在的校验，前端回填失败提示即可
+//
 
         List<AutoexecParamVo> toolAndScriptParamVoList = new ArrayList<>();
         List<AutoexecToolAndScriptVo> ToolAndScriptVoList = new ArrayList<>();
@@ -78,20 +81,39 @@ public class DeployProfileServiceImpl implements DeployProfileService {
 
         //根据name（唯一键）去重
         toolAndScriptParamVoList = toolAndScriptParamVoList.stream().collect(collectingAndThen(toCollection(() -> new TreeSet<>(comparing(AutoexecParamVo::getName))), ArrayList::new));
-        Map<String, String> newOperationNameAndTypeMap = toolAndScriptParamVoList.stream().collect(Collectors.toMap(AutoexecParamVo::getName, AutoexecParamVo::getType));
 
+        //实时的参数信息
+        Map<String, AutoexecParamVo> newOperationParamMap = toolAndScriptParamVoList.stream().collect(Collectors.toMap(AutoexecParamVo::getName, e -> e));
+
+        //旧的参数信息
+        Map<String, AutoexecParamVo> oldOperationParamMap = new HashMap<>();
         if (CollectionUtils.isEmpty(paramList)) {
             List<AutoexecParamVo> oldParamList = paramList.toJavaList(AutoexecParamVo.class);
-            Map<String, String> oldOperationNameAndTypeMap = oldParamList.stream().collect(Collectors.toMap(AutoexecParamVo::getName, AutoexecParamVo::getType));
+            oldOperationParamMap = oldParamList.stream().collect(Collectors.toMap(AutoexecParamVo::getName, e -> e));
         }
-        if (MapUtils.isNotEmpty(newOperationNameAndTypeMap)) {
-            for (AutoexecParamVo paramVo : toolAndScriptParamVoList) {
 
+        //找出需要替换值的参数
+        List<String> replaceNameList = new ArrayList<>();
+        if (MapUtils.isNotEmpty(newOperationParamMap) && MapUtils.isNotEmpty(oldOperationParamMap)) {
+            for (String newParamName : newOperationParamMap.keySet()) {
+                if (oldOperationParamMap.containsKey(newParamName) && StringUtils.equals(oldOperationParamMap.get(newParamName).getType(), newOperationParamMap.get(newParamName).getType())) {
+                    replaceNameList.add(newParamName);
+                }
             }
         }
 
+        if (CollectionUtils.isNotEmpty(replaceNameList)) {
+            for (String name : replaceNameList) {
+                newOperationParamMap.get(name).setConfig(oldOperationParamMap.get(name).getConfigStr());
+            }
+        }
 
-        return toolAndScriptParamVoList;
+        List<AutoexecParamVo> returnList = new ArrayList<>();
+        for (String name : newOperationParamMap.keySet()){
+            returnList.add(newOperationParamMap.get(name));
+        }
+
+            return returnList;
     }
 
 }

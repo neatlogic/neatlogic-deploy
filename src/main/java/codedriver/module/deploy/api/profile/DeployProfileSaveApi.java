@@ -2,7 +2,6 @@ package codedriver.module.deploy.api.profile;
 
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.autoexec.constvalue.ToolType;
-import codedriver.framework.autoexec.dto.AutoexecParamVo;
 import codedriver.framework.autoexec.dto.AutoexecToolAndScriptVo;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.deploy.auth.DEPLOY_PROFILE_MODIFY;
@@ -19,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -78,23 +78,32 @@ public class DeployProfileSaveApi extends PrivateApiComponentBase {
         if (CollectionUtils.isNotEmpty(autoexecToolAndScriptVoList)) {
             toolAndScriptMap = profileVo.getAutoexecToolAndScriptVoList().stream().collect(Collectors.groupingBy(AutoexecToolAndScriptVo::getType));
         }
+        //删除关系
+        deployProfileMapper.deleteProfileOperateByProfileId(paramProfileId);
+
         //tool
-        List<Long> toolIdList = toolAndScriptMap.get(ToolType.TOOL.getValue()).stream().map(AutoexecToolAndScriptVo::getId).collect(Collectors.toList());
+        List<Long> toolIdList = new ArrayList<>();
+        if (CollectionUtils.isNotEmpty(toolAndScriptMap.get(ToolType.TOOL.getValue()))) {
+            toolIdList = toolAndScriptMap.get(ToolType.TOOL.getValue()).stream().map(AutoexecToolAndScriptVo::getId).collect(Collectors.toList());
+        }
         if (CollectionUtils.isNotEmpty(toolIdList)) {
             deployProfileMapper.insertDeployProfileOperationByProfileIdAndOperateIdListAndType(profileVo.getId(), toolIdList, ToolType.TOOL.getValue());
         }
         //script
-        List<Long> scriptIdList = toolAndScriptMap.get(ToolType.SCRIPT.getValue()).stream().map(AutoexecToolAndScriptVo::getId).collect(Collectors.toList());
+        List<Long> scriptIdList = new ArrayList<>();
+        if (CollectionUtils.isNotEmpty(toolAndScriptMap.get(ToolType.SCRIPT.getValue()))) {
+            scriptIdList = toolAndScriptMap.get(ToolType.SCRIPT.getValue()).stream().map(AutoexecToolAndScriptVo::getId).collect(Collectors.toList());
+        }
         if (CollectionUtils.isNotEmpty(scriptIdList)) {
             deployProfileMapper.insertDeployProfileOperationByProfileIdAndOperateIdListAndType(profileVo.getId(), scriptIdList, ToolType.SCRIPT.getValue());
         }
-
-
+        if (CollectionUtils.isNotEmpty(paramObj.getJSONArray("paramList"))) {
+            profileVo.setConfigStr(paramObj.getJSONArray("paramList").toJSONString());
+        }
         if (paramProfileId != null) {
-            profileVo.setInputParamList(deployProfileService.getProfileConfig(toolIdList, scriptIdList, paramObj.getJSONArray("paramList")));
+//            profileVo.setInputParamList(deployProfileService.getProfileConfig(toolIdList, scriptIdList, paramObj.getJSONArray("paramList")));
             deployProfileMapper.updateProfile(profileVo);
         } else {
-            profileVo.setInputParamList(paramObj.getJSONArray("paramList").toJavaList(AutoexecParamVo.class));
             deployProfileMapper.insertProfile(profileVo);
         }
         return null;
