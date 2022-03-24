@@ -2,6 +2,7 @@ package codedriver.module.deploy.api.profile;
 
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.autoexec.constvalue.ToolType;
+import codedriver.framework.autoexec.dto.AutoexecParamVo;
 import codedriver.framework.autoexec.dto.AutoexecToolAndScriptVo;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.deploy.auth.DEPLOY_PROFILE_MODIFY;
@@ -18,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -33,7 +35,7 @@ import java.util.stream.Collectors;
 public class DeployProfileSaveApi extends PrivateApiComponentBase {
 
     @Resource
-    DeployProfileMapper  deployProfileMapper;
+    DeployProfileMapper deployProfileMapper;
 
     @Resource
     DeployProfileService deployProfileService;
@@ -57,8 +59,9 @@ public class DeployProfileSaveApi extends PrivateApiComponentBase {
             @Param(name = "id", type = ApiParamType.LONG, desc = "profile id"),
             @Param(name = "name", type = ApiParamType.STRING, isRequired = true, desc = "profile 名称"),
             @Param(name = "description", type = ApiParamType.STRING, desc = "描述"),
+            @Param(name = "systemId", type = ApiParamType.LONG, desc = "所属系统id"),
             @Param(name = "paramList", type = ApiParamType.JSONARRAY, desc = "工具参数"),
-            @Param(name = "autoexecToolAndScriptVoList", type = ApiParamType.JSONARRAY, isRequired = true, desc = "关联的工具和脚本列表")
+            @Param(name = "autoexecToolAndScriptVoList", type = ApiParamType.JSONARRAY, desc = "关联的工具和脚本列表")
     })
     @Output({
     })
@@ -66,11 +69,15 @@ public class DeployProfileSaveApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         Long paramProfileId = paramObj.getLong("id");
+        Map<String, List<AutoexecToolAndScriptVo>> toolAndScriptMap = new HashMap<>();
         DeployProfileVo profileVo = JSON.toJavaObject(paramObj, DeployProfileVo.class);
 
-        //分类 类型(tool:工具;script:脚本)
-        Map<String, List<AutoexecToolAndScriptVo>> toolAndScriptMap = profileVo.getAutoexecToolAndScriptVoList().stream().collect(Collectors.groupingBy(AutoexecToolAndScriptVo::getType));
+        List<AutoexecToolAndScriptVo> autoexecToolAndScriptVoList = profileVo.getAutoexecToolAndScriptVoList();
 
+        //分类 类型(tool:工具;script:脚本)
+        if (CollectionUtils.isNotEmpty(autoexecToolAndScriptVoList)) {
+            toolAndScriptMap = profileVo.getAutoexecToolAndScriptVoList().stream().collect(Collectors.groupingBy(AutoexecToolAndScriptVo::getType));
+        }
         //tool
         List<Long> toolIdList = toolAndScriptMap.get(ToolType.TOOL.getValue()).stream().map(AutoexecToolAndScriptVo::getId).collect(Collectors.toList());
         if (CollectionUtils.isNotEmpty(toolIdList)) {
@@ -81,10 +88,13 @@ public class DeployProfileSaveApi extends PrivateApiComponentBase {
         if (CollectionUtils.isNotEmpty(scriptIdList)) {
             deployProfileMapper.insertDeployProfileOperationByProfileIdAndOperateIdListAndType(profileVo.getId(), scriptIdList, ToolType.SCRIPT.getValue());
         }
+
+
         if (paramProfileId != null) {
+            profileVo.setInputParamList(deployProfileService.getProfileConfig(toolIdList, scriptIdList, paramObj.getJSONArray("paramList")));
             deployProfileMapper.updateProfile(profileVo);
         } else {
-            profileVo.setInputParamList(deployProfileService.getProfileConfig(toolIdList, scriptIdList, paramObj.getJSONArray("paramList")));
+            profileVo.setInputParamList(paramObj.getJSONArray("paramList").toJavaList(AutoexecParamVo.class));
             deployProfileMapper.insertProfile(profileVo);
         }
         return null;
