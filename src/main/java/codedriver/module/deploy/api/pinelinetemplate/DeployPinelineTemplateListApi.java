@@ -50,7 +50,7 @@ public class DeployPinelineTemplateListApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "查询组合工具模板列表";
+        return "查询流水线模板列表";
     }
 
     @Override
@@ -67,9 +67,9 @@ public class DeployPinelineTemplateListApi extends PrivateApiComponentBase {
     })
     @Output({
             @Param(explode = BasePageVo.class),
-            @Param(name = "tbodyList", explode = AutoexecCombopVo[].class, desc = "组合工具模板列表")
+            @Param(name = "tbodyList", explode = AutoexecCombopVo[].class, desc = "流水线模板列表")
     })
-    @Description(desc = "查询组合工具模板列表")
+    @Description(desc = "查询流水线模板列表")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         DeployPinelineTemplateVo searchVo = jsonObj.toJavaObject(DeployPinelineTemplateVo.class);

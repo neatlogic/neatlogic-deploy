@@ -56,7 +56,7 @@ public class DeployPinelineTemplateSaveApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "保存组合工具模板基本信息";
+        return "保存流水线模板基本信息";
     }
 
     @Override
@@ -77,7 +77,7 @@ public class DeployPinelineTemplateSaveApi extends PrivateApiComponentBase {
     @Output({
             @Param(name = "Return", type = ApiParamType.LONG, desc = "主键id")
     })
-    @Description(desc = "保存组合工具模板基本信息")
+    @Description(desc = "保存流水线模板基本信息")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         DeployPinelineTemplateVo deployPinelineTemplateVo = jsonObj.toJavaObject(DeployPinelineTemplateVo.class);

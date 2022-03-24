@@ -42,7 +42,7 @@ public class DeployPinelineTemplateGetApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "查询组合工具模板详情";
+        return "查询流水线模板详情";
     }
 
     @Override
@@ -54,9 +54,9 @@ public class DeployPinelineTemplateGetApi extends PrivateApiComponentBase {
             @Param(name = "id", type = ApiParamType.LONG, isRequired = true, desc = "主键id")
     })
     @Output({
-            @Param(explode = DeployPinelineTemplateVo.class, desc = "组合工具模板详情")
+            @Param(explode = DeployPinelineTemplateVo.class, desc = "流水线模板详情")
     })
-    @Description(desc = "查询组合工具模板详情")
+    @Description(desc = "查询流水线模板详情")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         Long id = jsonObj.getLong("id");

@@ -43,7 +43,7 @@ public class DeployPinelineTemplateIsActiveUpdateApi extends PrivateApiComponent
 
     @Override
     public String getName() {
-        return "更新组合工具模板状态";
+        return "更新流水线模板状态";
     }
 
     @Override
@@ -57,7 +57,7 @@ public class DeployPinelineTemplateIsActiveUpdateApi extends PrivateApiComponent
     @Output({
             @Param(name = "Return", type = ApiParamType.INTEGER, desc = "更新后的状态")
     })
-    @Description(desc = "更新组合工具模板状态")
+    @Description(desc = "更新流水线模板状态")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         Long id = jsonObj.getLong("id");

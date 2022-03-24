@@ -58,7 +58,7 @@ public class DeployPinelineTemplateExportApi extends PrivateBinaryStreamApiCompo
 
     @Override
     public String getName() {
-        return "导出组合工具模板";
+        return "导出流水线模板";
     }
 
     @Override
@@ -67,9 +67,9 @@ public class DeployPinelineTemplateExportApi extends PrivateBinaryStreamApiCompo
     }
 
     @Input({
-            @Param(name = "idList", type = ApiParamType.JSONARRAY, isRequired = true, desc = "组合工具模板id列表")
+            @Param(name = "idList", type = ApiParamType.JSONARRAY, isRequired = true, desc = "流水线模板id列表")
     })
-    @Description(desc = "导出组合工具模板")
+    @Description(desc = "导出流水线模板")
     @Override
     public Object myDoService(JSONObject paramObj, HttpServletRequest request, HttpServletResponse response) throws Exception {
         List<Long> idList = paramObj.getJSONArray("idList").toJavaList(Long.class);
@@ -96,7 +96,7 @@ public class DeployPinelineTemplateExportApi extends PrivateBinaryStreamApiCompo
             deployPinelineTemplateVoList.add(deployPinelineTemplateVo);
         }
         //设置导出文件名
-        String fileName = FileUtil.getEncodedFileName(request.getHeader("User-Agent"), "组合工具模板." + new SimpleDateFormat("yyyyMMddHHmmss").format(new Date()) + ".pak");
+        String fileName = FileUtil.getEncodedFileName(request.getHeader("User-Agent"), "流水线模板." + new SimpleDateFormat("yyyyMMddHHmmss").format(new Date()) + ".pak");
         response.setContentType("aplication/zip");
         response.setHeader("Content-Disposition", " attachment; filename=\"" + fileName + "\"");
 

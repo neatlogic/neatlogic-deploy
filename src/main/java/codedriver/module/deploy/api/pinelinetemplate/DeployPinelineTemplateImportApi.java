@@ -50,7 +50,7 @@ import java.util.Map.Entry;
 import java.util.zip.ZipInputStream;
 
 /**
- * 导入组合工具模板接口
+ * 导入流水线模板接口
  *
  * @author linbq
  * @since 2021/4/13 11:21
@@ -79,7 +79,7 @@ public class DeployPinelineTemplateImportApi extends PrivateBinaryStreamApiCompo
 
     @Override
     public String getName() {
-        return "导入组合工具模板";
+        return "导入流水线模板";
     }
 
     @Override
@@ -90,7 +90,7 @@ public class DeployPinelineTemplateImportApi extends PrivateBinaryStreamApiCompo
     @Output({
             @Param(name = "Return", type = ApiParamType.JSONARRAY, desc = "导入结果")
     })
-    @Description(desc = "导入组合工具模板")
+    @Description(desc = "导入流水线模板")
     @Override
     public Object myDoService(JSONObject paramObj, HttpServletRequest request, HttpServletResponse response) throws Exception {
         MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) request;

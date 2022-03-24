@@ -52,7 +52,7 @@ public class DeployPinelineTemplateCopyApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "复制组合工具模板";
+        return "复制流水线模板";
     }
 
     @Override
@@ -61,15 +61,15 @@ public class DeployPinelineTemplateCopyApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "id", type = ApiParamType.LONG, isRequired = true, desc = "被复制的组合工具模板id"),
-            @Param(name = "name", type = ApiParamType.REGEX, rule = "^[A-Za-z_\\d\\u4e00-\\u9fa5]+$", isRequired = true, minLength = 1, maxLength = 70, desc = "新组合工具模板名"),
+            @Param(name = "id", type = ApiParamType.LONG, isRequired = true, desc = "被复制的流水线模板id"),
+            @Param(name = "name", type = ApiParamType.REGEX, rule = "^[A-Za-z_\\d\\u4e00-\\u9fa5]+$", isRequired = true, minLength = 1, maxLength = 70, desc = "新流水线模板名"),
             @Param(name = "description", type = ApiParamType.STRING, desc = "描述"),
             @Param(name = "typeId", type = ApiParamType.LONG, isRequired = true, desc = "类型id")
     })
     @Output({
             @Param(name = "Return", type = ApiParamType.LONG, desc = "主键id")
     })
-    @Description(desc = "复制组合工具模板")
+    @Description(desc = "复制流水线模板")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         Long id = jsonObj.getLong("id");

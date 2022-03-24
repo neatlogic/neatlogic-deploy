@@ -44,7 +44,7 @@ public class DeployPinelineTemplateDeleteApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "删除组合工具模板";
+        return "删除流水线模板";
     }
 
     @Override
@@ -55,7 +55,7 @@ public class DeployPinelineTemplateDeleteApi extends PrivateApiComponentBase {
     @Input({
             @Param(name = "id", type = ApiParamType.LONG, isRequired = true, desc = "主键id")
     })
-    @Description(desc = "删除组合工具模板")
+    @Description(desc = "删除流水线模板")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         Long id = jsonObj.getLong("id");
