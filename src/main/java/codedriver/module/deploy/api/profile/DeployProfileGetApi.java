@@ -1,10 +1,8 @@
 package codedriver.module.deploy.api.profile;
 
 import codedriver.framework.auth.core.AuthAction;
-import codedriver.framework.autoexec.constvalue.ToolType;
 import codedriver.framework.autoexec.dao.mapper.AutoexecScriptMapper;
 import codedriver.framework.autoexec.dao.mapper.AutoexecToolMapper;
-import codedriver.framework.autoexec.dto.AutoexecToolAndScriptVo;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.deploy.auth.DEPLOY_PROFILE_MODIFY;
 import codedriver.framework.deploy.dao.mapper.DeployProfileMapper;
@@ -15,15 +13,9 @@ import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.deploy.service.DeployProfileService;
 import com.alibaba.fastjson.JSONObject;
-import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * @author longrf
@@ -77,30 +69,10 @@ public class DeployProfileGetApi extends PrivateApiComponentBase {
             throw new DeployProfileIsNotFoundException(id);
         }
 
-
-        List<AutoexecToolAndScriptVo> toolAndScriptVoList = profileVo.getAutoexecToolAndScriptVoList();
-        List<AutoexecToolAndScriptVo> returnToolAndScriptVoList = new ArrayList<>();
-
-
-        Map<String, List<AutoexecToolAndScriptVo>> toolAndScriptMap = new HashMap<>();
-        if (CollectionUtils.isNotEmpty(toolAndScriptVoList)) {
-            toolAndScriptMap = toolAndScriptVoList.stream().collect(Collectors.groupingBy(AutoexecToolAndScriptVo::getType));
-        }
-        //tool
-        List<Long> toolIdList = toolAndScriptMap.get(ToolType.TOOL.getValue()).stream().map(AutoexecToolAndScriptVo::getId).collect(Collectors.toList());
-        if (CollectionUtils.isNotEmpty(toolIdList)) {
-            returnToolAndScriptVoList.addAll(autoexecToolMapper.getToolListByIdList(toolIdList));
-        }
-        //script
-        List<Long> scriptIdList = toolAndScriptMap.get(ToolType.SCRIPT.getValue()).stream().map(AutoexecToolAndScriptVo::getId).collect(Collectors.toList());
-        if (CollectionUtils.isNotEmpty(scriptIdList)) {
-            returnToolAndScriptVoList.addAll(autoexecScriptMapper.getScriptListByIdList(scriptIdList));
-        }
-
-
-        profileVo.setAutoexecToolAndScriptVoList(returnToolAndScriptVoList);
+        //获取profile关联的tool、script工具
+        profileVo.setAutoexecToolAndScriptVoList(deployProfileService.getAutoexecToolAndScriptVoListByProfileId(id));
         //获取profile参数
-        profileVo.setInputParamList(deployProfileService.getProfileParamById(id));
+        profileVo.setParamList(deployProfileService.getProfileParamById(id));
         return profileVo;
     }
 }
