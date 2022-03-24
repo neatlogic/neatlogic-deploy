@@ -97,9 +97,6 @@ public class DeployProfileSaveApi extends PrivateApiComponentBase {
         if (CollectionUtils.isNotEmpty(scriptIdList)) {
             deployProfileMapper.insertDeployProfileOperationByProfileIdAndOperateIdListAndType(profileVo.getId(), scriptIdList, ToolType.SCRIPT.getValue());
         }
-        if (CollectionUtils.isNotEmpty(paramObj.getJSONArray("paramList"))) {
-            profileVo.setConfigStr(paramObj.getJSONArray("paramList").toJSONString());
-        }
         if (paramProfileId != null) {
 //            profileVo.setInputParamList(deployProfileService.getProfileConfig(toolIdList, scriptIdList, paramObj.getJSONArray("paramList")));
             deployProfileMapper.updateProfile(profileVo);

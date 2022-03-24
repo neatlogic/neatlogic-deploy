@@ -110,7 +110,7 @@ public class DeployProfileServiceImpl implements DeployProfileService {
 
         //旧的参数信息
         Map<String, AutoexecParamVo> oldOperationParamMap = new HashMap<>();
-        if (CollectionUtils.isEmpty(paramList)) {
+        if (CollectionUtils.isNotEmpty(paramList)) {
             List<AutoexecParamVo> oldParamList = paramList.toJavaList(AutoexecParamVo.class);
             oldOperationParamMap = oldParamList.stream().collect(Collectors.toMap(AutoexecParamVo::getName, e -> e));
         }
