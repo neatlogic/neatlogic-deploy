@@ -10,7 +10,6 @@ import codedriver.framework.deploy.dao.mapper.DeployProfileMapper;
 import codedriver.framework.deploy.dto.profile.DeployProfileOperationVo;
 import codedriver.framework.deploy.dto.profile.DeployProfileVo;
 import codedriver.framework.deploy.exception.profile.DeployProfileIsNotFoundException;
-import com.alibaba.fastjson.JSONArray;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -111,7 +110,7 @@ public class DeployProfileServiceImpl implements DeployProfileService {
         //旧的参数信息
         Map<String, AutoexecParamVo> oldOperationParamMap = null;
         if (CollectionUtils.isNotEmpty(paramList)) {
-            oldOperationParamMap = paramList.toJavaList(AutoexecParamVo.class).stream().collect(Collectors.toMap(AutoexecParamVo::getName, e -> e));
+            oldOperationParamMap = paramList.stream().collect(Collectors.toMap(AutoexecParamVo::getName, e -> e));
         }
 
         //找出需要替换值的参数名称name
