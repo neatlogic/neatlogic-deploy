@@ -8,10 +8,12 @@ import codedriver.framework.deploy.auth.DEPLOY_PROFILE_MODIFY;
 import codedriver.framework.deploy.dao.mapper.DeployProfileMapper;
 import codedriver.framework.deploy.dto.profile.DeployProfileVo;
 import codedriver.framework.deploy.exception.profile.DeployProfileIsNotFoundException;
+import codedriver.framework.deploy.exception.profile.DeployProfileNameRepeatsException;
+import codedriver.framework.dto.FieldValidResultVo;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
+import codedriver.framework.restful.core.IValid;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
-import codedriver.module.deploy.service.DeployProfileService;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
@@ -35,9 +37,6 @@ public class DeployProfileSaveApi extends PrivateApiComponentBase {
 
     @Resource
     DeployProfileMapper deployProfileMapper;
-
-    @Resource
-    DeployProfileService deployProfileService;
 
     @Override
     public String getName() {
@@ -101,5 +100,14 @@ public class DeployProfileSaveApi extends PrivateApiComponentBase {
             deployProfileMapper.insertProfile(profileVo);
         }
         return null;
+    }
+    public IValid name() {
+        return value -> {
+            DeployProfileVo vo = JSON.toJavaObject(value, DeployProfileVo.class);
+            if (deployProfileMapper.checkProfileNameIsRepeats(vo) > 0) {
+                return new FieldValidResultVo(new DeployProfileNameRepeatsException(vo.getName()));
+            }
+            return new FieldValidResultVo();
+        };
     }
 }
