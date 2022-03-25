@@ -88,13 +88,7 @@ public class DeployProfileServiceImpl implements DeployProfileService {
     @Override
     public List<AutoexecParamVo> getProfileConfig(List<Long> toolIdList, List<Long> scriptIdList, JSONArray paramList) {
 
-//         说明：
-//         新的参数列表：工具和脚本参数的去重集合（name唯一键）
-//         旧的参数列表：数据库存的
-//         新旧名称和类型都相同时，将继续使用旧参数值，不做值是否存在的校验，前端回填失败提示即可
-//
-
-        List<AutoexecParamVo> toolAndScriptParamVoList = new ArrayList<>();
+        List<AutoexecParamVo> newOperationParamVoList = new ArrayList<>();
         List<AutoexecToolAndScriptVo> ToolAndScriptVoList = new ArrayList<>();
         if (CollectionUtils.isNotEmpty(toolIdList)) {
             ToolAndScriptVoList.addAll(autoexecToolMapper.getToolListByIdList(toolIdList));
@@ -104,24 +98,23 @@ public class DeployProfileServiceImpl implements DeployProfileService {
         }
         for (AutoexecToolAndScriptVo toolAndScriptVo : ToolAndScriptVoList) {
             if (CollectionUtils.isNotEmpty(toolAndScriptVo.getParamList())) {
-                toolAndScriptParamVoList.addAll(toolAndScriptVo.getParamList());
+                newOperationParamVoList.addAll(toolAndScriptVo.getParamList());
             }
         }
 
         //根据name（唯一键）去重
-        toolAndScriptParamVoList = toolAndScriptParamVoList.stream().collect(collectingAndThen(toCollection(() -> new TreeSet<>(comparing(AutoexecParamVo::getName))), ArrayList::new));
+        newOperationParamVoList = newOperationParamVoList.stream().collect(collectingAndThen(toCollection(() -> new TreeSet<>(comparing(AutoexecParamVo::getName))), ArrayList::new));
 
         //实时的参数信息
-        Map<String, AutoexecParamVo> newOperationParamMap = toolAndScriptParamVoList.stream().collect(Collectors.toMap(AutoexecParamVo::getName, e -> e));
+        Map<String, AutoexecParamVo> newOperationParamMap = newOperationParamVoList.stream().collect(Collectors.toMap(AutoexecParamVo::getName, e -> e));
 
         //旧的参数信息
-        Map<String, AutoexecParamVo> oldOperationParamMap = new HashMap<>();
+        Map<String, AutoexecParamVo> oldOperationParamMap = null;
         if (CollectionUtils.isNotEmpty(paramList)) {
-            List<AutoexecParamVo> oldParamList = paramList.toJavaList(AutoexecParamVo.class);
-            oldOperationParamMap = oldParamList.stream().collect(Collectors.toMap(AutoexecParamVo::getName, e -> e));
+            oldOperationParamMap = paramList.toJavaList(AutoexecParamVo.class).stream().collect(Collectors.toMap(AutoexecParamVo::getName, e -> e));
         }
 
-        //找出需要替换值的参数
+        //找出需要替换值的参数名称name
         List<String> replaceNameList = new ArrayList<>();
         if (MapUtils.isNotEmpty(newOperationParamMap) && MapUtils.isNotEmpty(oldOperationParamMap)) {
             for (String newParamName : newOperationParamMap.keySet()) {
@@ -131,6 +124,7 @@ public class DeployProfileServiceImpl implements DeployProfileService {
             }
         }
 
+        //根据参数名称name替换对应的值
         if (CollectionUtils.isNotEmpty(replaceNameList)) {
             for (String name : replaceNameList) {
                 newOperationParamMap.get(name).setConfig(oldOperationParamMap.get(name).getConfigStr());

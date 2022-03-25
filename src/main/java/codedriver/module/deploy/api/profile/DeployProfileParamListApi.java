@@ -53,10 +53,7 @@ public class DeployProfileParamListApi extends PrivateApiComponentBase {
     @Description(desc = "获取工具profile参数列表接口")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
-
-        List<AutoexecToolAndScriptVo> toolAndScriptVoList = paramObj.getJSONArray("autoexecToolAndScriptVoList").toJavaList(AutoexecToolAndScriptVo.class);
-
-        Map<String, List<AutoexecToolAndScriptVo>> toolAndScriptMap = toolAndScriptVoList.stream().collect(Collectors.groupingBy(AutoexecToolAndScriptVo::getType));
+        Map<String, List<AutoexecToolAndScriptVo>> toolAndScriptMap = paramObj.getJSONArray("autoexecToolAndScriptVoList").toJavaList(AutoexecToolAndScriptVo.class).stream().collect(Collectors.groupingBy(AutoexecToolAndScriptVo::getType));
         List<Long> toolIdList = null;
         List<Long> scriptIdList = null;
         if (toolAndScriptMap.containsKey(ToolType.TOOL.getValue())) {
@@ -65,9 +62,7 @@ public class DeployProfileParamListApi extends PrivateApiComponentBase {
         if (toolAndScriptMap.containsKey(ToolType.SCRIPT.getValue())) {
             scriptIdList = toolAndScriptMap.get(ToolType.SCRIPT.getValue()).stream().map(AutoexecToolAndScriptVo::getId).collect(Collectors.toList());
         }
-
+        //获取工具参数并去重
         return deployProfileService.getProfileConfig(toolIdList, scriptIdList, null);
-
     }
-
 }

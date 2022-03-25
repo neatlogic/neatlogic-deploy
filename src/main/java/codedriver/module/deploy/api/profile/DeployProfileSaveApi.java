@@ -19,8 +19,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -62,7 +60,7 @@ public class DeployProfileSaveApi extends PrivateApiComponentBase {
             @Param(name = "description", type = ApiParamType.STRING, desc = "描述"),
             @Param(name = "fromSystemId", type = ApiParamType.LONG, desc = "所属系统id"),
             @Param(name = "paramList", type = ApiParamType.JSONARRAY, desc = "工具参数"),
-            @Param(name = "autoexecToolAndScriptVoList", type = ApiParamType.JSONARRAY, desc = "关联的工具和脚本列表")
+            @Param(name = "autoexecToolAndScriptVoList", type = ApiParamType.JSONARRAY, isRequired = true, desc = "关联的工具和脚本列表")
     })
     @Output({
     })
@@ -70,34 +68,30 @@ public class DeployProfileSaveApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         Long paramProfileId = paramObj.getLong("id");
-        Map<String, List<AutoexecToolAndScriptVo>> toolAndScriptMap = new HashMap<>();
         DeployProfileVo profileVo = JSON.toJavaObject(paramObj, DeployProfileVo.class);
+        Map<String, List<AutoexecToolAndScriptVo>> toolAndScriptMap = profileVo.getAutoexecToolAndScriptVoList().stream().collect(Collectors.groupingBy(AutoexecToolAndScriptVo::getType));
 
-        List<AutoexecToolAndScriptVo> autoexecToolAndScriptVoList = profileVo.getAutoexecToolAndScriptVoList();
-
-        //分类 类型(tool:工具;script:脚本)
-        if (CollectionUtils.isNotEmpty(autoexecToolAndScriptVoList)) {
-            toolAndScriptMap = profileVo.getAutoexecToolAndScriptVoList().stream().collect(Collectors.groupingBy(AutoexecToolAndScriptVo::getType));
-        }
-        //删除关系
+        //删除profile和tool、script的关系
         deployProfileMapper.deleteProfileOperateByProfileId(paramProfileId);
 
-        //tool
-        List<Long> toolIdList = new ArrayList<>();
-        if (CollectionUtils.isNotEmpty(toolAndScriptMap.get(ToolType.TOOL.getValue()))) {
+        //保存profile和tool、script的关系
+        List<Long> toolIdList = null;
+        if (toolAndScriptMap.containsKey(ToolType.TOOL.getValue())) {
             toolIdList = toolAndScriptMap.get(ToolType.TOOL.getValue()).stream().map(AutoexecToolAndScriptVo::getId).collect(Collectors.toList());
         }
         if (CollectionUtils.isNotEmpty(toolIdList)) {
+            //tool
             deployProfileMapper.insertDeployProfileOperationByProfileIdAndOperateIdListAndType(profileVo.getId(), toolIdList, ToolType.TOOL.getValue());
         }
-        //script
-        List<Long> scriptIdList = new ArrayList<>();
-        if (CollectionUtils.isNotEmpty(toolAndScriptMap.get(ToolType.SCRIPT.getValue()))) {
+        List<Long> scriptIdList = null;
+        if (toolAndScriptMap.containsKey(ToolType.SCRIPT.getValue())) {
             scriptIdList = toolAndScriptMap.get(ToolType.SCRIPT.getValue()).stream().map(AutoexecToolAndScriptVo::getId).collect(Collectors.toList());
         }
         if (CollectionUtils.isNotEmpty(scriptIdList)) {
+            //script
             deployProfileMapper.insertDeployProfileOperationByProfileIdAndOperateIdListAndType(profileVo.getId(), scriptIdList, ToolType.SCRIPT.getValue());
         }
+
         if (paramProfileId != null) {
             if (deployProfileMapper.checkProfileIsExists(paramProfileId) == 0) {
                 throw new DeployProfileIsNotFoundException(paramProfileId);

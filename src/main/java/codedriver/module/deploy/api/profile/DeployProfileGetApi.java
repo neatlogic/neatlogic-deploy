@@ -59,7 +59,6 @@ public class DeployProfileGetApi extends PrivateApiComponentBase {
         if (profileVo == null) {
             throw new DeployProfileIsNotFoundException(id);
         }
-
         //获取profile关联的tool、script工具
         profileVo.setAutoexecToolAndScriptVoList(deployProfileService.getAutoexecToolAndScriptVoListByProfileId(id));
         //获取profile参数
