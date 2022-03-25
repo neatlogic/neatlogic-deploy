@@ -3,9 +3,7 @@ package codedriver.module.deploy.api.profile;
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.dto.BasePageVo;
-import codedriver.framework.dependency.core.DependencyManager;
 import codedriver.framework.deploy.auth.DEPLOY_PROFILE_MODIFY;
-import codedriver.framework.deploy.constvalue.DeployFromType;
 import codedriver.framework.deploy.dao.mapper.DeployProfileMapper;
 import codedriver.framework.deploy.dto.profile.DeployProfileVo;
 import codedriver.framework.restful.annotation.*;
@@ -20,7 +18,6 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 /**
  * @author longrf
@@ -72,12 +69,12 @@ public class DeployProfileSearchApi extends PrivateApiComponentBase {
             paramProfileVo.setRowNum(profileCount);
             List<Long> profileIdList = deployProfileMapper.getDeployProfileIdList(paramProfileVo);
             returnList = deployProfileMapper.searchProfileListByIdList(profileIdList);
-            Map<Object, Integer> toolAndScriptReferredCountMap = DependencyManager.getBatchDependencyCount(DeployFromType.DEPLOY_PROFILE_OPERATION, profileIdList);
-            if (!toolAndScriptReferredCountMap.isEmpty()) {
-                for (DeployProfileVo profileVo : returnList) {
-                    profileVo.setAutoexecToolAndScriptCount(toolAndScriptReferredCountMap.get(profileVo.getId()));
-                }
-            }
+//            Map<Object, Integer> toolAndScriptReferredCountMap = DependencyManager.getBatchDependencyCount(DeployFromType.DEPLOY_PROFILE_OPERATION, profileIdList);
+//            if (!toolAndScriptReferredCountMap.isEmpty()) {
+//                for (DeployProfileVo profileVo : returnList) {
+//                    profileVo.setAutoexecToolAndScriptCount(toolAndScriptReferredCountMap.get(profileVo.getId()));
+//                }
+//            }
         }
         if (CollectionUtils.isEmpty(returnList)) {
             returnList = new ArrayList<>();
