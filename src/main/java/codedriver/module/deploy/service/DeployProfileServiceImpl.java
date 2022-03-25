@@ -103,7 +103,9 @@ public class DeployProfileServiceImpl implements DeployProfileService {
             ToolAndScriptVoList.addAll(autoexecScriptMapper.getScriptListByIdList(scriptIdList));
         }
         for (AutoexecToolAndScriptVo toolAndScriptVo : ToolAndScriptVoList) {
-            toolAndScriptParamVoList.addAll(toolAndScriptVo.getParamList());
+            if (CollectionUtils.isNotEmpty(toolAndScriptVo.getParamList())) {
+                toolAndScriptParamVoList.addAll(toolAndScriptVo.getParamList());
+            }
         }
 
         //根据name（唯一键）去重
