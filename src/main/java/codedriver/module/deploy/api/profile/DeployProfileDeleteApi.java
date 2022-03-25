@@ -2,8 +2,12 @@ package codedriver.module.deploy.api.profile;
 
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.common.constvalue.ApiParamType;
+import codedriver.framework.dependency.core.DependencyManager;
 import codedriver.framework.deploy.auth.DEPLOY_PROFILE_MODIFY;
+import codedriver.framework.deploy.constvalue.DeployFromType;
 import codedriver.framework.deploy.dao.mapper.DeployProfileMapper;
+import codedriver.framework.deploy.dto.profile.DeployProfileVo;
+import codedriver.framework.deploy.exception.profile.DeployProfileHasBeenReferredException;
 import codedriver.framework.deploy.exception.profile.DeployProfileIsNotFoundException;
 import codedriver.framework.restful.annotation.Description;
 import codedriver.framework.restful.annotation.Input;
@@ -52,14 +56,15 @@ public class DeployProfileDeleteApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         Long id = paramObj.getLong("id");
-        if (deployProfileMapper.checkProfileIsExists(id) == 0) {
+        DeployProfileVo profileVo = deployProfileMapper.getProfileVoById(id);
+        if (profileVo == null) {
             throw new DeployProfileIsNotFoundException(id);
         }
         //查询是否被引用
 
-//        if (DependencyManager.getDependencyCount(AutoexecFromType.AUTOEXEC_PROFILE_TOOL_AND_SCRIPT, id) > 0) {
-//            throw new AutoexecProfileHasBeenReferredException(profileVo.getName());
-//        }
+        if (DependencyManager.getDependencyCount(DeployFromType.DEPLOY_PROFILE_CIENTITY, id) > 0) {
+            throw new DeployProfileHasBeenReferredException(profileVo.getName());
+        }
         deployProfileMapper.deleteProfileById(id);
         deployProfileMapper.deleteProfileOperateByProfileId(id);
         return null;

@@ -1,8 +1,6 @@
 package codedriver.module.deploy.api.profile;
 
 import codedriver.framework.auth.core.AuthAction;
-import codedriver.framework.autoexec.dao.mapper.AutoexecScriptMapper;
-import codedriver.framework.autoexec.dao.mapper.AutoexecToolMapper;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.deploy.auth.DEPLOY_PROFILE_MODIFY;
 import codedriver.framework.deploy.dao.mapper.DeployProfileMapper;
@@ -31,13 +29,6 @@ public class DeployProfileGetApi extends PrivateApiComponentBase {
 
     @Resource
     DeployProfileService deployProfileService;
-
-    @Resource
-    AutoexecToolMapper autoexecToolMapper;
-
-    @Resource
-    AutoexecScriptMapper autoexecScriptMapper;
-
 
     @Override
     public String getName() {

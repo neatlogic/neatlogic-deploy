@@ -59,7 +59,7 @@ public class DeployProfileSaveApi extends PrivateApiComponentBase {
             @Param(name = "id", type = ApiParamType.LONG, desc = "profile id"),
             @Param(name = "name", type = ApiParamType.STRING, isRequired = true, desc = "profile 名称"),
             @Param(name = "description", type = ApiParamType.STRING, desc = "描述"),
-            @Param(name = "systemId", type = ApiParamType.LONG, desc = "所属系统id"),
+            @Param(name = "fromSystemId", type = ApiParamType.LONG, desc = "所属系统id"),
             @Param(name = "paramList", type = ApiParamType.JSONARRAY, desc = "工具参数"),
             @Param(name = "autoexecToolAndScriptVoList", type = ApiParamType.JSONARRAY, desc = "关联的工具和脚本列表")
     })
@@ -98,7 +98,6 @@ public class DeployProfileSaveApi extends PrivateApiComponentBase {
             deployProfileMapper.insertDeployProfileOperationByProfileIdAndOperateIdListAndType(profileVo.getId(), scriptIdList, ToolType.SCRIPT.getValue());
         }
         if (paramProfileId != null) {
-//            profileVo.setInputParamList(deployProfileService.getProfileConfig(toolIdList, scriptIdList, paramObj.getJSONArray("paramList")));
             deployProfileMapper.updateProfile(profileVo);
         } else {
             deployProfileMapper.insertProfile(profileVo);

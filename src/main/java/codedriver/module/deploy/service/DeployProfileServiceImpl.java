@@ -76,6 +76,10 @@ public class DeployProfileServiceImpl implements DeployProfileService {
     /**
      * 获取工具参数并去重
      *
+     * 新的参数列表：工具和脚本参数的去重集合（name唯一键）
+     * 旧的参数列表：数据库存的
+     * 新旧名称和类型都相同时，将继续使用旧参数值，不做值是否存在的校验，前端回填失败提示即可
+     *
      * @param toolIdList   工具id
      * @param scriptIdList 脚本id
      * @param paramList    工具参数

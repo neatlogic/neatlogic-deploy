@@ -22,7 +22,7 @@ public interface DeployProfileService {
     List<AutoexecParamVo> getProfileParamById(Long id);
 
     /**
-     * 根据获取工具参数并去重
+     * 获取工具参数并去重
      *
      * @param toolIdList   工具id
      * @param scriptIdList 脚本id

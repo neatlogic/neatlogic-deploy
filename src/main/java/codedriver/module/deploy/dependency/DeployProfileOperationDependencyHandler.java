@@ -37,7 +37,7 @@ public class DeployProfileOperationDependencyHandler extends CustomTableDependen
      */
     @Override
     protected String getTableName() {
-        return "deploy_profile_operate";
+        return "deploy_profile_operation";
     }
 
     /**
