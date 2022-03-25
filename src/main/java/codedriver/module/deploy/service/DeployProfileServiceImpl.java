@@ -70,7 +70,7 @@ public class DeployProfileServiceImpl implements DeployProfileService {
         if (CollectionUtils.isNotEmpty(scriptVoList)) {
             scriptIdList = scriptVoList.stream().map(DeployProfileOperationVo::getOperateId).collect(Collectors.toList());
         }
-        return getProfileConfig(toolIdList, scriptIdList, profileVo.getConfig().getJSONArray("paramList"));
+        return getProfileConfig(toolIdList, scriptIdList, profileVo.getParamList());
     }
 
     /**
@@ -86,7 +86,7 @@ public class DeployProfileServiceImpl implements DeployProfileService {
      * @return
      */
     @Override
-    public List<AutoexecParamVo> getProfileConfig(List<Long> toolIdList, List<Long> scriptIdList, JSONArray paramList) {
+    public List<AutoexecParamVo> getProfileConfig(List<Long> toolIdList, List<Long> scriptIdList, List<AutoexecParamVo> paramList) {
 
         List<AutoexecParamVo> newOperationParamVoList = new ArrayList<>();
         List<AutoexecToolAndScriptVo> ToolAndScriptVoList = new ArrayList<>();

@@ -2,7 +2,6 @@ package codedriver.module.deploy.service;
 
 import codedriver.framework.autoexec.dto.AutoexecParamVo;
 import codedriver.framework.autoexec.dto.AutoexecToolAndScriptVo;
-import com.alibaba.fastjson.JSONArray;
 
 import java.util.List;
 
@@ -29,7 +28,7 @@ public interface DeployProfileService {
      * @param paramList    工具参数
      * @return
      */
-    List<AutoexecParamVo> getProfileConfig(List<Long> toolIdList, List<Long> scriptIdList, JSONArray paramList);
+    List<AutoexecParamVo> getProfileConfig(List<Long> toolIdList, List<Long> scriptIdList,  List<AutoexecParamVo> paramList);
 
     /**
      * 根据profileId查询关联的tool、script工具
