@@ -7,6 +7,7 @@ import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.deploy.auth.DEPLOY_PROFILE_MODIFY;
 import codedriver.framework.deploy.dao.mapper.DeployProfileMapper;
 import codedriver.framework.deploy.dto.profile.DeployProfileVo;
+import codedriver.framework.deploy.exception.profile.DeployProfileIsNotFoundException;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
@@ -98,6 +99,9 @@ public class DeployProfileSaveApi extends PrivateApiComponentBase {
             deployProfileMapper.insertDeployProfileOperationByProfileIdAndOperateIdListAndType(profileVo.getId(), scriptIdList, ToolType.SCRIPT.getValue());
         }
         if (paramProfileId != null) {
+            if (deployProfileMapper.checkProfileIsExists(paramProfileId) == 0) {
+                throw new DeployProfileIsNotFoundException(paramProfileId);
+            }
             deployProfileMapper.updateProfile(profileVo);
         } else {
             deployProfileMapper.insertProfile(profileVo);

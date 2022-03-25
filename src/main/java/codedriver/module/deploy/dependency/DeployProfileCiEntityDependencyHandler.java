@@ -3,6 +3,8 @@ package codedriver.module.deploy.dependency;
 import codedriver.framework.dependency.core.CustomTableDependencyHandlerBase;
 import codedriver.framework.dependency.core.IFromType;
 import codedriver.framework.dependency.dto.DependencyInfoVo;
+import codedriver.framework.deploy.constvalue.DeployFromType;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 
@@ -10,6 +12,7 @@ import java.util.List;
  * @author longrf
  * @date 2022/3/25 2:07 下午
  */
+@Service
 public class DeployProfileCiEntityDependencyHandler extends CustomTableDependencyHandlerBase {
 
     @Override
@@ -39,6 +42,6 @@ public class DeployProfileCiEntityDependencyHandler extends CustomTableDependenc
 
     @Override
     public IFromType getFromType() {
-        return null;
+        return DeployFromType.DEPLOY_PROFILE_CIENTITY;
     }
 }
