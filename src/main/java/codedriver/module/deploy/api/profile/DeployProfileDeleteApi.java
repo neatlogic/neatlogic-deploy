@@ -36,7 +36,7 @@ public class DeployProfileDeleteApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "保存自动化工具profile";
+        return "删除发布工具profile";
     }
 
     @Override

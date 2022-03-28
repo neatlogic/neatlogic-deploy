@@ -40,7 +40,7 @@ public class DeployProfileSaveApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "保存自动化工具profile";
+        return "保存发布工具profile";
     }
 
     @Override
