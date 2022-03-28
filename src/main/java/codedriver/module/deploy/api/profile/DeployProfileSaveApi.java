@@ -63,7 +63,7 @@ public class DeployProfileSaveApi extends PrivateApiComponentBase {
     })
     @Output({
     })
-    @Description(desc = "自动化工具profile保存接口")
+    @Description(desc = "发布工具profile保存接口")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         Long paramProfileId = paramObj.getLong("id");

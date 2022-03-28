@@ -32,7 +32,7 @@ public class DeployProfileGetApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "获取自动化工具profile";
+        return "获取发布工具profile";
     }
 
     @Override
@@ -51,7 +51,7 @@ public class DeployProfileGetApi extends PrivateApiComponentBase {
     @Output({
             @Param(explode = DeployProfileVo[].class, desc = "工具profile")
     })
-    @Description(desc = "获取自动化工具profile接口")
+    @Description(desc = "获取发布工具profile接口")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         Long id = paramObj.getLong("id");

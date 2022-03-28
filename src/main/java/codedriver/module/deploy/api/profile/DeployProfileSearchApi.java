@@ -33,7 +33,7 @@ public class DeployProfileSearchApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "查询自动化工具profile列表";
+        return "查询发布工具profile列表";
     }
 
     @Override
@@ -59,7 +59,7 @@ public class DeployProfileSearchApi extends PrivateApiComponentBase {
             @Param(name = "tbodyList", explode = DeployProfileVo[].class, desc = "工具profile列表"),
             @Param(explode = BasePageVo.class)
     })
-    @Description(desc = "自动化工具profile列表查询接口")
+    @Description(desc = "发布profile列表查询接口")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         DeployProfileVo paramProfileVo = JSON.toJavaObject(paramObj, DeployProfileVo.class);

@@ -52,7 +52,7 @@ public class DeployProfileDeleteApi extends PrivateApiComponentBase {
     @Input({
             @Param(name = "id", desc = "profile id", type = ApiParamType.LONG)
     })
-    @Description(desc = "自动化工具profile保存接口")
+    @Description(desc = "发布工具profile保存接口")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         Long id = paramObj.getLong("id");
