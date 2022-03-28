@@ -71,7 +71,7 @@ public class DeployProfileSaveApi extends PrivateApiComponentBase {
         Map<String, List<AutoexecToolAndScriptVo>> toolAndScriptMap = profileVo.getAutoexecToolAndScriptVoList().stream().collect(Collectors.groupingBy(AutoexecToolAndScriptVo::getType));
 
         //删除profile和tool、script的关系
-        deployProfileMapper.deleteProfileOperateByProfileId(paramProfileId);
+        deployProfileMapper.deleteProfileOperationByProfileId(paramProfileId);
 
         //保存profile和tool、script的关系
         List<Long> toolIdList = null;

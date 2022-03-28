@@ -65,7 +65,7 @@ public class DeployProfileDeleteApi extends PrivateApiComponentBase {
             throw new DeployProfileHasBeenReferredException(profileVo.getName());
         }
         deployProfileMapper.deleteProfileById(id);
-        deployProfileMapper.deleteProfileOperateByProfileId(id);
+        deployProfileMapper.deleteProfileOperationByProfileId(id);
         return null;
     }
 }
