@@ -60,7 +60,7 @@ public class DeployProfileDeleteApi extends PrivateApiComponentBase {
         if (profileVo == null) {
             throw new DeployProfileIsNotFoundException(id);
         }
-        //查询是否被引用
+        //查询是否被引用(产品确认：无需判断所属系统和关联工具，只需要考虑是否被系统、模块、环境使用)
         if (DependencyManager.getDependencyCount(DeployFromType.DEPLOY_PROFILE_CIENTITY, id) > 0) {
             throw new DeployProfileHasBeenReferredException(profileVo.getName());
         }
