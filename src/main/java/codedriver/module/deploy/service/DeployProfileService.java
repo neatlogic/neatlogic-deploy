@@ -21,15 +21,6 @@ public interface DeployProfileService {
     List<AutoexecParamVo> getProfileParamById(Long id);
 
     /**
-     * 根据关联的operationVoList获取工具参数并与数据库存储的旧参数oldOperationParamList做去重处理
-     *
-     * @param paramAutoexecOperationVoList
-     * @param oldOperationParamList
-     * @return
-     */
-    List<AutoexecParamVo> getProfileConfig(List<AutoexecOperationVo> paramAutoexecOperationVoList, List<AutoexecParamVo> oldOperationParamList);
-
-    /**
      * 保存profile和tool、script的关系
      *
      * @param profileId
