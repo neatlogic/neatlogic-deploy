@@ -1,8 +1,6 @@
 package codedriver.module.deploy.api.profile;
 
 import codedriver.framework.auth.core.AuthAction;
-import codedriver.framework.autoexec.constvalue.ToolType;
-import codedriver.framework.autoexec.dto.AutoexecToolAndScriptVo;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.deploy.auth.DEPLOY_PROFILE_MODIFY;
 import codedriver.framework.deploy.dao.mapper.DeployProfileMapper;
@@ -14,16 +12,13 @@ import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.IValid;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
+import codedriver.module.deploy.service.DeployProfileService;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * @author longrf
@@ -37,6 +32,9 @@ public class DeployProfileSaveApi extends PrivateApiComponentBase {
 
     @Resource
     DeployProfileMapper deployProfileMapper;
+
+    @Resource
+    DeployProfileService deployProfileService;
 
     @Override
     public String getName() {
@@ -59,7 +57,7 @@ public class DeployProfileSaveApi extends PrivateApiComponentBase {
             @Param(name = "description", type = ApiParamType.STRING, desc = "描述"),
             @Param(name = "fromSystemId", type = ApiParamType.LONG, desc = "所属系统id"),
             @Param(name = "paramList", type = ApiParamType.JSONARRAY, desc = "工具参数"),
-            @Param(name = "autoexecToolAndScriptVoList", type = ApiParamType.JSONARRAY, isRequired = true, desc = "关联的工具和脚本列表")
+            @Param(name = "autoexecOperationVoList", type = ApiParamType.JSONARRAY, isRequired = true, desc = "关联的工具和脚本列表")
     })
     @Output({
     })
@@ -68,39 +66,23 @@ public class DeployProfileSaveApi extends PrivateApiComponentBase {
     public Object myDoService(JSONObject paramObj) throws Exception {
         Long paramProfileId = paramObj.getLong("id");
         DeployProfileVo profileVo = JSON.toJavaObject(paramObj, DeployProfileVo.class);
-        Map<String, List<AutoexecToolAndScriptVo>> toolAndScriptMap = profileVo.getAutoexecToolAndScriptVoList().stream().collect(Collectors.groupingBy(AutoexecToolAndScriptVo::getType));
+        if (paramProfileId != null && deployProfileMapper.checkProfileIsExists(paramProfileId) == 0) {
+            throw new DeployProfileIsNotFoundException(paramProfileId);
+        }
 
         //删除profile和tool、script的关系
         deployProfileMapper.deleteProfileOperationByProfileId(paramProfileId);
-
         //保存profile和tool、script的关系
-        List<Long> toolIdList = null;
-        if (toolAndScriptMap.containsKey(ToolType.TOOL.getValue())) {
-            toolIdList = toolAndScriptMap.get(ToolType.TOOL.getValue()).stream().map(AutoexecToolAndScriptVo::getId).collect(Collectors.toList());
-        }
-        if (CollectionUtils.isNotEmpty(toolIdList)) {
-            //tool
-            deployProfileMapper.insertDeployProfileOperationByProfileIdAndOperateIdListAndType(profileVo.getId(), toolIdList, ToolType.TOOL.getValue());
-        }
-        List<Long> scriptIdList = null;
-        if (toolAndScriptMap.containsKey(ToolType.SCRIPT.getValue())) {
-            scriptIdList = toolAndScriptMap.get(ToolType.SCRIPT.getValue()).stream().map(AutoexecToolAndScriptVo::getId).collect(Collectors.toList());
-        }
-        if (CollectionUtils.isNotEmpty(scriptIdList)) {
-            //script
-            deployProfileMapper.insertDeployProfileOperationByProfileIdAndOperateIdListAndType(profileVo.getId(), scriptIdList, ToolType.SCRIPT.getValue());
-        }
+        deployProfileService.saveProfileOperationByProfileIdAndAutoexecOperationVoList(profileVo.getId(), profileVo.getAutoexecOperationVoList());
 
         if (paramProfileId != null) {
-            if (deployProfileMapper.checkProfileIsExists(paramProfileId) == 0) {
-                throw new DeployProfileIsNotFoundException(paramProfileId);
-            }
             deployProfileMapper.updateProfile(profileVo);
         } else {
             deployProfileMapper.insertProfile(profileVo);
         }
         return null;
     }
+
     public IValid name() {
         return value -> {
             DeployProfileVo vo = JSON.toJavaObject(value, DeployProfileVo.class);

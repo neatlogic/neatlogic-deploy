@@ -2,7 +2,7 @@ package codedriver.module.deploy.api.profile;
 
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.autoexec.constvalue.ToolType;
-import codedriver.framework.autoexec.dto.AutoexecToolAndScriptVo;
+import codedriver.framework.autoexec.dto.AutoexecOperationVo;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.deploy.auth.DEPLOY_PROFILE_MODIFY;
 import codedriver.framework.restful.annotation.*;
@@ -46,21 +46,21 @@ public class DeployProfileParamListApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "autoexecToolAndScriptVoList", type = ApiParamType.JSONARRAY, isRequired = true, desc = "关联的工具和脚本列表")
+            @Param(name = "autoexecOperationVoList", type = ApiParamType.JSONARRAY, isRequired = true, desc = "关联的工具和脚本列表")
     })
     @Output({
     })
     @Description(desc = "获取工具profile参数列表接口")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
-        Map<String, List<AutoexecToolAndScriptVo>> toolAndScriptMap = paramObj.getJSONArray("autoexecToolAndScriptVoList").toJavaList(AutoexecToolAndScriptVo.class).stream().collect(Collectors.groupingBy(AutoexecToolAndScriptVo::getType));
+        Map<String, List<AutoexecOperationVo>> autoexecOperationVoMap = paramObj.getJSONArray("autoexecOperationVoList").toJavaList(AutoexecOperationVo.class).stream().collect(Collectors.groupingBy(AutoexecOperationVo::getType));
         List<Long> toolIdList = null;
         List<Long> scriptIdList = null;
-        if (toolAndScriptMap.containsKey(ToolType.TOOL.getValue())) {
-            toolIdList = toolAndScriptMap.get(ToolType.TOOL.getValue()).stream().map(AutoexecToolAndScriptVo::getId).collect(Collectors.toList());
+        if (autoexecOperationVoMap.containsKey(ToolType.TOOL.getValue())) {
+            toolIdList = autoexecOperationVoMap.get(ToolType.TOOL.getValue()).stream().map(AutoexecOperationVo::getId).collect(Collectors.toList());
         }
-        if (toolAndScriptMap.containsKey(ToolType.SCRIPT.getValue())) {
-            scriptIdList = toolAndScriptMap.get(ToolType.SCRIPT.getValue()).stream().map(AutoexecToolAndScriptVo::getId).collect(Collectors.toList());
+        if (autoexecOperationVoMap.containsKey(ToolType.SCRIPT.getValue())) {
+            scriptIdList = autoexecOperationVoMap.get(ToolType.SCRIPT.getValue()).stream().map(AutoexecOperationVo::getId).collect(Collectors.toList());
         }
         //获取工具参数并去重
         return deployProfileService.getProfileConfig(toolIdList, scriptIdList, null);

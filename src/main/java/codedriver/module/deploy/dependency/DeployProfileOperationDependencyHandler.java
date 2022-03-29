@@ -12,7 +12,6 @@ import codedriver.framework.dependency.dto.DependencyInfoVo;
 import codedriver.framework.deploy.constvalue.DeployFromType;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.List;
@@ -24,7 +23,7 @@ import java.util.Map;
  * @author longrf
  * @date 2022/3/18 10:36 上午
  */
-@Service
+@Deprecated
 public class DeployProfileOperationDependencyHandler extends CustomTableDependencyHandlerBase {
 
     @Resource

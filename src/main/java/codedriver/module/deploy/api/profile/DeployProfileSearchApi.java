@@ -68,7 +68,7 @@ public class DeployProfileSearchApi extends PrivateApiComponentBase {
         if (profileCount > 0) {
             paramProfileVo.setRowNum(profileCount);
             List<Long> profileIdList = deployProfileMapper.getDeployProfileIdList(paramProfileVo);
-            returnList = deployProfileMapper.searchProfileListByIdList(profileIdList);
+            returnList = deployProfileMapper.getProfileListByIdList(profileIdList);
 //            Map<Object, Integer> toolAndScriptReferredCountMap = DependencyManager.getBatchDependencyCount(DeployFromType.DEPLOY_PROFILE_OPERATION, profileIdList);
 //            if (!toolAndScriptReferredCountMap.isEmpty()) {
 //                for (DeployProfileVo profileVo : returnList) {

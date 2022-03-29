@@ -4,8 +4,8 @@ package codedriver.module.deploy.service;
 import codedriver.framework.autoexec.constvalue.ToolType;
 import codedriver.framework.autoexec.dao.mapper.AutoexecScriptMapper;
 import codedriver.framework.autoexec.dao.mapper.AutoexecToolMapper;
+import codedriver.framework.autoexec.dto.AutoexecOperationVo;
 import codedriver.framework.autoexec.dto.AutoexecParamVo;
-import codedriver.framework.autoexec.dto.AutoexecToolAndScriptVo;
 import codedriver.framework.deploy.dao.mapper.DeployProfileMapper;
 import codedriver.framework.deploy.dto.profile.DeployProfileVo;
 import codedriver.framework.deploy.exception.profile.DeployProfileIsNotFoundException;
@@ -39,13 +39,31 @@ public class DeployProfileServiceImpl implements DeployProfileService {
     AutoexecScriptMapper autoexecScriptMapper;
 
     /**
-     * 获取profile参数
+     * 根据profileId 获取profile参数
      *
      * @param id
      * @return
      */
     @Override
     public List<AutoexecParamVo> getProfileParamById(Long id) {
+
+/*        //个人觉得filter和下面那个区别不大
+        DeployProfileVo profileVo = deployProfileMapper.getProfileVoById(id);
+        if (profileVo == null) {
+            throw new DeployProfileIsNotFoundException(id);
+        }
+        List<AutoexecOperationVo> autoexecOperationVoList = profileVo.getAutoexecOperationVoList();
+        List<AutoexecOperationVo> tooVoList = autoexecOperationVoList.stream().filter(e -> StringUtils.equals(ToolType.TOOL.getValue(), e.getType())).collect(Collectors.toList());
+        List<AutoexecOperationVo> scriptVoList = autoexecOperationVoList.stream().filter(e -> StringUtils.equals(ToolType.SCRIPT.getValue(), e.getType())).collect(Collectors.toList());
+        List<Long> toolIdList = null;
+        List<Long> scriptIdList = null;
+        if (CollectionUtils.isNotEmpty(tooVoList)) {
+            toolIdList = tooVoList.stream().map(AutoexecOperationVo::getId).collect(Collectors.toList());
+        }
+        if (CollectionUtils.isNotEmpty(scriptVoList)) {
+            scriptIdList = scriptVoList.stream().map(AutoexecOperationVo::getId).collect(Collectors.toList());
+        }*/
+
         Map<String, List<Long>> toolIdListAndScriptIdListMap = getAutoexecToolIdListAndScriptIdListByProfileId(id);
         List<Long> toolIdList = null;
         List<Long> scriptIdList = null;
@@ -60,30 +78,31 @@ public class DeployProfileServiceImpl implements DeployProfileService {
 
     /**
      * 获取工具参数并去重
-     *
-     * 新的参数列表：工具和脚本参数的去重集合（name唯一键）
-     * 旧的参数列表：数据库存的
+     * <p>
+     * 新的参数列表newOperationParamVoList：工具和脚本参数的去重集合（name唯一键）
+     * 旧的参数列表oldOperationParamList：数据库存的
      * 新旧名称和类型都相同时，将继续使用旧参数值，不做值是否存在的校验，前端回填失败提示即可
      *
-     * @param toolIdList   工具id
-     * @param scriptIdList 脚本id
-     * @param paramList    工具参数
+     * @param toolIdList            工具id
+     * @param scriptIdList          脚本id
+     * @param oldOperationParamList 旧工具参数
      * @return
      */
     @Override
-    public List<AutoexecParamVo> getProfileConfig(List<Long> toolIdList, List<Long> scriptIdList, List<AutoexecParamVo> paramList) {
+    public List<AutoexecParamVo> getProfileConfig(List<Long> toolIdList, List<Long> scriptIdList, List<AutoexecParamVo> oldOperationParamList) {
 
+        //获取新的参数列表
         List<AutoexecParamVo> newOperationParamVoList = new ArrayList<>();
-        List<AutoexecToolAndScriptVo> ToolAndScriptVoList = new ArrayList<>();
+        List<AutoexecOperationVo> autoexecOperationVoList = new ArrayList<>();
         if (CollectionUtils.isNotEmpty(toolIdList)) {
-            ToolAndScriptVoList.addAll(autoexecToolMapper.getToolListByIdList(toolIdList));
+            autoexecOperationVoList.addAll(autoexecToolMapper.getAutoexecOperationListByIdList(toolIdList));
         }
         if (CollectionUtils.isNotEmpty(scriptIdList)) {
-            ToolAndScriptVoList.addAll(autoexecScriptMapper.getScriptListByIdList(scriptIdList));
+            autoexecOperationVoList.addAll(autoexecScriptMapper.getAutoexecOperationListByIdList(scriptIdList));
         }
-        for (AutoexecToolAndScriptVo toolAndScriptVo : ToolAndScriptVoList) {
-            if (CollectionUtils.isNotEmpty(toolAndScriptVo.getParamList())) {
-                newOperationParamVoList.addAll(toolAndScriptVo.getParamList());
+        for (AutoexecOperationVo operationVo : autoexecOperationVoList) {
+            if (CollectionUtils.isNotEmpty(operationVo.getParamVoList())) {
+                newOperationParamVoList.addAll(operationVo.getParamVoList());
             }
         }
 
@@ -95,8 +114,8 @@ public class DeployProfileServiceImpl implements DeployProfileService {
 
         //旧的参数信息
         Map<String, AutoexecParamVo> oldOperationParamMap = null;
-        if (CollectionUtils.isNotEmpty(paramList)) {
-            oldOperationParamMap = paramList.stream().collect(Collectors.toMap(AutoexecParamVo::getName, e -> e));
+        if (CollectionUtils.isNotEmpty(oldOperationParamList)) {
+            oldOperationParamMap = oldOperationParamList.stream().collect(Collectors.toMap(AutoexecParamVo::getName, e -> e));
         }
 
         //找出需要替换值的参数名称name
@@ -112,7 +131,7 @@ public class DeployProfileServiceImpl implements DeployProfileService {
         //根据参数名称name替换对应的值
         if (CollectionUtils.isNotEmpty(replaceNameList)) {
             for (String name : replaceNameList) {
-                newOperationParamMap.get(name).setConfig(oldOperationParamMap.get(name).getConfigStr());
+                newOperationParamMap.get(name).setDefaultValue(oldOperationParamMap.get(name).getDefaultValue());
             }
         }
 
@@ -131,55 +150,67 @@ public class DeployProfileServiceImpl implements DeployProfileService {
      * @return
      */
     @Override
-    public List<AutoexecToolAndScriptVo> getAutoexecToolAndScriptVoListByProfileId(Long id) {
-        List<AutoexecToolAndScriptVo> returnToolAndScriptVoList = new ArrayList<>();
+    public List<AutoexecOperationVo> getAutoexecOperationVoListByProfileId(Long id) {
+        List<AutoexecOperationVo> returnList = new ArrayList<>();
         Map<String, List<Long>> toolIdListAndScriptIdListMap = getAutoexecToolIdListAndScriptIdListByProfileId(id);
         //tool
-        if (toolIdListAndScriptIdListMap.containsKey(ToolType.TOOL.getValue())) {
-            returnToolAndScriptVoList.addAll(autoexecToolMapper.getToolListByIdList(toolIdListAndScriptIdListMap.get(ToolType.TOOL.getValue())));
+        if (toolIdListAndScriptIdListMap.containsKey(ToolType.TOOL.getValue()) && CollectionUtils.isNotEmpty(toolIdListAndScriptIdListMap.get(ToolType.TOOL.getValue()))) {
+            returnList.addAll(autoexecToolMapper.getAutoexecOperationListByIdList(toolIdListAndScriptIdListMap.get(ToolType.TOOL.getValue())));
         }
         //script
-        if (toolIdListAndScriptIdListMap.containsKey(ToolType.SCRIPT.getValue())) {
-            returnToolAndScriptVoList.addAll(autoexecScriptMapper.getScriptListByIdList(toolIdListAndScriptIdListMap.get(ToolType.SCRIPT.getValue())));
+        if (toolIdListAndScriptIdListMap.containsKey(ToolType.SCRIPT.getValue()) && CollectionUtils.isNotEmpty(toolIdListAndScriptIdListMap.get(ToolType.TOOL.getValue()))) {
+            returnList.addAll(autoexecScriptMapper.getAutoexecOperationListByIdList(toolIdListAndScriptIdListMap.get(ToolType.SCRIPT.getValue())));
         }
-        return returnToolAndScriptVoList;
+        return returnList;
+    }
+
+    /**
+     * 保存profile和tool、script的关系
+     *
+     * @param profileId
+     * @param autoexecOperationVoList
+     */
+    @Override
+    public void saveProfileOperationByProfileIdAndAutoexecOperationVoList(Long profileId, List<AutoexecOperationVo> autoexecOperationVoList) {
+        Map<String, List<AutoexecOperationVo>> autoexecOperationMap = autoexecOperationVoList.stream().collect(Collectors.groupingBy(AutoexecOperationVo::getType));
+        List<Long> toolIdList = null;
+        if (autoexecOperationMap.containsKey(ToolType.TOOL.getValue())) {
+            toolIdList = autoexecOperationMap.get(ToolType.TOOL.getValue()).stream().map(AutoexecOperationVo::getId).collect(Collectors.toList());
+        }
+        //tool
+        if (CollectionUtils.isNotEmpty(toolIdList)) {
+            deployProfileMapper.insertDeployProfileOperationByProfileIdAndOperateIdListAndType(profileId, toolIdList, ToolType.TOOL.getValue());
+        }
+        List<Long> scriptIdList = null;
+        if (autoexecOperationMap.containsKey(ToolType.SCRIPT.getValue())) {
+            scriptIdList = autoexecOperationMap.get(ToolType.SCRIPT.getValue()).stream().map(AutoexecOperationVo::getId).collect(Collectors.toList());
+        }
+        //script
+        if (CollectionUtils.isNotEmpty(scriptIdList)) {
+            deployProfileMapper.insertDeployProfileOperationByProfileIdAndOperateIdListAndType(profileId, scriptIdList, ToolType.SCRIPT.getValue());
+        }
     }
 
 
     /**
      * 根据profileId查询关联的toolIdList、scriptIdList
+     *
      * @param id
      * @return
      */
-    public Map<String,List<Long>> getAutoexecToolIdListAndScriptIdListByProfileId(Long id) {
+    public Map<String, List<Long>> getAutoexecToolIdListAndScriptIdListByProfileId(Long id) {
         Map<String, List<Long>> returnMap = new HashMap<>();
         DeployProfileVo profileVo = deployProfileMapper.getProfileVoById(id);
         if (profileVo == null) {
             throw new DeployProfileIsNotFoundException(id);
         }
-        List<AutoexecToolAndScriptVo> toolAndScriptVoList = profileVo.getAutoexecToolAndScriptVoList();
-
-        Map<String, List<AutoexecToolAndScriptVo>> toolAndScriptMap = new HashMap<>();
-        if (CollectionUtils.isNotEmpty(toolAndScriptVoList)) {
-            toolAndScriptMap = toolAndScriptVoList.stream().collect(Collectors.groupingBy(AutoexecToolAndScriptVo::getType));
-        }
-        //tool
-        List<Long> toolIdList = null;
-        if (toolAndScriptMap.containsKey(ToolType.TOOL.getValue())) {
-            toolIdList = toolAndScriptMap.get(ToolType.TOOL.getValue()).stream().map(AutoexecToolAndScriptVo::getId).collect(Collectors.toList());
-        }
-        if (CollectionUtils.isNotEmpty(toolIdList)) {
-            returnMap.put(ToolType.TOOL.getValue(), toolIdList);
-        }
-        //script
-        List<Long> scriptIdList = null;
-        if (toolAndScriptMap.containsKey(ToolType.SCRIPT.getValue())) {
-            scriptIdList = toolAndScriptMap.get(ToolType.SCRIPT.getValue()).stream().map(AutoexecToolAndScriptVo::getId).collect(Collectors.toList());
-        }
-        if (CollectionUtils.isNotEmpty(toolIdList)) {
-            returnMap.put(ToolType.SCRIPT.getValue(), scriptIdList);
+        List<AutoexecOperationVo> autoexecOperationVoList = profileVo.getAutoexecOperationVoList();
+        if (CollectionUtils.isNotEmpty(autoexecOperationVoList)) {
+            Map<Long, AutoexecOperationVo> autoexecOperationVoMap = autoexecOperationVoList.stream().collect(Collectors.toMap(AutoexecOperationVo::getId, e -> e));
+            for (AutoexecOperationVo autoexecOperationVo : autoexecOperationVoList) {
+                returnMap.computeIfAbsent(autoexecOperationVo.getType(), k -> new ArrayList<>()).add(autoexecOperationVoMap.get(autoexecOperationVo.getId()).getId());
+            }
         }
         return returnMap;
     }
-
 }
