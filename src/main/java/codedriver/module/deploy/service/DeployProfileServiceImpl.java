@@ -46,34 +46,11 @@ public class DeployProfileServiceImpl implements DeployProfileService {
      */
     @Override
     public List<AutoexecParamVo> getProfileParamById(Long id) {
-
-/*        //个人觉得filter和下面那个区别不大
         DeployProfileVo profileVo = deployProfileMapper.getProfileVoById(id);
         if (profileVo == null) {
             throw new DeployProfileIsNotFoundException(id);
         }
-        List<AutoexecOperationVo> autoexecOperationVoList = profileVo.getAutoexecOperationVoList();
-        List<AutoexecOperationVo> tooVoList = autoexecOperationVoList.stream().filter(e -> StringUtils.equals(ToolType.TOOL.getValue(), e.getType())).collect(Collectors.toList());
-        List<AutoexecOperationVo> scriptVoList = autoexecOperationVoList.stream().filter(e -> StringUtils.equals(ToolType.SCRIPT.getValue(), e.getType())).collect(Collectors.toList());
-        List<Long> toolIdList = null;
-        List<Long> scriptIdList = null;
-        if (CollectionUtils.isNotEmpty(tooVoList)) {
-            toolIdList = tooVoList.stream().map(AutoexecOperationVo::getId).collect(Collectors.toList());
-        }
-        if (CollectionUtils.isNotEmpty(scriptVoList)) {
-            scriptIdList = scriptVoList.stream().map(AutoexecOperationVo::getId).collect(Collectors.toList());
-        }*/
-
-        Map<String, List<Long>> toolIdListAndScriptIdListMap = getAutoexecToolIdListAndScriptIdListByProfileId(id);
-        List<Long> toolIdList = null;
-        List<Long> scriptIdList = null;
-        if (toolIdListAndScriptIdListMap.containsKey(ToolType.TOOL.getValue())) {
-            toolIdList = toolIdListAndScriptIdListMap.get(ToolType.TOOL.getValue());
-        }
-        if (toolIdListAndScriptIdListMap.containsKey(ToolType.SCRIPT.getValue())) {
-            scriptIdList = toolIdListAndScriptIdListMap.get(ToolType.SCRIPT.getValue());
-        }
-        return getProfileConfig(toolIdList, scriptIdList, deployProfileMapper.getProfileVoById(id).getParamList());
+        return getProfileConfig(profileVo.getAutoexecOperationVoList(), deployProfileMapper.getProfileVoById(id).getParamList());
     }
 
     /**
@@ -82,15 +59,15 @@ public class DeployProfileServiceImpl implements DeployProfileService {
      * 新的参数列表newOperationParamVoList：工具和脚本参数的去重集合（name唯一键）
      * 旧的参数列表oldOperationParamList：数据库存的
      * 新旧名称和类型都相同时，将继续使用旧参数值，不做值是否存在的校验，前端回填失败提示即可
-     *
-     * @param toolIdList            工具id
-     * @param scriptIdList          脚本id
-     * @param oldOperationParamList 旧工具参数
+     * @param paramAutoexecOperationVoList
+     * @param oldOperationParamList
      * @return
      */
     @Override
-    public List<AutoexecParamVo> getProfileConfig(List<Long> toolIdList, List<Long> scriptIdList, List<AutoexecParamVo> oldOperationParamList) {
+    public List<AutoexecParamVo> getProfileConfig(List<AutoexecOperationVo> paramAutoexecOperationVoList, List<AutoexecParamVo> oldOperationParamList) {
 
+        List<Long> toolIdList = paramAutoexecOperationVoList.stream().filter(e -> StringUtils.equals(ToolType.TOOL.getValue(), e.getType())).map(AutoexecOperationVo::getId).collect(Collectors.toList());
+        List<Long> scriptIdList = paramAutoexecOperationVoList.stream().filter(e -> StringUtils.equals(ToolType.SCRIPT.getValue(), e.getType())).map(AutoexecOperationVo::getId).collect(Collectors.toList());
         //获取新的参数列表
         List<AutoexecParamVo> newOperationParamVoList = new ArrayList<>();
         List<AutoexecOperationVo> autoexecOperationVoList = new ArrayList<>();
@@ -144,27 +121,6 @@ public class DeployProfileServiceImpl implements DeployProfileService {
     }
 
     /**
-     * 根据profileId查询关联的tool、script工具
-     *
-     * @param id
-     * @return
-     */
-    @Override
-    public List<AutoexecOperationVo> getAutoexecOperationVoListByProfileId(Long id) {
-        List<AutoexecOperationVo> returnList = new ArrayList<>();
-        Map<String, List<Long>> toolIdListAndScriptIdListMap = getAutoexecToolIdListAndScriptIdListByProfileId(id);
-        //tool
-        if (toolIdListAndScriptIdListMap.containsKey(ToolType.TOOL.getValue()) && CollectionUtils.isNotEmpty(toolIdListAndScriptIdListMap.get(ToolType.TOOL.getValue()))) {
-            returnList.addAll(autoexecToolMapper.getAutoexecOperationListByIdList(toolIdListAndScriptIdListMap.get(ToolType.TOOL.getValue())));
-        }
-        //script
-        if (toolIdListAndScriptIdListMap.containsKey(ToolType.SCRIPT.getValue()) && CollectionUtils.isNotEmpty(toolIdListAndScriptIdListMap.get(ToolType.TOOL.getValue()))) {
-            returnList.addAll(autoexecScriptMapper.getAutoexecOperationListByIdList(toolIdListAndScriptIdListMap.get(ToolType.SCRIPT.getValue())));
-        }
-        return returnList;
-    }
-
-    /**
      * 保存profile和tool、script的关系
      *
      * @param profileId
@@ -189,28 +145,5 @@ public class DeployProfileServiceImpl implements DeployProfileService {
         if (CollectionUtils.isNotEmpty(scriptIdList)) {
             deployProfileMapper.insertDeployProfileOperationByProfileIdAndOperateIdListAndType(profileId, scriptIdList, ToolType.SCRIPT.getValue());
         }
-    }
-
-
-    /**
-     * 根据profileId查询关联的toolIdList、scriptIdList
-     *
-     * @param id
-     * @return
-     */
-    public Map<String, List<Long>> getAutoexecToolIdListAndScriptIdListByProfileId(Long id) {
-        Map<String, List<Long>> returnMap = new HashMap<>();
-        DeployProfileVo profileVo = deployProfileMapper.getProfileVoById(id);
-        if (profileVo == null) {
-            throw new DeployProfileIsNotFoundException(id);
-        }
-        List<AutoexecOperationVo> autoexecOperationVoList = profileVo.getAutoexecOperationVoList();
-        if (CollectionUtils.isNotEmpty(autoexecOperationVoList)) {
-            Map<Long, AutoexecOperationVo> autoexecOperationVoMap = autoexecOperationVoList.stream().collect(Collectors.toMap(AutoexecOperationVo::getId, e -> e));
-            for (AutoexecOperationVo autoexecOperationVo : autoexecOperationVoList) {
-                returnMap.computeIfAbsent(autoexecOperationVo.getType(), k -> new ArrayList<>()).add(autoexecOperationVoMap.get(autoexecOperationVo.getId()).getId());
-            }
-        }
-        return returnMap;
     }
 }

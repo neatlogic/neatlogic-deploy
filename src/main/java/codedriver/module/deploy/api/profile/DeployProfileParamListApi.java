@@ -1,7 +1,6 @@
 package codedriver.module.deploy.api.profile;
 
 import codedriver.framework.auth.core.AuthAction;
-import codedriver.framework.autoexec.constvalue.ToolType;
 import codedriver.framework.autoexec.dto.AutoexecOperationVo;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.deploy.auth.DEPLOY_PROFILE_MODIFY;
@@ -13,9 +12,6 @@ import com.alibaba.fastjson.JSONObject;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * @author longrf
@@ -53,16 +49,6 @@ public class DeployProfileParamListApi extends PrivateApiComponentBase {
     @Description(desc = "获取工具profile参数列表接口")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
-        Map<String, List<AutoexecOperationVo>> autoexecOperationVoMap = paramObj.getJSONArray("autoexecOperationVoList").toJavaList(AutoexecOperationVo.class).stream().collect(Collectors.groupingBy(AutoexecOperationVo::getType));
-        List<Long> toolIdList = null;
-        List<Long> scriptIdList = null;
-        if (autoexecOperationVoMap.containsKey(ToolType.TOOL.getValue())) {
-            toolIdList = autoexecOperationVoMap.get(ToolType.TOOL.getValue()).stream().map(AutoexecOperationVo::getId).collect(Collectors.toList());
-        }
-        if (autoexecOperationVoMap.containsKey(ToolType.SCRIPT.getValue())) {
-            scriptIdList = autoexecOperationVoMap.get(ToolType.SCRIPT.getValue()).stream().map(AutoexecOperationVo::getId).collect(Collectors.toList());
-        }
-        //获取工具参数并去重
-        return deployProfileService.getProfileConfig(toolIdList, scriptIdList, null);
+        return deployProfileService.getProfileConfig(paramObj.getJSONArray("autoexecOperationVoList").toJavaList(AutoexecOperationVo.class) ,null);
     }
 }
