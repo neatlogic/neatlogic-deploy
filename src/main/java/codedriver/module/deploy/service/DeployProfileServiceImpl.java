@@ -54,7 +54,7 @@ public class DeployProfileServiceImpl implements DeployProfileService {
     }
 
     /**
-     * 获取工具参数并去重
+     * 根据关联的operationVoList获取工具参数并与数据库存储的旧参数oldOperationParamList做去重处理
      * <p>
      * 新的参数列表newOperationParamVoList：工具和脚本参数的去重集合（name唯一键）
      * 旧的参数列表oldOperationParamList：数据库存的
