@@ -128,18 +128,11 @@ public class DeployProfileServiceImpl implements DeployProfileService {
      */
     @Override
     public void saveProfileOperationByProfileIdAndAutoexecOperationVoList(Long profileId, List<AutoexecOperationVo> autoexecOperationVoList) {
-        Map<String, List<AutoexecOperationVo>> autoexecOperationMap = autoexecOperationVoList.stream().collect(Collectors.groupingBy(AutoexecOperationVo::getType));
-        List<Long> toolIdList = null;
-        if (autoexecOperationMap.containsKey(ToolType.TOOL.getValue())) {
-            toolIdList = autoexecOperationMap.get(ToolType.TOOL.getValue()).stream().map(AutoexecOperationVo::getId).collect(Collectors.toList());
-        }
+        List<Long> toolIdList = autoexecOperationVoList.stream().filter(e -> StringUtils.equals(ToolType.TOOL.getValue(), e.getType())).map(AutoexecOperationVo::getId).collect(Collectors.toList());
+        List<Long> scriptIdList = autoexecOperationVoList.stream().filter(e -> StringUtils.equals(ToolType.SCRIPT.getValue(), e.getType())).map(AutoexecOperationVo::getId).collect(Collectors.toList());
         //tool
         if (CollectionUtils.isNotEmpty(toolIdList)) {
             deployProfileMapper.insertDeployProfileOperationByProfileIdAndOperateIdListAndType(profileId, toolIdList, ToolType.TOOL.getValue());
-        }
-        List<Long> scriptIdList = null;
-        if (autoexecOperationMap.containsKey(ToolType.SCRIPT.getValue())) {
-            scriptIdList = autoexecOperationMap.get(ToolType.SCRIPT.getValue()).stream().map(AutoexecOperationVo::getId).collect(Collectors.toList());
         }
         //script
         if (CollectionUtils.isNotEmpty(scriptIdList)) {
