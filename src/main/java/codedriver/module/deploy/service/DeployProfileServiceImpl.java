@@ -3,8 +3,6 @@ package codedriver.module.deploy.service;
 
 import codedriver.framework.autoexec.constvalue.ToolType;
 import codedriver.framework.autoexec.crossover.IAutoexecServiceCrossoverService;
-import codedriver.framework.autoexec.dao.mapper.AutoexecScriptMapper;
-import codedriver.framework.autoexec.dao.mapper.AutoexecToolMapper;
 import codedriver.framework.autoexec.dto.AutoexecOperationVo;
 import codedriver.framework.autoexec.dto.AutoexecParamVo;
 import codedriver.framework.crossover.CrossoverServiceFactory;
@@ -29,12 +27,6 @@ public class DeployProfileServiceImpl implements DeployProfileService {
     @Resource
     DeployProfileMapper deployProfileMapper;
 
-    @Resource
-    AutoexecToolMapper autoexecToolMapper;
-
-    @Resource
-    AutoexecScriptMapper autoexecScriptMapper;
-
     /**
      * 根据profileId 获取profile参数
      *
@@ -48,7 +40,6 @@ public class DeployProfileServiceImpl implements DeployProfileService {
             throw new DeployProfileIsNotFoundException(id);
         }
         IAutoexecServiceCrossoverService iAutoexecServiceCrossoverService = CrossoverServiceFactory.getApi(IAutoexecServiceCrossoverService.class);
-
         return iAutoexecServiceCrossoverService.getProfileConfig(profileVo.getAutoexecOperationVoList(), deployProfileMapper.getProfileVoById(id).getParamList());
     }
 

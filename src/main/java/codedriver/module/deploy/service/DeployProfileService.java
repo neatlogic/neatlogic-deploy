@@ -22,6 +22,7 @@ public interface DeployProfileService {
 
     /**
      * 保存profile和tool、script的关系
+     * 在删除profile时会删除此关系，在删除script的时候也会删除此关系
      *
      * @param profileId
      * @param autoexecOperationVoList
