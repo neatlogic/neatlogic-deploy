@@ -56,7 +56,7 @@ public class DeployProfileOperationDependencyHandler extends CustomTableDependen
      */
     @Override
     protected String getToField() {
-        return "operate_id";
+        return "operation_id";
     }
 
     @Override
@@ -74,13 +74,13 @@ public class DeployProfileOperationDependencyHandler extends CustomTableDependen
     protected DependencyInfoVo parse(Object dependencyObj) {
         if (dependencyObj instanceof Map) {
             Map<String, Object> map = (Map) dependencyObj;
-            Long operateId = (Long) map.get("operate_id");
+            Long operationId = (Long) map.get("operation_id");
             String type = (String) map.get("type");
-            if (operateId == null) {
+            if (operationId == null) {
                 return null;
             }
             if (StringUtils.equals(type, ToolType.TOOL.getValue())) {
-                AutoexecToolVo autoexecToolVo = autoexecToolMapper.getToolById(operateId);
+                AutoexecToolVo autoexecToolVo = autoexecToolMapper.getToolById(operationId);
                 if (autoexecToolVo != null) {
                     JSONObject dependencyInfoConfig = new JSONObject();
                     dependencyInfoConfig.put("toolId", autoexecToolVo.getId());
@@ -91,7 +91,7 @@ public class DeployProfileOperationDependencyHandler extends CustomTableDependen
                 }
             } else if (StringUtils.equals(type, ToolType.SCRIPT.getValue())) {
                 IAutoexecScriptServiceCrossoverService iAutoexecScriptServiceCrossoverService = CrossoverServiceFactory.getApi(IAutoexecScriptServiceCrossoverService.class);
-                return iAutoexecScriptServiceCrossoverService.getScriptDependencyPageUrl(map, operateId, this.getGroupName(), DeployFromType.DEPLOY_PROFILE_OPERATION.getText());
+                return iAutoexecScriptServiceCrossoverService.getScriptDependencyPageUrl(map, operationId, this.getGroupName(), DeployFromType.DEPLOY_PROFILE_OPERATION.getText());
             }
         }
         return null;

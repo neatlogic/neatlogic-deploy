@@ -40,7 +40,7 @@ public class DeployProfileOperationDeleteApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "id", type = ApiParamType.LONG, desc = "脚本ID")
+            @Param(name = "id", type = ApiParamType.LONG, isRequired = true, desc = "脚本ID")
     })
     @Override
     @Description(desc = "删除profile和脚本的关系接口")

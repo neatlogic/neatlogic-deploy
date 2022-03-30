@@ -47,7 +47,7 @@ public class DeployProfileSearchApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "operateId", desc = "工具id", type = ApiParamType.LONG),
+            @Param(name = "operationId", desc = "工具id", type = ApiParamType.LONG),
             @Param(name = "type", desc = "工具类型", type = ApiParamType.STRING),
             @Param(name = "ciEntityId", type = ApiParamType.LONG, desc = "关联配置项id"),
             @Param(name = "keyword", desc = "关键词（名称、描述）", type = ApiParamType.STRING),
