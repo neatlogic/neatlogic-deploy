@@ -55,11 +55,11 @@ public class DeployProfileServiceImpl implements DeployProfileService {
         List<Long> scriptIdList = autoexecOperationVoList.stream().filter(e -> StringUtils.equals(ToolType.SCRIPT.getValue(), e.getType())).map(AutoexecOperationVo::getId).collect(Collectors.toList());
         //tool
         if (CollectionUtils.isNotEmpty(toolIdList)) {
-            deployProfileMapper.insertDeployProfileOperationByProfileIdAndOperateIdListAndType(profileId, toolIdList, ToolType.TOOL.getValue());
+            deployProfileMapper.insertDeployProfileOperation(profileId, toolIdList, ToolType.TOOL.getValue());
         }
         //script
         if (CollectionUtils.isNotEmpty(scriptIdList)) {
-            deployProfileMapper.insertDeployProfileOperationByProfileIdAndOperateIdListAndType(profileId, scriptIdList, ToolType.SCRIPT.getValue());
+            deployProfileMapper.insertDeployProfileOperation(profileId, scriptIdList, ToolType.SCRIPT.getValue());
         }
     }
 }
