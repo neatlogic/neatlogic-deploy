@@ -3,7 +3,6 @@ package codedriver.module.deploy.api.profile;
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.deploy.auth.DEPLOY_PROFILE_MODIFY;
-import codedriver.framework.deploy.dao.mapper.DeployProfileMapper;
 import codedriver.framework.deploy.dto.profile.DeployProfileVo;
 import codedriver.framework.deploy.exception.profile.DeployProfileIsNotFoundException;
 import codedriver.framework.deploy.exception.profile.DeployProfileNameRepeatsException;
@@ -12,6 +11,7 @@ import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.IValid;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
+import codedriver.module.deploy.dao.mapper.DeployProfileMapper;
 import codedriver.module.deploy.service.DeployProfileService;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
@@ -73,7 +73,7 @@ public class DeployProfileSaveApi extends PrivateApiComponentBase {
         //删除profile和tool、script的关系
         deployProfileMapper.deleteProfileOperationByProfileId(paramProfileId);
         //保存profile和tool、script的关系
-        deployProfileService.saveProfileOperationByProfileIdAndAutoexecOperationVoList(profileVo.getId(), profileVo.getAutoexecOperationVoList());
+        deployProfileService.saveProfileOperation(profileVo.getId(), profileVo.getAutoexecOperationVoList());
 
         if (paramProfileId != null) {
             deployProfileMapper.updateProfile(profileVo);

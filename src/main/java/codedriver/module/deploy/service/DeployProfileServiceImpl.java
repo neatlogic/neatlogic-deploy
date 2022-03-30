@@ -6,9 +6,9 @@ import codedriver.framework.autoexec.crossover.IAutoexecServiceCrossoverService;
 import codedriver.framework.autoexec.dto.AutoexecOperationVo;
 import codedriver.framework.autoexec.dto.AutoexecParamVo;
 import codedriver.framework.crossover.CrossoverServiceFactory;
-import codedriver.framework.deploy.dao.mapper.DeployProfileMapper;
 import codedriver.framework.deploy.dto.profile.DeployProfileVo;
 import codedriver.framework.deploy.exception.profile.DeployProfileIsNotFoundException;
+import codedriver.module.deploy.dao.mapper.DeployProfileMapper;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
@@ -40,17 +40,17 @@ public class DeployProfileServiceImpl implements DeployProfileService {
             throw new DeployProfileIsNotFoundException(id);
         }
         IAutoexecServiceCrossoverService iAutoexecServiceCrossoverService = CrossoverServiceFactory.getApi(IAutoexecServiceCrossoverService.class);
-        return iAutoexecServiceCrossoverService.getProfileConfig(profileVo.getAutoexecOperationVoList(), deployProfileMapper.getProfileVoById(id).getParamList());
+        return iAutoexecServiceCrossoverService.getAutoexecOperationParamVoList(profileVo.getAutoexecOperationVoList(), deployProfileMapper.getProfileVoById(id).getParamList());
     }
 
     /**
      * 保存profile和tool、script的关系
      *
-     * @param profileId
-     * @param autoexecOperationVoList
+     * @param profileId profile id
+     * @param autoexecOperationVoList 自动化工具list
      */
     @Override
-    public void saveProfileOperationByProfileIdAndAutoexecOperationVoList(Long profileId, List<AutoexecOperationVo> autoexecOperationVoList) {
+    public void saveProfileOperation(Long profileId, List<AutoexecOperationVo> autoexecOperationVoList) {
         List<Long> toolIdList = autoexecOperationVoList.stream().filter(e -> StringUtils.equals(ToolType.TOOL.getValue(), e.getType())).map(AutoexecOperationVo::getId).collect(Collectors.toList());
         List<Long> scriptIdList = autoexecOperationVoList.stream().filter(e -> StringUtils.equals(ToolType.SCRIPT.getValue(), e.getType())).map(AutoexecOperationVo::getId).collect(Collectors.toList());
         //tool
