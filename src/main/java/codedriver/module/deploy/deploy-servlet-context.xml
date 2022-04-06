@@ -15,7 +15,7 @@
 		http://codedriver.techsure.com/schema/codedriver
 		http://codedriver.techsure.com/schema/codedriver.xsd">
 
-	<codedriver:module id="deploy" name="发布模块" groupName="发布" group="deploy" groupSort="15" groupDescription="发布模块" />
+	<codedriver:module id="deploy" name="自动发布" groupName="发布" group="deploy" groupSort="15" groupDescription="规范快捷的持续集成-部署平台" />
 
 	<context:component-scan base-package="codedriver.module.deploy" />
 
