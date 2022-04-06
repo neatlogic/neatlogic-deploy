@@ -7,7 +7,6 @@ package codedriver.module.deploy.api.pinelinetemplate;
 
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.autoexec.auth.AUTOEXEC_COMBOP_TEMPLATE_MANAGE;
-import codedriver.framework.autoexec.constvalue.CombopOperationType;
 import codedriver.framework.autoexec.dao.mapper.AutoexecTypeMapper;
 import codedriver.framework.autoexec.dto.combop.AutoexecCombopConfigVo;
 import codedriver.framework.autoexec.dto.combop.AutoexecCombopPhaseVo;
@@ -89,7 +88,6 @@ public class DeployPinelineTemplateSaveApi extends PrivateApiComponentBase {
         }
         Long id = jsonObj.getLong("id");
         if (id == null) {
-            deployPinelineTemplateVo.setOperationType(CombopOperationType.COMBOP.getValue());
             deployPinelineTemplateVo.setConfig("{}");
             deployPinelineTemplateMapper.insertPinelineTemplate(deployPinelineTemplateVo);
         } else {
@@ -107,9 +105,6 @@ public class DeployPinelineTemplateSaveApi extends PrivateApiComponentBase {
                 }
                 nameList.add(name);
             }
-//            AutoexecCombopConfigVo oldConfigVo = oldAutoexecCombopTemplateVo.getConfig();
-//            /** 更新组合工具阶段列表数据时，需要保留执行目标的配置信息 **/
-//            config.setExecuteConfig(oldConfigVo.getExecuteConfig());
             deployPinelineTemplateMapper.updatePinelineTemplateById(deployPinelineTemplateVo);
         }
 

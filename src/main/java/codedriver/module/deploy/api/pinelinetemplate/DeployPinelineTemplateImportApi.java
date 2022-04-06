@@ -145,9 +145,7 @@ public class DeployPinelineTemplateImportApi extends PrivateBinaryStreamApiCompo
         if (deployPinelineTemplateVo.getTypeId() == null){
             throw new ClassCastException();
         }
-        if (StringUtils.isBlank(deployPinelineTemplateVo.getOperationType())){
-            throw new ClassCastException();
-        }
+
         if (deployPinelineTemplateVo.getConfig() == null){
             throw new ClassCastException();
         }
@@ -235,9 +233,6 @@ public class DeployPinelineTemplateImportApi extends PrivateBinaryStreamApiCompo
             return false;
         }
         if (!Objects.equals(obj1.getTypeId(), obj2.getTypeId())) {
-            return false;
-        }
-        if (!Objects.equals(obj1.getOperationType(), obj2.getOperationType())) {
             return false;
         }
         if (!Objects.equals(obj1.getConfigStr(), obj2.getConfigStr())) {

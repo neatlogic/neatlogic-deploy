@@ -8,7 +8,6 @@ package codedriver.module.deploy.api.pinelinetemplate;
 import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.autoexec.auth.AUTOEXEC_COMBOP_TEMPLATE_MANAGE;
-import codedriver.framework.autoexec.constvalue.CombopOperationType;
 import codedriver.framework.autoexec.dao.mapper.AutoexecTypeMapper;
 import codedriver.framework.deploy.dto.pinelinetemplate.DeployPinelineTemplateVo;
 import codedriver.framework.deploy.exception.DeployPinelineTemplateNameRepeatException;
@@ -90,7 +89,6 @@ public class DeployPinelineTemplateCopyApi extends PrivateApiComponentBase {
         }
         String userUuid = UserContext.get().getUserUuid(true);
         deployPinelineTemplateVo.setFcu(userUuid);
-        deployPinelineTemplateVo.setOperationType(CombopOperationType.COMBOP.getValue());
         deployPinelineTemplateVo.setDescription(jsonObj.getString("description"));
         deployPinelineTemplateMapper.insertPinelineTemplate(deployPinelineTemplateVo);
         return deployPinelineTemplateVo.getId();
