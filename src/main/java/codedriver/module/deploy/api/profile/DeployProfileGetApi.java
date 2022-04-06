@@ -46,7 +46,7 @@ public class DeployProfileGetApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "id", desc = "profile id", type = ApiParamType.LONG)
+            @Param(name = "id", desc = "profile id", isRequired = true, type = ApiParamType.LONG)
     })
     @Output({
             @Param(explode = DeployProfileVo[].class, desc = "工具profile")
