@@ -3,13 +3,13 @@
  * 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
  */
 
-package codedriver.module.deploy.api.pinelinetemplate;
+package codedriver.module.deploy.api.pipelinetemplate;
 
 import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.auth.core.AuthAction;
-import codedriver.framework.autoexec.auth.AUTOEXEC_COMBOP_TEMPLATE_MANAGE;
 import codedriver.framework.autoexec.dao.mapper.AutoexecTypeMapper;
-import codedriver.framework.deploy.dto.pinelinetemplate.DeployPinelineTemplateVo;
+import codedriver.framework.deploy.auth.DEPLOY_PIPELINE_TEMPLATE_MANAGE;
+import codedriver.framework.deploy.dto.pipelinetemplate.DeployPipelineTemplateVo;
 import codedriver.framework.deploy.exception.DeployPinelineTemplateNameRepeatException;
 import codedriver.framework.deploy.exception.DeployPinelineTemplateNotFoundException;
 import codedriver.framework.autoexec.exception.AutoexecTypeNotFoundException;
@@ -19,7 +19,7 @@ import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.IValid;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
-import codedriver.module.deploy.dao.mapper.DeployPinelineTemplateMapper;
+import codedriver.module.deploy.dao.mapper.DeployPipelineTemplateMapper;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,19 +34,19 @@ import javax.annotation.Resource;
  **/
 @Service
 @Transactional
-@AuthAction(action = AUTOEXEC_COMBOP_TEMPLATE_MANAGE.class)
+@AuthAction(action = DEPLOY_PIPELINE_TEMPLATE_MANAGE.class)
 @OperationType(type = OperationTypeEnum.UPDATE)
-public class DeployPinelineTemplateCopyApi extends PrivateApiComponentBase {
+public class DeployPipelineTemplateCopyApi extends PrivateApiComponentBase {
 
     @Resource
-    private DeployPinelineTemplateMapper deployPinelineTemplateMapper;
+    private DeployPipelineTemplateMapper deployPipelineTemplateMapper;
 
     @Resource
     private AutoexecTypeMapper autoexecTypeMapper;
 
     @Override
     public String getToken() {
-        return "deploy/pinelinetemplate/copy";
+        return "deploy/pipelinetemplate/copy";
     }
 
     @Override
@@ -72,35 +72,35 @@ public class DeployPinelineTemplateCopyApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         Long id = jsonObj.getLong("id");
-        DeployPinelineTemplateVo deployPinelineTemplateVo = deployPinelineTemplateMapper.getPinelineTemplateById(id);
-        if (deployPinelineTemplateVo == null) {
+        DeployPipelineTemplateVo deployPipelineTemplateVo = deployPipelineTemplateMapper.getPinelineTemplateById(id);
+        if (deployPipelineTemplateVo == null) {
             throw new DeployPinelineTemplateNotFoundException(id);
         }
         Long typeId = jsonObj.getLong("typeId");
         if (autoexecTypeMapper.checkTypeIsExistsById(typeId) == 0) {
             throw new AutoexecTypeNotFoundException(typeId);
         }
-        deployPinelineTemplateVo.setTypeId(typeId);
+        deployPipelineTemplateVo.setTypeId(typeId);
         String name = jsonObj.getString("name");
-        deployPinelineTemplateVo.setName(name);
-        deployPinelineTemplateVo.setId(null);
-        if (deployPinelineTemplateMapper.checkPinelineTemplateNameIsRepeat(deployPinelineTemplateVo) != null) {
-            throw new DeployPinelineTemplateNameRepeatException(deployPinelineTemplateVo.getName());
+        deployPipelineTemplateVo.setName(name);
+        deployPipelineTemplateVo.setId(null);
+        if (deployPipelineTemplateMapper.checkPinelineTemplateNameIsRepeat(deployPipelineTemplateVo) != null) {
+            throw new DeployPinelineTemplateNameRepeatException(deployPipelineTemplateVo.getName());
         }
         String userUuid = UserContext.get().getUserUuid(true);
-        deployPinelineTemplateVo.setFcu(userUuid);
-        deployPinelineTemplateVo.setDescription(jsonObj.getString("description"));
-        deployPinelineTemplateMapper.insertPinelineTemplate(deployPinelineTemplateVo);
-        return deployPinelineTemplateVo.getId();
+        deployPipelineTemplateVo.setFcu(userUuid);
+        deployPipelineTemplateVo.setDescription(jsonObj.getString("description"));
+        deployPipelineTemplateMapper.insertPinelineTemplate(deployPipelineTemplateVo);
+        return deployPipelineTemplateVo.getId();
     }
 
     public IValid name() {
         return jsonObj -> {
             String name = jsonObj.getString("name");
-            DeployPinelineTemplateVo deployPinelineTemplateVo = new DeployPinelineTemplateVo();
-            deployPinelineTemplateVo.setName(name);
-            if (deployPinelineTemplateMapper.checkPinelineTemplateNameIsRepeat(deployPinelineTemplateVo) != null) {
-                return new FieldValidResultVo(new DeployPinelineTemplateNameRepeatException(deployPinelineTemplateVo.getName()));
+            DeployPipelineTemplateVo deployPipelineTemplateVo = new DeployPipelineTemplateVo();
+            deployPipelineTemplateVo.setName(name);
+            if (deployPipelineTemplateMapper.checkPinelineTemplateNameIsRepeat(deployPipelineTemplateVo) != null) {
+                return new FieldValidResultVo(new DeployPinelineTemplateNameRepeatException(deployPipelineTemplateVo.getName()));
             }
             return new FieldValidResultVo();
         };

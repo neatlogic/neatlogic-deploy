@@ -3,11 +3,10 @@
  * 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
  */
 
-package codedriver.module.deploy.api.pinelinetemplate;
+package codedriver.module.deploy.api.pipelinetemplate;
 
 import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.auth.core.AuthAction;
-import codedriver.framework.autoexec.auth.AUTOEXEC_COMBOP_TEMPLATE_MANAGE;
 import codedriver.framework.autoexec.constvalue.CombopOperationType;
 import codedriver.framework.autoexec.dao.mapper.AutoexecScriptMapper;
 import codedriver.framework.autoexec.dao.mapper.AutoexecToolMapper;
@@ -17,7 +16,8 @@ import codedriver.framework.autoexec.dto.combop.AutoexecCombopConfigVo;
 import codedriver.framework.autoexec.dto.combop.AutoexecCombopPhaseConfigVo;
 import codedriver.framework.autoexec.dto.combop.AutoexecCombopPhaseOperationVo;
 import codedriver.framework.autoexec.dto.combop.AutoexecCombopPhaseVo;
-import codedriver.framework.deploy.dto.pinelinetemplate.DeployPinelineTemplateVo;
+import codedriver.framework.deploy.auth.DEPLOY_PIPELINE_TEMPLATE_MANAGE;
+import codedriver.framework.deploy.dto.pipelinetemplate.DeployPipelineTemplateVo;
 import codedriver.framework.autoexec.dto.script.AutoexecScriptVersionVo;
 import codedriver.framework.autoexec.dto.script.AutoexecScriptVo;
 import codedriver.framework.common.constvalue.ApiParamType;
@@ -29,7 +29,7 @@ import codedriver.framework.restful.annotation.Output;
 import codedriver.framework.restful.annotation.Param;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateBinaryStreamApiComponentBase;
-import codedriver.module.deploy.dao.mapper.DeployPinelineTemplateMapper;
+import codedriver.module.deploy.dao.mapper.DeployPipelineTemplateMapper;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.TypeReference;
@@ -58,11 +58,11 @@ import java.util.zip.ZipInputStream;
 @Service
 @Transactional
 @OperationType(type = OperationTypeEnum.CREATE)
-@AuthAction(action = AUTOEXEC_COMBOP_TEMPLATE_MANAGE.class)
-public class DeployPinelineTemplateImportApi extends PrivateBinaryStreamApiComponentBase {
+@AuthAction(action = DEPLOY_PIPELINE_TEMPLATE_MANAGE.class)
+public class DeployPipelineTemplateImportApi extends PrivateBinaryStreamApiComponentBase {
 
     @Resource
-    private DeployPinelineTemplateMapper deployPinelineTemplateMapper;
+    private DeployPipelineTemplateMapper deployPipelineTemplateMapper;
     @Resource
     private AutoexecScriptMapper autoexecScriptMapper;
 
@@ -74,7 +74,7 @@ public class DeployPinelineTemplateImportApi extends PrivateBinaryStreamApiCompo
 
     @Override
     public String getToken() {
-        return "deploy/pinelinetemplate/import";
+        return "deploy/pipelinetemplate/import";
     }
 
     @Override
@@ -115,8 +115,8 @@ public class DeployPinelineTemplateImportApi extends PrivateBinaryStreamApiCompo
                     while ((len = zipis.read(buf)) != -1) {
                         out.write(buf, 0, len);
                     }
-                    DeployPinelineTemplateVo deployPinelineTemplateVo = JSONObject.parseObject(new String(out.toByteArray(), StandardCharsets.UTF_8), new TypeReference<DeployPinelineTemplateVo>() {});
-                    JSONObject resultObj = save(deployPinelineTemplateVo);
+                    DeployPipelineTemplateVo deployPipelineTemplateVo = JSONObject.parseObject(new String(out.toByteArray(), StandardCharsets.UTF_8), new TypeReference<DeployPipelineTemplateVo>() {});
+                    JSONObject resultObj = save(deployPipelineTemplateVo);
                     if (resultObj != null) {
                         failureCount++;
                         failureReasonList.add(resultObj);
@@ -136,39 +136,39 @@ public class DeployPinelineTemplateImportApi extends PrivateBinaryStreamApiCompo
         return resultObj;
     }
 
-    private JSONObject save(DeployPinelineTemplateVo deployPinelineTemplateVo) {
-        Long id = deployPinelineTemplateVo.getId();
-        String oldName = deployPinelineTemplateVo.getName();
+    private JSONObject save(DeployPipelineTemplateVo deployPipelineTemplateVo) {
+        Long id = deployPipelineTemplateVo.getId();
+        String oldName = deployPipelineTemplateVo.getName();
         if (StringUtils.isBlank(oldName)) {
             throw new ClassCastException();
         }
-        if (deployPinelineTemplateVo.getTypeId() == null){
+        if (deployPipelineTemplateVo.getTypeId() == null){
             throw new ClassCastException();
         }
 
-        if (deployPinelineTemplateVo.getConfig() == null){
+        if (deployPipelineTemplateVo.getConfig() == null){
             throw new ClassCastException();
         }
-        DeployPinelineTemplateVo oldDeployPinelineTemplateVo = deployPinelineTemplateMapper.getPinelineTemplateById(id);
-        if (oldDeployPinelineTemplateVo != null) {
-            if (equals(oldDeployPinelineTemplateVo, deployPinelineTemplateVo)) {
+        DeployPipelineTemplateVo oldDeployPipelineTemplateVo = deployPipelineTemplateMapper.getPinelineTemplateById(id);
+        if (oldDeployPipelineTemplateVo != null) {
+            if (equals(oldDeployPipelineTemplateVo, deployPipelineTemplateVo)) {
                 return null;
             }
         }
 
         Set<String> failureReasonSet = new HashSet<>();
-        if (autoexecTypeMapper.checkTypeIsExistsById(deployPinelineTemplateVo.getTypeId()) == 0) {
-            failureReasonSet.add("添加工具类型：'" + deployPinelineTemplateVo.getTypeId() + "'");
+        if (autoexecTypeMapper.checkTypeIsExistsById(deployPipelineTemplateVo.getTypeId()) == 0) {
+            failureReasonSet.add("添加工具类型：'" + deployPipelineTemplateVo.getTypeId() + "'");
         }
         int index = 0;
         //如果导入的流程名称已存在就重命名
-        while (deployPinelineTemplateMapper.checkPinelineTemplateNameIsRepeat(deployPinelineTemplateVo) != null) {
+        while (deployPipelineTemplateMapper.checkPinelineTemplateNameIsRepeat(deployPipelineTemplateVo) != null) {
             index++;
-            deployPinelineTemplateVo.setName(oldName + "_" + index);
+            deployPipelineTemplateVo.setName(oldName + "_" + index);
         }
         String userUuid = UserContext.get().getUserUuid(true);
-        deployPinelineTemplateVo.setFcu(userUuid);
-        AutoexecCombopConfigVo config = deployPinelineTemplateVo.getConfig();
+        deployPipelineTemplateVo.setFcu(userUuid);
+        AutoexecCombopConfigVo config = deployPipelineTemplateVo.getConfig();
         int iSort = 0;
         List<AutoexecCombopPhaseVo> combopPhaseList = config.getCombopPhaseList();
         if (CollectionUtils.isNotEmpty(combopPhaseList)) {
@@ -211,10 +211,10 @@ public class DeployPinelineTemplateImportApi extends PrivateBinaryStreamApiCompo
             }
         }
         if (CollectionUtils.isEmpty(failureReasonSet)) {
-            if (oldDeployPinelineTemplateVo == null) {
-                deployPinelineTemplateMapper.insertPinelineTemplate(deployPinelineTemplateVo);
+            if (oldDeployPipelineTemplateVo == null) {
+                deployPipelineTemplateMapper.insertPinelineTemplate(deployPipelineTemplateVo);
             } else {
-                deployPinelineTemplateMapper.updatePinelineTemplateById(deployPinelineTemplateVo);
+                deployPipelineTemplateMapper.updatePinelineTemplateById(deployPipelineTemplateVo);
             }
             return null;
         } else {
@@ -225,7 +225,7 @@ public class DeployPinelineTemplateImportApi extends PrivateBinaryStreamApiCompo
         }
     }
 
-    private boolean equals(DeployPinelineTemplateVo obj1, DeployPinelineTemplateVo obj2){
+    private boolean equals(DeployPipelineTemplateVo obj1, DeployPipelineTemplateVo obj2){
         if (!Objects.equals(obj1.getName(), obj2.getName())) {
             return false;
         }

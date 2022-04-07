@@ -3,14 +3,14 @@
  * 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
  */
 
-package codedriver.module.deploy.api.pinelinetemplate;
+package codedriver.module.deploy.api.pipelinetemplate;
 
 import codedriver.framework.auth.core.AuthAction;
-import codedriver.framework.autoexec.auth.AUTOEXEC_BASE;
 import codedriver.framework.autoexec.dao.mapper.AutoexecTypeMapper;
 import codedriver.framework.autoexec.dto.AutoexecTypeVo;
 import codedriver.framework.autoexec.dto.combop.AutoexecCombopVo;
-import codedriver.framework.deploy.dto.pinelinetemplate.DeployPinelineTemplateVo;
+import codedriver.framework.deploy.auth.DEPLOY_BASE;
+import codedriver.framework.deploy.dto.pipelinetemplate.DeployPipelineTemplateVo;
 import codedriver.framework.autoexec.exception.AutoexecTypeNotFoundException;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.dto.BasePageVo;
@@ -18,7 +18,7 @@ import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.framework.util.TableResultUtil;
-import codedriver.module.deploy.dao.mapper.DeployPinelineTemplateMapper;
+import codedriver.module.deploy.dao.mapper.DeployPipelineTemplateMapper;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.stereotype.Service;
 
@@ -33,19 +33,19 @@ import java.util.List;
  * @since 2021/4/13 15:29
  **/
 @Service
-@AuthAction(action = AUTOEXEC_BASE.class)
+@AuthAction(action = DEPLOY_BASE.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
-public class DeployPinelineTemplateListApi extends PrivateApiComponentBase {
+public class DeployPipelineTemplateListApi extends PrivateApiComponentBase {
 
     @Resource
-    private DeployPinelineTemplateMapper deployPinelineTemplateMapper;
+    private DeployPipelineTemplateMapper deployPipelineTemplateMapper;
 
     @Resource
     private AutoexecTypeMapper autoexecTypeMapper;
 
     @Override
     public String getToken() {
-        return "deploy/pinelinetemplate/list";
+        return "deploy/pipelinetemplate/list";
     }
 
     @Override
@@ -72,17 +72,17 @@ public class DeployPinelineTemplateListApi extends PrivateApiComponentBase {
     @Description(desc = "查询流水线模板列表")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
-        DeployPinelineTemplateVo searchVo = jsonObj.toJavaObject(DeployPinelineTemplateVo.class);
-        int rowNum = deployPinelineTemplateMapper.getPinelineTemplateCount(searchVo);
+        DeployPipelineTemplateVo searchVo = jsonObj.toJavaObject(DeployPipelineTemplateVo.class);
+        int rowNum = deployPipelineTemplateMapper.getPinelineTemplateCount(searchVo);
         if (rowNum > 0) {
             searchVo.setRowNum(rowNum);
-            List<DeployPinelineTemplateVo> autoexecCombopTemplateList = deployPinelineTemplateMapper.getPinelineTemplateList(searchVo);
-            for (DeployPinelineTemplateVo deployPinelineTemplateVo : autoexecCombopTemplateList) {
-                AutoexecTypeVo autoexecTypeVo = autoexecTypeMapper.getTypeById(deployPinelineTemplateVo.getTypeId());
+            List<DeployPipelineTemplateVo> autoexecCombopTemplateList = deployPipelineTemplateMapper.getPinelineTemplateList(searchVo);
+            for (DeployPipelineTemplateVo deployPipelineTemplateVo : autoexecCombopTemplateList) {
+                AutoexecTypeVo autoexecTypeVo = autoexecTypeMapper.getTypeById(deployPipelineTemplateVo.getTypeId());
                 if (autoexecTypeVo == null) {
-                    throw new AutoexecTypeNotFoundException(deployPinelineTemplateVo.getTypeId());
+                    throw new AutoexecTypeNotFoundException(deployPipelineTemplateVo.getTypeId());
                 }
-                deployPinelineTemplateVo.setTypeName(autoexecTypeVo.getName());
+                deployPipelineTemplateVo.setTypeName(autoexecTypeVo.getName());
             }
             return TableResultUtil.getResult(autoexecCombopTemplateList, searchVo);
         }
