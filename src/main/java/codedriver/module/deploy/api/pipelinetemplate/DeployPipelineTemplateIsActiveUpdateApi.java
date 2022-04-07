@@ -3,18 +3,18 @@
  * 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
  */
 
-package codedriver.module.deploy.api.pinelinetemplate;
+package codedriver.module.deploy.api.pipelinetemplate;
 
 import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.auth.core.AuthAction;
-import codedriver.framework.autoexec.auth.AUTOEXEC_COMBOP_TEMPLATE_MANAGE;
-import codedriver.framework.deploy.dto.pinelinetemplate.DeployPinelineTemplateVo;
+import codedriver.framework.deploy.auth.DEPLOY_PIPELINE_TEMPLATE_MANAGE;
+import codedriver.framework.deploy.dto.pipelinetemplate.DeployPipelineTemplateVo;
 import codedriver.framework.deploy.exception.DeployPinelineTemplateNotFoundException;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
-import codedriver.module.deploy.dao.mapper.DeployPinelineTemplateMapper;
+import codedriver.module.deploy.dao.mapper.DeployPipelineTemplateMapper;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,16 +29,16 @@ import javax.annotation.Resource;
  **/
 @Service
 @Transactional
-@AuthAction(action = AUTOEXEC_COMBOP_TEMPLATE_MANAGE.class)
+@AuthAction(action = DEPLOY_PIPELINE_TEMPLATE_MANAGE.class)
 @OperationType(type = OperationTypeEnum.UPDATE)
-public class DeployPinelineTemplateIsActiveUpdateApi extends PrivateApiComponentBase {
+public class DeployPipelineTemplateIsActiveUpdateApi extends PrivateApiComponentBase {
 
     @Resource
-    private DeployPinelineTemplateMapper deployPinelineTemplateMapper;
+    private DeployPipelineTemplateMapper deployPipelineTemplateMapper;
 
     @Override
     public String getToken() {
-        return "deploy/pinelinetemplate/isactive/update";
+        return "deploy/pipelinetemplate/isactive/update";
     }
 
     @Override
@@ -61,17 +61,17 @@ public class DeployPinelineTemplateIsActiveUpdateApi extends PrivateApiComponent
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         Long id = jsonObj.getLong("id");
-        Integer isActive = deployPinelineTemplateMapper.getPinelineTemplateIsActiveByIdForUpdate(id);
+        Integer isActive = deployPipelineTemplateMapper.getPinelineTemplateIsActiveByIdForUpdate(id);
         if (isActive == null) {
             throw new DeployPinelineTemplateNotFoundException(id);
         }
-        DeployPinelineTemplateVo deployPinelineTemplateVo = deployPinelineTemplateMapper.getPinelineTemplateById(id);
+        DeployPipelineTemplateVo deployPipelineTemplateVo = deployPipelineTemplateMapper.getPinelineTemplateById(id);
         /** 如果是激活组合工具，则需要校验该组合工具配置正确 **/
 //        if (isActive == 0) {
 //            autoexecCombopService.verifyAutoexecCombopConfig(autoexecCombopVo, false);
 //        }
-        deployPinelineTemplateVo.setLcu(UserContext.get().getUserUuid(true));
-        deployPinelineTemplateMapper.updatePinelineTemplateIsActiveById(deployPinelineTemplateVo);
+        deployPipelineTemplateVo.setLcu(UserContext.get().getUserUuid(true));
+        deployPipelineTemplateMapper.updatePinelineTemplateIsActiveById(deployPipelineTemplateVo);
         return (1 - isActive);
     }
 }

@@ -3,11 +3,11 @@
  * 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
  */
 
-package codedriver.module.deploy.api.pinelinetemplate;
+package codedriver.module.deploy.api.pipelinetemplate;
 
 import codedriver.framework.auth.core.AuthAction;
-import codedriver.framework.autoexec.auth.AUTOEXEC_COMBOP_TEMPLATE_MANAGE;
-import codedriver.framework.deploy.dto.pinelinetemplate.DeployPinelineTemplateVo;
+import codedriver.framework.deploy.auth.DEPLOY_PIPELINE_TEMPLATE_MANAGE;
+import codedriver.framework.deploy.dto.pipelinetemplate.DeployPipelineTemplateVo;
 import codedriver.framework.deploy.exception.DeployPinelineTemplateNotFoundException;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.exception.type.ParamNotExistsException;
@@ -18,7 +18,7 @@ import codedriver.framework.restful.annotation.Param;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateBinaryStreamApiComponentBase;
 import codedriver.framework.util.FileUtil;
-import codedriver.module.deploy.dao.mapper.DeployPinelineTemplateMapper;
+import codedriver.module.deploy.dao.mapper.DeployPipelineTemplateMapper;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
@@ -42,18 +42,18 @@ import java.util.zip.ZipOutputStream;
  * @since 2021/4/13 11:21
  **/
 @Service
-@AuthAction(action = AUTOEXEC_COMBOP_TEMPLATE_MANAGE.class)
+@AuthAction(action = DEPLOY_PIPELINE_TEMPLATE_MANAGE.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
-public class DeployPinelineTemplateExportApi extends PrivateBinaryStreamApiComponentBase {
+public class DeployPipelineTemplateExportApi extends PrivateBinaryStreamApiComponentBase {
 
-    private final static Logger logger = LoggerFactory.getLogger(DeployPinelineTemplateExportApi.class);
+    private final static Logger logger = LoggerFactory.getLogger(DeployPipelineTemplateExportApi.class);
 
     @Resource
-    private DeployPinelineTemplateMapper deployPinelineTemplateMapper;
+    private DeployPipelineTemplateMapper deployPipelineTemplateMapper;
 
     @Override
     public String getToken() {
-        return "deploy/pinelinetemplate/export";
+        return "deploy/pipelinetemplate/export";
     }
 
     @Override
@@ -76,7 +76,7 @@ public class DeployPinelineTemplateExportApi extends PrivateBinaryStreamApiCompo
         if (CollectionUtils.isEmpty(idList)) {
             throw new ParamNotExistsException("idList");
         }
-        List<Long> existIdList = deployPinelineTemplateMapper.checkPinelineTemplateIdListIsExists(idList);
+        List<Long> existIdList = deployPipelineTemplateMapper.checkPinelineTemplateIdListIsExists(idList);
         idList.removeAll(existIdList);
         if (CollectionUtils.isNotEmpty(idList)) {
             int capacity = 17 * idList.size();
@@ -90,10 +90,10 @@ public class DeployPinelineTemplateExportApi extends PrivateBinaryStreamApiCompo
             System.out.println(stringBuilder.length());
             throw new DeployPinelineTemplateNotFoundException(stringBuilder.toString());
         }
-        List<DeployPinelineTemplateVo> deployPinelineTemplateVoList = new ArrayList<>();
+        List<DeployPipelineTemplateVo> deployPipelineTemplateVoList = new ArrayList<>();
         for (Long id : existIdList) {
-            DeployPinelineTemplateVo deployPinelineTemplateVo = deployPinelineTemplateMapper.getPinelineTemplateById(id);
-            deployPinelineTemplateVoList.add(deployPinelineTemplateVo);
+            DeployPipelineTemplateVo deployPipelineTemplateVo = deployPipelineTemplateMapper.getPinelineTemplateById(id);
+            deployPipelineTemplateVoList.add(deployPipelineTemplateVo);
         }
         //设置导出文件名
         String fileName = FileUtil.getEncodedFileName(request.getHeader("User-Agent"), "流水线模板." + new SimpleDateFormat("yyyyMMddHHmmss").format(new Date()) + ".pak");
@@ -101,9 +101,9 @@ public class DeployPinelineTemplateExportApi extends PrivateBinaryStreamApiCompo
         response.setHeader("Content-Disposition", " attachment; filename=\"" + fileName + "\"");
 
         try (ZipOutputStream zipos = new ZipOutputStream(response.getOutputStream())) {
-            for (DeployPinelineTemplateVo deployPinelineTemplateVo : deployPinelineTemplateVoList) {
-                zipos.putNextEntry(new ZipEntry(deployPinelineTemplateVo.getName() + ".json"));
-                zipos.write(JSONObject.toJSONBytes(deployPinelineTemplateVo));
+            for (DeployPipelineTemplateVo deployPipelineTemplateVo : deployPipelineTemplateVoList) {
+                zipos.putNextEntry(new ZipEntry(deployPipelineTemplateVo.getName() + ".json"));
+                zipos.write(JSONObject.toJSONBytes(deployPipelineTemplateVo));
                 zipos.closeEntry();
             }
         } catch (Exception e) {
