@@ -102,7 +102,6 @@
             #{description},
             #{typeId},
             #{isActive},
-            #{operationType},
             #{configStr},
             NOW(3),
             #{fcu},
