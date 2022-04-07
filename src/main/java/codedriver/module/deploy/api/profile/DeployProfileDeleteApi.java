@@ -50,7 +50,7 @@ public class DeployProfileDeleteApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "id", desc = "profile id", type = ApiParamType.LONG)
+            @Param(name = "id", desc = "profile id", isRequired = true, type = ApiParamType.LONG)
     })
     @Description(desc = "发布工具profile删除接口")
     @Override

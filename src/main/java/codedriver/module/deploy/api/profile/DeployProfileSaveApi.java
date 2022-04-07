@@ -55,7 +55,7 @@ public class DeployProfileSaveApi extends PrivateApiComponentBase {
             @Param(name = "id", type = ApiParamType.LONG, desc = "profile id"),
             @Param(name = "name", type = ApiParamType.STRING, isRequired = true, desc = "profile 名称"),
             @Param(name = "description", type = ApiParamType.STRING, desc = "描述"),
-            @Param(name = "fromSystemId", type = ApiParamType.LONG, desc = "所属系统id"),
+            @Param(name = "fromSystemId", type = ApiParamType.LONG, isRequired = true, desc = "所属系统id"),
             @Param(name = "paramList", type = ApiParamType.JSONARRAY, desc = "工具参数"),
             @Param(name = "autoexecOperationVoList", type = ApiParamType.JSONARRAY, isRequired = true, desc = "关联的工具和脚本列表")
     })
