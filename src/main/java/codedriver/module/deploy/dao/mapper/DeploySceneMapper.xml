@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="codedriver.module.deploy.dao.mapper.DeploySceneMapper">
+
+    <select id="checkSceneIsExistsById" resultType="java.lang.Integer">
+        select count(1)
+        from `deploy_scene`
+        where `id` = #{value}
+    </select>
+
+    <sql id="searchScene">
+        from deploy_scene
+        <where>
+            <if test="keyword != null and keyword != ''">
+                and (`name` LIKE CONCAT('%', #{keyword}, '%')
+                OR `description` LIKE CONCAT(#{keyword}, '%'))
+            </if>
+        </where>
+    </sql>
+
+    <select id="getSceneCount" resultType="java.lang.Integer">
+        select count(distinct id)
+        <include refid="searchScene"></include>
+    </select>
+
+    <select id="getSceneIdList" resultType="java.lang.Long">
+        select id from
+        ( select id, lcd
+        <include refid="searchScene"></include>
+        ORDER BY lcd DESC
+        LIMIT #{startNum}, #{pageSize})a
+    </select>
+
+    <select id="getSceneListByIdList" resultType="codedriver.framework.deploy.dto.scene.DeploySceneVo">
+        select id,
+        name,
+        description
+        from deploy_scene
+        where id in
+        <foreach collection="idList" item="item" open="(" close=")" separator=",">
+            #{item}
+        </foreach>
+        ORDER BY lcd DESC
+    </select>
+
+    <select id="getSceneById" resultType="codedriver.framework.deploy.dto.scene.DeploySceneVo">
+        select id,
+               name,
+               description
+        from deploy_scene
+        where id = #{value}
+    </select>
+
+    <insert id="insertScene" parameterType="codedriver.framework.deploy.dto.scene.DeploySceneVo">
+        INSERT INTO `deploy_scene` (id, name, description, fcu, fcd, lcu, lcd)
+        VALUES (#{id}, #{name}, #{description}, #{fcu}, now(3), #{lcu}, now(3)) ON DUPLICATE KEY
+        UPDATE name = #{name},
+            lcu = #{lcu},
+            lcd = now(3)
+    </insert>
+
+</mapper>
