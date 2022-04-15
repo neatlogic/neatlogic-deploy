@@ -34,7 +34,11 @@
     <select id="getSceneListByIdList" resultType="codedriver.framework.deploy.dto.scene.DeploySceneVo">
         select id,
         name,
-        description
+        description,
+        fcu,
+        fcd,
+        lcu,
+        lcd
         from deploy_scene
         where id in
         <foreach collection="idList" item="item" open="(" close=")" separator=",">

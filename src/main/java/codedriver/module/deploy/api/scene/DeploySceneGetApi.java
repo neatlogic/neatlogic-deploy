@@ -27,7 +27,7 @@ public class DeploySceneGetApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "保存发布场景";
+        return "获取发布场景";
     }
 
     @Override
@@ -37,7 +37,7 @@ public class DeploySceneGetApi extends PrivateApiComponentBase {
 
     @Override
     public String getToken() {
-        return "deploy/scene/save";
+        return "deploy/scene/get";
     }
 
     @Input({
