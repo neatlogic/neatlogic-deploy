@@ -13,16 +13,16 @@ import java.util.List;
  * @date 2022/4/19 3:41 下午
  */
 @Service
-public class DeploySceneDependencyHandler extends CustomTableDependencyHandlerBase {
+public class DeployScenarioDependencyHandler extends CustomTableDependencyHandlerBase {
 
     @Override
     protected String getTableName() {
-        return "deploy_scene_cientity";
+        return "deploy_scenario_cientity";
     }
 
     @Override
     protected String getFromField() {
-        return "scene_id";
+        return "scenario_id";
     }
 
     @Override
@@ -42,6 +42,6 @@ public class DeploySceneDependencyHandler extends CustomTableDependencyHandlerBa
 
     @Override
     public IFromType getFromType() {
-        return DeployFromType.DEPLOY_SCENE_CIENTITY;
+        return DeployFromType.DEPLOY_SCENARIO_CIENTITY;
     }
 }

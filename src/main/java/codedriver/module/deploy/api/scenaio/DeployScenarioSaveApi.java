@@ -1,11 +1,11 @@
-package codedriver.module.deploy.api.scene;
+package codedriver.module.deploy.api.scenaio;
 
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.deploy.auth.DEPLOY_MODIFY;
-import codedriver.framework.deploy.dto.scene.DeploySceneVo;
-import codedriver.framework.deploy.exception.scene.DeploySceneIsNotFoundException;
-import codedriver.framework.deploy.exception.scene.DeploySceneRepeatException;
+import codedriver.framework.deploy.dto.scenario.DeployScenarioVo;
+import codedriver.framework.deploy.exception.scenario.DeployScenarioIsNotFoundException;
+import codedriver.framework.deploy.exception.scenario.DeployScenarioRepeatException;
 import codedriver.framework.dto.FieldValidResultVo;
 import codedriver.framework.restful.annotation.Description;
 import codedriver.framework.restful.annotation.Input;
@@ -14,7 +14,7 @@ import codedriver.framework.restful.annotation.Param;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.IValid;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
-import codedriver.module.deploy.dao.mapper.DeploySceneMapper;
+import codedriver.module.deploy.dao.mapper.DeployScenarioMapper;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.stereotype.Service;
@@ -28,10 +28,10 @@ import javax.annotation.Resource;
 @Service
 @AuthAction(action = DEPLOY_MODIFY.class)
 @OperationType(type = OperationTypeEnum.CREATE)
-public class DeploySceneSaveApi extends PrivateApiComponentBase {
+public class DeployScenarioSaveApi extends PrivateApiComponentBase {
 
     @Resource
-    DeploySceneMapper deploySceneMapper;
+    DeployScenarioMapper deployScenarioMapper;
 
     @Override
     public String getName() {
@@ -40,7 +40,7 @@ public class DeploySceneSaveApi extends PrivateApiComponentBase {
 
     @Override
     public String getToken() {
-        return "deploy/scene/save";
+        return "deploy/scenario/save";
     }
 
     @Override
@@ -56,23 +56,23 @@ public class DeploySceneSaveApi extends PrivateApiComponentBase {
     @Description(desc = "保存发布场景接口")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
-        DeploySceneVo paramSceneVo = paramObj.toJavaObject(DeploySceneVo.class);
-        if (deploySceneMapper.checkSceneNameIsRepeat(paramSceneVo) > 0) {
-            throw new DeploySceneRepeatException(paramSceneVo.getName());
+        DeployScenarioVo paramScenarioVo = paramObj.toJavaObject(DeployScenarioVo.class);
+        if (deployScenarioMapper.checkScenarioNameIsRepeat(paramScenarioVo) > 0) {
+            throw new DeployScenarioRepeatException(paramScenarioVo.getName());
         }
         Long paramId = paramObj.getLong("id");
-        if (paramId != null && deploySceneMapper.checkSceneIsExistsById(paramId) == 0) {
-            throw new DeploySceneIsNotFoundException(paramId);
+        if (paramId != null && deployScenarioMapper.checkScenarioIsExistsById(paramId) == 0) {
+            throw new DeployScenarioIsNotFoundException(paramId);
         }
-        deploySceneMapper.insertScene(paramSceneVo);
+        deployScenarioMapper.insertScenario(paramScenarioVo);
         return null;
     }
 
     public IValid name() {
         return value -> {
-            DeploySceneVo paramSceneVo = JSON.toJavaObject(value, DeploySceneVo.class);
-            if (deploySceneMapper.checkSceneNameIsRepeat(paramSceneVo) > 0) {
-                return new FieldValidResultVo(new DeploySceneRepeatException(paramSceneVo.getName()));
+            DeployScenarioVo paramScenarioVo = JSON.toJavaObject(value, DeployScenarioVo.class);
+            if (deployScenarioMapper.checkScenarioNameIsRepeat(paramScenarioVo) > 0) {
+                return new FieldValidResultVo(new DeployScenarioRepeatException(paramScenarioVo.getName()));
             }
             return new FieldValidResultVo();
         };

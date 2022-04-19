@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="codedriver.module.deploy.dao.mapper.DeploySceneMapper">
+<mapper namespace="codedriver.module.deploy.dao.mapper.DeployScenarioMapper">
 
-    <select id="checkSceneIsExistsById" resultType="java.lang.Integer">
+    <select id="checkScenarioIsExistsById" resultType="java.lang.Integer">
         select count(1)
-        from `deploy_scene`
+        from `deploy_scenario`
         where `id` = #{value}
     </select>
 
-    <sql id="searchScene">
-        from deploy_scene
+    <sql id="searchScenario">
+        from deploy_scenario
         <where>
             <if test="keyword != null and keyword != ''">
                 and (`name` LIKE CONCAT('%', #{keyword}, '%')
@@ -18,20 +18,20 @@
         </where>
     </sql>
 
-    <select id="getSceneCount" resultType="java.lang.Integer">
+    <select id="getScenarioCount" resultType="java.lang.Integer">
         select count(distinct id)
-        <include refid="searchScene"></include>
+        <include refid="searchScenario"></include>
     </select>
 
-    <select id="getSceneIdList" resultType="java.lang.Long">
+    <select id="getScenarioIdList" resultType="java.lang.Long">
         select id from
         ( select id, lcd
-        <include refid="searchScene"></include>
+        <include refid="searchScenario"></include>
         ORDER BY lcd DESC
         LIMIT #{startNum}, #{pageSize})a
     </select>
 
-    <select id="getSceneListByIdList" resultType="codedriver.framework.deploy.dto.scene.DeploySceneVo">
+    <select id="getScenarioListByIdList" resultType="codedriver.framework.deploy.dto.scenario.DeployScenarioVo">
         select id,
         name,
         description,
@@ -39,7 +39,7 @@
         fcd,
         lcu,
         lcd
-        from deploy_scene
+        from deploy_scenario
         where id in
         <foreach collection="idList" item="item" open="(" close=")" separator=",">
             #{item}
@@ -47,7 +47,7 @@
         ORDER BY `lcd` DESC
     </select>
 
-    <select id="getSceneById" resultType="codedriver.framework.deploy.dto.scene.DeploySceneVo">
+    <select id="getScenarioById" resultType="codedriver.framework.deploy.dto.scenario.DeployScenarioVo">
         select id,
                name,
                description,
@@ -55,20 +55,20 @@
                fcd,
                lcu,
                lcd
-        from deploy_scene
+        from deploy_scenario
         where id = #{value}
     </select>
 
-    <select id="checkSceneNameIsRepeat" resultType="int"
-            parameterType="codedriver.framework.deploy.dto.scene.DeploySceneVo">
+    <select id="checkScenarioNameIsRepeat" resultType="int"
+            parameterType="codedriver.framework.deploy.dto.scenario.DeployScenarioVo">
         select count(id)
-        from deploy_scene
+        from deploy_scenario
         where id != #{id}
           and name =#{name}
     </select>
 
-    <insert id="insertScene" parameterType="codedriver.framework.deploy.dto.scene.DeploySceneVo">
-        INSERT INTO `deploy_scene` (id, name, description, fcu, fcd, lcu, lcd)
+    <insert id="insertScenario" parameterType="codedriver.framework.deploy.dto.scenario.DeployScenarioVo">
+        INSERT INTO `deploy_scenario` (id, name, description, fcu, fcd, lcu, lcd)
         VALUES (#{id}, #{name}, #{description}, #{fcu}, now(3), #{lcu}, now(3)) ON DUPLICATE KEY
         UPDATE name = #{name},
             description = #{description},
@@ -76,9 +76,9 @@
             lcd = now(3)
     </insert>
 
-    <delete id="deleteSceneById">
+    <delete id="deleteScenarioById">
         DELETE
-        FROM deploy_scene
+        FROM deploy_scenario
         WHERE id = #{value}
     </delete>
 

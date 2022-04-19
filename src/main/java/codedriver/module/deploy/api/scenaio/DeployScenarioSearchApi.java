@@ -1,11 +1,11 @@
-package codedriver.module.deploy.api.scene;
+package codedriver.module.deploy.api.scenaio;
 
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.dependency.core.DependencyManager;
 import codedriver.framework.deploy.auth.DEPLOY_MODIFY;
 import codedriver.framework.deploy.constvalue.DeployFromType;
-import codedriver.framework.deploy.dto.scene.DeploySceneVo;
+import codedriver.framework.deploy.dto.scenario.DeployScenarioVo;
 import codedriver.framework.restful.annotation.Description;
 import codedriver.framework.restful.annotation.Input;
 import codedriver.framework.restful.annotation.OperationType;
@@ -13,7 +13,7 @@ import codedriver.framework.restful.annotation.Param;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.framework.util.TableResultUtil;
-import codedriver.module.deploy.dao.mapper.DeploySceneMapper;
+import codedriver.module.deploy.dao.mapper.DeployScenarioMapper;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
@@ -30,10 +30,10 @@ import java.util.Map;
 @Service
 @AuthAction(action = DEPLOY_MODIFY.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
-public class DeploySceneSearchApi extends PrivateApiComponentBase {
+public class DeployScenarioSearchApi extends PrivateApiComponentBase {
 
     @Resource
-    DeploySceneMapper deploySceneMapper;
+    DeployScenarioMapper deployScenarioMapper;
 
     @Override
     public String getName() {
@@ -42,7 +42,7 @@ public class DeploySceneSearchApi extends PrivateApiComponentBase {
 
     @Override
     public String getToken() {
-        return "deploy/scene/search";
+        return "deploy/scenario/search";
     }
 
     @Override
@@ -59,22 +59,22 @@ public class DeploySceneSearchApi extends PrivateApiComponentBase {
     @Description(desc = "查询发布场景列表接口")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
-        DeploySceneVo paramSceneVo = paramObj.toJavaObject(DeploySceneVo.class);
-        List<DeploySceneVo> returnList = new ArrayList<>();
-        int sceneCount = deploySceneMapper.getSceneCount(paramSceneVo);
-        if (sceneCount > 0) {
-            paramSceneVo.setRowNum(sceneCount);
-            List<Long> idList = deploySceneMapper.getSceneIdList(paramSceneVo);
+        DeployScenarioVo paramScenarioVo = paramObj.toJavaObject(DeployScenarioVo.class);
+        List<DeployScenarioVo> returnList = new ArrayList<>();
+        int ScenarioCount = deployScenarioMapper.getScenarioCount(paramScenarioVo);
+        if (ScenarioCount > 0) {
+            paramScenarioVo.setRowNum(ScenarioCount);
+            List<Long> idList = deployScenarioMapper.getScenarioIdList(paramScenarioVo);
             if (CollectionUtils.isNotEmpty(idList)) {
-                returnList = deploySceneMapper.getSceneListByIdList(idList);
-                Map<Object, Integer> ciEntityReferredCountMap = DependencyManager.getBatchDependencyCount(DeployFromType.DEPLOY_SCENE_CIENTITY, idList);
+                returnList = deployScenarioMapper.getScenarioListByIdList(idList);
+                Map<Object, Integer> ciEntityReferredCountMap = DependencyManager.getBatchDependencyCount(DeployFromType.DEPLOY_SCENARIO_CIENTITY, idList);
                 if (!ciEntityReferredCountMap.isEmpty()) {
-                    for (DeploySceneVo sceneVo : returnList) {
-                        sceneVo.setCiEntityReferredCount(ciEntityReferredCountMap.get(sceneVo.getId()));
+                    for (DeployScenarioVo scenarioVo : returnList) {
+                        scenarioVo.setCiEntityReferredCount(ciEntityReferredCountMap.get(scenarioVo.getId()));
                     }
                 }
             }
         }
-        return TableResultUtil.getResult(returnList, paramSceneVo);
+        return TableResultUtil.getResult(returnList, paramScenarioVo);
     }
 }

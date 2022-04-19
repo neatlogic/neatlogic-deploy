@@ -1,20 +1,20 @@
-package codedriver.module.deploy.api.scene;
+package codedriver.module.deploy.api.scenaio;
 
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.dependency.core.DependencyManager;
 import codedriver.framework.deploy.auth.DEPLOY_MODIFY;
 import codedriver.framework.deploy.constvalue.DeployFromType;
-import codedriver.framework.deploy.dto.scene.DeploySceneVo;
-import codedriver.framework.deploy.exception.scene.DeploySceneHasBeenReferredException;
-import codedriver.framework.deploy.exception.scene.DeploySceneIsNotFoundException;
+import codedriver.framework.deploy.dto.scenario.DeployScenarioVo;
+import codedriver.framework.deploy.exception.scenario.DeployScenarioHasBeenReferredException;
+import codedriver.framework.deploy.exception.scenario.DeployScenarioIsNotFoundException;
 import codedriver.framework.restful.annotation.Description;
 import codedriver.framework.restful.annotation.Input;
 import codedriver.framework.restful.annotation.OperationType;
 import codedriver.framework.restful.annotation.Param;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
-import codedriver.module.deploy.dao.mapper.DeploySceneMapper;
+import codedriver.module.deploy.dao.mapper.DeployScenarioMapper;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.stereotype.Service;
 
@@ -27,10 +27,10 @@ import javax.annotation.Resource;
 @Service
 @AuthAction(action = DEPLOY_MODIFY.class)
 @OperationType(type = OperationTypeEnum.DELETE)
-public class DeploySceneDeleteApi extends PrivateApiComponentBase {
+public class DeployScenarioDeleteApi extends PrivateApiComponentBase {
 
     @Resource
-    DeploySceneMapper deploySceneMapper;
+    DeployScenarioMapper deployScenarioMapper;
 
     @Override
     public String getName() {
@@ -39,7 +39,7 @@ public class DeploySceneDeleteApi extends PrivateApiComponentBase {
 
     @Override
     public String getToken() {
-        return "deploy/scene/delete";
+        return "deploy/scenario/delete";
     }
     @Override
     public String getConfig() {
@@ -53,14 +53,14 @@ public class DeploySceneDeleteApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         Long paramId = paramObj.getLong("id");
-        DeploySceneVo paramSceneVo = deploySceneMapper.getSceneById(paramId);
-        if (paramSceneVo == null) {
-            throw new DeploySceneIsNotFoundException(paramId);
+        DeployScenarioVo paramScenarioVo = deployScenarioMapper.getScenarioById(paramId);
+        if (paramScenarioVo == null) {
+            throw new DeployScenarioIsNotFoundException(paramId);
         }
-        if (DependencyManager.getDependencyCount(DeployFromType.DEPLOY_SCENE_CIENTITY, paramId) > 0) {
-            throw new DeploySceneHasBeenReferredException(paramSceneVo.getName());
+        if (DependencyManager.getDependencyCount(DeployFromType.DEPLOY_SCENARIO_CIENTITY, paramId) > 0) {
+            throw new DeployScenarioHasBeenReferredException(paramScenarioVo.getName());
         }
-        deploySceneMapper.deleteSceneById(paramId);
+        deployScenarioMapper.deleteScenarioById(paramId);
         return null;
     }
 }
