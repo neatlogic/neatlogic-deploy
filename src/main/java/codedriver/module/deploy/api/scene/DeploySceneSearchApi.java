@@ -2,7 +2,9 @@ package codedriver.module.deploy.api.scene;
 
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.common.constvalue.ApiParamType;
+import codedriver.framework.dependency.core.DependencyManager;
 import codedriver.framework.deploy.auth.DEPLOY_MODIFY;
+import codedriver.framework.deploy.constvalue.DeployFromType;
 import codedriver.framework.deploy.dto.scene.DeploySceneVo;
 import codedriver.framework.restful.annotation.Description;
 import codedriver.framework.restful.annotation.Input;
@@ -19,6 +21,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author longrf
@@ -64,6 +67,12 @@ public class DeploySceneSearchApi extends PrivateApiComponentBase {
             List<Long> idList = deploySceneMapper.getSceneIdList(paramSceneVo);
             if (CollectionUtils.isNotEmpty(idList)) {
                 returnList = deploySceneMapper.getSceneListByIdList(idList);
+                Map<Object, Integer> ciEntityReferredCountMap = DependencyManager.getBatchDependencyCount(DeployFromType.DEPLOY_SCENE_CIENTITY, idList);
+                if (!ciEntityReferredCountMap.isEmpty()) {
+                    for (DeploySceneVo sceneVo : returnList) {
+                        sceneVo.setCiEntityReferredCount(ciEntityReferredCountMap.get(sceneVo.getId()));
+                    }
+                }
             }
         }
         return TableResultUtil.getResult(returnList, paramSceneVo);

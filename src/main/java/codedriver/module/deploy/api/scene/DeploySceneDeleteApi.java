@@ -2,7 +2,11 @@ package codedriver.module.deploy.api.scene;
 
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.common.constvalue.ApiParamType;
+import codedriver.framework.dependency.core.DependencyManager;
 import codedriver.framework.deploy.auth.DEPLOY_MODIFY;
+import codedriver.framework.deploy.constvalue.DeployFromType;
+import codedriver.framework.deploy.dto.scene.DeploySceneVo;
+import codedriver.framework.deploy.exception.scene.DeploySceneHasBeenReferredException;
 import codedriver.framework.deploy.exception.scene.DeploySceneIsNotFoundException;
 import codedriver.framework.restful.annotation.Description;
 import codedriver.framework.restful.annotation.Input;
@@ -49,8 +53,12 @@ public class DeploySceneDeleteApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         Long paramId = paramObj.getLong("id");
-        if (deploySceneMapper.checkSceneIsExistsById(paramId) == 0) {
+        DeploySceneVo paramSceneVo = deploySceneMapper.getSceneById(paramId);
+        if (paramSceneVo == null) {
             throw new DeploySceneIsNotFoundException(paramId);
+        }
+        if (DependencyManager.getDependencyCount(DeployFromType.DEPLOY_SCENE_CIENTITY, paramId) > 0) {
+            throw new DeploySceneHasBeenReferredException(paramSceneVo.getName());
         }
         deploySceneMapper.deleteSceneById(paramId);
         return null;
