@@ -58,9 +58,9 @@ public class DeployGlobalParamSaveApi extends PrivateApiComponentBase {
     public Object myDoService(JSONObject paramObj) throws Exception {
         DeployGlobalParamVo globalParamVo = paramObj.toJavaObject(DeployGlobalParamVo.class);
         if (deployGlobalParamMapper.checkGlobalParamNameIsRepeat(globalParamVo) > 0) {
-            throw new  DeployGlobalParamNameRepeatException(globalParamVo.getName());
+            throw new DeployGlobalParamNameRepeatException(globalParamVo.getName());
         } else if (deployGlobalParamMapper.checkGlobalParamDisplayNameIsRepeat(globalParamVo) > 0) {
-            throw new  DeployGlobalParamDisplayNameRepeatException(globalParamVo.getName());
+            throw new DeployGlobalParamDisplayNameRepeatException(globalParamVo.getName());
         }
         Long paramId = paramObj.getLong("id");
         if (paramId != null && deployGlobalParamMapper.checkGlobalParamIsExistsById(paramId) == 0) {
@@ -76,6 +76,16 @@ public class DeployGlobalParamSaveApi extends PrivateApiComponentBase {
             if (deployGlobalParamMapper.checkGlobalParamNameIsRepeat(globalParamVo) > 0) {
                 return new FieldValidResultVo(new DeployGlobalParamNameRepeatException(globalParamVo.getName()));
             } else if (deployGlobalParamMapper.checkGlobalParamDisplayNameIsRepeat(globalParamVo) > 0) {
+                return new FieldValidResultVo(new DeployGlobalParamDisplayNameRepeatException(globalParamVo.getName()));
+            }
+            return new FieldValidResultVo();
+        };
+    }
+
+    public IValid displayName() {
+        return value -> {
+            DeployGlobalParamVo globalParamVo = JSON.toJavaObject(value, DeployGlobalParamVo.class);
+            if (deployGlobalParamMapper.checkGlobalParamDisplayNameIsRepeat(globalParamVo) > 0) {
                 return new FieldValidResultVo(new DeployGlobalParamDisplayNameRepeatException(globalParamVo.getName()));
             }
             return new FieldValidResultVo();
