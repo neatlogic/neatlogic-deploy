@@ -57,6 +57,7 @@ public class DeployScenarioDeleteApi extends PrivateApiComponentBase {
         if (paramScenarioVo == null) {
             throw new DeployScenarioIsNotFoundException(paramId);
         }
+        //TODO 插入应用与场景关系的接口未完善，后续需要注意关系表的表结构
         if (DependencyManager.getDependencyCount(DeployFromType.DEPLOY_SCENARIO_CIENTITY, paramId) > 0) {
             throw new DeployScenarioHasBeenReferredException(paramScenarioVo.getName());
         }
