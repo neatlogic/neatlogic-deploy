@@ -18,41 +18,41 @@ import javax.annotation.Resource;
 
 /**
  * @author longrf
- * @date 2022/4/15 5:13 下午
+ * @date 2022/4/19 2:16 下午
  */
 @Service
 @AuthAction(action = DEPLOY_MODIFY.class)
-@OperationType(type = OperationTypeEnum.SEARCH)
-public class DeploySceneGetApi extends PrivateApiComponentBase {
+@OperationType(type = OperationTypeEnum.DELETE)
+public class DeploySceneDeleteApi extends PrivateApiComponentBase {
 
     @Resource
     DeploySceneMapper deploySceneMapper;
 
     @Override
     public String getName() {
-        return "获取发布场景";
+        return "删除发布场景";
     }
 
+    @Override
+    public String getToken() {
+        return "deploy/scene/delete";
+    }
     @Override
     public String getConfig() {
         return null;
     }
 
-    @Override
-    public String getToken() {
-        return "deploy/scene/get";
-    }
-
     @Input({
             @Param(name = "id", type = ApiParamType.LONG, isRequired = true, desc = "主键id")
     })
-    @Description(desc = "获取发布场景接口")
+    @Description(desc = "删除发布场景接口")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         Long paramId = paramObj.getLong("id");
         if (deploySceneMapper.checkSceneIsExistsById(paramId) == 0) {
             throw new DeploySceneIsNotFoundException(paramId);
         }
-        return deploySceneMapper.getSceneById(paramId);
+        deploySceneMapper.deleteSceneById(paramId);
+        return null;
     }
 }

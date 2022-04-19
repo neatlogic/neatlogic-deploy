@@ -23,4 +23,7 @@ public interface DeploySceneMapper {
 
     void insertScene(DeploySceneVo paramSceneVo);
 
+    int checkSceneNameIsRepeat(DeploySceneVo paramSceneVo);
+
+    void deleteSceneById(Long paramId);
 }

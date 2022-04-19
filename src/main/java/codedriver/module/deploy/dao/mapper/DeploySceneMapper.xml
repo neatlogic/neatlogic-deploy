@@ -13,7 +13,7 @@
         <where>
             <if test="keyword != null and keyword != ''">
                 and (`name` LIKE CONCAT('%', #{keyword}, '%')
-                OR `description` LIKE CONCAT(#{keyword}, '%'))
+                OR `description` LIKE CONCAT('%',#{keyword}, '%'))
             </if>
         </where>
     </sql>
@@ -44,23 +44,42 @@
         <foreach collection="idList" item="item" open="(" close=")" separator=",">
             #{item}
         </foreach>
-        ORDER BY lcd DESC
+        ORDER BY `lcd` DESC
     </select>
 
     <select id="getSceneById" resultType="codedriver.framework.deploy.dto.scene.DeploySceneVo">
         select id,
                name,
-               description
+               description,
+               fcu,
+               fcd,
+               lcu,
+               lcd
         from deploy_scene
         where id = #{value}
+    </select>
+
+    <select id="checkSceneNameIsRepeat" resultType="int"
+            parameterType="codedriver.framework.deploy.dto.scene.DeploySceneVo">
+        select count(id)
+        from deploy_scene
+        where id != #{id}
+          and name =#{name}
     </select>
 
     <insert id="insertScene" parameterType="codedriver.framework.deploy.dto.scene.DeploySceneVo">
         INSERT INTO `deploy_scene` (id, name, description, fcu, fcd, lcu, lcd)
         VALUES (#{id}, #{name}, #{description}, #{fcu}, now(3), #{lcu}, now(3)) ON DUPLICATE KEY
         UPDATE name = #{name},
+            description = #{description},
             lcu = #{lcu},
             lcd = now(3)
     </insert>
+
+    <delete id="deleteSceneById">
+        DELETE
+        FROM deploy_scene
+        WHERE id = #{value}
+    </delete>
 
 </mapper>
