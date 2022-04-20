@@ -3,6 +3,7 @@ package codedriver.module.deploy.api.param;
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.deploy.auth.DEPLOY_MODIFY;
+import codedriver.framework.deploy.dto.param.DeployGlobalParamVo;
 import codedriver.framework.deploy.exception.param.DeployGlobalParamIsNotFoundException;
 import codedriver.framework.restful.annotation.Description;
 import codedriver.framework.restful.annotation.Input;
@@ -50,9 +51,10 @@ public class DeployGlobalParamGetApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         Long paramId = paramObj.getLong("id");
-        if (deployGlobalParamMapper.checkGlobalParamIsExistsById(paramId) == 0) {
+        DeployGlobalParamVo globalParamVo = deployGlobalParamMapper.getGlobalParamById(paramId);
+        if (globalParamVo == null) {
             throw new DeployGlobalParamIsNotFoundException(paramId);
         }
-        return deployGlobalParamMapper.getGlobalParamById(paramId);
+        return globalParamVo;
     }
 }
