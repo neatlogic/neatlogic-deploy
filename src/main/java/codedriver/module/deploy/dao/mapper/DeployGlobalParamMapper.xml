@@ -54,12 +54,12 @@
     </sql>
 
     <select id="getGlobalParamCount" resultType="int">
-        select count(distinct id)
+        select count(id)
         <include refid="searchGlobalParam"></include>
     </select>
 
     <select id="getGlobalParamIdList" resultType="java.lang.Long">
-     select id
+        select id
         <include refid="searchGlobalParam"></include>
         ORDER BY lcd DESC
         LIMIT #{startNum}, #{pageSize}
