@@ -66,6 +66,19 @@
           and name =#{name}
     </select>
 
+    <select id="searchScenario" resultType="codedriver.framework.deploy.dto.scenario.DeployScenarioVo">
+        select id,
+               name,
+               description,
+               fcu,
+               fcd,
+               lcu,
+               lcd
+        <include refid="searchScenario"></include>
+        ORDER BY lcd DESC
+        LIMIT #{startNum}, #{pageSize}
+    </select>
+
     <insert id="insertScenario" parameterType="codedriver.framework.deploy.dto.scenario.DeployScenarioVo">
         INSERT INTO `deploy_scenario` (id, name, description, fcu, fcd, lcu, lcd)
         VALUES (#{id}, #{name}, #{description}, #{fcu}, now(3), #{lcu}, now(3)) ON DUPLICATE KEY

@@ -26,4 +26,6 @@ public interface DeployScenarioMapper {
     int checkScenarioNameIsRepeat(DeployScenarioVo paramScenarioVo);
 
     void deleteScenarioById(Long paramId);
+
+    List<DeployScenarioVo> searchScenario(DeployScenarioVo paramScenarioVo);
 }

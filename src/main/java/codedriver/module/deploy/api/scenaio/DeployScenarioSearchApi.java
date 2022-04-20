@@ -15,13 +15,13 @@ import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.framework.util.TableResultUtil;
 import codedriver.module.deploy.dao.mapper.DeployScenarioMapper;
 import com.alibaba.fastjson.JSONObject;
-import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * @author longrf
@@ -60,21 +60,18 @@ public class DeployScenarioSearchApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         DeployScenarioVo paramScenarioVo = paramObj.toJavaObject(DeployScenarioVo.class);
-        List<DeployScenarioVo> returnList = new ArrayList<>();
+        List<DeployScenarioVo> returnScenarioList = new ArrayList<>();
         int ScenarioCount = deployScenarioMapper.getScenarioCount(paramScenarioVo);
         if (ScenarioCount > 0) {
             paramScenarioVo.setRowNum(ScenarioCount);
-            List<Long> idList = deployScenarioMapper.getScenarioIdList(paramScenarioVo);
-            if (CollectionUtils.isNotEmpty(idList)) {
-                returnList = deployScenarioMapper.getScenarioListByIdList(idList);
-                Map<Object, Integer> ciEntityReferredCountMap = DependencyManager.getBatchDependencyCount(DeployFromType.DEPLOY_SCENARIO_CIENTITY, idList);
-                if (!ciEntityReferredCountMap.isEmpty()) {
-                    for (DeployScenarioVo scenarioVo : returnList) {
-                        scenarioVo.setCiEntityReferredCount(ciEntityReferredCountMap.get(scenarioVo.getId()));
-                    }
+            returnScenarioList = deployScenarioMapper.searchScenario(paramScenarioVo);
+            Map<Object, Integer> ciEntityReferredCountMap = DependencyManager.getBatchDependencyCount(DeployFromType.DEPLOY_SCENARIO_CIENTITY, returnScenarioList.stream().map(DeployScenarioVo::getId).collect(Collectors.toList()));
+            if (!ciEntityReferredCountMap.isEmpty()) {
+                for (DeployScenarioVo scenarioVo : returnScenarioList) {
+                    scenarioVo.setCiEntityReferredCount(ciEntityReferredCountMap.get(scenarioVo.getId()));
                 }
             }
         }
-        return TableResultUtil.getResult(returnList, paramScenarioVo);
+        return TableResultUtil.getResult(returnScenarioList, paramScenarioVo);
     }
 }

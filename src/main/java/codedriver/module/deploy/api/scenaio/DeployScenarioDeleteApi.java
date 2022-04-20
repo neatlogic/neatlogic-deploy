@@ -47,7 +47,7 @@ public class DeployScenarioDeleteApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "id", type = ApiParamType.LONG, isRequired = true, desc = "主键id")
+            @Param(name = "id", type = ApiParamType.LONG, isRequired = true, desc = "场景id")
     })
     @Description(desc = "删除发布场景接口")
     @Override

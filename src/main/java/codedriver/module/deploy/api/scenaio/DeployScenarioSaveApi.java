@@ -49,7 +49,7 @@ public class DeployScenarioSaveApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "id", type = ApiParamType.LONG, desc = "主键 id"),
+            @Param(name = "id", type = ApiParamType.LONG, desc = "场景id"),
             @Param(name = "name", type = ApiParamType.STRING, isRequired = true, desc = "名称"),
             @Param(name = "description", type = ApiParamType.STRING, desc = "描述")
     })
