@@ -49,8 +49,9 @@ public class DeployGlobalParamSaveApi extends PrivateApiComponentBase {
 
     @Input({
             @Param(name = "id", type = ApiParamType.LONG, desc = "主键 id"),
-            @Param(name = "name", type = ApiParamType.STRING, isRequired = true, desc = "参数名"),
+            @Param(name = "name", type = ApiParamType.STRING, rule = "^[a-zA-Z0-9_\\.]+$", isRequired = true, desc = "参数名"),
             @Param(name = "displayName", type = ApiParamType.STRING, isRequired = true, desc = "显示名"),
+            @Param(name = "value", type = ApiParamType.STRING, isRequired = true, desc = "参数值"),
             @Param(name = "description", type = ApiParamType.STRING, desc = "描述")
     })
     @Description(desc = "保存发布全局参数接口")
