@@ -2,7 +2,10 @@ package codedriver.module.deploy.api.param;
 
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.common.constvalue.ApiParamType;
+import codedriver.framework.common.constvalue.CiphertextPrefix;
+import codedriver.framework.common.util.RC4Util;
 import codedriver.framework.deploy.auth.DEPLOY_MODIFY;
+import codedriver.framework.deploy.constvalue.ParamValueType;
 import codedriver.framework.deploy.dto.param.DeployGlobalParamVo;
 import codedriver.framework.deploy.exception.param.DeployGlobalParamDisplayNameRepeatException;
 import codedriver.framework.deploy.exception.param.DeployGlobalParamIsNotFoundException;
@@ -16,6 +19,7 @@ import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.deploy.dao.mapper.DeployGlobalParamMapper;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -49,8 +53,9 @@ public class DeployGlobalParamSaveApi extends PrivateApiComponentBase {
 
     @Input({
             @Param(name = "id", type = ApiParamType.LONG, desc = "主键 id"),
-            @Param(name = "name", type = ApiParamType.STRING, rule = "^[a-zA-Z0-9_\\.]+$", isRequired = true, desc = "参数名"),
+            @Param(name = "name", type = ApiParamType.REGEX, rule = "^[a-zA-Z0-9_\\.]+$", isRequired = true, desc = "参数名"),
             @Param(name = "displayName", type = ApiParamType.STRING, isRequired = true, desc = "显示名"),
+            @Param(name = "valueType", type = ApiParamType.STRING, isRequired = true, desc = "参数值类型"),
             @Param(name = "value", type = ApiParamType.STRING, isRequired = true, desc = "参数值"),
             @Param(name = "description", type = ApiParamType.STRING, desc = "描述")
     })
@@ -66,6 +71,10 @@ public class DeployGlobalParamSaveApi extends PrivateApiComponentBase {
         Long paramId = paramObj.getLong("id");
         if (paramId != null && deployGlobalParamMapper.checkGlobalParamIsExistsById(paramId) == 0) {
             throw new DeployGlobalParamIsNotFoundException(paramId);
+        }
+        // 如果参数值不以"RC4:"开头，说明密码需要加密
+        if (StringUtils.equals(ParamValueType.PASSWORD.getValue(), globalParamVo.getValueType()) && StringUtils.isNotBlank(globalParamVo.getValue()) && !globalParamVo.getValue().startsWith(CiphertextPrefix.RC4.getValue())) {
+            globalParamVo.setValue(CiphertextPrefix.RC4.getValue() + RC4Util.encrypt(globalParamVo.getValue()));
         }
         deployGlobalParamMapper.insertGlobalParam(globalParamVo);
         return null;

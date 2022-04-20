@@ -2,7 +2,10 @@ package codedriver.module.deploy.api.param;
 
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.common.constvalue.ApiParamType;
+import codedriver.framework.common.constvalue.CiphertextPrefix;
+import codedriver.framework.common.util.RC4Util;
 import codedriver.framework.deploy.auth.DEPLOY_MODIFY;
+import codedriver.framework.deploy.constvalue.ParamValueType;
 import codedriver.framework.deploy.dto.param.DeployGlobalParamVo;
 import codedriver.framework.restful.annotation.Description;
 import codedriver.framework.restful.annotation.Input;
@@ -14,6 +17,7 @@ import codedriver.framework.util.TableResultUtil;
 import codedriver.module.deploy.dao.mapper.DeployGlobalParamMapper;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -64,6 +68,11 @@ public class DeployGlobalParamSearchApi extends PrivateApiComponentBase {
             List<Long> idList = deployGlobalParamMapper.getGlobalParamIdList(globalParamVo);
             if (CollectionUtils.isNotEmpty(idList)) {
                 returnList = deployGlobalParamMapper.getGlobalParamListByIdList(idList);
+            }
+            for (DeployGlobalParamVo paramVo : returnList) {
+                if (StringUtils.equals(ParamValueType.PASSWORD.getValue(), paramVo.getValueType()) && StringUtils.isNotBlank(paramVo.getValue()) && paramVo.getValue().startsWith(CiphertextPrefix.RC4.getValue())) {
+                    paramVo.setValue(RC4Util.decrypt(paramVo.getValue().substring(4)));
+                }
             }
         }
         return TableResultUtil.getResult(returnList, globalParamVo);
