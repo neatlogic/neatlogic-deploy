@@ -19,7 +19,7 @@
     </sql>
 
     <select id="getScenarioCount" resultType="java.lang.Integer">
-        select count(distinct id)
+        select count(id)
         <include refid="searchScenario"></include>
     </select>
 
