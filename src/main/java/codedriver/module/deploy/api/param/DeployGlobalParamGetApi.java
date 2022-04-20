@@ -5,7 +5,7 @@ import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.constvalue.CiphertextPrefix;
 import codedriver.framework.common.util.RC4Util;
 import codedriver.framework.deploy.auth.DEPLOY_MODIFY;
-import codedriver.framework.deploy.constvalue.ParamValueType;
+import codedriver.framework.deploy.constvalue.DeployGlobalParamType;
 import codedriver.framework.deploy.dto.param.DeployGlobalParamVo;
 import codedriver.framework.deploy.exception.param.DeployGlobalParamIsNotFoundException;
 import codedriver.framework.restful.annotation.Description;
@@ -49,7 +49,7 @@ public class DeployGlobalParamGetApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "id", type = ApiParamType.LONG, isRequired = true, desc = "主键id")
+            @Param(name = "id", type = ApiParamType.LONG, isRequired = true, desc = "参数id")
     })
     @Description(desc = "获取发布全局参数接口")
     @Override
@@ -59,7 +59,7 @@ public class DeployGlobalParamGetApi extends PrivateApiComponentBase {
         if (globalParamVo == null) {
             throw new DeployGlobalParamIsNotFoundException(paramId);
         }
-        if (StringUtils.equals(ParamValueType.PASSWORD.getValue(), globalParamVo.getValueType()) && StringUtils.isNotBlank(globalParamVo.getValue()) && globalParamVo.getValue().startsWith(CiphertextPrefix.RC4.getValue())) {
+        if (StringUtils.equals(DeployGlobalParamType.PASSWORD.getValue(), globalParamVo.getType()) && StringUtils.isNotBlank(globalParamVo.getValue()) && globalParamVo.getValue().startsWith(CiphertextPrefix.RC4.getValue())) {
             globalParamVo.setValue(RC4Util.decrypt(globalParamVo.getValue().substring(4)));
         }
         return globalParamVo;

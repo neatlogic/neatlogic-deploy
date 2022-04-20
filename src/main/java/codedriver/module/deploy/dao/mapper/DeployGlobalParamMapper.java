@@ -21,6 +21,8 @@ public interface DeployGlobalParamMapper {
 
     List<DeployGlobalParamVo> getGlobalParamListByIdList(@Param("idList") List<Long> idList);
 
+    List<DeployGlobalParamVo> getGlobalParam(DeployGlobalParamVo globalParamVo);
+
     int checkGlobalParamNameIsRepeat(DeployGlobalParamVo globalParamVo);
 
     int checkGlobalParamDisplayNameIsRepeat(DeployGlobalParamVo globalParamVo);

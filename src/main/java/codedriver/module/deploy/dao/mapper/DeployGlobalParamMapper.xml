@@ -8,13 +8,13 @@
 <mapper namespace="codedriver.module.deploy.dao.mapper.DeployGlobalParamMapper">
 
     <insert id="insertGlobalParam" parameterType="codedriver.framework.deploy.dto.param.DeployGlobalParamVo">
-        INSERT INTO `deploy_global_param` (`id`, `name`, `display_name`, `value_type`, `value`, `description`, `fcu`,
+        INSERT INTO `deploy_global_param` (`id`, `name`, `display_name`, `type`, `value`, `description`, `fcu`,
                                            `fcd`, `lcu`, `lcd`)
-        VALUES (#{id}, #{name}, #{displayName}, #{valueType}, #{value}, #{description}, #{fcu}, now(3), #{lcu},
+        VALUES (#{id}, #{name}, #{displayName}, #{type}, #{value}, #{description}, #{fcu}, now(3), #{lcu},
                 now(3)) ON DUPLICATE KEY
         UPDATE `name` = #{name},
             `display_name` = #{displayName},
-            `value_type`= #{valueType},
+            `type`= #{type},
             `value` = #{value},
             `description` = #{description},
             `lcu` = #{lcu},
@@ -37,7 +37,7 @@
         select `id`,
                `name`,
                `display_name` as displayName,
-               `value_type`   as valueType,
+               `type`,
                `value`,
                `description`,
                `fcu`,
@@ -64,6 +64,22 @@
         <include refid="searchGlobalParam"></include>
     </select>
 
+    <select id="getGlobalParam" resultType="codedriver.framework.deploy.dto.param.DeployGlobalParamVo" parameterType="codedriver.framework.deploy.dto.param.DeployGlobalParamVo">
+        select `id`,
+        `name`,
+        `display_name` as displayName,
+        `type`,
+        `value`,
+        `description`,
+        `fcu`,
+        `fcd`,
+        `lcu`,
+        `lcd`
+        <include refid="searchGlobalParam"></include>
+        ORDER BY lcd DESC
+        LIMIT #{startNum}, #{pageSize}
+    </select>
+
     <select id="getGlobalParamIdList" resultType="java.lang.Long">
         select id
         <include refid="searchGlobalParam"></include>
@@ -76,7 +92,7 @@
         select `id`,
         `name`,
         `display_name` as displayName,
-        `value_type` as valueType,
+        `type`,
         `value`,
         `description`,
         `fcu`,

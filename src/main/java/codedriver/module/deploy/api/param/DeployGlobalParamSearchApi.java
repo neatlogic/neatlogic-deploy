@@ -5,7 +5,7 @@ import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.constvalue.CiphertextPrefix;
 import codedriver.framework.common.util.RC4Util;
 import codedriver.framework.deploy.auth.DEPLOY_MODIFY;
-import codedriver.framework.deploy.constvalue.ParamValueType;
+import codedriver.framework.deploy.constvalue.DeployGlobalParamType;
 import codedriver.framework.deploy.dto.param.DeployGlobalParamVo;
 import codedriver.framework.restful.annotation.Description;
 import codedriver.framework.restful.annotation.Input;
@@ -16,7 +16,6 @@ import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.framework.util.TableResultUtil;
 import codedriver.module.deploy.dao.mapper.DeployGlobalParamMapper;
 import com.alibaba.fastjson.JSONObject;
-import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
@@ -61,20 +60,17 @@ public class DeployGlobalParamSearchApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         DeployGlobalParamVo globalParamVo = paramObj.toJavaObject(DeployGlobalParamVo.class);
-        List<DeployGlobalParamVo> returnList = new ArrayList<>();
+        List<DeployGlobalParamVo> GlobalParamList = new ArrayList<>();
         int paramCount = deployGlobalParamMapper.getGlobalParamCount(globalParamVo);
         if (paramCount > 0) {
             globalParamVo.setRowNum(paramCount);
-            List<Long> idList = deployGlobalParamMapper.getGlobalParamIdList(globalParamVo);
-            if (CollectionUtils.isNotEmpty(idList)) {
-                returnList = deployGlobalParamMapper.getGlobalParamListByIdList(idList);
-            }
-            for (DeployGlobalParamVo paramVo : returnList) {
-                if (StringUtils.equals(ParamValueType.PASSWORD.getValue(), paramVo.getValueType()) && StringUtils.isNotBlank(paramVo.getValue()) && paramVo.getValue().startsWith(CiphertextPrefix.RC4.getValue())) {
+            GlobalParamList = deployGlobalParamMapper.getGlobalParam(globalParamVo);
+            for (DeployGlobalParamVo paramVo : GlobalParamList) {
+                if (StringUtils.equals(DeployGlobalParamType.PASSWORD.getValue(), paramVo.getType()) && StringUtils.isNotBlank(paramVo.getValue()) && paramVo.getValue().startsWith(CiphertextPrefix.RC4.getValue())) {
                     paramVo.setValue(RC4Util.decrypt(paramVo.getValue().substring(4)));
                 }
             }
         }
-        return TableResultUtil.getResult(returnList, globalParamVo);
+        return TableResultUtil.getResult(GlobalParamList, globalParamVo);
     }
 }

@@ -44,7 +44,7 @@ public class DeployGlobalParamDeleteApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "id", type = ApiParamType.LONG, isRequired = true, desc = "主键id")
+            @Param(name = "id", type = ApiParamType.LONG, isRequired = true, desc = "参数id")
     })
     @Description(desc = "删除发布全局参数接口")
     @Override

@@ -5,7 +5,7 @@ import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.constvalue.CiphertextPrefix;
 import codedriver.framework.common.util.RC4Util;
 import codedriver.framework.deploy.auth.DEPLOY_MODIFY;
-import codedriver.framework.deploy.constvalue.ParamValueType;
+import codedriver.framework.deploy.constvalue.DeployGlobalParamType;
 import codedriver.framework.deploy.dto.param.DeployGlobalParamVo;
 import codedriver.framework.deploy.exception.param.DeployGlobalParamDisplayNameRepeatException;
 import codedriver.framework.deploy.exception.param.DeployGlobalParamIsNotFoundException;
@@ -52,10 +52,10 @@ public class DeployGlobalParamSaveApi extends PrivateApiComponentBase {
 
 
     @Input({
-            @Param(name = "id", type = ApiParamType.LONG, desc = "主键 id"),
+            @Param(name = "id", type = ApiParamType.LONG, desc = "参数id"),
             @Param(name = "name", type = ApiParamType.REGEX, rule = "^[a-zA-Z0-9_\\.]+$", isRequired = true, desc = "参数名"),
             @Param(name = "displayName", type = ApiParamType.STRING, isRequired = true, desc = "显示名"),
-            @Param(name = "valueType", type = ApiParamType.STRING, isRequired = true, desc = "参数值类型"),
+            @Param(name = "type", type = ApiParamType.STRING, isRequired = true, desc = "类型"),
             @Param(name = "value", type = ApiParamType.STRING, isRequired = true, desc = "参数值"),
             @Param(name = "description", type = ApiParamType.STRING, desc = "描述")
     })
@@ -73,7 +73,7 @@ public class DeployGlobalParamSaveApi extends PrivateApiComponentBase {
             throw new DeployGlobalParamIsNotFoundException(paramId);
         }
         // 如果参数值不以"RC4:"开头，说明密码需要加密
-        if (StringUtils.equals(ParamValueType.PASSWORD.getValue(), globalParamVo.getValueType()) && StringUtils.isNotBlank(globalParamVo.getValue()) && !globalParamVo.getValue().startsWith(CiphertextPrefix.RC4.getValue())) {
+        if (StringUtils.equals(DeployGlobalParamType.PASSWORD.getValue(), globalParamVo.getType()) && StringUtils.isNotBlank(globalParamVo.getValue()) && !globalParamVo.getValue().startsWith(CiphertextPrefix.RC4.getValue())) {
             globalParamVo.setValue(CiphertextPrefix.RC4.getValue() + RC4Util.encrypt(globalParamVo.getValue()));
         }
         deployGlobalParamMapper.insertGlobalParam(globalParamVo);
