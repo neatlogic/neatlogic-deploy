@@ -5,7 +5,9 @@
 
 package codedriver.module.deploy.globallock;
 
+import codedriver.framework.deploy.constvalue.DeployOperType;
 import codedriver.framework.dto.globallock.GlobalLockVo;
+import codedriver.framework.exception.type.ParamIrregularException;
 import codedriver.framework.globallock.GlobalLockManager;
 import codedriver.framework.globallock.core.GlobalLockHandlerBase;
 import com.alibaba.fastjson.JSONObject;
@@ -19,7 +21,7 @@ import java.util.Objects;
 public class DeployGlobalLockHandler extends GlobalLockHandlerBase {
     @Override
     public String getHandler() {
-        return "deploy";
+        return DeployOperType.DEPLOY.getValue();
     }
 
     @Override
@@ -29,7 +31,10 @@ public class DeployGlobalLockHandler extends GlobalLockHandlerBase {
 
     @Override
     public boolean getIsCanLock(List<GlobalLockVo> globalLockVoList, GlobalLockVo globalLockVo) {
-        String mode = null;
+        String mode = globalLockVo.getHandlerParam().getString("mode");
+        if(StringUtils.isBlank(mode)){
+            throw new ParamIrregularException("mode");
+        }
         for (GlobalLockVo globalLock : globalLockVoList){
             if(StringUtils.isNotBlank(mode) && !Objects.equals(globalLock.getHandlerParam().getString("mode"),mode)){
                 globalLockVo.setWaitReason("your mode is '"+mode+"',already has '"+globalLock.getHandlerParam().getString("mode")+"' lock");
@@ -40,9 +45,6 @@ public class DeployGlobalLockHandler extends GlobalLockHandlerBase {
                 return false;
             }
             mode = globalLock.getHandlerParam().getString("mode");
-            try {
-                Thread.sleep(1000L);
-            }catch (Exception ignored){}
         }
         return true;
     }
@@ -66,13 +68,4 @@ public class DeployGlobalLockHandler extends GlobalLockHandlerBase {
         return jsonObject;
     }
 
-    @Override
-    public void cancelLock(Long lockId, JSONObject paramJson) {
-        GlobalLockManager.cancelLock(lockId, paramJson);
-    }
-
-    @Override
-    public void doNotify(GlobalLockVo globalLockVo, JSONObject paramJson) {
-
-    }
 }
