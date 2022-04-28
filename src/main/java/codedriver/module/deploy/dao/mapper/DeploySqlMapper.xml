@@ -66,7 +66,6 @@
           AND dsd.version = #{version}
     </select>
 
-
     <update id="updateJobDeploySqlDetailIsDeleteAndStatusAndMd5AndLcdById">
         UPDATE deploy_sql_detail
         SET `md5`    = #{md5},
@@ -74,5 +73,15 @@
             `lcd`=now(3),
             `is_delete` = 0
         WHERE id = #{id}
+    </update>
+
+    <update id="updateJobDeploySqlIsDeleteByIdList">
+        UPDATE deploy_sql_detail
+        SET
+        `is_delete` = 1
+        WHERE id in
+        <foreach collection="idList" item="id" separator="," open="(" close=")">
+            #{id}
+        </foreach>
     </update>
 </mapper>
