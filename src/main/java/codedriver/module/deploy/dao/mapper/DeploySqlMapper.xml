@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright(c) 2022 TechSureCo.,Ltd.AllRightsReserved.
+  ~ 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
+  -->
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="codedriver.module.deploy.dao.mapper.DeploySqlMapper">
+
+    <select id="getAutoexecJobIdByDeploySqlDetailVo" resultType="codedriver.framework.deploy.dto.sql.DeploySqlDetailVo"
+            parameterType="codedriver.framework.deploy.dto.sql.DeploySqlDetailVo">
+        SELECT dsd.id,
+               dsd.`md5`,
+               dsd.`status`,
+               dsd.`sql_file` as sqlFile,
+               ajs.job_id as jobId
+        FROM deploy_sql_detail dsd
+                 JOIN autoexec_job_sql ajs ON ajs.sql_id = dsd.id
+        WHERE dsd.system_id = #{systemId}
+          AND dsd.module_id = #{moduleId}
+          AND dsd.env_id = #{envId}
+          AND dsd.version = #{version}
+          AND dsd.sql_file = #{sqlFile}
+    </select>
+
+    <select id="getJobDeploySqlDetailList"
+            resultType="codedriver.framework.deploy.dto.sql.DeploySqlDetailVo">
+        SELECT dsd.`id`,
+        dsd.`md5`,
+        dsd.`status`,
+        dsd.`sql_file` as sqlFile,
+        dsd.system_id as systemId,
+        dsd.module_id as moduleId,
+        dsd.env_id as envId,
+        dsd.version as version
+        from
+        deploy_sql_detail dsd
+        WHERE
+        <foreach collection="sqlFileDetailVoList" item="vo" separator="or">
+            (
+            dsd.system_id = #{vo.systemId}
+            AND dsd.module_id = #{vo.moduleId}
+            AND dsd.env_id = #{vo.envId}
+            AND dsd.version = #{vo.version}
+            AND dsd.sql_file = #{vo.sqlFile}
+            AND dsd.is_delete = 0)
+        </foreach>
+    </select>
+
+    <select id="getAllJobDeploySqlDetailList" parameterType="codedriver.framework.deploy.dto.sql.DeploySqlDetailVo"
+            resultType="codedriver.framework.deploy.dto.sql.DeploySqlDetailVo">
+        SELECT dsd.`id`,
+               dsd.`md5`,
+               dsd.`status`,
+               dsd.`sql_file`  as sqlFile,
+               dsd.system_id   as systemId,
+               dsd.module_id   as moduleId,
+               dsd.env_id      as envId,
+               dsd.version     as version,
+               dsd.`is_delete` as isDelete
+        FROM autoexec_job_sql ajs
+                 join deploy_sql_detail dsd ON dsd.id = ajs.sql_id
+        WHERE dsd.system_id = #{systemId}
+          AND dsd.module_id = #{moduleId}
+          AND dsd.env_id = #{envId}
+          AND dsd.version = #{version}
+    </select>
+
+
+    <update id="updateJobDeploySqlDetailIsDeleteAndStatusAndMd5AndLcdById">
+        UPDATE deploy_sql_detail
+        SET `md5`    = #{md5},
+            `status` = #{status},
+            `lcd`=now(3),
+            `is_delete` = 0
+        WHERE id = #{id}
+    </update>
+</mapper>
