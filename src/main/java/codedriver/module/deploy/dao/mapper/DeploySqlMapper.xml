@@ -33,11 +33,9 @@
     </insert>
 
     <insert id="insertDeploySql">
-        insert into deploy_sql(`id`, `job_id`,`node_id`,`node_name`, `sql_id`)
+        insert into deploy_sql(`id`, `job_id`, `sql_id`)
         values (#{id},
                 #{jobId},
-                #{nodeId},
-                #{nodeName},
                 #{sqlId})ON DUPLICATE KEY
         UPDATE job_id =#{jobId},
             sql_id =#{sqlId}
@@ -81,7 +79,8 @@
             AND dsd.env_id = #{vo.envId}
             AND dsd.version = #{vo.version}
             AND dsd.sql_file = #{vo.sqlFile}
-            AND dsd.is_delete = 0)
+            )
+            AND dsd.is_delete = 0
         </foreach>
     </select>
 
