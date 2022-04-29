@@ -9,7 +9,8 @@
 
     <insert id="insertDeploySqlDetail">
         insert into `deploy_sql_detail`(`id`, `system_id`, `module_id`, `env_id`, `version`,
-                                        `sql_file`, `status`, `md5`, `host`, `port`, `resource_id`, `lcd`,
+                                        `sql_file`, `status`, `md5`, `host`, `port`, `resource_id`, `runner_id`,
+                                        `runner_port`, `lcd`,
                                         `is_delete`)
         values (#{id},
                 #{systemId},
@@ -22,6 +23,8 @@
                 #{host},
                 #{port},
                 #{resourceId},
+                #{runnerId},
+                #{runnerPort},
                 now(3),
                 #{isDelete}) ON DUPLICATE KEY
         UPDATE `md5` = #{md5},
@@ -30,9 +33,11 @@
     </insert>
 
     <insert id="insertDeploySql">
-        insert into deploy_sql(`id`, `job_id`, `sql_id`)
+        insert into deploy_sql(`id`, `job_id`,`node_id`,`node_name`, `sql_id`)
         values (#{id},
                 #{jobId},
+                #{nodeId},
+                #{nodeName},
                 #{sqlId})ON DUPLICATE KEY
         UPDATE job_id =#{jobId},
             sql_id =#{sqlId}
@@ -59,6 +64,8 @@
         SELECT dsd.`id`,
         dsd.`md5`,
         dsd.`status`,
+        dsd.`runner_id` as runnerId,
+        dsd.`runner_port` as runnerPort,
         dsd.`sql_file` as sqlFile,
         dsd.system_id as systemId,
         dsd.module_id as moduleId,
