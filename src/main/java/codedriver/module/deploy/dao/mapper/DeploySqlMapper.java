@@ -1,5 +1,6 @@
 package codedriver.module.deploy.dao.mapper;
 
+import codedriver.framework.deploy.dto.sql.DeployJobSqlVo;
 import codedriver.framework.deploy.crossover.IDeploySqlCrossoverMapper;
 import codedriver.framework.deploy.dto.sql.DeploySqlDetailVo;
 import org.apache.ibatis.annotations.Param;
@@ -22,4 +23,7 @@ public interface DeploySqlMapper extends IDeploySqlCrossoverMapper {
 
     void updateJobDeploySqlIsDeleteByIdList(@Param("idList") List<Long> idList);
 
+    void insertDeploySqlDetail(DeploySqlDetailVo paramDeploySqlVo);
+
+    void insertDeploySql(DeployJobSqlVo jobId);
 }

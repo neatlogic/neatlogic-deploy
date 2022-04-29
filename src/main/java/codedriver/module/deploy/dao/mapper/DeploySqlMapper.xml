@@ -7,15 +7,46 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="codedriver.module.deploy.dao.mapper.DeploySqlMapper">
 
+    <insert id="insertDeploySqlDetail">
+        insert into `deploy_sql_detail`(`id`, `system_id`, `module_id`, `env_id`, `version`,
+                                        `sql_file`, `status`, `md5`, `host`, `port`, `resource_id`, `lcd`,
+                                        `is_delete`)
+        values (#{id},
+                #{systemId},
+                #{moduleId},
+                #{envId},
+                #{version},
+                #{sqlFile},
+                #{status},
+                #{md5},
+                #{host},
+                #{port},
+                #{resourceId},
+                now(3),
+                #{isDelete}) ON DUPLICATE KEY
+        UPDATE `md5` = #{md5},
+            `status` = #{status},
+            `is_delete`= #{isDelete}
+    </insert>
+
+    <insert id="insertDeploySql">
+        insert into deploy_sql(`id`, `job_id`, `sql_id`)
+        values (#{id},
+                #{jobId},
+                #{sqlId})ON DUPLICATE KEY
+        UPDATE job_id =#{jobId},
+            sql_id =#{sqlId}
+    </insert>
+
     <select id="getAutoexecJobIdByDeploySqlDetailVo" resultType="codedriver.framework.deploy.dto.sql.DeploySqlDetailVo"
             parameterType="codedriver.framework.deploy.dto.sql.DeploySqlDetailVo">
         SELECT dsd.id,
                dsd.`md5`,
                dsd.`status`,
                dsd.`sql_file` as sqlFile,
-               ajs.job_id as jobId
+               ajs.job_id     as jobId
         FROM deploy_sql_detail dsd
-                 JOIN autoexec_job_sql ajs ON ajs.sql_id = dsd.id
+                 JOIN deploy_sql ajs ON ajs.sql_id = dsd.id
         WHERE dsd.system_id = #{systemId}
           AND dsd.module_id = #{moduleId}
           AND dsd.env_id = #{envId}
@@ -58,7 +89,7 @@
                dsd.env_id      as envId,
                dsd.version     as version,
                dsd.`is_delete` as isDelete
-        FROM autoexec_job_sql ajs
+        FROM deploy_sql ajs
                  join deploy_sql_detail dsd ON dsd.id = ajs.sql_id
         WHERE dsd.system_id = #{systemId}
           AND dsd.module_id = #{moduleId}
@@ -68,8 +99,8 @@
 
     <update id="updateJobDeploySqlDetailIsDeleteAndStatusAndMd5AndLcdById">
         UPDATE deploy_sql_detail
-        SET `md5`    = #{md5},
-            `status` = #{status},
+        SET `md5`       = #{md5},
+            `status`    = #{status},
             `lcd`=now(3),
             `is_delete` = 0
         WHERE id = #{id}
