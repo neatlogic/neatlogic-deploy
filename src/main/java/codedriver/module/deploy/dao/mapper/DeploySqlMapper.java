@@ -15,13 +15,13 @@ public interface DeploySqlMapper extends IDeploySqlCrossoverMapper {
 
     DeploySqlDetailVo getAutoexecJobIdByDeploySqlDetailVo(DeploySqlDetailVo paramDeploySqlVo);
 
-    List<DeploySqlDetailVo> getJobDeploySqlDetailList(@Param("sqlFileDetailVoList") List<DeploySqlDetailVo> sqlFileDetailVoList);
+    List<DeploySqlDetailVo> getDeploySqlDetailList(@Param("sqlFileDetailVoList") List<DeploySqlDetailVo> sqlFileDetailVoList);
 
-    List<DeploySqlDetailVo> getAllJobDeploySqlDetailList(DeploySqlDetailVo deployVersionSql);
+    List<DeploySqlDetailVo> getAllDeploySqlDetailList(DeploySqlDetailVo deployVersionSql);
 
-    void updateJobDeploySqlDetailIsDeleteAndStatusAndMd5AndLcdById(@Param("status") String status, @Param("md5") String md5, @Param("id") Long id);
+    void updateDeploySqlDetailIsDeleteAndStatusAndMd5AndLcdById(@Param("status") String status, @Param("md5") String md5, @Param("id") Long id);
 
-    void updateJobDeploySqlIsDeleteByIdList(@Param("idList") List<Long> idList);
+    void updateDeploySqlIsDeleteByIdList(@Param("idList") List<Long> idList);
 
     void insertDeploySqlDetail(DeploySqlDetailVo paramDeploySqlVo);
 

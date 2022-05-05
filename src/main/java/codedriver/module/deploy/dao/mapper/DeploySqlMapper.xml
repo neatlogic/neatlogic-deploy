@@ -57,7 +57,7 @@
           AND dsd.sql_file = #{sqlFile}
     </select>
 
-    <select id="getJobDeploySqlDetailList"
+    <select id="getDeploySqlDetailList"
             resultType="codedriver.framework.deploy.dto.sql.DeploySqlDetailVo">
         SELECT dsd.`id`,
         dsd.`md5`,
@@ -84,7 +84,7 @@
         </foreach>
     </select>
 
-    <select id="getAllJobDeploySqlDetailList" parameterType="codedriver.framework.deploy.dto.sql.DeploySqlDetailVo"
+    <select id="getAllDeploySqlDetailList" parameterType="codedriver.framework.deploy.dto.sql.DeploySqlDetailVo"
             resultType="codedriver.framework.deploy.dto.sql.DeploySqlDetailVo">
         SELECT dsd.`id`,
                dsd.`md5`,
@@ -103,7 +103,7 @@
           AND dsd.version = #{version}
     </select>
 
-    <update id="updateJobDeploySqlDetailIsDeleteAndStatusAndMd5AndLcdById">
+    <update id="updateDeploySqlDetailIsDeleteAndStatusAndMd5AndLcdById">
         UPDATE deploy_sql_detail
         SET `md5`       = #{md5},
             `status`    = #{status},
@@ -112,7 +112,7 @@
         WHERE id = #{id}
     </update>
 
-    <update id="updateJobDeploySqlIsDeleteByIdList">
+    <update id="updateDeploySqlIsDeleteByIdList">
         UPDATE deploy_sql_detail
         SET
         `is_delete` = 1
