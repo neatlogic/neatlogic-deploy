@@ -7,6 +7,7 @@ package codedriver.module.deploy.globallock;
 
 import codedriver.framework.deploy.constvalue.DeployOperType;
 import codedriver.framework.dto.globallock.GlobalLockVo;
+import codedriver.framework.exception.core.ApiRuntimeException;
 import codedriver.framework.exception.type.ParamIrregularException;
 import codedriver.framework.globallock.GlobalLockManager;
 import codedriver.framework.globallock.core.GlobalLockHandlerBase;
@@ -16,6 +17,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 @Service
 public class DeployGlobalLockHandler extends GlobalLockHandlerBase {
@@ -31,20 +33,21 @@ public class DeployGlobalLockHandler extends GlobalLockHandlerBase {
 
     @Override
     public boolean getIsCanLock(List<GlobalLockVo> globalLockVoList, GlobalLockVo globalLockVo) {
-        String mode = globalLockVo.getHandlerParam().getString("mode");
-        if(StringUtils.isBlank(mode)){
-            throw new ParamIrregularException("mode");
+        String lockMode = globalLockVo.getHandlerParam().getString("lockMode");
+        if(StringUtils.isBlank(lockMode)){
+            throw new ParamIrregularException("lockMode");
         }
-        for (GlobalLockVo globalLock : globalLockVoList){
-            if(StringUtils.isNotBlank(mode) && !Objects.equals(globalLock.getHandlerParam().getString("mode"),mode)){
-                globalLockVo.setWaitReason("your mode is '"+mode+"',already has '"+globalLock.getHandlerParam().getString("mode")+"' lock");
+        Optional<GlobalLockVo> lockedGlobalLockOptional = globalLockVoList.stream().filter(o-> Objects.equals(o.getIsLock(),1)).findFirst();
+        if(lockedGlobalLockOptional.isPresent()) {
+            GlobalLockVo lockedGlobalLock = lockedGlobalLockOptional.get();
+            if (!Objects.equals(lockedGlobalLock.getHandlerParam().getString("lockMode"), lockMode)) {
+                globalLockVo.setWaitReason("your mode is '" + lockMode + "',already has '" + lockedGlobalLock.getHandlerParam().getString("lockMode") + "' lock");
                 return false;
             }
-            if(StringUtils.isNotBlank(mode) && Objects.equals("write",mode ) && Objects.equals(globalLock.getHandlerParam().getString("mode"),mode)){
-                globalLockVo.setWaitReason("your mode is '"+mode+"',already has '"+globalLock.getHandlerParam().getString("mode")+"' lock");
+            if (StringUtils.isNotBlank(lockMode) && Objects.equals("write", lockMode) && Objects.equals(lockedGlobalLock.getHandlerParam().getString("lockMode"), lockMode)) {
+                globalLockVo.setWaitReason("your mode is '" + lockMode + "',already has '" + lockedGlobalLock.getHandlerParam().getString("lockMode") + "' lock");
                 return false;
             }
-            mode = globalLock.getHandlerParam().getString("mode");
         }
         return true;
     }
@@ -52,11 +55,7 @@ public class DeployGlobalLockHandler extends GlobalLockHandlerBase {
     @Override
     public JSONObject getLock(JSONObject paramJson) {
         JSONObject jsonObject = new JSONObject();
-        GlobalLockVo globalLockVo = new GlobalLockVo();
-        globalLockVo.setHandler("deploy");
-        globalLockVo.setDescription(paramJson.getString("lockOwnerName"));
-        globalLockVo.setKey(paramJson.getString("lockOwner")+"/"+paramJson.getString("lockTarget"));
-        globalLockVo.setHandlerParamStr(paramJson.toJSONString());
+        GlobalLockVo globalLockVo = new GlobalLockVo(DeployOperType.DEPLOY.getValue(),paramJson.getString("lockOwner")+"/"+paramJson.getString("lockTarget"),paramJson.toJSONString(),paramJson.getString("lockOwnerName"));
         GlobalLockManager.getLock(globalLockVo);
         if (globalLockVo.getIsLock() == 1) {
             jsonObject.put("lockId", globalLockVo.getId());
@@ -64,6 +63,24 @@ public class DeployGlobalLockHandler extends GlobalLockHandlerBase {
         } else {
             jsonObject.put("wait", 1);
             jsonObject.put("message", globalLockVo.getWaitReason());
+        }
+        return jsonObject;
+    }
+
+    @Override
+    public JSONObject retryLock(Long lockId, JSONObject paramJson) {
+        JSONObject jsonObject = new JSONObject();
+        if(lockId == null){
+            throw new ParamIrregularException("lockId");
+        }
+        //预防如果不存在，需重新insert lock
+        String jobId = paramJson.getString("jobId");
+        GlobalLockVo globalLockVo = new GlobalLockVo(lockId,DeployOperType.DEPLOY.getValue(),paramJson.getString("lockOwner")+"/"+paramJson.getString("lockTarget"),paramJson.toJSONString(),paramJson.getString("lockOwnerName"));
+        GlobalLockManager.retryLock(globalLockVo);
+        if (globalLockVo.getIsLock() == 1) {
+            jsonObject.put("lockId", globalLockVo.getId());
+        } else {
+            throw new ApiRuntimeException(globalLockVo.getWaitReason());
         }
         return jsonObject;
     }
