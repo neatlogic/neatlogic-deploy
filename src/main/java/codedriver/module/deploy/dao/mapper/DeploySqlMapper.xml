@@ -54,7 +54,7 @@
                 now(3),
             </when>
             <otherwise>
-                now(3),
+                now(3)
             </otherwise>
         </choose>
         )
