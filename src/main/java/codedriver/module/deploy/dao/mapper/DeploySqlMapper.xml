@@ -148,7 +148,7 @@
         dsd.`port`,
         dsd.runner_id AS runnerId,
         dsd.runner_port AS runnerPort,
-        dsd.is_delete AS isDelete,,
+        dsd.is_delete AS isDelete,
         dsd.start_time AS startTime,
         dsd.end_time AS endTime,
         ri.`name`
