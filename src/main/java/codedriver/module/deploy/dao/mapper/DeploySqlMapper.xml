@@ -8,28 +8,56 @@
 <mapper namespace="codedriver.module.deploy.dao.mapper.DeploySqlMapper">
 
     <insert id="insertDeploySqlDetail">
-        insert into `deploy_sql_detail`(`id`, `system_id`, `module_id`, `env_id`, `version`,
-                                        `sql_file`, `status`, `md5`, `host`, `port`, `resource_id`, `runner_id`,
-                                        `runner_port`, `lcd`,
-                                        `is_delete`)
+        insert into `deploy_sql_detail`(`id`,
+        `system_id`,
+        `module_id`,
+        `env_id`,
+        `version`,
+        `sql_file`,
+        `status`,
+        `md5`,
+        `host`,
+        `port`,
+        `resource_id`,
+        `runner_id`,
+        `runner_port`,
+        `is_delete`,
+        <choose>
+            <when test="status == 'pending'">
+            </when>
+            <when test="status == 'running'">
+                `fcd`,
+            </when>
+            <otherwise>
+                `lcd`,
+            </otherwise>
+        </choose>
+        )
         values (#{id},
-                #{systemId},
-                #{moduleId},
-                #{envId},
-                #{version},
-                #{sqlFile},
-                #{status},
-                #{md5},
-                #{host},
-                #{port},
-                #{resourceId},
-                #{runnerId},
-                #{runnerPort},
+        #{systemId},
+        #{moduleId},
+        #{envId},
+        #{version},
+        #{sqlFile},
+        #{status},
+        #{md5},
+        #{host},
+        #{port},
+        #{resourceId},
+        #{runnerId},
+        #{runnerPort},
+        #{isDelete},
+        <choose>
+            <when test="status == 'pending'">
+            </when>
+            <when test="status == 'running'">
                 now(3),
-                #{isDelete}) ON DUPLICATE KEY
-        UPDATE `md5` = #{md5},
-            `status` = #{status},
-            `is_delete`= #{isDelete}
+            </when>
+            <otherwise>
+                now(3),
+            </otherwise>
+        </choose>
+        )
     </insert>
 
     <insert id="insertDeploySql">
@@ -103,12 +131,73 @@
           AND dsd.version = #{version}
     </select>
 
-    <update id="updateDeploySqlDetailIsDeleteAndStatusAndMd5AndLcdById">
+    <select id="searchDeploySqlCount" resultType="int">
+        SELECT
+        count(dsd.id)
+        <include refid="searchDeploySql"></include>
+    </select>
+
+    <select id="searchDeploySql" resultType="codedriver.framework.deploy.dto.sql.DeploySqlDetailVo">
+        SELECT
+        dsd.id,
+        dsd.status,
+        dsd.fcd,
+        dsd.lcd,
+        dsd.sql_file AS sqlFile,
+        dsd.host AS ip,
+        dsd.`port`,
+        dsd.runner_id AS runnerId,
+        dsd.runner_port AS runnerPort,
+        dsd.is_delete AS isDelete,,
+        dsd.fcd,
+        dsd.lcd,
+        ri.`name`
+        <include refid="searchDeploySql"></include>
+        ORDER BY dsd.`fcd` DESC
+        <if test="needPage">
+            LIMIT #{startNum}, #{pageSize}
+        </if>
+    </select>
+
+    <sql id="searchDeploySql">
+        FROM
+        autoexec_job_phase_node ajpn
+        LEFT JOIN deploy_sql_detail dsd ON ajpn.resource_id = dsd.resource_id
+        LEFT JOIN deploy_sql ds ON dsd.id = ds.sql_id AND ajpn.job_id = ds.job_id
+        LEFT JOIN codedriver_develop_data.resource_ipobject ri ON ri.id = dsd.resource_id
+        <where>
+            <if test="statusList != null and statusList.size() > 0 ">
+                and dsd.`status` in
+                <foreach collection="statusList" item="status" open="(" close=")" separator=",">
+                    #{status}
+                </foreach>
+            </if>
+            <if test="keyword != null and keyword != ''">
+                and (ri.`name` like concat('%',#{keyword},'%') or dsd.`host` like concat('%',#{keyword},'%'))
+            </if>
+            <if test="isDelete != null">
+                and dsd.`is_delete` = #{isDelete}
+            </if>
+            and ajpn.job_id= #{jobId}
+            and ajpn.job_phase_id= #{jobPhaseId}
+        </where>
+    </sql>
+
+    <update id="updateDeploySqlDetailIsDeleteAndStatusAndMd5ById">
         UPDATE deploy_sql_detail
-        SET `md5`       = #{md5},
-            `status`    = #{status},
-            `lcd`=now(3),
-            `is_delete` = 0
+        SET `md5` = #{md5},
+        `status` = #{status},
+        <choose>
+            <when test="status == 'pending'">
+            </when>
+            <when test="status == 'running'">
+                `fcd`=now(3),
+            </when>
+            <otherwise>
+                `lcd`=now(3),
+            </otherwise>
+        </choose>
+        `is_delete` = 0
         WHERE id = #{id}
     </update>
 
