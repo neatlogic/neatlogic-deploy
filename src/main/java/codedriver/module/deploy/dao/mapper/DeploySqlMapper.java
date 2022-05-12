@@ -3,7 +3,7 @@ package codedriver.module.deploy.dao.mapper;
 import codedriver.framework.autoexec.dto.job.AutoexecJobPhaseNodeVo;
 import codedriver.framework.deploy.crossover.IDeploySqlCrossoverMapper;
 import codedriver.framework.deploy.dto.sql.DeploySqlDetailVo;
-import codedriver.framework.deploy.dto.sql.DeploySqlVo;
+import codedriver.framework.deploy.dto.sql.DeploySqlJobPhaseVo;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
@@ -30,5 +30,5 @@ public interface DeploySqlMapper extends IDeploySqlCrossoverMapper {
 
     void insertDeploySqlDetail(@Param("sqlVo") DeploySqlDetailVo paramDeploySqlVo, @Param("sysId") Long sysId, @Param("envId") Long envId, @Param("moduleId") Long moduleId, @Param("version") String version, @Param("runnerId") Long runnerId);
 
-    void insertDeploySql(DeploySqlVo deploySqlVo);
+    void insertDeploySql(DeploySqlJobPhaseVo deploySqlVo);
 }
