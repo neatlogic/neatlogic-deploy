@@ -19,6 +19,7 @@
         `host`,
         `port`,
         `resource_id`,
+        `node_name`,
         `runner_id`,
         `is_delete`
         <choose>
@@ -43,6 +44,7 @@
         #{sqlVo.host},
         #{sqlVo.port},
         #{sqlVo.resourceId},
+        #{sqlVo.nodeName},
         #{runnerId},
         #{sqlVo.isDelete}
         <choose>
@@ -93,12 +95,9 @@
         dsd.env_id as envId,
         dsd.version as version,
         dsd.resource_id as resourceId,
-        ajpn.name as nodeName
+        dsd.node_name as nodeName
         from
         deploy_sql_detail dsd
-        JOIN deploy_sql_job_phase dsjp ON dsd.id = dsjp.sql_id
-        JOIN autoexec_job_phase ajp ON ajp.job_id = dsjp.job_id AND dsjp.job_phase_name = ajp.name
-        JOIN autoexec_job_phase_node ajpn ON ajpn.job_phase_id = ajp.id AND ajpn.job_id = ajp.job_id AND dsd.resource_id = ajpn.resource_id
         WHERE
         <foreach collection="sqlFileDetailVoList" item="vo" separator="or">
             (
@@ -157,7 +156,7 @@
         ajpn.resource_id AS resourceId,
         r.`host` AS runnerHost,
         r.`port` AS runnerPort,
-        ri.`name` AS nodeName
+        dsd.`node_name` AS nodeName
         <include refid="searchDeploySql"></include>
         ORDER BY dsd.`start_time` DESC
         <if test="needPage">
@@ -172,7 +171,6 @@
         JOIN autoexec_job_phase ajp ON ajp.job_id = dsjp.job_id AND dsjp.job_phase_name = ajp.name
         JOIN autoexec_job_phase_node ajpn ON ajpn.job_phase_id = ajp.id AND ajpn.job_id = ajp.job_id AND dsd.resource_id = ajpn.resource_id
         JOIN runner r ON r.id = dsd.runner_id
-        LEFT JOIN ${schemaName}.resource_ipobject ri ON ri.id = dsd.resource_id
         <where>
             <if test="statusList != null and statusList.size() > 0 ">
                 and dsd.`status` in
@@ -181,7 +179,7 @@
                 </foreach>
             </if>
             <if test="keyword != null and keyword != ''">
-                and (ri.`name` like concat('%',#{keyword},'%') or dsd.`host` like concat('%',#{keyword},'%'))
+                and (dsd.`name` like concat('%',#{keyword},'%') or dsd.`host` like concat('%',#{keyword},'%'))
             </if>
             <if test="isDelete != null">
                 and dsd.`is_delete` = #{isDelete}
