@@ -148,13 +148,15 @@
         dsd.start_time,
         dsd.end_time,
         dsd.sql_file AS sqlFile,
-        dsd.host AS ip,
+        dsd.host,
         dsd.`port`,
         dsd.runner_id AS runnerId,
         dsd.is_delete AS isDelete,
         dsd.start_time AS startTime,
         dsd.end_time AS endTime,
         ajpn.resource_id AS resourceId,
+        r.`host` AS runnerHost,
+        r.`port` AS runnerPort,
         ri.`name` AS nodeName
         <include refid="searchDeploySql"></include>
         ORDER BY dsd.`start_time` DESC
