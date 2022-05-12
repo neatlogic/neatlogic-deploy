@@ -18,67 +18,63 @@
         `md5`,
         `host`,
         `port`,
-        `resource_ip`,
+        `resource_id`,
         `runner_id`,
-        `runner_port`,
-        `is_delete`,
+        `is_delete`
         <choose>
-            <when test="status == 'pending'">
+            <when test="sqlVo.status == 'pending'">
             </when>
-            <when test="status == 'running'">
-                `start_time`,
+            <when test="sqlVo.status == 'running'">
+                ,`start_time`
             </when>
             <otherwise>
-                `end_time`
+                ,`end_time`
             </otherwise>
         </choose>
         )
-        values (#{id},
-        #{systemId},
+        values (#{sqlVo.id},
+        #{sysId},
         #{moduleId},
         #{envId},
         #{version},
-        #{sqlFile},
-        #{status},
-        #{md5},
-        #{host},
-        #{port},
-        #{resourceIp},
+        #{sqlVo.sqlFile},
+        #{sqlVo.status},
+        #{sqlVo.md5},
+        #{sqlVo.host},
+        #{sqlVo.port},
+        #{sqlVo.resourceId},
         #{runnerId},
-        #{runnerPort},
-        #{isDelete},
+        #{sqlVo.isDelete}
         <choose>
-            <when test="status == 'pending'">
+            <when test="sqlVo.status == 'pending'">
             </when>
-            <when test="status == 'running'">
-                now(3),
+            <when test="sqlVo.status == 'running'">
+                ,now(3)
             </when>
             <otherwise>
-                now(3)
+                ,now(3)
             </otherwise>
         </choose>
         )
     </insert>
 
     <insert id="insertDeploySql">
-        insert into deploy_sql(`id`, `job_id`, `sql_id`)
+        insert into deploy_sql_job_phase(`id`, `job_id`, `job_phase_name`,`sql_id`)
         values (#{id},
                 #{jobId},
-                #{sqlId})ON DUPLICATE KEY
-        UPDATE job_id =#{jobId},
-            sql_id =#{sqlId}
+                #{phaseName},
+                #{sqlId})
     </insert>
 
-    <select id="getAutoexecJobIdByDeploySqlDetailVo" resultType="codedriver.framework.deploy.dto.sql.DeploySqlDetailVo"
-            parameterType="codedriver.framework.deploy.dto.sql.DeploySqlDetailVo">
+    <select id="getDeploySqlBySysIdAndModuleIdAndEnvIdAndVersionAndSqlFile" resultType="codedriver.framework.deploy.dto.sql.DeploySqlDetailVo">
         SELECT dsd.id,
                dsd.`md5`,
                dsd.`status`,
                dsd.`sql_file` as sqlFile,
-               ajs.job_id     as jobId
+               dsjp.job_id     as jobId
         FROM deploy_sql_detail dsd
-                 JOIN deploy_sql ajs ON ajs.sql_id = dsd.id
-        WHERE dsd.system_id = #{systemId}
+                 JOIN deploy_sql_job_phase dsjp ON dsjp.sql_id = dsd.id
+        WHERE dsd.system_id = #{sysId}
           AND dsd.module_id = #{moduleId}
           AND dsd.env_id = #{envId}
           AND dsd.version = #{version}
@@ -90,23 +86,29 @@
         SELECT dsd.`id`,
         dsd.`md5`,
         dsd.`status`,
-        dsd.`runner_ip` as runnerIp,
-        dsd.`runner_port` as runnerPort,
+        dsd.`runner_id` as runnerId,
         dsd.`sql_file` as sqlFile,
-        dsd.system_id as systemId,
+        dsd.system_id as sysId,
         dsd.module_id as moduleId,
         dsd.env_id as envId,
-        dsd.version as version
+        dsd.version as version,
+        dsd.resource_id as resourceId,
+        ajpn.name as nodeName
         from
         deploy_sql_detail dsd
+        JOIN deploy_sql_job_phase dsjp ON dsd.id = dsjp.sql_id
+        JOIN autoexec_job_phase ajp ON ajp.job_id = dsjp.job_id AND dsjp.job_phase_name = ajp.name
+        JOIN autoexec_job_phase_node ajpn ON ajpn.job_phase_id = ajp.id AND ajpn.job_id = ajp.job_id AND dsd.resource_id = ajpn.resource_id
         WHERE
         <foreach collection="sqlFileDetailVoList" item="vo" separator="or">
             (
-            dsd.system_id = #{vo.systemId}
+            dsd.system_id = #{vo.sysId}
             AND dsd.module_id = #{vo.moduleId}
             AND dsd.env_id = #{vo.envId}
             AND dsd.version = #{vo.version}
-            AND dsd.sql_file = #{vo.sqlFile}
+            <if test="vo.sqlFile != null and vo.sqlFile != ''">
+                AND dsd.sql_file = #{vo.sqlFile}
+            </if>
             )
             AND dsd.is_delete = 0
         </foreach>
@@ -118,17 +120,19 @@
                dsd.`md5`,
                dsd.`status`,
                dsd.`sql_file`  as sqlFile,
-               dsd.system_id   as systemId,
+               dsd.system_id   as sysId,
                dsd.module_id   as moduleId,
                dsd.env_id      as envId,
                dsd.version     as version,
                dsd.`is_delete` as isDelete
-        FROM deploy_sql ajs
-                 join deploy_sql_detail dsd ON dsd.id = ajs.sql_id
-        WHERE dsd.system_id = #{systemId}
+        FROM deploy_sql_job_phase asjp
+                 join deploy_sql_detail dsd ON dsd.id = asjp.sql_id
+        WHERE dsd.system_id = #{sysId}
           AND dsd.module_id = #{moduleId}
           AND dsd.env_id = #{envId}
           AND dsd.version = #{version}
+          AND asjp.job_phase_name = #{phaseName}
+          AND dsd.is_delete = 0
     </select>
 
     <select id="searchDeploySqlCount" resultType="int">
@@ -146,12 +150,12 @@
         dsd.sql_file AS sqlFile,
         dsd.host AS ip,
         dsd.`port`,
-        dsd.runner_ip AS runnerIp,
-        dsd.runner_port AS runnerPort,
+        dsd.runner_id AS runnerId,
         dsd.is_delete AS isDelete,
         dsd.start_time AS startTime,
         dsd.end_time AS endTime,
-        ri.`name`
+        ajpn.resource_id AS resourceId,
+        ri.`name` AS nodeName
         <include refid="searchDeploySql"></include>
         ORDER BY dsd.`start_time` DESC
         <if test="needPage">
@@ -161,9 +165,11 @@
 
     <sql id="searchDeploySql">
         FROM
-        autoexec_job_phase_node ajpn
-        LEFT JOIN deploy_sql_detail dsd ON ajpn.resource_id = dsd.resource_id
-        LEFT JOIN deploy_sql ds ON dsd.id = ds.sql_id AND ajpn.job_id = ds.job_id
+        deploy_sql_detail dsd
+        JOIN deploy_sql_job_phase dsjp ON dsd.id = dsjp.sql_id
+        JOIN autoexec_job_phase ajp ON ajp.job_id = dsjp.job_id AND dsjp.job_phase_name = ajp.name
+        JOIN autoexec_job_phase_node ajpn ON ajpn.job_phase_id = ajp.id AND ajpn.job_id = ajp.job_id AND dsd.resource_id = ajpn.resource_id
+        JOIN runner r ON r.id = dsd.runner_id
         LEFT JOIN ${schemaName}.resource_ipobject ri ON ri.id = dsd.resource_id
         <where>
             <if test="statusList != null and statusList.size() > 0 ">
