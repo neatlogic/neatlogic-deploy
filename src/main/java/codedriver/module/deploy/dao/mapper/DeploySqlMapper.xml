@@ -153,7 +153,7 @@
         dsd.is_delete AS isDelete,
         dsd.start_time AS startTime,
         dsd.end_time AS endTime,
-        ajpn.resource_id AS resourceId,
+        dsd.resource_id AS resourceId,
         r.`host` AS runnerHost,
         r.`port` AS runnerPort,
         dsd.`node_name` AS nodeName
@@ -168,8 +168,6 @@
         FROM
         deploy_sql_detail dsd
         JOIN deploy_sql_job_phase dsjp ON dsd.id = dsjp.sql_id
-        JOIN autoexec_job_phase ajp ON ajp.job_id = dsjp.job_id AND dsjp.job_phase_name = ajp.name
-        JOIN autoexec_job_phase_node ajpn ON ajpn.job_phase_id = ajp.id AND ajpn.job_id = ajp.job_id AND dsd.resource_id = ajpn.resource_id
         JOIN runner r ON r.id = dsd.runner_id
         <where>
             <if test="statusList != null and statusList.size() > 0 ">
@@ -184,8 +182,8 @@
             <if test="isDelete != null">
                 and dsd.`is_delete` = #{isDelete}
             </if>
-            and ajpn.job_id= #{jobId}
-            and ajpn.job_phase_id= #{jobPhaseId}
+            and dsjp.job_id= #{jobId}
+            and dsjp.job_phase_name= #{jobPhaseName}
         </where>
     </sql>
 
