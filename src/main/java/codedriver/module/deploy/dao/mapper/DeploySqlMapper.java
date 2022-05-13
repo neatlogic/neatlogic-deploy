@@ -3,7 +3,7 @@ package codedriver.module.deploy.dao.mapper;
 import codedriver.framework.autoexec.dto.job.AutoexecJobPhaseNodeVo;
 import codedriver.framework.deploy.crossover.IDeploySqlCrossoverMapper;
 import codedriver.framework.deploy.dto.sql.DeploySqlDetailVo;
-import codedriver.framework.deploy.dto.sql.DeploySqlVo;
+import codedriver.framework.deploy.dto.sql.DeploySqlJobPhaseVo;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
@@ -14,7 +14,7 @@ import java.util.List;
  */
 public interface DeploySqlMapper extends IDeploySqlCrossoverMapper {
 
-    DeploySqlDetailVo getAutoexecJobIdByDeploySqlDetailVo(DeploySqlDetailVo paramDeploySqlVo);
+    DeploySqlDetailVo getDeploySqlBySysIdAndModuleIdAndEnvIdAndVersionAndSqlFile(@Param("sysId") Long sysId, @Param("envId") Long envId, @Param("moduleId") Long moduleId, @Param("version") String version, @Param("sqlFile") String sqlFile);
 
     int searchDeploySqlCount(AutoexecJobPhaseNodeVo jobPhaseNodeVo);
 
@@ -28,7 +28,7 @@ public interface DeploySqlMapper extends IDeploySqlCrossoverMapper {
 
     void updateDeploySqlIsDeleteByIdList(@Param("idList") List<Long> idList);
 
-    void insertDeploySqlDetail(DeploySqlDetailVo paramDeploySqlVo);
+    void insertDeploySqlDetail(@Param("sqlVo") DeploySqlDetailVo paramDeploySqlVo, @Param("sysId") Long sysId, @Param("envId") Long envId, @Param("moduleId") Long moduleId, @Param("version") String version, @Param("runnerId") Long runnerId);
 
-    void insertDeploySql(DeploySqlVo jobId);
+    void insertDeploySql(DeploySqlJobPhaseVo deploySqlVo);
 }
