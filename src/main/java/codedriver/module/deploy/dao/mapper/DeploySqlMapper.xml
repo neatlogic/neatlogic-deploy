@@ -168,7 +168,7 @@
         FROM
         deploy_sql_detail dsd
         JOIN deploy_sql_job_phase dsjp ON dsd.id = dsjp.sql_id
-        JOIN runner r ON r.id = dsd.runner_id
+        LEFT JOIN runner r ON r.id = dsd.runner_id
         <where>
             <if test="statusList != null and statusList.size() > 0 ">
                 and dsd.`status` in
@@ -213,5 +213,21 @@
         <foreach collection="idList" item="id" separator="," open="(" close=")">
             #{id}
         </foreach>
+    </update>
+
+    <update id="resetDeploySqlStatusByJobIdAndPhaseNameList">
+        UPDATE deploy_sql_detail
+        SET `status` = "pending",
+        `start_time` = null,
+        `end_time` = null
+        WHERE
+        id IN (
+        SELECT sql_id
+        FROM deploy_sql_job_phase
+        WHERE job_id = #{jobId}
+        AND job_phase_name IN
+        <foreach collection="jobPhaseNameList" item="name" separator="," open="(" close=")">
+            #{name}
+        </foreach>)
     </update>
 </mapper>
