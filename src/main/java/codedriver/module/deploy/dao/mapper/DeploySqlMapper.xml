@@ -164,6 +164,16 @@
         </if>
     </select>
 
+    <select id="getJobSqlIdListByJobIdAndJobPhaseNameList" resultType="java.lang.Long">
+        SELECT sql_id
+        FROM deploy_sql_job_phase
+        WHERE job_id = #{jobId}
+        AND job_phase_name IN
+        <foreach collection="jobPhaseNameList" item="name" separator="," open="(" close=")">
+            #{name}
+        </foreach>
+    </select>
+
     <sql id="searchDeploySql">
         FROM
         deploy_sql_detail dsd
@@ -213,22 +223,6 @@
         <foreach collection="idList" item="id" separator="," open="(" close=")">
             #{id}
         </foreach>
-    </update>
-
-    <update id="resetDeploySqlStatusByJobIdAndPhaseNameList">
-        UPDATE deploy_sql_detail
-        SET `status` = "pending",
-        `start_time` = null,
-        `end_time` = null
-        WHERE
-        id IN (
-        SELECT sql_id
-        FROM deploy_sql_job_phase
-        WHERE job_id = #{jobId}
-        AND job_phase_name IN
-        <foreach collection="jobPhaseNameList" item="name" separator="," open="(" close=")">
-            #{name}
-        </foreach>)
     </update>
 
     <update id="resetDeploySqlStatusBySqlIdList">
