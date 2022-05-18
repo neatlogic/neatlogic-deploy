@@ -230,4 +230,21 @@
             #{name}
         </foreach>)
     </update>
+
+    <update id="resetDeploySqlStatusByJobIdAndPhaseNameAndSqlFileList">
+        UPDATE deploy_sql_detail
+        SET `status` = "pending",
+        `start_time` = null,
+        `end_time` = null
+        WHERE
+        id IN (
+        SELECT sql_id
+        FROM deploy_sql_job_phase
+        WHERE job_id = #{jobId}
+        AND job_phase_name = #{jobPhaseName}
+        AND sql_file IN
+        <foreach collection="sqlFileList" item="sql" separator="," open="(" close=")">
+            #{sql}
+        </foreach>)
+    </update>
 </mapper>
