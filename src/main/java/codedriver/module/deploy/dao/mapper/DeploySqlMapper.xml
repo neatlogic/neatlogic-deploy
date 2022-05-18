@@ -238,13 +238,15 @@
         `end_time` = null
         WHERE
         id IN (
-        SELECT sql_id
-        FROM deploy_sql_job_phase
+        SELECT id FROM ( SELECT dsd.id
+        FROM deploy_sql_job_phase dsjp
+        JOIN deploy_sql_detail dsd ON dsd.id = dsjp.sql_id
         WHERE job_id = #{jobId}
-        AND job_phase_name = #{jobPhaseName}
-        AND sql_file IN
+        AND dsjp.job_phase_name = #{jobPhaseName}
+        AND dsd.sql_file IN
         <foreach collection="sqlFileList" item="sql" separator="," open="(" close=")">
             #{sql}
-        </foreach>)
+        </foreach>)a
+            )
     </update>
 </mapper>
