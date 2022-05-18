@@ -4,6 +4,7 @@ import codedriver.framework.autoexec.dto.job.AutoexecJobPhaseNodeVo;
 import codedriver.framework.deploy.crossover.IDeploySqlCrossoverMapper;
 import codedriver.framework.deploy.dto.sql.DeploySqlDetailVo;
 import codedriver.framework.deploy.dto.sql.DeploySqlJobPhaseVo;
+import com.alibaba.fastjson.JSONArray;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
@@ -34,5 +35,6 @@ public interface DeploySqlMapper extends IDeploySqlCrossoverMapper {
 
     void resetDeploySqlStatusByJobIdAndPhaseNameList(@Param("jobId") Long jobId, @Param("jobPhaseNameList") List<String> jobPhaseNameList);
 
-    void resetDeploySqlStatusByJobIdAndPhaseNameAndSqlFileList(@Param("jobId") Long jobId, @Param("jobPhaseName") String jobPhaseName, @Param("sqlFileList") List<String> sqlFileList);
+    void resetDeploySqlStatusBySqlIdList(@Param("idList") JSONArray idList);
+
 }
