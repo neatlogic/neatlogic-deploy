@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright(c) 2022 TechSureCo.,Ltd.AllRightsReserved.
+  ~ 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
+  -->
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="codedriver.module.deploy.dao.mapper.DeployAppConfigMapper">
+
+    <resultMap id="resourceCenterMap" type="codedriver.framework.deploy.dto.app.DeployAppConfigResourceVo">
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="abbr_name" property="abbrName"/>
+        <result column="type_id" property="typeId"/>
+        <result column="type_name" property="typeName"/>
+        <result column="type_label" property="typeLabel"/>
+        <result column="inspect_status" property="inspectStatus"/>
+        <result column="inspect_time" property="inspectTime"/>
+        <result column="monitor_status" property="monitorStatus"/>
+        <result column="monitor_time" property="monitorTime"/>
+        <result column="maintenance_window" property="maintenanceWindow"/>
+        <result column="description" property="description"/>
+        <result column="fcu" property="fcu"/>
+        <result column="fcd" property="fcd"/>
+        <result column="lcu" property="lcu"/>
+        <result column="lcd" property="lcd"/>
+        <result column="network_area" property="networkArea"/>
+        <result column="port" property="port"/>
+        <result column="ip" property="ip"/>
+        <result column="state_id" property="stateId"/>
+        <result column="state_name" property="stateName"/>
+        <result column="datacenter_id" property="dataCenterId"/>
+        <result column="datacenter_name" property="dataCenterName"/>
+        <result column="env_id" property="envId"/>
+        <result column="env_name" property="envName"/>
+        <result column="app_module_id" property="appModuleId"/>
+        <result column="app_module_name" property="appModuleName"/>
+        <result column="app_module_abbr_name" property="appModuleAbbrName"/>
+        <result column="app_system_id" property="appSystemId"/>
+        <result column="app_system_name" property="appSystemName"/>
+        <result column="app_system_abbr_name" property="appSystemAbbrName"/>
+        <result column="cluster_id" property="clusterId"/>
+        <result column="cluster_name" property="clusterName"/>
+        <result column="cluster_type_id" property="clusterTypeId"/>
+        <result column="isFavorite" property="isFavorite"/>
+        <collection property="bgList" ofType="codedriver.framework.cmdb.dto.resourcecenter.BgVo">
+            <id column="bg_id" property="bgId"/>
+            <result column="bg_name" property="bgName"/>
+        </collection>
+        <collection property="ownerList" ofType="codedriver.framework.cmdb.dto.resourcecenter.OwnerVo">
+            <id column="user_id" property="userId"/>
+            <result column="user_uuid" property="uuid"/>
+            <result column="user_name" property="userName"/>
+        </collection>
+        <collection property="allIp" ofType="codedriver.framework.cmdb.dto.resourcecenter.IpVo">
+            <id column="allip_id" property="id"/>
+            <result column="allip_ip" property="ip"/>
+            <result column="allip_label" property="label"/>
+        </collection>
+    </resultMap>
+
+    <select id="getAppIdList" parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo"
+            resultType="java.lang.Long">
+        SELECT ra.`id` FROM ${searchVo.schemaName}.`resource_appsystem_appmodule` raa
+        join ${searchVo.schemaName}.`resource_appsystem` ra on raa.resource_id = ra.id
+        left join deploy_app_config_user dacu on ra.id = dacu.app_resource_id and dacu.user_uuid = #{userUuid}
+        <where>
+            <if test="searchVo.keyword != null and searchVo.keyword != ''">
+                ra.`name` LIKE concat('%', #{searchVo.keyword}, '%') or raa.app_module_name LIKE concat('%',
+                #{searchVo.keyword}, '%')
+            </if>
+        </where>
+        GROUP BY ra.id
+        order by if(dacu.user_uuid = #{userUuid},1,0) desc,ra.name
+        limit #{searchVo.startNum}, #{searchVo.pageSize}
+    </select>
+
+    <select id="getAppIdListCount" parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo"
+            resultType="java.lang.Integer">
+        SELECT count(distinct ra.`id`) FROM ${schemaName}.`resource_appsystem_appmodule` raa
+        join ${schemaName}.`resource_appsystem` ra on raa.resource_id = ra.id
+        <where>
+            <if test="keyword != null and keyword != ''">
+                ra.`name` LIKE concat('%', #{keyword}, '%') or raa.app_module_name LIKE concat('%', #{keyword}, '%')
+            </if>
+        </where>
+    </select>
+
+    <select id="getAppListByIdList" resultMap="resourceCenterMap">
+        select ra.id as app_system_id,ra.`name` as app_system_name, if(dacu.user_uuid is null,0,1) as isFavorite
+        from ${schemaName}.`resource_appsystem` ra
+        left join deploy_app_config_user dacu on ra.id = dacu.app_resource_id and dacu.user_uuid = #{userUuid}
+        where ra.id in
+        <foreach collection="idList" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+        order by if(dacu.user_uuid = #{userUuid},1,0) desc,ra.name
+    </select>
+</mapper>
