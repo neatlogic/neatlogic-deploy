@@ -36,4 +36,6 @@ public interface DeploySqlMapper extends IDeploySqlCrossoverMapper {
 
     void resetDeploySqlStatusBySqlIdList(@Param("idList") List<Long> idList);
 
+    List<Long> getJobSqlIdListByJobIdAndJobPhaseName(@Param("jobId") Long jobId, @Param("phaseName") String phaseName);
+
 }
