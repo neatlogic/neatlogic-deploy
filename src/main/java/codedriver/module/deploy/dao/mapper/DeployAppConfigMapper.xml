@@ -96,4 +96,60 @@
         </foreach>
         order by if(dacu.user_uuid = #{userUuid},1,0) desc,ra.name
     </select>
+
+    <select id="getAppConfigAuthorityCount" resultType="java.lang.Integer">
+        select count(distinct app_resource_id,env_resource_id,auth_uuid)
+        from deploy_app_config_authority
+        <include refid="appConfigAuthorityWhere"/>
+    </select>
+    <select id="getAppConfigAuthorityList" resultType="codedriver.framework.deploy.dto.app.DeployAppConfigAuthorityVo">
+        select app_resource_id as appResourceId,env_resource_id as envResourceId,auth_uuid as authUuid
+        from deploy_app_config_authority
+        <include refid="appConfigAuthorityWhere"/>
+        group by app_resource_id,env_resource_id,auth_uuid
+        order by auth_uuid
+        limit #{startNum}, #{pageSize}
+    </select>
+
+    <sql id="appConfigAuthorityWhere">
+        <where>
+            app_resource_id = #{appResourceId}
+            <if test="authUuidList != null and authUuidList.size() > 0">
+                and auth_uuid in
+                <foreach collection="authUuidList" item="authUuid" close=")" separator="," open="(">
+                    #{authUuid}
+                </foreach>
+            </if>
+            <if test="actionList != null and actionList.size() > 0">
+                and `action` in
+                <foreach collection="actionList" item="action" close=")" separator="," open="(">
+                    #{action}
+                </foreach>
+            </if>
+            <if test="envResourceIdList != null and envResourceIdList.size() > 0">
+                and env_resource_id in
+                <foreach collection="envResourceIdList" item="envResourceId" close=")" separator="," open="(">
+                    #{envResourceId}
+                </foreach>
+            </if>
+        </where>
+    </sql>
+    <resultMap id="appConfigAuthorityMap" type="codedriver.framework.deploy.dto.app.DeployAppConfigAuthorityVo">
+        <result column="app_resource_id" property="appResourceId"/>
+        <result column="env_resource_id" property="envResourceId"/>
+        <result column="auth_type" property="authType"/>
+        <result column="auth_uuid" property="authUuid"/>
+        <collection property="actionList" ofType="string">
+            <result column="action"/>
+        </collection>
+    </resultMap>
+    <select id="getAppConfigAuthorityDetailList" resultMap="appConfigAuthorityMap">
+        select app_resource_id,env_resource_id,auth_type,auth_uuid,`action`
+        from deploy_app_config_authority
+        where
+        <foreach collection="appConfigAuthList" item="appConfigAuth" open="(" separator=")or(" close=")">
+            app_resource_id = #{appConfigAuth.appResourceId} and env_resource_id = #{appConfigAuth.envResourceId} and
+            auth_uuid = #{appConfigAuth.authUuid}
+        </foreach>
+    </select>
 </mapper>
