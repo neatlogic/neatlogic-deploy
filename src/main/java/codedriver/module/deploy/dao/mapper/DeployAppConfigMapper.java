@@ -5,6 +5,7 @@ import codedriver.framework.deploy.dto.app.DeployAppConfigAuthorityVo;
 import codedriver.framework.deploy.dto.app.DeployAppConfigResourceVo;
 import org.apache.ibatis.annotations.Param;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -13,7 +14,7 @@ import java.util.List;
  */
 public interface DeployAppConfigMapper {
 
-    List<Long> getAppIdList(@Param("searchVo") ResourceSearchVo searchVo,@Param("userUuid") String userUuid);
+    List<Long> getAppSystemIdList(@Param("searchVo") ResourceSearchVo searchVo, @Param("userUuid") String userUuid);
 
     List<DeployAppConfigResourceVo> getAppListByIdList(@Param("idList") List<Long> idList, @Param("schemaName") String schemaName,@Param("userUuid") String userUuid);
 
@@ -24,4 +25,8 @@ public interface DeployAppConfigMapper {
     List<DeployAppConfigAuthorityVo> getAppConfigAuthorityList(DeployAppConfigAuthorityVo searchVo);
 
     List<DeployAppConfigAuthorityVo> getAppConfigAuthorityDetailList(@Param("appConfigAuthList")List<DeployAppConfigAuthorityVo> appConfigAuthList);
+
+    Integer insertAppConfigAuthority(DeployAppConfigAuthorityVo deployAppConfigAuthorityVo);
+
+    Integer deleteAppConfigAuthorityByAppSystemIdAndEnvIdAndAuthUuidAndLcd(@Param("appSystemId") Long appSystemId, @Param("envId") Long envId, @Param("authUuid") String uuid, @Param("lcd") Date nowTime);
 }

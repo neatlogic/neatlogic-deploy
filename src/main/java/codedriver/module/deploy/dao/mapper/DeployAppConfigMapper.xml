@@ -59,11 +59,11 @@
         </collection>
     </resultMap>
 
-    <select id="getAppIdList" parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo"
+    <select id="getAppSystemIdList" parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo"
             resultType="java.lang.Long">
         SELECT ra.`id` FROM ${searchVo.schemaName}.`resource_appsystem_appmodule` raa
         join ${searchVo.schemaName}.`resource_appsystem` ra on raa.resource_id = ra.id
-        left join deploy_app_config_user dacu on ra.id = dacu.app_resource_id and dacu.user_uuid = #{userUuid}
+        left join deploy_app_config_user dacu on ra.id = dacu.app_system_id and dacu.user_uuid = #{userUuid}
         <where>
             <if test="searchVo.keyword != null and searchVo.keyword != ''">
                 ra.`name` LIKE concat('%', #{searchVo.keyword}, '%') or raa.app_module_name LIKE concat('%',
@@ -89,7 +89,7 @@
     <select id="getAppListByIdList" resultMap="resourceCenterMap">
         select ra.id as app_system_id,ra.`name` as app_system_name, if(dacu.user_uuid is null,0,1) as isFavorite
         from ${schemaName}.`resource_appsystem` ra
-        left join deploy_app_config_user dacu on ra.id = dacu.app_resource_id and dacu.user_uuid = #{userUuid}
+        left join deploy_app_config_user dacu on ra.id = dacu.app_system_id and dacu.user_uuid = #{userUuid}
         where ra.id in
         <foreach collection="idList" item="id" open="(" close=")" separator=",">
             #{id}
@@ -98,22 +98,22 @@
     </select>
 
     <select id="getAppConfigAuthorityCount" resultType="java.lang.Integer">
-        select count(distinct app_resource_id,env_resource_id,auth_uuid)
+        select count(distinct app_system_id,env_id,auth_uuid)
         from deploy_app_config_authority
         <include refid="appConfigAuthorityWhere"/>
     </select>
     <select id="getAppConfigAuthorityList" resultType="codedriver.framework.deploy.dto.app.DeployAppConfigAuthorityVo">
-        select app_resource_id as appResourceId,env_resource_id as envResourceId,auth_uuid as authUuid
+        select app_system_id as appSystemId,env_id as envId,auth_uuid as authUuid
         from deploy_app_config_authority
         <include refid="appConfigAuthorityWhere"/>
-        group by app_resource_id,env_resource_id,auth_uuid
+        group by app_system_id,env_id,auth_uuid
         order by auth_uuid
         limit #{startNum}, #{pageSize}
     </select>
 
     <sql id="appConfigAuthorityWhere">
         <where>
-            app_resource_id = #{appResourceId}
+            app_system_id = #{appSystemId}
             <if test="authUuidList != null and authUuidList.size() > 0">
                 and auth_uuid in
                 <foreach collection="authUuidList" item="authUuid" close=")" separator="," open="(">
@@ -126,17 +126,17 @@
                     #{action}
                 </foreach>
             </if>
-            <if test="envResourceIdList != null and envResourceIdList.size() > 0">
-                and env_resource_id in
-                <foreach collection="envResourceIdList" item="envResourceId" close=")" separator="," open="(">
-                    #{envResourceId}
+            <if test="envIdList != null and envIdList.size() > 0">
+                and env_id in
+                <foreach collection="envIdList" item="envId" close=")" separator="," open="(">
+                    #{envId}
                 </foreach>
             </if>
         </where>
     </sql>
     <resultMap id="appConfigAuthorityMap" type="codedriver.framework.deploy.dto.app.DeployAppConfigAuthorityVo">
-        <result column="app_resource_id" property="appResourceId"/>
-        <result column="env_resource_id" property="envResourceId"/>
+        <result column="app_system_id" property="appSystemId"/>
+        <result column="env_id" property="envId"/>
         <result column="auth_type" property="authType"/>
         <result column="auth_uuid" property="authUuid"/>
         <collection property="actionList" ofType="string">
@@ -144,12 +144,42 @@
         </collection>
     </resultMap>
     <select id="getAppConfigAuthorityDetailList" resultMap="appConfigAuthorityMap">
-        select app_resource_id,env_resource_id,auth_type,auth_uuid,`action`
+        select app_system_id,env_id,auth_type,auth_uuid,`action`
         from deploy_app_config_authority
         where
         <foreach collection="appConfigAuthList" item="appConfigAuth" open="(" separator=")or(" close=")">
-            app_resource_id = #{appConfigAuth.appResourceId} and env_resource_id = #{appConfigAuth.envResourceId} and
+            app_system_id = #{appConfigAuth.appSystemId} and env_id = #{appConfigAuth.envId} and
             auth_uuid = #{appConfigAuth.authUuid}
         </foreach>
     </select>
+
+    <insert id="insertAppConfigAuthority">
+        INSERT INTO `deploy_app_config_authority` (`app_system_id`,
+                                                   `env_id`,
+                                                   `auth_type`,
+                                                   `auth_uuid`,
+                                                   `action`,
+                                                   `lcd`,
+                                                   `lcu`)
+        VALUES (#{appSystemId},
+                #{envId},
+                #{authType},
+                #{authUuid},
+                #{action},
+                #{lcd},
+                #{lcu})
+        ON DUPLICATE KEY UPDATE `lcd` = #{lcd},
+                                `lcu` = #{lcu};
+    </insert>
+
+    <delete id="deleteAppConfigAuthorityByAppSystemIdAndEnvIdAndAuthUuidAndLcd">
+        delete
+        from `deploy_app_config_authority`
+        where `app_system_id` = #{appSystemId}
+        and `env_id` = #{envId}
+        and `auth_uuid` = #{authUuid}
+        <if test="lcd != null">
+            and `lcd` != #{lcd}
+        </if>
+    </delete>
 </mapper>

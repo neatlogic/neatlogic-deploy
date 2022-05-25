@@ -5,8 +5,12 @@
 
 package codedriver.module.deploy.app;
 
+import codedriver.framework.asynchronization.threadlocal.TenantContext;
+import codedriver.framework.cmdb.crossover.IAppSystemMapper;
+import codedriver.framework.cmdb.dto.resourcecenter.entity.AppEnvironmentVo;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.dto.BasePageVo;
+import codedriver.framework.crossover.CrossoverServiceFactory;
 import codedriver.framework.deploy.constvalue.DeployAppConfigAction;
 import codedriver.framework.deploy.dto.app.DeployAppConfigAuthorityVo;
 import codedriver.framework.restful.annotation.*;
@@ -20,10 +24,12 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
- * @author linbq
- * @since 2021/6/16 15:04
+ * @author lvzk
+ * @since 2022/5/25 15:04
  **/
 @Service
 @OperationType(type = OperationTypeEnum.SEARCH)
@@ -54,7 +60,7 @@ public class DeployAppConfigAuthoritySearchApi extends PrivateApiComponentBase {
             put("displayName", "用户");
         }});
         theadList.add(new JSONObject() {{
-            put("name", "env");
+            put("name", "envName");
             put("displayName", "环境");
         }});
         for (DeployAppConfigAction action : DeployAppConfigAction.values()) {
@@ -66,7 +72,7 @@ public class DeployAppConfigAuthoritySearchApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "appResourceId", type = ApiParamType.LONG, isRequired = true, desc = "应用资产id"),
+            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "应用资产id"),
             @Param(name = "authUuidList", type = ApiParamType.JSONARRAY, desc = "用户列表"),
             @Param(name = "actionList", type = ApiParamType.JSONARRAY, desc = "动作列表"),
             @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "当前页"),
@@ -86,11 +92,16 @@ public class DeployAppConfigAuthoritySearchApi extends PrivateApiComponentBase {
         List<JSONObject> bodyList = new ArrayList<>();
         Integer count = deployAppConfigMapper.getAppConfigAuthorityCount(searchVo);
         if (count > 0) {
+            IAppSystemMapper appSystemMapper = CrossoverServiceFactory.getApi(IAppSystemMapper.class);
+            List<AppEnvironmentVo> envList = appSystemMapper.getAppEnvironmentListByAppResourceIdAndModuleResourceIdList(searchVo.getAppSystemId(), null,TenantContext.get().getDataDbName());
+            Map<Long,String> envIdNameMap = envList.stream().collect(Collectors.toMap(AppEnvironmentVo::getEnvId,AppEnvironmentVo::getEnvName));
             List<DeployAppConfigAuthorityVo> appConfigAuthList = deployAppConfigMapper.getAppConfigAuthorityList(searchVo);
             searchVo.setRowNum(count);
             List<DeployAppConfigAuthorityVo> appConfigAuthorityVos = deployAppConfigMapper.getAppConfigAuthorityDetailList(appConfigAuthList);
             for (DeployAppConfigAuthorityVo appConfigAuthorityVo : appConfigAuthorityVos){
                 JSONObject actionAuth = new JSONObject();
+                actionAuth.put("envId",appConfigAuthorityVo.getEnvId());
+                actionAuth.put("envName",envIdNameMap.get(appConfigAuthorityVo.getEnvId()));
                 actionAuth.put("authUuid",appConfigAuthorityVo.getAuthUuid());
                 actionAuth.put("authType",appConfigAuthorityVo.getAuthType());
                 for (DeployAppConfigAction action : DeployAppConfigAction.values()) {

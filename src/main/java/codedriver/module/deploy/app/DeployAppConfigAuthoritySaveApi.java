@@ -6,22 +6,25 @@
 package codedriver.module.deploy.app;
 
 import codedriver.framework.common.constvalue.ApiParamType;
-import codedriver.framework.common.dto.BasePageVo;
 import codedriver.framework.deploy.dto.app.DeployAppConfigAuthorityVo;
+import codedriver.framework.dto.AuthorityVo;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.deploy.dao.mapper.DeployAppConfigMapper;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.Date;
 
 /**
- * @author linbq
- * @since 2021/6/16 15:04
+ * @author lvzk
+ * @since 2022/5/25 15:04
  **/
 @Service
+@Transactional
 @OperationType(type = OperationTypeEnum.UPDATE)
 public class DeployAppConfigAuthoritySaveApi extends PrivateApiComponentBase {
     @Resource
@@ -43,20 +46,34 @@ public class DeployAppConfigAuthoritySaveApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "appResourceId", type = ApiParamType.LONG, isRequired = true, desc = "应用资产id"),
-            @Param(name = "authUuid", type = ApiParamType.STRING, desc = "用户列表"),
-            @Param(name = "authType", type = ApiParamType.STRING, desc = "动作列表"),
-            @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "当前页"),
-            @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "每页数据条目"),
-            @Param(name = "needPage", type = ApiParamType.BOOLEAN, desc = "是否需要分页，默认true")
+            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "应用资产id"),
+            @Param(name = "envId", type = ApiParamType.LONG, isRequired = true, desc = "环境资产id"),
+            @Param(name = "authorityList", type = ApiParamType.JSONARRAY, isRequired = true, desc = "授权列表"),
+            @Param(name = "actionList", type = ApiParamType.JSONARRAY, isRequired = true, desc = "授权操作列表"),
+            @Param(name = "isEdit", type = ApiParamType.INTEGER, isRequired = true, desc = "是否编辑，0：否，1：是"),
     })
     @Output({
-            @Param(explode = BasePageVo.class),
-            @Param(name = "tbodyList", explode = DeployAppConfigAuthorityVo[].class, desc = "应用配置授权列表")
     })
     @Description(desc = "保存应用配置权限")
     @Override
     public Object myDoService(JSONObject paramObj) {
-       return null;
+        DeployAppConfigAuthorityVo deployAppConfigAuthorityVo = paramObj.toJavaObject(DeployAppConfigAuthorityVo.class);
+        Date nowTime = new Date(System.currentTimeMillis());
+        deployAppConfigAuthorityVo.setLcd(nowTime);
+        for(AuthorityVo authorityVo : deployAppConfigAuthorityVo.getAuthorityList()){
+            deployAppConfigAuthorityVo.setAuthUuid(authorityVo.getUuid());
+            deployAppConfigAuthorityVo.setAuthType(authorityVo.getType());
+            for(String action : deployAppConfigAuthorityVo.getActionList()){
+                deployAppConfigAuthorityVo.setAction(action);
+                deployAppConfigMapper.insertAppConfigAuthority(deployAppConfigAuthorityVo);
+            }
+        }
+
+        //如果是编辑，则需要删除多余权限
+        if(deployAppConfigAuthorityVo.getIsEdit() == 1){
+            AuthorityVo authorityVo = deployAppConfigAuthorityVo.getAuthorityList().get(0);
+            deployAppConfigMapper.deleteAppConfigAuthorityByAppSystemIdAndEnvIdAndAuthUuidAndLcd(deployAppConfigAuthorityVo.getAppSystemId(),deployAppConfigAuthorityVo.getEnvId(),authorityVo.getUuid(),nowTime);
+        }
+        return null;
     }
 }

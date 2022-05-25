@@ -66,7 +66,7 @@ public class AppListApi extends PrivateApiComponentBase {
         List<DeployAppConfigResourceVo> resourceVoList = new ArrayList<>();
         Integer count = deployAppConfigMapper.getAppIdListCount(searchVo);
         if (count > 0) {
-            List<Long> appIdList = deployAppConfigMapper.getAppIdList(searchVo, UserContext.get().getUserUuid());
+            List<Long> appIdList = deployAppConfigMapper.getAppSystemIdList(searchVo, UserContext.get().getUserUuid());
             searchVo.setRowNum(count);
             resourceVoList = deployAppConfigMapper.getAppListByIdList(appIdList, TenantContext.get().getDataDbName(), UserContext.get().getUserUuid());
         }
