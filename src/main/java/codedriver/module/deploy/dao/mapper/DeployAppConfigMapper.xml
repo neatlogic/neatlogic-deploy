@@ -171,6 +171,11 @@
         ON DUPLICATE KEY UPDATE `lcd` = #{lcd},
                                 `lcu` = #{lcu};
     </insert>
+    <insert id="insertAppModuleRunnerGroup">
+        INSERT INTO `deploy_app_module_runner_group` (`module_id`, `runner_group_id`)
+        VALUES (#{moduleId}, #{runnerGroupId})
+        ON DUPLICATE KEY UPDATE `runner_group_id` = #{runnerGroupId}
+    </insert>
 
     <delete id="deleteAppConfigAuthorityByAppSystemIdAndEnvIdAndAuthUuidAndLcd">
         delete

@@ -28,5 +28,8 @@ public interface DeployAppConfigMapper {
 
     Integer insertAppConfigAuthority(DeployAppConfigAuthorityVo deployAppConfigAuthorityVo);
 
+    Integer insertAppModuleRunnerGroup(@Param("moduleId") Long moduleId,@Param("runnerGroupId") Long runnerGroupId);
+
     Integer deleteAppConfigAuthorityByAppSystemIdAndEnvIdAndAuthUuidAndLcd(@Param("appSystemId") Long appSystemId, @Param("envId") Long envId, @Param("authUuid") String uuid, @Param("lcd") Date nowTime);
+
 }
