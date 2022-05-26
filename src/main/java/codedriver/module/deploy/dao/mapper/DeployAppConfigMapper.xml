@@ -176,6 +176,14 @@
         VALUES (#{moduleId}, #{runnerGroupId})
         ON DUPLICATE KEY UPDATE `runner_group_id` = #{runnerGroupId}
     </insert>
+    <insert id="insertAppEnvAutoConfig">
+        INSERT INTO deploy_app_env_auto_config (`id`,`env_id`,`instance_id`,`key`,`value`)
+        VALUES
+        <foreach collection="autoConfig.keyValueList" item="keyValue" separator="),(" open="(" close=")">
+            #{keyValue.id},#{autoConfig.envId},#{autoConfig.instanceId},#{keyValue.key},#{keyValue.value}
+        </foreach>
+        ON DUPLICATE KEY UPDATE `key` = VALUES(`key`),`value` = VALUES(`value`);
+    </insert>
 
     <delete id="deleteAppConfigAuthorityByAppSystemIdAndEnvIdAndAuthUuidAndLcd">
         delete

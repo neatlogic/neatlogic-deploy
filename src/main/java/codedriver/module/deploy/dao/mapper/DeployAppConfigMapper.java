@@ -3,6 +3,7 @@ package codedriver.module.deploy.dao.mapper;
 import codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo;
 import codedriver.framework.deploy.dto.app.DeployAppConfigAuthorityVo;
 import codedriver.framework.deploy.dto.app.DeployAppConfigResourceVo;
+import codedriver.framework.deploy.dto.app.DeployAppEnvAutoConfigVo;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.Date;
@@ -29,6 +30,8 @@ public interface DeployAppConfigMapper {
     Integer insertAppConfigAuthority(DeployAppConfigAuthorityVo deployAppConfigAuthorityVo);
 
     Integer insertAppModuleRunnerGroup(@Param("moduleId") Long moduleId,@Param("runnerGroupId") Long runnerGroupId);
+
+    void insertAppEnvAutoConfig(@Param("autoConfig") DeployAppEnvAutoConfigVo appEnvAutoConfigVo);
 
     Integer deleteAppConfigAuthorityByAppSystemIdAndEnvIdAndAuthUuidAndLcd(@Param("appSystemId") Long appSystemId, @Param("envId") Long envId, @Param("authUuid") String uuid, @Param("lcd") Date nowTime);
 
