@@ -15,6 +15,7 @@ import com.alibaba.fastjson.JSONObject;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.Date;
 
 /**
  * @author lvzk
@@ -43,6 +44,8 @@ public class DeployAppEnvAutoConfigSaveApi extends PrivateApiComponentBase {
     }
 
     @Input({
+            @Param(name = "appId", type = ApiParamType.LONG, isRequired = true, desc = "应用 id"),
+            @Param(name = "moduleId", type = ApiParamType.LONG, isRequired = true, desc = "模块 id"),
             @Param(name = "envId", type = ApiParamType.LONG, isRequired = true, desc = "环境 id"),
             @Param(name = "instanceId", type = ApiParamType.LONG, desc = "应用实例 id"),
             @Param(name = "keyValueList", type = ApiParamType.JSONARRAY, isRequired = true, desc = "[{\"id\": xxx,\"key\": xxx,\"value\":xxx}]"),
@@ -53,7 +56,10 @@ public class DeployAppEnvAutoConfigSaveApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject paramObj) {
         DeployAppEnvAutoConfigVo appEnvAutoConfigVo = JSONObject.toJavaObject(paramObj,DeployAppEnvAutoConfigVo.class);
+        Date nowDate = new Date(System.currentTimeMillis());
+        appEnvAutoConfigVo.setLcd(nowDate);
         deployAppConfigMapper.insertAppEnvAutoConfig(appEnvAutoConfigVo);
+        deployAppConfigMapper.deleteAppEnvAutoConfig(appEnvAutoConfigVo);
        return null;
     }
 }

@@ -177,12 +177,12 @@
         ON DUPLICATE KEY UPDATE `runner_group_id` = #{runnerGroupId}
     </insert>
     <insert id="insertAppEnvAutoConfig">
-        INSERT INTO deploy_app_env_auto_config (`id`,`env_id`,`instance_id`,`key`,`value`)
+        INSERT INTO deploy_app_env_auto_config (`id`,`app_id`,`module_id`,`env_id`,`instance_id`,`key`,`value`,`lcd`,'lcu')
         VALUES
         <foreach collection="autoConfig.keyValueList" item="keyValue" separator="),(" open="(" close=")">
-            #{keyValue.id},#{autoConfig.envId},#{autoConfig.instanceId},#{keyValue.key},#{keyValue.value}
+            #{keyValue.id},#{appId},#{moduleId},#{envId},#{instanceId},#{keyValue.key},#{keyValue.value},#{lcd},#{lcu}
         </foreach>
-        ON DUPLICATE KEY UPDATE `key` = VALUES(`key`),`value` = VALUES(`value`);
+        ON DUPLICATE KEY UPDATE `key` = VALUES(`key`),`value` = VALUES(`value`),`lcd`= VALUES(`lcd`),`lcu` = VALUES(`lcu`);
     </insert>
 
     <delete id="deleteAppConfigAuthorityByAppSystemIdAndEnvIdAndAuthUuidAndLcd">
@@ -194,5 +194,18 @@
         <if test="lcd != null">
             and `lcd` != #{lcd}
         </if>
+    </delete>
+    <delete id="deleteAppEnvAutoConfig">
+        delete
+        from deploy_app_env_auto_config
+        <where>
+            `app_id` = #{appId}
+            and `module_id`=#{moduleId}
+            and `env_id` = #{env_id}
+            <if test="instance_id != null">
+                and `instance_id` = #{instanceId}
+            </if>
+            and `lcd` != #{lcd}
+        </where>
     </delete>
 </mapper>
