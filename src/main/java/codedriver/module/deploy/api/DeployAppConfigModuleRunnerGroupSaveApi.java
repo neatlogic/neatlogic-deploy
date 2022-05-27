@@ -21,14 +21,14 @@ import javax.annotation.Resource;
  **/
 @Service
 @OperationType(type = OperationTypeEnum.SEARCH)
-public class DeployAppModuleRunnerGroupSaveApi extends PrivateApiComponentBase {
+public class DeployAppConfigModuleRunnerGroupSaveApi extends PrivateApiComponentBase {
 
     @Resource
     private DeployAppConfigMapper deployAppConfigMapper;
 
     @Override
     public String getToken() {
-        return "deploy/app/module/runner/group/save";
+        return "deploy/app/config/module/runner/group/save";
     }
 
     @Override
@@ -42,6 +42,7 @@ public class DeployAppModuleRunnerGroupSaveApi extends PrivateApiComponentBase {
     }
 
     @Input({
+            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "应用id"),
             @Param(name = "moduleId", type = ApiParamType.LONG, isRequired = true, desc = "模块id"),
             @Param(name = "runnerGroupId", type = ApiParamType.LONG, isRequired = true, desc = "runner组id")
     })
@@ -50,9 +51,10 @@ public class DeployAppModuleRunnerGroupSaveApi extends PrivateApiComponentBase {
     @Description(desc = "保存应用模块runner组接口")
     @Override
     public Object myDoService(JSONObject paramObj) {
+        Long appSystemId = paramObj.getLong("appSystemId");
         Long moduleId = paramObj.getLong("moduleId");
         Long runnerGroupId = paramObj.getLong("runnerGroupId");
-        deployAppConfigMapper.insertAppModuleRunnerGroup(moduleId,runnerGroupId);
+        deployAppConfigMapper.insertAppModuleRunnerGroup(appSystemId,moduleId,runnerGroupId);
        return null;
     }
 }

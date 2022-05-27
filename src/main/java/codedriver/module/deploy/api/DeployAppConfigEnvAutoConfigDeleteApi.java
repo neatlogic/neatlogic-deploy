@@ -15,7 +15,6 @@ import com.alibaba.fastjson.JSONObject;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.Date;
 
 /**
  * @author lvzk
@@ -23,19 +22,19 @@ import java.util.Date;
  **/
 @Service
 @OperationType(type = OperationTypeEnum.SEARCH)
-public class DeployAppEnvAutoConfigSaveApi extends PrivateApiComponentBase {
+public class DeployAppConfigEnvAutoConfigDeleteApi extends PrivateApiComponentBase {
 
     @Resource
     private DeployAppConfigMapper deployAppConfigMapper;
 
     @Override
     public String getToken() {
-        return "deploy/app/env/auto/config/save";
+        return "deploy/app/config/env/auto/config/delete";
     }
 
     @Override
     public String getName() {
-        return "保存应用环境实例autoConfig";
+        return "删除应用环境实例autoConfig";
     }
 
     @Override
@@ -44,22 +43,18 @@ public class DeployAppEnvAutoConfigSaveApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "appId", type = ApiParamType.LONG, isRequired = true, desc = "应用 id"),
+            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "应用 id"),
             @Param(name = "moduleId", type = ApiParamType.LONG, isRequired = true, desc = "模块 id"),
             @Param(name = "envId", type = ApiParamType.LONG, isRequired = true, desc = "环境 id"),
-            @Param(name = "instanceId", type = ApiParamType.LONG, desc = "应用实例 id"),
-            @Param(name = "keyValueList", type = ApiParamType.JSONARRAY, isRequired = true, desc = "[{\"id\": xxx,\"key\": xxx,\"value\":xxx}]"),
+            @Param(name = "instanceId", type = ApiParamType.LONG, isRequired = true, desc = "应用实例 id"),
     })
     @Output({
     })
-    @Description(desc = "保存应用环境实例autoConfig接口")
+    @Description(desc = "删除应用环境实例autoConfig接口")
     @Override
     public Object myDoService(JSONObject paramObj) {
-        DeployAppEnvAutoConfigVo appEnvAutoConfigVo = JSONObject.toJavaObject(paramObj,DeployAppEnvAutoConfigVo.class);
-        Date nowDate = new Date(System.currentTimeMillis());
-        appEnvAutoConfigVo.setLcd(nowDate);
-        deployAppConfigMapper.insertAppEnvAutoConfig(appEnvAutoConfigVo);
+        DeployAppEnvAutoConfigVo appEnvAutoConfigVo = JSONObject.toJavaObject(paramObj, DeployAppEnvAutoConfigVo.class);
         deployAppConfigMapper.deleteAppEnvAutoConfig(appEnvAutoConfigVo);
-       return null;
+        return null;
     }
 }

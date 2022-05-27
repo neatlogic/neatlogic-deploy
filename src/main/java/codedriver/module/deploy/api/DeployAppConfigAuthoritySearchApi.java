@@ -93,7 +93,7 @@ public class DeployAppConfigAuthoritySearchApi extends PrivateApiComponentBase {
         Integer count = deployAppConfigMapper.getAppConfigAuthorityCount(searchVo);
         if (count > 0) {
             IAppSystemMapper appSystemMapper = CrossoverServiceFactory.getApi(IAppSystemMapper.class);
-            List<AppEnvironmentVo> envList = appSystemMapper.getAppEnvironmentListByAppResourceIdAndModuleResourceIdList(searchVo.getAppSystemId(), null,TenantContext.get().getDataDbName());
+            List<AppEnvironmentVo> envList = appSystemMapper.getAppEnvListByAppSystemIdAndModuleIdList(searchVo.getAppSystemId(), null,TenantContext.get().getDataDbName());
             Map<Long,String> envIdNameMap = envList.stream().collect(Collectors.toMap(AppEnvironmentVo::getEnvId,AppEnvironmentVo::getEnvName));
             List<DeployAppConfigAuthorityVo> appConfigAuthList = deployAppConfigMapper.getAppConfigAuthorityList(searchVo);
             searchVo.setRowNum(count);

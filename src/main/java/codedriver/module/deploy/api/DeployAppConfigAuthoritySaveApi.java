@@ -72,7 +72,7 @@ public class DeployAppConfigAuthoritySaveApi extends PrivateApiComponentBase {
         //如果是编辑，则需要删除多余权限
         if(deployAppConfigAuthorityVo.getIsEdit() == 1){
             AuthorityVo authorityVo = deployAppConfigAuthorityVo.getAuthorityList().get(0);
-            deployAppConfigMapper.deleteAppConfigAuthorityByAppSystemIdAndEnvIdAndAuthUuidAndLcd(deployAppConfigAuthorityVo.getAppSystemId(),deployAppConfigAuthorityVo.getEnvId(),authorityVo.getUuid(),nowTime);
+            deployAppConfigMapper.deleteAppConfigAuthorityByAppIdAndEnvIdAndAuthUuidAndLcd(deployAppConfigAuthorityVo.getAppSystemId(),deployAppConfigAuthorityVo.getEnvId(),authorityVo.getUuid(),nowTime);
         }
         return null;
     }

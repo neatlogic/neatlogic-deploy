@@ -29,14 +29,14 @@ import java.util.List;
  **/
 @Service
 @OperationType(type = OperationTypeEnum.SEARCH)
-public class AppListApi extends PrivateApiComponentBase {
+public class DeployAppConfigAppSystemListApi extends PrivateApiComponentBase {
 
     @Resource
     private DeployAppConfigMapper deployAppConfigMapper;
 
     @Override
     public String getToken() {
-        return "deploy/app/list";
+        return "deploy/app/config/appsystem/list";
     }
 
     @Override
@@ -64,11 +64,11 @@ public class AppListApi extends PrivateApiComponentBase {
     public Object myDoService(JSONObject paramObj) {
         ResourceSearchVo searchVo = paramObj.toJavaObject(ResourceSearchVo.class);
         List<DeployAppConfigResourceVo> resourceVoList = new ArrayList<>();
-        Integer count = deployAppConfigMapper.getAppIdListCount(searchVo);
+        Integer count = deployAppConfigMapper.getAppSystemIdListCount(searchVo);
         if (count > 0) {
-            List<Long> appIdList = deployAppConfigMapper.getAppSystemIdList(searchVo, UserContext.get().getUserUuid());
+            List<Long> appSystemIdList = deployAppConfigMapper.getAppSystemIdList(searchVo, UserContext.get().getUserUuid());
             searchVo.setRowNum(count);
-            resourceVoList = deployAppConfigMapper.getAppListByIdList(appIdList, TenantContext.get().getDataDbName(), UserContext.get().getUserUuid());
+            resourceVoList = deployAppConfigMapper.getAppSystemListByIdList(appSystemIdList, TenantContext.get().getDataDbName(), UserContext.get().getUserUuid());
         }
         return TableResultUtil.getResult(resourceVoList, searchVo);
     }

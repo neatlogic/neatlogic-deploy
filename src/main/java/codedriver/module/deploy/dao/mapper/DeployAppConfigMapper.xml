@@ -7,58 +7,6 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="codedriver.module.deploy.dao.mapper.DeployAppConfigMapper">
 
-    <resultMap id="resourceCenterMap" type="codedriver.framework.deploy.dto.app.DeployAppConfigResourceVo">
-        <id column="id" property="id"/>
-        <result column="name" property="name"/>
-        <result column="abbr_name" property="abbrName"/>
-        <result column="type_id" property="typeId"/>
-        <result column="type_name" property="typeName"/>
-        <result column="type_label" property="typeLabel"/>
-        <result column="inspect_status" property="inspectStatus"/>
-        <result column="inspect_time" property="inspectTime"/>
-        <result column="monitor_status" property="monitorStatus"/>
-        <result column="monitor_time" property="monitorTime"/>
-        <result column="maintenance_window" property="maintenanceWindow"/>
-        <result column="description" property="description"/>
-        <result column="fcu" property="fcu"/>
-        <result column="fcd" property="fcd"/>
-        <result column="lcu" property="lcu"/>
-        <result column="lcd" property="lcd"/>
-        <result column="network_area" property="networkArea"/>
-        <result column="port" property="port"/>
-        <result column="ip" property="ip"/>
-        <result column="state_id" property="stateId"/>
-        <result column="state_name" property="stateName"/>
-        <result column="datacenter_id" property="dataCenterId"/>
-        <result column="datacenter_name" property="dataCenterName"/>
-        <result column="env_id" property="envId"/>
-        <result column="env_name" property="envName"/>
-        <result column="app_module_id" property="appModuleId"/>
-        <result column="app_module_name" property="appModuleName"/>
-        <result column="app_module_abbr_name" property="appModuleAbbrName"/>
-        <result column="app_system_id" property="appSystemId"/>
-        <result column="app_system_name" property="appSystemName"/>
-        <result column="app_system_abbr_name" property="appSystemAbbrName"/>
-        <result column="cluster_id" property="clusterId"/>
-        <result column="cluster_name" property="clusterName"/>
-        <result column="cluster_type_id" property="clusterTypeId"/>
-        <result column="isFavorite" property="isFavorite"/>
-        <collection property="bgList" ofType="codedriver.framework.cmdb.dto.resourcecenter.BgVo">
-            <id column="bg_id" property="bgId"/>
-            <result column="bg_name" property="bgName"/>
-        </collection>
-        <collection property="ownerList" ofType="codedriver.framework.cmdb.dto.resourcecenter.OwnerVo">
-            <id column="user_id" property="userId"/>
-            <result column="user_uuid" property="uuid"/>
-            <result column="user_name" property="userName"/>
-        </collection>
-        <collection property="allIp" ofType="codedriver.framework.cmdb.dto.resourcecenter.IpVo">
-            <id column="allip_id" property="id"/>
-            <result column="allip_ip" property="ip"/>
-            <result column="allip_label" property="label"/>
-        </collection>
-    </resultMap>
-
     <select id="getAppSystemIdList" parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo"
             resultType="java.lang.Long">
         SELECT ra.`id` FROM ${searchVo.schemaName}.`resource_appsystem_appmodule` raa
@@ -75,7 +23,7 @@
         limit #{searchVo.startNum}, #{searchVo.pageSize}
     </select>
 
-    <select id="getAppIdListCount" parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo"
+    <select id="getAppSystemIdListCount" parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo"
             resultType="java.lang.Integer">
         SELECT count(distinct ra.`id`) FROM ${schemaName}.`resource_appsystem_appmodule` raa
         join ${schemaName}.`resource_appsystem` ra on raa.resource_id = ra.id
@@ -86,8 +34,8 @@
         </where>
     </select>
 
-    <select id="getAppListByIdList" resultMap="resourceCenterMap">
-        select ra.id as app_system_id,ra.`name` as app_system_name, if(dacu.user_uuid is null,0,1) as isFavorite
+    <select id="getAppSystemListByIdList" resultType="codedriver.framework.deploy.dto.app.DeployAppConfigResourceVo">
+        select ra.id as appSystemId,ra.`name` as appSystemName, if(dacu.user_uuid is null,0,1) as isFavorite
         from ${schemaName}.`resource_appsystem` ra
         left join deploy_app_config_user dacu on ra.id = dacu.app_system_id and dacu.user_uuid = #{userUuid}
         where ra.id in
@@ -172,20 +120,22 @@
                                 `lcu` = #{lcu};
     </insert>
     <insert id="insertAppModuleRunnerGroup">
-        INSERT INTO `deploy_app_module_runner_group` (`module_id`, `runner_group_id`)
-        VALUES (#{moduleId}, #{runnerGroupId})
+        INSERT INTO `deploy_app_module_runner_group` (`app_system_id`, `module_id`, `runner_group_id`)
+        VALUES (#{appSystemId}, #{moduleId}, #{runnerGroupId})
         ON DUPLICATE KEY UPDATE `runner_group_id` = #{runnerGroupId}
     </insert>
     <insert id="insertAppEnvAutoConfig">
-        INSERT INTO deploy_app_env_auto_config (`id`,`app_id`,`module_id`,`env_id`,`instance_id`,`key`,`value`,`lcd`,'lcu')
+        INSERT INTO deploy_app_env_auto_config
+        (`app_system_id`,`module_id`,`env_id`,`instance_id`,`key`,`value`,`lcd`,`lcu`)
         VALUES
-        <foreach collection="autoConfig.keyValueList" item="keyValue" separator="),(" open="(" close=")">
-            #{keyValue.id},#{appId},#{moduleId},#{envId},#{instanceId},#{keyValue.key},#{keyValue.value},#{lcd},#{lcu}
+        <foreach collection="keyValueList" item="keyValue" separator="),(" open="(" close=")">
+            #{appSystemId},#{moduleId},#{envId},#{instanceId},#{keyValue.key},#{keyValue.value},#{lcd},#{lcu}
         </foreach>
-        ON DUPLICATE KEY UPDATE `key` = VALUES(`key`),`value` = VALUES(`value`),`lcd`= VALUES(`lcd`),`lcu` = VALUES(`lcu`);
+        ON DUPLICATE KEY UPDATE `key` = VALUES(`key`),`value` = VALUES(`value`),`lcd`= VALUES(`lcd`),`lcu` =
+        VALUES(`lcu`);
     </insert>
 
-    <delete id="deleteAppConfigAuthorityByAppSystemIdAndEnvIdAndAuthUuidAndLcd">
+    <delete id="deleteAppConfigAuthorityByAppIdAndEnvIdAndAuthUuidAndLcd">
         delete
         from `deploy_app_config_authority`
         where `app_system_id` = #{appSystemId}
@@ -198,14 +148,13 @@
     <delete id="deleteAppEnvAutoConfig">
         delete
         from deploy_app_env_auto_config
-        <where>
-            `app_id` = #{appId}
-            and `module_id`=#{moduleId}
-            and `env_id` = #{env_id}
-            <if test="instance_id != null">
-                and `instance_id` = #{instanceId}
-            </if>
+        where
+        `app_system_id` = #{appSystemId}
+        and `module_id`=#{moduleId}
+        and `env_id` = #{envId}
+        and `instance_id` = #{instanceId}
+        <if test="lcd != null">
             and `lcd` != #{lcd}
-        </where>
+        </if>
     </delete>
 </mapper>

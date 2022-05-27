@@ -17,9 +17,9 @@ public interface DeployAppConfigMapper {
 
     List<Long> getAppSystemIdList(@Param("searchVo") ResourceSearchVo searchVo, @Param("userUuid") String userUuid);
 
-    List<DeployAppConfigResourceVo> getAppListByIdList(@Param("idList") List<Long> idList, @Param("schemaName") String schemaName,@Param("userUuid") String userUuid);
+    List<DeployAppConfigResourceVo> getAppSystemListByIdList(@Param("idList") List<Long> idList, @Param("schemaName") String schemaName, @Param("userUuid") String userUuid);
 
-    Integer getAppIdListCount(ResourceSearchVo searchVo);
+    Integer getAppSystemIdListCount(ResourceSearchVo searchVo);
 
     Integer getAppConfigAuthorityCount(DeployAppConfigAuthorityVo searchVo);
 
@@ -29,11 +29,11 @@ public interface DeployAppConfigMapper {
 
     Integer insertAppConfigAuthority(DeployAppConfigAuthorityVo deployAppConfigAuthorityVo);
 
-    Integer insertAppModuleRunnerGroup(@Param("moduleId") Long moduleId,@Param("runnerGroupId") Long runnerGroupId);
+    Integer insertAppModuleRunnerGroup(@Param("appSystemId")Long appSystemId,@Param("moduleId") Long moduleId,@Param("runnerGroupId") Long runnerGroupId);
 
     void insertAppEnvAutoConfig(DeployAppEnvAutoConfigVo appEnvAutoConfigVo);
 
-    Integer deleteAppConfigAuthorityByAppSystemIdAndEnvIdAndAuthUuidAndLcd(@Param("appSystemId") Long appSystemId, @Param("envId") Long envId, @Param("authUuid") String uuid, @Param("lcd") Date nowTime);
+    Integer deleteAppConfigAuthorityByAppIdAndEnvIdAndAuthUuidAndLcd(@Param("appSystemId") Long appSystemId, @Param("envId") Long envId, @Param("authUuid") String uuid, @Param("lcd") Date nowTime);
 
     Integer deleteAppEnvAutoConfig(DeployAppEnvAutoConfigVo deployAppEnvAutoConfigVo);
 }
