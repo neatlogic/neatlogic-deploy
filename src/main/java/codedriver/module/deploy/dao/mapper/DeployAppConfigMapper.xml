@@ -9,8 +9,8 @@
 
     <select id="getAppSystemIdList" parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo"
             resultType="java.lang.Long">
-        SELECT ra.`id` FROM ${searchVo.schemaName}.`resource_appsystem_appmodule` raa
-        join ${searchVo.schemaName}.`resource_appsystem` ra on raa.resource_id = ra.id
+        SELECT ra.`id` FROM ${searchVo.schemaName}.`resource_appsystem` ra
+        left join  ${searchVo.schemaName}.`resource_appsystem_appmodule` raa on raa.resource_id = ra.id
         left join deploy_app_config_user dacu on ra.id = dacu.app_system_id and dacu.user_uuid = #{userUuid}
         <where>
             <if test="searchVo.keyword != null and searchVo.keyword != ''">
@@ -35,9 +35,10 @@
     </select>
 
     <select id="getAppSystemListByIdList" resultType="codedriver.framework.deploy.dto.app.DeployAppConfigResourceVo">
-        select ra.id as appSystemId,ra.`name` as appSystemName, if(dacu.user_uuid is null,0,1) as isFavorite
+        select ra.id as appSystemId,ra.`name` as appSystemName, if(dacu.user_uuid is null,0,1) as isFavorite, if(dac.is_config is null,0,1) as isConfig
         from ${schemaName}.`resource_appsystem` ra
         left join deploy_app_config_user dacu on ra.id = dacu.app_system_id and dacu.user_uuid = #{userUuid}
+        left join deploy_app_config dac on ra.id = dac.app_system_id
         where ra.id in
         <foreach collection="idList" item="id" open="(" close=")" separator=",">
             #{id}
@@ -134,7 +135,11 @@
         ON DUPLICATE KEY UPDATE `key` = VALUES(`key`),`value` = VALUES(`value`),`lcd`= VALUES(`lcd`),`lcu` =
         VALUES(`lcu`);
     </insert>
-
+    <insert id="insertAppConfig">
+        INSERT INTO `deploy_app_config` (`app_system_id`,`is_config`)
+        VALUES (#{appSystemId}, #{isConfig})
+        ON DUPLICATE KEY UPDATE `is_config` = #{isConfig}
+    </insert>
     <delete id="deleteAppConfigAuthorityByAppIdAndEnvIdAndAuthUuidAndLcd">
         delete
         from `deploy_app_config_authority`

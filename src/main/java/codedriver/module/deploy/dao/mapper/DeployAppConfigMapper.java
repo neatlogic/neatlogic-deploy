@@ -25,13 +25,15 @@ public interface DeployAppConfigMapper {
 
     List<DeployAppConfigAuthorityVo> getAppConfigAuthorityList(DeployAppConfigAuthorityVo searchVo);
 
-    List<DeployAppConfigAuthorityVo> getAppConfigAuthorityDetailList(@Param("appConfigAuthList")List<DeployAppConfigAuthorityVo> appConfigAuthList);
+    List<DeployAppConfigAuthorityVo> getAppConfigAuthorityDetailList(@Param("appConfigAuthList") List<DeployAppConfigAuthorityVo> appConfigAuthList);
 
     Integer insertAppConfigAuthority(DeployAppConfigAuthorityVo deployAppConfigAuthorityVo);
 
-    Integer insertAppModuleRunnerGroup(@Param("appSystemId")Long appSystemId,@Param("moduleId") Long moduleId,@Param("runnerGroupId") Long runnerGroupId);
+    Integer insertAppModuleRunnerGroup(@Param("appSystemId") Long appSystemId, @Param("moduleId") Long moduleId, @Param("runnerGroupId") Long runnerGroupId);
 
-    void insertAppEnvAutoConfig(DeployAppEnvAutoConfigVo appEnvAutoConfigVo);
+    Integer insertAppEnvAutoConfig(DeployAppEnvAutoConfigVo appEnvAutoConfigVo);
+
+    Integer insertAppConfig(@Param("appSystemId") Long appSystemId, @Param("isConfig") Long isConfig);
 
     Integer deleteAppConfigAuthorityByAppIdAndEnvIdAndAuthUuidAndLcd(@Param("appSystemId") Long appSystemId, @Param("envId") Long envId, @Param("authUuid") String uuid, @Param("lcd") Date nowTime);
 
