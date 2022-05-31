@@ -23,17 +23,6 @@
         limit #{searchVo.startNum}, #{searchVo.pageSize}
     </select>
 
-    <select id="getAppSystemIdListCount" parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo"
-            resultType="java.lang.Integer">
-        SELECT count(distinct ra.`id`) FROM ${schemaName}.`resource_appsystem_appmodule` raa
-        join ${schemaName}.`resource_appsystem` ra on raa.resource_id = ra.id
-        <where>
-            <if test="keyword != null and keyword != ''">
-                ra.`name` LIKE concat('%', #{keyword}, '%') or raa.app_module_name LIKE concat('%', #{keyword}, '%')
-            </if>
-        </where>
-    </select>
-
     <select id="getAppSystemListByIdList" resultType="codedriver.framework.deploy.dto.app.DeployAppConfigResourceVo">
         select ra.id as appSystemId,ra.`name` as appSystemName, if(dacu.user_uuid is null,0,1) as isFavorite, if(dac.is_config is null,0,1) as isConfig
         from ${schemaName}.`resource_appsystem` ra

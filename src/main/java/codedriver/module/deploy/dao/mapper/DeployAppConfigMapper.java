@@ -19,8 +19,6 @@ public interface DeployAppConfigMapper {
 
     List<DeployAppConfigResourceVo> getAppSystemListByIdList(@Param("idList") List<Long> idList, @Param("schemaName") String schemaName, @Param("userUuid") String userUuid);
 
-    Integer getAppSystemIdListCount(ResourceSearchVo searchVo);
-
     Integer getAppConfigAuthorityCount(DeployAppConfigAuthorityVo searchVo);
 
     List<DeployAppConfigAuthorityVo> getAppConfigAuthorityList(DeployAppConfigAuthorityVo searchVo);
