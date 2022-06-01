@@ -11,15 +11,20 @@ import codedriver.framework.cmdb.crossover.ICiEntityCrossoverMapper;
 import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
 import codedriver.framework.crossover.CrossoverServiceFactory;
 import codedriver.framework.deploy.constvalue.DeployOperType;
+import codedriver.framework.deploy.crossover.IDeploySqlCrossoverMapper;
 import codedriver.framework.deploy.dto.sql.DeploySqlDetailVo;
 import codedriver.framework.integration.authentication.enums.AuthenticateType;
 import codedriver.framework.util.HttpRequestUtil;
 import codedriver.module.deploy.dao.mapper.DeploySqlMapper;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.alibaba.nacos.common.utils.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.List;
+import java.util.Objects;
 
 /**
  * @author longrf
@@ -75,6 +80,22 @@ public class DeployJobSourceHandler extends AutoexecJobSourceActionHandlerBase {
 
         if (StringUtils.isNotBlank(result)) {
             throw new AutoexecJobRunnerHttpRequestException(url + ":" + result);
+        }
+    }
+
+    @Override
+    public void resetSqlStatus(JSONObject paramObj, AutoexecJobVo jobVo) {
+        JSONArray sqlIdArray = paramObj.getJSONArray("sqlIdList");
+        IDeploySqlCrossoverMapper iDeploySqlCrossoverMapper = CrossoverServiceFactory.getApi(IDeploySqlCrossoverMapper.class);
+        if (!Objects.isNull(paramObj.getInteger("isAll")) && paramObj.getInteger("isAll") == 1) {
+            //重置phase的所有sql文件状态
+            List<Long> resetSqlIdList = iDeploySqlCrossoverMapper.getJobSqlIdListByJobIdAndJobPhaseName(paramObj.getLong("jobId"), paramObj.getString("phaseName"));
+            if (CollectionUtils.isNotEmpty(resetSqlIdList)) {
+                iDeploySqlCrossoverMapper.resetDeploySqlStatusBySqlIdList(resetSqlIdList);
+            }
+        } else if (CollectionUtils.isNotEmpty(sqlIdArray)) {
+            //批量重置sql文件状态
+            iDeploySqlCrossoverMapper.resetDeploySqlStatusBySqlIdList(sqlIdArray.toJavaList(Long.class));
         }
     }
 }
