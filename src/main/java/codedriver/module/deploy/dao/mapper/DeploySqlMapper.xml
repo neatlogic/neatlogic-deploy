@@ -181,6 +181,24 @@
           AND job_phase_name = #{phaseName}
     </select>
 
+    <select id="getJobSqlDetailById" resultType="codedriver.framework.deploy.dto.sql.DeploySqlDetailVo">
+        SELECT dsd.`id`,
+               dsd.`md5`,
+               dsd.`status`,
+               dsd.`runner_id` as runnerId,
+               dsd.`sql_file` as sqlFile,
+               dsd.system_id as sysId,
+               dsd.module_id as moduleId,
+               dsd.env_id as envId,
+               dsd.version as version,
+               dsd.resource_id as resourceId,
+               dsd.node_name as nodeName
+        from
+            deploy_sql_detail dsd
+        WHERE
+            dsd.`id` = #{id}
+    </select>
+
     <sql id="searchDeploySql">
         FROM
         deploy_sql_detail dsd
