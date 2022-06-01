@@ -67,6 +67,8 @@ public class DeployJobSourceHandler extends AutoexecJobSourceActionHandlerBase {
         ICiEntityCrossoverMapper ciEntityCrossoverMapper = CrossoverServiceFactory.getApi(ICiEntityCrossoverMapper.class);
         CiEntityVo envCiEntity = ciEntityCrossoverMapper.getCiEntityBaseInfoById(sqlDetailVo.getEnvId());
         paramObj.put("envName", envCiEntity.getName());
+        UserContext.get().getResponse().setContentType("text/plain");
+        UserContext.get().getResponse().setHeader("Content-Disposition", " attachment; filename=\"" + paramObj.getString("sqlName") + "\"");
         AutoexecJobPhaseNodeVo nodeVo = jobVo.getCurrentNode();
         String url = nodeVo.getRunnerUrl() + "/api/binary/deploy/sql/file/download";
         String result = HttpRequestUtil.download(url, "POST", UserContext.get().getResponse().getOutputStream()).setPayload(paramObj.toJSONString()).setAuthType(AuthenticateType.BUILDIN).sendRequest().getError();
