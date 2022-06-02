@@ -1,7 +1,11 @@
 package codedriver.module.deploy.api.version;
 
+import codedriver.framework.cmdb.crossover.ICiEntityCrossoverMapper;
+import codedriver.framework.cmdb.exception.cientity.CiEntityNotFoundException;
 import codedriver.framework.common.constvalue.ApiParamType;
+import codedriver.framework.crossover.CrossoverServiceFactory;
 import codedriver.framework.deploy.dto.version.DeployVersionVo;
+import codedriver.framework.deploy.exception.DeployVersionIsRepeatException;
 import codedriver.framework.dto.FieldValidResultVo;
 import codedriver.framework.restful.annotation.Description;
 import codedriver.framework.restful.annotation.Input;
@@ -24,9 +28,7 @@ public class DeployVersionSaveApi extends PrivateApiComponentBase {
 
     @Resource
     DeployVersionMapper deployVersionMapper;
-//
-//    @Resource
-//    CiEntityMapper ciEntityMapper;
+
 
     @Override
     public String getName() {
@@ -54,27 +56,28 @@ public class DeployVersionSaveApi extends PrivateApiComponentBase {
     @Description(desc = "保存发布版本")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
-//        DeployVersionVo paramVersion = paramObj.toJavaObject(DeployVersionVo.class);
-//        if (deployVersionMapper.checkDeployVersionIsRepeat(paramVersion)) {
-//            throw new DeployVersionIsRepeat(paramVersion);
-//        }
-//        if (ciEntityMapper.getCiEntityBaseInfoById(paramVersion.getAppId()) == null) {
-//            throw new CiEntityNotFoundException(paramVersion.getAppId());
-//        }
-//        if (ciEntityMapper.getCiEntityBaseInfoById(paramVersion.getAppModuleId()) == null) {
-//            throw new CiEntityNotFoundException(paramVersion.getAppModuleId());
-//        }
-//
-//        deployVersionMapper.insertDeployVersion(paramVersion);
+        DeployVersionVo version = paramObj.toJavaObject(DeployVersionVo.class);
+        if (deployVersionMapper.checkDeployVersionIsRepeat(version)>0) {
+            throw new DeployVersionIsRepeatException(version.getVersion());
+        }
+        ICiEntityCrossoverMapper iCiEntityCrossoverMapper =  CrossoverServiceFactory.getApi(ICiEntityCrossoverMapper.class);
+        if (iCiEntityCrossoverMapper.getCiEntityBaseInfoById(version.getAppId()) == null) {
+            throw new CiEntityNotFoundException(version.getAppId());
+        }
+        if (iCiEntityCrossoverMapper.getCiEntityBaseInfoById(version.getAppModuleId()) == null) {
+            throw new CiEntityNotFoundException(version.getAppModuleId());
+        }
+
+        deployVersionMapper.insertDeployVersion(version);
         return null;
     }
 
     public IValid name() {
         return value -> {
             DeployVersionVo vo = JSON.toJavaObject(value, DeployVersionVo.class);
-//            if (deployVersionMapper.checkDeployVersionIsRepeat(vo) > 0) {
-//                return new FieldValidResultVo(new DeployVersionIsRepeat(vo));
-//            }
+            if (deployVersionMapper.checkDeployVersionIsRepeat(vo) > 0) {
+                return new FieldValidResultVo(new DeployVersionIsRepeatException(vo.getVersion()));
+            }
             return new FieldValidResultVo();
         };
     }

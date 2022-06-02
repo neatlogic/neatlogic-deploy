@@ -7,4 +7,20 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="codedriver.module.deploy.dao.mapper.DeployVersionMapper">
 
+    <insert id="insertDeployVersion">
+        insert into deploy_version
+        (id, version, status, app_id, app_name, app_module_id, app_module_name, is_unlock, fcu, fcd, lcu, lcd)
+        values (#{id}, #{version}, #{status}, #{appId}, #{appName}, #{appModuleId}, #{appModuleName}, #{isUnLock},
+                #{fcu}, now(3), #{lcd}, now(3))
+    </insert>
+
+
+    <select id="checkDeployVersionIsRepeat" resultType="int">
+        select count(id)
+        from deploy_version
+        where id != #{id}
+          and app_id = #{appId}
+          and module_id = #{moduleId}
+          and version = #{version}
+    </select>
 </mapper>
