@@ -13,6 +13,8 @@ import com.alibaba.fastjson.JSONObject;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author longrf
@@ -52,6 +54,12 @@ public class DeployVersionSearchApi extends PrivateApiComponentBase {
     @Description(desc = "查询发布版本列表")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
+        DeployVersionVo paramVersionVo = paramObj.toJavaObject(DeployVersionVo.class);
+        List<DeployVersionVo> returnList = new ArrayList<>();
+        int count = deployVersionMapper.searchDeployVersionCount(paramVersionVo);
+        if (count > 0) {
+           returnList = deployVersionMapper.searchDeployVersion(paramVersionVo);
+        }
         return null;
     }
 }
