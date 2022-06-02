@@ -242,7 +242,7 @@
     <update id="updateDeploySqlIsDeleteByIdList">
         UPDATE deploy_sql_detail
         SET
-        `is_delete` = 1
+        `is_delete` = #{isDelete}
         WHERE id in
         <foreach collection="idList" item="id" separator="," open="(" close=")">
             #{id}
@@ -260,13 +260,4 @@
         </foreach>
     </update>
 
-    <update id="reEnabledDeploySqlDetailById">
-        UPDATE deploy_sql_detail
-        SET
-        `is_delete` = 0
-        WHERE id in
-        <foreach collection="idList" item="id" separator="," open="(" close=")">
-            #{id}
-        </foreach>
-    </update>
 </mapper>
