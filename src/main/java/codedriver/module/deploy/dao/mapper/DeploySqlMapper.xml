@@ -242,11 +242,7 @@
     <update id="updateDeploySqlIsDeleteByIdList">
         UPDATE deploy_sql_detail
         SET
-        `is_delete` = 1,
-        md5 = null,
-        status = null,
-        start_time = null,
-        end_time = null
+        `is_delete` = 1
         WHERE id in
         <foreach collection="idList" item="id" separator="," open="(" close=")">
             #{id}
