@@ -131,7 +131,6 @@
           AND dsd.env_id = #{envId}
           AND dsd.version = #{version}
           AND asjp.job_phase_name = #{phaseName}
-          AND dsd.is_delete = 0
     </select>
 
     <select id="searchDeploySqlCount" resultType="int">
@@ -243,7 +242,11 @@
     <update id="updateDeploySqlIsDeleteByIdList">
         UPDATE deploy_sql_detail
         SET
-        `is_delete` = 1
+        `is_delete` = 1,
+        md5 = null,
+        status = null,
+        start_time = null,
+        end_time = null
         WHERE id in
         <foreach collection="idList" item="id" separator="," open="(" close=")">
             #{id}
