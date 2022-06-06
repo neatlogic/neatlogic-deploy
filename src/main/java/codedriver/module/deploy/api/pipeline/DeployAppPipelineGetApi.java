@@ -32,7 +32,7 @@ public class DeployAppPipelineGetApi extends PrivateApiComponentBase {
 
     @Override
     public String getToken() {
-        return "deploy/app/pipeline/save";
+        return "deploy/app/pipeline/get";
     }
 
     @Override
