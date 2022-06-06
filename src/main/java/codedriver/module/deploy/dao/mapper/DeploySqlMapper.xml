@@ -20,6 +20,7 @@
         `port`,
         `resource_id`,
         `node_name`,
+        `user_name`,
         `runner_id`,
         `is_delete`
         <choose>
@@ -45,6 +46,7 @@
         #{sqlVo.port},
         #{sqlVo.resourceId},
         #{sqlVo.nodeName},
+        #{sqlVo.userName},
         #{runnerId},
         #{sqlVo.isDelete}
         <choose>
@@ -95,7 +97,8 @@
         dsd.env_id as envId,
         dsd.version as version,
         dsd.resource_id as resourceId,
-        dsd.node_name as nodeName
+        dsd.node_name as nodeName,
+        dsd.user_name as userName,
         from
         deploy_sql_detail dsd
         WHERE
