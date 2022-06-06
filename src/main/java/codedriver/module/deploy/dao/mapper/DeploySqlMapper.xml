@@ -20,6 +20,7 @@
         `port`,
         `resource_id`,
         `node_name`,
+        `user_name`,
         `runner_id`,
         `is_delete`
         <choose>
@@ -45,6 +46,7 @@
         #{sqlVo.port},
         #{sqlVo.resourceId},
         #{sqlVo.nodeName},
+        #{sqlVo.userName},
         #{runnerId},
         #{sqlVo.isDelete}
         <choose>
