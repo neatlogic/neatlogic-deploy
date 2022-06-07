@@ -1,10 +1,7 @@
 package codedriver.module.deploy.dao.mapper;
 
 import codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo;
-import codedriver.framework.deploy.dto.app.DeployAppConfigAuthorityVo;
-import codedriver.framework.deploy.dto.app.DeployAppConfigResourceVo;
-import codedriver.framework.deploy.dto.app.DeployAppConfigVo;
-import codedriver.framework.deploy.dto.app.DeployAppEnvAutoConfigVo;
+import codedriver.framework.deploy.dto.app.*;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.Date;
@@ -26,7 +23,9 @@ public interface DeployAppConfigMapper {
 
     List<DeployAppConfigAuthorityVo> getAppConfigAuthorityDetailList(@Param("appConfigAuthList") List<DeployAppConfigAuthorityVo> appConfigAuthList);
 
-    DeployAppConfigVo getAppConfigByAppSystemId(Long appSystemId);
+    String getAppConfigByAppSystemId(Long appSystemId);
+
+    String getAppConfigOverrideConfig(DeployAppConfigOverrideVo deployAppConfigOverrideVo);
 
     Integer insertAppConfigAuthority(DeployAppConfigAuthorityVo deployAppConfigAuthorityVo);
 
@@ -35,6 +34,8 @@ public interface DeployAppConfigMapper {
     Integer insertAppEnvAutoConfig(DeployAppEnvAutoConfigVo appEnvAutoConfigVo);
 
     Integer insertAppConfig(DeployAppConfigVo deployAppConfigVo);
+
+    Integer insertAppConfigOverride(DeployAppConfigOverrideVo deployAppOverrideOverrideVo);
 
     Integer updateAppConfig(DeployAppConfigVo deployAppConfigVo);
 

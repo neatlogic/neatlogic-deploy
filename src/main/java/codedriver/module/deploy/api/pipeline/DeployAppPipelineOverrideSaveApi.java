@@ -6,7 +6,7 @@
 package codedriver.module.deploy.api.pipeline;
 
 import codedriver.framework.common.constvalue.ApiParamType;
-import codedriver.framework.deploy.dto.app.DeployAppConfigVo;
+import codedriver.framework.deploy.dto.app.DeployAppConfigOverrideVo;
 import codedriver.framework.restful.annotation.Description;
 import codedriver.framework.restful.annotation.Input;
 import codedriver.framework.restful.annotation.OperationType;
@@ -18,23 +18,22 @@ import com.alibaba.fastjson.JSONObject;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.Objects;
 
 @Service
-@OperationType(type = OperationTypeEnum.OPERATE)
-public class DeployAppPipelineSaveApi extends PrivateApiComponentBase {
+@OperationType(type = OperationTypeEnum.SEARCH)
+public class DeployAppPipelineOverrideSaveApi extends PrivateApiComponentBase {
 
     @Resource
     private DeployAppConfigMapper deployAppConfigMapper;
 
     @Override
-    public String getName() {
-        return "保存应用流水线";
+    public String getToken() {
+        return "deploy/app/pipeline/override/save";
     }
 
     @Override
-    public String getToken() {
-        return "deploy/app/pipeline/save";
+    public String getName() {
+        return "保存模块或环境对流水线的修改";
     }
 
     @Override
@@ -44,21 +43,15 @@ public class DeployAppPipelineSaveApi extends PrivateApiComponentBase {
 
     @Input({
             @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "应用系统ID"),
-            @Param(name = "config", type = ApiParamType.JSONOBJECT, isRequired = true, desc = "流水线配置信息")
+            @Param(name = "moduleId", type = ApiParamType.LONG, isRequired = true, desc = "模块ID"),
+            @Param(name = "envId", type = ApiParamType.LONG, desc = "环境ID"),
+            @Param(name = "config", type = ApiParamType.JSONOBJECT, isRequired = true, desc = "流水线部分配置信息")
     })
-    @Description(desc = "保存应用流水线")
+    @Description(desc = "保存模块或环境对流水线的修改")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
-        DeployAppConfigVo deployAppConfigVo = paramObj.toJavaObject(DeployAppConfigVo.class);
-        String configStr = deployAppConfigMapper.getAppConfigByAppSystemId(deployAppConfigVo.getAppSystemId());
-        if (configStr != null) {
-            if (Objects.equals(configStr, deployAppConfigVo.getConfigStr())) {
-                return null;
-            }
-            deployAppConfigMapper.updateAppConfig(deployAppConfigVo);
-        } else {
-            deployAppConfigMapper.insertAppConfig(deployAppConfigVo);
-        }
+        DeployAppConfigOverrideVo deployAppOverrideOverrideVo = paramObj.toJavaObject(DeployAppConfigOverrideVo.class);
+        deployAppConfigMapper.insertAppConfigOverride(deployAppOverrideOverrideVo);
         return null;
     }
 }
