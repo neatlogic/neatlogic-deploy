@@ -91,6 +91,15 @@
         </foreach>
     </select>
 
+    <select id="getAppConfigByAppSystemId" parameterType="java.lang.Long" resultType="codedriver.framework.deploy.dto.app.DeployAppConfigVo">
+        SELECT
+            `app_system_id` AS appSystemId,
+            `is_config` AS isConfig,
+            `config` AS configStr
+        FROM `deploy_app_config`
+        WHERE `app_system_id` = #{value}
+    </select>
+
     <insert id="insertAppConfigAuthority">
         INSERT INTO `deploy_app_config_authority` (`app_system_id`,
                                                    `env_id`,
@@ -124,11 +133,17 @@
         ON DUPLICATE KEY UPDATE `key` = VALUES(`key`),`value` = VALUES(`value`),`lcd`= VALUES(`lcd`),`lcu` =
         VALUES(`lcu`);
     </insert>
-    <insert id="insertAppConfig">
-        INSERT INTO `deploy_app_config` (`app_system_id`,`is_config`)
-        VALUES (#{appSystemId}, #{isConfig})
-        ON DUPLICATE KEY UPDATE `is_config` = #{isConfig}
+    <insert id="insertAppConfig" parameterType="codedriver.framework.deploy.dto.app.DeployAppConfigVo">
+        INSERT INTO `deploy_app_config` (`app_system_id`,`is_config`, `config`)
+        VALUES (#{appSystemId}, #{isConfig}, #{configStr})
     </insert>
+
+    <update id="updateAppConfig" parameterType="codedriver.framework.deploy.dto.app.DeployAppConfigVo">
+        UPDATE `deploy_app_config`
+        SET `config` = #{configStr}
+        WHERE `app_system_id` = #{appSystemId}
+    </update>
+
     <delete id="deleteAppConfigAuthorityByAppIdAndEnvIdAndAuthUuidAndLcd">
         delete
         from `deploy_app_config_authority`
