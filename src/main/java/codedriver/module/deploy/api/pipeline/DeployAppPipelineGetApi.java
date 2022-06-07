@@ -60,15 +60,15 @@ public class DeployAppPipelineGetApi extends PrivateApiComponentBase {
     @Description(desc = "获取应用流水线")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
-        DeployAppConfigOverrideVo deployAppOverrideOverrideVo = paramObj.toJavaObject(DeployAppConfigOverrideVo.class);
-        Long appSystemId = deployAppOverrideOverrideVo.getAppSystemId();
+        DeployAppConfigOverrideVo deployAppConfigOverrideVo = paramObj.toJavaObject(DeployAppConfigOverrideVo.class);
+        Long appSystemId = deployAppConfigOverrideVo.getAppSystemId();
         String configStr = deployAppConfigMapper.getAppConfigByAppSystemId(appSystemId);
         if (StringUtils.isBlank(configStr)) {
             throw new DeployAppConfigNotFoundException(appSystemId);
         }
         DeployPipelineConfigVo config = JSONObject.parseObject(configStr, DeployPipelineConfigVo.class);
-        Long moduleId = deployAppOverrideOverrideVo.getModuleId();
-        Long envId = deployAppOverrideOverrideVo.getEnvId();
+        Long moduleId = deployAppConfigOverrideVo.getModuleId();
+        Long envId = deployAppConfigOverrideVo.getEnvId();
         if (moduleId == 0L && envId == 0L) {
             return config;
         }
@@ -76,10 +76,6 @@ public class DeployAppPipelineGetApi extends PrivateApiComponentBase {
             throw new ParamNotExistsException("moduleId");
         }
 
-        DeployAppConfigOverrideVo deployAppConfigOverrideVo = new DeployAppConfigOverrideVo();
-        deployAppConfigOverrideVo.setAppSystemId(appSystemId);
-        deployAppConfigOverrideVo.setModuleId(moduleId);
-        deployAppConfigOverrideVo.setEnvId(envId);
         String overrideConfigStr = deployAppConfigMapper.getAppConfigOverrideConfig(deployAppConfigOverrideVo);
         if (StringUtils.isNotBlank(overrideConfigStr)) {
             DeployPipelineConfigVo overrideConfig = JSONObject.parseObject(overrideConfigStr, DeployPipelineConfigVo.class);
