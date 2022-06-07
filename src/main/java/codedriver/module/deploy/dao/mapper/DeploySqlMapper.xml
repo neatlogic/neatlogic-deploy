@@ -98,7 +98,7 @@
         dsd.version as version,
         dsd.resource_id as resourceId,
         dsd.node_name as nodeName,
-        dsd.user_name as userName,
+        dsd.user_name as username
         from
         deploy_sql_detail dsd
         WHERE
