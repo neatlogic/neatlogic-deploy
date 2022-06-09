@@ -21,7 +21,7 @@ import javax.annotation.Resource;
 import java.util.Objects;
 
 @Service
-@OperationType(type = OperationTypeEnum.SEARCH)
+@OperationType(type = OperationTypeEnum.OPERATE)
 public class DeployAppPipelineSaveApi extends PrivateApiComponentBase {
 
     @Resource
@@ -50,14 +50,13 @@ public class DeployAppPipelineSaveApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         DeployAppConfigVo deployAppConfigVo = paramObj.toJavaObject(DeployAppConfigVo.class);
-        DeployAppConfigVo oldDeployAppConfigVo = deployAppConfigMapper.getAppConfigByAppSystemId(deployAppConfigVo.getAppSystemId());
-        if (oldDeployAppConfigVo != null) {
-            if (Objects.equals(oldDeployAppConfigVo.getConfigStr(), deployAppConfigVo.getConfigStr())) {
+        String configStr = deployAppConfigMapper.getAppConfigByAppSystemId(deployAppConfigVo.getAppSystemId());
+        if (configStr != null) {
+            if (Objects.equals(configStr, deployAppConfigVo.getConfigStr())) {
                 return null;
             }
             deployAppConfigMapper.updateAppConfig(deployAppConfigVo);
         } else {
-            deployAppConfigVo.setIsConfig(1);
             deployAppConfigMapper.insertAppConfig(deployAppConfigVo);
         }
         return null;

@@ -24,7 +24,7 @@
     </select>
 
     <select id="getAppSystemListByIdList" resultType="codedriver.framework.deploy.dto.app.DeployAppConfigResourceVo">
-        select ra.id as appSystemId,ra.`name` as appSystemName, if(dacu.user_uuid is null,0,1) as isFavorite, if(dac.is_config is null,0,1) as isConfig
+        select ra.id as appSystemId,ra.`name` as appSystemName, if(dacu.user_uuid is null,0,1) as isFavorite, if(dac.config is null,0,1) as isConfig
         from ${schemaName}.`resource_appsystem` ra
         left join deploy_app_config_user dacu on ra.id = dacu.app_system_id and dacu.user_uuid = #{userUuid}
         left join deploy_app_config dac on ra.id = dac.app_system_id
@@ -91,13 +91,20 @@
         </foreach>
     </select>
 
-    <select id="getAppConfigByAppSystemId" parameterType="java.lang.Long" resultType="codedriver.framework.deploy.dto.app.DeployAppConfigVo">
+    <select id="getAppConfigByAppSystemId" parameterType="java.lang.Long" resultType="java.lang.String">
         SELECT
-            `app_system_id` AS appSystemId,
-            `is_config` AS isConfig,
-            `config` AS configStr
+            `config`
         FROM `deploy_app_config`
         WHERE `app_system_id` = #{value}
+    </select>
+
+    <select id="getAppConfigOverrideConfig" parameterType="codedriver.framework.deploy.dto.app.DeployAppConfigOverrideVo" resultType="java.lang.String">
+        SELECT
+            `config`
+        FROM `deploy_app_config_override`
+        WHERE `app_system_id` = #{appSystemId}
+        and `module_id` = #{moduleId}
+        and `env_id` = #{envId}
     </select>
 
     <insert id="insertAppConfigAuthority">
@@ -134,8 +141,25 @@
         VALUES(`lcu`);
     </insert>
     <insert id="insertAppConfig" parameterType="codedriver.framework.deploy.dto.app.DeployAppConfigVo">
-        INSERT INTO `deploy_app_config` (`app_system_id`,`is_config`, `config`)
-        VALUES (#{appSystemId}, #{isConfig}, #{configStr})
+        INSERT INTO `deploy_app_config` (`app_system_id`, `config`)
+        VALUES (#{appSystemId}, #{configStr})
+    </insert>
+
+    <insert id="insertAppConfigOverride" parameterType="codedriver.framework.deploy.dto.app.DeployAppConfigOverrideVo">
+        INSERT INTO `deploy_app_config_override` (
+            `app_system_id`,
+            `module_id`,
+            `env_id`,
+            `config`
+        )
+        VALUES
+        (
+            #{appSystemId},
+            #{moduleId},
+            #{envId},
+            #{configStr}
+        )
+        ON DUPLICATE KEY UPDATE `config` = #{configStr}
     </insert>
 
     <update id="updateAppConfig" parameterType="codedriver.framework.deploy.dto.app.DeployAppConfigVo">
