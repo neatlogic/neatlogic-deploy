@@ -50,7 +50,8 @@ public class DeployAppPipelineServiceImpl implements DeployAppPipelineService {
         //查询应用层配置信息
         String configStr = deployAppConfigMapper.getAppConfigByAppSystemId(appSystemId);
         if (StringUtils.isBlank(configStr)) {
-            throw new DeployAppConfigNotFoundException(appSystemId);
+//            throw new DeployAppConfigNotFoundException(appSystemId);
+            configStr = "{}";
         }
         DeployPipelineConfigVo config = JSONObject.parseObject(configStr, DeployPipelineConfigVo.class);
         overrideProfileParamSetSource(config.getOverrideProfileList(), "应用");
@@ -141,6 +142,7 @@ public class DeployAppPipelineServiceImpl implements DeployAppPipelineService {
                 List<DeployProfileVo> deployProfileList = getDeployProfileList(profileList);
                 List<DeployProfileVo> overrideProfileList = config.getOverrideProfileList();
                 finalOverrideProfile(deployProfileList, overrideProfileList);
+                config.setOverrideProfileList(deployProfileList);
             }
         }
         return config;
