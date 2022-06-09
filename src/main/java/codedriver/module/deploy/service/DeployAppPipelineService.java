@@ -12,7 +12,18 @@ import java.util.List;
 
 public interface DeployAppPipelineService {
 
+    /**
+     * 查询应用、模块、环境的流水线配置信息
+     * @param deployAppConfigOverrideVo
+     * @return
+     */
     DeployPipelineConfigVo getDeployPipelineConfigVo(DeployAppConfigOverrideVo deployAppConfigOverrideVo);
 
+    /**
+     * 查询应用、模块、环境的流水线配置信息
+     * @param deployAppConfigOverrideVo
+     * @param profileIdList
+     * @return
+     */
     DeployPipelineConfigVo getDeployPipelineConfigVo(DeployAppConfigOverrideVo deployAppConfigOverrideVo, List<Long> profileIdList);
 }

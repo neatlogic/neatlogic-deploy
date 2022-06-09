@@ -28,11 +28,22 @@ public class DeployAppPipelineServiceImpl implements DeployAppPipelineService {
     @Resource
     private DeployAppConfigMapper deployAppConfigMapper;
 
+    /**
+     * 查询应用、模块、环境的流水线配置信息
+     * @param deployAppConfigOverrideVo
+     * @return
+     */
     @Override
     public DeployPipelineConfigVo getDeployPipelineConfigVo(DeployAppConfigOverrideVo deployAppConfigOverrideVo) {
         return getDeployPipelineConfigVo(deployAppConfigOverrideVo, null);
     }
 
+    /**
+     * 查询应用、模块、环境的流水线配置信息
+     * @param deployAppConfigOverrideVo
+     * @param profileIdList
+     * @return
+     */
     @Override
     public DeployPipelineConfigVo getDeployPipelineConfigVo(DeployAppConfigOverrideVo deployAppConfigOverrideVo, List<Long> profileIdList) {
         Long appSystemId = deployAppConfigOverrideVo.getAppSystemId();
@@ -119,8 +130,6 @@ public class DeployAppPipelineServiceImpl implements DeployAppPipelineService {
             }
         }
 
-
-//        String targetLevel = envId == 0L ? "模块" : "环境";
         overrideProfileParamSetInherit(config.getOverrideProfileList(), targetLevel);
         if (CollectionUtils.isEmpty(profileIdList)) {
             profileIdList = new ArrayList<>(getProfileIdSet(config));
@@ -137,7 +146,7 @@ public class DeployAppPipelineServiceImpl implements DeployAppPipelineService {
         return config;
     }
     /**
-     *
+     * 覆盖阶段列表配置信息
      * @param appSystemCombopPhaseList 应用层阶段列表数据
      */
     private void overridePhase(List<DeployPipelinePhaseVo> appSystemCombopPhaseList) {
@@ -145,7 +154,7 @@ public class DeployAppPipelineServiceImpl implements DeployAppPipelineService {
     }
 
     /**
-     *
+     * 覆盖阶段列表配置信息
      * @param appSystemCombopPhaseList 应用层阶段列表数据
      * @param overrideCombopPhaseList 模块层或环境层阶段列表数据
      */
@@ -153,7 +162,7 @@ public class DeployAppPipelineServiceImpl implements DeployAppPipelineService {
         overridePhase(appSystemCombopPhaseList, overrideCombopPhaseList, null);
     }
     /**
-     *
+     * 覆盖阶段列表配置信息
      * @param appSystemCombopPhaseList 应用层阶段列表数据
      * @param overrideCombopPhaseList 模块层或环境层阶段列表数据
      * @param inheritName
@@ -196,9 +205,9 @@ public class DeployAppPipelineServiceImpl implements DeployAppPipelineService {
     }
 
     /**
-     *
-     * @param appSystemCombopGroupList
-     * @param overrideCombopGroupList
+     * 覆盖阶段组列表配置信息
+     * @param appSystemCombopGroupList 应用层阶段组列表数据
+     * @param overrideCombopGroupList 模块层或环境层阶段组列表数据
      */
     private void overridePhaseGroup(List<AutoexecCombopGroupVo> appSystemCombopGroupList, List<AutoexecCombopGroupVo> overrideCombopGroupList ) {
         if (CollectionUtils.isNotEmpty(appSystemCombopGroupList) && CollectionUtils.isNotEmpty(overrideCombopGroupList)) {
@@ -213,6 +222,11 @@ public class DeployAppPipelineServiceImpl implements DeployAppPipelineService {
         }
     }
 
+    /**
+     * 覆盖预置参数集列表数据
+     * @param appSystemDeployProfileList 应用层预置参数集列表数据
+     * @param overrideDeployProfileList 模块层或环境层预置参数集列表数据
+     */
     private void overrideProfile(List<DeployProfileVo> appSystemDeployProfileList, List<DeployProfileVo> overrideDeployProfileList) {
         if ( CollectionUtils.isEmpty(overrideDeployProfileList)) {
             return;
@@ -238,6 +252,11 @@ public class DeployAppPipelineServiceImpl implements DeployAppPipelineService {
         }
     }
 
+    /**
+     * 覆盖预置参数集列表数据
+     * @param appSystemDeployProfileParamList 应用层预置参数集列表数据
+     * @param overrideDeployProfileParamList 模块层或环境层预置参数集列表数据
+     */
     private void overrideProfileParam(List<DeployProfileParamVo> appSystemDeployProfileParamList, List<DeployProfileParamVo> overrideDeployProfileParamList) {
         if (CollectionUtils.isEmpty(overrideDeployProfileParamList)) {
             return;
@@ -254,7 +273,6 @@ public class DeployAppPipelineServiceImpl implements DeployAppPipelineService {
                     if (overrideDeployProfileParam.getInherit() == 1) {
                         continue;
                     }
-//                    appSystemDeployProfileParam.setInherit(overrideDeployProfileParam.getInherit());
                     appSystemDeployProfileParam.setSource(overrideDeployProfileParam.getSource());
                     appSystemDeployProfileParam.setDefaultValue(overrideDeployProfileParam.getDefaultValue());
                     break;
@@ -266,6 +284,11 @@ public class DeployAppPipelineServiceImpl implements DeployAppPipelineService {
         }
     }
 
+    /**
+     * 设置预置参数的inherit字段值
+     * @param overrideDeployProfileList 预置参数集列表数据
+     * @param targetLevel 目标层级
+     */
     private void overrideProfileParamSetInherit(List<DeployProfileVo> overrideDeployProfileList, String targetLevel) {
         if ( CollectionUtils.isEmpty(overrideDeployProfileList)) {
             return;
@@ -285,6 +308,11 @@ public class DeployAppPipelineServiceImpl implements DeployAppPipelineService {
         }
     }
 
+    /**
+     * 设置预置参数的source字段值
+     * @param overrideDeployProfileList 预置参数集列表数据
+     * @param source 来源名
+     */
     private void overrideProfileParamSetSource(List<DeployProfileVo> overrideDeployProfileList, String source) {
         if ( CollectionUtils.isEmpty(overrideDeployProfileList)) {
             return;
@@ -301,6 +329,12 @@ public class DeployAppPipelineServiceImpl implements DeployAppPipelineService {
             }
         }
     }
+
+    /**
+     * 获取流水线的阶段列表中引用预置参数集列表的profileId列表
+     * @param config
+     * @return
+     */
     private Set<Long> getProfileIdSet(DeployPipelineConfigVo config) {
         Set<Long> profileIdSet = new HashSet<>();
         List<DeployPipelinePhaseVo> combopPhaseList = config.getCombopPhaseList();
@@ -329,6 +363,12 @@ public class DeployAppPipelineServiceImpl implements DeployAppPipelineService {
         }
         return profileIdSet;
     }
+
+    /**
+     * 将AutoexecProfileVo列表转化成DeployProfileVo列表
+     * @param profileList
+     * @return
+     */
     private List<DeployProfileVo> getDeployProfileList(List<AutoexecProfileVo> profileList) {
         List<DeployProfileVo> deployProfileList = new ArrayList<>();
         for (AutoexecProfileVo autoexecProfileVo : profileList) {
@@ -355,6 +395,11 @@ public class DeployAppPipelineServiceImpl implements DeployAppPipelineService {
         return deployProfileList;
     }
 
+    /**
+     * 最终覆盖预置参数集列表数据
+     * @param deployProfileList 原始的预置参数集列表
+     * @param overrideDeployProfileList 流水线修改后的预置参数集列表
+     */
     private void finalOverrideProfile(List<DeployProfileVo> deployProfileList, List<DeployProfileVo> overrideDeployProfileList) {
         if ( CollectionUtils.isEmpty(overrideDeployProfileList)) {
             return;
@@ -371,6 +416,11 @@ public class DeployAppPipelineServiceImpl implements DeployAppPipelineService {
         }
     }
 
+    /**
+     * 最终覆盖预置参数集列表数据
+     * @param deployProfileParamList 原始的预置参数集列表
+     * @param overrideDeployProfileParamList 流水线修改后的预置参数集列表
+     */
     private void finalOverrideProfileParam(List<DeployProfileParamVo> deployProfileParamList, List<DeployProfileParamVo> overrideDeployProfileParamList) {
         if (CollectionUtils.isEmpty(overrideDeployProfileParamList)) {
             return;
