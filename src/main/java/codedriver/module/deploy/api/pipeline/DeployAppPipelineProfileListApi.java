@@ -5,12 +5,10 @@
 
 package codedriver.module.deploy.api.pipeline;
 
-import codedriver.framework.autoexec.crossover.IAutoexecProfileCrossoverService;
 import codedriver.framework.autoexec.dto.combop.*;
 import codedriver.framework.autoexec.dto.profile.AutoexecProfileParamVo;
 import codedriver.framework.autoexec.dto.profile.AutoexecProfileVo;
 import codedriver.framework.common.constvalue.ApiParamType;
-import codedriver.framework.crossover.CrossoverServiceFactory;
 import codedriver.framework.deploy.dto.app.*;
 import codedriver.framework.exception.type.ParamNotExistsException;
 import codedriver.framework.restful.annotation.*;
@@ -66,53 +64,67 @@ public class DeployAppPipelineProfileListApi extends PrivateApiComponentBase {
         if (moduleId == 0L && envId != 0L) {
             throw new ParamNotExistsException("moduleId");
         }
-        DeployPipelineConfigVo config = deployAppPipelineService.getDeployPipelineConfigVo(deployAppConfigOverrideVo);
-        Set<Long> profileIdSet = new HashSet<>();
         JSONArray defaultValue = paramObj.getJSONArray("defaultValue");
         if (CollectionUtils.isNotEmpty(defaultValue)) {
             List<Long> profileIdList = defaultValue.toJavaList(Long.class);
-            profileIdSet.addAll(profileIdList);
+            DeployPipelineConfigVo config = deployAppPipelineService.getDeployPipelineConfigVo(deployAppConfigOverrideVo, profileIdList);
+            return config.getOverrideProfileList();
         } else {
-            List<DeployPipelinePhaseVo> combopPhaseList = config.getCombopPhaseList();
-            if (CollectionUtils.isEmpty(combopPhaseList)) {
-                return new ArrayList<>();
-            }
-            for (AutoexecCombopPhaseVo combopPhaseVo : combopPhaseList) {
-                AutoexecCombopPhaseConfigVo phaseConfigVo = combopPhaseVo.getConfig();
-                if (phaseConfigVo == null) {
-                    continue;
-                }
-                List<AutoexecCombopPhaseOperationVo> combopPhaseOperationList = phaseConfigVo.getPhaseOperationList();
-                if (CollectionUtils.isEmpty(combopPhaseOperationList)) {
-                    continue;
-                }
-                for (AutoexecCombopPhaseOperationVo combopPhaseOperationVo : combopPhaseOperationList) {
-                    AutoexecCombopPhaseOperationConfigVo operationConfigVo = combopPhaseOperationVo.getConfig();
-                    if (operationConfigVo == null) {
-                        continue;
-                    }
-                    Long profileId = operationConfigVo.getProfileId();
-                    if (profileId != null) {
-                        profileIdSet.add(profileId);
-                    }
-                }
-            }
+            DeployPipelineConfigVo config = deployAppPipelineService.getDeployPipelineConfigVo(deployAppConfigOverrideVo);
+            return config.getOverrideProfileList();
         }
 
-        if (CollectionUtils.isEmpty(profileIdSet)) {
-            return new ArrayList<>();
-        }
-        IAutoexecProfileCrossoverService autoexecProfileCrossoverService = CrossoverServiceFactory.getApi(IAutoexecProfileCrossoverService.class);
-        List<AutoexecProfileVo> profileList = autoexecProfileCrossoverService.getProfileVoListByIdList(new ArrayList<>(profileIdSet));
-        if (CollectionUtils.isEmpty(profileList)) {
-            return new ArrayList<>();
-        }
-        List<DeployProfileVo> deployProfileList = getDeployProfileList(profileList);
-        List<DeployProfileVo> overrideProfileList = config.getOverrideProfileList();
-        overrideProfile(deployProfileList, overrideProfileList);
-        return deployProfileList;
+//        Set<Long> profileIdSet = new HashSet<>();
+//        JSONArray defaultValue = paramObj.getJSONArray("defaultValue");
+//        if (CollectionUtils.isNotEmpty(defaultValue)) {
+//            List<Long> profileIdList = defaultValue.toJavaList(Long.class);
+//            profileIdSet.addAll(profileIdList);
+//        } else {
+//            profileIdSet = getProfileIdSet(config);
+//        }
+//
+//        if (CollectionUtils.isEmpty(profileIdSet)) {
+//            return new ArrayList<>();
+//        }
+//        IAutoexecProfileCrossoverService autoexecProfileCrossoverService = CrossoverServiceFactory.getApi(IAutoexecProfileCrossoverService.class);
+//        List<AutoexecProfileVo> profileList = autoexecProfileCrossoverService.getProfileVoListByIdList(new ArrayList<>(profileIdSet));
+//        if (CollectionUtils.isEmpty(profileList)) {
+//            return new ArrayList<>();
+//        }
+//        List<DeployProfileVo> deployProfileList = getDeployProfileList(profileList);
+//        List<DeployProfileVo> overrideProfileList = config.getOverrideProfileList();
+//        finalOverrideProfile(deployProfileList, overrideProfileList);
+//        return deployProfileList;
     }
 
+    private Set<Long> getProfileIdSet(DeployPipelineConfigVo config) {
+        Set<Long> profileIdSet = new HashSet<>();
+        List<DeployPipelinePhaseVo> combopPhaseList = config.getCombopPhaseList();
+        if (CollectionUtils.isEmpty(combopPhaseList)) {
+            return profileIdSet;
+        }
+        for (AutoexecCombopPhaseVo combopPhaseVo : combopPhaseList) {
+            AutoexecCombopPhaseConfigVo phaseConfigVo = combopPhaseVo.getConfig();
+            if (phaseConfigVo == null) {
+                continue;
+            }
+            List<AutoexecCombopPhaseOperationVo> combopPhaseOperationList = phaseConfigVo.getPhaseOperationList();
+            if (CollectionUtils.isEmpty(combopPhaseOperationList)) {
+                continue;
+            }
+            for (AutoexecCombopPhaseOperationVo combopPhaseOperationVo : combopPhaseOperationList) {
+                AutoexecCombopPhaseOperationConfigVo operationConfigVo = combopPhaseOperationVo.getConfig();
+                if (operationConfigVo == null) {
+                    continue;
+                }
+                Long profileId = operationConfigVo.getProfileId();
+                if (profileId != null) {
+                    profileIdSet.add(profileId);
+                }
+            }
+        }
+        return profileIdSet;
+    }
     private List<DeployProfileVo> getDeployProfileList(List<AutoexecProfileVo> profileList) {
         List<DeployProfileVo> deployProfileList = new ArrayList<>();
         for (AutoexecProfileVo autoexecProfileVo : profileList) {
@@ -123,11 +135,11 @@ public class DeployAppPipelineProfileListApi extends PrivateApiComponentBase {
             if (CollectionUtils.isNotEmpty(profileParamList)) {
                 List<DeployProfileParamVo> deployProfileParamList = new ArrayList<>();
                 for (AutoexecProfileParamVo autoexecProfileParamVo : profileParamList) {
-                    DeployProfileParamVo deployProfileParamVo = new DeployProfileParamVo();
-                    deployProfileParamVo.setKey(autoexecProfileParamVo.getKey());
-                    deployProfileParamVo.setValue(autoexecProfileParamVo.getDefaultValue());
-                    deployProfileParamVo.setDescription(autoexecProfileParamVo.getDescription());
-                    deployProfileParamVo.setType(autoexecProfileParamVo.getType());
+                    DeployProfileParamVo deployProfileParamVo = new DeployProfileParamVo(autoexecProfileParamVo);
+//                    deployProfileParamVo.setKey(autoexecProfileParamVo.getKey());
+//                    deployProfileParamVo.setDefaultValue(autoexecProfileParamVo.getDefaultValue());
+//                    deployProfileParamVo.setDescription(autoexecProfileParamVo.getDescription());
+//                    deployProfileParamVo.setType(autoexecProfileParamVo.getType());
                     deployProfileParamVo.setInherit(1);
                     deployProfileParamVo.setSource("预置参数集");
                     deployProfileParamList.add(deployProfileParamVo);
@@ -139,7 +151,7 @@ public class DeployAppPipelineProfileListApi extends PrivateApiComponentBase {
         return deployProfileList;
     }
 
-    private void overrideProfile(List<DeployProfileVo> deployProfileList, List<DeployProfileVo> overrideDeployProfileList) {
+    private void finalOverrideProfile(List<DeployProfileVo> deployProfileList, List<DeployProfileVo> overrideDeployProfileList) {
         if ( CollectionUtils.isEmpty(overrideDeployProfileList)) {
             return;
         }
@@ -148,14 +160,14 @@ public class DeployAppPipelineProfileListApi extends PrivateApiComponentBase {
                 if (Objects.equals(deployProfile.getProfileId(), overrideDeployProfile.getProfileId())) {
                     List<DeployProfileParamVo> deployProfileParamList = deployProfile.getParamList();
                     List<DeployProfileParamVo> overrideDeployProfileParamList = overrideDeployProfile.getParamList();
-                    overrideProfileParam(deployProfileParamList, overrideDeployProfileParamList);
+                    finalOverrideProfileParam(deployProfileParamList, overrideDeployProfileParamList);
                     break;
                 }
             }
         }
     }
 
-    private void overrideProfileParam(List<DeployProfileParamVo> deployProfileParamList, List<DeployProfileParamVo> overrideDeployProfileParamList) {
+    private void finalOverrideProfileParam(List<DeployProfileParamVo> deployProfileParamList, List<DeployProfileParamVo> overrideDeployProfileParamList) {
         if (CollectionUtils.isEmpty(overrideDeployProfileParamList)) {
             return;
         }
@@ -167,7 +179,7 @@ public class DeployAppPipelineProfileListApi extends PrivateApiComponentBase {
                 if (Objects.equals(deployProfileParam.getKey(), overrideDeployProfileParam.getKey())) {
                     deployProfileParam.setInherit(overrideDeployProfileParam.getInherit());
                     deployProfileParam.setSource(overrideDeployProfileParam.getSource());
-                    deployProfileParam.setValue(overrideDeployProfileParam.getValue());
+                    deployProfileParam.setDefaultValue(overrideDeployProfileParam.getDefaultValue());
                     break;
                 }
             }

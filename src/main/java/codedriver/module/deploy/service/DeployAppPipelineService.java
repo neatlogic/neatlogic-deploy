@@ -8,7 +8,11 @@ package codedriver.module.deploy.service;
 import codedriver.framework.deploy.dto.app.DeployAppConfigOverrideVo;
 import codedriver.framework.deploy.dto.app.DeployPipelineConfigVo;
 
+import java.util.List;
+
 public interface DeployAppPipelineService {
 
     DeployPipelineConfigVo getDeployPipelineConfigVo(DeployAppConfigOverrideVo deployAppConfigOverrideVo);
+
+    DeployPipelineConfigVo getDeployPipelineConfigVo(DeployAppConfigOverrideVo deployAppConfigOverrideVo, List<Long> profileIdList);
 }
