@@ -380,10 +380,6 @@ public class DeployAppPipelineServiceImpl implements DeployAppPipelineService {
                 List<DeployProfileParamVo> deployProfileParamList = new ArrayList<>();
                 for (AutoexecProfileParamVo autoexecProfileParamVo : profileParamList) {
                     DeployProfileParamVo deployProfileParamVo = new DeployProfileParamVo(autoexecProfileParamVo);
-//                    deployProfileParamVo.setKey(autoexecProfileParamVo.getKey());
-//                    deployProfileParamVo.setDefaultValue(autoexecProfileParamVo.getDefaultValue());
-//                    deployProfileParamVo.setDescription(autoexecProfileParamVo.getDescription());
-//                    deployProfileParamVo.setType(autoexecProfileParamVo.getType());
                     deployProfileParamVo.setInherit(1);
                     deployProfileParamVo.setSource("预置参数集");
                     deployProfileParamList.add(deployProfileParamVo);

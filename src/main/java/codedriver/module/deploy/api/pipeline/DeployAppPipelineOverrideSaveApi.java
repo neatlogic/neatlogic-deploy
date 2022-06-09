@@ -59,30 +59,6 @@ public class DeployAppPipelineOverrideSaveApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         DeployAppConfigOverrideVo deployAppConfigOverrideVo = paramObj.toJavaObject(DeployAppConfigOverrideVo.class);
-//        Long appSystemId = deployAppConfigOverrideVo.getAppSystemId();
-//        String appSystemConfigStr = deployAppConfigMapper.getAppConfigByAppSystemId(deployAppConfigOverrideVo.getAppSystemId());
-//        if (StringUtils.isNotBlank(appSystemConfigStr)) {
-//            throw new DeployAppConfigNotFoundException(appSystemId);
-//        }
-//        DeployPipelineConfigVo appSystemConfig = JSONObject.parseObject(appSystemConfigStr, DeployPipelineConfigVo.class);
-//        Long envId = deployAppConfigOverrideVo.getEnvId();
-//        if (envId != 0L) {
-//
-//        }
-//        DeployPipelineConfigVo newConfig = new DeployPipelineConfigVo();
-//        DeployPipelineConfigVo config = deployAppConfigOverrideVo.getConfig();
-//
-//        List<DeployPipelinePhaseVo> deployPipelinePhaseList = config.getCombopPhaseList();
-//        if (CollectionUtils.isNotEmpty(deployPipelinePhaseList)) {
-//            for (DeployPipelinePhaseVo deployPipelinePhaseVo : deployPipelinePhaseList) {
-//                String inherit = deployPipelinePhaseVo.getInherit();
-//
-//            }
-//        }
-//        List<AutoexecCombopGroupVo> combopGroupList = config.getCombopGroupList();
-//        List<AutoexecProfileVo> overrideProfileList = config.getOverrideProfileList();
-//
-//        deployAppConfigOverrideVo.setConfig(newConfig);
         deployAppConfigMapper.insertAppConfigOverride(deployAppConfigOverrideVo);
         return null;
     }
