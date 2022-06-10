@@ -214,6 +214,13 @@ public class DeployAppPipelineProfileParamOverrideListApi extends PrivateApiComp
         return resultObj;
     }
 
+    /**
+     * 从流水线配置信息中找出某预置参数数据
+     * @param config 流水线配置信息
+     * @param profileId 预置参数集ID
+     * @param key 参数key
+     * @return
+     */
     public DeployProfileParamVo findDeployProfileParamByProfileIdAndKey(DeployPipelineConfigVo config, Long profileId, String key) {
         List<DeployProfileVo> overrideProfileList = config.getOverrideProfileList();
         if (CollectionUtils.isEmpty(overrideProfileList)) {
