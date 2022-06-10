@@ -107,6 +107,16 @@
         and `env_id` = #{envId}
     </select>
 
+    <select id="getAppConfigOverrideListByAppSystemId" parameterType="java.lang.Long" resultType="codedriver.framework.deploy.dto.app.DeployAppConfigOverrideVo">
+        SELECT
+            `app_system_id` AS appSystemId,
+            `module_id` AS moduleId,
+            `env_id` AS envId,
+            `config` AS configStr
+        FROM `deploy_app_config_override`
+        WHERE `app_system_id` = #{value}
+    </select>
+
     <insert id="insertAppConfigAuthority">
         INSERT INTO `deploy_app_config_authority` (`app_system_id`,
                                                    `env_id`,
