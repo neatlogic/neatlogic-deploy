@@ -27,6 +27,8 @@ public interface DeployAppConfigMapper {
 
     String getAppConfigOverrideConfig(DeployAppConfigOverrideVo deployAppConfigOverrideVo);
 
+    List<DeployAppConfigOverrideVo> getAppConfigOverrideListByAppSystemId(Long appSystemId);
+
     Integer insertAppConfigAuthority(DeployAppConfigAuthorityVo deployAppConfigAuthorityVo);
 
     Integer insertAppModuleRunnerGroup(@Param("appSystemId") Long appSystemId, @Param("moduleId") Long moduleId, @Param("runnerGroupId") Long runnerGroupId);
