@@ -11,10 +11,12 @@ import codedriver.framework.exception.type.ParamNotExistsException;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
+import codedriver.module.deploy.dao.mapper.DeployAppConfigMapper;
 import codedriver.module.deploy.service.DeployAppPipelineService;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -26,6 +28,9 @@ public class DeployAppPipelineProfileListApi extends PrivateApiComponentBase {
 
     @Resource
     private DeployAppPipelineService deployAppPipelineService;
+
+    @Resource
+    private DeployAppConfigMapper deployAppConfigMapper;
 
     @Override
     public String getName() {
@@ -54,20 +59,59 @@ public class DeployAppPipelineProfileListApi extends PrivateApiComponentBase {
     @Description(desc = "获取应用流水线预置参数集列表")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
-        DeployAppConfigOverrideVo deployAppConfigOverrideVo = paramObj.toJavaObject(DeployAppConfigOverrideVo.class);
-        Long moduleId = deployAppConfigOverrideVo.getModuleId();
-        Long envId = deployAppConfigOverrideVo.getEnvId();
-        // 如果是访问环境层配置信息，moduleId不能为空
-        if (moduleId == 0L && envId != 0L) {
+        DeployAppConfigVo deployAppConfigVo = paramObj.toJavaObject(DeployAppConfigVo.class);
+        String targetLevel = null;
+        DeployPipelineConfigVo appConfig = null;
+        DeployPipelineConfigVo moduleOverrideConfig = null;
+        DeployPipelineConfigVo envOverrideConfig = null;
+        Long appSystemId = deployAppConfigVo.getAppSystemId();
+        Long moduleId = deployAppConfigVo.getModuleId();
+        Long envId = deployAppConfigVo.getEnvId();
+        String overrideConfigStr = deployAppConfigMapper.getAppConfig(deployAppConfigVo);
+        if (moduleId == 0L && envId == 0L) {
+            targetLevel = "应用";
+            //查询应用层流水线配置信息
+            if (StringUtils.isBlank(overrideConfigStr)) {
+                overrideConfigStr = "{}";
+            }
+            appConfig = JSONObject.parseObject(overrideConfigStr, DeployPipelineConfigVo.class);
+        } else if (moduleId == 0L && envId != 0L) {
+            // 如果是访问环境层配置信息，moduleId不能为空
             throw new ParamNotExistsException("moduleId");
+        } else if (moduleId != 0L && envId == 0L) {
+            targetLevel = "模块";
+            //查询应用层配置信息
+            String configStr = deployAppConfigMapper.getAppConfig(new DeployAppConfigVo(appSystemId));
+            if (StringUtils.isBlank(configStr)) {
+                configStr = "{}";
+            }
+            appConfig = JSONObject.parseObject(configStr, DeployPipelineConfigVo.class);
+            if (StringUtils.isNotBlank(overrideConfigStr)) {
+                moduleOverrideConfig = JSONObject.parseObject(overrideConfigStr, DeployPipelineConfigVo.class);
+            }
+        } else {
+            targetLevel = "环境";
+            //查询应用层配置信息
+            String configStr = deployAppConfigMapper.getAppConfig(new DeployAppConfigVo(appSystemId));
+            if (StringUtils.isBlank(configStr)) {
+                configStr = "{}";
+            }
+            appConfig = JSONObject.parseObject(configStr, DeployPipelineConfigVo.class);
+            String moduleOverrideConfigStr = deployAppConfigMapper.getAppConfig(new DeployAppConfigVo(appSystemId, moduleId));
+            if (StringUtils.isNotBlank(moduleOverrideConfigStr)) {
+                moduleOverrideConfig = JSONObject.parseObject(moduleOverrideConfigStr, DeployPipelineConfigVo.class);
+            }
+            if (StringUtils.isNotBlank(overrideConfigStr)) {
+                envOverrideConfig = JSONObject.parseObject(overrideConfigStr, DeployPipelineConfigVo.class);
+            }
         }
         JSONArray defaultValue = paramObj.getJSONArray("defaultValue");
         if (CollectionUtils.isNotEmpty(defaultValue)) {
             List<Long> profileIdList = defaultValue.toJavaList(Long.class);
-            DeployPipelineConfigVo config = deployAppPipelineService.getDeployPipelineConfigVo(deployAppConfigOverrideVo, profileIdList);
+            DeployPipelineConfigVo config = deployAppPipelineService.getDeployPipelineConfigVo(appConfig, moduleOverrideConfig, envOverrideConfig, targetLevel, profileIdList);
             return config.getOverrideProfileList();
         } else {
-            DeployPipelineConfigVo config = deployAppPipelineService.getDeployPipelineConfigVo(deployAppConfigOverrideVo);
+            DeployPipelineConfigVo config = deployAppPipelineService.getDeployPipelineConfigVo(appConfig, moduleOverrideConfig, envOverrideConfig, targetLevel);
             return config.getOverrideProfileList();
         }
     }

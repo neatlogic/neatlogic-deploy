@@ -8,7 +8,6 @@ package codedriver.module.deploy.api.pipeline;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.deploy.dto.app.DeployAppConfigVo;
 import codedriver.framework.deploy.dto.app.DeployPipelineConfigVo;
-import codedriver.framework.deploy.exception.DeployAppConfigNotFoundException;
 import codedriver.framework.exception.type.ParamNotExistsException;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
@@ -23,7 +22,7 @@ import javax.annotation.Resource;
 
 @Service
 @OperationType(type = OperationTypeEnum.SEARCH)
-public class DeployAppPipelineGetApi extends PrivateApiComponentBase {
+public class DeployAppPipelineDraftGetApi extends PrivateApiComponentBase {
 
     @Resource
     private DeployAppPipelineService deployAppPipelineService;
@@ -31,14 +30,17 @@ public class DeployAppPipelineGetApi extends PrivateApiComponentBase {
     @Resource
     private DeployAppConfigMapper deployAppConfigMapper;
 
+//    @Resource
+//    private UserMapper userMapper;
+
     @Override
     public String getName() {
-        return "获取应用流水线";
+        return "获取应用流水线草稿";
     }
 
     @Override
     public String getToken() {
-        return "deploy/app/pipeline/get";
+        return "deploy/app/pipeline/draft/get";
     }
 
     @Override
@@ -52,12 +54,20 @@ public class DeployAppPipelineGetApi extends PrivateApiComponentBase {
             @Param(name = "envId", type = ApiParamType.LONG, desc = "环境ID")
     })
     @Output({
-            @Param(name = "Return", explode = DeployAppConfigVo.class, desc = "应用流水线配置信息")
+            @Param(name = "Return", explode = DeployAppConfigVo.class, desc = "应用流水线草稿")
     })
-    @Description(desc = "获取应用流水线")
+    @Description(desc = "获取应用流水线草稿")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         DeployAppConfigVo searchVo = paramObj.toJavaObject(DeployAppConfigVo.class);
+        DeployAppConfigVo deployAppConfigDraftVo = deployAppConfigMapper.getAppConfigDraft(searchVo);
+        if (deployAppConfigDraftVo == null) {
+            return null;
+        }
+        String overrideConfigStr = deployAppConfigDraftVo.getConfigStr();
+        if (StringUtils.isBlank(overrideConfigStr)) {
+            return null;
+        }
         String targetLevel = null;
         DeployPipelineConfigVo appConfig = null;
         DeployPipelineConfigVo moduleOverrideConfig = null;
@@ -65,17 +75,9 @@ public class DeployAppPipelineGetApi extends PrivateApiComponentBase {
         Long appSystemId = searchVo.getAppSystemId();
         Long moduleId = searchVo.getModuleId();
         Long envId = searchVo.getEnvId();
-        DeployAppConfigVo deployAppConfigVo = deployAppConfigMapper.getAppConfigVo(searchVo);
-        if (deployAppConfigVo == null) {
-            deployAppConfigVo = searchVo;
-        }
-        String overrideConfigStr = deployAppConfigVo.getConfigStr();
         if (moduleId == 0L && envId == 0L) {
             targetLevel = "应用";
             //查询应用层流水线配置信息
-            if (StringUtils.isBlank(overrideConfigStr)) {
-                throw new DeployAppConfigNotFoundException(appSystemId);
-            }
             appConfig = JSONObject.parseObject(overrideConfigStr, DeployPipelineConfigVo.class);
         } else if (moduleId == 0L && envId != 0L) {
             // 如果是访问环境层配置信息，moduleId不能为空
@@ -88,9 +90,7 @@ public class DeployAppPipelineGetApi extends PrivateApiComponentBase {
                 configStr = "{}";
             }
             appConfig = JSONObject.parseObject(configStr, DeployPipelineConfigVo.class);
-            if (StringUtils.isNotBlank(overrideConfigStr)) {
-                moduleOverrideConfig = JSONObject.parseObject(overrideConfigStr, DeployPipelineConfigVo.class);
-            }
+            moduleOverrideConfig = JSONObject.parseObject(overrideConfigStr, DeployPipelineConfigVo.class);
         } else {
             targetLevel = "环境";
             //查询应用层配置信息
@@ -103,12 +103,12 @@ public class DeployAppPipelineGetApi extends PrivateApiComponentBase {
             if (StringUtils.isNotBlank(moduleOverrideConfigStr)) {
                 moduleOverrideConfig = JSONObject.parseObject(moduleOverrideConfigStr, DeployPipelineConfigVo.class);
             }
-            if (StringUtils.isNotBlank(overrideConfigStr)) {
-                envOverrideConfig = JSONObject.parseObject(overrideConfigStr, DeployPipelineConfigVo.class);
-            }
+            envOverrideConfig = JSONObject.parseObject(overrideConfigStr, DeployPipelineConfigVo.class);
         }
         DeployPipelineConfigVo deployPipelineConfigVo = deployAppPipelineService.getDeployPipelineConfigVo(appConfig, moduleOverrideConfig, envOverrideConfig, targetLevel);
-        deployAppConfigVo.setConfig(deployPipelineConfigVo);
-        return deployAppConfigVo;
+        deployAppConfigDraftVo.setConfig(deployPipelineConfigVo);
+//        UserVo lcuVo = userMapper.getUserBaseInfoByUuid(deployAppConfigDraftVo.getLcu());
+//        deployAppConfigDraftVo.setLcuVo(lcuVo);
+        return deployAppConfigDraftVo;
     }
 }

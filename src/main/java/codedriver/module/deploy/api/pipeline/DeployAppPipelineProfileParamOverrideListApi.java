@@ -20,10 +20,7 @@ import codedriver.framework.cmdb.exception.cientity.CiEntityNotFoundException;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.dto.ValueTextVo;
 import codedriver.framework.crossover.CrossoverServiceFactory;
-import codedriver.framework.deploy.dto.app.DeployAppConfigOverrideVo;
-import codedriver.framework.deploy.dto.app.DeployPipelineConfigVo;
-import codedriver.framework.deploy.dto.app.DeployProfileParamVo;
-import codedriver.framework.deploy.dto.app.DeployProfileVo;
+import codedriver.framework.deploy.dto.app.*;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
@@ -96,7 +93,8 @@ public class DeployAppPipelineProfileParamOverrideListApi extends PrivateApiComp
 
         //查询应用层配置信息
         Long appSystemId = paramObj.getLong("appSystemId");
-        String configStr = deployAppConfigMapper.getAppConfigByAppSystemId(appSystemId);
+
+        String configStr = deployAppConfigMapper.getAppConfig(new DeployAppConfigVo(appSystemId));
         ICiEntityCrossoverMapper ciEntityCrossoverMapper = CrossoverServiceFactory.getApi(ICiEntityCrossoverMapper.class);
         CiEntityVo ciEntityVo = ciEntityCrossoverMapper.getCiEntityBaseInfoById(appSystemId);
         if (ciEntityVo == null) {
