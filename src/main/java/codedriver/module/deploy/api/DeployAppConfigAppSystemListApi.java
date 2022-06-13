@@ -7,9 +7,11 @@ package codedriver.module.deploy.api;
 
 import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.asynchronization.threadlocal.UserContext;
+import codedriver.framework.cmdb.crossover.IAppSystemMapper;
 import codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.dto.BasePageVo;
+import codedriver.framework.crossover.CrossoverServiceFactory;
 import codedriver.framework.deploy.dto.app.DeployAppConfigResourceVo;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
@@ -64,7 +66,8 @@ public class DeployAppConfigAppSystemListApi extends PrivateApiComponentBase {
     public Object myDoService(JSONObject paramObj) {
         ResourceSearchVo searchVo = paramObj.toJavaObject(ResourceSearchVo.class);
         List<DeployAppConfigResourceVo> resourceVoList = new ArrayList<>();
-        Integer count = deployAppConfigMapper.getAppSystemIdListCount(searchVo);
+        IAppSystemMapper appSystemMapper = CrossoverServiceFactory.getApi(IAppSystemMapper.class);
+        Integer count = appSystemMapper.getAppSystemIdListCount(searchVo);
         if (count > 0) {
             List<Long> appSystemIdList = deployAppConfigMapper.getAppSystemIdList(searchVo, UserContext.get().getUserUuid());
             searchVo.setRowNum(count);

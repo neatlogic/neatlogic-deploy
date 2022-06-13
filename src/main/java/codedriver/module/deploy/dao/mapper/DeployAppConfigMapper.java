@@ -1,9 +1,7 @@
 package codedriver.module.deploy.dao.mapper;
 
 import codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo;
-import codedriver.framework.deploy.dto.app.DeployAppConfigAuthorityVo;
-import codedriver.framework.deploy.dto.app.DeployAppConfigResourceVo;
-import codedriver.framework.deploy.dto.app.DeployAppEnvAutoConfigVo;
+import codedriver.framework.deploy.dto.app.*;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.Date;
@@ -19,13 +17,17 @@ public interface DeployAppConfigMapper {
 
     List<DeployAppConfigResourceVo> getAppSystemListByIdList(@Param("idList") List<Long> idList, @Param("schemaName") String schemaName, @Param("userUuid") String userUuid);
 
-    Integer getAppSystemIdListCount(ResourceSearchVo searchVo);
-
     Integer getAppConfigAuthorityCount(DeployAppConfigAuthorityVo searchVo);
 
     List<DeployAppConfigAuthorityVo> getAppConfigAuthorityList(DeployAppConfigAuthorityVo searchVo);
 
     List<DeployAppConfigAuthorityVo> getAppConfigAuthorityDetailList(@Param("appConfigAuthList") List<DeployAppConfigAuthorityVo> appConfigAuthList);
+
+    String getAppConfigByAppSystemId(Long appSystemId);
+
+    String getAppConfigOverrideConfig(DeployAppConfigOverrideVo deployAppConfigOverrideVo);
+
+    List<DeployAppConfigOverrideVo> getAppConfigOverrideListByAppSystemId(Long appSystemId);
 
     Integer insertAppConfigAuthority(DeployAppConfigAuthorityVo deployAppConfigAuthorityVo);
 
@@ -33,7 +35,11 @@ public interface DeployAppConfigMapper {
 
     Integer insertAppEnvAutoConfig(DeployAppEnvAutoConfigVo appEnvAutoConfigVo);
 
-    Integer insertAppConfig(@Param("appSystemId") Long appSystemId, @Param("isConfig") Long isConfig);
+    Integer insertAppConfig(DeployAppConfigVo deployAppConfigVo);
+
+    Integer insertAppConfigOverride(DeployAppConfigOverrideVo deployAppOverrideOverrideVo);
+
+    Integer updateAppConfig(DeployAppConfigVo deployAppConfigVo);
 
     Integer deleteAppConfigAuthorityByAppIdAndEnvIdAndAuthUuidAndLcd(@Param("appSystemId") Long appSystemId, @Param("envId") Long envId, @Param("authUuid") String uuid, @Param("lcd") Date nowTime);
 
