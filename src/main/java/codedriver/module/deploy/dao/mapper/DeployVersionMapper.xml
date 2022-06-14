@@ -9,11 +9,22 @@
 
     <insert id="insertDeployVersion">
         insert into deploy_version
-        (id, version, status, app_id, app_name, app_module_id, app_module_name, is_unlock, fcu, fcd, lcu, lcd)
-        values (#{id}, #{version}, #{status}, #{appId}, #{appName}, #{appModuleId}, #{appModuleName}, #{isUnLock},
+        (id, version, status, app_id, app_name, app_module_id, app_module_name, is_lock, fcu, fcd, lcu, lcd)
+        values (#{id}, #{version}, #{status}, #{appId}, #{appName}, #{appModuleId}, #{appModuleName}, #{isLock},
                 #{fcu}, now(3), #{lcd}, now(3))
     </insert>
 
+    <update id="unLockDeployVersionById">
+        update deploy_version
+        set is_lock = #{isLock}
+        where id = #{id}
+    </update>
+
+    <delete id="deleteDeployVersionById">
+        delete
+        from deploy_version
+        where id = #{id}
+    </delete>
 
     <select id="checkDeployVersionIsRepeat" resultType="int">
         select count(id)
@@ -22,5 +33,47 @@
           and app_id = #{appId}
           and module_id = #{moduleId}
           and version = #{version}
+    </select>
+
+    <select id="getDeployVersionById" resultType="codedriver.framework.deploy.dto.version.DeployVersionVo">
+        select id,
+               version,
+               status,
+               app_id          as appId,
+               app_name        as appName,
+               app_module_id   as appModuleId,
+               app_module_name as appModuleName,
+               is_lock         as isLock,
+               fcu,
+               fcd,
+               lcu,
+               lcd
+        from deploy_version
+        where id = #{id}
+    </select>
+
+    <select id="searchDeployVersionCount" resultType="java.lang.Integer">
+        select count(id)
+        from deploy_verison
+        where app_id = #{appId}
+          and app_module_id = #{appModuleId}
+    </select>
+
+    <select id="searchDeployVersion" resultType="codedriver.framework.deploy.dto.version.DeployVersionVo">
+        select id,
+               version,
+               status,
+               app_id          as appId,
+               app_name        as appName,
+               app_module_id   as appModuleId,
+               app_module_name as appModuleName,
+               is_lock         as isLock,
+               fcu,
+               fcd,
+               lcu,
+               lcd
+        from deploy_verison
+        where app_id = #{appId}
+          and app_module_id = #{appModuleId}
     </select>
 </mapper>

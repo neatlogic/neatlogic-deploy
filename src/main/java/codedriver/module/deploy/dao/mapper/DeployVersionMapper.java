@@ -1,6 +1,9 @@
 package codedriver.module.deploy.dao.mapper;
 
 import codedriver.framework.deploy.dto.version.DeployVersionVo;
+import org.apache.ibatis.annotations.Param;
+
+import java.util.List;
 
 /**
  * @author longrf
@@ -10,5 +13,16 @@ public interface DeployVersionMapper {
 
     int checkDeployVersionIsRepeat(DeployVersionVo version);
 
+    int searchDeployVersionCount(DeployVersionVo versionVo);
+
     void insertDeployVersion(DeployVersionVo version);
+
+    void unLockDeployVersionById(@Param("id") Long id, @Param("isLock") Long isLock);
+
+    void deleteDeployVersionById(Long id);
+
+    DeployVersionVo getDeployVersionById(Long id);
+
+    List<DeployVersionVo> searchDeployVersion(DeployVersionVo versionVo);
+
 }

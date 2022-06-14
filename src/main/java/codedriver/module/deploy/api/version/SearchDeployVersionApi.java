@@ -3,10 +3,8 @@ package codedriver.module.deploy.api.version;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.dto.BasePageVo;
 import codedriver.framework.deploy.dto.version.DeployVersionVo;
-import codedriver.framework.restful.annotation.Description;
-import codedriver.framework.restful.annotation.Input;
-import codedriver.framework.restful.annotation.Output;
-import codedriver.framework.restful.annotation.Param;
+import codedriver.framework.restful.annotation.*;
+import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.deploy.dao.mapper.DeployVersionMapper;
 import com.alibaba.fastjson.JSONObject;
@@ -21,7 +19,8 @@ import java.util.List;
  * @date 2022/5/26 2:33 下午
  */
 @Service
-public class DeployVersionSearchApi extends PrivateApiComponentBase {
+@OperationType(type = OperationTypeEnum.SEARCH)
+public class SearchDeployVersionApi extends PrivateApiComponentBase {
 
     @Resource
     DeployVersionMapper deployVersionMapper;
@@ -44,6 +43,8 @@ public class DeployVersionSearchApi extends PrivateApiComponentBase {
     @Input({
             @Param(name = "defaultValue", desc = "默认值", type = ApiParamType.JSONARRAY),
             @Param(name = "keyword", desc = "关键词", type = ApiParamType.STRING),
+            @Param(name = "appId", desc = "应用id", isRequired = true, type = ApiParamType.LONG),
+            @Param(name = "appModuleId", desc = "应用模块id", isRequired = true, type = ApiParamType.LONG),
             @Param(name = "currentPage", desc = "当前页", type = ApiParamType.INTEGER),
             @Param(name = "pageSize", desc = "每页最大数", type = ApiParamType.INTEGER)
     })
@@ -54,12 +55,12 @@ public class DeployVersionSearchApi extends PrivateApiComponentBase {
     @Description(desc = "查询发布版本列表")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
-        DeployVersionVo paramVersionVo = paramObj.toJavaObject(DeployVersionVo.class);
+        DeployVersionVo versionVo = paramObj.toJavaObject(DeployVersionVo.class);
         List<DeployVersionVo> returnList = new ArrayList<>();
-        int count = deployVersionMapper.searchDeployVersionCount(paramVersionVo);
+        int count = deployVersionMapper.searchDeployVersionCount(versionVo);
         if (count > 0) {
-           returnList = deployVersionMapper.searchDeployVersion(paramVersionVo);
+           returnList = deployVersionMapper.searchDeployVersion(versionVo);
         }
-        return null;
+        return returnList;
     }
 }

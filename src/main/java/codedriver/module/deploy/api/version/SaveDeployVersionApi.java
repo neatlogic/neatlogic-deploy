@@ -9,7 +9,9 @@ import codedriver.framework.deploy.exception.DeployVersionIsRepeatException;
 import codedriver.framework.dto.FieldValidResultVo;
 import codedriver.framework.restful.annotation.Description;
 import codedriver.framework.restful.annotation.Input;
+import codedriver.framework.restful.annotation.OperationType;
 import codedriver.framework.restful.annotation.Param;
+import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.IValid;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.deploy.dao.mapper.DeployVersionMapper;
@@ -24,15 +26,16 @@ import javax.annotation.Resource;
  * @date 2022/5/26 2:33 下午
  */
 @Service
-public class DeployVersionSaveApi extends PrivateApiComponentBase {
+//@AuthAction(action = PROCESS_BASE.class)
+@OperationType(type = OperationTypeEnum.UPDATE)
+public class SaveDeployVersionApi extends PrivateApiComponentBase {
 
     @Resource
     DeployVersionMapper deployVersionMapper;
 
-
     @Override
     public String getName() {
-        return "保存发布版本列表";
+        return "保存发布版本";
     }
 
     @Override
@@ -51,7 +54,7 @@ public class DeployVersionSaveApi extends PrivateApiComponentBase {
             @Param(name = "appName", desc = "应用名称", type = ApiParamType.STRING),
             @Param(name = "appModuleId", desc = "应用模块id", isRequired = true, type = ApiParamType.LONG),
             @Param(name = "appModuleName", desc = "应用模块名称", type = ApiParamType.STRING),
-            @Param(name = "isUnLock", desc = "是否封版", isRequired = true, type = ApiParamType.INTEGER)
+            @Param(name = "isLock", desc = "是否封版", isRequired = true, type = ApiParamType.INTEGER)
     })
     @Description(desc = "保存发布版本")
     @Override
