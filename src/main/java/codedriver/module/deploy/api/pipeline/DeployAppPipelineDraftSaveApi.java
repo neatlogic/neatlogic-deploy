@@ -23,19 +23,19 @@ import java.util.Objects;
 
 @Service
 @OperationType(type = OperationTypeEnum.OPERATE)
-public class DeployAppPipelineSaveApi extends PrivateApiComponentBase {
+public class DeployAppPipelineDraftSaveApi extends PrivateApiComponentBase {
 
     @Resource
     private DeployAppConfigMapper deployAppConfigMapper;
 
     @Override
     public String getName() {
-        return "保存应用流水线";
+        return "保存流水线草稿";
     }
 
     @Override
     public String getToken() {
-        return "deploy/app/pipeline/save";
+        return "deploy/app/pipeline/draft/save";
     }
 
     @Override
@@ -47,23 +47,22 @@ public class DeployAppPipelineSaveApi extends PrivateApiComponentBase {
             @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "应用系统ID"),
             @Param(name = "moduleId", type = ApiParamType.LONG, desc = "模块ID"),
             @Param(name = "envId", type = ApiParamType.LONG, desc = "环境ID"),
-            @Param(name = "config", type = ApiParamType.JSONOBJECT, isRequired = true, desc = "流水线配置信息")
+            @Param(name = "config", type = ApiParamType.JSONOBJECT, isRequired = true, desc = "流水线草稿配置信息")
     })
-    @Description(desc = "保存应用流水线")
+    @Description(desc = "保存流水线草稿")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
-        DeployAppConfigVo deployAppConfigVo = paramObj.toJavaObject(DeployAppConfigVo.class);
-        String configStr = deployAppConfigMapper.getAppConfig(deployAppConfigVo);
-        if (configStr != null) {
-            if (Objects.equals(configStr, deployAppConfigVo.getConfigStr())) {
+        DeployAppConfigVo deployAppConfigDraftVo = paramObj.toJavaObject(DeployAppConfigVo.class);
+        DeployAppConfigVo oldDeployAppConfigDraftVo = deployAppConfigMapper.getAppConfigDraft(deployAppConfigDraftVo);
+        if (oldDeployAppConfigDraftVo != null) {
+            if (Objects.equals(oldDeployAppConfigDraftVo.getConfigStr(), deployAppConfigDraftVo.getConfigStr())) {
                 return null;
             }
-            deployAppConfigVo.setLcu(UserContext.get().getUserUuid());
-            deployAppConfigMapper.updateAppConfig(deployAppConfigVo);
-            deployAppConfigMapper.deleteAppConfigDraft(deployAppConfigVo);
+            deployAppConfigDraftVo.setLcu(UserContext.get().getUserUuid());
+            deployAppConfigMapper.updateAppConfigDraft(deployAppConfigDraftVo);
         } else {
-            deployAppConfigVo.setFcu(UserContext.get().getUserUuid());
-            deployAppConfigMapper.insertAppConfig(deployAppConfigVo);
+            deployAppConfigDraftVo.setFcu(UserContext.get().getUserUuid());
+            deployAppConfigMapper.insertAppConfigDraft(deployAppConfigDraftVo);
         }
         return null;
     }
