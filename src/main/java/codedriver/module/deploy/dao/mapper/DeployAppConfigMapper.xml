@@ -27,7 +27,7 @@
         select ra.id as appSystemId,ra.`name` as appSystemName, if(dacu.user_uuid is null,0,1) as isFavorite, if(dac.config is null,0,1) as isConfig
         from ${schemaName}.`resource_appsystem` ra
         left join deploy_app_config_user dacu on ra.id = dacu.app_system_id and dacu.user_uuid = #{userUuid}
-        left join deploy_app_config dac on ra.id = dac.app_system_id
+        left join deploy_app_config dac on ra.id = dac.app_system_id and dac.module_id = 0 and dac.env_id = 0
         where ra.id in
         <foreach collection="idList" item="id" open="(" close=")" separator=",">
             #{id}
