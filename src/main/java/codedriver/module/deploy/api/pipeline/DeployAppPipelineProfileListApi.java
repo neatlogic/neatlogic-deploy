@@ -108,10 +108,10 @@ public class DeployAppPipelineProfileListApi extends PrivateApiComponentBase {
         JSONArray defaultValue = paramObj.getJSONArray("defaultValue");
         if (CollectionUtils.isNotEmpty(defaultValue)) {
             List<Long> profileIdList = defaultValue.toJavaList(Long.class);
-            DeployPipelineConfigVo config = deployAppPipelineService.getDeployPipelineConfigVo(appConfig, moduleOverrideConfig, envOverrideConfig, targetLevel, profileIdList);
+            DeployPipelineConfigVo config = deployAppPipelineService.mergeDeployPipelineConfigVo(appConfig, moduleOverrideConfig, envOverrideConfig, targetLevel, profileIdList);
             return config.getOverrideProfileList();
         } else {
-            DeployPipelineConfigVo config = deployAppPipelineService.getDeployPipelineConfigVo(appConfig, moduleOverrideConfig, envOverrideConfig, targetLevel);
+            DeployPipelineConfigVo config = deployAppPipelineService.mergeDeployPipelineConfigVo(appConfig, moduleOverrideConfig, envOverrideConfig, targetLevel);
             return config.getOverrideProfileList();
         }
     }

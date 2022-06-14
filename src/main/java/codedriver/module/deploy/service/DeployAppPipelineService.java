@@ -26,16 +26,16 @@ public interface DeployAppPipelineService {
 //     */
 //    DeployPipelineConfigVo getDeployPipelineConfigVo(DeployAppConfigVo deployAppConfigVo, List<Long> profileIdList);
     /**
-     * 查询应用、模块、环境的流水线配置信息
+     * 组装应用、模块、环境的流水线配置信息
      * @param appConfig
      * @param moduleOverrideConfig
      * @param envOverrideConfig
      * @param targetLevel
      * @return
      */
-    DeployPipelineConfigVo getDeployPipelineConfigVo(DeployPipelineConfigVo appConfig, DeployPipelineConfigVo moduleOverrideConfig, DeployPipelineConfigVo envOverrideConfig, String targetLevel);
+    DeployPipelineConfigVo mergeDeployPipelineConfigVo(DeployPipelineConfigVo appConfig, DeployPipelineConfigVo moduleOverrideConfig, DeployPipelineConfigVo envOverrideConfig, String targetLevel);
     /**
-     * 查询应用、模块、环境的流水线配置信息
+     * 组装应用、模块、环境的流水线配置信息
      * @param appConfig
      * @param moduleOverrideConfig
      * @param envOverrideConfig
@@ -43,5 +43,5 @@ public interface DeployAppPipelineService {
      * @param profileIdList
      * @return
      */
-    DeployPipelineConfigVo getDeployPipelineConfigVo(DeployPipelineConfigVo appConfig, DeployPipelineConfigVo moduleOverrideConfig, DeployPipelineConfigVo envOverrideConfig, String targetLevel, List<Long> profileIdList);
+    DeployPipelineConfigVo mergeDeployPipelineConfigVo(DeployPipelineConfigVo appConfig, DeployPipelineConfigVo moduleOverrideConfig, DeployPipelineConfigVo envOverrideConfig, String targetLevel, List<Long> profileIdList);
 }

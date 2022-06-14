@@ -30,9 +30,6 @@ public class DeployAppPipelineDraftGetApi extends PrivateApiComponentBase {
     @Resource
     private DeployAppConfigMapper deployAppConfigMapper;
 
-//    @Resource
-//    private UserMapper userMapper;
-
     @Override
     public String getName() {
         return "获取应用流水线草稿";
@@ -105,10 +102,8 @@ public class DeployAppPipelineDraftGetApi extends PrivateApiComponentBase {
             }
             envOverrideConfig = JSONObject.parseObject(overrideConfigStr, DeployPipelineConfigVo.class);
         }
-        DeployPipelineConfigVo deployPipelineConfigVo = deployAppPipelineService.getDeployPipelineConfigVo(appConfig, moduleOverrideConfig, envOverrideConfig, targetLevel);
+        DeployPipelineConfigVo deployPipelineConfigVo = deployAppPipelineService.mergeDeployPipelineConfigVo(appConfig, moduleOverrideConfig, envOverrideConfig, targetLevel);
         deployAppConfigDraftVo.setConfig(deployPipelineConfigVo);
-//        UserVo lcuVo = userMapper.getUserBaseInfoByUuid(deployAppConfigDraftVo.getLcu());
-//        deployAppConfigDraftVo.setLcuVo(lcuVo);
         return deployAppConfigDraftVo;
     }
 }

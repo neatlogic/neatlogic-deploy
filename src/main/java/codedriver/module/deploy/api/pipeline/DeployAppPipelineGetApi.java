@@ -107,7 +107,7 @@ public class DeployAppPipelineGetApi extends PrivateApiComponentBase {
                 envOverrideConfig = JSONObject.parseObject(overrideConfigStr, DeployPipelineConfigVo.class);
             }
         }
-        DeployPipelineConfigVo deployPipelineConfigVo = deployAppPipelineService.getDeployPipelineConfigVo(appConfig, moduleOverrideConfig, envOverrideConfig, targetLevel);
+        DeployPipelineConfigVo deployPipelineConfigVo = deployAppPipelineService.mergeDeployPipelineConfigVo(appConfig, moduleOverrideConfig, envOverrideConfig, targetLevel);
         deployAppConfigVo.setConfig(deployPipelineConfigVo);
         return deployAppConfigVo;
     }
