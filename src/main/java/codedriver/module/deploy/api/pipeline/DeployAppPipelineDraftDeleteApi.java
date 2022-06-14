@@ -5,7 +5,6 @@
 
 package codedriver.module.deploy.api.pipeline;
 
-import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.deploy.dto.app.DeployAppConfigVo;
 import codedriver.framework.restful.annotation.Description;
@@ -19,23 +18,22 @@ import com.alibaba.fastjson.JSONObject;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.Objects;
 
 @Service
-@OperationType(type = OperationTypeEnum.OPERATE)
-public class DeployAppPipelineSaveApi extends PrivateApiComponentBase {
+@OperationType(type = OperationTypeEnum.DELETE)
+public class DeployAppPipelineDraftDeleteApi extends PrivateApiComponentBase {
 
     @Resource
     private DeployAppConfigMapper deployAppConfigMapper;
 
     @Override
     public String getName() {
-        return "保存应用流水线";
+        return "删除流水线草稿";
     }
 
     @Override
     public String getToken() {
-        return "deploy/app/pipeline/save";
+        return "deploy/app/pipeline/draft/delete";
     }
 
     @Override
@@ -46,25 +44,13 @@ public class DeployAppPipelineSaveApi extends PrivateApiComponentBase {
     @Input({
             @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "应用系统ID"),
             @Param(name = "moduleId", type = ApiParamType.LONG, desc = "模块ID"),
-            @Param(name = "envId", type = ApiParamType.LONG, desc = "环境ID"),
-            @Param(name = "config", type = ApiParamType.JSONOBJECT, isRequired = true, desc = "流水线配置信息")
+            @Param(name = "envId", type = ApiParamType.LONG, desc = "环境ID")
     })
-    @Description(desc = "保存应用流水线")
+    @Description(desc = "删除流水线草稿")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
-        DeployAppConfigVo deployAppConfigVo = paramObj.toJavaObject(DeployAppConfigVo.class);
-        String configStr = deployAppConfigMapper.getAppConfig(deployAppConfigVo);
-        if (configStr != null) {
-            if (Objects.equals(configStr, deployAppConfigVo.getConfigStr())) {
-                return null;
-            }
-            deployAppConfigVo.setLcu(UserContext.get().getUserUuid());
-            deployAppConfigMapper.updateAppConfig(deployAppConfigVo);
-            deployAppConfigMapper.deleteAppConfigDraft(deployAppConfigVo);
-        } else {
-            deployAppConfigVo.setFcu(UserContext.get().getUserUuid());
-            deployAppConfigMapper.insertAppConfig(deployAppConfigVo);
-        }
+        DeployAppConfigVo deployAppConfigDraftVo = paramObj.toJavaObject(DeployAppConfigVo.class);
+        deployAppConfigMapper.deleteAppConfigDraft(deployAppConfigDraftVo);
         return null;
     }
 }

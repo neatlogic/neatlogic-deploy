@@ -23,11 +23,15 @@ public interface DeployAppConfigMapper {
 
     List<DeployAppConfigAuthorityVo> getAppConfigAuthorityDetailList(@Param("appConfigAuthList") List<DeployAppConfigAuthorityVo> appConfigAuthList);
 
-    String getAppConfigByAppSystemId(Long appSystemId);
+    String getAppConfig(DeployAppConfigVo deployAppConfigVo);
+
+    DeployAppConfigVo getAppConfigVo(DeployAppConfigVo deployAppConfigVo);
 
     String getAppConfigOverrideConfig(DeployAppConfigOverrideVo deployAppConfigOverrideVo);
 
     List<DeployAppConfigOverrideVo> getAppConfigOverrideListByAppSystemId(Long appSystemId);
+
+    DeployAppConfigVo getAppConfigDraft(DeployAppConfigVo deployAppConfigDraftVo);
 
     Integer insertAppConfigAuthority(DeployAppConfigAuthorityVo deployAppConfigAuthorityVo);
 
@@ -39,9 +43,15 @@ public interface DeployAppConfigMapper {
 
     Integer insertAppConfigOverride(DeployAppConfigOverrideVo deployAppOverrideOverrideVo);
 
+    Integer insertAppConfigDraft(DeployAppConfigVo deployAppConfigDraftVo);
+
     Integer updateAppConfig(DeployAppConfigVo deployAppConfigVo);
+
+    Integer updateAppConfigDraft(DeployAppConfigVo deployAppConfigDraftVo);
 
     Integer deleteAppConfigAuthorityByAppIdAndEnvIdAndAuthUuidAndLcd(@Param("appSystemId") Long appSystemId, @Param("envId") Long envId, @Param("authUuid") String uuid, @Param("lcd") Date nowTime);
 
     Integer deleteAppEnvAutoConfig(DeployAppEnvAutoConfigVo deployAppEnvAutoConfigVo);
+
+    Integer deleteAppConfigDraft(DeployAppConfigVo deployAppConfigDraftVo);
 }

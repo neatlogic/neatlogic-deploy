@@ -5,25 +5,43 @@
 
 package codedriver.module.deploy.service;
 
-import codedriver.framework.deploy.dto.app.DeployAppConfigOverrideVo;
 import codedriver.framework.deploy.dto.app.DeployPipelineConfigVo;
 
 import java.util.List;
 
 public interface DeployAppPipelineService {
 
+//    /**
+//     * 查询应用、模块、环境的流水线配置信息
+//     * @param deployAppConfigVo
+//     * @return
+//     */
+//    DeployPipelineConfigVo getDeployPipelineConfigVo(DeployAppConfigVo deployAppConfigVo);
+//
+//    /**
+//     * 查询应用、模块、环境的流水线配置信息
+//     * @param deployAppConfigVo
+//     * @param profileIdList
+//     * @return
+//     */
+//    DeployPipelineConfigVo getDeployPipelineConfigVo(DeployAppConfigVo deployAppConfigVo, List<Long> profileIdList);
     /**
-     * 查询应用、模块、环境的流水线配置信息
-     * @param deployAppConfigOverrideVo
+     * 组装应用、模块、环境的流水线配置信息
+     * @param appConfig
+     * @param moduleOverrideConfig
+     * @param envOverrideConfig
+     * @param targetLevel
      * @return
      */
-    DeployPipelineConfigVo getDeployPipelineConfigVo(DeployAppConfigOverrideVo deployAppConfigOverrideVo);
-
+    DeployPipelineConfigVo mergeDeployPipelineConfigVo(DeployPipelineConfigVo appConfig, DeployPipelineConfigVo moduleOverrideConfig, DeployPipelineConfigVo envOverrideConfig, String targetLevel);
     /**
-     * 查询应用、模块、环境的流水线配置信息
-     * @param deployAppConfigOverrideVo
+     * 组装应用、模块、环境的流水线配置信息
+     * @param appConfig
+     * @param moduleOverrideConfig
+     * @param envOverrideConfig
+     * @param targetLevel
      * @param profileIdList
      * @return
      */
-    DeployPipelineConfigVo getDeployPipelineConfigVo(DeployAppConfigOverrideVo deployAppConfigOverrideVo, List<Long> profileIdList);
+    DeployPipelineConfigVo mergeDeployPipelineConfigVo(DeployPipelineConfigVo appConfig, DeployPipelineConfigVo moduleOverrideConfig, DeployPipelineConfigVo envOverrideConfig, String targetLevel, List<Long> profileIdList);
 }
