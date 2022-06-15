@@ -10,10 +10,16 @@ import codedriver.framework.dependency.core.FixedTableDependencyHandlerBase;
 import codedriver.framework.dependency.core.IFromType;
 import codedriver.framework.dependency.dto.DependencyInfoVo;
 import codedriver.framework.dependency.dto.DependencyVo;
+import codedriver.module.deploy.dao.mapper.DeployAppConfigMapper;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Resource;
+
 @Component
-public class AutoexecGlobalParam2DeployAppPipelinePhaseOperationDependencyHandler extends FixedTableDependencyHandlerBase {
+public class AutoexecGlobalParam2DeployAppPipelinePhaseOperationArgumentParamDependencyHandler extends FixedTableDependencyHandlerBase {
+
+    @Resource
+    private DeployAppConfigMapper deployAppConfigMapper;
 
     @Override
     public IFromType getFromType() {

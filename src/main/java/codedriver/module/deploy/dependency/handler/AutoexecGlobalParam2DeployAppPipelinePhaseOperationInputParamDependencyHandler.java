@@ -16,14 +16,14 @@ import org.springframework.stereotype.Component;
 import javax.annotation.Resource;
 
 @Component
-public class AutoexecProfile2DeployAppPipelinePhaseOperationDependencyHandler extends FixedTableDependencyHandlerBase {
+public class AutoexecGlobalParam2DeployAppPipelinePhaseOperationInputParamDependencyHandler extends FixedTableDependencyHandlerBase {
 
     @Resource
     private DeployAppConfigMapper deployAppConfigMapper;
 
     @Override
     public IFromType getFromType() {
-        return AutoexecFromType.PROFILE;
+        return AutoexecFromType.GLOBAL_PARAM;
     }
 
     @Override
