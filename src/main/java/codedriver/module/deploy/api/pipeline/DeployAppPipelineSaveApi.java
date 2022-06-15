@@ -66,12 +66,6 @@ public class DeployAppPipelineSaveApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         DeployAppConfigVo deployAppConfigVo = paramObj.toJavaObject(DeployAppConfigVo.class);
-        Long appSystemId = deployAppConfigVo.getAppSystemId();
-        Long moduleId = deployAppConfigVo.getModuleId();
-        Long envId = deployAppConfigVo.getEnvId();
-//        if (moduleId == 0L && envId == 0L) {
-//
-//        }
         String configStr = deployAppConfigMapper.getAppConfig(deployAppConfigVo);
         if (configStr != null) {
             if (Objects.equals(configStr, deployAppConfigVo.getConfigStr())) {
@@ -87,7 +81,17 @@ public class DeployAppPipelineSaveApi extends PrivateApiComponentBase {
         DeployPipelineConfigVo deployPipelineConfigVo = deployAppConfigVo.getConfig();
         List<DeployPipelinePhaseVo> combopPhaseList = deployPipelineConfigVo.getCombopPhaseList();
         if (CollectionUtils.isNotEmpty(combopPhaseList)) {
+            Long appSystemId = deployAppConfigVo.getAppSystemId();
+            Long moduleId = deployAppConfigVo.getModuleId();
+            Long envId = deployAppConfigVo.getEnvId();
             for (DeployPipelinePhaseVo combopPhaseVo : combopPhaseList) {
+                if (moduleId != null) {
+                    //如果是模块层或环境层，没有重载，就不用保存依赖关系
+                    Integer override = combopPhaseVo.getOverride();
+                    if (Objects.equals(override, 0)) {
+                        continue;
+                    }
+                }
                 AutoexecCombopPhaseConfigVo config = combopPhaseVo.getConfig();
                 if (config == null) {
                     continue;
@@ -105,11 +109,11 @@ public class DeployAppPipelineSaveApi extends PrivateApiComponentBase {
                     if (profileId != null) {
                         JSONObject dependencyConfig = new JSONObject();
                         dependencyConfig.put("appSystemId", appSystemId);
-//                        dependencyConfig.put("moduleId", moduleId);
-//                        dependencyConfig.put("envId", envId);
+                        dependencyConfig.put("moduleId", moduleId);
+                        dependencyConfig.put("envId", envId);
                         dependencyConfig.put("phaseUuid", combopPhaseVo.getUuid());
                         dependencyConfig.put("phaseName", combopPhaseVo.getName());
-                        DependencyManager.insert(AutoexecProfile2DeployAppPipelinePhaseOperationDependencyHandler.class, profileId, phaseOperationVo.getUuid(), dependencyConfig);
+                        DependencyManager.insert(AutoexecProfile2DeployAppPipelinePhaseOperationDependencyHandler.class, profileId, phaseOperationVo.getOperationId(), dependencyConfig);
                     }
                     List<ParamMappingVo> paramMappingList = operationConfigVo.getParamMappingList();
                     if (CollectionUtils.isNotEmpty(paramMappingList)) {
@@ -117,12 +121,12 @@ public class DeployAppPipelineSaveApi extends PrivateApiComponentBase {
                             if (Objects.equals(paramMappingVo.getMappingMode(), ParamMappingMode.GLOBAL_PARAM.getValue())) {
                                 JSONObject dependencyConfig = new JSONObject();
                                 dependencyConfig.put("appSystemId", appSystemId);
-//                        dependencyConfig.put("moduleId", moduleId);
-//                        dependencyConfig.put("envId", envId);
+                                dependencyConfig.put("moduleId", moduleId);
+                                dependencyConfig.put("envId", envId);
                                 dependencyConfig.put("phaseUuid", combopPhaseVo.getUuid());
                                 dependencyConfig.put("phaseName", combopPhaseVo.getName());
                                 dependencyConfig.put("type", "输入参数映射");
-                                DependencyManager.insert(AutoexecProfile2DeployAppPipelinePhaseOperationDependencyHandler.class, paramMappingVo.getValue(), phaseOperationVo.getUuid(), dependencyConfig);
+                                DependencyManager.insert(AutoexecProfile2DeployAppPipelinePhaseOperationDependencyHandler.class, paramMappingVo.getValue(), phaseOperationVo.getOperationId(), dependencyConfig);
                             }
                         }
                     }
@@ -132,24 +136,16 @@ public class DeployAppPipelineSaveApi extends PrivateApiComponentBase {
                             if (Objects.equals(paramMappingVo.getMappingMode(), ParamMappingMode.GLOBAL_PARAM.getValue())) {
                                 JSONObject dependencyConfig = new JSONObject();
                                 dependencyConfig.put("appSystemId", appSystemId);
-//                        dependencyConfig.put("moduleId", moduleId);
-//                        dependencyConfig.put("envId", envId);
+                                dependencyConfig.put("moduleId", moduleId);
+                                dependencyConfig.put("envId", envId);
                                 dependencyConfig.put("phaseUuid", combopPhaseVo.getUuid());
                                 dependencyConfig.put("phaseName", combopPhaseVo.getName());
                                 dependencyConfig.put("type", "自由参数映射");
-                                DependencyManager.insert(AutoexecProfile2DeployAppPipelinePhaseOperationDependencyHandler.class, paramMappingVo.getValue(), phaseOperationVo.getUuid(), dependencyConfig);
+                                DependencyManager.insert(AutoexecProfile2DeployAppPipelinePhaseOperationDependencyHandler.class, paramMappingVo.getValue(), phaseOperationVo.getOperationId(), dependencyConfig);
                             }
                         }
                     }
                 }
-//                if (moduleId != 0L) {
-//                    Integer override = combopPhaseVo.getOverride();
-//                    if (!Objects.equals(override, 1)) {
-//                        continue;
-//                    }
-//                } else {
-//
-//                }
             }
         }
         return null;
