@@ -9,8 +9,10 @@
 
     <insert id="insertDeployVersion">
         insert into deploy_version
-        (id, version, status, app_system_id, app_system_name, app_module_id, app_module_name, is_lock, fcu, fcd, lcu, lcd)
-        values (#{id}, #{version}, #{status}, #{appSystemId}, #{appSystemName}, #{appModuleId}, #{appModuleName}, #{isLock},
+        (id, version, status, app_system_id, app_system_name, app_module_id, app_module_name, is_lock, fcu, fcd, lcu,
+         lcd)
+        values (#{id}, #{version}, #{status}, #{appSystemId}, #{appSystemName}, #{appModuleId}, #{appModuleName},
+                #{isLock},
                 #{fcu}, now(3), #{lcd}, now(3))
     </insert>
 
@@ -39,8 +41,8 @@
         select id,
                version,
                status,
-               app_system_id          as appSystemId,
-               app_system_name        as appSystemName,
+               app_system_id   as appSystemId,
+               app_system_name as appSystemName,
                app_module_id   as appModuleId,
                app_module_name as appModuleName,
                is_lock         as isLock,
