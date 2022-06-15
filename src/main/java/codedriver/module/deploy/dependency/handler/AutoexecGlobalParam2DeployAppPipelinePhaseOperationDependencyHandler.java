@@ -13,7 +13,7 @@ import codedriver.framework.dependency.dto.DependencyVo;
 import org.springframework.stereotype.Component;
 
 @Component
-public class AutoexecGlobalParam2DeployAppPipelinePhaseOperationInputParamDependencyHandler extends FixedTableDependencyHandlerBase {
+public class AutoexecGlobalParam2DeployAppPipelinePhaseOperationDependencyHandler extends FixedTableDependencyHandlerBase {
 
     @Override
     public IFromType getFromType() {
