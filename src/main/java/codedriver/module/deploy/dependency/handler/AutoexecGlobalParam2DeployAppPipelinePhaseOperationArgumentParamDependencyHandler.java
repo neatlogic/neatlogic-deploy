@@ -5,10 +5,16 @@
 
 package codedriver.module.deploy.dependency.handler;
 
+import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.autoexec.constvalue.AutoexecFromType;
+import codedriver.framework.autoexec.constvalue.ParamMappingMode;
 import codedriver.framework.autoexec.dto.combop.AutoexecCombopPhaseConfigVo;
 import codedriver.framework.autoexec.dto.combop.AutoexecCombopPhaseOperationConfigVo;
 import codedriver.framework.autoexec.dto.combop.AutoexecCombopPhaseOperationVo;
+import codedriver.framework.autoexec.dto.combop.ParamMappingVo;
+import codedriver.framework.cmdb.crossover.ICiEntityCrossoverMapper;
+import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
+import codedriver.framework.crossover.CrossoverServiceFactory;
 import codedriver.framework.dependency.core.FixedTableDependencyHandlerBase;
 import codedriver.framework.dependency.core.IFromType;
 import codedriver.framework.dependency.dto.DependencyInfoVo;
@@ -23,6 +29,7 @@ import org.apache.commons.collections4.MapUtils;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -88,6 +95,52 @@ public class AutoexecGlobalParam2DeployAppPipelinePhaseOperationArgumentParamDep
                 AutoexecCombopPhaseOperationConfigVo operationConfigVo = phaseOperationVo.getConfig();
                 if (operationConfigVo == null) {
                     return null;
+                }
+                List<ParamMappingVo> argumentMappingList = operationConfigVo.getArgumentMappingList();
+                if (CollectionUtils.isEmpty(argumentMappingList)) {
+                    return null;
+                }
+                for (ParamMappingVo paramMappingVo : argumentMappingList) {
+                    if (paramMappingVo == null) {
+                        continue;
+                    }
+                    if (!Objects.equals(paramMappingVo.getMappingMode(), ParamMappingMode.GLOBAL_PARAM.getValue())) {
+                        continue;
+                    }
+                    if (Objects.equals(paramMappingVo.getValue(), dependencyVo.getFrom())) {
+                        String operationName = phaseOperationVo.getName();
+                        String phaseName = combopPhaseVo.getName();
+                        JSONObject dependencyInfoConfig = new JSONObject();
+                        dependencyInfoConfig.put("appSystemId", appSystemId);
+                        dependencyInfoConfig.put("moduleId", moduleId);
+                        dependencyInfoConfig.put("envId", envId);
+                        List<String> pathList = new ArrayList<>();
+                        pathList.add("应用配置");
+                        ICiEntityCrossoverMapper ciEntityCrossoverMapper = CrossoverServiceFactory.getApi(ICiEntityCrossoverMapper.class);
+                        if (appSystemId != null && appSystemId != 0) {
+                            CiEntityVo ciEntityVo = ciEntityCrossoverMapper.getCiEntityBaseInfoById(appSystemId);
+                            if (ciEntityVo != null) {
+                                pathList.add(ciEntityVo.getName());
+                            }
+                        }
+                        if (moduleId != null && moduleId != 0) {
+                            CiEntityVo ciEntityVo = ciEntityCrossoverMapper.getCiEntityBaseInfoById(moduleId);
+                            if (ciEntityVo != null) {
+                                pathList.add(ciEntityVo.getName());
+                            }
+                        }
+                        if (envId != null && envId != 0) {
+                            CiEntityVo ciEntityVo = ciEntityCrossoverMapper.getCiEntityBaseInfoById(envId);
+                            if (ciEntityVo != null) {
+                                pathList.add(ciEntityVo.getName());
+                            }
+                        }
+                        pathList.add(phaseName);
+                        pathList.add(operationName);
+                        String urlFormat = "/" + TenantContext.get().getTenantUuid() + "/deploy.html#/action-detail?appSystemId=${DATA.appSystemId}&moduleId=${DATA.moduleId}&envId=${DATA.envId}";
+                        String value = operationId + "_" + System.currentTimeMillis();
+                        return new DependencyInfoVo(value, dependencyInfoConfig, "自由参数", pathList, urlFormat, this.getGroupName());
+                    }
                 }
             }
         }
