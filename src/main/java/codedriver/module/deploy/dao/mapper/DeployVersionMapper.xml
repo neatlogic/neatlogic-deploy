@@ -13,7 +13,7 @@
          lcd)
         values (#{id}, #{version}, #{status}, #{appSystemId}, #{appSystemName}, #{appModuleId}, #{appModuleName},
                 #{isLock},
-                #{fcu}, now(3), #{lcd}, now(3))
+                #{fcu}, now(3), #{lcu}, now(3))
     </insert>
 
     <update id="unLockDeployVersionById">
