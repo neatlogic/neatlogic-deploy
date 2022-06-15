@@ -43,7 +43,7 @@ public class UnLockDeployVersionApi extends PrivateApiComponentBase {
 
     @Input({
             @Param(name = "id", desc = "版本id", isRequired = true, type = ApiParamType.LONG),
-            @Param(name = "isLock", desc = "是否封版(0：解版，1：封版)", isRequired = true, type = ApiParamType.INTEGER)
+            @Param(name = "isLocked", desc = "是否封版(0：解版，1：封版)", isRequired = true, type = ApiParamType.INTEGER)
     })
     @Description(desc = "保存发布版本")
     @Override

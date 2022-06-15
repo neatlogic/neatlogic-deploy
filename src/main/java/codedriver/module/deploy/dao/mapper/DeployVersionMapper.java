@@ -17,7 +17,7 @@ public interface DeployVersionMapper {
 
     void insertDeployVersion(DeployVersionVo versionVo);
 
-    void unLockDeployVersionById(@Param("id") Long id, @Param("isLock") Long isLock);
+    void unLockDeployVersionById(@Param("id") Long id, @Param("isLocked") Long isLocked);
 
     void deleteDeployVersionById(Long id);
 

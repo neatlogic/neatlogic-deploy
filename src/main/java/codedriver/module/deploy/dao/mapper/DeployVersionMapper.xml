@@ -9,16 +9,16 @@
 
     <insert id="insertDeployVersion">
         insert into deploy_version
-        (id, version, status, app_system_id, app_system_name, app_module_id, app_module_name, is_lock, fcu, fcd, lcu,
+        (id, version, status, app_system_id, app_system_name, app_module_id, app_module_name, is_locked, fcu, fcd, lcu,
          lcd)
         values (#{id}, #{version}, #{status}, #{appSystemId}, #{appSystemName}, #{appModuleId}, #{appModuleName},
-                #{isLock},
+                #{isLocked},
                 #{fcu}, now(3), #{lcu}, now(3))
     </insert>
 
     <update id="unLockDeployVersionById">
         update deploy_version
-        set is_lock = #{isLock}
+        set is_locked = #{isLocked}
         where id = #{id}
     </update>
 
@@ -45,7 +45,7 @@
                app_system_name as appSystemName,
                app_module_id   as appModuleId,
                app_module_name as appModuleName,
-               is_lock         as isLock,
+               is_locked         as isLocked,
                fcu,
                fcd,
                lcu,
@@ -68,8 +68,8 @@
             <if test="status != null">
                 and status = #{status}
             </if>
-            <if test="isLock != null">
-                and isLock = #{is_lock}
+            <if test="isLocked != null">
+                and isLocked = #{isLocked}
             </if>
             <if test="appSystemIdList != null and appSystemIdList.size() > 0">
                 AND app_system_id IN
@@ -106,7 +106,7 @@
         app_system_name as appSystemName,
         app_module_id as appModuleId,
         app_module_name as appModuleName,
-        is_lock as isLock,
+        is_locked as isLocked,
         fcu,
         fcd,
         lcu,

@@ -42,8 +42,7 @@ public class DeleteDeployVersionApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "id", desc = "版本id", isRequired = true, type = ApiParamType.LONG),
-            @Param(name = "isLock", desc = "是否封版(0：解版，1：封版)", isRequired = true, type = ApiParamType.INTEGER)
+            @Param(name = "id", desc = "版本id", isRequired = true, type = ApiParamType.LONG)
     })
     @Description(desc = "删除发布版本")
     @Override
