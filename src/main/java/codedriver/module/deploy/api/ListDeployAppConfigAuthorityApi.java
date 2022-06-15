@@ -25,7 +25,7 @@ public class ListDeployAppConfigAuthorityApi extends PrivateApiComponentBase {
 
     @Override
     public String getToken() {
-        return "/deploy/app/config/authority/list";
+        return "/deploy/app/config/authority/action/list";
     }
 
     @Override
