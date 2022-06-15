@@ -76,15 +76,21 @@
                 </foreach>
             </if>
             <if test="appModuleIdList != null and appModuleIdList.size() > 0">
-                AND app_system_id IN
+                AND app_module_id IN
                 <foreach collection="appModuleIdList" item="appModuleId" open="(" separator="," close=")">
                     #{appModuleId}
                 </foreach>
             </if>
             <if test="statusList != null and statusList.size() > 0">
-                AND app_system_id IN
+                AND status IN
                 <foreach collection="statusList" item="status" open="(" separator="," close=")">
                     #{appSystemId}
+                </foreach>
+            </if>
+            <if test="defaultValue != null and defaultValue.size() > 0">
+                AND id IN
+                <foreach collection="defaultValue" item="id" open="(" separator="," close=")">
+                    #{id}
                 </foreach>
             </if>
         </where>
