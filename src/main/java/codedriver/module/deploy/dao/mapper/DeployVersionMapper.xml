@@ -9,8 +9,8 @@
 
     <insert id="insertDeployVersion">
         insert into deploy_version
-        (id, version, status, app_id, app_name, app_module_id, app_module_name, is_lock, fcu, fcd, lcu, lcd)
-        values (#{id}, #{version}, #{status}, #{appId}, #{appName}, #{appModuleId}, #{appModuleName}, #{isLock},
+        (id, version, status, app_system_id, app_system_name, app_module_id, app_module_name, is_lock, fcu, fcd, lcu, lcd)
+        values (#{id}, #{version}, #{status}, #{appSystemId}, #{appSystemName}, #{appModuleId}, #{appModuleName}, #{isLock},
                 #{fcu}, now(3), #{lcd}, now(3))
     </insert>
 
@@ -30,8 +30,8 @@
         select count(id)
         from deploy_version
         where id != #{id}
-          and app_id = #{appId}
-          and module_id = #{moduleId}
+          and app_system_id = #{appSystemId}
+          and app_module_id = #{appModuleId}
           and version = #{version}
     </select>
 
@@ -39,8 +39,8 @@
         select id,
                version,
                status,
-               app_id          as appId,
-               app_name        as appName,
+               app_system_id          as appSystemId,
+               app_system_name        as appSystemName,
                app_module_id   as appModuleId,
                app_module_name as appModuleName,
                is_lock         as isLock,
@@ -54,26 +54,60 @@
 
     <select id="searchDeployVersionCount" resultType="java.lang.Integer">
         select count(id)
-        from deploy_verison
-        where app_id = #{appId}
-          and app_module_id = #{appModuleId}
+        from deploy_version
+        <include refid="searchVersionWhere"></include>
     </select>
+
+    <sql id="searchVersionWhere">
+        <where>
+            <if test="keyword != null and keyword != ''">
+                and `version` like CONCAT('%', #{keyword}, '%')
+            </if>
+            <if test="status != null">
+                and status = #{status}
+            </if>
+            <if test="isLock != null">
+                and isLock = #{is_lock}
+            </if>
+            <if test="appSystemIdList != null and appSystemIdList.size() > 0">
+                AND app_system_id IN
+                <foreach collection="appSystemIdList" item="appSystemId" open="(" separator="," close=")">
+                    #{appSystemId}
+                </foreach>
+            </if>
+            <if test="appModuleIdList != null and appModuleIdList.size() > 0">
+                AND app_system_id IN
+                <foreach collection="appModuleIdList" item="appModuleId" open="(" separator="," close=")">
+                    #{appModuleId}
+                </foreach>
+            </if>
+            <if test="statusList != null and statusList.size() > 0">
+                AND app_system_id IN
+                <foreach collection="statusList" item="status" open="(" separator="," close=")">
+                    #{appSystemId}
+                </foreach>
+            </if>
+        </where>
+    </sql>
 
     <select id="searchDeployVersion" resultType="codedriver.framework.deploy.dto.version.DeployVersionVo">
         select id,
-               version,
-               status,
-               app_id          as appId,
-               app_name        as appName,
-               app_module_id   as appModuleId,
-               app_module_name as appModuleName,
-               is_lock         as isLock,
-               fcu,
-               fcd,
-               lcu,
-               lcd
-        from deploy_verison
-        where app_id = #{appId}
-          and app_module_id = #{appModuleId}
+        version,
+        status,
+        app_system_id as appSystemId,
+        app_system_name as appSystemName,
+        app_module_id as appModuleId,
+        app_module_name as appModuleName,
+        is_lock as isLock,
+        fcu,
+        fcd,
+        lcu,
+        lcd
+        from deploy_version
+        <include refid="searchVersionWhere"></include>
+        ORDER BY fcd DESC
+        <if test="needPage == true">
+            LIMIT #{startNum}, #{pageSize}
+        </if>
     </select>
 </mapper>

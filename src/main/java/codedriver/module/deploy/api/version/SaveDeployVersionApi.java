@@ -50,8 +50,8 @@ public class SaveDeployVersionApi extends PrivateApiComponentBase {
 
     @Input({
             @Param(name = "version", desc = "版本", isRequired = true, type = ApiParamType.STRING),
-            @Param(name = "appId", desc = "应用id", isRequired = true, type = ApiParamType.LONG),
-            @Param(name = "appName", desc = "应用名称", type = ApiParamType.STRING),
+            @Param(name = "appSystemId", desc = "应用id", isRequired = true, type = ApiParamType.LONG),
+            @Param(name = "appSystemName", desc = "应用名称", type = ApiParamType.STRING),
             @Param(name = "appModuleId", desc = "应用模块id", isRequired = true, type = ApiParamType.LONG),
             @Param(name = "appModuleName", desc = "应用模块名称", type = ApiParamType.STRING),
             @Param(name = "isLock", desc = "是否封版", isRequired = true, type = ApiParamType.INTEGER)
@@ -59,19 +59,19 @@ public class SaveDeployVersionApi extends PrivateApiComponentBase {
     @Description(desc = "保存发布版本")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
-        DeployVersionVo version = paramObj.toJavaObject(DeployVersionVo.class);
-        if (deployVersionMapper.checkDeployVersionIsRepeat(version)>0) {
-            throw new DeployVersionIsRepeatException(version.getVersion());
+        DeployVersionVo versionVo = paramObj.toJavaObject(DeployVersionVo.class);
+        if (deployVersionMapper.checkDeployVersionIsRepeat(versionVo) > 0) {
+            throw new DeployVersionIsRepeatException(versionVo.getVersion());
         }
-        ICiEntityCrossoverMapper iCiEntityCrossoverMapper =  CrossoverServiceFactory.getApi(ICiEntityCrossoverMapper.class);
-        if (iCiEntityCrossoverMapper.getCiEntityBaseInfoById(version.getAppId()) == null) {
-            throw new CiEntityNotFoundException(version.getAppId());
+        ICiEntityCrossoverMapper iCiEntityCrossoverMapper = CrossoverServiceFactory.getApi(ICiEntityCrossoverMapper.class);
+        if (iCiEntityCrossoverMapper.getCiEntityBaseInfoById(versionVo.getAppSystemId()) == null) {
+            throw new CiEntityNotFoundException(versionVo.getAppSystemId());
         }
-        if (iCiEntityCrossoverMapper.getCiEntityBaseInfoById(version.getAppModuleId()) == null) {
-            throw new CiEntityNotFoundException(version.getAppModuleId());
+        if (iCiEntityCrossoverMapper.getCiEntityBaseInfoById(versionVo.getAppModuleId()) == null) {
+            throw new CiEntityNotFoundException(versionVo.getAppModuleId());
         }
 
-        deployVersionMapper.insertDeployVersion(version);
+        deployVersionMapper.insertDeployVersion(versionVo);
         return null;
     }
 

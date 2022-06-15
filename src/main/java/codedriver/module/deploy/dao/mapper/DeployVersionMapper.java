@@ -11,11 +11,11 @@ import java.util.List;
  */
 public interface DeployVersionMapper {
 
-    int checkDeployVersionIsRepeat(DeployVersionVo version);
+    int checkDeployVersionIsRepeat(DeployVersionVo versionVo);
 
     int searchDeployVersionCount(DeployVersionVo versionVo);
 
-    void insertDeployVersion(DeployVersionVo version);
+    void insertDeployVersion(DeployVersionVo versionVo);
 
     void unLockDeployVersionById(@Param("id") Long id, @Param("isLock") Long isLock);
 

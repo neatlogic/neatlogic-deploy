@@ -49,8 +49,8 @@ public class DeleteDeployVersionApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         Long versionId = paramObj.getLong("id");
-        DeployVersionVo deployVersionVo = deployVersionMapper.getDeployVersionById(versionId);
-        if (deployVersionVo == null) {
+        DeployVersionVo versionVo = deployVersionMapper.getDeployVersionById(versionId);
+        if (versionVo == null) {
             throw new DeployVersionNotFoundException(versionId);
         }
         deployVersionMapper.deleteDeployVersionById(versionId);
