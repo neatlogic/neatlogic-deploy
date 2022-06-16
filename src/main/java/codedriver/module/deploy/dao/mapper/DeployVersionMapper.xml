@@ -7,4 +7,115 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="codedriver.module.deploy.dao.mapper.DeployVersionMapper">
 
+    <insert id="insertDeployVersion">
+        insert into deploy_version
+        (id, version, status, app_system_id, app_system_name, app_module_id, app_module_name, is_locked, fcu, fcd, lcu,
+         lcd)
+        values (#{id}, #{version}, #{status}, #{appSystemId}, #{appSystemName}, #{appModuleId}, #{appModuleName},
+                #{isLocked},
+                #{fcu}, now(3), #{lcu}, now(3))
+    </insert>
+
+    <update id="unLockDeployVersionById">
+        update deploy_version
+        set is_locked = #{isLocked}
+        where id = #{id}
+    </update>
+
+    <delete id="deleteDeployVersionById">
+        delete
+        from deploy_version
+        where id = #{id}
+    </delete>
+
+    <select id="checkDeployVersionIsRepeat" resultType="int">
+        select count(id)
+        from deploy_version
+        where id != #{id}
+          and app_system_id = #{appSystemId}
+          and app_module_id = #{appModuleId}
+          and version = #{version}
+    </select>
+
+    <select id="getDeployVersionById" resultType="codedriver.framework.deploy.dto.version.DeployVersionVo">
+        select id,
+               version,
+               status,
+               app_system_id   as appSystemId,
+               app_system_name as appSystemName,
+               app_module_id   as appModuleId,
+               app_module_name as appModuleName,
+               is_locked         as isLocked,
+               fcu,
+               fcd,
+               lcu,
+               lcd
+        from deploy_version
+        where id = #{id}
+    </select>
+
+    <select id="searchDeployVersionCount" resultType="java.lang.Integer">
+        select count(id)
+        from deploy_version
+        <include refid="searchVersionWhere"></include>
+    </select>
+
+    <sql id="searchVersionWhere">
+        <where>
+            <if test="keyword != null and keyword != ''">
+                and `version` like CONCAT('%', #{keyword}, '%')
+            </if>
+            <if test="status != null">
+                and status = #{status}
+            </if>
+            <if test="isLocked != null">
+                and isLocked = #{isLocked}
+            </if>
+            <if test="appSystemIdList != null and appSystemIdList.size() > 0">
+                AND app_system_id IN
+                <foreach collection="appSystemIdList" item="appSystemId" open="(" separator="," close=")">
+                    #{appSystemId}
+                </foreach>
+            </if>
+            <if test="appModuleIdList != null and appModuleIdList.size() > 0">
+                AND app_module_id IN
+                <foreach collection="appModuleIdList" item="appModuleId" open="(" separator="," close=")">
+                    #{appModuleId}
+                </foreach>
+            </if>
+            <if test="statusList != null and statusList.size() > 0">
+                AND status IN
+                <foreach collection="statusList" item="status" open="(" separator="," close=")">
+                    #{appSystemId}
+                </foreach>
+            </if>
+            <if test="defaultValue != null and defaultValue.size() > 0">
+                AND id IN
+                <foreach collection="defaultValue" item="id" open="(" separator="," close=")">
+                    #{id}
+                </foreach>
+            </if>
+        </where>
+    </sql>
+
+    <select id="searchDeployVersion" resultType="codedriver.framework.deploy.dto.version.DeployVersionVo">
+        select id,
+        version,
+        status,
+        app_system_id as appSystemId,
+        app_system_name as appSystemName,
+        app_module_id as appModuleId,
+        app_module_name as appModuleName,
+        is_locked as isLocked,
+        fcu,
+        fcd,
+        lcu,
+        lcd
+        from deploy_version
+        <include refid="searchVersionWhere"></include>
+        ORDER BY fcd DESC
+        <if test="needPage == true">
+            LIMIT #{startNum}, #{pageSize}
+        </if>
+    </select>
 </mapper>
