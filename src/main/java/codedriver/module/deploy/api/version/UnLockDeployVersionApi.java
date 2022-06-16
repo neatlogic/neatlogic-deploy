@@ -53,7 +53,7 @@ public class UnLockDeployVersionApi extends PrivateApiComponentBase {
         if (deployVersionVo == null) {
             throw new DeployVersionNotFoundException(versionId);
         }
-        deployVersionMapper.unLockDeployVersionById(versionId, paramObj.getLong("isLock"));
+        deployVersionMapper.unLockDeployVersionById(versionId, paramObj.getLong("isLocked"));
         return null;
     }
 }
