@@ -43,7 +43,7 @@ public class SearchDeployVersionApi extends PrivateApiComponentBase {
     @Input({
             @Param(name = "defaultValue", desc = "默认值", type = ApiParamType.JSONARRAY),
             @Param(name = "keyword", desc = "关键词", type = ApiParamType.STRING),
-            @Param(name = "appSystemIdList", desc = "应用id", type = ApiParamType.JSONARRAY),
+            @Param(name = "appSystemIdList", desc = "应用系统id", type = ApiParamType.JSONARRAY),
             @Param(name = "appModuleIdList", desc = "应用模块id", type = ApiParamType.JSONARRAY),
             @Param(name = "statusList", desc = "状态", type = ApiParamType.JSONARRAY),
             @Param(name = "currentPage", desc = "当前页", type = ApiParamType.INTEGER),
