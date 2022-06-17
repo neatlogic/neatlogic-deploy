@@ -52,7 +52,7 @@ public class DeployJobSourceHandler extends AutoexecJobSourceActionHandlerBase {
     }
 
     @Override
-    public String getJobSqlContent(AutoexecJobVo jobVo) {
+    public JSONObject getJobSqlContent(AutoexecJobVo jobVo) {
         JSONObject paramObj = jobVo.getActionParam();
         DeploySqlDetailVo sqlDetailVo = deploySqlMapper.getJobSqlDetailById(paramObj.getLong("sqlId"));
         paramObj.put("sysId", sqlDetailVo.getSysId());
@@ -63,7 +63,7 @@ public class DeployJobSourceHandler extends AutoexecJobSourceActionHandlerBase {
         CiEntityVo envCiEntity = ciEntityCrossoverMapper.getCiEntityBaseInfoById(sqlDetailVo.getEnvId());
         paramObj.put("envName", envCiEntity.getName());
         AutoexecJobPhaseNodeVo nodeVo = jobVo.getCurrentNode();
-        return AutoexecUtil.requestRunner(nodeVo.getRunnerUrl() + "/api/rest/deploy/sql/content/get", paramObj);
+        return JSONObject.parseObject(AutoexecUtil.requestRunner(nodeVo.getRunnerUrl() + "/api/rest/deploy/sql/content/get", paramObj));
     }
 
     @Override
