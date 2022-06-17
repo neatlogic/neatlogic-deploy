@@ -1,9 +1,13 @@
 package codedriver.module.deploy.api.version.resource;
 
 import codedriver.framework.common.constvalue.ApiParamType;
-import codedriver.framework.deploy.exception.GetDeployVersionResourceFailedException;
+import codedriver.framework.deploy.exception.ChangeDeployVersionResourcePermissionFailedException;
+import codedriver.framework.deploy.exception.CreateDeployVersionResourceDirectoryFailedException;
 import codedriver.framework.integration.authentication.enums.AuthenticateType;
-import codedriver.framework.restful.annotation.*;
+import codedriver.framework.restful.annotation.Description;
+import codedriver.framework.restful.annotation.Input;
+import codedriver.framework.restful.annotation.OperationType;
+import codedriver.framework.restful.annotation.Param;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.framework.util.HttpRequestUtil;
@@ -18,19 +22,19 @@ import org.springframework.stereotype.Service;
  * @date 2022/6/17 9:59 上午
  */
 @Service
-@OperationType(type = OperationTypeEnum.SEARCH)
-public class GetDirectoryContentApi extends PrivateApiComponentBase {
+@OperationType(type = OperationTypeEnum.UPDATE)
+public class ChangePermissionApi extends PrivateApiComponentBase {
 
-    Logger logger = LoggerFactory.getLogger(GetDirectoryContentApi.class);
+    Logger logger = LoggerFactory.getLogger(ChangePermissionApi.class);
 
     @Override
     public String getName() {
-        return "获取目录内容";
+        return "修改文件权限";
     }
 
     @Override
     public String getToken() {
-        return "deploy/version/resource/directory/content/get";
+        return "deploy/version/resource/file/chmod";
     }
 
     @Override
@@ -40,36 +44,33 @@ public class GetDirectoryContentApi extends PrivateApiComponentBase {
 
     // todo 入参待确定
     @Input({
-            @Param(name = "id", desc = "版本id", isRequired = true, type = ApiParamType.LONG)
+            @Param(name = "id", desc = "版本id", isRequired = true, type = ApiParamType.LONG),
+            @Param(name = "name", desc = "目录或文件名称", isRequired = true, type = ApiParamType.STRING),
+            @Param(name = "mode", desc = "权限(e.g:rwxr-xr-x)", isRequired = true, type = ApiParamType.STRING)
     })
-    @Output({
-            @Param(name = "name", type = ApiParamType.STRING, desc = "文件名"),
-            @Param(name = "type", type = ApiParamType.STRING, desc = "文件类型"),
-            @Param(name = "size", type = ApiParamType.LONG, desc = "文件大小"),
-            @Param(name = "fcd", type = ApiParamType.LONG, desc = "最后修改时间"),
-            @Param(name = "fcdText", type = ApiParamType.STRING, desc = "最后修改时间(格式化为yyyy-MM-dd HH:mm:ss)"),
-            @Param(name = "permission", type = ApiParamType.STRING, desc = "文件权限")
-    })
-    @Description(desc = "获取目录内容")
+    @Description(desc = "修改文件权限")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         // todo 根据应用、模块、版本号、buildNo/环境决定runner与文件路径
+        String name = paramObj.getString("name");
+        String mode = paramObj.getString("mode");
         JSONObject paramJson = new JSONObject();
-        String path = "/test"; // todo 根据入参决定path
+        String path = "/test/hihi"; // todo 根据入参决定path
         paramJson.put("path", path);
+        paramJson.put("mode", mode);
         String url = "http://bj.ainoe.cn:8080/api/rest/file";
-        String method = "/directory/content/get";
+        String method = "/chmod";
         url += method;
         HttpRequestUtil request = HttpRequestUtil.post(url).setPayload(paramJson.toJSONString()).setAuthType(AuthenticateType.BUILDIN).sendRequest();
         String error = request.getError();
         if (StringUtils.isNotBlank(error)) {
             logger.error("send request failed.url: {},error: {}", url, error);
-            throw new GetDeployVersionResourceFailedException(error);
+            throw new ChangeDeployVersionResourcePermissionFailedException(error);
         }
         JSONObject resultJson = request.getResultJson();
         if (!resultJson.containsKey("Status") || !"OK".equals(resultJson.getString("Status"))) {
-            throw new GetDeployVersionResourceFailedException(resultJson.getString("Message"));
+            throw new ChangeDeployVersionResourcePermissionFailedException(resultJson.getString("Message"));
         }
-        return resultJson.getJSONArray("Return");
+        return null;
     }
 }

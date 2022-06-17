@@ -49,11 +49,14 @@ public class CreateDirectoryApi extends PrivateApiComponentBase {
     @Description(desc = "新建目录")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
+        String name = paramObj.getString("name");
         // todo 根据应用、模块、版本号、buildNo/环境决定runner与文件路径
         JSONObject paramJson = new JSONObject();
         String path = "/test/hihi"; // todo 根据入参决定path
         paramJson.put("path", path);
-        String url = "http://bj.ainoe.cn:8080/api/rest/file/directory/create";
+        String url = "http://bj.ainoe.cn:8080/api/rest/file";
+        String method = "/directory/create";
+        url += method;
         HttpRequestUtil request = HttpRequestUtil.post(url).setPayload(paramJson.toJSONString()).setAuthType(AuthenticateType.BUILDIN).sendRequest();
         String error = request.getError();
         if (StringUtils.isNotBlank(error)) {
