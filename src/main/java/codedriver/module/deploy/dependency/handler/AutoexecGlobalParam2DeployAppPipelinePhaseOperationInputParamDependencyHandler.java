@@ -34,6 +34,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+/**
+ * 发布应用流水线阶段操作输入参数映射引用全局参数处理器
+ */
 @Component
 public class AutoexecGlobalParam2DeployAppPipelinePhaseOperationInputParamDependencyHandler extends FixedTableDependencyHandlerBase {
 

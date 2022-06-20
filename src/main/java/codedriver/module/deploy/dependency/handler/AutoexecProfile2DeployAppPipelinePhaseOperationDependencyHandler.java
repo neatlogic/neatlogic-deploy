@@ -31,6 +31,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+/**
+ * 发布应用流水线阶段操作引用预置参数集处理器
+ */
 @Component
 public class AutoexecProfile2DeployAppPipelinePhaseOperationDependencyHandler extends FixedTableDependencyHandlerBase {
 
