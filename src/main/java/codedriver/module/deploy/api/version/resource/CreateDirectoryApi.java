@@ -59,11 +59,12 @@ public class CreateDirectoryApi extends PrivateApiComponentBase {
         HttpRequestUtil request = HttpRequestUtil.post(url).setPayload(paramJson.toJSONString()).setAuthType(AuthenticateType.BUILDIN).sendRequest();
         int responseCode = request.getResponseCode();
         String error = request.getError();
-        if (responseCode == 520) {
-            JSONObject resultJson = request.getResultJson();
-            throw new CreateDirectoryFailedException(resultJson.getString("Message"));
-        } else if (StringUtils.isNotBlank(error)) {
-            throw new CreateDirectoryFailedException(error);
+        if (StringUtils.isNotBlank(error)) {
+            if (responseCode == 520) {
+                throw new CreateDirectoryFailedException(JSONObject.parseObject(error).getString("Message"));
+            } else {
+                throw new CreateDirectoryFailedException(error);
+            }
         }
         return null;
     }

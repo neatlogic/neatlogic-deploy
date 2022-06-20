@@ -62,11 +62,12 @@ public class CopyFileApi extends PrivateApiComponentBase {
         HttpRequestUtil request = HttpRequestUtil.post(url).setPayload(paramJson.toJSONString()).setAuthType(AuthenticateType.BUILDIN).sendRequest();
         int responseCode = request.getResponseCode();
         String error = request.getError();
-        if (responseCode == 520) {
-            JSONObject resultJson = request.getResultJson();
-            throw new CopyFileFailedException(resultJson.getString("Message"));
-        } else if (StringUtils.isNotBlank(error)) {
-            throw new CopyFileFailedException(error);
+        if (StringUtils.isNotBlank(error)) {
+            if (responseCode == 520) {
+                throw new CopyFileFailedException(JSONObject.parseObject(error).getString("Message"));
+            } else {
+                throw new CopyFileFailedException(error);
+            }
         }
         return null;
     }

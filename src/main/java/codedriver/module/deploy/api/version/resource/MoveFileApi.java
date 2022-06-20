@@ -62,11 +62,12 @@ public class MoveFileApi extends PrivateApiComponentBase {
         HttpRequestUtil request = HttpRequestUtil.post(url).setPayload(paramJson.toJSONString()).setAuthType(AuthenticateType.BUILDIN).sendRequest();
         int responseCode = request.getResponseCode();
         String error = request.getError();
-        if (responseCode == 520) {
-            JSONObject resultJson = request.getResultJson();
-            throw new MoveFileFailedException(resultJson.getString("Message"));
-        } else if (StringUtils.isNotBlank(error)) {
-            throw new MoveFileFailedException(error);
+        if (StringUtils.isNotBlank(error)) {
+            if (responseCode == 520) {
+                throw new MoveFileFailedException(JSONObject.parseObject(error).getString("Message"));
+            } else {
+                throw new MoveFileFailedException(error);
+            }
         }
         return null;
     }

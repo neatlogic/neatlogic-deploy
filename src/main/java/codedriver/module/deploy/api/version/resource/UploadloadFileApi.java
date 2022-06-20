@@ -81,11 +81,12 @@ public class UploadloadFileApi extends PrivateBinaryStreamApiComponentBase {
             HttpRequestUtil httpRequestUtil = HttpRequestUtil.post(url).setContentType(HttpRequestUtil.ContentType.CONTENT_TYPE_MULTIPART_FORM_DATA_FILE_STREAM).setFormData(paramJson).setFileStreamMap(fileStreamMap).setAuthType(AuthenticateType.BUILDIN).sendRequest();
             int responseCode = httpRequestUtil.getResponseCode();
             String error = httpRequestUtil.getError();
-            if (responseCode == 520) {
-                JSONObject resultJson = httpRequestUtil.getResultJson();
-                throw new UploadFileFailedException(resultJson.getString("Message"));
-            } else if (StringUtils.isNotBlank(error)) {
-                throw new UploadFileFailedException(error);
+            if (StringUtils.isNotBlank(error)) {
+                if (responseCode == 520) {
+                    throw new UploadFileFailedException(JSONObject.parseObject(error).getString("Message"));
+                } else {
+                    throw new UploadFileFailedException(error);
+                }
             }
         }
 

@@ -41,7 +41,7 @@ public class GetDirectoryContentApi extends PrivateApiComponentBase {
     // todo 入参待确定
     @Input({
             @Param(name = "id", desc = "版本id", isRequired = true, type = ApiParamType.LONG),
-            @Param(name = "path", desc = "目录路径", isRequired = true, type = ApiParamType.LONG)
+            @Param(name = "path", desc = "目录路径", isRequired = true, type = ApiParamType.STRING)
     })
     @Output({
             @Param(name = "name", type = ApiParamType.STRING, desc = "文件名"),
@@ -65,10 +65,12 @@ public class GetDirectoryContentApi extends PrivateApiComponentBase {
         int responseCode = request.getResponseCode();
         JSONObject resultJson = request.getResultJson();
         String error = request.getError();
-        if (responseCode == 520) {
-            throw new GetDirectoryFailedException(resultJson.getString("Message"));
-        } else if (StringUtils.isNotBlank(error)) {
-            throw new GetDirectoryFailedException(error);
+        if (StringUtils.isNotBlank(error)) {
+            if (responseCode == 520) {
+                throw new GetDirectoryFailedException(JSONObject.parseObject(error).getString("Message"));
+            } else {
+                throw new GetDirectoryFailedException(error);
+            }
         }
         return resultJson.getJSONArray("Return");
     }

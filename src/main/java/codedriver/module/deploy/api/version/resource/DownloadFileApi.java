@@ -67,11 +67,12 @@ public class DownloadFileApi extends PrivateBinaryStreamApiComponentBase {
         HttpRequestUtil httpRequestUtil = HttpRequestUtil.download(url, "POST", response.getOutputStream()).setPayload(paramJson.toJSONString()).setAuthType(AuthenticateType.BUILDIN).sendRequest();
         int responseCode = httpRequestUtil.getResponseCode();
         String error = httpRequestUtil.getError();
-        if (responseCode == 520) {
-            JSONObject resultJson = httpRequestUtil.getResultJson();
-            throw new DownloadFileFailedException(resultJson.getString("Message"));
-        } else if (StringUtils.isNotBlank(error)) {
-            throw new DownloadFileFailedException(error);
+        if (StringUtils.isNotBlank(error)) {
+            if (responseCode == 520) {
+                throw new DownloadFileFailedException(JSONObject.parseObject(error).getString("Message"));
+            } else {
+                throw new DownloadFileFailedException(error);
+            }
         }
         return null;
     }

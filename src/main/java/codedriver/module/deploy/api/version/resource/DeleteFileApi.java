@@ -59,11 +59,12 @@ public class DeleteFileApi extends PrivateApiComponentBase {
         HttpRequestUtil request = HttpRequestUtil.post(url).setPayload(paramJson.toJSONString()).setAuthType(AuthenticateType.BUILDIN).sendRequest();
         int responseCode = request.getResponseCode();
         String error = request.getError();
-        if (responseCode == 520) {
-            JSONObject resultJson = request.getResultJson();
-            throw new DeleteFileFailedException(resultJson.getString("Message"));
-        } else if (StringUtils.isNotBlank(error)) {
-            throw new DeleteFileFailedException(error);
+        if (StringUtils.isNotBlank(error)) {
+            if (responseCode == 520) {
+                throw new DeleteFileFailedException(JSONObject.parseObject(error).getString("Message"));
+            } else {
+                throw new DeleteFileFailedException(error);
+            }
         }
         return null;
     }

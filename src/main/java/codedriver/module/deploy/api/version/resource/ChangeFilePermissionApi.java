@@ -62,11 +62,12 @@ public class ChangeFilePermissionApi extends PrivateApiComponentBase {
         HttpRequestUtil request = HttpRequestUtil.post(url).setPayload(paramJson.toJSONString()).setAuthType(AuthenticateType.BUILDIN).sendRequest();
         int responseCode = request.getResponseCode();
         String error = request.getError();
-        if (responseCode == 520) {
-            JSONObject resultJson = request.getResultJson();
-            throw new ChangeFilePermissionFailedException(resultJson.getString("Message"));
-        } else if (StringUtils.isNotBlank(error)) {
-            throw new ChangeFilePermissionFailedException(error);
+        if (StringUtils.isNotBlank(error)) {
+            if (responseCode == 520) {
+                throw new ChangeFilePermissionFailedException(JSONObject.parseObject(error).getString("Message"));
+            } else {
+                throw new ChangeFilePermissionFailedException(error);
+            }
         }
         return null;
     }
