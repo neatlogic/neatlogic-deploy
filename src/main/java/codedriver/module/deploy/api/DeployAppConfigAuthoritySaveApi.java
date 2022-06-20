@@ -48,7 +48,7 @@ public class DeployAppConfigAuthoritySaveApi extends PrivateApiComponentBase {
     @Input({
             @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "应用资产id"),
             @Param(name = "envId", type = ApiParamType.LONG, isRequired = true, desc = "环境资产id"),
-            @Param(name = "authorityList", type = ApiParamType.JSONARRAY, isRequired = true, desc = "授权列表"),
+            @Param(name = "authorityStrList", type = ApiParamType.JSONARRAY, isRequired = true, desc = "授权列表"),
             @Param(name = "actionList", type = ApiParamType.JSONARRAY, isRequired = true, desc = "授权操作列表"),
             @Param(name = "isEdit", type = ApiParamType.INTEGER, isRequired = true, desc = "是否编辑，0：否，1：是"),
     })
@@ -60,19 +60,19 @@ public class DeployAppConfigAuthoritySaveApi extends PrivateApiComponentBase {
         DeployAppConfigAuthorityVo deployAppConfigAuthorityVo = paramObj.toJavaObject(DeployAppConfigAuthorityVo.class);
         Date nowTime = new Date(System.currentTimeMillis());
         deployAppConfigAuthorityVo.setLcd(nowTime);
-        for(AuthorityVo authorityVo : deployAppConfigAuthorityVo.getAuthorityList()){
+        for (AuthorityVo authorityVo : deployAppConfigAuthorityVo.getAuthorityList()) {
             deployAppConfigAuthorityVo.setAuthUuid(authorityVo.getUuid());
             deployAppConfigAuthorityVo.setAuthType(authorityVo.getType());
-            for(String action : deployAppConfigAuthorityVo.getActionList()){
+            for (String action : deployAppConfigAuthorityVo.getActionList()) {
                 deployAppConfigAuthorityVo.setAction(action);
                 deployAppConfigMapper.insertAppConfigAuthority(deployAppConfigAuthorityVo);
             }
         }
 
         //如果是编辑，则需要删除多余权限
-        if(deployAppConfigAuthorityVo.getIsEdit() == 1){
+        if (deployAppConfigAuthorityVo.getIsEdit() == 1) {
             AuthorityVo authorityVo = deployAppConfigAuthorityVo.getAuthorityList().get(0);
-            deployAppConfigMapper.deleteAppConfigAuthorityByAppIdAndEnvIdAndAuthUuidAndLcd(deployAppConfigAuthorityVo.getAppSystemId(),deployAppConfigAuthorityVo.getEnvId(),authorityVo.getUuid(),nowTime);
+            deployAppConfigMapper.deleteAppConfigAuthorityByAppIdAndEnvIdAndAuthUuidAndLcd(deployAppConfigAuthorityVo.getAppSystemId(), deployAppConfigAuthorityVo.getEnvId(), authorityVo.getUuid(), nowTime);
         }
         return null;
     }
