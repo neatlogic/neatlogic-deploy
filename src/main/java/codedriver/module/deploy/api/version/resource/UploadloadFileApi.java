@@ -5,7 +5,7 @@
 package codedriver.module.deploy.api.version.resource;
 
 import codedriver.framework.common.constvalue.ApiParamType;
-import codedriver.framework.deploy.exception.DownloadFileFailedException;
+import codedriver.framework.deploy.exception.UploadFileFailedException;
 import codedriver.framework.integration.authentication.enums.AuthenticateType;
 import codedriver.framework.restful.annotation.Description;
 import codedriver.framework.restful.annotation.Input;
@@ -54,8 +54,8 @@ public class UploadloadFileApi extends PrivateBinaryStreamApiComponentBase {
     @Input({
             @Param(name = "id", desc = "版本id", isRequired = true, type = ApiParamType.LONG),
             @Param(name = "path", type = ApiParamType.STRING, desc = "文件路径", isRequired = true),
+            @Param(name = "unpack", type = ApiParamType.ENUM, rule = "1,0", desc = "是否解压"),
             @Param(name = "fileParamName", type = ApiParamType.STRING, desc = "文件参数名称", isRequired = true),
-            @Param(name = "unpack", type = ApiParamType.ENUM, rule = "1,0", desc = "是否解压")
     })
     @Output({})
     @Description(desc = "上传文件")
@@ -75,13 +75,17 @@ public class UploadloadFileApi extends PrivateBinaryStreamApiComponentBase {
             JSONObject paramJson = new JSONObject();
             paramJson.put("path", path);
             paramJson.put("unpack", unpack);
-            String url = "http://bj.ainoe.cn:8080/api/binary/file";
+            String url = "autoexecrunner/api/binary/file";
             String method = "/upload";
             url += method;
             HttpRequestUtil httpRequestUtil = HttpRequestUtil.post(url).setContentType(HttpRequestUtil.ContentType.CONTENT_TYPE_MULTIPART_FORM_DATA_FILE_STREAM).setFormData(paramJson).setFileStreamMap(fileStreamMap).setAuthType(AuthenticateType.BUILDIN).sendRequest();
+            int responseCode = httpRequestUtil.getResponseCode();
             String error = httpRequestUtil.getError();
-            if (StringUtils.isNotBlank(error)) {
-                throw new DownloadFileFailedException(error);
+            if (responseCode == 520) {
+                JSONObject resultJson = httpRequestUtil.getResultJson();
+                throw new UploadFileFailedException(resultJson.getString("Message"));
+            } else if (StringUtils.isNotBlank(error)) {
+                throw new UploadFileFailedException(error);
             }
         }
 

@@ -22,9 +22,9 @@ import org.springframework.stereotype.Service;
  */
 @Service
 @OperationType(type = OperationTypeEnum.UPDATE)
-public class ChangePermissionApi extends PrivateApiComponentBase {
+public class ChangeFilePermissionApi extends PrivateApiComponentBase {
 
-    Logger logger = LoggerFactory.getLogger(ChangePermissionApi.class);
+    Logger logger = LoggerFactory.getLogger(ChangeFilePermissionApi.class);
 
     @Override
     public String getName() {
@@ -54,21 +54,19 @@ public class ChangePermissionApi extends PrivateApiComponentBase {
         String path = paramObj.getString("path");
         String mode = paramObj.getString("mode");
         JSONObject paramJson = new JSONObject();
-        path = "/test/hihi"; // todo 根据入参决定path
         paramJson.put("path", path);
         paramJson.put("mode", mode);
-        String url = "http://bj.ainoe.cn:8080/api/rest/file";
+        String url = "autoexecrunner/api/rest/file";
         String method = "/chmod";
         url += method;
         HttpRequestUtil request = HttpRequestUtil.post(url).setPayload(paramJson.toJSONString()).setAuthType(AuthenticateType.BUILDIN).sendRequest();
+        int responseCode = request.getResponseCode();
         String error = request.getError();
-        if (StringUtils.isNotBlank(error)) {
-            logger.error("send request failed.url: {},error: {}", url, error);
-            throw new ChangeFilePermissionFailedException(error);
-        }
-        JSONObject resultJson = request.getResultJson();
-        if (!resultJson.containsKey("Status") || !"OK".equals(resultJson.getString("Status"))) {
+        if (responseCode == 520) {
+            JSONObject resultJson = request.getResultJson();
             throw new ChangeFilePermissionFailedException(resultJson.getString("Message"));
+        } else if (StringUtils.isNotBlank(error)) {
+            throw new ChangeFilePermissionFailedException(error);
         }
         return null;
     }

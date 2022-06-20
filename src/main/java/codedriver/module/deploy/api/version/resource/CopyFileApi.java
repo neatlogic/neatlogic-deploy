@@ -54,22 +54,19 @@ public class CopyFileApi extends PrivateApiComponentBase {
         String dest = paramObj.getString("dest");
         // todo 根据应用、模块、版本号、buildNo/环境决定runner与文件路径
         JSONObject paramJson = new JSONObject();
-        src = "/test/hehe"; // todo 根据入参决定
-        dest = "/test/hihi";
         paramJson.put("src", src);
         paramJson.put("dest", dest);
-        String url = "http://bj.ainoe.cn:8080/api/rest/file";
+        String url = "autoexecrunner/api/rest/file";
         String method = "/copy";
         url += method;
         HttpRequestUtil request = HttpRequestUtil.post(url).setPayload(paramJson.toJSONString()).setAuthType(AuthenticateType.BUILDIN).sendRequest();
+        int responseCode = request.getResponseCode();
         String error = request.getError();
-        if (StringUtils.isNotBlank(error)) {
-            logger.error("send request failed.url: {},error: {}", url, error);
-            throw new CopyFileFailedException(error);
-        }
-        JSONObject resultJson = request.getResultJson();
-        if (!resultJson.containsKey("Status") || !"OK".equals(resultJson.getString("Status"))) {
+        if (responseCode == 520) {
+            JSONObject resultJson = request.getResultJson();
             throw new CopyFileFailedException(resultJson.getString("Message"));
+        } else if (StringUtils.isNotBlank(error)) {
+            throw new CopyFileFailedException(error);
         }
         return null;
     }

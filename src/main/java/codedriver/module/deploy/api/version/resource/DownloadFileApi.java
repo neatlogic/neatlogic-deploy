@@ -59,16 +59,18 @@ public class DownloadFileApi extends PrivateBinaryStreamApiComponentBase {
         String path = paramObj.getString("path");
         Integer isPack = paramObj.getInteger("isPack");
         JSONObject paramJson = new JSONObject();
-        path = "/test/hihi";
-        isPack = 0;
         paramJson.put("path", path);
         paramJson.put("isPack", isPack);
-        String url = "http://bj.ainoe.cn:8080/api/binary/file";
+        String url = "autoexecrunner/api/binary/file";
         String method = "/download";
         url += method;
         HttpRequestUtil httpRequestUtil = HttpRequestUtil.download(url, "POST", response.getOutputStream()).setPayload(paramJson.toJSONString()).setAuthType(AuthenticateType.BUILDIN).sendRequest();
+        int responseCode = httpRequestUtil.getResponseCode();
         String error = httpRequestUtil.getError();
-        if (StringUtils.isNotBlank(error)) {
+        if (responseCode == 520) {
+            JSONObject resultJson = httpRequestUtil.getResultJson();
+            throw new DownloadFileFailedException(resultJson.getString("Message"));
+        } else if (StringUtils.isNotBlank(error)) {
             throw new DownloadFileFailedException(error);
         }
         return null;
