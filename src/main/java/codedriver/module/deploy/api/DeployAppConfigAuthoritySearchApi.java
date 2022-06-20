@@ -73,7 +73,7 @@ public class DeployAppConfigAuthoritySearchApi extends PrivateApiComponentBase {
 
     @Input({
             @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "应用资产id"),
-            @Param(name = "envIdList", type = ApiParamType.LONG, desc = "环境Id列表"),
+            @Param(name = "envIdList", type = ApiParamType.JSONARRAY, desc = "环境Id列表"),
             @Param(name = "authUuidList", type = ApiParamType.JSONARRAY, desc = "用户列表"),
             @Param(name = "actionList", type = ApiParamType.JSONARRAY, desc = "动作列表"),
             @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "当前页"),
