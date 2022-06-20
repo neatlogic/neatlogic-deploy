@@ -1,7 +1,7 @@
 package codedriver.module.deploy.api.version.resource;
 
 import codedriver.framework.common.constvalue.ApiParamType;
-import codedriver.framework.deploy.exception.CreateDeployVersionResourceDirectoryFailedException;
+import codedriver.framework.deploy.exception.CreateDirectoryFailedException;
 import codedriver.framework.integration.authentication.enums.AuthenticateType;
 import codedriver.framework.restful.annotation.Description;
 import codedriver.framework.restful.annotation.Input;
@@ -44,15 +44,15 @@ public class CreateDirectoryApi extends PrivateApiComponentBase {
     // todo 入参待确定
     @Input({
             @Param(name = "id", desc = "版本id", isRequired = true, type = ApiParamType.LONG),
-            @Param(name = "name", desc = "目录名称", isRequired = true, type = ApiParamType.STRING)
+            @Param(name = "path", desc = "目录路径", isRequired = true, type = ApiParamType.STRING)
     })
     @Description(desc = "新建目录")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
-        String name = paramObj.getString("name");
+        String path = paramObj.getString("path");
         // todo 根据应用、模块、版本号、buildNo/环境决定runner与文件路径
         JSONObject paramJson = new JSONObject();
-        String path = "/test/hihi"; // todo 根据入参决定path
+        path = "/test/hihi"; // todo 根据入参决定path
         paramJson.put("path", path);
         String url = "http://bj.ainoe.cn:8080/api/rest/file";
         String method = "/directory/create";
@@ -61,11 +61,11 @@ public class CreateDirectoryApi extends PrivateApiComponentBase {
         String error = request.getError();
         if (StringUtils.isNotBlank(error)) {
             logger.error("send request failed.url: {},error: {}", url, error);
-            throw new CreateDeployVersionResourceDirectoryFailedException(error);
+            throw new CreateDirectoryFailedException(error);
         }
         JSONObject resultJson = request.getResultJson();
         if (!resultJson.containsKey("Status") || !"OK".equals(resultJson.getString("Status"))) {
-            throw new CreateDeployVersionResourceDirectoryFailedException(resultJson.getString("Message"));
+            throw new CreateDirectoryFailedException(resultJson.getString("Message"));
         }
         return null;
     }

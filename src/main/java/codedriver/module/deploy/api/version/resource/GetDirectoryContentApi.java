@@ -1,7 +1,7 @@
 package codedriver.module.deploy.api.version.resource;
 
 import codedriver.framework.common.constvalue.ApiParamType;
-import codedriver.framework.deploy.exception.GetDeployVersionResourceFailedException;
+import codedriver.framework.deploy.exception.GetDirectoryFailedException;
 import codedriver.framework.integration.authentication.enums.AuthenticateType;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
@@ -40,7 +40,8 @@ public class GetDirectoryContentApi extends PrivateApiComponentBase {
 
     // todo 入参待确定
     @Input({
-            @Param(name = "id", desc = "版本id", isRequired = true, type = ApiParamType.LONG)
+            @Param(name = "id", desc = "版本id", isRequired = true, type = ApiParamType.LONG),
+            @Param(name = "path", desc = "目录路径", isRequired = true, type = ApiParamType.LONG)
     })
     @Output({
             @Param(name = "name", type = ApiParamType.STRING, desc = "文件名"),
@@ -53,9 +54,10 @@ public class GetDirectoryContentApi extends PrivateApiComponentBase {
     @Description(desc = "获取目录内容")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
+        String path = paramObj.getString("path");
         // todo 根据应用、模块、版本号、buildNo/环境决定runner与文件路径
         JSONObject paramJson = new JSONObject();
-        String path = "/test"; // todo 根据入参决定path
+        path = "/test"; // todo 根据入参决定path
         paramJson.put("path", path);
         String url = "http://bj.ainoe.cn:8080/api/rest/file";
         String method = "/directory/content/get";
@@ -64,11 +66,11 @@ public class GetDirectoryContentApi extends PrivateApiComponentBase {
         String error = request.getError();
         if (StringUtils.isNotBlank(error)) {
             logger.error("send request failed.url: {},error: {}", url, error);
-            throw new GetDeployVersionResourceFailedException(error);
+            throw new GetDirectoryFailedException(error);
         }
         JSONObject resultJson = request.getResultJson();
         if (!resultJson.containsKey("Status") || !"OK".equals(resultJson.getString("Status"))) {
-            throw new GetDeployVersionResourceFailedException(resultJson.getString("Message"));
+            throw new GetDirectoryFailedException(resultJson.getString("Message"));
         }
         return resultJson.getJSONArray("Return");
     }
