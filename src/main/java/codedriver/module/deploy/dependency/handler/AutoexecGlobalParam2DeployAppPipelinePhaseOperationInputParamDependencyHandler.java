@@ -119,10 +119,6 @@ public class AutoexecGlobalParam2DeployAppPipelinePhaseOperationInputParamDepend
                                 name = key;
                             }
                         }
-                        JSONObject dependencyInfoConfig = new JSONObject();
-                        dependencyInfoConfig.put("appSystemId", appSystemId);
-                        dependencyInfoConfig.put("moduleId", moduleId);
-                        dependencyInfoConfig.put("envId", envId);
                         List<String> pathList = new ArrayList<>();
                         pathList.add("应用配置");
                         ICiEntityCrossoverMapper ciEntityCrossoverMapper = CrossoverServiceFactory.getApi(ICiEntityCrossoverMapper.class);
@@ -147,7 +143,21 @@ public class AutoexecGlobalParam2DeployAppPipelinePhaseOperationInputParamDepend
                         pathList.add(phaseName);
                         pathList.add(operationName);
                         pathList.add("输入参数映射");
-                        String urlFormat = "/" + TenantContext.get().getTenantUuid() + "/deploy.html#/action-detail?appSystemId=${DATA.appSystemId}&moduleId=${DATA.moduleId}&envId=${DATA.envId}";
+                        StringBuilder stringBuilder = new StringBuilder();
+                        stringBuilder.append("/");
+                        stringBuilder.append(TenantContext.get().getTenantUuid());
+                        stringBuilder.append("/deploy.html#/application-config-manage?appSystemId=${DATA.appSystemId}");
+                        JSONObject dependencyInfoConfig = new JSONObject();
+                        dependencyInfoConfig.put("appSystemId", appSystemId);
+                        if (moduleId != null && moduleId != 0L) {
+                            dependencyInfoConfig.put("moduleId", moduleId);
+                            stringBuilder.append("&moduleId=${DATA.moduleId}");
+                            if (envId != null && envId != 0L) {
+                                dependencyInfoConfig.put("envId", envId);
+                                stringBuilder.append("&envId=${DATA.envId}");
+                            }
+                        }
+                        String urlFormat = stringBuilder.toString();
                         String value = operationId + "_" + key;
                         return new DependencyInfoVo(value, dependencyInfoConfig, name, pathList, urlFormat, this.getGroupName());
                     }

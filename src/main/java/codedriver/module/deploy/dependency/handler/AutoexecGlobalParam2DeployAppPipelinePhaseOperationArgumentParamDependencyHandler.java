@@ -110,10 +110,6 @@ public class AutoexecGlobalParam2DeployAppPipelinePhaseOperationArgumentParamDep
                     if (Objects.equals(paramMappingVo.getValue(), dependencyVo.getFrom())) {
                         String operationName = phaseOperationVo.getName();
                         String phaseName = combopPhaseVo.getName();
-                        JSONObject dependencyInfoConfig = new JSONObject();
-                        dependencyInfoConfig.put("appSystemId", appSystemId);
-                        dependencyInfoConfig.put("moduleId", moduleId);
-                        dependencyInfoConfig.put("envId", envId);
                         List<String> pathList = new ArrayList<>();
                         pathList.add("应用配置");
                         ICiEntityCrossoverMapper ciEntityCrossoverMapper = CrossoverServiceFactory.getApi(ICiEntityCrossoverMapper.class);
@@ -137,7 +133,22 @@ public class AutoexecGlobalParam2DeployAppPipelinePhaseOperationArgumentParamDep
                         }
                         pathList.add(phaseName);
                         pathList.add(operationName);
-                        String urlFormat = "/" + TenantContext.get().getTenantUuid() + "/deploy.html#/action-detail?appSystemId=${DATA.appSystemId}&moduleId=${DATA.moduleId}&envId=${DATA.envId}";
+                        StringBuilder stringBuilder = new StringBuilder();
+                        stringBuilder.append("/");
+                        stringBuilder.append(TenantContext.get().getTenantUuid());
+                        stringBuilder.append("/deploy.html#/application-config-manage?appSystemId=${DATA.appSystemId}");
+                        JSONObject dependencyInfoConfig = new JSONObject();
+                        dependencyInfoConfig.put("appSystemId", appSystemId);
+                        if (moduleId != null && moduleId != 0L) {
+                            dependencyInfoConfig.put("moduleId", moduleId);
+                            stringBuilder.append("&moduleId=${DATA.moduleId}");
+                            if (envId != null && envId != 0L) {
+                                dependencyInfoConfig.put("envId", envId);
+                                stringBuilder.append("&envId=${DATA.envId}");
+                            }
+                        }
+
+                        String urlFormat = stringBuilder.toString();
                         String value = operationId + "_" + System.currentTimeMillis();
                         return new DependencyInfoVo(value, dependencyInfoConfig, "自由参数", pathList, urlFormat, this.getGroupName());
                     }

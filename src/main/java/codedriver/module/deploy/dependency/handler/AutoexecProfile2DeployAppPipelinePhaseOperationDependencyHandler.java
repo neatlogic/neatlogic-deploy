@@ -99,10 +99,6 @@ public class AutoexecProfile2DeployAppPipelinePhaseOperationDependencyHandler ex
                 }
                 String operationName = phaseOperationVo.getName();
                 String phaseName = combopPhaseVo.getName();
-                JSONObject dependencyInfoConfig = new JSONObject();
-                dependencyInfoConfig.put("appSystemId", appSystemId);
-                dependencyInfoConfig.put("moduleId", moduleId);
-                dependencyInfoConfig.put("envId", envId);
                 List<String> pathList = new ArrayList<>();
                 pathList.add("应用配置");
                 ICiEntityCrossoverMapper ciEntityCrossoverMapper = CrossoverServiceFactory.getApi(ICiEntityCrossoverMapper.class);
@@ -125,7 +121,22 @@ public class AutoexecProfile2DeployAppPipelinePhaseOperationDependencyHandler ex
                     }
                 }
                 pathList.add(phaseName);
-                String urlFormat = "/" + TenantContext.get().getTenantUuid() + "/deploy.html#/action-detail?appSystemId=${DATA.appSystemId}&moduleId=${DATA.moduleId}&envId=${DATA.envId}";
+                StringBuilder stringBuilder = new StringBuilder();
+                stringBuilder.append("/");
+                stringBuilder.append(TenantContext.get().getTenantUuid());
+                stringBuilder.append("/deploy.html#/application-config-manage?appSystemId=${DATA.appSystemId}");
+                JSONObject dependencyInfoConfig = new JSONObject();
+                dependencyInfoConfig.put("appSystemId", appSystemId);
+                if (moduleId != null && moduleId != 0L) {
+                    dependencyInfoConfig.put("moduleId", moduleId);
+                    stringBuilder.append("&moduleId=${DATA.moduleId}");
+                    if (envId != null && envId != 0L) {
+                        dependencyInfoConfig.put("envId", envId);
+                        stringBuilder.append("&envId=${DATA.envId}");
+                    }
+                }
+
+                String urlFormat = stringBuilder.toString();
                 return new DependencyInfoVo(operationId, dependencyInfoConfig, operationName, pathList, urlFormat, this.getGroupName());
             }
         }
