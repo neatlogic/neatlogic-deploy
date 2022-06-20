@@ -24,6 +24,7 @@ import codedriver.framework.restful.annotation.Param;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.deploy.dao.mapper.DeployAppConfigMapper;
+import codedriver.module.deploy.dependency.handler.AutoexecProfile2DeployAppPipelinePhaseOperationDependencyHandler;
 import codedriver.module.deploy.dependency.handler.Matrix2DeployAppPipelineParamDependencyHandler;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
@@ -128,10 +129,9 @@ public class DeployAppPipelineParamSaveApi extends PrivateApiComponentBase {
                     if (MapUtils.isNotEmpty(config)) {
                         String matrixUuid = config.getString("matrixUuid");
                         if (StringUtils.isNotBlank(matrixUuid)) {
-                            JSONArray callers = new JSONArray();
-                            callers.add(autoexecParamVo.getId());
-                            callers.add(key);
-                            DependencyManager.insert(Matrix2DeployAppPipelineParamDependencyHandler.class, matrixUuid, callers);
+                            JSONObject dependencyConfig = new JSONObject();
+                            dependencyConfig.put("appSystemId", appSystemId);
+                            DependencyManager.insert(AutoexecProfile2DeployAppPipelinePhaseOperationDependencyHandler.class, matrixUuid, autoexecParamVo.getId(), dependencyConfig);
                         }
                     }
                 }
