@@ -131,7 +131,7 @@ public class DeployAppPipelineParamSaveApi extends PrivateApiComponentBase {
                         if (StringUtils.isNotBlank(matrixUuid)) {
                             JSONObject dependencyConfig = new JSONObject();
                             dependencyConfig.put("appSystemId", appSystemId);
-                            DependencyManager.insert(AutoexecProfile2DeployAppPipelinePhaseOperationDependencyHandler.class, matrixUuid, autoexecParamVo.getId(), dependencyConfig);
+                            DependencyManager.insert(Matrix2DeployAppPipelineParamDependencyHandler.class, matrixUuid, autoexecParamVo.getId(), dependencyConfig);
                         }
                     }
                 }
@@ -151,6 +151,7 @@ public class DeployAppPipelineParamSaveApi extends PrivateApiComponentBase {
                 deployAppConfigVo.setConfig(config);
             }
             config.setRuntimeParamList(runtimeParamList);
+            deployAppConfigVo.setConfigStr(null);
             deployAppConfigMapper.updateAppConfig(deployAppConfigVo);
         }
         return null;
