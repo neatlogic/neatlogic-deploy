@@ -59,7 +59,7 @@ public class DeployAppConfigAppSystemListApi extends PrivateApiComponentBase {
     })
     @Output({
             @Param(explode = BasePageVo.class),
-            @Param(name = "tbodyList", explode = DeployAppConfigResourceVo[].class, desc = "应用模块列表")
+            @Param(name = "tbodyList", explode = DeployAppConfigResourceVo[].class, desc = "发布应用配置的应用系统列表")
     })
     @Description(desc = "查询发布应用配置的应用系统列表")
     @Override
