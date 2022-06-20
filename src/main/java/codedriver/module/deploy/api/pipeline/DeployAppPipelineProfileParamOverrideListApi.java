@@ -154,10 +154,10 @@ public class DeployAppPipelineProfileParamOverrideListApi extends PrivateApiComp
         appSystemIdList.add(appSystemId);
         ResourceSearchVo searchVo = new ResourceSearchVo();
         searchVo.setAppSystemIdList(appSystemIdList);
-        List<ModuleVo> appModuleIdList = resourceCenterMapper.getAppModuleListByAppSystemIdList(searchVo);
-        if (CollectionUtils.isNotEmpty(appModuleIdList)) {
+        List<ModuleVo> appModuleList = resourceCenterMapper.getAppModuleListByAppSystemIdList(searchVo);
+        if (CollectionUtils.isNotEmpty(appModuleList)) {
             IAppSystemMapper appSystemMapper = CrossoverServiceFactory.getApi(IAppSystemMapper.class);
-            for (ModuleVo appModule : appModuleIdList) {
+            for (ModuleVo appModule : appModuleList) {
                 allDeployAppConfigOverrideList.add(new DeployAppConfigOverrideVo(appSystemId, appModule.getAppModuleId()));
                 nameMap.put(appModule.getAppModuleId(), appModule.getAppModuleName());
                 List<AppEnvironmentVo> envList = appSystemMapper.getAppEnvListByAppSystemIdAndModuleIdList(appSystemId, Arrays.asList(appModule.getAppModuleId()), TenantContext.get().getDataDbName());

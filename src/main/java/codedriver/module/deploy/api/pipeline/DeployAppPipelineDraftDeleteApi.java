@@ -16,11 +16,13 @@ import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.deploy.dao.mapper.DeployAppConfigMapper;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 
 @Service
 @OperationType(type = OperationTypeEnum.DELETE)
+@Transactional
 public class DeployAppPipelineDraftDeleteApi extends PrivateApiComponentBase {
 
     @Resource
