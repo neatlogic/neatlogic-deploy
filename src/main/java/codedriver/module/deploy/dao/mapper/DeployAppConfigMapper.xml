@@ -151,6 +151,50 @@
           and `env_id` = #{envId}
     </select>
 
+    <select id="getDeployAppEnvListByAppSystemIdAndModuleIdList"
+            resultType="codedriver.framework.cmdb.dto.resourcecenter.entity.AppEnvironmentVo">
+        ( SELECT DISTINCT
+        rse.env_id AS envId,
+        rse.env_name AS envName
+        FROM
+        ${schemaName}.resource_appsystem_appmodule raa
+        join ${schemaName}.resource_ipobject_appmodule ria on raa.app_module_id = ria.app_module_id
+        join ${schemaName}.resource_appinstance ra on ria.resource_id = ra.id
+        JOIN ${schemaName}.resource_softwareservice_env rse ON ra.id = rse.resource_id
+        <where>
+            <if test="appSystemId != null">
+                raa.resource_id = #{appSystemId}
+            </if>
+            <if test="appModuleIdList != null and appModuleIdList.size() > 0">
+                and ria.app_module_id in
+                <foreach collection="appModuleIdList" item="id" separator="," open="(" close=")">
+                    #{id}
+                </foreach>
+            </if>
+        </where>
+        ) UNION
+        (
+        SELECT DISTINCT
+        cc.id AS envId,
+        cc.name AS envNaem
+        FROM
+        deploy_app_config_env dace
+        JOIN cmdb_cientity cc ON cc.id = dace.env_id
+        AND cc.ci_id = ( SELECT id FROM cmdb_ci where name = 'APPEnv' )
+        <where>
+            <if test="appSystemId != null">
+                dace.app_system_id = #{appSystemId}
+            </if>
+            <if test="appModuleIdList != null and appModuleIdList.size() > 0">
+                and dace.app_module_id in
+                <foreach collection="appModuleIdList" item="id" separator="," open="(" close=")">
+                    #{id}
+                </foreach>
+            </if>
+        </where>
+        )
+    </select>
+
     <insert id="insertAppConfigAuthority">
         INSERT INTO `deploy_app_config_authority` (`app_system_id`,
                                                    `env_id`,
@@ -249,6 +293,16 @@
         )
     </insert>
 
+    <insert id="insertAppConfigEnv">
+        insert into deploy_app_config_env(`app_system_id`, `app_module_id`, `env_id`)
+        VALUES (#{appSystemId},
+                #{appModuleId},
+                #{envId}) ON DUPLICATE KEY
+        UPDATE `app_system_id` = #{appSystemId},
+            `app_module_id` = #{appModuleId},
+            `env_id` = #{envId}
+    </insert>
+
     <update id="updateAppConfig" parameterType="codedriver.framework.deploy.dto.app.DeployAppConfigVo">
         UPDATE `deploy_app_config`
         SET `config` = #{configStr},
@@ -296,6 +350,13 @@
         DELETE FROM `deploy_app_config_draft`
         WHERE `app_system_id` = #{appSystemId}
           and `module_id` = #{moduleId}
+          and `env_id` = #{envId}
+    </delete>
+
+    <delete id="deleteAppConfigEnvByAppSystemIdAndAppModuleIdAndEnvId">
+        DELETE FROM `deploy_app_config_env`
+        WHERE `app_system_id` = #{appSystemId}
+          and `app_module_id` = #{appModuleId}
           and `env_id` = #{envId}
     </delete>
 </mapper>
