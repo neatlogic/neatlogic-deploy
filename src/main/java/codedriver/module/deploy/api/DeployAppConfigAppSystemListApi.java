@@ -43,7 +43,7 @@ public class DeployAppConfigAppSystemListApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "查询应用系统列表";
+        return "查询发布应用配置的应用系统列表";
     }
 
     @Override
@@ -61,7 +61,7 @@ public class DeployAppConfigAppSystemListApi extends PrivateApiComponentBase {
             @Param(explode = BasePageVo.class),
             @Param(name = "tbodyList", explode = DeployAppConfigResourceVo[].class, desc = "应用模块列表")
     })
-    @Description(desc = "查询应用系统列表")
+    @Description(desc = "查询发布应用配置的应用系统列表")
     @Override
     public Object myDoService(JSONObject paramObj) {
         ResourceSearchVo searchVo = paramObj.toJavaObject(ResourceSearchVo.class);

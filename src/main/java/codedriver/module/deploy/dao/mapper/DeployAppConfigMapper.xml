@@ -23,16 +23,30 @@
         limit #{searchVo.startNum}, #{searchVo.pageSize}
     </select>
 
-    <select id="getAppSystemListByIdList" resultType="codedriver.framework.deploy.dto.app.DeployAppConfigResourceVo">
-        select ra.id as appSystemId,ra.`name` as appSystemName, if(dacu.user_uuid is null,0,1) as isFavorite, if(dac.config is null,0,1) as isConfig
+    <resultMap id="appConfigSystemMap" type="codedriver.framework.deploy.dto.app.DeployAppConfigResourceVo">
+        <result column="appSystemId" property="appSystemId"/>
+        <result column="appSystemName" property="appSystemName"/>
+        <collection property="appModuleList" ofType="codedriver.framework.cmdb.dto.resourcecenter.entity.AppModuleVo">
+            <id column="appModuleId" property="id"/>
+            <result column="appModuleName" property="name"/>
+        </collection>
+    </resultMap>
+
+    <select id="getAppSystemListByIdList" resultMap="appConfigSystemMap">
+        select ra.id as appSystemId,ra.`name` as appSystemName, if(dacu.user_uuid is null,0,1) as isFavorite,
+        if(dac.config is null,0,1) as isConfig,
+        raa.app_module_id AS appModuleId,
+        raa.app_module_name AS appModuleName
         from ${schemaName}.`resource_appsystem` ra
+        left join ${schemaName}.`resource_appsystem_appmodule` raa on raa.resource_id = ra.id
         left join deploy_app_config_user dacu on ra.id = dacu.app_system_id and dacu.user_uuid = #{userUuid}
         left join deploy_app_config dac on ra.id = dac.app_system_id and dac.module_id = 0 and dac.env_id = 0
         where ra.id in
         <foreach collection="idList" item="id" open="(" close=")" separator=",">
             #{id}
         </foreach>
-        order by if(dacu.user_uuid = #{userUuid},1,0) desc,ra.name
+        order by if(dacu.user_uuid = #{userUuid},1,0) desc,
+        CONVERT(ra.name USING gbk) COLLATE gbk_chinese_ci ASC
     </select>
 
     <select id="getAppConfigAuthorityCount" resultType="java.lang.Integer">
@@ -303,6 +317,12 @@
             `env_id` = #{envId}
     </insert>
 
+    <insert id="insertAppConfigSystemFavorite">
+        insert into deploy_app_config_user(`app_system_id`, `user_uuid`)
+        VALUES (#{appSystemId},
+                #{userUuid})
+    </insert>
+
     <update id="updateAppConfig" parameterType="codedriver.framework.deploy.dto.app.DeployAppConfigVo">
         UPDATE `deploy_app_config`
         SET `config` = #{configStr},
@@ -358,5 +378,11 @@
         WHERE `app_system_id` = #{appSystemId}
           and `app_module_id` = #{appModuleId}
           and `env_id` = #{envId}
+    </delete>
+
+    <delete id="deleteAppConfigSystemFavoriteByAppSystemIdAndUserUuid">
+        DELETE FROM `deploy_app_config_user`
+        WHERE `app_system_id` = #{appSystemId}
+          and `user_uuid` = #{userUuid}
     </delete>
 </mapper>
