@@ -1,7 +1,7 @@
 package codedriver.module.deploy.api.version.resource;
 
 import codedriver.framework.common.constvalue.ApiParamType;
-import codedriver.framework.deploy.exception.ChangeFilePermissionFailedException;
+import codedriver.framework.deploy.exception.MoveFileFailedException;
 import codedriver.framework.integration.authentication.enums.AuthenticateType;
 import codedriver.framework.restful.annotation.Description;
 import codedriver.framework.restful.annotation.Input;
@@ -22,18 +22,18 @@ import org.springframework.stereotype.Service;
  */
 @Service
 @OperationType(type = OperationTypeEnum.UPDATE)
-public class ChangePermissionApi extends PrivateApiComponentBase {
+public class MoveFileApi extends PrivateApiComponentBase {
 
-    Logger logger = LoggerFactory.getLogger(ChangePermissionApi.class);
+    Logger logger = LoggerFactory.getLogger(MoveFileApi.class);
 
     @Override
     public String getName() {
-        return "修改文件权限";
+        return "文件复制或重命名";
     }
 
     @Override
     public String getToken() {
-        return "deploy/version/resource/file/chmod";
+        return "deploy/version/resource/file/move";
     }
 
     @Override
@@ -44,31 +44,32 @@ public class ChangePermissionApi extends PrivateApiComponentBase {
     // todo 入参待确定
     @Input({
             @Param(name = "id", desc = "版本id", isRequired = true, type = ApiParamType.LONG),
-            @Param(name = "path", desc = "目录或文件路径", isRequired = true, type = ApiParamType.STRING),
-            @Param(name = "mode", desc = "权限(e.g:rwxr-xr-x)", isRequired = true, type = ApiParamType.STRING)
+            @Param(name = "src", desc = "源文件路径", isRequired = true, type = ApiParamType.STRING),
+            @Param(name = "dest", desc = "目标文件路径", isRequired = true, type = ApiParamType.STRING)
     })
-    @Description(desc = "修改文件权限")
+    @Description(desc = "文件复制或重命名")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
+        String src = paramObj.getString("src");
+        String dest = paramObj.getString("dest");
         // todo 根据应用、模块、版本号、buildNo/环境决定runner与文件路径
-        String path = paramObj.getString("path");
-        String mode = paramObj.getString("mode");
         JSONObject paramJson = new JSONObject();
-        path = "/test/hihi"; // todo 根据入参决定path
-        paramJson.put("path", path);
-        paramJson.put("mode", mode);
+        src = "/test/hoho"; // todo 根据入参决定path
+        dest = "test/hihi/hoho"; // todo 截取src路径最后的文件名
+        paramJson.put("src", src);
+        paramJson.put("dest", dest);
         String url = "http://bj.ainoe.cn:8080/api/rest/file";
-        String method = "/chmod";
+        String method = "/move";
         url += method;
         HttpRequestUtil request = HttpRequestUtil.post(url).setPayload(paramJson.toJSONString()).setAuthType(AuthenticateType.BUILDIN).sendRequest();
         String error = request.getError();
         if (StringUtils.isNotBlank(error)) {
             logger.error("send request failed.url: {},error: {}", url, error);
-            throw new ChangeFilePermissionFailedException(error);
+            throw new MoveFileFailedException(error);
         }
         JSONObject resultJson = request.getResultJson();
         if (!resultJson.containsKey("Status") || !"OK".equals(resultJson.getString("Status"))) {
-            throw new ChangeFilePermissionFailedException(resultJson.getString("Message"));
+            throw new MoveFileFailedException(resultJson.getString("Message"));
         }
         return null;
     }

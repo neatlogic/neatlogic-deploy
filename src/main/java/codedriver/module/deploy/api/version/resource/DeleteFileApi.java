@@ -1,7 +1,8 @@
 package codedriver.module.deploy.api.version.resource;
 
 import codedriver.framework.common.constvalue.ApiParamType;
-import codedriver.framework.deploy.exception.MoveFileFailedException;
+import codedriver.framework.deploy.exception.ChangeFilePermissionFailedException;
+import codedriver.framework.deploy.exception.DeleteFileFailedException;
 import codedriver.framework.integration.authentication.enums.AuthenticateType;
 import codedriver.framework.restful.annotation.Description;
 import codedriver.framework.restful.annotation.Input;
@@ -22,18 +23,18 @@ import org.springframework.stereotype.Service;
  */
 @Service
 @OperationType(type = OperationTypeEnum.UPDATE)
-public class FileMoveApi extends PrivateApiComponentBase {
+public class DeleteFileApi extends PrivateApiComponentBase {
 
-    Logger logger = LoggerFactory.getLogger(FileMoveApi.class);
+    Logger logger = LoggerFactory.getLogger(DeleteFileApi.class);
 
     @Override
     public String getName() {
-        return "文件复制或重命名";
+        return "删除文件";
     }
 
     @Override
     public String getToken() {
-        return "deploy/version/resource/file/move";
+        return "deploy/version/resource/file/delete";
     }
 
     @Override
@@ -44,32 +45,28 @@ public class FileMoveApi extends PrivateApiComponentBase {
     // todo 入参待确定
     @Input({
             @Param(name = "id", desc = "版本id", isRequired = true, type = ApiParamType.LONG),
-            @Param(name = "src", desc = "源文件路径", isRequired = true, type = ApiParamType.STRING),
-            @Param(name = "dest", desc = "目标文件路径", isRequired = true, type = ApiParamType.STRING)
+            @Param(name = "path", desc = "目录或文件路径", isRequired = true, type = ApiParamType.STRING),
     })
-    @Description(desc = "文件复制或重命名")
+    @Description(desc = "删除文件")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
-        String src = paramObj.getString("src");
-        String dest = paramObj.getString("dest");
         // todo 根据应用、模块、版本号、buildNo/环境决定runner与文件路径
+        String path = paramObj.getString("path");
         JSONObject paramJson = new JSONObject();
-        src = "/test/hoho"; // todo 根据入参决定path
-        dest = "test/hihi/hoho"; // todo 截取src路径最后的文件名
-        paramJson.put("src", src);
-        paramJson.put("dest", dest);
+        path = "/test/hehe.json"; // todo 根据入参决定path
+        paramJson.put("path", path);
         String url = "http://bj.ainoe.cn:8080/api/rest/file";
-        String method = "/move";
+        String method = "/delete";
         url += method;
         HttpRequestUtil request = HttpRequestUtil.post(url).setPayload(paramJson.toJSONString()).setAuthType(AuthenticateType.BUILDIN).sendRequest();
         String error = request.getError();
         if (StringUtils.isNotBlank(error)) {
             logger.error("send request failed.url: {},error: {}", url, error);
-            throw new MoveFileFailedException(error);
+            throw new DeleteFileFailedException(error);
         }
         JSONObject resultJson = request.getResultJson();
         if (!resultJson.containsKey("Status") || !"OK".equals(resultJson.getString("Status"))) {
-            throw new MoveFileFailedException(resultJson.getString("Message"));
+            throw new DeleteFileFailedException(resultJson.getString("Message"));
         }
         return null;
     }
