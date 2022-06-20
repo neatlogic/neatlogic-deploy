@@ -26,6 +26,7 @@ import codedriver.module.deploy.dao.mapper.DeployAppConfigMapper;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
@@ -84,7 +85,7 @@ public class AutoexecGlobalParam2DeployAppPipelinePhaseOperationInputParamDepend
             if (CollectionUtils.isEmpty(phaseOperationList)) {
                 return null;
             }
-            Long operationId = Long.getLong(dependencyVo.getTo());
+            Long operationId = Long.valueOf(dependencyVo.getTo());
             for (AutoexecCombopPhaseOperationVo phaseOperationVo : phaseOperationList) {
                 if (phaseOperationVo == null) {
                     continue;
@@ -111,7 +112,13 @@ public class AutoexecGlobalParam2DeployAppPipelinePhaseOperationInputParamDepend
                         String operationName = phaseOperationVo.getName();
                         String phaseName = combopPhaseVo.getName();
                         String key = config.getString("key");
-                        String name = config.getString("name");
+                        String name = paramMappingVo.getName();
+                        if (StringUtils.isBlank(name)) {
+                            name = config.getString("name");
+                            if (StringUtils.isBlank(name)) {
+                                name = key;
+                            }
+                        }
                         JSONObject dependencyInfoConfig = new JSONObject();
                         dependencyInfoConfig.put("appSystemId", appSystemId);
                         dependencyInfoConfig.put("moduleId", moduleId);

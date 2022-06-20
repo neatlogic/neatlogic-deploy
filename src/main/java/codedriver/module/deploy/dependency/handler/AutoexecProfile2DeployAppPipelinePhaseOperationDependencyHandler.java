@@ -82,7 +82,7 @@ public class AutoexecProfile2DeployAppPipelinePhaseOperationDependencyHandler ex
             if (CollectionUtils.isEmpty(phaseOperationList)) {
                 return null;
             }
-            Long operationId = Long.getLong(dependencyVo.getTo());
+            Long operationId = Long.valueOf(dependencyVo.getTo());
             for (AutoexecCombopPhaseOperationVo phaseOperationVo : phaseOperationList) {
                 if (phaseOperationVo == null) {
                     continue;
@@ -94,7 +94,7 @@ public class AutoexecProfile2DeployAppPipelinePhaseOperationDependencyHandler ex
                 if (operationConfigVo == null) {
                     return null;
                 }
-                if (!Objects.equals(operationConfigVo.getProfileId(), dependencyVo.getFrom())) {
+                if (!Objects.equals(operationConfigVo.getProfileId().toString(), dependencyVo.getFrom())) {
                     return null;
                 }
                 String operationName = phaseOperationVo.getName();
