@@ -7,17 +7,15 @@ package codedriver.module.deploy.api.version.resource;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.deploy.exception.DownloadFileFailedException;
 import codedriver.framework.integration.authentication.enums.AuthenticateType;
-import codedriver.framework.restful.annotation.Description;
-import codedriver.framework.restful.annotation.Input;
-import codedriver.framework.restful.annotation.Output;
-import codedriver.framework.restful.annotation.Param;
+import codedriver.framework.restful.annotation.*;
+import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateBinaryStreamApiComponentBase;
 import codedriver.framework.util.HttpRequestUtil;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -26,7 +24,8 @@ import javax.servlet.http.HttpServletResponse;
  * @author laiwt
  * @since 2022/5/27 10:54 上午
  **/
-@Component
+@Service
+@OperationType(type = OperationTypeEnum.SEARCH)
 public class DownloadFileApi extends PrivateBinaryStreamApiComponentBase {
 
     static Logger logger = LoggerFactory.getLogger(DownloadFileApi.class);

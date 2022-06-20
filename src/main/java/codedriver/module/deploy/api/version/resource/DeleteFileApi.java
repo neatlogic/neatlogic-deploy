@@ -21,7 +21,7 @@ import org.springframework.stereotype.Service;
  * @date 2022/6/17 9:59 上午
  */
 @Service
-@OperationType(type = OperationTypeEnum.UPDATE)
+@OperationType(type = OperationTypeEnum.DELETE)
 public class DeleteFileApi extends PrivateApiComponentBase {
 
     Logger logger = LoggerFactory.getLogger(DeleteFileApi.class);
