@@ -64,7 +64,7 @@ public class ListDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
         int count = iCiEntityCrossoverMapper.getCiEntityIdListCountByCiName("APP");
         if (count > 0) {
             searchVo.setRowNum(count);
-            resourceVoList = deployAppConfigMapper.getAppSystemListByUserUuid(UserContext.get().getUserUuid());
+            resourceVoList = deployAppConfigMapper.getAppSystemListByUserUuid(UserContext.get().getUserUuid(), searchVo);
         }
         return TableResultUtil.getResult(resourceVoList, searchVo);
     }

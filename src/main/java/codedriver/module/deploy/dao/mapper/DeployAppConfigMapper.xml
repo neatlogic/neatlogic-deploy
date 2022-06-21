@@ -12,16 +12,15 @@
         SELECT ce.`id`
         FROM
         `cmdb_cientity` ce
-        JOIN `cmdb_ci` cc ON ce.ci_id = cc.id AND  cc.name = 'APP'
+        JOIN `cmdb_ci` cc ON ce.ci_id = cc.id AND cc.name = 'APP'
         left join ${searchVo.schemaName}.`resource_appsystem_appmodule` raa ON raa.resource_id = ce.id
         left join deploy_app_config_user dacu on ce.id = dacu.app_system_id and dacu.user_uuid = #{userUuid}
         <where>
             <if test="searchVo.keyword != null and searchVo.keyword != ''">
-                 ce.`name` LIKE concat('%', #{searchVo.keyword}, '%') or raa.app_module_name LIKE concat('%',
+                ce.`name` LIKE concat('%', #{searchVo.keyword}, '%') or raa.app_module_name LIKE concat('%',
                 #{searchVo.keyword}, '%')
             </if>
         </where>
-        GROUP BY ce.id
         order by if(dacu.user_uuid = #{userUuid},1,0) desc,
         CONVERT(ce.name USING gbk) COLLATE gbk_chinese_ci ASC
         limit #{searchVo.startNum}, #{searchVo.pageSize}
@@ -40,11 +39,8 @@
 
     <select id="getAppSystemListByIdList" resultMap="appConfigSystemMap">
         select ce.id as appSystemId,ce.`name` as appSystemName, if(dacu.user_uuid is null,0,1) as isFavorite,
-        if(dac.config is null,0,1) as isConfig,
-        raa.app_module_id AS appModuleId,
-        raa.app_module_name AS appModuleName
+        if(dac.config is null,0,1) as isConfig
         from  cmdb_cientity ce
-        left join ${schemaName}.`resource_appsystem_appmodule` raa ON raa.resource_id = ce.id
         left join deploy_app_config_user dacu on ce.id = dacu.app_system_id and dacu.user_uuid = #{userUuid}
         left join deploy_app_config dac on ce.id = dac.app_system_id and dac.module_id = 0 and dac.env_id = 0
         where ce.id in
@@ -68,17 +64,17 @@
     </select>
 
     <select id="getAppSystemListByUserUuid" resultMap="appConfigSystemMap">
-        select cc.id     as appSystemId,
-               cc.name as appSystemName,
-               if(dacu.user_uuid is null,0,1) as isFavorite,
-               if(dac.config is null,0,1) as isConfig
+        select cc.id                            as appSystemId,
+               cc.name                          as appSystemName,
+               if(dacu.user_uuid is null, 0, 1) as isFavorite,
+               if(dac.config is null, 0, 1)     as isConfig
         FROM cmdb_cientity cc
-        JOIN cmdb_ci cci ON cc.ci_id = cci.id
-        left join deploy_app_config_user dacu on cc.id = dacu.app_system_id and dacu.user_uuid = #{userUuid}
-        left join deploy_app_config dac on cc.id = dac.app_system_id and dac.module_id = 0 and dac.env_id = 0
-        where cci.name = 'APP'
+                 JOIN cmdb_ci cci ON cc.ci_id = cci.id AND cci.name = 'APP'
+                 left join deploy_app_config_user dacu on cc.id = dacu.app_system_id and dacu.user_uuid = #{userUuid}
+                 left join deploy_app_config dac on cc.id = dac.app_system_id and dac.module_id = 0 and dac.env_id = 0
         order by if(dacu.user_uuid = #{userUuid}, 1, 0) desc,
                  CONVERT(cc.name USING gbk) COLLATE gbk_chinese_ci ASC
+            limit #{searchVo.startNum}, #{searchVo.pageSize}
     </select>
 
     <select id="getAppConfigAuthorityCount" resultType="java.lang.Integer">
@@ -197,12 +193,24 @@
           and `env_id` = #{envId}
     </select>
 
+    <resultMap id="appEnvMap" type="codedriver.framework.deploy.dto.app.DeployAppEnvironmentVo">
+        <result column="envId" property="envId"/>
+        <result column="envName" property="envName"/>
+        <result column="isEdit" property="isEdit"/>
+        <collection property="appModuleList" ofType="codedriver.framework.cmdb.dto.resourcecenter.entity.AppModuleVo">
+            <id column="appModuleId" property="id"/>
+            <result column="appModuleName" property="name"/>
+        </collection>
+    </resultMap>
+
     <select id="getDeployAppEnvListByAppSystemIdAndModuleIdList"
-            resultType="codedriver.framework.deploy.dto.app.DeployAppEnvironmentVo">
-        ( SELECT DISTINCT
+            resultMap="appEnvMap">
+        ( SELECT
         rse.env_id AS envId,
         rse.env_name AS envName,
-        '0' AS isEdit
+        '0' AS isEdit,
+        ria.app_module_id AS appModuleId,
+        ria.app_module_name AS appModuleName
         FROM
         ${schemaName}.resource_appsystem_appmodule raa
         join ${schemaName}.resource_ipobject_appmodule ria on raa.app_module_id = ria.app_module_id
@@ -221,14 +229,16 @@
         </where>
         ) UNION
         (
-        SELECT DISTINCT
+        SELECT
         cc.id AS envId,
         cc.name AS envName,
-        '1' AS isEdit
+        '1' AS isEdit,
+        cce.id AS appModuleId,
+        cce.name AS appModuleName
         FROM
         deploy_app_config_env dace
-        JOIN cmdb_cientity cc ON cc.id = dace.env_id
-        AND cc.ci_id = ( SELECT id FROM cmdb_ci where name = 'APPEnv' )
+        JOIN cmdb_cientity cc ON cc.id = dace.env_id AND cc.ci_id = ( SELECT id FROM cmdb_ci where name = 'APPEnv' )
+        JOIN cmdb_cientity cce ON cce.id = dace.app_module_id
         <where>
             <if test="appSystemId != null">
                 dace.app_system_id = #{appSystemId}
