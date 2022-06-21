@@ -230,7 +230,6 @@ public class DeployAppPipelineSaveApi extends PrivateApiComponentBase {
             dependencyConfig.put("envId", envId);
             dependencyConfig.put("phaseId", combopPhaseVo.getId());
             dependencyConfig.put("phaseName", combopPhaseVo.getName());
-            System.out.println(profileId + "-" + AutoexecProfile2DeployAppPipelinePhaseOperationDependencyHandler.class.getSimpleName() + "-" + phaseOperationVo.getOperationId());
             DependencyManager.insert(AutoexecProfile2DeployAppPipelinePhaseOperationDependencyHandler.class, profileId, phaseOperationVo.getOperationId(), dependencyConfig);
         }
         List<ParamMappingVo> paramMappingList = operationConfigVo.getParamMappingList();
