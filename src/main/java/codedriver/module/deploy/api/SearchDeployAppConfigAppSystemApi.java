@@ -67,11 +67,15 @@ public class SearchDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
         IAppSystemMapper appSystemMapper = CrossoverServiceFactory.getApi(IAppSystemMapper.class);
         Integer count = appSystemMapper.getAppSystemIdListCount(searchVo);
         if (count > 0) {
+            searchVo.setRowNum(count);
+
             //查询包含关键字的 returnAppSystemList
             List<Long> appSystemIdList = deployAppConfigMapper.getAppSystemIdList(searchVo, UserContext.get().getUserUuid());
+            if (CollectionUtils.isEmpty(appSystemIdList)) {
+                return TableResultUtil.getResult(returnAppSystemList, searchVo);
+            }
             returnAppSystemList = deployAppConfigMapper.getAppSystemListByIdList(appSystemIdList, TenantContext.get().getDataDbName(), UserContext.get().getUserUuid());
             Map<Long, DeployAppConfigResourceVo> returnAppSystemMap = returnAppSystemList.stream().collect(Collectors.toMap(DeployAppConfigResourceVo::getAppSystemId, e -> e));
-            searchVo.setRowNum(count);
 
             //查询包含关键字的 appSystemModuleList，再将信息模块信息补回 returnAppSystemList
             List<Long> appSystemIdListByAppModuleName = appSystemMapper.getAppSystemIdListByAppModuleName(searchVo.getKeyword(), TenantContext.get().getDataDbName());
@@ -85,7 +89,6 @@ public class SearchDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
                 }
             }
         }
-
         return TableResultUtil.getResult(returnAppSystemList, searchVo);
     }
 }
