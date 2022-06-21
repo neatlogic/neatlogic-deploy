@@ -65,9 +65,26 @@ public class DeployAppPipelineSaveApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         DeployAppConfigVo deployAppConfigVo = paramObj.toJavaObject(DeployAppConfigVo.class);
+        String newConfigStr = deployAppConfigVo.getConfigStr();
         DeployAppConfigVo oldDeployAppConfigVo = deployAppConfigMapper.getAppConfigVo(deployAppConfigVo);
+        Long moduleId = deployAppConfigVo.getModuleId();
+        Long envId = deployAppConfigVo.getEnvId();
+        if (envId != null && envId != 0) {
+            //环境层，需要对重新生成重载过的阶段的操作id
+            regenerateOperationId(deployAppConfigVo);
+        } else if (moduleId != null && moduleId != 0) {
+            //模块层，需要对重新生成重载过的阶段的操作id
+            regenerateOperationId(deployAppConfigVo);
+        } else {
+            //应用层，在首次保存时需要重新生成阶段id和操作id
+            if (oldDeployAppConfigVo == null) {
+                regeneratePhaseIdAndOperationId(deployAppConfigVo);
+            }
+        }
+        deployAppConfigVo.setConfigStr(null);
         if (oldDeployAppConfigVo != null) {
-            if (Objects.equals(oldDeployAppConfigVo.getConfigStr(), deployAppConfigVo.getConfigStr())) {
+            if (Objects.equals(oldDeployAppConfigVo.getConfigStr(), newConfigStr)) {
+                //如果没有改动，不用更新数据库数据
                 return null;
             }
             deleteDependency(oldDeployAppConfigVo);
@@ -81,6 +98,73 @@ public class DeployAppPipelineSaveApi extends PrivateApiComponentBase {
             saveDependency(deployAppConfigVo);
         }
         return null;
+    }
+
+    /**
+     * 重新生成阶段id和操作id
+     * @param deployAppConfigVo
+     */
+    private void regeneratePhaseIdAndOperationId(DeployAppConfigVo deployAppConfigVo) {
+        DeployPipelineConfigVo config = deployAppConfigVo.getConfig();
+        List<DeployPipelinePhaseVo> combopPhaseList = config.getCombopPhaseList();
+        if (CollectionUtils.isEmpty(combopPhaseList)) {
+            return;
+        }
+        for (DeployPipelinePhaseVo combopPhaseVo : combopPhaseList) {
+            if (combopPhaseVo == null) {
+                continue;
+            }
+            combopPhaseVo.setId(null);
+            AutoexecCombopPhaseConfigVo phaseConfig = combopPhaseVo.getConfig();
+            if (phaseConfig == null) {
+                continue;
+            }
+            List<AutoexecCombopPhaseOperationVo> operationList = phaseConfig.getPhaseOperationList();
+            if (CollectionUtils.isEmpty(operationList)) {
+                continue;
+            }
+            for (AutoexecCombopPhaseOperationVo operationVo : operationList) {
+                if(operationVo == null) {
+                    continue;
+                }
+                operationVo.setOperationId(null);
+                operationVo.setCombopPhaseId(combopPhaseVo.getId());
+            }
+        }
+    }
+    /**
+     * 重新生成操作id
+     * @param deployAppConfigVo
+     */
+    private void regenerateOperationId(DeployAppConfigVo deployAppConfigVo) {
+        DeployPipelineConfigVo config = deployAppConfigVo.getConfig();
+        List<DeployPipelinePhaseVo> combopPhaseList = config.getCombopPhaseList();
+        if (CollectionUtils.isEmpty(combopPhaseList)) {
+            return;
+        }
+        for (DeployPipelinePhaseVo combopPhaseVo : combopPhaseList) {
+            if (combopPhaseVo == null) {
+                continue;
+            }
+            if(!Objects.equals(combopPhaseVo.getOverride(), 1)) {
+                continue;
+            }
+            AutoexecCombopPhaseConfigVo phaseConfig = combopPhaseVo.getConfig();
+            if (phaseConfig == null) {
+                continue;
+            }
+            List<AutoexecCombopPhaseOperationVo> operationList = phaseConfig.getPhaseOperationList();
+            if (CollectionUtils.isEmpty(operationList)) {
+                continue;
+            }
+            for (AutoexecCombopPhaseOperationVo operationVo : operationList) {
+                if(operationVo == null) {
+                    continue;
+                }
+                operationVo.setOperationId(null);
+                operationVo.setCombopPhaseId(combopPhaseVo.getId());
+            }
+        }
     }
 
     /**
