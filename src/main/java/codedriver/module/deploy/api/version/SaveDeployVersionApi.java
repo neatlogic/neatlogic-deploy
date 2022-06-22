@@ -50,7 +50,7 @@ public class SaveDeployVersionApi extends PrivateApiComponentBase {
 
     @Input({
             @Param(name = "version", desc = "版本", isRequired = true, type = ApiParamType.STRING),
-            @Param(name = "appSystemId", desc = "应用id", isRequired = true, type = ApiParamType.LONG),
+            @Param(name = "appSystemId", desc = "应用系统id", isRequired = true, type = ApiParamType.LONG),
             @Param(name = "appSystemName", desc = "应用名称", type = ApiParamType.STRING),
             @Param(name = "appModuleId", desc = "应用模块id", isRequired = true, type = ApiParamType.LONG),
             @Param(name = "appModuleName", desc = "应用模块名称", type = ApiParamType.STRING),

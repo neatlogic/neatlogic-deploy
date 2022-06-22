@@ -5,11 +5,9 @@
 
 package codedriver.module.deploy.api;
 
-import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.asynchronization.threadlocal.UserContext;
-import codedriver.framework.cmdb.crossover.IAppSystemMapper;
+import codedriver.framework.cmdb.crossover.ICiEntityCrossoverMapper;
 import codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo;
-import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.dto.BasePageVo;
 import codedriver.framework.crossover.CrossoverServiceFactory;
 import codedriver.framework.deploy.dto.app.DeployAppConfigResourceVo;
@@ -31,7 +29,7 @@ import java.util.List;
  **/
 @Service
 @OperationType(type = OperationTypeEnum.SEARCH)
-public class DeployAppConfigAppSystemListApi extends PrivateApiComponentBase {
+public class ListDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
 
     @Resource
     private DeployAppConfigMapper deployAppConfigMapper;
@@ -43,7 +41,7 @@ public class DeployAppConfigAppSystemListApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "查询应用系统列表";
+        return "查询发布应用配置的应用系统列表";
     }
 
     @Override
@@ -52,26 +50,21 @@ public class DeployAppConfigAppSystemListApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "keyword", type = ApiParamType.STRING, desc = "模糊搜索-应用名|模块名"),
-            @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "当前页"),
-            @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "每页数据条目"),
-            @Param(name = "needPage", type = ApiParamType.BOOLEAN, desc = "是否需要分页，默认true")
     })
     @Output({
             @Param(explode = BasePageVo.class),
-            @Param(name = "tbodyList", explode = DeployAppConfigResourceVo[].class, desc = "应用模块列表")
+            @Param(name = "tbodyList", explode = DeployAppConfigResourceVo[].class, desc = "发布应用配置的应用系统列表")
     })
-    @Description(desc = "查询应用系统列表")
+    @Description(desc = "查询发布应用配置的应用系统列表（没有关键字过滤）")
     @Override
     public Object myDoService(JSONObject paramObj) {
         ResourceSearchVo searchVo = paramObj.toJavaObject(ResourceSearchVo.class);
         List<DeployAppConfigResourceVo> resourceVoList = new ArrayList<>();
-        IAppSystemMapper appSystemMapper = CrossoverServiceFactory.getApi(IAppSystemMapper.class);
-        Integer count = appSystemMapper.getAppSystemIdListCount(searchVo);
+        ICiEntityCrossoverMapper iCiEntityCrossoverMapper = CrossoverServiceFactory.getApi(ICiEntityCrossoverMapper.class);
+        int count = iCiEntityCrossoverMapper.getCiEntityIdListCountByCiName("APP");
         if (count > 0) {
-            List<Long> appSystemIdList = deployAppConfigMapper.getAppSystemIdList(searchVo, UserContext.get().getUserUuid());
             searchVo.setRowNum(count);
-            resourceVoList = deployAppConfigMapper.getAppSystemListByIdList(appSystemIdList, TenantContext.get().getDataDbName(), UserContext.get().getUserUuid());
+            resourceVoList = deployAppConfigMapper.getAppSystemListByUserUuid(UserContext.get().getUserUuid(), searchVo);
         }
         return TableResultUtil.getResult(resourceVoList, searchVo);
     }
