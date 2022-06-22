@@ -27,9 +27,7 @@ public interface DeployAppConfigMapper {
 
     List<DeployAppConfigAuthorityVo> getAppConfigAuthorityDetailList(@Param("appConfigAuthList") List<DeployAppConfigAuthorityVo> appConfigAuthList);
 
-    List<DeployAppEnvAutoConfigVo> searchAppEnvAutoConfig(DeployAppEnvAutoConfigVo envAutoConfigVo);
-
-    Integer getAppEnvAutoConfigCount(DeployAppEnvAutoConfigVo envAutoConfigVo);
+    List<DeployAppEnvAutoConfigKeyValueVo> getAppEnvAutoConfigKeyValueList(DeployAppEnvAutoConfigVo envAutoConfigVo);
 
     String getAppConfig(DeployAppConfigVo deployAppConfigVo);
 

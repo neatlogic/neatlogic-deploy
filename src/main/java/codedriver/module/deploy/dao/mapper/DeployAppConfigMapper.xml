@@ -253,30 +253,17 @@
         )
     </select>
 
-    <select id="getAppEnvAutoConfigCount" parameterType="codedriver.framework.deploy.dto.app.DeployAppEnvAutoConfigVo"
-            resultType="java.lang.Integer">
-        select count(1)
+    <select id="getAppEnvAutoConfigKeyValueList" parameterType="codedriver.framework.deploy.dto.app.DeployAppEnvAutoConfigVo"
+            resultType="codedriver.framework.deploy.dto.app.DeployAppEnvAutoConfigKeyValueVo">
+        select
+               `key`,
+               `value`
         from deploy_app_env_auto_config
-        <include refid="autoconfigWhere"/>
-    </select>
-
-    <select id="searchAppEnvAutoConfig" parameterType="codedriver.framework.deploy.dto.app.DeployAppEnvAutoConfigVo"
-            resultType="codedriver.framework.deploy.dto.app.DeployAppEnvAutoConfigVo">
-        select `app_system_id` as appSystemId,
-               `module_id`     as moduleId,
-               `env_id`        as envId,
-               `instance_id`   as instanceId
-        from deploy_app_env_auto_config
-        <include refid="autoconfigWhere"/>
-        limit #{startNum}, #{pageSize}
-    </select>
-
-    <sql id="autoconfigWhere">
         WHERE `app_system_id` = #{appSystemId}
-        and `module_id` = #{moduleId}
-        and `env_id` = #{envId}
-        and `instance_id` = #{instanceId}
-    </sql>
+          and `module_id` = #{moduleId}
+          and `env_id` = #{envId}
+          and `instance_id` = #{instanceId}
+    </select>
 
     <insert id="insertAppConfigAuthority">
         INSERT INTO `deploy_app_config_authority` (`app_system_id`,

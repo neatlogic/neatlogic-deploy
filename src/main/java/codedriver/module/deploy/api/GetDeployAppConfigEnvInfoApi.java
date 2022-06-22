@@ -7,17 +7,16 @@ package codedriver.module.deploy.api;
 
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.dto.BasePageVo;
+import codedriver.framework.deploy.dto.app.DeployAppEnvAutoConfigKeyValueVo;
 import codedriver.framework.deploy.dto.app.DeployAppEnvAutoConfigVo;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
-import codedriver.framework.util.TableResultUtil;
 import codedriver.module.deploy.dao.mapper.DeployAppConfigMapper;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -26,19 +25,18 @@ import java.util.List;
  **/
 @Service
 @OperationType(type = OperationTypeEnum.SEARCH)
-public class SearchDeployAppConfigEnvAutoConfigApi extends PrivateApiComponentBase {
-    List<JSONObject> theadList = new ArrayList<>();
+public class GetDeployAppConfigEnvInfoApi extends PrivateApiComponentBase {
     @Resource
     private DeployAppConfigMapper deployAppConfigMapper;
 
     @Override
     public String getToken() {
-        return "deploy/app/config/env/auto/config/search";
+        return "deploy/app/config/env/info/get";
     }
 
     @Override
     public String getName() {
-        return "查询应用环境autoconfig";
+        return "查询应用环境详细配置信息";
     }
 
     @Override
@@ -49,26 +47,26 @@ public class SearchDeployAppConfigEnvAutoConfigApi extends PrivateApiComponentBa
     @Input({
             @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "应用 id"),
             @Param(name = "moduleId", type = ApiParamType.LONG, isRequired = true, desc = "模块 id"),
-            @Param(name = "envId", type = ApiParamType.LONG, isRequired = true, desc = "环境 id"),
-            @Param(name = "instanceId", type = ApiParamType.LONG, desc = "应用实例 id"),
-            @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "当前页"),
-            @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "每页数据条目"),
-            @Param(name = "needPage", type = ApiParamType.BOOLEAN, desc = "是否需要分页，默认true")
+            @Param(name = "envId", type = ApiParamType.LONG, isRequired = true, desc = "环境 id")
     })
     @Output({
             @Param(explode = BasePageVo.class),
             @Param(name = "tbodyList", explode = DeployAppEnvAutoConfigVo[].class, desc = "应用配置授权列表")
     })
-    @Description(desc = "查询应用环境autoconfig接口")
+    @Description(desc = "查询应用环境详细配置信息接口")
     @Override
     public Object myDoService(JSONObject paramObj) {
-        DeployAppEnvAutoConfigVo searchVo = paramObj.toJavaObject(DeployAppEnvAutoConfigVo.class);
-        List<DeployAppEnvAutoConfigVo> envAutoConfigList = new ArrayList<>();
-        Integer count = deployAppConfigMapper.getAppEnvAutoConfigCount(searchVo);
-        if (count > 0) {
-            searchVo.setRowNum(count);
-            envAutoConfigList = deployAppConfigMapper.searchAppEnvAutoConfig(searchVo);
-        }
-        return TableResultUtil.getResult(envAutoConfigList, searchVo);
+        JSONObject envInfo = new JSONObject();
+        DeployAppEnvAutoConfigVo envAutoConfigVo = paramObj.toJavaObject(DeployAppEnvAutoConfigVo.class);
+        //获取环境 autoConfig
+        List<DeployAppEnvAutoConfigKeyValueVo> envAutoConfigList = deployAppConfigMapper.getAppEnvAutoConfigKeyValueList(envAutoConfigVo);
+        envInfo.put("envAutoConfigList",envAutoConfigList);
+
+        //TODO 获取实例列表
+
+        //TODO 根据实例获取envAutoConfig
+
+        //TODO db配置
+        return envInfo;
     }
 }
