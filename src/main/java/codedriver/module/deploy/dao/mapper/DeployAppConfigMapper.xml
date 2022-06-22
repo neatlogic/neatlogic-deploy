@@ -215,6 +215,8 @@
         FROM
         ${schemaName}.resource_appsystem_appmodule raa
         JOIN ${schemaName}.resource_ipobject_appmodule ria ON raa.app_module_id = ria.app_module_id
+        JOIN cmdb_cientity cc ON cc.id =ria.resource_id
+        JOIN cmdb_ci cci ON cci.id cc.ci_id AND cci.type = 'APPIns'
         JOIN ${schemaName}.resource_softwareservice_env rse ON ria.resource_id = rse.resource_id
         <where>
             <if test="appSystemId != null">
@@ -264,6 +266,47 @@
           and `env_id` = #{envId}
           and `instance_id` = #{instanceId}
     </select>
+
+
+
+    <select id="getAppModuleRunnerGroupByAppSystemIdAndModuleId"
+            resultType="codedriver.framework.dto.runner.RunnerGroupVo">
+        SELECT
+            r.id,
+            r.name,
+            r.description
+        FROM
+            deploy_app_module_runner_group damrg
+                JOIN runnergroup r ON r.id = damrg.runner_group_id
+        WHERE
+            damrg.app_system_id = #{appSystemId}
+          AND damrg.module_id = #{appModuleId}
+    </select>
+
+    <select id="getAppEnvAutoConfigListBySystemIdAndModuleIdAndEnvIdAndInstanceIdList"
+            resultMap="appEnvAutoConfigMap">
+        select
+        `key`,
+        `value`
+        from deploy_app_env_auto_config
+        WHERE `app_system_id` = #{appSystemId}
+        and `module_id` = #{moduleId}
+        and `env_id` = #{envId}
+        and `instance_id` in
+        <foreach collection="instanceIdList" item="instanceId" open="(" close=")" separator=",">
+            #{instanceId}
+        </foreach>
+    </select>
+
+    <resultMap id="appEnvAutoConfigMap" type="codedriver.framework.deploy.dto.app.DeployAppEnvAutoConfigVo">
+        <result column="envId" property="envId"/>
+        <result column="envName" property="envName"/>
+        <result column="isEdit" property="isEdit"/>
+        <collection property="appModuleList" ofType="codedriver.framework.cmdb.dto.resourcecenter.entity.AppModuleVo">
+            <id column="appModuleId" property="id"/>
+            <result column="appModuleName" property="name"/>
+        </collection>
+    </resultMap>
 
     <insert id="insertAppConfigAuthority">
         INSERT INTO `deploy_app_config_authority` (`app_system_id`,
