@@ -215,8 +215,7 @@
         FROM
         ${schemaName}.resource_appsystem_appmodule raa
         JOIN ${schemaName}.resource_ipobject_appmodule ria ON raa.app_module_id = ria.app_module_id
-        JOIN cmdb_cientity cc ON cc.id = ria.resource_id
-        JOIN ${schemaName}.resource_softwareservice_env rse ON cc.id = rse.resource_id
+        JOIN ${schemaName}.resource_softwareservice_env rse ON ria.resource_id = rse.resource_id
         <where>
             <if test="appSystemId != null">
                 raa.resource_id = #{appSystemId}
@@ -238,7 +237,7 @@
         cce.name AS appModuleName
         FROM
         deploy_app_config_env dace
-        JOIN cmdb_cientity cc ON cc.id = dace.env_id AND cc.ci_id = ( SELECT id FROM cmdb_ci where name = 'APPEnv' )
+        JOIN cmdb_cientity cc ON cc.id = dace.env_id
         JOIN cmdb_cientity cce ON cce.id = dace.app_module_id
         <where>
             <if test="appSystemId != null">
