@@ -10,7 +10,7 @@
     <select id="getAppSystemIdList" parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo"
             resultType="java.lang.Long">
         SELECT ra.`id` FROM ${searchVo.schemaName}.`resource_appsystem` ra
-        left join  ${searchVo.schemaName}.`resource_appsystem_appmodule` raa on raa.resource_id = ra.id
+        left join ${searchVo.schemaName}.`resource_appsystem_appmodule` raa on raa.resource_id = ra.id
         left join deploy_app_config_user dacu on ra.id = dacu.app_system_id and dacu.user_uuid = #{userUuid}
         <where>
             <if test="searchVo.keyword != null and searchVo.keyword != ''">
@@ -24,7 +24,8 @@
     </select>
 
     <select id="getAppSystemListByIdList" resultType="codedriver.framework.deploy.dto.app.DeployAppConfigResourceVo">
-        select ra.id as appSystemId,ra.`name` as appSystemName, if(dacu.user_uuid is null,0,1) as isFavorite, if(dac.config is null,0,1) as isConfig
+        select ra.id as appSystemId,ra.`name` as appSystemName, if(dacu.user_uuid is null,0,1) as isFavorite,
+        if(dac.config is null,0,1) as isConfig
         from ${schemaName}.`resource_appsystem` ra
         left join deploy_app_config_user dacu on ra.id = dacu.app_system_id and dacu.user_uuid = #{userUuid}
         left join deploy_app_config dac on ra.id = dac.app_system_id and dac.module_id = 0 and dac.env_id = 0
@@ -91,65 +92,90 @@
         </foreach>
     </select>
 
-    <select id="getAppConfig" parameterType="codedriver.framework.deploy.dto.app.DeployAppConfigVo" resultType="java.lang.String">
-        SELECT
-            `config`
+    <select id="getAppConfig" parameterType="codedriver.framework.deploy.dto.app.DeployAppConfigVo"
+            resultType="java.lang.String">
+        SELECT `config`
         FROM `deploy_app_config`
         WHERE `app_system_id` = #{appSystemId}
           and `module_id` = #{moduleId}
           and `env_id` = #{envId}
     </select>
 
-    <select id="getAppConfigVo" parameterType="codedriver.framework.deploy.dto.app.DeployAppConfigVo" resultType="codedriver.framework.deploy.dto.app.DeployAppConfigVo">
-        SELECT
-            `app_system_id` as appSystemId,
-            `module_id` as moduleId,
-            `env_id` as envId,
-            `config` as configStr,
-            `fcd`,
-            `fcu`,
-            `lcd`,
-            `lcu`
+    <select id="getAppConfigVo" parameterType="codedriver.framework.deploy.dto.app.DeployAppConfigVo"
+            resultType="codedriver.framework.deploy.dto.app.DeployAppConfigVo">
+        SELECT `app_system_id` as appSystemId,
+               `module_id`     as moduleId,
+               `env_id`        as envId,
+               `config`        as configStr,
+               `fcd`,
+               `fcu`,
+               `lcd`,
+               `lcu`
         FROM `deploy_app_config`
         WHERE `app_system_id` = #{appSystemId}
           and `module_id` = #{moduleId}
           and `env_id` = #{envId}
     </select>
 
-    <select id="getAppConfigOverrideConfig" parameterType="codedriver.framework.deploy.dto.app.DeployAppConfigOverrideVo" resultType="java.lang.String">
-        SELECT
-            `config`
+    <select id="getAppConfigOverrideConfig"
+            parameterType="codedriver.framework.deploy.dto.app.DeployAppConfigOverrideVo" resultType="java.lang.String">
+        SELECT `config`
         FROM `deploy_app_config_override`
         WHERE `app_system_id` = #{appSystemId}
-        and `module_id` = #{moduleId}
-        and `env_id` = #{envId}
+          and `module_id` = #{moduleId}
+          and `env_id` = #{envId}
     </select>
 
-    <select id="getAppConfigOverrideListByAppSystemId" parameterType="java.lang.Long" resultType="codedriver.framework.deploy.dto.app.DeployAppConfigOverrideVo">
-        SELECT
-            `app_system_id` AS appSystemId,
-            `module_id` AS moduleId,
-            `env_id` AS envId,
-            `config` AS configStr
+    <select id="getAppConfigOverrideListByAppSystemId" parameterType="java.lang.Long"
+            resultType="codedriver.framework.deploy.dto.app.DeployAppConfigOverrideVo">
+        SELECT `app_system_id` AS appSystemId,
+               `module_id`     AS moduleId,
+               `env_id`        AS envId,
+               `config`        AS configStr
         FROM `deploy_app_config_override`
         WHERE `app_system_id` = #{value}
     </select>
 
-    <select id="getAppConfigDraft" parameterType="codedriver.framework.deploy.dto.app.DeployAppConfigVo" resultType="codedriver.framework.deploy.dto.app.DeployAppConfigVo">
-        SELECT
-            `app_system_id` as appSystemId,
-            `module_id` as moduleId,
-            `env_id` as envId,
-            `config` as configStr,
-            `fcd`,
-            `fcu`,
-            `lcd`,
-            `lcu`
+    <select id="getAppConfigDraft" parameterType="codedriver.framework.deploy.dto.app.DeployAppConfigVo"
+            resultType="codedriver.framework.deploy.dto.app.DeployAppConfigVo">
+        SELECT `app_system_id` as appSystemId,
+               `module_id`     as moduleId,
+               `env_id`        as envId,
+               `config`        as configStr,
+               `fcd`,
+               `fcu`,
+               `lcd`,
+               `lcu`
         FROM `deploy_app_config_draft`
         WHERE `app_system_id` = #{appSystemId}
           and `module_id` = #{moduleId}
           and `env_id` = #{envId}
     </select>
+
+    <select id="getAppEnvAutoConfigCount" parameterType="codedriver.framework.deploy.dto.app.DeployAppEnvAutoConfigVo"
+            resultType="java.lang.Integer">
+        select count(1)
+        from deploy_app_env_auto_config
+        <include refid="autoconfigWhere"/>
+    </select>
+
+    <select id="searchAppEnvAutoConfig" parameterType="codedriver.framework.deploy.dto.app.DeployAppEnvAutoConfigVo"
+            resultType="codedriver.framework.deploy.dto.app.DeployAppEnvAutoConfigVo">
+        select `app_system_id` as appSystemId,
+               `module_id`     as moduleId,
+               `env_id`        as envId,
+               `instance_id`   as instanceId
+        from deploy_app_env_auto_config
+        <include refid="autoconfigWhere"/>
+        limit #{startNum}, #{pageSize}
+    </select>
+
+    <sql id="autoconfigWhere">
+        WHERE `app_system_id` = #{appSystemId}
+        and `module_id` = #{moduleId}
+        and `env_id` = #{envId}
+        and `instance_id` = #{instanceId}
+    </sql>
 
     <insert id="insertAppConfigAuthority">
         INSERT INTO `deploy_app_config_authority` (`app_system_id`,
@@ -185,75 +211,60 @@
         VALUES(`lcu`);
     </insert>
     <insert id="insertAppConfig" parameterType="codedriver.framework.deploy.dto.app.DeployAppConfigVo">
-        INSERT INTO `deploy_app_config` (
-            `app_system_id`,
-            `module_id`,
-            `env_id`,
-            `config`,
-            `fcd`,
-            `fcu`,
-            `lcd`,
-            `lcu`
-        )
-        VALUES
-        (
-            #{appSystemId},
-            #{moduleId},
-            #{envId},
-            #{configStr},
-            NOW(3),
-            #{fcu},
-            NOW(3),
-            #{fcu}
-        )
+        INSERT INTO `deploy_app_config` (`app_system_id`,
+                                         `module_id`,
+                                         `env_id`,
+                                         `config`,
+                                         `fcd`,
+                                         `fcu`,
+                                         `lcd`,
+                                         `lcu`)
+        VALUES (#{appSystemId},
+                #{moduleId},
+                #{envId},
+                #{configStr},
+                NOW(3),
+                #{fcu},
+                NOW(3),
+                #{fcu})
     </insert>
 
     <insert id="insertAppConfigOverride" parameterType="codedriver.framework.deploy.dto.app.DeployAppConfigOverrideVo">
-        INSERT INTO `deploy_app_config_override` (
-            `app_system_id`,
-            `module_id`,
-            `env_id`,
-            `config`
-        )
-        VALUES
-        (
-            #{appSystemId},
-            #{moduleId},
-            #{envId},
-            #{configStr}
-        )
+        INSERT INTO `deploy_app_config_override` (`app_system_id`,
+                                                  `module_id`,
+                                                  `env_id`,
+                                                  `config`)
+        VALUES (#{appSystemId},
+                #{moduleId},
+                #{envId},
+                #{configStr})
         ON DUPLICATE KEY UPDATE `config` = #{configStr}
     </insert>
 
     <insert id="insertAppConfigDraft" parameterType="codedriver.framework.deploy.dto.app.DeployAppConfigVo">
-        INSERT INTO `deploy_app_config_draft` (
-            `app_system_id`,
-            `module_id`,
-            `env_id`,
-            `config`,
-            `fcd`,
-            `fcu`,
-            `lcd`,
-            `lcu`
-        )
-        VALUES
-        (
-            #{appSystemId},
-            #{moduleId},
-            #{envId},
-            #{configStr},
-            NOW(3),
-            #{fcu},
-            NOW(3),
-            #{fcu}
-        )
+        INSERT INTO `deploy_app_config_draft` (`app_system_id`,
+                                               `module_id`,
+                                               `env_id`,
+                                               `config`,
+                                               `fcd`,
+                                               `fcu`,
+                                               `lcd`,
+                                               `lcu`)
+        VALUES (#{appSystemId},
+                #{moduleId},
+                #{envId},
+                #{configStr},
+                NOW(3),
+                #{fcu},
+                NOW(3),
+                #{fcu})
     </insert>
 
     <update id="updateAppConfig" parameterType="codedriver.framework.deploy.dto.app.DeployAppConfigVo">
         UPDATE `deploy_app_config`
         SET `config` = #{configStr},
-            `lcu` = #{lcu},
-            `lcd` = NOW(3)
+            `lcu`    = #{lcu},
+            `lcd`    = NOW(3)
         WHERE `app_system_id` = #{appSystemId}
           and `module_id` = #{moduleId}
           and `env_id` = #{envId}
@@ -262,8 +273,8 @@
     <update id="updateAppConfigDraft" parameterType="codedriver.framework.deploy.dto.app.DeployAppConfigVo">
         UPDATE `deploy_app_config_draft`
         SET `config` = #{configStr},
-            `lcu` = #{lcu},
-            `lcd` = NOW(3)
+            `lcu`    = #{lcu},
+            `lcd`    = NOW(3)
         WHERE `app_system_id` = #{appSystemId}
           and `module_id` = #{moduleId}
           and `env_id` = #{envId}
@@ -293,7 +304,8 @@
     </delete>
 
     <delete id="deleteAppConfigDraft" parameterType="codedriver.framework.deploy.dto.app.DeployAppConfigVo">
-        DELETE FROM `deploy_app_config_draft`
+        DELETE
+        FROM `deploy_app_config_draft`
         WHERE `app_system_id` = #{appSystemId}
           and `module_id` = #{moduleId}
           and `env_id` = #{envId}
