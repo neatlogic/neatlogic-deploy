@@ -43,7 +43,7 @@ public class SaveDeployAppConfigAppSystemFavoriteApi extends PrivateApiComponent
 
     @Input({
             @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "应用系统id"),
-            @Param(name = "isFavorite", type = ApiParamType.INTEGER, isRequired = true, desc = "是否被收藏")
+            @Param(name = "isFavorite", type = ApiParamType.INTEGER, isRequired = true, desc = "是否被收藏（1：收藏，0：取消收藏）")
     })
     @Output({
     })
