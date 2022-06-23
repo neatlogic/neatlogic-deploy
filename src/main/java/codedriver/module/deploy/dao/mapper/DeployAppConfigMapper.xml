@@ -286,6 +286,10 @@
     <select id="getAppEnvAutoConfigListBySystemIdAndModuleIdAndEnvIdAndInstanceIdList"
             resultMap="appEnvAutoConfigMap">
         select
+        `app_system_id` as appSystemId,
+        `module_id` as appSystemId,
+        `env_id` as envId,
+        `instance_id` as instanceId,
         `key`,
         `value`
         from deploy_app_env_auto_config
@@ -299,12 +303,13 @@
     </select>
 
     <resultMap id="appEnvAutoConfigMap" type="codedriver.framework.deploy.dto.app.DeployAppEnvAutoConfigVo">
+        <result column="appSystemId" property="appSystemId"/>
+        <result column="appSystemId" property="appSystemId"/>
         <result column="envId" property="envId"/>
-        <result column="envName" property="envName"/>
-        <result column="isEdit" property="isEdit"/>
-        <collection property="appModuleList" ofType="codedriver.framework.cmdb.dto.resourcecenter.entity.AppModuleVo">
-            <id column="appModuleId" property="id"/>
-            <result column="appModuleName" property="name"/>
+        <result column="instanceId" property="instanceId"/>
+        <collection property="keyValueList" ofType="codedriver.framework.deploy.dto.app.DeployAppEnvAutoConfigKeyValueVo">
+            <id column="key" property="key"/>
+            <result column="value" property="value"/>
         </collection>
     </resultMap>
 
