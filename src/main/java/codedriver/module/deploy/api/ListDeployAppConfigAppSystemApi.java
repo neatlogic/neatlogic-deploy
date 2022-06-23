@@ -5,18 +5,19 @@
 
 package codedriver.module.deploy.api;
 
+import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.asynchronization.threadlocal.UserContext;
-import codedriver.framework.cmdb.crossover.ICiEntityCrossoverMapper;
-import codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo;
+import codedriver.framework.cmdb.dao.mapper.resourcecenter.ResourceCenterMapper;
 import codedriver.framework.common.dto.BasePageVo;
-import codedriver.framework.crossover.CrossoverServiceFactory;
 import codedriver.framework.deploy.dto.app.DeployAppConfigResourceVo;
+import codedriver.framework.deploy.dto.app.DeployResourceSearchVo;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.framework.util.TableResultUtil;
 import codedriver.module.deploy.dao.mapper.DeployAppConfigMapper;
 import com.alibaba.fastjson.JSONObject;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -33,6 +34,9 @@ public class ListDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
 
     @Resource
     private DeployAppConfigMapper deployAppConfigMapper;
+
+    @Resource
+    private ResourceCenterMapper resourceCenterMapper;
 
     @Override
     public String getToken() {
@@ -58,13 +62,20 @@ public class ListDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
     @Description(desc = "查询发布应用配置的应用系统列表（没有关键字过滤）")
     @Override
     public Object myDoService(JSONObject paramObj) {
-        ResourceSearchVo searchVo = paramObj.toJavaObject(ResourceSearchVo.class);
+        DeployResourceSearchVo searchVo = paramObj.toJavaObject(DeployResourceSearchVo.class);
         List<DeployAppConfigResourceVo> resourceVoList = new ArrayList<>();
-        ICiEntityCrossoverMapper iCiEntityCrossoverMapper = CrossoverServiceFactory.getApi(ICiEntityCrossoverMapper.class);
-        int count = iCiEntityCrossoverMapper.getCiEntityIdListCountByCiName("APP");
+//        ICiEntityCrossoverMapper iCiEntityCrossoverMapper = CrossoverServiceFactory.getApi(ICiEntityCrossoverMapper.class);
+        int count = deployAppConfigMapper.getCiEntityIdListCount(paramObj.getInteger("isConfig"));
         if (count > 0) {
             searchVo.setRowNum(count);
             resourceVoList = deployAppConfigMapper.getAppSystemListByUserUuid(UserContext.get().getUserUuid(), searchVo);
+            if (CollectionUtils.isNotEmpty(resourceVoList)) {
+                //补充当前系统的模块个数
+                for (DeployAppConfigResourceVo resourceVo : resourceVoList) {
+                    List<Long> moduleIdList = resourceCenterMapper.getAppSystemModuleIdListByAppSystemId(resourceVo.getAppSystemId(), TenantContext.get().getDataDbName());
+                    resourceVo.setAppModuleCount(moduleIdList.size());
+                }
+            }
         }
         return TableResultUtil.getResult(resourceVoList, searchVo);
     }

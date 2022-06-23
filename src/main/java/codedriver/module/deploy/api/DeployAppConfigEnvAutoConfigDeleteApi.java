@@ -44,7 +44,7 @@ public class DeployAppConfigEnvAutoConfigDeleteApi extends PrivateApiComponentBa
 
     @Input({
             @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "应用 id"),
-            @Param(name = "moduleId", type = ApiParamType.LONG, isRequired = true, desc = "模块 id"),
+            @Param(name = "appModuleId", type = ApiParamType.LONG, isRequired = true, desc = "模块 id"),
             @Param(name = "envId", type = ApiParamType.LONG, isRequired = true, desc = "环境 id"),
             @Param(name = "instanceId", type = ApiParamType.LONG, isRequired = true, desc = "应用实例 id"),
     })

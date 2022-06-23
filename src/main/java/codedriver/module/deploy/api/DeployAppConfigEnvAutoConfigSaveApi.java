@@ -46,7 +46,7 @@ public class DeployAppConfigEnvAutoConfigSaveApi extends PrivateApiComponentBase
 
     @Input({
             @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "应用 id"),
-            @Param(name = "moduleId", type = ApiParamType.LONG, isRequired = true, desc = "模块 id"),
+            @Param(name = "appModuleId", type = ApiParamType.LONG, isRequired = true, desc = "模块 id"),
             @Param(name = "envId", type = ApiParamType.LONG, isRequired = true, desc = "环境 id"),
             @Param(name = "instanceId", type = ApiParamType.LONG, desc = "应用实例 id"),
             @Param(name = "keyValueList", type = ApiParamType.JSONARRAY, desc = "[{\"id\": xxx,\"key\": xxx,\"value\":xxx}]"),

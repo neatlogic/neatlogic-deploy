@@ -22,7 +22,6 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * @author lvzk
@@ -75,12 +74,12 @@ public class GetDeployAppConfigEnvInfoApi extends PrivateApiComponentBase {
         //TODO 根据appSystemId获取阶段信息
 
         //获取实例列表
-        List<ResourceVo> instanceList = resourceCenterMapper.getResourceListByAppSystemIdAndModuleIdAndEnvId(paramObj.toJavaObject(ResourceVo.class), TenantContext.get().getDataDbName());
-        envInfo.put("instanceList", instanceList);
+        List<Long> instanceIdList = resourceCenterMapper.getResourceIdListByAppSystemIdAndModuleIdAndEnvId(paramObj.toJavaObject(ResourceVo.class), TenantContext.get().getDataDbName());
 
         //获取实例autoConfig
-        if (CollectionUtils.isNotEmpty(instanceList)) {
-            List<Long> instanceIdList = instanceList.stream().map(ResourceVo::getId).collect(Collectors.toList());
+        if (CollectionUtils.isNotEmpty(instanceIdList)) {
+            List<ResourceVo> instanceList = resourceCenterMapper.getResourceListByIdList(instanceIdList, TenantContext.get().getDataDbName());
+            envInfo.put("instanceList", instanceList);
             List<DeployAppEnvAutoConfigVo> instanceConfigList = deployAppConfigMapper.getAppEnvAutoConfigListBySystemIdAndModuleIdAndEnvIdAndInstanceIdList(paramObj.getLong("appSystemId"), paramObj.getLong("appModuleId"), paramObj.getLong("envId"), instanceIdList);
             envInfo.put("instanceConfigList", instanceConfigList);
         }
