@@ -5,6 +5,7 @@ import codedriver.framework.cmdb.crossover.ICiEntityCrossoverService;
 import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
 import codedriver.framework.cmdb.exception.cientity.CiEntityNotFoundException;
 import codedriver.framework.common.constvalue.ApiParamType;
+import codedriver.framework.common.dto.BasePageVo;
 import codedriver.framework.crossover.CrossoverServiceFactory;
 import codedriver.framework.dto.runner.RunnerGroupVo;
 import codedriver.framework.restful.annotation.*;
@@ -47,7 +48,8 @@ public class GetDeployAppConfigAppModuleInfoApi extends PrivateApiComponentBase 
             @Param(name = "appModuleId", type = ApiParamType.LONG, isRequired = true, desc = "应用模块id")
     })
     @Output({
-//            @Param(explode = AppEnvironmentVo[].class, desc = "发布应用配置应用模块信息"),
+            @Param(explode = BasePageVo.class),
+            @Param(name = "tbodyList", explode = CiEntityVo[].class, desc = "应用模块详细配置信息")
     })
     @Description(desc = "查询应用模块详细配置信息")
     @Override
