@@ -64,7 +64,7 @@ public class ListDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
     public Object myDoService(JSONObject paramObj) {
         DeployResourceSearchVo searchVo = paramObj.toJavaObject(DeployResourceSearchVo.class);
         List<DeployAppConfigResourceVo> resourceVoList = new ArrayList<>();
-//        ICiEntityCrossoverMapper iCiEntityCrossoverMapper = CrossoverServiceFactory.getApi(ICiEntityCrossoverMapper.class);
+
         int count = deployAppConfigMapper.getCiEntityIdListCount(paramObj.getInteger("isConfig"));
         if (count > 0) {
             searchVo.setRowNum(count);
@@ -74,6 +74,9 @@ public class ListDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
                 for (DeployAppConfigResourceVo resourceVo : resourceVoList) {
                     List<Long> moduleIdList = resourceCenterMapper.getAppSystemModuleIdListByAppSystemId(resourceVo.getAppSystemId(), TenantContext.get().getDataDbName());
                     resourceVo.setAppModuleCount(moduleIdList.size());
+                    if (CollectionUtils.isNotEmpty(moduleIdList)) {
+                        resourceVo.setIsHasModule(1);
+                    }
                 }
             }
         }

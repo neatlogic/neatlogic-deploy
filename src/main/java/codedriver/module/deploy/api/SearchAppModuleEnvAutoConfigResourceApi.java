@@ -26,7 +26,7 @@ import java.util.List;
  */
 @Service
 @OperationType(type = OperationTypeEnum.SEARCH)
-public class ListAppModuleEnvWithoutAutoConfigResourceApi extends PrivateApiComponentBase {
+public class SearchAppModuleEnvAutoConfigResourceApi extends PrivateApiComponentBase {
 
     @Resource
     private DeployAppConfigMapper deployAppConfigMapper;
@@ -46,13 +46,14 @@ public class ListAppModuleEnvWithoutAutoConfigResourceApi extends PrivateApiComp
 
     @Override
     public String getToken() {
-        return "deploy/app/module/env/without/autoConfig/resource/list";
+        return "deploy/app/module/env/autoConfig/resource/search";
     }
 
     @Input({
             @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "应用 id"),
             @Param(name = "appModuleId", type = ApiParamType.LONG, isRequired = true, desc = "模块 id"),
             @Param(name = "envId", type = ApiParamType.LONG, isRequired = true, desc = "环境 id"),
+            @Param(name = "isAutoConfig", type = ApiParamType.INTEGER, isRequired = true, desc = "是否有AutoConfig"),
             @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "当前页"),
             @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "每页数据条目"),
             @Param(name = "needPage", type = ApiParamType.BOOLEAN, desc = "是否需要分页，默认true")

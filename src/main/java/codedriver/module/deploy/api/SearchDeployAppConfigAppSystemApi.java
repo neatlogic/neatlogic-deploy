@@ -87,6 +87,9 @@ public class SearchDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
             for (DeployAppConfigResourceVo resourceVo : returnAppSystemList) {
                 List<Long> moduleIdList = resourceCenterMapper.getAppSystemModuleIdListByAppSystemId(resourceVo.getAppSystemId(), TenantContext.get().getDataDbName());
                 resourceVo.setAppModuleCount(moduleIdList.size());
+                if (CollectionUtils.isNotEmpty(moduleIdList)) {
+                    resourceVo.setIsHasModule(1);
+                }
             }
 
             //查询包含关键字的 appSystemModuleList，再将信息模块信息补回 returnAppSystemList
@@ -100,6 +103,9 @@ public class SearchDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
                         for (DeployAppModuleVo appModuleVo : appSystemInfoVo.getAppModuleList()) {
                             List<DeployAppEnvironmentVo> appModuleEnvList = deployAppConfigMapper.getDeployAppEnvListByAppSystemIdAndModuleId(returnAppSystemVo.getAppSystemId(), appModuleVo.getId(), TenantContext.get().getDataDbName());
                             appModuleVo.setEnvCount(appModuleEnvList.size());
+                            if (CollectionUtils.isNotEmpty(appModuleEnvList)) {
+                                appModuleVo.setIsHasEnv(1);
+                            }
                         }
                         returnAppSystemVo.setAppModuleList(appSystemInfoVo.getAppModuleList());
                     }
