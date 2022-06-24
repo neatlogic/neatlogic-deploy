@@ -5,6 +5,9 @@
 
 package codedriver.module.deploy.api;
 
+import codedriver.framework.asynchronization.threadlocal.TenantContext;
+import codedriver.framework.cmdb.dao.mapper.resourcecenter.ResourceCenterMapper;
+import codedriver.framework.cmdb.dto.resourcecenter.ResourceVo;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.dto.BasePageVo;
 import codedriver.framework.deploy.dto.app.DeployAppEnvAutoConfigKeyValueVo;
@@ -14,6 +17,7 @@ import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.deploy.dao.mapper.DeployAppConfigMapper;
 import com.alibaba.fastjson.JSONObject;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -26,8 +30,12 @@ import java.util.List;
 @Service
 @OperationType(type = OperationTypeEnum.SEARCH)
 public class GetDeployAppConfigEnvInfoApi extends PrivateApiComponentBase {
+
     @Resource
     private DeployAppConfigMapper deployAppConfigMapper;
+
+    @Resource
+    private ResourceCenterMapper resourceCenterMapper;
 
     @Override
     public String getToken() {
@@ -46,26 +54,35 @@ public class GetDeployAppConfigEnvInfoApi extends PrivateApiComponentBase {
 
     @Input({
             @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "应用 id"),
-            @Param(name = "moduleId", type = ApiParamType.LONG, isRequired = true, desc = "模块 id"),
+            @Param(name = "appModuleId", type = ApiParamType.LONG, isRequired = true, desc = "模块 id"),
             @Param(name = "envId", type = ApiParamType.LONG, isRequired = true, desc = "环境 id")
     })
     @Output({
             @Param(explode = BasePageVo.class),
-            @Param(name = "tbodyList", explode = DeployAppEnvAutoConfigVo[].class, desc = "应用配置授权列表")
+            @Param(name = "tbodyList", explode = DeployAppEnvAutoConfigVo[].class, desc = "应用配置环境autoConfig列表")
     })
     @Description(desc = "查询应用环境详细配置信息接口")
     @Override
     public Object myDoService(JSONObject paramObj) {
         JSONObject envInfo = new JSONObject();
         DeployAppEnvAutoConfigVo envAutoConfigVo = paramObj.toJavaObject(DeployAppEnvAutoConfigVo.class);
+
         //获取环境 autoConfig
         List<DeployAppEnvAutoConfigKeyValueVo> envAutoConfigList = deployAppConfigMapper.getAppEnvAutoConfigKeyValueList(envAutoConfigVo);
-        envInfo.put("envAutoConfigList",envAutoConfigList);
+        envInfo.put("envAutoConfigList", envAutoConfigList);
 
-        //TODO 获取实例列表
+        //TODO 根据appSystemId获取阶段信息
 
-        //TODO 根据实例获取envAutoConfig
+        //获取实例列表
+        List<Long> instanceIdList = resourceCenterMapper.getResourceIdListByAppSystemIdAndModuleIdAndEnvId(paramObj.toJavaObject(ResourceVo.class), TenantContext.get().getDataDbName());
 
+        //获取实例autoConfig
+        if (CollectionUtils.isNotEmpty(instanceIdList)) {
+            List<ResourceVo> instanceList = resourceCenterMapper.getResourceListByIdList(instanceIdList, TenantContext.get().getDataDbName());
+            envInfo.put("instanceList", instanceList);
+            List<DeployAppEnvAutoConfigVo> instanceAutoConfigList = deployAppConfigMapper.getAppEnvAutoConfigListBySystemIdAndModuleIdAndEnvIdAndInstanceIdList(paramObj.getLong("appSystemId"), paramObj.getLong("appModuleId"), paramObj.getLong("envId"), instanceIdList);
+            envInfo.put("instanceAutoConfigList", instanceAutoConfigList);
+        }
         //TODO db配置
         return envInfo;
     }

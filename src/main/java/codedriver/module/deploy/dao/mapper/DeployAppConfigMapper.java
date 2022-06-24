@@ -1,7 +1,7 @@
 package codedriver.module.deploy.dao.mapper;
 
-import codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo;
 import codedriver.framework.deploy.dto.app.*;
+import codedriver.framework.dto.runner.RunnerGroupVo;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.Date;
@@ -13,19 +13,21 @@ import java.util.List;
  */
 public interface DeployAppConfigMapper {
 
-    List<Long> getAppSystemIdList(@Param("searchVo") ResourceSearchVo searchVo, @Param("userUuid") String userUuid);
+    List<Long> getAppSystemIdList(@Param("searchVo") DeployResourceSearchVo searchVo, @Param("userUuid") String userUuid);
 
     List<DeployAppConfigResourceVo> getAppSystemListByIdList(@Param("idList") List<Long> idList, @Param("schemaName") String schemaName, @Param("userUuid") String userUuid);
 
-    List<DeployAppConfigResourceVo> getAppSystemModuleListBySystemIdList(@Param("idList") List<Long> idList, @Param("schemaName") String schemaName, @Param("userUuid") String userUuid);
+    List<DeployAppConfigResourceVo> getAppSystemModuleListBySystemIdList(@Param("idList") List<Long> idList, @Param("isConfig") Integer isConfig, @Param("schemaName") String schemaName, @Param("userUuid") String userUuid);
 
-    List<DeployAppConfigResourceVo> getAppSystemListByUserUuid(@Param("userUuid") String userUuid, @Param("searchVo") ResourceSearchVo searchVo);
+    List<DeployAppConfigResourceVo> getAppSystemListByUserUuid(@Param("userUuid") String userUuid, @Param("searchVo") DeployResourceSearchVo searchVo);
 
     Integer getAppConfigAuthorityCount(DeployAppConfigAuthorityVo searchVo);
 
     List<DeployAppConfigAuthorityVo> getAppConfigAuthorityList(DeployAppConfigAuthorityVo searchVo);
 
     List<DeployAppConfigAuthorityVo> getAppConfigAuthorityDetailList(@Param("appConfigAuthList") List<DeployAppConfigAuthorityVo> appConfigAuthList);
+
+    List<DeployAppEnvAutoConfigVo> getAppEnvAutoConfigListBySystemIdAndModuleIdAndEnvIdAndInstanceIdList(@Param("appSystemId") Long appSystemId, @Param("appModuleId") Long appModuleId, @Param("envId") Long envId, @Param("instanceIdList") List<Long> instanceIdList);
 
     List<DeployAppEnvAutoConfigKeyValueVo> getAppEnvAutoConfigKeyValueList(DeployAppEnvAutoConfigVo envAutoConfigVo);
 
@@ -40,6 +42,12 @@ public interface DeployAppConfigMapper {
     DeployAppConfigVo getAppConfigDraft(DeployAppConfigVo deployAppConfigDraftVo);
 
     List<DeployAppEnvironmentVo> getDeployAppEnvListByAppSystemIdAndModuleIdList(@Param("appSystemId") Long appSystemId, @Param("appModuleIdList") List<Long> appModuleIdList, @Param("schemaName") String schemaName);
+
+    List<DeployAppEnvironmentVo> getDeployAppEnvListByAppSystemIdAndModuleId(@Param("appSystemId") Long appSystemId, @Param("appModuleId") Long appModuleId, @Param("schemaName") String schemaName);
+
+    List<Long> getAppModuleEnvWithoutAutoConfigInstanceIdListByAppSystemIdAndAppModuleIdAndEnvId(@Param("searchVo") DeployAppEnvAutoConfigVo searchVo, @Param("schemaName") String schemaName);
+
+    RunnerGroupVo getAppModuleRunnerGroupByAppSystemIdAndModuleId(@Param("appSystemId") Long appSystemId, @Param("appModuleId") Long appModuleId);
 
     Integer insertAppConfigAuthority(DeployAppConfigAuthorityVo deployAppConfigAuthorityVo);
 
@@ -66,6 +74,10 @@ public interface DeployAppConfigMapper {
     Integer deleteAppEnvAutoConfig(DeployAppEnvAutoConfigVo deployAppEnvAutoConfigVo);
 
     Integer deleteAppConfigDraft(DeployAppConfigVo deployAppConfigDraftVo);
+
+    Integer getAppSystemIdListCount(DeployResourceSearchVo searchVo);
+
+    int getCiEntityIdListCount(Integer isConfig);
 
     void deleteAppConfigEnvByAppSystemIdAndAppModuleIdAndEnvId(@Param("appSystemId") Long appSystemId, @Param("appModuleId") Long appModuleId, @Param("envId") Long envId);
 

@@ -43,7 +43,7 @@ public class DeployAppConfigModuleRunnerGroupSaveApi extends PrivateApiComponent
 
     @Input({
             @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "应用id"),
-            @Param(name = "moduleId", type = ApiParamType.LONG, isRequired = true, desc = "模块id"),
+            @Param(name = "appModuleId", type = ApiParamType.LONG, isRequired = true, desc = "模块id"),
             @Param(name = "runnerGroupId", type = ApiParamType.LONG, isRequired = true, desc = "runner组id")
     })
     @Output({
@@ -52,7 +52,7 @@ public class DeployAppConfigModuleRunnerGroupSaveApi extends PrivateApiComponent
     @Override
     public Object myDoService(JSONObject paramObj) {
         Long appSystemId = paramObj.getLong("appSystemId");
-        Long moduleId = paramObj.getLong("moduleId");
+        Long moduleId = paramObj.getLong("appModuleId");
         Long runnerGroupId = paramObj.getLong("runnerGroupId");
         deployAppConfigMapper.insertAppModuleRunnerGroup(appSystemId,moduleId,runnerGroupId);
        return null;
