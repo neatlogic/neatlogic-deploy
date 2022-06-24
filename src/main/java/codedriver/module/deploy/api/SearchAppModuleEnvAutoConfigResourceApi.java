@@ -4,6 +4,7 @@ import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.cmdb.dao.mapper.resourcecenter.ResourceCenterMapper;
 import codedriver.framework.cmdb.dto.resourcecenter.ResourceVo;
 import codedriver.framework.common.constvalue.ApiParamType;
+import codedriver.framework.common.dto.BasePageVo;
 import codedriver.framework.deploy.dto.app.DeployAppEnvAutoConfigVo;
 import codedriver.framework.restful.annotation.Input;
 import codedriver.framework.restful.annotation.OperationType;
@@ -11,6 +12,7 @@ import codedriver.framework.restful.annotation.Output;
 import codedriver.framework.restful.annotation.Param;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
+import codedriver.framework.util.TableResultUtil;
 import codedriver.module.deploy.dao.mapper.DeployAppConfigMapper;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
@@ -36,7 +38,7 @@ public class SearchAppModuleEnvAutoConfigResourceApi extends PrivateApiComponent
 
     @Override
     public String getName() {
-        return "获取发布应用模块环境无AutoConfig实例差异的资产列表";
+        return "获取发布应用模块环境AutoConfig实例差异的资产列表";
     }
 
     @Override
@@ -58,15 +60,22 @@ public class SearchAppModuleEnvAutoConfigResourceApi extends PrivateApiComponent
             @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "每页数据条目"),
             @Param(name = "needPage", type = ApiParamType.BOOLEAN, desc = "是否需要分页，默认true")
     })
-    @Output({})
+    @Output({
+            @Param(explode = BasePageVo.class),
+            @Param(name = "tbodyList", explode = ResourceVo[].class, desc = "发布应用模块环境AutoConfig实例差异的资产列表")
+    })
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         DeployAppEnvAutoConfigVo searchVo = paramObj.toJavaObject(DeployAppEnvAutoConfigVo.class);
         List<ResourceVo> resourceVoList = new ArrayList<>();
-        List<Long> instanceIdList = deployAppConfigMapper.getAppModuleEnvWithoutAutoConfigInstanceIdListByAppSystemIdAndAppModuleIdAndEnvId(searchVo, TenantContext.get().getDataDbName());
-        if (CollectionUtils.isNotEmpty(instanceIdList)) {
-            resourceVoList = resourceCenterMapper.getResourceByIdList(instanceIdList, TenantContext.get().getDataDbName());
+        int count = deployAppConfigMapper.getAppModuleEnvAutoConfigInstanceIdCount(searchVo, TenantContext.get().getDataDbName());
+        if (count > 0) {
+            searchVo.setRowNum(count);
+            List<Long> instanceIdList = deployAppConfigMapper.getAppModuleEnvAutoConfigInstanceIdList(searchVo, TenantContext.get().getDataDbName());
+            if (CollectionUtils.isNotEmpty(instanceIdList)) {
+                resourceVoList = resourceCenterMapper.getResourceByIdList(instanceIdList, TenantContext.get().getDataDbName());
+            }
         }
-        return resourceVoList;
+        return TableResultUtil.getResult(resourceVoList, searchVo);
     }
 }
