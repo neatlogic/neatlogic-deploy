@@ -71,7 +71,7 @@
         from cmdb_cientity ce
         join ${schemaName}.`resource_appsystem_appmodule` raa on raa.resource_id = ce.id
         <if test="isConfig != null">
-            left join deploy_app_config dac on ce.id = dac.app_system_id and dac.module_id = 0 and dac.env_id = 0
+            left join deploy_app_config dac on ce.id = dac.app_system_id and dac.app_module_id = 0 and dac.env_id = 0
         </if>
         where ce.id in
         <foreach collection="idList" item="id" open="(" close=")" separator=",">
@@ -384,7 +384,7 @@
                  LEFT JOIN runnergroup_runner rgr ON rg.`id` = rgr.`runnergroup_id`
                  LEFT JOIN runner r ON r.`id` = rgr.`runner_id`
         WHERE damrg.app_system_id = #{appSystemId}
-          AND damrg.module_id = #{appModuleId}
+          AND damrg.app_module_id = #{appModuleId}
     </select>
 
     <select id="getAppEnvAutoConfigListBySystemIdAndModuleIdAndEnvIdAndInstanceIdList"
@@ -430,7 +430,7 @@
         SELECT count(distinct ra.`id`) FROM ${schemaName}.`resource_appsystem` ra
         left join ${schemaName}.`resource_appsystem_appmodule` raa on raa.resource_id = ra.id
         <if test="isConfig != null">
-            left join deploy_app_config dac on ra.id = dac.app_system_id and dac.module_id = 0 and dac.env_id = 0
+            left join deploy_app_config dac on ra.id = dac.app_system_id and dac.app_module_id = 0 and dac.env_id = 0
         </if>
         <where>
             <if test="keyword != null and keyword != ''">
@@ -454,7 +454,7 @@
         FROM `cmdb_cientity` a
         JOIN `cmdb_ci` b ON a.ci_id = b.id
         <if test="isConfig != null">
-            left join deploy_app_config dac on a.id = dac.app_system_id and dac.module_id = 0 and dac.env_id = 0
+            left join deploy_app_config dac on a.id = dac.app_system_id and dac.app_module_id = 0 and dac.env_id = 0
         </if>
         where b.name = 'APP'
         <choose>
