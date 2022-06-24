@@ -3,11 +3,14 @@ package codedriver.module.deploy.api;
 import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.cmdb.crossover.IAppSystemMapper;
-import codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo;
+import codedriver.framework.cmdb.dao.mapper.resourcecenter.ResourceCenterMapper;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.dto.BasePageVo;
 import codedriver.framework.crossover.CrossoverServiceFactory;
 import codedriver.framework.deploy.dto.app.DeployAppConfigResourceVo;
+import codedriver.framework.deploy.dto.app.DeployAppEnvironmentVo;
+import codedriver.framework.deploy.dto.app.DeployAppModuleVo;
+import codedriver.framework.deploy.dto.app.DeployResourceSearchVo;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
@@ -33,6 +36,9 @@ public class SearchDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
 
     @Resource
     private DeployAppConfigMapper deployAppConfigMapper;
+
+    @Resource
+    private ResourceCenterMapper resourceCenterMapper;
 
     @Override
     public String getToken() {
@@ -62,10 +68,10 @@ public class SearchDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
     @Description(desc = "查询发布应用配置的应用系统列表（含关键字过滤）")
     @Override
     public Object myDoService(JSONObject paramObj) {
-        ResourceSearchVo searchVo = paramObj.toJavaObject(ResourceSearchVo.class);
+        DeployResourceSearchVo searchVo = paramObj.toJavaObject(DeployResourceSearchVo.class);
         List<DeployAppConfigResourceVo> returnAppSystemList = new ArrayList<>();
         IAppSystemMapper appSystemMapper = CrossoverServiceFactory.getApi(IAppSystemMapper.class);
-        Integer count = appSystemMapper.getAppSystemIdListCount(searchVo);
+        Integer count = deployAppConfigMapper.getAppSystemIdListCount(searchVo);
         if (count > 0) {
             searchVo.setRowNum(count);
 
@@ -77,13 +83,30 @@ public class SearchDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
             returnAppSystemList = deployAppConfigMapper.getAppSystemListByIdList(appSystemIdList, TenantContext.get().getDataDbName(), UserContext.get().getUserUuid());
             Map<Long, DeployAppConfigResourceVo> returnAppSystemMap = returnAppSystemList.stream().collect(Collectors.toMap(DeployAppConfigResourceVo::getAppSystemId, e -> e));
 
+            //补充当前系统的模块个数
+            for (DeployAppConfigResourceVo resourceVo : returnAppSystemList) {
+                List<Long> moduleIdList = resourceCenterMapper.getAppSystemModuleIdListByAppSystemId(resourceVo.getAppSystemId(), TenantContext.get().getDataDbName());
+                resourceVo.setAppModuleCount(moduleIdList.size());
+                if (CollectionUtils.isNotEmpty(moduleIdList)) {
+                    resourceVo.setIsHasModule(1);
+                }
+            }
+
             //查询包含关键字的 appSystemModuleList，再将信息模块信息补回 returnAppSystemList
             List<Long> appSystemIdListByAppModuleName = appSystemMapper.getAppSystemIdListByAppModuleName(searchVo.getKeyword(), TenantContext.get().getDataDbName());
-            List<DeployAppConfigResourceVo> appSystemModuleList = deployAppConfigMapper.getAppSystemModuleListBySystemIdList(appSystemIdListByAppModuleName, TenantContext.get().getDataDbName(), UserContext.get().getUserUuid());
+            List<DeployAppConfigResourceVo> appSystemModuleList = deployAppConfigMapper.getAppSystemModuleListBySystemIdList(appSystemIdListByAppModuleName, paramObj.getInteger("isConfig"), TenantContext.get().getDataDbName(), UserContext.get().getUserUuid());
             if (CollectionUtils.isNotEmpty(appSystemModuleList)) {
                 for (DeployAppConfigResourceVo appSystemInfoVo : appSystemModuleList) {
                     DeployAppConfigResourceVo returnAppSystemVo = returnAppSystemMap.get(appSystemInfoVo.getAppSystemId());
                     if (returnAppSystemVo != null) {
+                        //补充当前模块的环境个数（有实例的环境个数）
+                        for (DeployAppModuleVo appModuleVo : appSystemInfoVo.getAppModuleList()) {
+                            List<DeployAppEnvironmentVo> appModuleEnvList = deployAppConfigMapper.getDeployAppEnvListByAppSystemIdAndModuleId(returnAppSystemVo.getAppSystemId(), appModuleVo.getId(), TenantContext.get().getDataDbName());
+                            appModuleVo.setEnvCount(appModuleEnvList.size());
+                            if (CollectionUtils.isNotEmpty(appModuleEnvList)) {
+                                appModuleVo.setIsHasEnv(1);
+                            }
+                        }
                         returnAppSystemVo.setAppModuleList(appSystemInfoVo.getAppModuleList());
                     }
                 }
