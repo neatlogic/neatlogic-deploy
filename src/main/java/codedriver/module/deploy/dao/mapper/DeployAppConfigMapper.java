@@ -79,12 +79,7 @@ public interface DeployAppConfigMapper {
 
     int getCiEntityIdListCount(Integer isConfig);
 
-
-
-
     void deleteAppConfigEnvByAppSystemIdAndAppModuleIdAndEnvId(@Param("appSystemId") Long appSystemId, @Param("appModuleId") Long appModuleId, @Param("envId") Long envId);
 
     void deleteAppConfigSystemFavoriteByAppSystemIdAndUserUuid(@Param("appSystemId") Long appSystemId, @Param("userUuid") String userUuid);
-
-
 }
