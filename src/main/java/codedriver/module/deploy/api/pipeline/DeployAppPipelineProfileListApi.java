@@ -49,7 +49,7 @@ public class DeployAppPipelineProfileListApi extends PrivateApiComponentBase {
 
     @Input({
             @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "应用系统ID"),
-            @Param(name = "moduleId", type = ApiParamType.LONG, desc = "模块ID"),
+            @Param(name = "appModuleId", type = ApiParamType.LONG, desc = "模块ID"),
             @Param(name = "envId", type = ApiParamType.LONG, desc = "环境ID"),
             @Param(name = "defaultValue", type = ApiParamType.JSONARRAY, desc = "默认值")
     })
@@ -65,7 +65,7 @@ public class DeployAppPipelineProfileListApi extends PrivateApiComponentBase {
         DeployPipelineConfigVo moduleOverrideConfig = null;
         DeployPipelineConfigVo envOverrideConfig = null;
         Long appSystemId = deployAppConfigVo.getAppSystemId();
-        Long moduleId = deployAppConfigVo.getModuleId();
+        Long moduleId = deployAppConfigVo.getAppModuleId();
         Long envId = deployAppConfigVo.getEnvId();
         String overrideConfigStr = deployAppConfigMapper.getAppConfig(deployAppConfigVo);
         if (moduleId == 0L && envId == 0L) {

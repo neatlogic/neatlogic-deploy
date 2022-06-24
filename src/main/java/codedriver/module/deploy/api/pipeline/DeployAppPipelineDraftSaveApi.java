@@ -47,7 +47,7 @@ public class DeployAppPipelineDraftSaveApi extends PrivateApiComponentBase {
 
     @Input({
             @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "应用系统ID"),
-            @Param(name = "moduleId", type = ApiParamType.LONG, desc = "模块ID"),
+            @Param(name = "appModuleId", type = ApiParamType.LONG, desc = "模块ID"),
             @Param(name = "envId", type = ApiParamType.LONG, desc = "环境ID"),
             @Param(name = "config", type = ApiParamType.JSONOBJECT, isRequired = true, desc = "流水线草稿配置信息")
     })
