@@ -138,14 +138,14 @@
         SELECT `config`
         FROM `deploy_app_config`
         WHERE `app_system_id` = #{appSystemId}
-          and `module_id` = #{moduleId}
+          and `app_module_id` = #{appModuleId}
           and `env_id` = #{envId}
     </select>
 
     <select id="getAppConfigVo" parameterType="codedriver.framework.deploy.dto.app.DeployAppConfigVo"
             resultType="codedriver.framework.deploy.dto.app.DeployAppConfigVo">
         SELECT `app_system_id` as appSystemId,
-               `module_id`     as moduleId,
+               `app_module_id`     as moduleId,
                `env_id`        as envId,
                `config`        as configStr,
                `fcd`,
@@ -154,7 +154,7 @@
                `lcu`
         FROM `deploy_app_config`
         WHERE `app_system_id` = #{appSystemId}
-          and `module_id` = #{moduleId}
+          and `app_module_id` = #{appModuleId}
           and `env_id` = #{envId}
     </select>
 
@@ -163,14 +163,14 @@
         SELECT `config`
         FROM `deploy_app_config_override`
         WHERE `app_system_id` = #{appSystemId}
-          and `module_id` = #{moduleId}
+          and `app_module_id` = #{appModuleId}
           and `env_id` = #{envId}
     </select>
 
     <select id="getAppConfigOverrideListByAppSystemId" parameterType="java.lang.Long"
             resultType="codedriver.framework.deploy.dto.app.DeployAppConfigOverrideVo">
         SELECT `app_system_id` AS appSystemId,
-               `module_id`     AS moduleId,
+               `app_module_id`     AS moduleId,
                `env_id`        AS envId,
                `config`        AS configStr
         FROM `deploy_app_config_override`
@@ -180,7 +180,7 @@
     <select id="getAppConfigDraft" parameterType="codedriver.framework.deploy.dto.app.DeployAppConfigVo"
             resultType="codedriver.framework.deploy.dto.app.DeployAppConfigVo">
         SELECT `app_system_id` as appSystemId,
-               `module_id`     as moduleId,
+               `app_module_id`     as moduleId,
                `env_id`        as envId,
                `config`        as configStr,
                `fcd`,
@@ -189,7 +189,7 @@
                `lcu`
         FROM `deploy_app_config_draft`
         WHERE `app_system_id` = #{appSystemId}
-          and `module_id` = #{moduleId}
+          and `app_module_id` = #{appModuleId}
           and `env_id` = #{envId}
     </select>
 
@@ -260,7 +260,7 @@
                `value`
         from deploy_app_env_auto_config
         WHERE `app_system_id` = #{appSystemId}
-          and `module_id` = #{moduleId}
+          and `app_module_id` = #{appModuleId}
           and `env_id` = #{envId}
           and `instance_id` = #{instanceId}
     </select>
@@ -284,23 +284,23 @@
                                 `lcu` = #{lcu};
     </insert>
     <insert id="insertAppModuleRunnerGroup">
-        INSERT INTO `deploy_app_module_runner_group` (`app_system_id`, `module_id`, `runner_group_id`)
-        VALUES (#{appSystemId}, #{moduleId}, #{runnerGroupId})
+        INSERT INTO `deploy_app_module_runner_group` (`app_system_id`, `app_module_id`, `runner_group_id`)
+        VALUES (#{appSystemId}, #{appModuleId}, #{runnerGroupId})
         ON DUPLICATE KEY UPDATE `runner_group_id` = #{runnerGroupId}
     </insert>
     <insert id="insertAppEnvAutoConfig">
         INSERT INTO deploy_app_env_auto_config
-        (`app_system_id`,`module_id`,`env_id`,`instance_id`,`key`,`value`,`lcd`,`lcu`)
+        (`app_system_id`,`app_module_id`,`env_id`,`instance_id`,`key`,`value`,`lcd`,`lcu`)
         VALUES
         <foreach collection="keyValueList" item="keyValue" separator="),(" open="(" close=")">
-            #{appSystemId},#{moduleId},#{envId},#{instanceId},#{keyValue.key},#{keyValue.value},#{lcd},#{lcu}
+            #{appSystemId},#{appModuleId},#{envId},#{instanceId},#{keyValue.key},#{keyValue.value},#{lcd},#{lcu}
         </foreach>
         ON DUPLICATE KEY UPDATE `key` = VALUES(`key`),`value` = VALUES(`value`),`lcd`= VALUES(`lcd`),`lcu` =
         VALUES(`lcu`);
     </insert>
     <insert id="insertAppConfig" parameterType="codedriver.framework.deploy.dto.app.DeployAppConfigVo">
         INSERT INTO `deploy_app_config` (`app_system_id`,
-                                         `module_id`,
+                                         `app_module_id`,
                                          `env_id`,
                                          `config`,
                                          `fcd`,
@@ -308,7 +308,7 @@
                                          `lcd`,
                                          `lcu`)
         VALUES (#{appSystemId},
-                #{moduleId},
+                #{appModuleId},
                 #{envId},
                 #{configStr},
                 NOW(3),
@@ -319,11 +319,11 @@
 
     <insert id="insertAppConfigOverride" parameterType="codedriver.framework.deploy.dto.app.DeployAppConfigOverrideVo">
         INSERT INTO `deploy_app_config_override` (`app_system_id`,
-                                                  `module_id`,
+                                                  `app_module_id`,
                                                   `env_id`,
                                                   `config`)
         VALUES (#{appSystemId},
-                #{moduleId},
+                #{appModuleId},
                 #{envId},
                 #{configStr})
         ON DUPLICATE KEY UPDATE `config` = #{configStr}
@@ -331,7 +331,7 @@
 
     <insert id="insertAppConfigDraft" parameterType="codedriver.framework.deploy.dto.app.DeployAppConfigVo">
         INSERT INTO `deploy_app_config_draft` (`app_system_id`,
-                                               `module_id`,
+                                               `app_module_id`,
                                                `env_id`,
                                                `config`,
                                                `fcd`,
@@ -339,7 +339,7 @@
                                                `lcd`,
                                                `lcu`)
         VALUES (#{appSystemId},
-                #{moduleId},
+                #{appModuleId},
                 #{envId},
                 #{configStr},
                 NOW(3),
@@ -372,7 +372,7 @@
             `lcu`    = #{lcu},
             `lcd`    = NOW(3)
         WHERE `app_system_id` = #{appSystemId}
-          and `module_id` = #{moduleId}
+          and `app_module_id` = #{appModuleId}
           and `env_id` = #{envId}
     </update>
 
@@ -382,7 +382,7 @@
             `lcu`    = #{lcu},
             `lcd`    = NOW(3)
         WHERE `app_system_id` = #{appSystemId}
-          and `module_id` = #{moduleId}
+          and `app_module_id` = #{appModuleId}
           and `env_id` = #{envId}
     </update>
 
@@ -401,7 +401,7 @@
         from deploy_app_env_auto_config
         where
         `app_system_id` = #{appSystemId}
-        and `module_id`=#{moduleId}
+        and `app_module_id`=#{appModuleId}
         and `env_id` = #{envId}
         and `instance_id` = #{instanceId}
         <if test="lcd != null">
@@ -413,7 +413,7 @@
         DELETE
         FROM `deploy_app_config_draft`
         WHERE `app_system_id` = #{appSystemId}
-          and `module_id` = #{moduleId}
+          and `app_module_id` = #{appModuleId}
           and `env_id` = #{envId}
     </delete>
 
