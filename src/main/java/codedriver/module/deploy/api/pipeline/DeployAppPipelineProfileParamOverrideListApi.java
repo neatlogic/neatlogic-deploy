@@ -135,7 +135,7 @@ public class DeployAppPipelineProfileParamOverrideListApi extends PrivateApiComp
                     paramVo = deployProfileParamVo;
                     List<String> idList = new ArrayList<>();
                     idList.add(appSystemId.toString());
-                    Long moduleId = deployAppConfigOverrideVo.getModuleId();
+                    Long moduleId = deployAppConfigOverrideVo.getAppModuleId();
                     if (moduleId != null && moduleId != 0L) {
                         idList.add(moduleId.toString());
                     }
@@ -175,7 +175,7 @@ public class DeployAppPipelineProfileParamOverrideListApi extends PrivateApiComp
             idList.add(appSystemId.toString());
             List<String> nameList = new ArrayList<>();
             nameList.add(appSystemName);
-            Long moduleId = deployAppConfigOverrideVo.getModuleId();
+            Long moduleId = deployAppConfigOverrideVo.getAppModuleId();
             if (moduleId != null && moduleId != 0L) {
                 idList.add(moduleId.toString());
                 String name = nameMap.get(moduleId);

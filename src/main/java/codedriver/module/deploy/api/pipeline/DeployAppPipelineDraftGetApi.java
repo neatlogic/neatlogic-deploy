@@ -47,7 +47,7 @@ public class DeployAppPipelineDraftGetApi extends PrivateApiComponentBase {
 
     @Input({
             @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "应用系统ID"),
-            @Param(name = "moduleId", type = ApiParamType.LONG, desc = "模块ID"),
+            @Param(name = "appModuleId", type = ApiParamType.LONG, desc = "模块ID"),
             @Param(name = "envId", type = ApiParamType.LONG, desc = "环境ID")
     })
     @Output({
@@ -70,7 +70,7 @@ public class DeployAppPipelineDraftGetApi extends PrivateApiComponentBase {
         DeployPipelineConfigVo moduleOverrideConfig = null;
         DeployPipelineConfigVo envOverrideConfig = null;
         Long appSystemId = searchVo.getAppSystemId();
-        Long moduleId = searchVo.getModuleId();
+        Long moduleId = searchVo.getAppModuleId();
         Long envId = searchVo.getEnvId();
         if (moduleId == 0L && envId == 0L) {
             targetLevel = "应用";

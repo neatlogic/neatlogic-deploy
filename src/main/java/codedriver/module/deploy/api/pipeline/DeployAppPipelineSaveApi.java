@@ -57,7 +57,7 @@ public class DeployAppPipelineSaveApi extends PrivateApiComponentBase {
 
     @Input({
             @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "应用系统ID"),
-            @Param(name = "moduleId", type = ApiParamType.LONG, desc = "模块ID"),
+            @Param(name = "appModuleId", type = ApiParamType.LONG, desc = "模块ID"),
             @Param(name = "envId", type = ApiParamType.LONG, desc = "环境ID"),
             @Param(name = "config", type = ApiParamType.JSONOBJECT, isRequired = true, desc = "流水线配置信息")
     })
@@ -67,7 +67,7 @@ public class DeployAppPipelineSaveApi extends PrivateApiComponentBase {
         DeployAppConfigVo deployAppConfigVo = paramObj.toJavaObject(DeployAppConfigVo.class);
         String newConfigStr = deployAppConfigVo.getConfigStr();
         DeployAppConfigVo oldDeployAppConfigVo = deployAppConfigMapper.getAppConfigVo(deployAppConfigVo);
-        Long moduleId = deployAppConfigVo.getModuleId();
+        Long moduleId = deployAppConfigVo.getAppModuleId();
         Long envId = deployAppConfigVo.getEnvId();
         if (envId != null && envId != 0) {
             //环境层，需要对重新生成重载过的阶段的操作id
@@ -181,7 +181,7 @@ public class DeployAppPipelineSaveApi extends PrivateApiComponentBase {
             return;
         }
         Long appSystemId = deployAppConfigVo.getAppSystemId();
-        Long moduleId = deployAppConfigVo.getModuleId();
+        Long moduleId = deployAppConfigVo.getAppModuleId();
         Long envId = deployAppConfigVo.getEnvId();
         for (DeployPipelinePhaseVo combopPhaseVo : combopPhaseList) {
             if (combopPhaseVo == null) {
@@ -277,7 +277,7 @@ public class DeployAppPipelineSaveApi extends PrivateApiComponentBase {
         if (CollectionUtils.isEmpty(combopPhaseList)) {
             return;
         }
-        Long moduleId = deployAppConfigVo.getModuleId();
+        Long moduleId = deployAppConfigVo.getAppModuleId();
         for (DeployPipelinePhaseVo combopPhaseVo : combopPhaseList) {
             if (combopPhaseVo == null) {
                 continue;
