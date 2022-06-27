@@ -1,7 +1,6 @@
 package codedriver.module.deploy.api;
 
 import codedriver.framework.cmdb.crossover.ICiEntityCrossoverMapper;
-import codedriver.framework.cmdb.exception.cientity.CiEntityNotFoundException;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.crossover.CrossoverServiceFactory;
 import codedriver.framework.restful.annotation.*;
@@ -18,7 +17,7 @@ import javax.annotation.Resource;
  * @date 2022/6/20 10:00 上午
  */
 @Service
-@OperationType(type = OperationTypeEnum.UPDATE)
+@OperationType(type = OperationTypeEnum.DELETE)
 public class DeleteDeployAppConfigEnvApi extends PrivateApiComponentBase {
 
     @Resource
@@ -52,17 +51,28 @@ public class DeleteDeployAppConfigEnvApi extends PrivateApiComponentBase {
 
         //校验应用系统id、应用模块id、环境id是否存在
         ICiEntityCrossoverMapper iCiEntityCrossoverMapper = CrossoverServiceFactory.getApi(ICiEntityCrossoverMapper.class);
-        if (iCiEntityCrossoverMapper.getCiEntityBaseInfoById(paramObj.getLong("appSystemId")) == null) {
-            throw new CiEntityNotFoundException(paramObj.getLong("appSystemId"));
-        }
-        if (iCiEntityCrossoverMapper.getCiEntityBaseInfoById(paramObj.getLong("appModuleId")) == null) {
-            throw new CiEntityNotFoundException(paramObj.getLong("appModuleId"));
-        }
-        if (iCiEntityCrossoverMapper.getCiEntityBaseInfoById(paramObj.getLong("envId")) == null) {
-            throw new CiEntityNotFoundException(paramObj.getLong("envId"));
+//        if (iCiEntityCrossoverMapper.getCiEntityBaseInfoById(paramObj.getLong("appSystemId")) == null) {
+//            throw new CiEntityNotFoundException(paramObj.getLong("appSystemId"));
+//        }
+//        if (iCiEntityCrossoverMapper.getCiEntityBaseInfoById(paramObj.getLong("appModuleId")) == null) {
+//            throw new CiEntityNotFoundException(paramObj.getLong("appModuleId"));
+//        }
+//        if (iCiEntityCrossoverMapper.getCiEntityBaseInfoById(paramObj.getLong("envId")) == null) {
+//            throw new CiEntityNotFoundException(paramObj.getLong("envId"));
+//        }
+
+        //如果是发布新增的环境，需要删除
+        if (deployAppConfigMapper.getAppConfigEnvByAppSystemIdAndAppModuleIdAndEnvId(paramObj.getLong("appSystemId"), paramObj.getLong("appModuleId"), paramObj.getLong("envId")) > 0) {
+            deployAppConfigMapper.deleteAppConfigEnvByAppSystemIdAndAppModuleIdAndEnvId(paramObj.getLong("appSystemId"), paramObj.getLong("appModuleId"), paramObj.getLong("envId"));
         }
 
-        deployAppConfigMapper.deleteAppConfigEnvByAppSystemIdAndAppModuleIdAndEnvId(paramObj.getLong("appSystemId"),paramObj.getLong("appModuleId"),paramObj.getLong("envId"));
+        //删除关系
+        deployAppConfigMapper.deleteAppConfigByAppSystemIdAndAppModuleIdAndEnvId(paramObj.getLong("appSystemId"), paramObj.getLong("appModuleId"), paramObj.getLong("envId"));
+        deployAppConfigMapper.deleteAppConfigAuthorityByAppSystemIdAndEnvId(paramObj.getLong("appSystemId"), paramObj.getLong("appModuleId"), paramObj.getLong("envId"));
+        deployAppConfigMapper.deleteAppConfigDraftByAppSystemIdAndAppModuleIdAndEnvId(paramObj.getLong("appSystemId"), paramObj.getLong("appModuleId"), paramObj.getLong("envId"));
+        deployAppConfigMapper.deleteAppConfigOverrideByAppSystemIdAndAppModuleIdAndEnvId(paramObj.getLong("appSystemId"), paramObj.getLong("appModuleId"), paramObj.getLong("envId"));
+        deployAppConfigMapper.deleteAppEnvAutoConfigByAppSystemIdAndAppModuleIdAndEnvId(paramObj.getLong("appSystemId"), paramObj.getLong("appModuleId"), paramObj.getLong("envId"));
+
         return null;
     }
 }

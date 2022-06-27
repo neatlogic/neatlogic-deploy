@@ -487,6 +487,28 @@
         </choose>
     </select>
 
+    <select id="getAppConfigEnvByAppSystemId" resultType="int">
+        SELECT count(1)
+        FROM deploy_app_config_env
+        WHERE `app_system_id` = #{appSystemId}
+    </select>
+
+    <select id="getAppConfigEnvByAppSystemIdAndAppModuleId" resultType="int">
+        SELECT count(1)
+        FROM deploy_app_config_env
+        WHERE `app_system_id` = #{appSystemId}
+          and `app_module_id` = #{appModuleId}
+    </select>
+
+    <select id="getAppConfigEnvByAppSystemIdAndAppModuleIdAndEnvId"
+            resultType="int">
+        SELECT count(1)
+        FROM deploy_app_config_env
+        WHERE `app_system_id` = #{appSystemId}
+          and `app_module_id` = #{appModuleId}
+          and `env_id` = #{envId}
+    </select>
+
     <resultMap id="appEnvAutoConfigMap" type="codedriver.framework.deploy.dto.app.DeployAppEnvAutoConfigVo">
         <result column="appSystemId" property="appSystemId"/>
         <result column="appModuleId" property="appModuleId"/>
@@ -651,6 +673,17 @@
           and `env_id` = #{envId}
     </delete>
 
+    <delete id="deleteAppConfigEnvByAppSystemId">
+        DELETE FROM `deploy_app_config_env`
+        WHERE `app_system_id` = #{appSystemId}
+    </delete>
+
+    <delete id="deleteAppConfigEnvByAppSystemIdAndAppModuleId">
+        DELETE FROM `deploy_app_config_env`
+        WHERE `app_system_id` = #{appSystemId}
+          and `app_module_id` = #{appModuleId}
+    </delete>
+
     <delete id="deleteAppConfigEnvByAppSystemIdAndAppModuleIdAndEnvId">
         DELETE FROM `deploy_app_config_env`
         WHERE `app_system_id` = #{appSystemId}
@@ -663,4 +696,84 @@
         WHERE `app_system_id` = #{appSystemId}
           and `user_uuid` = #{userUuid}
     </delete>
+
+    <delete id="deleteAppConfigByAppSystemId">
+        DELETE FROM `deploy_app_config`
+        WHERE `app_system_id` = #{appSystemId}
+    </delete>
+
+    <delete id="deleteAppConfigByAppSystemIdAndAppModuleId">
+        DELETE
+        FROM `deploy_app_config`
+        WHERE `app_system_id` = #{appSystemId}
+          AND `app_module_id` = #{appModuleId}
+    </delete>
+
+    <delete id="deleteAppConfigByAppSystemIdAndAppModuleIdAndEnvId">
+        DELETE
+        FROM `deploy_app_config`
+        WHERE `app_system_id` = #{appSystemId}
+          AND `app_module_id` = #{appModuleId}
+          AND `env_id` = #{envId}
+    </delete>
+
+    <delete id="deleteAppConfigAuthorityByAppSystemId">
+        delete
+        from `deploy_app_config_authority`
+        where `app_system_id` = #{appSystemId}
+    </delete>
+
+    <delete id="deleteAppConfigAuthorityByAppSystemIdAndEnvId">
+        delete
+        from `deploy_app_config_authority`
+        where `app_system_id` = #{appSystemId}
+          AND `env_id` = #{envId}
+    </delete>
+
+    <delete id="deleteAppConfigDraftByAppSystemId">
+        DELETE
+        FROM `deploy_app_config_draft`
+        WHERE `app_system_id` = #{appSystemId}
+    </delete>
+
+    <delete id="deleteAppConfigDraftByAppSystemIdAndAppModuleIdAndEnvId"></delete>
+
+
+    <delete id="deleteAppConfigDraftByAppSystemIdAndAppModuleId">
+        DELETE
+        FROM `deploy_app_config_draft`
+        WHERE `app_system_id` = #{appSystemId}
+          AND `app_module_id` = #{appModuleId}
+    </delete>
+
+    <delete id="deleteAppConfigOverrideByAppSystemId">
+        DELETE
+        FROM `deploy_app_config_override`
+        WHERE `app_system_id` = #{appSystemId}
+    </delete>
+
+    <delete id="deleteAppConfigOverrideByAppSystemIdAndAppModuleId">
+        DELETE
+        FROM `deploy_app_config_override`
+        WHERE `app_system_id` = #{appSystemId}
+          AND `app_module_id` = #{appModuleId}
+    </delete>
+
+    <delete id="deleteAppConfigOverrideByAppSystemIdAndAppModuleIdAndEnvId">
+        DELETE
+        FROM `deploy_app_config_override`
+        WHERE `app_system_id` = #{appSystemId}
+          AND `app_module_id` = #{appModuleId}
+          AND `env_id` = #{envId}
+    </delete>
+
+    <delete id="deleteAppEnvAutoConfigByAppSystemIdAndAppModuleIdAndEnvId">
+        delete
+        from deploy_app_env_auto_config
+        where `app_system_id` = #{appSystemId}
+          and `app_module_id` = #{appModuleId}
+          and `env_id` = #{envId}
+          and `instance_id` = #{instanceId}
+    </delete>
+
 </mapper>
