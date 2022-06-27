@@ -4,9 +4,7 @@ import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.cmdb.crossover.ICiEntityCrossoverMapper;
 import codedriver.framework.cmdb.dao.mapper.resourcecenter.ResourceCenterMapper;
 import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
-import codedriver.framework.cmdb.dto.resourcecenter.ResourceVo;
 import codedriver.framework.common.constvalue.ApiParamType;
-import codedriver.framework.common.dto.BasePageVo;
 import codedriver.framework.crossover.CrossoverServiceFactory;
 import codedriver.framework.deploy.dto.app.DeployAppModuleVo;
 import codedriver.framework.restful.annotation.*;
@@ -55,8 +53,7 @@ public class ListDeployAppConfigAppModuleApi extends PrivateApiComponentBase {
             @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "应用系统id")
     })
     @Output({
-            @Param(explode = BasePageVo.class),
-            @Param(name = "tbodyList", explode = ResourceVo[].class, desc = "查询发布应用配置的应用系统模块列表")
+            @Param(name = "appModuleVoList", explode = DeployAppModuleVo[].class, desc = "发布应用配置的应用系统模块列表")
     })
     @Description(desc = "查询发布应用配置的应用系统模块列表")
     @Override
