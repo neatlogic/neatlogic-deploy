@@ -8,7 +8,6 @@ import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.dto.BasePageVo;
 import codedriver.framework.crossover.CrossoverServiceFactory;
 import codedriver.framework.deploy.dto.app.DeployAppConfigResourceVo;
-import codedriver.framework.deploy.dto.app.DeployAppEnvironmentVo;
 import codedriver.framework.deploy.dto.app.DeployAppModuleVo;
 import codedriver.framework.deploy.dto.app.DeployResourceSearchVo;
 import codedriver.framework.restful.annotation.*;
@@ -83,11 +82,10 @@ public class SearchDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
             returnAppSystemList = deployAppConfigMapper.getAppSystemListByIdList(appSystemIdList, TenantContext.get().getDataDbName(), UserContext.get().getUserUuid());
             Map<Long, DeployAppConfigResourceVo> returnAppSystemMap = returnAppSystemList.stream().collect(Collectors.toMap(DeployAppConfigResourceVo::getAppSystemId, e -> e));
 
-            //补充当前系统的模块个数
+            //补充系统是否有模块
+            List<Long> hasModuleAppSystemIdList = resourceCenterMapper.getAppModuleIdListByAppSystemIdList(returnAppSystemList.stream().map(DeployAppConfigResourceVo::getAppSystemId).collect(Collectors.toList()), TenantContext.get().getDataDbName());
             for (DeployAppConfigResourceVo resourceVo : returnAppSystemList) {
-                List<Long> moduleIdList = resourceCenterMapper.getAppSystemModuleIdListByAppSystemId(resourceVo.getAppSystemId(), TenantContext.get().getDataDbName());
-                resourceVo.setAppModuleCount(moduleIdList.size());
-                if (CollectionUtils.isNotEmpty(moduleIdList)) {
+                if (hasModuleAppSystemIdList.contains(resourceVo.getAppSystemId())) {
                     resourceVo.setIsHasModule(1);
                 }
             }
@@ -99,14 +97,15 @@ public class SearchDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
                 for (DeployAppConfigResourceVo appSystemInfoVo : appSystemModuleList) {
                     DeployAppConfigResourceVo returnAppSystemVo = returnAppSystemMap.get(appSystemInfoVo.getAppSystemId());
                     if (returnAppSystemVo != null) {
-                        //补充当前模块的环境个数（有实例的环境个数）
+
+                        //补充模块是否有环境（有实例的环境）
+                        List<Long> appModuleIdList = deployAppConfigMapper.getHasEnvAppModuleIdListByAppSystemIdAndModuleIdList(returnAppSystemVo.getAppSystemId(),appSystemInfoVo.getAppModuleList().stream().map(DeployAppModuleVo::getId).collect(Collectors.toList()), TenantContext.get().getDataDbName());
                         for (DeployAppModuleVo appModuleVo : appSystemInfoVo.getAppModuleList()) {
-                            List<DeployAppEnvironmentVo> appModuleEnvList = deployAppConfigMapper.getDeployAppEnvListByAppSystemIdAndModuleId(returnAppSystemVo.getAppSystemId(), appModuleVo.getId(), TenantContext.get().getDataDbName());
-                            appModuleVo.setEnvCount(appModuleEnvList.size());
-                            if (CollectionUtils.isNotEmpty(appModuleEnvList)) {
+                            if (appModuleIdList.contains(appModuleVo.getId())) {
                                 appModuleVo.setIsHasEnv(1);
                             }
                         }
+                        //补充系统下的模块列表
                         returnAppSystemVo.setAppModuleList(appSystemInfoVo.getAppModuleList());
                     }
                 }

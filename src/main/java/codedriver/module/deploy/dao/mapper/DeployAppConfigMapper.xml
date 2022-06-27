@@ -232,8 +232,8 @@
     </select>
 
     <resultMap id="appEnvMap" type="codedriver.framework.deploy.dto.app.DeployAppEnvironmentVo">
-        <result column="envId" property="envId"/>
-        <result column="envName" property="envName"/>
+        <result column="envId" property="id"/>
+        <result column="envName" property="name"/>
         <result column="isEdit" property="isEdit"/>
         <collection property="appModuleList" ofType="codedriver.framework.cmdb.dto.resourcecenter.entity.AppModuleVo">
             <id column="appModuleId" property="id"/>
@@ -293,13 +293,11 @@
         )
     </select>
 
-    <select id="getDeployAppEnvListByAppSystemIdAndModuleId"
-            resultMap="appEnvMap">
+    <select id="getHasEnvAppModuleIdListByAppSystemIdAndModuleIdList"
+            resultType="java.lang.Long">
         (
         SELECT
-        rse.env_id AS envId,
-        rse.env_name AS envName,
-        '0' AS isEdit
+        ria.app_module_id
         FROM
         ${schemaName}.resource_appsystem_appmodule raa
         JOIN ${schemaName}.resource_ipobject_appmodule ria ON raa.app_module_id = ria.app_module_id
@@ -310,16 +308,17 @@
             <if test="appSystemId != null">
                 raa.resource_id = #{appSystemId}
             </if>
-            <if test="appModuleId != null">
-                and ria.app_module_id =#{appModuleId}
+            <if test="appModuleIdList != null and appModuleIdList.size() > 0">
+                and ria.app_module_id in
+                <foreach collection="appModuleIdList" item="appModuleId" open="(" close=")" separator=",">
+                    #{appModuleId}
+                </foreach>
             </if>
         </where>
         ) UNION
         (
         SELECT
-        cc.id AS envId,
-        cc.name AS envName,
-        '1' AS isEdit
+        dace.app_module_id
         FROM
         deploy_app_config_env dace
         JOIN cmdb_cientity cc ON cc.id = dace.env_id
@@ -327,8 +326,11 @@
             <if test="appSystemId != null">
                 dace.app_system_id = #{appSystemId}
             </if>
-            <if test="appModuleId != null">
-                and dace.app_module_id =#{appModuleId}
+            <if test="appModuleIdList != null and appModuleIdList.size() > 0">
+                and dace.app_module_id in
+                <foreach collection="appModuleIdList" item="appModuleId" open="(" close=")" separator=",">
+                    #{appModuleId}
+                </foreach>
             </if>
         </where>
         )
@@ -409,21 +411,37 @@
         </foreach>
     </select>
 
-    <select id="getAppModuleEnvWithoutAutoConfigInstanceIdListByAppSystemIdAndAppModuleIdAndEnvId" resultType="java.lang.Long">
-        SELECT rse.resource_id
+    <sql id="searchAppModuleEnvConfigInstance">
         FROM ${schemaName}.resource_appsystem_appmodule raa
-                 JOIN ${schemaName}.resource_ipobject_appmodule ria ON raa.app_module_id = ria.app_module_id
-                 JOIN ${schemaName}.resource_softwareservice_env rse ON ria.resource_id = rse.resource_id
+        JOIN ${schemaName}.resource_ipobject_appmodule ria ON raa.app_module_id = ria.app_module_id
+        JOIN ${schemaName}.resource_softwareservice_env rse ON ria.resource_id = rse.resource_id
         WHERE raa.resource_id = #{searchVo.appSystemId}
-          AND ria.app_module_id = #{searchVo.appModuleId}
-          AND rse.env_id = #{searchVo.envId}
-          AND rse.resource_id not in (select `instance_id`
-                                      from deploy_app_env_auto_config
-                                      WHERE `app_system_id` = #{searchVo.appSystemId}
-                                        and `app_module_id` = #{searchVo.appModuleId}
-                                        and `env_id` = #{searchVo.envId})
+        AND ria.app_module_id = #{searchVo.appModuleId}
+        AND rse.env_id = #{searchVo.envId}
+        AND rse.resource_id
+        <if test="searchVo.isAutoConfig == 1">
+            in
+        </if>
+        <if test="searchVo.isAutoConfig == 0">
+            not in
+        </if>
+        (select `instance_id`
+        from deploy_app_env_auto_config
+        WHERE `app_system_id` = #{searchVo.appSystemId}
+        and `app_module_id` = #{searchVo.appModuleId}
+        and `env_id` = #{searchVo.envId})
+    </sql>
+
+    <select id="getAppModuleEnvAutoConfigInstanceIdCount" resultType="int">
+        SELECT count(rse.resource_id)
+        <include refid="searchAppModuleEnvConfigInstance"></include>
+    </select>
+
+    <select id="getAppModuleEnvAutoConfigInstanceIdList" resultType="java.lang.Long">
+        SELECT rse.resource_id
+        <include refid="searchAppModuleEnvConfigInstance"></include>
         ORDER BY rse.resource_id DESC
-            LIMIT #{searchVo.startNum}, #{searchVo.pageSize}
+        LIMIT #{searchVo.startNum}, #{searchVo.pageSize}
     </select>
 
     <select id="getAppSystemIdListCount" resultType="java.lang.Integer">

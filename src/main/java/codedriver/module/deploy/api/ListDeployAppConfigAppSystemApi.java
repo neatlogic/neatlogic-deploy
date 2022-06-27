@@ -23,6 +23,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author lvzk
@@ -70,11 +71,10 @@ public class ListDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
             searchVo.setRowNum(count);
             resourceVoList = deployAppConfigMapper.getAppSystemListByUserUuid(UserContext.get().getUserUuid(), searchVo);
             if (CollectionUtils.isNotEmpty(resourceVoList)) {
-                //补充当前系统的模块个数
+                //补充系统是否有模块
+                List<Long> appSystemIdList = resourceCenterMapper.getAppModuleIdListByAppSystemIdList(resourceVoList.stream().map(DeployAppConfigResourceVo::getAppSystemId).collect(Collectors.toList()), TenantContext.get().getDataDbName());
                 for (DeployAppConfigResourceVo resourceVo : resourceVoList) {
-                    List<Long> moduleIdList = resourceCenterMapper.getAppSystemModuleIdListByAppSystemId(resourceVo.getAppSystemId(), TenantContext.get().getDataDbName());
-                    resourceVo.setAppModuleCount(moduleIdList.size());
-                    if (CollectionUtils.isNotEmpty(moduleIdList)) {
+                    if (appSystemIdList.contains(resourceVo.getAppSystemId())) {
                         resourceVo.setIsHasModule(1);
                     }
                 }
