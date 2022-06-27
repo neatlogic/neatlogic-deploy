@@ -69,13 +69,13 @@ public class GetDeployAppConfigAppModuleInfoApi extends PrivateApiComponentBase 
         //获取模块基础信息
         CiEntityVo ciEntityVo = iCiEntityCrossoverMapper.getCiEntityBaseInfoById(paramObj.getLong("appModuleId"));
         ICiEntityCrossoverService ciEntityService = CrossoverServiceFactory.getApi(ICiEntityCrossoverService.class);
-        CiEntityVo appSystemInfo = ciEntityService.getCiEntityById(ciEntityVo.getCiId(), paramObj.getLong("appModuleId"));
+        CiEntityVo appModuleInfo = ciEntityService.getCiEntityById(ciEntityVo.getCiId(), paramObj.getLong("appModuleId"));
 
         //获取runner组信息
         RunnerGroupVo runnerGroupVo = deployAppConfigMapper.getAppModuleRunnerGroupByAppSystemIdAndModuleId(paramObj.getLong("appSystemId"),paramObj.getLong("appModuleId"));
 
         JSONObject appSystemInfoObject = new JSONObject();
-        appSystemInfoObject.put("appModuleInfo", appSystemInfo);
+        appSystemInfoObject.put("appModuleInfo", appModuleInfo);
         appSystemInfoObject.put("runnerGroupVo", runnerGroupVo);
         return appSystemInfoObject;
     }
