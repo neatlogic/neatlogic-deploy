@@ -72,7 +72,7 @@ public class ListDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
             resourceVoList = deployAppConfigMapper.getAppSystemListByUserUuid(UserContext.get().getUserUuid(), searchVo);
             if (CollectionUtils.isNotEmpty(resourceVoList)) {
                 //补充系统是否有模块
-                List<Long> appSystemIdList = resourceCenterMapper.getAppModuleIdListByAppSystemIdList(resourceVoList.stream().map(DeployAppConfigResourceVo::getAppSystemId).collect(Collectors.toList()), TenantContext.get().getDataDbName());
+                List<Long> appSystemIdList = resourceCenterMapper.getHasModuleAppSystemIdListByAppSystemIdList(resourceVoList.stream().map(DeployAppConfigResourceVo::getAppSystemId).collect(Collectors.toList()), TenantContext.get().getDataDbName());
                 for (DeployAppConfigResourceVo resourceVo : resourceVoList) {
                     if (appSystemIdList.contains(resourceVo.getAppSystemId())) {
                         resourceVo.setIsHasModule(1);

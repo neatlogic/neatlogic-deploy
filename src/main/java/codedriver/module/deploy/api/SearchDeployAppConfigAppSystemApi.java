@@ -83,7 +83,7 @@ public class SearchDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
             Map<Long, DeployAppConfigResourceVo> returnAppSystemMap = returnAppSystemList.stream().collect(Collectors.toMap(DeployAppConfigResourceVo::getAppSystemId, e -> e));
 
             //补充系统是否有模块
-            List<Long> hasModuleAppSystemIdList = resourceCenterMapper.getAppModuleIdListByAppSystemIdList(returnAppSystemList.stream().map(DeployAppConfigResourceVo::getAppSystemId).collect(Collectors.toList()), TenantContext.get().getDataDbName());
+            List<Long> hasModuleAppSystemIdList = resourceCenterMapper.getHasModuleAppSystemIdListByAppSystemIdList(returnAppSystemList.stream().map(DeployAppConfigResourceVo::getAppSystemId).collect(Collectors.toList()), TenantContext.get().getDataDbName());
             for (DeployAppConfigResourceVo resourceVo : returnAppSystemList) {
                 if (hasModuleAppSystemIdList.contains(resourceVo.getAppSystemId())) {
                     resourceVo.setIsHasModule(1);
@@ -92,21 +92,23 @@ public class SearchDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
 
             //查询包含关键字的 appSystemModuleList，再将信息模块信息补回 returnAppSystemList
             List<Long> appSystemIdListByAppModuleName = appSystemMapper.getAppSystemIdListByAppModuleName(searchVo.getKeyword(), TenantContext.get().getDataDbName());
-            List<DeployAppConfigResourceVo> appSystemModuleList = deployAppConfigMapper.getAppSystemModuleListBySystemIdList(appSystemIdListByAppModuleName, paramObj.getInteger("isConfig"), TenantContext.get().getDataDbName(), UserContext.get().getUserUuid());
-            if (CollectionUtils.isNotEmpty(appSystemModuleList)) {
-                for (DeployAppConfigResourceVo appSystemInfoVo : appSystemModuleList) {
-                    DeployAppConfigResourceVo returnAppSystemVo = returnAppSystemMap.get(appSystemInfoVo.getAppSystemId());
-                    if (returnAppSystemVo != null) {
+            if (CollectionUtils.isNotEmpty(appSystemIdListByAppModuleName)) {
+                List<DeployAppConfigResourceVo> appSystemModuleList = deployAppConfigMapper.getAppSystemModuleListBySystemIdList(appSystemIdListByAppModuleName, paramObj.getInteger("isConfig"), TenantContext.get().getDataDbName(), UserContext.get().getUserUuid());
+                if (CollectionUtils.isNotEmpty(appSystemModuleList)) {
+                    for (DeployAppConfigResourceVo appSystemInfoVo : appSystemModuleList) {
+                        DeployAppConfigResourceVo returnAppSystemVo = returnAppSystemMap.get(appSystemInfoVo.getAppSystemId());
+                        if (returnAppSystemVo != null) {
 
-                        //补充模块是否有环境（有实例的环境）
-                        List<Long> appModuleIdList = deployAppConfigMapper.getHasEnvAppModuleIdListByAppSystemIdAndModuleIdList(returnAppSystemVo.getAppSystemId(),appSystemInfoVo.getAppModuleList().stream().map(DeployAppModuleVo::getId).collect(Collectors.toList()), TenantContext.get().getDataDbName());
-                        for (DeployAppModuleVo appModuleVo : appSystemInfoVo.getAppModuleList()) {
-                            if (appModuleIdList.contains(appModuleVo.getId())) {
-                                appModuleVo.setIsHasEnv(1);
+                            //补充模块是否有环境（有实例的环境）
+                            List<Long> appModuleIdList = deployAppConfigMapper.getHasEnvAppModuleIdListByAppSystemIdAndModuleIdList(returnAppSystemVo.getAppSystemId(),appSystemInfoVo.getAppModuleList().stream().map(DeployAppModuleVo::getId).collect(Collectors.toList()), TenantContext.get().getDataDbName());
+                            for (DeployAppModuleVo appModuleVo : appSystemInfoVo.getAppModuleList()) {
+                                if (appModuleIdList.contains(appModuleVo.getId())) {
+                                    appModuleVo.setIsHasEnv(1);
+                                }
                             }
+                            //补充系统下的模块列表
+                            returnAppSystemVo.setAppModuleList(appSystemInfoVo.getAppModuleList());
                         }
-                        //补充系统下的模块列表
-                        returnAppSystemVo.setAppModuleList(appSystemInfoVo.getAppModuleList());
                     }
                 }
             }
