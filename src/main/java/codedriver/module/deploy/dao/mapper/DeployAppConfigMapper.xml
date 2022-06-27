@@ -736,14 +736,19 @@
         WHERE `app_system_id` = #{appSystemId}
     </delete>
 
-    <delete id="deleteAppConfigDraftByAppSystemIdAndAppModuleIdAndEnvId"></delete>
-
-
     <delete id="deleteAppConfigDraftByAppSystemIdAndAppModuleId">
         DELETE
         FROM `deploy_app_config_draft`
         WHERE `app_system_id` = #{appSystemId}
           AND `app_module_id` = #{appModuleId}
+    </delete>
+
+    <delete id="deleteAppConfigDraftByAppSystemIdAndAppModuleIdAndEnvId">
+        DELETE
+        FROM `deploy_app_config_draft`
+        WHERE `app_system_id` = #{appSystemId}
+          AND `app_module_id` = #{appModuleId}
+          AND `env_id` = #{envId}
     </delete>
 
     <delete id="deleteAppConfigOverrideByAppSystemId">
