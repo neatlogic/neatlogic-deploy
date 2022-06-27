@@ -176,7 +176,7 @@
         SELECT `config`
         FROM `deploy_app_config`
         WHERE `app_system_id` = #{appSystemId}
-          and `module_id` = #{moduleId}
+          and `app_module_id` = #{appModuleId}
           and `env_id` = #{envId}
     </select>
 
@@ -232,8 +232,8 @@
     </select>
 
     <resultMap id="appEnvMap" type="codedriver.framework.deploy.dto.app.DeployAppEnvironmentVo">
-        <result column="envId" property="envId"/>
-        <result column="envName" property="envName"/>
+        <result column="envId" property="id"/>
+        <result column="envName" property="name"/>
         <result column="isEdit" property="isEdit"/>
         <collection property="appModuleList" ofType="codedriver.framework.cmdb.dto.resourcecenter.entity.AppModuleVo">
             <id column="appModuleId" property="id"/>
@@ -386,7 +386,7 @@
                  LEFT JOIN runnergroup_runner rgr ON rg.`id` = rgr.`runnergroup_id`
                  LEFT JOIN runner r ON r.`id` = rgr.`runner_id`
         WHERE damrg.app_system_id = #{appSystemId}
-          AND damrg.module_id = #{appModuleId}
+          AND damrg.app_module_id = #{appModuleId}
     </select>
 
     <select id="getAppEnvAutoConfigListBySystemIdAndModuleIdAndEnvIdAndInstanceIdList"

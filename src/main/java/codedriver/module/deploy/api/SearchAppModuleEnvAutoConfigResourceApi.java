@@ -48,7 +48,7 @@ public class SearchAppModuleEnvAutoConfigResourceApi extends PrivateApiComponent
 
     @Override
     public String getToken() {
-        return "deploy/app/module/env/autoConfig/resource/search";
+        return "deploy/app/module/env/autoConfig/instance/search";
     }
 
     @Input({
@@ -67,15 +67,15 @@ public class SearchAppModuleEnvAutoConfigResourceApi extends PrivateApiComponent
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         DeployAppEnvAutoConfigVo searchVo = paramObj.toJavaObject(DeployAppEnvAutoConfigVo.class);
-        List<ResourceVo> resourceVoList = new ArrayList<>();
+        List<ResourceVo> instanceList = new ArrayList<>();
         int count = deployAppConfigMapper.getAppModuleEnvAutoConfigInstanceIdCount(searchVo, TenantContext.get().getDataDbName());
         if (count > 0) {
             searchVo.setRowNum(count);
             List<Long> instanceIdList = deployAppConfigMapper.getAppModuleEnvAutoConfigInstanceIdList(searchVo, TenantContext.get().getDataDbName());
             if (CollectionUtils.isNotEmpty(instanceIdList)) {
-                resourceVoList = resourceCenterMapper.getResourceByIdList(instanceIdList, TenantContext.get().getDataDbName());
+                instanceList = resourceCenterMapper.getResourceByIdList(instanceIdList, TenantContext.get().getDataDbName());
             }
         }
-        return TableResultUtil.getResult(resourceVoList, searchVo);
+        return TableResultUtil.getResult(instanceList, searchVo);
     }
 }
