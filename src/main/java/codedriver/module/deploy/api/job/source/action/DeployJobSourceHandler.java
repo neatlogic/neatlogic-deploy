@@ -1,9 +1,11 @@
 package codedriver.module.deploy.api.job.source.action;
 
 import codedriver.framework.asynchronization.threadlocal.UserContext;
+import codedriver.framework.autoexec.constvalue.ExecMode;
 import codedriver.framework.autoexec.dao.mapper.AutoexecJobMapper;
 import codedriver.framework.autoexec.dto.combop.AutoexecCombopPhaseVo;
 import codedriver.framework.autoexec.dto.job.AutoexecJobPhaseNodeVo;
+import codedriver.framework.autoexec.dto.job.AutoexecJobPhaseVo;
 import codedriver.framework.autoexec.dto.job.AutoexecJobVo;
 import codedriver.framework.autoexec.exception.AutoexecJobRunnerGroupRunnerNotFoundException;
 import codedriver.framework.autoexec.exception.AutoexecJobRunnerHttpRequestException;
@@ -129,7 +131,8 @@ public class DeployJobSourceHandler extends AutoexecJobSourceActionHandlerBase {
             jobPhaseNodeVo.setRowNum(sqlCount);
             returnList = deploySqlMapper.searchDeploySql(jobPhaseNodeVo);
         }
-        return TableResultUtil.getResult(returnList, jobPhaseNodeVo);    }
+        return TableResultUtil.getResult(returnList, jobPhaseNodeVo);
+    }
 
     @Override
     public void checkinSqlList(JSONObject paramObj) {
@@ -191,18 +194,30 @@ public class DeployJobSourceHandler extends AutoexecJobSourceActionHandlerBase {
 
     @Override
     public List<RunnerMapVo> getRunnerMapList(AutoexecJobVo jobVo) {
+        List<RunnerMapVo> runnerMapVos = null;
+        AutoexecJobPhaseVo jobPhaseVo = jobVo.getCurrentPhase();
         DeployJobVo deployJobVo = deployJobMapper.getDeployJobByJobId(jobVo.getId());
-        RunnerGroupVo appModuleRunnerGroup = deployAppConfigMapper.getAppModuleRunnerGroupByAppSystemIdAndModuleId(deployJobVo.getAppSystemId(),deployJobVo.getSystemModuleId());
-        if(appModuleRunnerGroup == null){
-            throw new DeployAppConfigModuleRunnerGroupNotFoundException(deployJobVo.getAppSystemId(),deployJobVo.getSystemModuleId());
+        //如果是sqlfile ｜ local ，则保证一个作业使用同一个runner
+        if (Arrays.asList(ExecMode.SQL.getValue(), ExecMode.RUNNER.getValue()).contains(jobPhaseVo.getExecMode())) {
+            RunnerMapVo  runnerMapVo = runnerMapper.getRunnerMapByRunnerMapId(deployJobVo.getRunnerMapId());
+            if(runnerMapVo != null){
+                runnerMapVos = Collections.singletonList(runnerMapVo);
+            }
+        }else {
+            //其它则根据模块均衡分配runner
+            RunnerGroupVo appModuleRunnerGroup = deployAppConfigMapper.getAppModuleRunnerGroupByAppSystemIdAndModuleId(deployJobVo.getAppSystemId(), deployJobVo.getSystemModuleId());
+            if (appModuleRunnerGroup == null) {
+                throw new DeployAppConfigModuleRunnerGroupNotFoundException(deployJobVo.getAppSystemId(), deployJobVo.getSystemModuleId());
+            }
+            RunnerGroupVo groupVo = runnerMapper.getRunnerMapGroupById(appModuleRunnerGroup.getId());
+            if (groupVo == null) {
+                throw new AutoexecJobRunnerGroupRunnerNotFoundException(appModuleRunnerGroup.getId().toString());
+            }
+            if (CollectionUtils.isEmpty(groupVo.getRunnerMapList())) {
+                throw new AutoexecJobRunnerGroupRunnerNotFoundException(groupVo.getName() + "(" + groupVo.getId() + ") ");
+            }
+            runnerMapVos = groupVo.getRunnerMapList();
         }
-        RunnerGroupVo groupVo = runnerMapper.getRunnerMapGroupById(appModuleRunnerGroup.getId());
-        if(groupVo == null){
-            throw new AutoexecJobRunnerGroupRunnerNotFoundException(appModuleRunnerGroup.getId().toString());
-        }
-        if (CollectionUtils.isEmpty(groupVo.getRunnerMapList())) {
-            throw new AutoexecJobRunnerGroupRunnerNotFoundException(groupVo.getName() + "(" + groupVo.getId() + ") ");
-        }
-        return groupVo.getRunnerMapList();
+        return runnerMapVos;
     }
 }
