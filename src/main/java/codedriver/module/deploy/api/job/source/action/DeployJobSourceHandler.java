@@ -5,18 +5,26 @@ import codedriver.framework.autoexec.dao.mapper.AutoexecJobMapper;
 import codedriver.framework.autoexec.dto.combop.AutoexecCombopPhaseVo;
 import codedriver.framework.autoexec.dto.job.AutoexecJobPhaseNodeVo;
 import codedriver.framework.autoexec.dto.job.AutoexecJobVo;
+import codedriver.framework.autoexec.exception.AutoexecJobRunnerGroupRunnerNotFoundException;
 import codedriver.framework.autoexec.exception.AutoexecJobRunnerHttpRequestException;
 import codedriver.framework.autoexec.job.source.action.AutoexecJobSourceActionHandlerBase;
 import codedriver.framework.autoexec.util.AutoexecUtil;
 import codedriver.framework.cmdb.crossover.ICiEntityCrossoverMapper;
 import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
 import codedriver.framework.crossover.CrossoverServiceFactory;
+import codedriver.framework.dao.mapper.runner.RunnerMapper;
 import codedriver.framework.deploy.constvalue.DeployOperType;
+import codedriver.framework.deploy.dto.DeployJobVo;
 import codedriver.framework.deploy.dto.sql.DeploySqlDetailVo;
 import codedriver.framework.deploy.dto.sql.DeploySqlJobPhaseVo;
+import codedriver.framework.deploy.exception.DeployAppConfigModuleRunnerGroupNotFoundException;
+import codedriver.framework.dto.runner.RunnerGroupVo;
+import codedriver.framework.dto.runner.RunnerMapVo;
 import codedriver.framework.integration.authentication.enums.AuthenticateType;
 import codedriver.framework.util.HttpRequestUtil;
 import codedriver.framework.util.TableResultUtil;
+import codedriver.module.deploy.dao.mapper.DeployAppConfigMapper;
+import codedriver.module.deploy.dao.mapper.DeployJobMapper;
 import codedriver.module.deploy.dao.mapper.DeploySqlMapper;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
@@ -40,6 +48,15 @@ public class DeployJobSourceHandler extends AutoexecJobSourceActionHandlerBase {
 
     @Resource
     AutoexecJobMapper autoexecJobMapper;
+
+    @Resource
+    DeployAppConfigMapper deployAppConfigMapper;
+
+    @Resource
+    DeployJobMapper deployJobMapper;
+
+    @Resource
+    RunnerMapper runnerMapper;
 
     @Override
     public String getName() {
@@ -170,5 +187,22 @@ public class DeployJobSourceHandler extends AutoexecJobSourceActionHandlerBase {
             deploySqlMapper.insertDeploySql(new DeploySqlJobPhaseVo(paramObj.getLong("jobId"), paramObj.getString("phaseName"), paramDeploySqlVo.getId()));
             deploySqlMapper.insertDeploySqlDetail(paramDeploySqlVo, paramObj.getLong("sysId"), paramObj.getLong("envId"), paramObj.getLong("moduleId"), paramObj.getString("version"), paramObj.getLong("runnerId"));
         }
+    }
+
+    @Override
+    public List<RunnerMapVo> getRunnerMapList(AutoexecJobVo jobVo) {
+        DeployJobVo deployJobVo = deployJobMapper.getDeployJobByJobId(jobVo.getId());
+        RunnerGroupVo appModuleRunnerGroup = deployAppConfigMapper.getAppModuleRunnerGroupByAppSystemIdAndModuleId(deployJobVo.getAppSystemId(),deployJobVo.getSystemModuleId());
+        if(appModuleRunnerGroup == null){
+            throw new DeployAppConfigModuleRunnerGroupNotFoundException(deployJobVo.getAppSystemId(),deployJobVo.getSystemModuleId());
+        }
+        RunnerGroupVo groupVo = runnerMapper.getRunnerMapGroupById(appModuleRunnerGroup.getId());
+        if(groupVo == null){
+            throw new AutoexecJobRunnerGroupRunnerNotFoundException(appModuleRunnerGroup.getId().toString());
+        }
+        if (CollectionUtils.isEmpty(groupVo.getRunnerMapList())) {
+            throw new AutoexecJobRunnerGroupRunnerNotFoundException(groupVo.getName() + "(" + groupVo.getId() + ") ");
+        }
+        return groupVo.getRunnerMapList();
     }
 }
