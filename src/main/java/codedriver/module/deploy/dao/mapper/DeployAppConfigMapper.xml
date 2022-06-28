@@ -778,7 +778,6 @@
         where `app_system_id` = #{appSystemId}
           and `app_module_id` = #{appModuleId}
           and `env_id` = #{envId}
-          and `instance_id` = #{instanceId}
     </delete>
 
 </mapper>

@@ -120,5 +120,4 @@ public interface DeployAppConfigMapper {
 
     void deleteAppEnvAutoConfigByAppSystemIdAndAppModuleIdAndEnvId(@Param("appSystemId") Long appSystemId, @Param("appModuleId") Long appModuleId, @Param("envId") Long envId);
 
-
 }
