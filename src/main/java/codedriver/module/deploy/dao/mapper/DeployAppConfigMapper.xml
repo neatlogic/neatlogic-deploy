@@ -533,7 +533,8 @@
         VALUES(`lcu`);
     </insert>
     <insert id="insertAppConfig" parameterType="codedriver.framework.deploy.dto.app.DeployAppConfigVo">
-        INSERT INTO `deploy_app_config` (`app_system_id`,
+        INSERT INTO `deploy_app_config` (`id`,
+                                         `app_system_id`,
                                          `app_module_id`,
                                          `env_id`,
                                          `config`,
@@ -541,7 +542,8 @@
                                          `fcu`,
                                          `lcd`,
                                          `lcu`)
-        VALUES (#{appSystemId},
+        VALUES (#{id},
+                #{appSystemId},
                 #{appModuleId},
                 #{envId},
                 #{configStr},
