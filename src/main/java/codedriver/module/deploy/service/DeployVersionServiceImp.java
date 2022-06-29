@@ -55,6 +55,10 @@ public class DeployVersionServiceImp implements DeployVersionService {
         if (runner == null) {
             throw new RunnerNotFoundByRunnerMapIdException(runnerMapId);
         }
-        return runner.getUrl();
+        String url = runner.getUrl();
+        if (!url.endsWith("/")) {
+            url += "/";
+        }
+        return url;
     }
 }

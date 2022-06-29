@@ -79,9 +79,6 @@ public class GetDirectoryContentApi extends PrivateApiComponentBase {
             throw new DeployVersionNotFoundException(id);
         }
         String url = deployVersionService.getVersionRunnerUrl(paramObj, version);
-        if (!url.endsWith("/")) {
-            url += "/";
-        }
         url += "api/rest/file/directory/content/get";
         // todo 路径待定
         String fullPath = version.getAppSystemId() + "/"

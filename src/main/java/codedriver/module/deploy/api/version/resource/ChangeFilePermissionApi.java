@@ -76,9 +76,6 @@ public class ChangeFilePermissionApi extends PrivateApiComponentBase {
             throw new DeployVersionNotFoundException(id);
         }
         String url = deployVersionService.getVersionRunnerUrl(paramObj, version);
-        if (!url.endsWith("/")) {
-            url += "/";
-        }
         url += "api/rest/file/chmod";
         // todo 路径待定
         String fullPath = version.getAppSystemId() + "/"
