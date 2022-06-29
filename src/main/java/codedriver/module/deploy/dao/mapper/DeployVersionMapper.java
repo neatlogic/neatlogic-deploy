@@ -15,14 +15,18 @@ public interface DeployVersionMapper {
 
     int searchDeployVersionCount(DeployVersionVo versionVo);
 
-    void insertDeployVersion(DeployVersionVo versionVo);
-
-    void unLockDeployVersionById(@Param("id") Long id, @Param("isLocked") Long isLocked);
-
-    void deleteDeployVersionById(Long id);
-
     DeployVersionVo getDeployVersionById(Long id);
 
     List<DeployVersionVo> searchDeployVersion(DeployVersionVo versionVo);
+
+    Long getJobIdByDeployVersionIdAndBuildNo(@Param("versionId") Long versionId, @Param("buildNo") Integer buildNo);
+
+    Long getJobIdByDeployVersionIdAndEnvId(@Param("versionId") Long versionId, @Param("envId") Long envId);
+
+    void unLockDeployVersionById(@Param("id") Long id, @Param("isLocked") Long isLocked);
+
+    void insertDeployVersion(DeployVersionVo versionVo);
+
+    void deleteDeployVersionById(Long id);
 
 }
