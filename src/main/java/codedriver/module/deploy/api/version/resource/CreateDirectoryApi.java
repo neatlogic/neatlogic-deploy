@@ -1,7 +1,9 @@
 package codedriver.module.deploy.api.version.resource;
 
 import codedriver.framework.common.constvalue.ApiParamType;
+import codedriver.framework.deploy.dto.version.DeployVersionVo;
 import codedriver.framework.deploy.exception.CreateDirectoryFailedException;
+import codedriver.framework.deploy.exception.DeployVersionNotFoundException;
 import codedriver.framework.integration.authentication.enums.AuthenticateType;
 import codedriver.framework.restful.annotation.Description;
 import codedriver.framework.restful.annotation.Input;
@@ -10,11 +12,15 @@ import codedriver.framework.restful.annotation.Param;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.framework.util.HttpRequestUtil;
+import codedriver.module.deploy.dao.mapper.DeployVersionMapper;
+import codedriver.module.deploy.service.DeployVersionService;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+
+import javax.annotation.Resource;
 
 /**
  * @author laiwt
@@ -25,6 +31,12 @@ import org.springframework.stereotype.Service;
 public class CreateDirectoryApi extends PrivateApiComponentBase {
 
     Logger logger = LoggerFactory.getLogger(CreateDirectoryApi.class);
+
+    @Resource
+    DeployVersionMapper deployVersionMapper;
+
+    @Resource
+    DeployVersionService deployVersionService;
 
     @Override
     public String getName() {
@@ -44,18 +56,31 @@ public class CreateDirectoryApi extends PrivateApiComponentBase {
     // todo 入参待确定
     @Input({
             @Param(name = "id", desc = "版本id", isRequired = true, type = ApiParamType.LONG),
-            @Param(name = "path", desc = "目录路径", isRequired = true, type = ApiParamType.STRING)
+            @Param(name = "buildNo", desc = "buildNo", type = ApiParamType.INTEGER),
+            @Param(name = "envId", desc = "环境ID", type = ApiParamType.LONG),
+            @Param(name = "resourceType", rule = "version_product,env_product,diff_directory,sql_script", desc = "资源类型(version_product:版本制品;env_product:环境制品;diff_directory:差异目录;sql_script:SQL脚本)", isRequired = true, type = ApiParamType.ENUM),
+            @Param(name = "path", desc = "目标路径", isRequired = true, type = ApiParamType.STRING)
     })
     @Description(desc = "新建目录")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
+        Long id = paramObj.getLong("id");
+        Integer buildNo = paramObj.getInteger("buildNo");
+        Long envId = paramObj.getLong("envId");
+        String resourceType = paramObj.getString("resourceType");
         String path = paramObj.getString("path");
-        // todo 根据应用、模块、版本号、buildNo/环境决定runner与文件路径
+        DeployVersionVo version = deployVersionMapper.getDeployVersionById(id);
+        if (version == null) {
+            throw new DeployVersionNotFoundException(id);
+        }
+        String url = deployVersionService.getVersionRunnerUrl(paramObj, version);
+        url += "api/rest/file/directory/create";
+        String fullPath = version.getAppSystemId() + "/"
+                + version.getAppModuleId() + "/"
+                + version.getVersion() + "/" + (buildNo != null ? "build" + "/" + buildNo : "env" + "/" + envId) + "/"
+                + resourceType + "/" + path;
         JSONObject paramJson = new JSONObject();
-        paramJson.put("path", path);
-        String url = "autoexecrunner/api/rest/file";
-        String method = "/directory/create";
-        url += method;
+        paramJson.put("path", fullPath);
         HttpRequestUtil request = HttpRequestUtil.post(url).setPayload(paramJson.toJSONString()).setAuthType(AuthenticateType.BUILDIN).sendRequest();
         int responseCode = request.getResponseCode();
         String error = request.getError();
