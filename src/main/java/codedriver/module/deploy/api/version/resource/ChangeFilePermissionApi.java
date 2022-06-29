@@ -57,7 +57,7 @@ public class ChangeFilePermissionApi extends PrivateApiComponentBase {
     @Input({
             @Param(name = "id", desc = "版本id", isRequired = true, type = ApiParamType.LONG),
             @Param(name = "buildNo", desc = "buildNo", type = ApiParamType.INTEGER),
-            @Param(name = "evnId", desc = "环境ID", type = ApiParamType.LONG),
+            @Param(name = "envId", desc = "环境ID", type = ApiParamType.LONG),
             @Param(name = "resourceType", rule = "version_product,env_product,diff_directory,sql_script", desc = "资源类型(version_product:版本制品;env_product:环境制品;diff_directory:差异目录;sql_script:SQL脚本)", isRequired = true, type = ApiParamType.ENUM),
             @Param(name = "path", desc = "目录或文件路径", isRequired = true, type = ApiParamType.STRING),
             @Param(name = "mode", desc = "权限(e.g:rwxr-xr-x)", isRequired = true, type = ApiParamType.STRING)
