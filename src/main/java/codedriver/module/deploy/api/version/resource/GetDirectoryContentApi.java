@@ -1,22 +1,16 @@
 package codedriver.module.deploy.api.version.resource;
 
 import codedriver.framework.common.constvalue.ApiParamType;
-import codedriver.framework.dao.mapper.runner.RunnerMapper;
-import codedriver.framework.deploy.dto.DeployJobVo;
 import codedriver.framework.deploy.dto.version.DeployVersionVo;
-import codedriver.framework.deploy.exception.DeployVersionJobNotFoundException;
 import codedriver.framework.deploy.exception.DeployVersionNotFoundException;
 import codedriver.framework.deploy.exception.GetDirectoryFailedException;
-import codedriver.framework.dto.runner.RunnerMapVo;
-import codedriver.framework.exception.runner.RunnerNotFoundByRunnerMapIdException;
-import codedriver.framework.exception.type.ParamNotExistsException;
 import codedriver.framework.integration.authentication.enums.AuthenticateType;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.framework.util.HttpRequestUtil;
-import codedriver.module.deploy.dao.mapper.DeployJobMapper;
 import codedriver.module.deploy.dao.mapper.DeployVersionMapper;
+import codedriver.module.deploy.service.DeployVersionService;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -39,10 +33,7 @@ public class GetDirectoryContentApi extends PrivateApiComponentBase {
     DeployVersionMapper deployVersionMapper;
 
     @Resource
-    DeployJobMapper deployJobMapper;
-
-    @Resource
-    RunnerMapper runnerMapper;
+    DeployVersionService deployVersionService;
 
     @Override
     public String getName() {
@@ -87,40 +78,16 @@ public class GetDirectoryContentApi extends PrivateApiComponentBase {
         if (version == null) {
             throw new DeployVersionNotFoundException(id);
         }
-        if (buildNo == null && envId == null) {
-            throw new ParamNotExistsException("buildNo", "envId");
+        String url = deployVersionService.getVersionRunnerUrl(paramObj, version);
+        if (!url.endsWith("/")) {
+            url += "/";
         }
-        Long runnerMapId = null;
-        if (buildNo != null) {
-            Long jobId = deployVersionMapper.getJobIdByDeployVersionIdAndBuildNo(id, buildNo);
-            DeployJobVo job = deployJobMapper.getDeployJobByJobId(jobId);
-            if (job == null) {
-                throw new DeployVersionJobNotFoundException(version.getVersion(), buildNo);
-            }
-            runnerMapId = job.getRunnerMapId();
-        } else if (envId != null) {
-            Long jobId = deployVersionMapper.getJobIdByDeployVersionIdAndEnvId(id, envId);
-            DeployJobVo job = deployJobMapper.getDeployJobByJobId(jobId);
-            if (job == null) {
-                // todo 环境名称
-//                throw new DeployVersionJobNotFoundException(version.getVersion(), envId);
-            }
-            runnerMapId = job.getRunnerMapId();
-        }
-        RunnerMapVo runner = runnerMapper.getRunnerByRunnerMapId(runnerMapId);
-        if (runner == null) {
-            throw new RunnerNotFoundByRunnerMapIdException(runnerMapId);
-        }
+        url += "api/rest/file/directory/content/get";
         // todo 路径待定
         String fullPath = version.getAppSystemId() + "/"
                 + version.getAppModuleId() + "/"
                 + version.getVersion() + "/" + (buildNo != null ? "build" + "/" + buildNo : "env" + "/" + envId) + "/"
                 + resourceType + "/" + path;
-        String url = runner.getUrl();
-        if (!url.endsWith("/")) {
-            url += "/";
-        }
-        url += "api/rest/file/directory/content/get";
         JSONObject paramJson = new JSONObject();
         paramJson.put("path", fullPath);
         HttpRequestUtil request = HttpRequestUtil.post(url).setPayload(paramJson.toJSONString()).setAuthType(AuthenticateType.BUILDIN).sendRequest();
