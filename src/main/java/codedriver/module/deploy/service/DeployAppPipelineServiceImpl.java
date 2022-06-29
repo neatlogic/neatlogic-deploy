@@ -220,6 +220,11 @@ public class DeployAppPipelineServiceImpl implements DeployAppPipelineService {
         return appConfig;
     }
 
+    /**
+     * 获取流水线配置信息
+     * @param searchVo
+     * @return
+     */
     @Override
     public DeployPipelineConfigVo getDeployPipelineConfigVo(DeployAppConfigVo searchVo) {
         String targetLevel = null;
