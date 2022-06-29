@@ -6,6 +6,7 @@
 package codedriver.module.deploy.api;
 
 import codedriver.framework.asynchronization.threadlocal.TenantContext;
+import codedriver.framework.autoexec.dto.combop.AutoexecCombopScenarioVo;
 import codedriver.framework.cmdb.crossover.IAppSystemMapper;
 import codedriver.framework.cmdb.dto.resourcecenter.entity.AppEnvironmentVo;
 import codedriver.framework.common.constvalue.ApiParamType;
@@ -13,12 +14,16 @@ import codedriver.framework.common.dto.BasePageVo;
 import codedriver.framework.crossover.CrossoverServiceFactory;
 import codedriver.framework.deploy.constvalue.DeployAppConfigAction;
 import codedriver.framework.deploy.dto.app.DeployAppConfigAuthorityVo;
+import codedriver.framework.deploy.dto.app.DeployAppConfigVo;
+import codedriver.framework.deploy.dto.app.DeployPipelineConfigVo;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.framework.util.TableResultUtil;
 import codedriver.module.deploy.dao.mapper.DeployAppConfigMapper;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -33,7 +38,7 @@ import java.util.stream.Collectors;
  **/
 @Service
 @OperationType(type = OperationTypeEnum.SEARCH)
-public class DeployAppConfigAuthoritySearchApi extends PrivateApiComponentBase {
+public class SearchDeployAppConfigAuthorityApi extends PrivateApiComponentBase {
     List<JSONObject> theadList = new ArrayList<>();
     @Resource
     private DeployAppConfigMapper deployAppConfigMapper;
@@ -88,7 +93,18 @@ public class DeployAppConfigAuthoritySearchApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject paramObj) {
         DeployAppConfigAuthorityVo searchVo = paramObj.toJavaObject(DeployAppConfigAuthorityVo.class);
-        //TODO 补充根据appResourceId获取对应的场景theadList
+        //根据appSystemId获取对应的场景theadList
+        DeployAppConfigVo appConfigVo = deployAppConfigMapper.getAppConfigByAppSystemIdAndAppModuleIdAndEnvId(searchVo.getAppSystemId(),0L,0L);
+        DeployPipelineConfigVo pipelineConfigVo = appConfigVo.getConfig();
+        JSONArray finalTheadList = JSONArray.parseArray(theadList.toString());
+        if(CollectionUtils.isNotEmpty(pipelineConfigVo.getScenarioList())) {
+            for (AutoexecCombopScenarioVo scenarioVo : pipelineConfigVo.getScenarioList()) {
+                JSONObject scenarioKeyValue = new JSONObject();
+                scenarioKeyValue.put("name", scenarioVo.getScenarioName());
+                scenarioKeyValue.put("displayName", scenarioVo.getScenarioName());
+                finalTheadList.add(scenarioKeyValue);
+            }
+        }
         //获取tbodyList
         List<JSONObject> bodyList = new ArrayList<>();
         Integer count = deployAppConfigMapper.getAppConfigAuthorityCount(searchVo);
@@ -115,6 +131,6 @@ public class DeployAppConfigAuthoritySearchApi extends PrivateApiComponentBase {
                 bodyList.add(actionAuth);
             }
         }
-        return TableResultUtil.getResult(theadList, bodyList, searchVo);
+        return TableResultUtil.getResult(finalTheadList, bodyList, searchVo);
     }
 }
