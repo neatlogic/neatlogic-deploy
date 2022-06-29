@@ -11,7 +11,10 @@ import codedriver.framework.autoexec.dto.profile.AutoexecProfileParamVo;
 import codedriver.framework.autoexec.dto.profile.AutoexecProfileVo;
 import codedriver.framework.crossover.CrossoverServiceFactory;
 import codedriver.framework.deploy.dto.app.*;
+import codedriver.framework.deploy.exception.DeployAppConfigNotFoundException;
+import codedriver.framework.exception.type.ParamNotExistsException;
 import codedriver.module.deploy.dao.mapper.DeployAppConfigMapper;
+import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
@@ -216,6 +219,61 @@ public class DeployAppPipelineServiceImpl implements DeployAppPipelineService {
         }
         return appConfig;
     }
+
+    @Override
+    public DeployPipelineConfigVo getDeployPipelineConfigVo(DeployAppConfigVo searchVo) {
+        String targetLevel = null;
+        DeployPipelineConfigVo appConfig = null;
+        DeployPipelineConfigVo moduleOverrideConfig = null;
+        DeployPipelineConfigVo envOverrideConfig = null;
+        String overrideConfigStr = null;
+        Long appSystemId = searchVo.getAppSystemId();
+        Long appModuleId = searchVo.getAppModuleId();
+        Long envId = searchVo.getEnvId();
+        DeployAppConfigVo deployAppConfigVo = deployAppConfigMapper.getAppConfigVo(searchVo);
+        if (deployAppConfigVo == null) {
+            overrideConfigStr = deployAppConfigVo.getConfigStr();
+        }
+        if (appModuleId == 0L && envId == 0L) {
+            targetLevel = "应用";
+            //查询应用层流水线配置信息
+            if (StringUtils.isBlank(overrideConfigStr)) {
+                throw new DeployAppConfigNotFoundException(appSystemId);
+            }
+            appConfig = JSONObject.parseObject(overrideConfigStr, DeployPipelineConfigVo.class);
+        } else if (appModuleId == 0L && envId != 0L) {
+            // 如果是访问环境层配置信息，moduleId不能为空
+            throw new ParamNotExistsException("moduleId");
+        } else if (appModuleId != 0L && envId == 0L) {
+            targetLevel = "模块";
+            //查询应用层配置信息
+            String configStr = deployAppConfigMapper.getAppConfig(new DeployAppConfigVo(appSystemId));
+            if (StringUtils.isBlank(configStr)) {
+                configStr = "{}";
+            }
+            appConfig = JSONObject.parseObject(configStr, DeployPipelineConfigVo.class);
+            if (StringUtils.isNotBlank(overrideConfigStr)) {
+                moduleOverrideConfig = JSONObject.parseObject(overrideConfigStr, DeployPipelineConfigVo.class);
+            }
+        } else {
+            targetLevel = "环境";
+            //查询应用层配置信息
+            String configStr = deployAppConfigMapper.getAppConfig(new DeployAppConfigVo(appSystemId));
+            if (StringUtils.isBlank(configStr)) {
+                configStr = "{}";
+            }
+            appConfig = JSONObject.parseObject(configStr, DeployPipelineConfigVo.class);
+            String moduleOverrideConfigStr = deployAppConfigMapper.getAppConfig(new DeployAppConfigVo(appSystemId, appModuleId));
+            if (StringUtils.isNotBlank(moduleOverrideConfigStr)) {
+                moduleOverrideConfig = JSONObject.parseObject(moduleOverrideConfigStr, DeployPipelineConfigVo.class);
+            }
+            if (StringUtils.isNotBlank(overrideConfigStr)) {
+                envOverrideConfig = JSONObject.parseObject(overrideConfigStr, DeployPipelineConfigVo.class);
+            }
+        }
+        return mergeDeployPipelineConfigVo(appConfig, moduleOverrideConfig, envOverrideConfig, targetLevel);
+    }
+
     /**
      * 覆盖阶段列表配置信息
      * @param appSystemCombopPhaseList 应用层阶段列表数据

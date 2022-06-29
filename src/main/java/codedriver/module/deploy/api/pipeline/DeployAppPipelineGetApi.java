@@ -8,15 +8,11 @@ package codedriver.module.deploy.api.pipeline;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.deploy.dto.app.DeployAppConfigVo;
 import codedriver.framework.deploy.dto.app.DeployPipelineConfigVo;
-import codedriver.framework.deploy.exception.DeployAppConfigNotFoundException;
-import codedriver.framework.exception.type.ParamNotExistsException;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
-import codedriver.module.deploy.dao.mapper.DeployAppConfigMapper;
 import codedriver.module.deploy.service.DeployAppPipelineService;
 import com.alibaba.fastjson.JSONObject;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -27,9 +23,6 @@ public class DeployAppPipelineGetApi extends PrivateApiComponentBase {
 
     @Resource
     private DeployAppPipelineService deployAppPipelineService;
-
-    @Resource
-    private DeployAppConfigMapper deployAppConfigMapper;
 
     @Override
     public String getName() {
@@ -58,57 +51,58 @@ public class DeployAppPipelineGetApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         DeployAppConfigVo searchVo = paramObj.toJavaObject(DeployAppConfigVo.class);
-        String targetLevel = null;
-        DeployPipelineConfigVo appConfig = null;
-        DeployPipelineConfigVo moduleOverrideConfig = null;
-        DeployPipelineConfigVo envOverrideConfig = null;
-        Long appSystemId = searchVo.getAppSystemId();
-        Long moduleId = searchVo.getAppModuleId();
-        Long envId = searchVo.getEnvId();
-        DeployAppConfigVo deployAppConfigVo = deployAppConfigMapper.getAppConfigVo(searchVo);
-        if (deployAppConfigVo == null) {
-            deployAppConfigVo = searchVo;
-        }
-        String overrideConfigStr = deployAppConfigVo.getConfigStr();
-        if (moduleId == 0L && envId == 0L) {
-            targetLevel = "应用";
-            //查询应用层流水线配置信息
-            if (StringUtils.isBlank(overrideConfigStr)) {
-                throw new DeployAppConfigNotFoundException(appSystemId);
-            }
-            appConfig = JSONObject.parseObject(overrideConfigStr, DeployPipelineConfigVo.class);
-        } else if (moduleId == 0L && envId != 0L) {
-            // 如果是访问环境层配置信息，moduleId不能为空
-            throw new ParamNotExistsException("moduleId");
-        } else if (moduleId != 0L && envId == 0L) {
-            targetLevel = "模块";
-            //查询应用层配置信息
-            String configStr = deployAppConfigMapper.getAppConfig(new DeployAppConfigVo(appSystemId));
-            if (StringUtils.isBlank(configStr)) {
-                configStr = "{}";
-            }
-            appConfig = JSONObject.parseObject(configStr, DeployPipelineConfigVo.class);
-            if (StringUtils.isNotBlank(overrideConfigStr)) {
-                moduleOverrideConfig = JSONObject.parseObject(overrideConfigStr, DeployPipelineConfigVo.class);
-            }
-        } else {
-            targetLevel = "环境";
-            //查询应用层配置信息
-            String configStr = deployAppConfigMapper.getAppConfig(new DeployAppConfigVo(appSystemId));
-            if (StringUtils.isBlank(configStr)) {
-                configStr = "{}";
-            }
-            appConfig = JSONObject.parseObject(configStr, DeployPipelineConfigVo.class);
-            String moduleOverrideConfigStr = deployAppConfigMapper.getAppConfig(new DeployAppConfigVo(appSystemId, moduleId));
-            if (StringUtils.isNotBlank(moduleOverrideConfigStr)) {
-                moduleOverrideConfig = JSONObject.parseObject(moduleOverrideConfigStr, DeployPipelineConfigVo.class);
-            }
-            if (StringUtils.isNotBlank(overrideConfigStr)) {
-                envOverrideConfig = JSONObject.parseObject(overrideConfigStr, DeployPipelineConfigVo.class);
-            }
-        }
-        DeployPipelineConfigVo deployPipelineConfigVo = deployAppPipelineService.mergeDeployPipelineConfigVo(appConfig, moduleOverrideConfig, envOverrideConfig, targetLevel);
-        deployAppConfigVo.setConfig(deployPipelineConfigVo);
-        return deployAppConfigVo;
+//        String targetLevel = null;
+//        DeployPipelineConfigVo appConfig = null;
+//        DeployPipelineConfigVo moduleOverrideConfig = null;
+//        DeployPipelineConfigVo envOverrideConfig = null;
+//        Long appSystemId = searchVo.getAppSystemId();
+//        Long moduleId = searchVo.getAppModuleId();
+//        Long envId = searchVo.getEnvId();
+//        DeployAppConfigVo deployAppConfigVo = deployAppConfigMapper.getAppConfigVo(searchVo);
+//        if (deployAppConfigVo == null) {
+//            deployAppConfigVo = searchVo;
+//        }
+//        String overrideConfigStr = deployAppConfigVo.getConfigStr();
+//        if (moduleId == 0L && envId == 0L) {
+//            targetLevel = "应用";
+//            //查询应用层流水线配置信息
+//            if (StringUtils.isBlank(overrideConfigStr)) {
+//                throw new DeployAppConfigNotFoundException(appSystemId);
+//            }
+//            appConfig = JSONObject.parseObject(overrideConfigStr, DeployPipelineConfigVo.class);
+//        } else if (moduleId == 0L && envId != 0L) {
+//            // 如果是访问环境层配置信息，moduleId不能为空
+//            throw new ParamNotExistsException("moduleId");
+//        } else if (moduleId != 0L && envId == 0L) {
+//            targetLevel = "模块";
+//            //查询应用层配置信息
+//            String configStr = deployAppConfigMapper.getAppConfig(new DeployAppConfigVo(appSystemId));
+//            if (StringUtils.isBlank(configStr)) {
+//                configStr = "{}";
+//            }
+//            appConfig = JSONObject.parseObject(configStr, DeployPipelineConfigVo.class);
+//            if (StringUtils.isNotBlank(overrideConfigStr)) {
+//                moduleOverrideConfig = JSONObject.parseObject(overrideConfigStr, DeployPipelineConfigVo.class);
+//            }
+//        } else {
+//            targetLevel = "环境";
+//            //查询应用层配置信息
+//            String configStr = deployAppConfigMapper.getAppConfig(new DeployAppConfigVo(appSystemId));
+//            if (StringUtils.isBlank(configStr)) {
+//                configStr = "{}";
+//            }
+//            appConfig = JSONObject.parseObject(configStr, DeployPipelineConfigVo.class);
+//            String moduleOverrideConfigStr = deployAppConfigMapper.getAppConfig(new DeployAppConfigVo(appSystemId, moduleId));
+//            if (StringUtils.isNotBlank(moduleOverrideConfigStr)) {
+//                moduleOverrideConfig = JSONObject.parseObject(moduleOverrideConfigStr, DeployPipelineConfigVo.class);
+//            }
+//            if (StringUtils.isNotBlank(overrideConfigStr)) {
+//                envOverrideConfig = JSONObject.parseObject(overrideConfigStr, DeployPipelineConfigVo.class);
+//            }
+//        }
+//        DeployPipelineConfigVo deployPipelineConfigVo = deployAppPipelineService.mergeDeployPipelineConfigVo(appConfig, moduleOverrideConfig, envOverrideConfig, targetLevel);
+        DeployPipelineConfigVo deployPipelineConfigVo = deployAppPipelineService.getDeployPipelineConfigVo(searchVo);
+        searchVo.setConfig(deployPipelineConfigVo);
+        return searchVo;
     }
 }
