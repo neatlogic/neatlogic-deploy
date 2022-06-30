@@ -6,6 +6,7 @@ package codedriver.module.deploy.api.version.resource;
 
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.deploy.dto.version.DeployVersionVo;
+import codedriver.framework.deploy.exception.DeployVersionEnvNotFoundException;
 import codedriver.framework.deploy.exception.DeployVersionNotFoundException;
 import codedriver.framework.deploy.exception.UploadFileFailedException;
 import codedriver.framework.integration.authentication.enums.AuthenticateType;
@@ -85,9 +86,16 @@ public class UploadloadFileApi extends PrivateBinaryStreamApiComponentBase {
         if (version == null) {
             throw new DeployVersionNotFoundException(id);
         }
-        String url = deployVersionService.getVersionRunnerUrl(paramObj, version);
+        String envName = null;
+        if (envId != null) {
+            envName = deployVersionService.getVersionEnvNameByEnvId(envId);
+            if (StringUtils.isBlank(envName)) {
+                throw new DeployVersionEnvNotFoundException(version.getVersion(), envId);
+            }
+        }
+        String url = deployVersionService.getVersionRunnerUrl(paramObj, version, envName);
         url += "api/binary/file/upload";
-        String fullPath = deployVersionService.getVersionResourceFullPath(version, resourceType, buildNo, envId, path);
+        String fullPath = deployVersionService.getVersionResourceFullPath(version, resourceType, buildNo, envName, path);
         MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) request;
         MultipartFile multipartFile = multipartRequest.getFile(fileParamName);
         if (multipartFile != null && multipartFile.getName() != null) {

@@ -1,5 +1,8 @@
 package codedriver.module.deploy.service;
 
+import codedriver.framework.cmdb.crossover.ICiEntityCrossoverMapper;
+import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
+import codedriver.framework.crossover.CrossoverServiceFactory;
 import codedriver.framework.dao.mapper.runner.RunnerMapper;
 import codedriver.framework.deploy.dto.DeployJobVo;
 import codedriver.framework.deploy.dto.version.DeployVersionVo;
@@ -27,7 +30,7 @@ public class DeployVersionServiceImp implements DeployVersionService {
     RunnerMapper runnerMapper;
 
     @Override
-    public String getVersionRunnerUrl(JSONObject paramObj, DeployVersionVo version) {
+    public String getVersionRunnerUrl(JSONObject paramObj, DeployVersionVo version, String envName) {
         Long id = paramObj.getLong("id");
         Integer buildNo = paramObj.getInteger("buildNo");
         Long envId = paramObj.getLong("envId");
@@ -46,8 +49,7 @@ public class DeployVersionServiceImp implements DeployVersionService {
             Long jobId = deployVersionMapper.getJobIdByDeployVersionIdAndEnvId(id, envId);
             DeployJobVo job = deployJobMapper.getDeployJobByJobId(jobId);
             if (job == null) {
-                // todo 环境名称
-//                throw new DeployVersionJobNotFoundException(version.getVersion(), envId);
+                throw new DeployVersionJobNotFoundException(version.getVersion(), envName);
             }
             runnerMapId = job.getRunnerMapId();
         }
@@ -63,10 +65,20 @@ public class DeployVersionServiceImp implements DeployVersionService {
     }
 
     @Override
-    public String getVersionResourceFullPath(DeployVersionVo version, String resourceType, Integer buildNo, Long envId, String customPath) {
+    public String getVersionResourceFullPath(DeployVersionVo version, String resourceType, Integer buildNo, String envName, String customPath) {
         // todo 路径待定
         return version.getAppSystemId() + "/" + version.getAppModuleId() + "/"
-                + version.getVersion() + "/" + (buildNo != null ? "build" + "/" + buildNo : "env" + "/" + envId) + "/"
+                + version.getVersion() + "/" + (buildNo != null ? "build" + "/" + buildNo : "env" + "/" + envName) + "/"
                 + resourceType + "/" + customPath;
+    }
+
+    @Override
+    public String getVersionEnvNameByEnvId(Long envId) {
+        ICiEntityCrossoverMapper ciEntityCrossoverMapper = CrossoverServiceFactory.getApi(ICiEntityCrossoverMapper.class);
+        CiEntityVo env = ciEntityCrossoverMapper.getCiEntityBaseInfoById(envId);
+        if (env != null) {
+            return env.getName();
+        }
+        return null;
     }
 }

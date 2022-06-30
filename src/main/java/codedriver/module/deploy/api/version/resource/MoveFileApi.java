@@ -2,6 +2,7 @@ package codedriver.module.deploy.api.version.resource;
 
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.deploy.dto.version.DeployVersionVo;
+import codedriver.framework.deploy.exception.DeployVersionEnvNotFoundException;
 import codedriver.framework.deploy.exception.DeployVersionNotFoundException;
 import codedriver.framework.deploy.exception.MoveFileFailedException;
 import codedriver.framework.exception.type.ParamNotExistsException;
@@ -86,14 +87,21 @@ public class MoveFileApi extends PrivateApiComponentBase {
         if (version == null) {
             throw new DeployVersionNotFoundException(id);
         }
-        String url = deployVersionService.getVersionRunnerUrl(paramObj, version);
+        String envName = null;
+        if (envId != null) {
+            envName = deployVersionService.getVersionEnvNameByEnvId(envId);
+            if (StringUtils.isBlank(envName)) {
+                throw new DeployVersionEnvNotFoundException(version.getVersion(), envId);
+            }
+        }
+        String url = deployVersionService.getVersionRunnerUrl(paramObj, version, envName);
         url += "api/rest/file/move";
-        String fullSrcPath = deployVersionService.getVersionResourceFullPath(version, resourceType, buildNo, envId, src);
+        String fullSrcPath = deployVersionService.getVersionResourceFullPath(version, resourceType, buildNo, envName, src);
         String fullDestPath;
         if ("move".equals(operation)) {
-            fullDestPath = deployVersionService.getVersionResourceFullPath(version, resourceType, buildNo, envId, dest + src.substring(src.lastIndexOf("/")));
+            fullDestPath = deployVersionService.getVersionResourceFullPath(version, resourceType, buildNo, envName, dest + src.substring(src.lastIndexOf("/")));
         } else {
-            fullDestPath = deployVersionService.getVersionResourceFullPath(version, resourceType, buildNo, envId, src.substring(0, src.lastIndexOf("/")) + "/" + name);
+            fullDestPath = deployVersionService.getVersionResourceFullPath(version, resourceType, buildNo, envName, src.substring(0, src.lastIndexOf("/")) + "/" + name);
         }
         JSONObject paramJson = new JSONObject();
         paramJson.put("src", fullSrcPath);

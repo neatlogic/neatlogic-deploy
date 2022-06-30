@@ -3,6 +3,7 @@ package codedriver.module.deploy.api.version.resource;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.deploy.dto.version.DeployVersionVo;
 import codedriver.framework.deploy.exception.CopyFileFailedException;
+import codedriver.framework.deploy.exception.DeployVersionEnvNotFoundException;
 import codedriver.framework.deploy.exception.DeployVersionNotFoundException;
 import codedriver.framework.integration.authentication.enums.AuthenticateType;
 import codedriver.framework.restful.annotation.Description;
@@ -74,10 +75,17 @@ public class CopyFileApi extends PrivateApiComponentBase {
         if (version == null) {
             throw new DeployVersionNotFoundException(id);
         }
-        String url = deployVersionService.getVersionRunnerUrl(paramObj, version);
+        String envName = null;
+        if (envId != null) {
+            envName = deployVersionService.getVersionEnvNameByEnvId(envId);
+            if (StringUtils.isBlank(envName)) {
+                throw new DeployVersionEnvNotFoundException(version.getVersion(), envId);
+            }
+        }
+        String url = deployVersionService.getVersionRunnerUrl(paramObj, version, envName);
         url += "api/rest/file/copy";
-        String fullSrcPath = deployVersionService.getVersionResourceFullPath(version, resourceType, buildNo, envId, src);
-        String fullDestPath = deployVersionService.getVersionResourceFullPath(version, resourceType, buildNo, envId, dest + src.substring(src.lastIndexOf("/")));
+        String fullSrcPath = deployVersionService.getVersionResourceFullPath(version, resourceType, buildNo, envName, src);
+        String fullDestPath = deployVersionService.getVersionResourceFullPath(version, resourceType, buildNo, envName, dest + src.substring(src.lastIndexOf("/")));
         JSONObject paramJson = new JSONObject();
         paramJson.put("src", fullSrcPath);
         paramJson.put("dest", fullDestPath);

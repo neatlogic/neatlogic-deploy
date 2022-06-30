@@ -17,17 +17,19 @@ public interface DeployVersionService {
      * @param version
      * @return
      */
-    String getVersionRunnerUrl(JSONObject paramObj, DeployVersionVo version);
+    String getVersionRunnerUrl(JSONObject paramObj, DeployVersionVo version, String envName);
 
     /**
-     * 根据版本、资源类型、builNo或envId决定文件完整路径
+     * 根据版本、资源类型、builNo或envName决定文件完整路径
      *
      * @param version      版本
      * @param resourceType 资源类型
      * @param buildNo
-     * @param envId
+     * @param envName
      * @param customPath
      * @return
      */
-    String getVersionResourceFullPath(DeployVersionVo version, String resourceType, Integer buildNo, Long envId, String customPath);
+    String getVersionResourceFullPath(DeployVersionVo version, String resourceType, Integer buildNo, String envName, String customPath);
+
+    String getVersionEnvNameByEnvId(Long envId);
 }
