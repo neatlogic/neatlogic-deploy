@@ -1,6 +1,7 @@
 package codedriver.module.deploy.api.version.resource;
 
 import codedriver.framework.common.constvalue.ApiParamType;
+import codedriver.framework.deploy.constvalue.DeployResourceType;
 import codedriver.framework.deploy.dto.version.DeployVersionVo;
 import codedriver.framework.deploy.exception.CopyFileFailedException;
 import codedriver.framework.deploy.exception.DeployVersionEnvNotFoundException;
@@ -68,7 +69,7 @@ public class CopyFileApi extends PrivateApiComponentBase {
         Long id = paramObj.getLong("id");
         Integer buildNo = paramObj.getInteger("buildNo");
         Long envId = paramObj.getLong("envId");
-        String resourceType = paramObj.getString("resourceType");
+        String resourceType = DeployResourceType.getDeployResourceType(paramObj.getString("resourceType")).getDirectoryName();
         String src = paramObj.getString("src");
         String dest = paramObj.getString("dest");
         DeployVersionVo version = deployVersionMapper.getDeployVersionById(id);
