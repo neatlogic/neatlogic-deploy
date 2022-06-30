@@ -35,6 +35,10 @@ public interface DeployAppConfigMapper {
 
     DeployAppConfigVo getAppConfigVo(DeployAppConfigVo deployAppConfigVo);
 
+    DeployAppConfigVo getAppConfigByAppSystemIdAndAppModuleIdAndEnvId(@Param("appSystemId") Long appSystemId, @Param("appModuleId") Long appModuleId, @Param("envId") Long envId);
+
+    List<DeployAppConfigVo> getAppConfigListByAppSystemId(Long appSystemId);
+
     String getAppConfigOverrideConfig(DeployAppConfigOverrideVo deployAppConfigOverrideVo);
 
     List<DeployAppConfigOverrideVo> getAppConfigOverrideListByAppSystemId(Long appSystemId);
@@ -100,6 +104,7 @@ public interface DeployAppConfigMapper {
     void deleteAppConfigEnvByAppSystemIdAndAppModuleIdAndEnvId(@Param("appSystemId") Long appSystemId, @Param("appModuleId") Long appModuleId, @Param("envId") Long envId);
 
     void deleteAppConfigSystemFavoriteByAppSystemIdAndUserUuid(@Param("appSystemId") Long appSystemId, @Param("userUuid") String userUuid);
+
 
     void deleteAppConfigByAppSystemId(Long appSystemId);
 

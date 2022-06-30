@@ -5,15 +5,21 @@
 
 package codedriver.module.deploy.api;
 
+import codedriver.framework.autoexec.dto.combop.AutoexecCombopScenarioVo;
+import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.deploy.constvalue.DeployAppConfigAction;
-import codedriver.framework.restful.annotation.Description;
-import codedriver.framework.restful.annotation.Input;
-import codedriver.framework.restful.annotation.OperationType;
-import codedriver.framework.restful.annotation.Output;
+import codedriver.framework.deploy.dto.app.DeployAppConfigVo;
+import codedriver.framework.deploy.dto.app.DeployPipelineConfigVo;
+import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
+import codedriver.module.deploy.dao.mapper.DeployAppConfigMapper;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
+
+import javax.annotation.Resource;
 
 /**
  * @author lvzk
@@ -22,6 +28,8 @@ import org.springframework.stereotype.Service;
 @Service
 @OperationType(type = OperationTypeEnum.SEARCH)
 public class ListDeployAppConfigAuthorityApi extends PrivateApiComponentBase {
+    @Resource
+    DeployAppConfigMapper deployAppConfigMapper;
 
     @Override
     public String getToken() {
@@ -39,13 +47,25 @@ public class ListDeployAppConfigAuthorityApi extends PrivateApiComponentBase {
     }
 
     @Input({
+            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "应用资产id")
     })
     @Output({
     })
     @Description(desc = "查询应用系统权限列表")
     @Override
     public Object myDoService(JSONObject paramObj) {
-        //TODO 场景
-        return DeployAppConfigAction.getValueTextList();
+        JSONArray resultArray = DeployAppConfigAction.getValueTextList();
+        Long appSystemId = paramObj.getLong("appSystemId");
+        DeployAppConfigVo appConfigVo = deployAppConfigMapper.getAppConfigByAppSystemIdAndAppModuleIdAndEnvId(appSystemId,0L,0L);
+        DeployPipelineConfigVo pipelineConfigVo = appConfigVo.getConfig();
+        if(CollectionUtils.isNotEmpty(pipelineConfigVo.getScenarioList())){
+            for (AutoexecCombopScenarioVo scenarioVo : pipelineConfigVo.getScenarioList()) {
+                JSONObject scenarioKeyValue = new JSONObject();
+                scenarioKeyValue.put("value", scenarioVo.getScenarioName());
+                scenarioKeyValue.put("text", scenarioVo.getScenarioName());
+                resultArray.add(scenarioKeyValue);
+            }
+        }
+        return resultArray;
     }
 }
