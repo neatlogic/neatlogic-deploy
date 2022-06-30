@@ -1,6 +1,9 @@
 package codedriver.module.deploy.api;
 
+import codedriver.framework.cmdb.crossover.ICiEntityCrossoverMapper;
+import codedriver.framework.cmdb.exception.cientity.CiEntityNotFoundException;
 import codedriver.framework.common.constvalue.ApiParamType;
+import codedriver.framework.crossover.CrossoverServiceFactory;
 import codedriver.framework.restful.annotation.Description;
 import codedriver.framework.restful.annotation.Input;
 import codedriver.framework.restful.annotation.OperationType;
@@ -47,10 +50,10 @@ public class DeleteDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
     public Object myDoService(JSONObject paramObj) throws Exception {
 
         //校验应用系统id是否存在
-//        ICiEntityCrossoverMapper iCiEntityCrossoverMapper = CrossoverServiceFactory.getApi(ICiEntityCrossoverMapper.class);
-//        if (iCiEntityCrossoverMapper.getCiEntityBaseInfoById(paramObj.getLong("appSystemId")) == null) {
-//            throw new CiEntityNotFoundException(paramObj.getLong("appSystemId"));
-//        }
+        ICiEntityCrossoverMapper iCiEntityCrossoverMapper = CrossoverServiceFactory.getApi(ICiEntityCrossoverMapper.class);
+        if (iCiEntityCrossoverMapper.getCiEntityBaseInfoById(paramObj.getLong("appSystemId")) == null) {
+            throw new CiEntityNotFoundException(paramObj.getLong("appSystemId"));
+        }
 
         //如果是发布新增的环境，需要删除
         if (deployAppConfigMapper.getAppConfigEnvByAppSystemId(paramObj.getLong("appSystemId")) > 0) {
