@@ -486,6 +486,34 @@
             </otherwise>
         </choose>
     </select>
+    <select id="getAppConfigListByAppSystemId"
+            resultType="codedriver.framework.deploy.dto.app.DeployAppConfigVo">
+        SELECT `app_system_id` as appSystemId,
+               `app_module_id`     as appModuleId,
+               `env_id`        as envId,
+               `config`        as configStr,
+               `fcd`,
+               `fcu`,
+               `lcd`,
+               `lcu`
+        FROM `deploy_app_config`
+        WHERE `app_system_id` = #{appSystemId}
+    </select>
+    <select id="getAppConfigByAppSystemIdAndAppModuleIdAndEnvId"
+            resultType="codedriver.framework.deploy.dto.app.DeployAppConfigVo">
+        SELECT `app_system_id` as appSystemId,
+               `app_module_id`     as appModuleId,
+               `env_id`        as envId,
+               `config`        as configStr,
+               `fcd`,
+               `fcu`,
+               `lcd`,
+               `lcu`
+        FROM `deploy_app_config`
+        WHERE `app_system_id` = #{appSystemId}
+          and `app_module_id` = #{appModuleId}
+          and `env_id` = #{envId}
+    </select>
 
     <resultMap id="appEnvAutoConfigMap" type="codedriver.framework.deploy.dto.app.DeployAppEnvAutoConfigVo">
         <result column="appSystemId" property="appSystemId"/>
@@ -533,7 +561,8 @@
         VALUES(`lcu`);
     </insert>
     <insert id="insertAppConfig" parameterType="codedriver.framework.deploy.dto.app.DeployAppConfigVo">
-        INSERT INTO `deploy_app_config` (`app_system_id`,
+        INSERT INTO `deploy_app_config` (`id`,
+                                         `app_system_id`,
                                          `app_module_id`,
                                          `env_id`,
                                          `config`,
@@ -541,7 +570,8 @@
                                          `fcu`,
                                          `lcd`,
                                          `lcu`)
-        VALUES (#{appSystemId},
+        VALUES (#{id},
+                #{appSystemId},
                 #{appModuleId},
                 #{envId},
                 #{configStr},
