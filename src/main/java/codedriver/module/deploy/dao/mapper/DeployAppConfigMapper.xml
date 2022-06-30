@@ -519,27 +519,27 @@
     <select id="getAppModuleEnvNotEnvOrSameEnvAndNotModuleInstanceIdCount" resultType="int">
         SELECT count(a.id)
         FROM ((SELECT ra.id
-        FROM codedriver_develop_data.resource_appinstance ra
-        JOIN codedriver_develop_data.resource_softwareservice_env rse ON rse.resource_id = ra.id
+        FROM ${schemaName}.resource_appinstance ra
+        JOIN ${schemaName}.resource_softwareservice_env rse ON rse.resource_id = ra.id
         AND rse.env_id = #{searchVo.envId}
-        WHERE ra.id NOT IN (SELECT resource_id FROM codedriver_develop_data.resource_ipobject_appmodule)
+        WHERE ra.id NOT IN (SELECT resource_id FROM ${schemaName}.resource_ipobject_appmodule)
         <if test="searchVo.keyword != null and searchVo.keyword != ''">
             AND ra.`ip` LIKE concat('%', #{searchVo.keyword}, '%') or ra.`port` LIKE concat('%', #{searchVo.keyword}, '%')
         </if>
         )
         UNION
         (SELECT ra.id
-        FROM codedriver_develop_data.resource_appinstance ra
-        WHERE ra.id NOT IN (SELECT resource_id FROM codedriver_develop_data.resource_softwareservice_env)
+        FROM ${schemaName}.resource_appinstance ra
+        WHERE ra.id NOT IN (SELECT resource_id FROM ${schemaName}.resource_softwareservice_env)
         <if test="searchVo.keyword != null and searchVo.keyword != ''">
             AND ra.`ip` LIKE concat('%', #{searchVo.keyword}, '%') or ra.`port` LIKE concat('%', #{searchVo.keyword}, '%')
         </if>
         )) a
         WHERE a.id NOT IN (
         SELECT rse.resource_id
-        FROM codedriver_develop_data.resource_appsystem_appmodule raa
-        JOIN codedriver_develop_data.resource_ipobject_appmodule ria ON raa.app_module_id = ria.app_module_id
-        JOIN codedriver_develop_data.resource_softwareservice_env rse ON ria.resource_id = rse.resource_id
+        FROM ${schemaName}.resource_appsystem_appmodule raa
+        JOIN ${schemaName}.resource_ipobject_appmodule ria ON raa.app_module_id = ria.app_module_id
+        JOIN ${schemaName}.resource_softwareservice_env rse ON ria.resource_id = rse.resource_id
         WHERE raa.resource_id = #{searchVo.appSystemId}
         AND ria.app_module_id = #{searchVo.appModuleId}
         AND rse.env_id = #{searchVo.envId})
@@ -553,10 +553,10 @@
         FROM ((SELECT ra.id,
         ra.ip,
         ra.port
-        FROM codedriver_develop_data.resource_appinstance ra
-        JOIN codedriver_develop_data.resource_softwareservice_env rse ON rse.resource_id = ra.id
+        FROM ${schemaName}.resource_appinstance ra
+        JOIN ${schemaName}.resource_softwareservice_env rse ON rse.resource_id = ra.id
         AND rse.env_id = #{searchVo.envId}
-        WHERE ra.id NOT IN (SELECT resource_id FROM codedriver_develop_data.resource_ipobject_appmodule)
+        WHERE ra.id NOT IN (SELECT resource_id FROM ${schemaName}.resource_ipobject_appmodule)
         <if test="searchVo.keyword != null and searchVo.keyword != ''">
             AND ra.`ip` LIKE concat('%', #{searchVo.keyword}, '%') or ra.`port` LIKE concat('%', #{searchVo.keyword}, '%')
         </if>)
@@ -564,16 +564,16 @@
         (SELECT ra.id,
         ra.ip,
         ra.port
-        FROM codedriver_develop_data.resource_appinstance ra
-        WHERE ra.id NOT IN (SELECT resource_id FROM codedriver_develop_data.resource_softwareservice_env)
+        FROM ${schemaName}.resource_appinstance ra
+        WHERE ra.id NOT IN (SELECT resource_id FROM ${schemaName}.resource_softwareservice_env)
         <if test="searchVo.keyword != null and searchVo.keyword != ''">
             AND ra.`ip` LIKE concat('%', #{searchVo.keyword}, '%') or ra.`port` LIKE concat('%', #{searchVo.keyword}, '%')
         </if>)) a
         WHERE a.id NOT IN (
         SELECT rse.resource_id
-        FROM codedriver_develop_data.resource_appsystem_appmodule raa
-        JOIN codedriver_develop_data.resource_ipobject_appmodule ria ON raa.app_module_id = ria.app_module_id
-        JOIN codedriver_develop_data.resource_softwareservice_env rse ON ria.resource_id = rse.resource_id
+        FROM ${schemaName}.resource_appsystem_appmodule raa
+        JOIN ${schemaName}.resource_ipobject_appmodule ria ON raa.app_module_id = ria.app_module_id
+        JOIN ${schemaName}.resource_softwareservice_env rse ON ria.resource_id = rse.resource_id
         WHERE raa.resource_id = #{searchVo.appSystemId}
         AND ria.app_module_id = #{searchVo.appModuleId}
         AND rse.env_id = #{searchVo.envId})
