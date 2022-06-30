@@ -27,7 +27,7 @@ public class DeployAppConfigServiceImpl implements DeployAppConfigService {
         }
 
         //删除系统才需要删除权限
-        if (configVo.getAppModuleId() == null && configVo.getEnvId() == null) {
+        if (configVo.getAppModuleId() == 0L && configVo.getEnvId() == 0L ) {
             deployAppConfigMapper.deleteAppConfigAuthorityByAppSystemId(configVo.getAppSystemId());
         }
 

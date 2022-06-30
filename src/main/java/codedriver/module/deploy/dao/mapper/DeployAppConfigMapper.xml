@@ -659,10 +659,10 @@
             <if test="appSystemId != null">
                 AND `app_system_id` = #{appSystemId}
             </if>
-            <if test="appModuleId != null">
+            <if test="appModuleId !=  0L">
                 AND `app_module_id` = #{appModuleId}
             </if>
-            <if test="envId != null">
+            <if test="envId != 0L">
                 AND `env_id` = #{envId}
             </if>
         </where>
@@ -825,13 +825,13 @@
             <if test="appSystemId != null">
                 AND `app_system_id` = #{appSystemId}
             </if>
-            <if test="appModuleId != null">
+            <if test="appModuleId != 0L">
                 AND `app_module_id` = #{appModuleId}
             </if>
-            <if test="envId != null">
+            <if test="envId != 0L">
                 AND `env_id` = #{envId}
             </if>
-            <if test="instanceId != null">
+            <if test="instanceId !=  0L">
                 and `instance_id` = #{instanceId}
             </if>
             <if test="lcd != null">
@@ -847,10 +847,10 @@
             <if test="appSystemId != null">
                 AND `app_system_id` = #{appSystemId}
             </if>
-            <if test="appModuleId != null">
+            <if test="appModuleId != 0L">
                 AND `app_module_id` = #{appModuleId}
             </if>
-            <if test="envId != null">
+            <if test="envId != 0L">
                 AND `env_id` = #{envId}
             </if>
         </where>
@@ -862,10 +862,10 @@
             <if test="appSystemId != null">
                 AND `app_system_id` = #{appSystemId}
             </if>
-            <if test="appModuleId != null">
+            <if test="appModuleId != 0L">
                 AND `app_module_id` = #{appModuleId}
             </if>
-            <if test="envId != null">
+            <if test="envId != 0L">
                 AND `env_id` = #{envId}
             </if>
         </where>
@@ -883,10 +883,10 @@
             <if test="appSystemId != null">
                 AND `app_system_id` = #{appSystemId}
             </if>
-            <if test="appModuleId != null">
+            <if test="appModuleId != 0L">
                 AND `app_module_id` = #{appModuleId}
             </if>
-            <if test="envId != null">
+            <if test="envId != 0L">
                 AND `env_id` = #{envId}
             </if>
         </where>
@@ -904,7 +904,7 @@
             <if test="appSystemId != null">
                 AND `app_system_id` = #{appSystemId}
             </if>
-            <if test="appModuleId != null">
+            <if test="appModuleId != 0L">
                 AND `app_module_id` = #{appModuleId}
             </if>
         </where>
