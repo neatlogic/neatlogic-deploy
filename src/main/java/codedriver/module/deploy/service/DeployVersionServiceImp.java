@@ -64,6 +64,7 @@ public class DeployVersionServiceImp implements DeployVersionService {
 
     @Override
     public String getVersionResourceFullPath(DeployVersionVo version, String resourceType, Integer buildNo, Long envId, String customPath) {
+        // todo 路径待定
         return version.getAppSystemId() + "/" + version.getAppModuleId() + "/"
                 + version.getVersion() + "/" + (buildNo != null ? "build" + "/" + buildNo : "env" + "/" + envId) + "/"
                 + resourceType + "/" + customPath;

@@ -55,7 +55,6 @@ public class MoveFileApi extends PrivateApiComponentBase {
         return null;
     }
 
-    // todo 资源类型名称待定
     @Input({
             @Param(name = "id", desc = "版本id", isRequired = true, type = ApiParamType.LONG),
             @Param(name = "buildNo", desc = "buildNo", type = ApiParamType.INTEGER),
@@ -89,7 +88,6 @@ public class MoveFileApi extends PrivateApiComponentBase {
         }
         String url = deployVersionService.getVersionRunnerUrl(paramObj, version);
         url += "api/rest/file/move";
-        // todo 路径待定
         String fullSrcPath = deployVersionService.getVersionResourceFullPath(version, resourceType, buildNo, envId, src);
         String fullDestPath;
         if ("move".equals(operation)) {

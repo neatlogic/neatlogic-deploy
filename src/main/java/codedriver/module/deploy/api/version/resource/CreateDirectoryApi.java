@@ -53,7 +53,6 @@ public class CreateDirectoryApi extends PrivateApiComponentBase {
         return null;
     }
 
-    // todo 资源类型名称待定
     @Input({
             @Param(name = "id", desc = "版本id", isRequired = true, type = ApiParamType.LONG),
             @Param(name = "buildNo", desc = "buildNo", type = ApiParamType.INTEGER),

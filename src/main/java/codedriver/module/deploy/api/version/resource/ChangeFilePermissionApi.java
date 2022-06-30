@@ -53,7 +53,6 @@ public class ChangeFilePermissionApi extends PrivateApiComponentBase {
         return null;
     }
 
-    // todo 资源类型名称待定
     @Input({
             @Param(name = "id", desc = "版本id", isRequired = true, type = ApiParamType.LONG),
             @Param(name = "buildNo", desc = "buildNo", type = ApiParamType.INTEGER),
@@ -77,7 +76,6 @@ public class ChangeFilePermissionApi extends PrivateApiComponentBase {
         }
         String url = deployVersionService.getVersionRunnerUrl(paramObj, version);
         url += "api/rest/file/chmod";
-        // todo 路径待定
         String fullPath = deployVersionService.getVersionResourceFullPath(version, resourceType, buildNo, envId, path);
         JSONObject paramJson = new JSONObject();
         paramJson.put("path", fullPath);
