@@ -7,27 +7,6 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="codedriver.module.deploy.dao.mapper.DeployVersionMapper">
 
-    <insert id="insertDeployVersion">
-        insert into deploy_version
-        (id, version, status, app_system_id, app_system_name, app_module_id, app_module_name, is_locked, fcu, fcd, lcu,
-         lcd)
-        values (#{id}, #{version}, #{status}, #{appSystemId}, #{appSystemName}, #{appModuleId}, #{appModuleName},
-                #{isLocked},
-                #{fcu}, now(3), #{lcu}, now(3))
-    </insert>
-
-    <update id="unLockDeployVersionById">
-        update deploy_version
-        set is_locked = #{isLocked}
-        where id = #{id}
-    </update>
-
-    <delete id="deleteDeployVersionById">
-        delete
-        from deploy_version
-        where id = #{id}
-    </delete>
-
     <select id="checkDeployVersionIsRepeat" resultType="int">
         select count(id)
         from deploy_version
@@ -118,4 +97,33 @@
             LIMIT #{startNum}, #{pageSize}
         </if>
     </select>
+
+    <select id="getJobIdByDeployVersionIdAndBuildNo" resultType="java.lang.Long">
+        SELECT `job_id` FROM `deploy_version_buildno` WHERE `version_id` = #{versionId} AND `build_no` = #{buildNo}
+    </select>
+
+    <select id="getJobIdByDeployVersionIdAndEnvId" resultType="java.lang.Long">
+        SELECT `job_id` FROM `deploy_version_env` WHERE `version_id` = #{versionId} AND `env_id` = #{envId}
+    </select>
+
+    <update id="unLockDeployVersionById">
+        update deploy_version
+        set is_locked = #{isLocked}
+        where id = #{id}
+    </update>
+
+    <insert id="insertDeployVersion">
+        insert into deploy_version
+        (id, version, status, app_system_id, app_system_name, app_module_id, app_module_name, is_locked, fcu, fcd, lcu,
+         lcd)
+        values (#{id}, #{version}, #{status}, #{appSystemId}, #{appSystemName}, #{appModuleId}, #{appModuleName},
+                #{isLocked},
+                #{fcu}, now(3), #{lcu}, now(3))
+    </insert>
+
+    <delete id="deleteDeployVersionById">
+        delete
+        from deploy_version
+        where id = #{id}
+    </delete>
 </mapper>

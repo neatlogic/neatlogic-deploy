@@ -13,7 +13,8 @@
                system_module_id as systemModuleId,
                env_id           as envId,
                version,
-               job_id           as jobId
+               job_id           as jobId,
+               runner_map_id    as runnerMapId
         from deploy_job
         where job_id = #{value}
     </select>
