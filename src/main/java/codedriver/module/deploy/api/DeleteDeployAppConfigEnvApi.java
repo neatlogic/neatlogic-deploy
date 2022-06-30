@@ -4,10 +4,11 @@ import codedriver.framework.cmdb.crossover.ICiEntityCrossoverMapper;
 import codedriver.framework.cmdb.exception.cientity.CiEntityNotFoundException;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.crossover.CrossoverServiceFactory;
+import codedriver.framework.deploy.dto.app.DeployAppConfigVo;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
-import codedriver.module.deploy.dao.mapper.DeployAppConfigMapper;
+import codedriver.module.deploy.service.DeployAppConfigService;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.stereotype.Service;
 
@@ -22,7 +23,7 @@ import javax.annotation.Resource;
 public class DeleteDeployAppConfigEnvApi extends PrivateApiComponentBase {
 
     @Resource
-    DeployAppConfigMapper deployAppConfigMapper;
+    DeployAppConfigService deployAppConfigService;
 
     @Override
     public String getName() {
@@ -62,18 +63,8 @@ public class DeleteDeployAppConfigEnvApi extends PrivateApiComponentBase {
             throw new CiEntityNotFoundException(paramObj.getLong("envId"));
         }
 
-        //如果是发布新增的环境，需要删除
-        if (deployAppConfigMapper.getAppConfigEnvByAppSystemIdAndAppModuleIdAndEnvId(paramObj.getLong("appSystemId"), paramObj.getLong("appModuleId"), paramObj.getLong("envId")) > 0) {
-            deployAppConfigMapper.deleteAppConfigEnvByAppSystemIdAndAppModuleIdAndEnvId(paramObj.getLong("appSystemId"), paramObj.getLong("appModuleId"), paramObj.getLong("envId"));
-        }
-
-        //删除关系
-        deployAppConfigMapper.deleteAppConfigByAppSystemIdAndAppModuleIdAndEnvId(paramObj.getLong("appSystemId"), paramObj.getLong("appModuleId"), paramObj.getLong("envId"));
-        deployAppConfigMapper.deleteAppConfigAuthorityByAppSystemIdAndEnvId(paramObj.getLong("appSystemId"), paramObj.getLong("appModuleId"), paramObj.getLong("envId"));
-        deployAppConfigMapper.deleteAppConfigDraftByAppSystemIdAndAppModuleIdAndEnvId(paramObj.getLong("appSystemId"), paramObj.getLong("appModuleId"), paramObj.getLong("envId"));
-        deployAppConfigMapper.deleteAppConfigOverrideByAppSystemIdAndAppModuleIdAndEnvId(paramObj.getLong("appSystemId"), paramObj.getLong("appModuleId"), paramObj.getLong("envId"));
-        deployAppConfigMapper.deleteAppEnvAutoConfigByAppSystemIdAndAppModuleIdAndEnvId(paramObj.getLong("appSystemId"), paramObj.getLong("appModuleId"), paramObj.getLong("envId"));
-
+        //删除配置
+        deployAppConfigService.deleteAppConfig(paramObj.toJavaObject(DeployAppConfigVo.class));
         return null;
     }
 }

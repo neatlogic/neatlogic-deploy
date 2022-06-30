@@ -4,8 +4,7 @@ import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.cmdb.dto.resourcecenter.ResourceVo;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.dto.BasePageVo;
-import codedriver.framework.deploy.dto.app.DeployAppConfigResourceVo;
-import codedriver.framework.deploy.dto.app.DeployAppEnvAutoConfigVo;
+import codedriver.framework.deploy.dto.app.DeployAppConfigInstanceVo;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
@@ -60,8 +59,8 @@ public class SearchDeployAppConfigInstanceApi extends PrivateApiComponentBase {
     @Description(desc = "查询无环境的实例，或者同环境且无模块的实例")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
-        DeployAppEnvAutoConfigVo searchVo = paramObj.toJavaObject(DeployAppEnvAutoConfigVo.class);
-        List<DeployAppConfigResourceVo> instanceList = new ArrayList<>();
+        DeployAppConfigInstanceVo searchVo = paramObj.toJavaObject(DeployAppConfigInstanceVo.class);
+        List<DeployAppConfigInstanceVo> instanceList = new ArrayList<>();
         int count = deployAppConfigMapper.getAppModuleEnvNotEnvOrSameEnvAndNotModuleInstanceIdCount(searchVo, TenantContext.get().getDataDbName());
         if (count > 0) {
             searchVo.setRowNum(count);

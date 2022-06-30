@@ -19,10 +19,12 @@ import codedriver.framework.restful.annotation.Param;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import com.alibaba.fastjson.JSONObject;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author longrf
@@ -182,28 +184,23 @@ public class SaveDeployAppConfigInstanceApi extends PrivateApiComponentBase {
         List<AttrVo> attrVoList = attrCrossoverMapper.getAttrByCiId(paramObj.getLong("ciId"));
 
         for (AttrVo attrVo : attrVoList) {
-            if (StringUtils.equals(attrVo.getName(), "name")) {
-                ciEntityTransactionVo.addAttrEntityData(attrVo, paramObj.getString("name"));
-                continue;
-            }
-            if (StringUtils.equals(attrVo.getName(), "ip")) {
-                ciEntityTransactionVo.addAttrEntityData(attrVo, paramObj.getString("ip"));
-                continue;
-            }
-            if (StringUtils.equals(attrVo.getName(), "maintenance_window")) {
-                ciEntityTransactionVo.addAttrEntityData(attrVo, paramObj.getString("maintenanceWindow"));
-                continue;
-            }
-            if (StringUtils.equals(attrVo.getName(), "app_environment")) {
-                ciEntityTransactionVo.addAttrEntityData(attrVo, paramObj.getString("envId"));
-                continue;
-            }
-            if (StringUtils.equals(attrVo.getName(), "port")) {
-                ciEntityTransactionVo.addAttrEntityData(attrVo, paramObj.getString("port"));
+            if (getAttrMap().containsKey(attrVo.getName())) {
+                ciEntityTransactionVo.addAttrEntityData(attrVo, paramObj.getString(getAttrMap().get(attrVo.getName())));
                 continue;
             }
             ciEntityTransactionVo.addAttrEntityData(attrVo);
         }
     }
+
+    public static Map<String,String> getAttrMap() {
+        Map<String,String> map = new HashMap<>();
+        map.put("name", "name");
+        map.put("ip", "ip");
+        map.put("maintenance_window", "maintenanceWindow");
+        map.put("port", "port");
+        map.put("app_environment", "envId");
+        return map;
+    }
+
 
 }
