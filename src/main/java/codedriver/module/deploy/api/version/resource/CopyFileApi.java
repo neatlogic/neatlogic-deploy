@@ -78,14 +78,8 @@ public class CopyFileApi extends PrivateApiComponentBase {
         String url = deployVersionService.getVersionRunnerUrl(paramObj, version);
         url += "api/rest/file/copy";
         // todo 路径待定
-        String fullSrcPath = version.getAppSystemId() + "/"
-                + version.getAppModuleId() + "/"
-                + version.getVersion() + "/" + (buildNo != null ? "build" + "/" + buildNo : "env" + "/" + envId) + "/"
-                + resourceType + "/" + src;
-        String fullDestPath = version.getAppSystemId() + "/"
-                + version.getAppModuleId() + "/"
-                + version.getVersion() + "/" + (buildNo != null ? "build" + "/" + buildNo : "env" + "/" + envId) + "/"
-                + resourceType + "/" + dest + src.substring(src.lastIndexOf("/"));
+        String fullSrcPath = deployVersionService.getVersionResourceFullPath(version, resourceType, buildNo, envId, src);
+        String fullDestPath = deployVersionService.getVersionResourceFullPath(version, resourceType, buildNo, envId, dest + src.substring(src.lastIndexOf("/")));
         JSONObject paramJson = new JSONObject();
         paramJson.put("src", fullSrcPath);
         paramJson.put("dest", fullDestPath);

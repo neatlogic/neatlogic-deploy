@@ -75,10 +75,7 @@ public class CreateDirectoryApi extends PrivateApiComponentBase {
         }
         String url = deployVersionService.getVersionRunnerUrl(paramObj, version);
         url += "api/rest/file/directory/create";
-        String fullPath = version.getAppSystemId() + "/"
-                + version.getAppModuleId() + "/"
-                + version.getVersion() + "/" + (buildNo != null ? "build" + "/" + buildNo : "env" + "/" + envId) + "/"
-                + resourceType + "/" + path;
+        String fullPath = deployVersionService.getVersionResourceFullPath(version, resourceType, buildNo, envId, path);
         JSONObject paramJson = new JSONObject();
         paramJson.put("path", fullPath);
         HttpRequestUtil request = HttpRequestUtil.post(url).setPayload(paramJson.toJSONString()).setAuthType(AuthenticateType.BUILDIN).sendRequest();

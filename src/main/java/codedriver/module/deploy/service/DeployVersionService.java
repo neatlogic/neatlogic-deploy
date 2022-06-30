@@ -10,5 +10,24 @@ import com.alibaba.fastjson.JSONObject;
 
 public interface DeployVersionService {
 
+    /**
+     * 根据版本ID、buildNo或envId查询runner地址
+     *
+     * @param paramObj
+     * @param version
+     * @return
+     */
     String getVersionRunnerUrl(JSONObject paramObj, DeployVersionVo version);
+
+    /**
+     * 根据版本、资源类型、builNo或envId决定文件完整路径
+     *
+     * @param version      版本
+     * @param resourceType 资源类型
+     * @param buildNo
+     * @param envId
+     * @param customPath
+     * @return
+     */
+    String getVersionResourceFullPath(DeployVersionVo version, String resourceType, Integer buildNo, Long envId, String customPath);
 }

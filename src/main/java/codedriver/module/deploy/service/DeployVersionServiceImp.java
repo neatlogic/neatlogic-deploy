@@ -61,4 +61,11 @@ public class DeployVersionServiceImp implements DeployVersionService {
         }
         return url;
     }
+
+    @Override
+    public String getVersionResourceFullPath(DeployVersionVo version, String resourceType, Integer buildNo, Long envId, String customPath) {
+        return version.getAppSystemId() + "/" + version.getAppModuleId() + "/"
+                + version.getVersion() + "/" + (buildNo != null ? "build" + "/" + buildNo : "env" + "/" + envId) + "/"
+                + resourceType + "/" + customPath;
+    }
 }

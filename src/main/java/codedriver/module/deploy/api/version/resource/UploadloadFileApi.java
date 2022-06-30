@@ -89,10 +89,7 @@ public class UploadloadFileApi extends PrivateBinaryStreamApiComponentBase {
         String url = deployVersionService.getVersionRunnerUrl(paramObj, version);
         url += "api/binary/file/upload";
         // todo 路径待定
-        String fullPath = version.getAppSystemId() + "/"
-                + version.getAppModuleId() + "/"
-                + version.getVersion() + "/" + (buildNo != null ? "build" + "/" + buildNo : "env" + "/" + envId) + "/"
-                + resourceType + "/" + path;
+        String fullPath = deployVersionService.getVersionResourceFullPath(version, resourceType, buildNo, envId, path);
         MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) request;
         MultipartFile multipartFile = multipartRequest.getFile(fileParamName);
         if (multipartFile != null && multipartFile.getName() != null) {
