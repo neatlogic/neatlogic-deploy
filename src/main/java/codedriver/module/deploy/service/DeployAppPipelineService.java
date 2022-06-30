@@ -5,6 +5,7 @@
 
 package codedriver.module.deploy.service;
 
+import codedriver.framework.deploy.dto.app.DeployAppConfigVo;
 import codedriver.framework.deploy.dto.app.DeployPipelineConfigVo;
 
 import java.util.List;
@@ -44,4 +45,11 @@ public interface DeployAppPipelineService {
      * @return
      */
     DeployPipelineConfigVo mergeDeployPipelineConfigVo(DeployPipelineConfigVo appConfig, DeployPipelineConfigVo moduleOverrideConfig, DeployPipelineConfigVo envOverrideConfig, String targetLevel, List<Long> profileIdList);
+
+    /**
+     * 获取流水线配置信息
+     * @param deployAppConfigVo
+     * @return
+     */
+    DeployPipelineConfigVo getDeployPipelineConfigVo(DeployAppConfigVo deployAppConfigVo);
 }
