@@ -27,13 +27,17 @@ public class DeployAppConfigServiceImpl implements DeployAppConfigService {
         }
 
         //删除系统才需要删除权限
-        if (configVo.getAppModuleId() == 0L && configVo.getEnvId() == 0L ) {
+        if (configVo.getAppModuleId() == 0L && configVo.getEnvId() == 0L) {
             deployAppConfigMapper.deleteAppConfigAuthorityByAppSystemId(configVo.getAppSystemId());
+        }
+
+        //删除系统、模块时才会删除runner组
+        if (!(configVo.getAppSystemId() != 0L && configVo.getAppSystemId() != 0L && configVo.getEnvId() != 0L)) {
+            deployAppConfigMapper.deleteAppModuleRunnerGroup(configVo);
         }
 
         deployAppConfigMapper.deleteAppConfig(configVo);
         deployAppConfigMapper.deleteAppConfigDraft(configVo);
-        deployAppConfigMapper.deleteAppModuleRunnerGroup(configVo);
         deployAppConfigMapper.deleteAppEnvAutoConfig(new DeployAppEnvAutoConfigVo(configVo.getAppSystemId(), configVo.getAppModuleId(), configVo.getEnvId()));
     }
 }
