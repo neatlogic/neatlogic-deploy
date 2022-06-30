@@ -831,7 +831,9 @@
             <if test="envId != null">
                 AND `env_id` = #{envId}
             </if>
-            and `instance_id` = #{instanceId}
+            <if test="instanceId != null">
+                and `instance_id` = #{instanceId}
+            </if>
             <if test="lcd != null">
                 and `lcd` != #{lcd}
             </if>
