@@ -8,4 +8,6 @@ import codedriver.framework.deploy.dto.DeployJobVo;
  */
 public interface DeployJobMapper {
     DeployJobVo getDeployJobByJobId(Long id);
+
+    Integer insertDeployJob(DeployJobVo deployJobVo);
 }

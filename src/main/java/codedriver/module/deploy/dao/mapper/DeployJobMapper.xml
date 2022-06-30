@@ -14,8 +14,19 @@
                env_id           as envId,
                version,
                job_id           as jobId,
-               runner_map_id as runnerMapId
+               runner_map_id    as runnerMapId
         from deploy_job
         where job_id = #{value}
     </select>
+
+    <insert id="insertDeployJob">
+        insert into deploy_job (`id`, `app_system_id`, `env_id`, `version`, `job_id`, `runner_map_id`)
+        values (#{id},
+                #{appSystemId},
+                #{envId},
+                #{version},
+                #{jobId},
+                #{runnerMapId})
+    </insert>
+
 </mapper>

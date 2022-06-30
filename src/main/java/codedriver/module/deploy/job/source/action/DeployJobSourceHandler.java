@@ -9,6 +9,7 @@ import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.autoexec.constvalue.ExecMode;
 import codedriver.framework.autoexec.dao.mapper.AutoexecJobMapper;
 import codedriver.framework.autoexec.dto.combop.AutoexecCombopPhaseVo;
+import codedriver.framework.autoexec.dto.combop.AutoexecCombopVo;
 import codedriver.framework.autoexec.dto.job.AutoexecJobPhaseNodeVo;
 import codedriver.framework.autoexec.dto.job.AutoexecJobPhaseVo;
 import codedriver.framework.autoexec.dto.job.AutoexecJobVo;
@@ -20,11 +21,14 @@ import codedriver.framework.cmdb.crossover.ICiEntityCrossoverMapper;
 import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
 import codedriver.framework.crossover.CrossoverServiceFactory;
 import codedriver.framework.dao.mapper.runner.RunnerMapper;
-import codedriver.framework.deploy.constvalue.DeployOperType;
+import codedriver.framework.deploy.constvalue.JobSourceType;
 import codedriver.framework.deploy.dto.DeployJobVo;
+import codedriver.framework.deploy.dto.app.DeployAppConfigVo;
+import codedriver.framework.deploy.dto.app.DeployPipelineConfigVo;
 import codedriver.framework.deploy.dto.sql.DeploySqlDetailVo;
 import codedriver.framework.deploy.dto.sql.DeploySqlJobPhaseVo;
 import codedriver.framework.deploy.exception.DeployAppConfigModuleRunnerGroupNotFoundException;
+import codedriver.framework.deploy.exception.DeployPipelineConfigNotFoundException;
 import codedriver.framework.dto.runner.RunnerGroupVo;
 import codedriver.framework.dto.runner.RunnerMapVo;
 import codedriver.framework.integration.authentication.enums.AuthenticateType;
@@ -33,6 +37,7 @@ import codedriver.framework.util.TableResultUtil;
 import codedriver.module.deploy.dao.mapper.DeployAppConfigMapper;
 import codedriver.module.deploy.dao.mapper.DeployJobMapper;
 import codedriver.module.deploy.dao.mapper.DeploySqlMapper;
+import codedriver.module.deploy.service.DeployAppPipelineService;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.nacos.common.utils.CollectionUtils;
@@ -65,9 +70,12 @@ public class DeployJobSourceHandler extends AutoexecJobSourceActionHandlerBase {
     @Resource
     RunnerMapper runnerMapper;
 
+    @Resource
+    DeployAppPipelineService deployAppPipelineService;
+
     @Override
     public String getName() {
-        return DeployOperType.DEPLOY.getValue();
+        return JobSourceType.DEPLOY.getValue();
     }
 
     @Override
@@ -204,11 +212,11 @@ public class DeployJobSourceHandler extends AutoexecJobSourceActionHandlerBase {
         DeployJobVo deployJobVo = deployJobMapper.getDeployJobByJobId(jobVo.getId());
         //如果是sqlfile ｜ local ，则保证一个作业使用同一个runner
         if (Arrays.asList(ExecMode.SQL.getValue(), ExecMode.RUNNER.getValue()).contains(jobPhaseVo.getExecMode())) {
-            RunnerMapVo  runnerMapVo = runnerMapper.getRunnerMapByRunnerMapId(deployJobVo.getRunnerMapId());
-            if(runnerMapVo != null){
+            RunnerMapVo runnerMapVo = runnerMapper.getRunnerMapByRunnerMapId(deployJobVo.getRunnerMapId());
+            if (runnerMapVo != null) {
                 runnerMapVos = Collections.singletonList(runnerMapVo);
             }
-        }else {
+        } else {
             //其它则根据模块均衡分配runner
             RunnerGroupVo appModuleRunnerGroup = deployAppConfigMapper.getAppModuleRunnerGroupByAppSystemIdAndModuleId(deployJobVo.getAppSystemId(), deployJobVo.getSystemModuleId());
             if (appModuleRunnerGroup == null) {
@@ -224,5 +232,20 @@ public class DeployJobSourceHandler extends AutoexecJobSourceActionHandlerBase {
             runnerMapVos = groupVo.getRunnerMapList();
         }
         return runnerMapVos;
+    }
+
+    @Override
+    public AutoexecCombopVo getAutoexecCombop(JSONObject paramJson) {
+        Long appSystemId = paramJson.getLong("appSystemId");
+        Long appModuleId = paramJson.getLong("appModuleId");
+        Long envId = paramJson.getLong("envId");
+        //获取最终流水线
+        DeployPipelineConfigVo deployPipelineConfigVo = deployAppPipelineService.getDeployPipelineConfigVo(new DeployAppConfigVo(appSystemId, appModuleId, envId));
+        if (deployPipelineConfigVo == null) {
+            throw new DeployPipelineConfigNotFoundException();
+        }
+        AutoexecCombopVo combopVo = new AutoexecCombopVo();
+        combopVo.setConfig(JSONObject.toJSONString(deployPipelineConfigVo));
+        return combopVo;
     }
 }

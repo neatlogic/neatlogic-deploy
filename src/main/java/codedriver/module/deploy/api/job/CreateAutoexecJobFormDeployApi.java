@@ -15,12 +15,15 @@ import codedriver.framework.autoexec.job.action.core.IAutoexecJobActionHandler;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.crossover.CrossoverServiceFactory;
 import codedriver.framework.deploy.constvalue.CombopOperationType;
+import codedriver.framework.deploy.dto.DeployJobVo;
 import codedriver.framework.deploy.dto.app.DeployAppConfigVo;
 import codedriver.framework.deploy.exception.DeployAppConfigNotFoundException;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.deploy.dao.mapper.DeployAppConfigMapper;
+import codedriver.module.deploy.dao.mapper.DeployJobMapper;
+import codedriver.module.deploy.service.DeployAppPipelineService;
 import codedriver.module.deploy.service.DeployJobService;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.stereotype.Service;
@@ -48,6 +51,12 @@ public class CreateAutoexecJobFormDeployApi extends PrivateApiComponentBase {
     @Resource
     DeployJobService deployJobService;
 
+    @Resource
+    DeployJobMapper deployJobMapper;
+
+    @Resource
+    DeployAppPipelineService deployAppPipelineService;
+
     @Override
     public String getName() {
         return "作业创建(来自发布)";
@@ -67,6 +76,7 @@ public class CreateAutoexecJobFormDeployApi extends PrivateApiComponentBase {
             @Param(name = "param", type = ApiParamType.JSONOBJECT, isRequired = true, desc = "执行参数"),
             @Param(name = "source", type = ApiParamType.STRING, isRequired = true, desc = "来源 itsm|human|deploy   ITSM|人工发起的等，不传默认是人工发起的"),
             @Param(name = "invokeId", type = ApiParamType.LONG, desc = "来源id"),
+            @Param(name = "scenarioId", type = ApiParamType.LONG, desc = "场景id"),
             @Param(name = "threadCount", type = ApiParamType.LONG, isRequired = true, desc = "并发线程,2的n次方 "),
             @Param(name = "executeConfig", type = ApiParamType.JSONOBJECT, desc = "执行目标"),
     })
@@ -78,9 +88,11 @@ public class CreateAutoexecJobFormDeployApi extends PrivateApiComponentBase {
     public Object myDoService(JSONObject jsonObj) throws Exception {
         jsonObj.put("operationType", CombopOperationType.PIPELINE.getValue());
         jsonObj.put("operationId", getOperationId(jsonObj));
-        //TODO 获取最终流水线
         IAutoexecJobActionCrossoverService autoexecJobActionCrossoverService = CrossoverServiceFactory.getApi(IAutoexecJobActionCrossoverService.class);
-        AutoexecJobVo jobVo = autoexecJobActionCrossoverService.validateCreateJobFromCombop(jsonObj, false);
+        AutoexecJobVo jobVo = autoexecJobActionCrossoverService.validateAndCreateJobFromCombop(jsonObj, false);
+        //插入发布和作业的关系表
+        DeployJobVo deployJobVo = new DeployJobVo(jsonObj);
+        deployJobMapper.insertDeployJob(deployJobVo);
         IAutoexecJobActionHandler fireAction = AutoexecJobActionHandlerFactory.getAction(JobAction.FIRE.getValue());
         jobVo.setAction(JobAction.FIRE.getValue());
         jobVo.setIsFirstFire(1);

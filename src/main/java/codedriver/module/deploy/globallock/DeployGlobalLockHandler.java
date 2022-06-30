@@ -5,7 +5,7 @@
 
 package codedriver.module.deploy.globallock;
 
-import codedriver.framework.deploy.constvalue.DeployOperType;
+import codedriver.framework.deploy.constvalue.JobSourceType;
 import codedriver.framework.dto.globallock.GlobalLockVo;
 import codedriver.framework.exception.core.ApiRuntimeException;
 import codedriver.framework.exception.type.ParamIrregularException;
@@ -23,7 +23,7 @@ import java.util.Optional;
 public class DeployGlobalLockHandler extends GlobalLockHandlerBase {
     @Override
     public String getHandler() {
-        return DeployOperType.DEPLOY.getValue();
+        return JobSourceType.DEPLOY.getValue();
     }
 
     @Override
@@ -55,7 +55,7 @@ public class DeployGlobalLockHandler extends GlobalLockHandlerBase {
     @Override
     public JSONObject getLock(JSONObject paramJson) {
         JSONObject jsonObject = new JSONObject();
-        GlobalLockVo globalLockVo = new GlobalLockVo(DeployOperType.DEPLOY.getValue(),paramJson.getString("lockOwner")+"/"+paramJson.getString("lockTarget"),paramJson.toJSONString(),paramJson.getString("lockOwnerName"));
+        GlobalLockVo globalLockVo = new GlobalLockVo(JobSourceType.DEPLOY.getValue(),paramJson.getString("lockOwner")+"/"+paramJson.getString("lockTarget"),paramJson.toJSONString(),paramJson.getString("lockOwnerName"));
         GlobalLockManager.getLock(globalLockVo);
         if (globalLockVo.getIsLock() == 1) {
             jsonObject.put("lockId", globalLockVo.getId());
@@ -75,7 +75,7 @@ public class DeployGlobalLockHandler extends GlobalLockHandlerBase {
         }
         //预防如果不存在，需重新insert lock
         String jobId = paramJson.getString("jobId");
-        GlobalLockVo globalLockVo = new GlobalLockVo(lockId,DeployOperType.DEPLOY.getValue(),paramJson.getString("lockOwner")+"/"+paramJson.getString("lockTarget"),paramJson.toJSONString(),paramJson.getString("lockOwnerName"));
+        GlobalLockVo globalLockVo = new GlobalLockVo(lockId, JobSourceType.DEPLOY.getValue(),paramJson.getString("lockOwner")+"/"+paramJson.getString("lockTarget"),paramJson.toJSONString(),paramJson.getString("lockOwnerName"));
         GlobalLockManager.retryLock(globalLockVo);
         if (globalLockVo.getIsLock() == 1) {
             jsonObject.put("lockId", globalLockVo.getId());
