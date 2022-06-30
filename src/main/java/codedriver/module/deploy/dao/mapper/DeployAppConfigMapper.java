@@ -41,8 +41,11 @@ public interface DeployAppConfigMapper {
 
     DeployAppConfigVo getAppConfigDraft(DeployAppConfigVo deployAppConfigDraftVo);
 
+    List<DeployAppConfigResourceVo> getAppModuleEnvNotEnvOrSameEnvAndNotModuleInstanceList(@Param("searchVo") DeployAppEnvAutoConfigVo searchVo, @Param("schemaName") String schemaName);
 
     List<DeployAppEnvironmentVo> getDeployAppEnvListByAppSystemIdAndModuleIdList(@Param("appSystemId") Long appSystemId, @Param("appModuleIdList") List<Long> appModuleIdList, @Param("schemaName") String schemaName);
+
+    List<DeployAppEnvironmentVo> getDeployAppHasNotEnvListByAppSystemIdAndModuleIdList(@Param("appSystemId") Long appSystemId, @Param("appModuleIdList") List<Long> appModuleIdList, @Param("schemaName") String schemaName);
 
     List<Long> getHasEnvAppModuleIdListByAppSystemIdAndModuleIdList(@Param("appSystemId") Long appSystemId, @Param("appModuleIdList") List<Long> appModuleIdList, @Param("schemaName") String schemaName);
 
@@ -68,7 +71,7 @@ public interface DeployAppConfigMapper {
 
     Integer insertAppConfigDraft(DeployAppConfigVo deployAppConfigDraftVo);
 
-    void insertAppConfigEnv(@Param("appSystemId") Long appSystemId, @Param("appModuleId") Long appModuleId, @Param("envId") Long envId);
+    void insertAppConfigEnv(@Param("appSystemId") Long appSystemId, @Param("appModuleId") Long appModuleId, @Param("envIdList") List<Long> envIdList);
 
     void insertAppConfigSystemFavorite(@Param("appSystemId") Long appSystemId, @Param("userUuid") String userUuid);
 
@@ -87,6 +90,8 @@ public interface DeployAppConfigMapper {
     int getCiEntityIdListCount(Integer isConfig);
 
     int getAppModuleEnvAutoConfigInstanceIdCount(@Param("searchVo") DeployAppEnvAutoConfigVo searchVo, @Param("schemaName") String schemaName);
+
+    int getAppModuleEnvNotEnvOrSameEnvAndNotModuleInstanceIdCount(@Param("searchVo") DeployAppEnvAutoConfigVo searchVo, @Param("schemaName") String schemaName);
 
     void deleteAppConfigEnvByAppSystemId(Long appSystemId);
 
