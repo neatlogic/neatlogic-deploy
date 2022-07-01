@@ -254,11 +254,18 @@
         ${schemaName}.resource_appsystem_appmodule raa
         JOIN ${schemaName}.resource_ipobject_appmodule ria ON raa.app_module_id = ria.app_module_id
         JOIN cmdb_cientity cc ON cc.id =ria.resource_id
-        JOIN cmdb_ci cci ON cci.id = cc.ci_id AND cci.name = 'APPIns'
         JOIN ${schemaName}.resource_softwareservice_env rse ON ria.resource_id = rse.resource_id
         <where>
+            cc.ci_id IN (
+            SELECT
+            a.`id`
+            FROM
+            `cmdb_ci` a
+            WHERE
+            a.lft &gt;= ( SELECT a.lft FROM `cmdb_ci` a WHERE a.name = 'APPIns' )
+            AND a.rht &lt;= ( SELECT a.rht FROM `cmdb_ci` a WHERE a.name = 'APPIns' ))
             <if test="appSystemId != null">
-                raa.resource_id = #{appSystemId}
+                AND   raa.resource_id = #{appSystemId}
             </if>
             <if test="appModuleIdList != null and appModuleIdList.size() > 0">
                 and ria.app_module_id in
@@ -293,6 +300,64 @@
         )
     </select>
 
+    <select id="getDeployAppHasNotEnvListByAppSystemIdAndModuleIdList"
+            resultType="codedriver.framework.deploy.dto.app.DeployAppEnvironmentVo">
+        SELECT a.`id`,
+               a.`name`
+        FROM `cmdb_cientity` a
+        JOIN `cmdb_ci` b ON a.ci_id = b.id
+        WHERE b.name = 'APPEnv'
+        AND a.id not in(
+        (
+        SELECT
+        rse.env_id
+        FROM
+        ${schemaName}.resource_appsystem_appmodule raa
+        JOIN ${schemaName}.resource_ipobject_appmodule ria ON raa.app_module_id = ria.app_module_id
+        JOIN cmdb_cientity cc ON cc.id =ria.resource_id
+        JOIN ${schemaName}.resource_softwareservice_env rse ON ria.resource_id = rse.resource_id
+        <where>
+            cc.ci_id IN (
+            SELECT
+            a.`id`
+            FROM
+            `cmdb_ci` a
+            WHERE
+            a.lft &gt;= ( SELECT a.lft FROM `cmdb_ci` a WHERE a.name = 'APPIns' )
+            AND a.rht &lt;= ( SELECT a.rht FROM `cmdb_ci` a WHERE a.name = 'APPIns' ))
+            <if test="appSystemId != null">
+                AND raa.resource_id = #{appSystemId}
+            </if>
+            <if test="appModuleIdList != null and appModuleIdList.size() > 0">
+                and ria.app_module_id in
+                <foreach collection="appModuleIdList" item="id" separator="," open="(" close=")">
+                    #{id}
+                </foreach>
+            </if>
+        </where>
+        ) UNION
+        (
+        SELECT
+        cc.id
+        FROM
+        deploy_app_config_env dace
+        JOIN cmdb_cientity cc ON cc.id = dace.env_id
+        JOIN cmdb_cientity cce ON cce.id = dace.app_module_id
+        <where>
+            <if test="appSystemId != null">
+                dace.app_system_id = #{appSystemId}
+            </if>
+            <if test="appModuleIdList != null and appModuleIdList.size() > 0">
+                and dace.app_module_id in
+                <foreach collection="appModuleIdList" item="id" separator="," open="(" close=")">
+                    #{id}
+                </foreach>
+            </if>
+        </where>
+        )
+        )
+    </select>
+
     <select id="getHasEnvAppModuleIdListByAppSystemIdAndModuleIdList"
             resultType="java.lang.Long">
         (
@@ -302,11 +367,18 @@
         ${schemaName}.resource_appsystem_appmodule raa
         JOIN ${schemaName}.resource_ipobject_appmodule ria ON raa.app_module_id = ria.app_module_id
         JOIN cmdb_cientity cc ON cc.id = ria.resource_id
-        JOIN cmdb_ci cci ON cci.id = cc.ci_id AND cci.name = 'APPIns'
         JOIN ${schemaName}.resource_softwareservice_env rse ON ria.resource_id = rse.resource_id
         <where>
+            cc.ci_id IN (
+            SELECT
+            a.`id`
+            FROM
+            `cmdb_ci` a
+            WHERE
+            a.lft &gt;= ( SELECT a.lft FROM `cmdb_ci` a WHERE a.name = 'APPIns' )
+            AND a.rht &lt;= ( SELECT a.rht FROM `cmdb_ci` a WHERE a.name = 'APPIns' ))
             <if test="appSystemId != null">
-                raa.resource_id = #{appSystemId}
+                AND raa.resource_id = #{appSystemId}
             </if>
             <if test="appModuleIdList != null and appModuleIdList.size() > 0">
                 and ria.app_module_id in
@@ -444,6 +516,71 @@
         LIMIT #{searchVo.startNum}, #{searchVo.pageSize}
     </select>
 
+    <select id="getAppModuleEnvNotEnvOrSameEnvAndNotModuleInstanceIdCount" resultType="int">
+        SELECT count(a.id)
+        FROM ((SELECT ra.id
+        FROM ${schemaName}.resource_appinstance ra
+        JOIN ${schemaName}.resource_softwareservice_env rse ON rse.resource_id = ra.id
+        AND rse.env_id = #{searchVo.envId}
+        WHERE ra.id NOT IN (SELECT resource_id FROM ${schemaName}.resource_ipobject_appmodule)
+        <if test="searchVo.keyword != null and searchVo.keyword != ''">
+            AND ra.`ip` LIKE concat('%', #{searchVo.keyword}, '%') or ra.`port` LIKE concat('%', #{searchVo.keyword}, '%')
+        </if>
+        )
+        UNION
+        (SELECT ra.id
+        FROM ${schemaName}.resource_appinstance ra
+        WHERE ra.id NOT IN (SELECT resource_id FROM ${schemaName}.resource_softwareservice_env)
+        <if test="searchVo.keyword != null and searchVo.keyword != ''">
+            AND ra.`ip` LIKE concat('%', #{searchVo.keyword}, '%') or ra.`port` LIKE concat('%', #{searchVo.keyword}, '%')
+        </if>
+        )) a
+        WHERE a.id NOT IN (
+        SELECT rse.resource_id
+        FROM ${schemaName}.resource_appsystem_appmodule raa
+        JOIN ${schemaName}.resource_ipobject_appmodule ria ON raa.app_module_id = ria.app_module_id
+        JOIN ${schemaName}.resource_softwareservice_env rse ON ria.resource_id = rse.resource_id
+        WHERE raa.resource_id = #{searchVo.appSystemId}
+        AND ria.app_module_id = #{searchVo.appModuleId}
+        AND rse.env_id = #{searchVo.envId})
+    </select>
+
+    <select id="getAppModuleEnvNotEnvOrSameEnvAndNotModuleInstanceList"
+            resultType="codedriver.framework.deploy.dto.app.DeployAppConfigInstanceVo">
+        SELECT a.id,
+        a.ip,
+        a.port
+        FROM ((SELECT ra.id,
+        ra.ip,
+        ra.port
+        FROM ${schemaName}.resource_appinstance ra
+        JOIN ${schemaName}.resource_softwareservice_env rse ON rse.resource_id = ra.id
+        AND rse.env_id = #{searchVo.envId}
+        WHERE ra.id NOT IN (SELECT resource_id FROM ${schemaName}.resource_ipobject_appmodule)
+        <if test="searchVo.keyword != null and searchVo.keyword != ''">
+            AND ra.`ip` LIKE concat('%', #{searchVo.keyword}, '%') or ra.`port` LIKE concat('%', #{searchVo.keyword}, '%')
+        </if>)
+        UNION
+        (SELECT ra.id,
+        ra.ip,
+        ra.port
+        FROM ${schemaName}.resource_appinstance ra
+        WHERE ra.id NOT IN (SELECT resource_id FROM ${schemaName}.resource_softwareservice_env)
+        <if test="searchVo.keyword != null and searchVo.keyword != ''">
+            AND ra.`ip` LIKE concat('%', #{searchVo.keyword}, '%') or ra.`port` LIKE concat('%', #{searchVo.keyword}, '%')
+        </if>)) a
+        WHERE a.id NOT IN (
+        SELECT rse.resource_id
+        FROM ${schemaName}.resource_appsystem_appmodule raa
+        JOIN ${schemaName}.resource_ipobject_appmodule ria ON raa.app_module_id = ria.app_module_id
+        JOIN ${schemaName}.resource_softwareservice_env rse ON ria.resource_id = rse.resource_id
+        WHERE raa.resource_id = #{searchVo.appSystemId}
+        AND ria.app_module_id = #{searchVo.appModuleId}
+        AND rse.env_id = #{searchVo.envId})
+        ORDER BY a.id DESC
+        LIMIT #{searchVo.startNum}, #{searchVo.pageSize}
+    </select>
+
     <select id="getAppSystemIdListCount" resultType="java.lang.Integer">
         SELECT count(distinct ra.`id`) FROM ${schemaName}.`resource_appsystem` ra
         left join ${schemaName}.`resource_appsystem_appmodule` raa on raa.resource_id = ra.id
@@ -513,6 +650,22 @@
         WHERE `app_system_id` = #{appSystemId}
           and `app_module_id` = #{appModuleId}
           and `env_id` = #{envId}
+    </select>
+
+    <select id="getAppConfigEnv" resultType="int">
+        SELECT count(1)
+        FROM deploy_app_config_env
+        <where>
+            <if test="appSystemId != null">
+                AND `app_system_id` = #{appSystemId}
+            </if>
+            <if test="appModuleId !=  0L">
+                AND `app_module_id` = #{appModuleId}
+            </if>
+            <if test="envId != 0L">
+                AND `env_id` = #{envId}
+            </if>
+        </where>
     </select>
 
     <resultMap id="appEnvAutoConfigMap" type="codedriver.framework.deploy.dto.app.DeployAppEnvAutoConfigVo">
@@ -614,12 +767,16 @@
 
     <insert id="insertAppConfigEnv">
         insert into deploy_app_config_env(`app_system_id`, `app_module_id`, `env_id`)
-        VALUES (#{appSystemId},
-                #{appModuleId},
-                #{envId}) ON DUPLICATE KEY
-        UPDATE `app_system_id` = #{appSystemId},
-            `app_module_id` = #{appModuleId},
-            `env_id` = #{envId}
+        VALUES
+        <foreach collection="envIdList" separator="," item="envId">
+            (#{appSystemId},
+            #{appModuleId},
+            #{envId})
+        </foreach>
+        ON DUPLICATE KEY
+        UPDATE `app_system_id` = VALUES(app_system_id),
+        `app_module_id` = VALUES(app_module_id),
+        `env_id` = VALUES(env_id)
     </insert>
 
     <insert id="insertAppConfigSystemFavorite">
@@ -660,32 +817,58 @@
             and `lcd` != #{lcd}
         </if>
     </delete>
+
     <delete id="deleteAppEnvAutoConfig">
         delete
         from deploy_app_env_auto_config
-        where
-        `app_system_id` = #{appSystemId}
-        and `app_module_id`=#{appModuleId}
-        and `env_id` = #{envId}
-        and `instance_id` = #{instanceId}
-        <if test="lcd != null">
-            and `lcd` != #{lcd}
-        </if>
+        <where>
+            <if test="appSystemId != null">
+                AND `app_system_id` = #{appSystemId}
+            </if>
+            <if test="appModuleId != 0L">
+                AND `app_module_id` = #{appModuleId}
+            </if>
+            <if test="envId != 0L">
+                AND `env_id` = #{envId}
+            </if>
+            <if test="instanceId !=  0L">
+                and `instance_id` = #{instanceId}
+            </if>
+            <if test="lcd != null">
+                and `lcd` != #{lcd}
+            </if>
+        </where>
     </delete>
 
     <delete id="deleteAppConfigDraft" parameterType="codedriver.framework.deploy.dto.app.DeployAppConfigVo">
         DELETE
         FROM `deploy_app_config_draft`
-        WHERE `app_system_id` = #{appSystemId}
-          and `app_module_id` = #{appModuleId}
-          and `env_id` = #{envId}
+        <where>
+            <if test="appSystemId != null">
+                AND `app_system_id` = #{appSystemId}
+            </if>
+            <if test="appModuleId != 0L">
+                AND `app_module_id` = #{appModuleId}
+            </if>
+            <if test="envId != 0L">
+                AND `env_id` = #{envId}
+            </if>
+        </where>
     </delete>
 
-    <delete id="deleteAppConfigEnvByAppSystemIdAndAppModuleIdAndEnvId">
+    <delete id="deleteAppConfigEnv">
         DELETE FROM `deploy_app_config_env`
-        WHERE `app_system_id` = #{appSystemId}
-          and `app_module_id` = #{appModuleId}
-          and `env_id` = #{envId}
+        <where>
+            <if test="appSystemId != null">
+                AND `app_system_id` = #{appSystemId}
+            </if>
+            <if test="appModuleId != 0L">
+                AND `app_module_id` = #{appModuleId}
+            </if>
+            <if test="envId != 0L">
+                AND `env_id` = #{envId}
+            </if>
+        </where>
     </delete>
 
     <delete id="deleteAppConfigSystemFavoriteByAppSystemIdAndUserUuid">
@@ -693,4 +876,38 @@
         WHERE `app_system_id` = #{appSystemId}
           and `user_uuid` = #{userUuid}
     </delete>
+
+    <delete id="deleteAppConfig">
+        DELETE FROM `deploy_app_config`
+        <where>
+            <if test="appSystemId != null">
+                AND `app_system_id` = #{appSystemId}
+            </if>
+            <if test="appModuleId != 0L">
+                AND `app_module_id` = #{appModuleId}
+            </if>
+            <if test="envId != 0L">
+                AND `env_id` = #{envId}
+            </if>
+        </where>
+    </delete>
+
+    <delete id="deleteAppConfigAuthorityByAppSystemId">
+        delete
+        from `deploy_app_config_authority`
+        where `app_system_id` = #{appSystemId}
+    </delete>
+
+    <delete id="deleteAppModuleRunnerGroup">
+        DELETE FROM `deploy_app_module_runner_group`
+        <where>
+            <if test="appSystemId != null">
+                AND `app_system_id` = #{appSystemId}
+            </if>
+            <if test="appModuleId != 0L">
+                AND `app_module_id` = #{appModuleId}
+            </if>
+        </where>
+    </delete>
+
 </mapper>
