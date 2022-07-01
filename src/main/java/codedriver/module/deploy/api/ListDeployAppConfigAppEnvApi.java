@@ -8,6 +8,7 @@ package codedriver.module.deploy.api;
 import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.cmdb.dto.resourcecenter.entity.AppEnvironmentVo;
 import codedriver.framework.common.constvalue.ApiParamType;
+import codedriver.framework.deploy.dto.app.DeployAppEnvironmentVo;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
@@ -19,6 +20,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @author longrf
@@ -49,11 +51,12 @@ public class ListDeployAppConfigAppEnvApi extends PrivateApiComponentBase {
     @Input({
             @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "应用系统id"),
             @Param(name = "appModuleIdList", type = ApiParamType.JSONARRAY, isRequired = true, desc = "应用模块id列表"),
+            @Param(name = "isHasEnv", type = ApiParamType.INTEGER, desc = "是否拥有环境"),
     })
     @Output({
             @Param(explode = AppEnvironmentVo[].class, desc = "发布应用配置的应用系统环境列表"),
     })
-    @Description(desc = "查询发布应用配置的应用系统环境列表")
+    @Description(desc = "查询发布应用配置的应用系统环境列表(用于应用树的环境下拉、发布作业时通过模块列表查询环境列表)")
     @Override
     public Object myDoService(JSONObject paramObj) {
         JSONArray appModuleIdArray = paramObj.getJSONArray("appModuleIdList");
@@ -62,6 +65,12 @@ public class ListDeployAppConfigAppEnvApi extends PrivateApiComponentBase {
             appModuleIdList = appModuleIdArray.toJavaList(Long.class);
         }
         Long appSystemId = paramObj.getLong("appSystemId");
-        return deployAppConfigMapper.getDeployAppEnvListByAppSystemIdAndModuleIdList(appSystemId, appModuleIdList, TenantContext.get().getDataDbName());
+        List<DeployAppEnvironmentVo> returnEnvList = null;
+        if (Objects.nonNull(paramObj.getInteger("isHasEnv")) && paramObj.getInteger("isHasEnv") == 1) {
+            returnEnvList = deployAppConfigMapper.getDeployAppHasNotEnvListByAppSystemIdAndModuleIdList(appSystemId, appModuleIdList, TenantContext.get().getDataDbName());
+        } else {
+            returnEnvList = deployAppConfigMapper.getDeployAppEnvListByAppSystemIdAndModuleIdList(appSystemId, appModuleIdList, TenantContext.get().getDataDbName());
+        }
+        return returnEnvList;
     }
 }

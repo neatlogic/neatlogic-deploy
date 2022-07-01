@@ -8,10 +8,13 @@ import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.deploy.dao.mapper.DeployAppConfigMapper;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.List;
 
 /**
  * @author longrf
@@ -42,7 +45,7 @@ public class SaveDeployAppConfigEnvApi extends PrivateApiComponentBase {
     @Input({
             @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "应用系统id"),
             @Param(name = "appModuleId", type = ApiParamType.LONG, isRequired = true, desc = "应用模块id"),
-            @Param(name = "envId", type = ApiParamType.LONG, isRequired = true, desc = "环境id"),
+            @Param(name = "envIdList", type = ApiParamType.JSONARRAY, isRequired = true, desc = "环境id列表"),
     })
     @Output({
     })
@@ -58,11 +61,18 @@ public class SaveDeployAppConfigEnvApi extends PrivateApiComponentBase {
         if (iCiEntityCrossoverMapper.getCiEntityBaseInfoById(paramObj.getLong("appModuleId")) == null) {
             throw new CiEntityNotFoundException(paramObj.getLong("appModuleId"));
         }
-        if (iCiEntityCrossoverMapper.getCiEntityBaseInfoById(paramObj.getLong("envId")) == null) {
-            throw new CiEntityNotFoundException(paramObj.getLong("envId"));
+        JSONArray envIdArray = paramObj.getJSONArray("envIdList");
+        List<Long> envIdList = null;
+        if (CollectionUtils.isNotEmpty(envIdArray)) {
+            envIdList = envIdArray.toJavaList(Long.class);
+        }
+        for (Long envId : envIdList) {
+            if (iCiEntityCrossoverMapper.getCiEntityBaseInfoById(envId) == null) {
+                throw new CiEntityNotFoundException(envId);
+            }
         }
 
-        deployAppConfigMapper.insertAppConfigEnv(paramObj.getLong("appSystemId"),paramObj.getLong("appModuleId"),paramObj.getLong("envId"));
+        deployAppConfigMapper.insertAppConfigEnv(paramObj.getLong("appSystemId"), paramObj.getLong("appModuleId"), envIdList);
         return null;
     }
 }

@@ -236,7 +236,7 @@ public class DeployAppPipelineServiceImpl implements DeployAppPipelineService {
         Long appModuleId = searchVo.getAppModuleId();
         Long envId = searchVo.getEnvId();
         DeployAppConfigVo deployAppConfigVo = deployAppConfigMapper.getAppConfigVo(searchVo);
-        if (deployAppConfigVo == null) {
+        if (deployAppConfigVo != null) {
             overrideConfigStr = deployAppConfigVo.getConfigStr();
         }
         if (appModuleId == 0L && envId == 0L) {
