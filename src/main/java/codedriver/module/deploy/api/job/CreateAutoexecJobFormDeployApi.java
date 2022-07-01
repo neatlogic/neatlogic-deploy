@@ -15,7 +15,6 @@ import codedriver.framework.autoexec.job.action.core.IAutoexecJobActionHandler;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.crossover.CrossoverServiceFactory;
 import codedriver.framework.deploy.constvalue.CombopOperationType;
-import codedriver.framework.deploy.dto.DeployJobVo;
 import codedriver.framework.deploy.dto.app.DeployAppConfigVo;
 import codedriver.framework.deploy.exception.DeployAppConfigNotFoundException;
 import codedriver.framework.restful.annotation.*;
@@ -72,6 +71,7 @@ public class CreateAutoexecJobFormDeployApi extends PrivateApiComponentBase {
             @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "应用系统id"),
             @Param(name = "appModuleId", type = ApiParamType.LONG, isRequired = true, desc = "模块id"),
             @Param(name = "envId", type = ApiParamType.LONG, isRequired = true, desc = "环境id"),
+            @Param(name = "buildNo", type = ApiParamType.INTEGER, desc = "编译号"),
             @Param(name = "version", type = ApiParamType.STRING, isRequired = true, desc = "版本"),
             @Param(name = "param", type = ApiParamType.JSONOBJECT, isRequired = true, desc = "执行参数"),
             @Param(name = "source", type = ApiParamType.STRING, isRequired = true, desc = "来源 itsm|human|deploy   ITSM|人工发起的等，不传默认是人工发起的"),
@@ -90,12 +90,13 @@ public class CreateAutoexecJobFormDeployApi extends PrivateApiComponentBase {
         jsonObj.put("operationId", getOperationId(jsonObj));
         IAutoexecJobActionCrossoverService autoexecJobActionCrossoverService = CrossoverServiceFactory.getApi(IAutoexecJobActionCrossoverService.class);
         AutoexecJobVo jobVo = autoexecJobActionCrossoverService.validateAndCreateJobFromCombop(jsonObj, false);
-        //插入发布和作业的关系表
-        DeployJobVo deployJobVo = new DeployJobVo(jsonObj);
-        deployJobMapper.insertDeployJob(deployJobVo);
         IAutoexecJobActionHandler fireAction = AutoexecJobActionHandlerFactory.getAction(JobAction.FIRE.getValue());
         jobVo.setAction(JobAction.FIRE.getValue());
         jobVo.setIsFirstFire(1);
+        JSONObject environment = new JSONObject();
+        environment.put("_VERSION",jsonObj.getString("version"));
+        environment.put("_BUILD_NO",jsonObj.getInteger("buildNo"));
+        jobVo.setEnvironment(environment);
         fireAction.doService(jobVo);
         return new JSONObject() {{
             put("jobId", jobVo.getId());

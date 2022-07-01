@@ -239,13 +239,16 @@ public class DeployJobSourceHandler extends AutoexecJobSourceActionHandlerBase {
         Long appSystemId = paramJson.getLong("appSystemId");
         Long appModuleId = paramJson.getLong("appModuleId");
         Long envId = paramJson.getLong("envId");
+        DeployJobVo deployJobVo = new DeployJobVo(paramJson);
         //获取最终流水线
         DeployPipelineConfigVo deployPipelineConfigVo = deployAppPipelineService.getDeployPipelineConfigVo(new DeployAppConfigVo(appSystemId, appModuleId, envId));
         if (deployPipelineConfigVo == null) {
             throw new DeployPipelineConfigNotFoundException();
         }
+        deployJobVo.setConfig(deployPipelineConfigVo);
+        deployJobMapper.insertDeployJob(deployJobVo);
         AutoexecCombopVo combopVo = new AutoexecCombopVo();
-        combopVo.setConfig(JSONObject.toJSONString(deployPipelineConfigVo));
+        combopVo.setConfigStr(JSONObject.toJSONString(deployPipelineConfigVo));
         return combopVo;
     }
 }

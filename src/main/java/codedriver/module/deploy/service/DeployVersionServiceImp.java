@@ -53,7 +53,7 @@ public class DeployVersionServiceImp implements DeployVersionService {
             }
             runnerMapId = job.getRunnerMapId();
         }
-        RunnerMapVo runner = runnerMapper.getRunnerByRunnerMapId(runnerMapId);
+        RunnerMapVo runner = runnerMapper.getRunnerMapByRunnerMapId(runnerMapId);
         if (runner == null) {
             throw new RunnerNotFoundByRunnerMapIdException(runnerMapId);
         }
