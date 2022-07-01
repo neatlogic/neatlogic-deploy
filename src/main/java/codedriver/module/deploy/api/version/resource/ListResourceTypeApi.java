@@ -64,7 +64,7 @@ public class ListResourceTypeApi extends PrivateApiComponentBase {
         } else {
             if (Objects.equals(hasMirror, 1)) {
                 list.add(new ValueTextVo(DeployResourceType.MIRROR_PRODUCT.getValue(), DeployResourceType.MIRROR_PRODUCT.getText()));
-                list.add(new ValueTextVo(DeployResourceType.DIFF_MIRROR.getValue(), DeployResourceType.DIFF_MIRROR.getText()));
+                list.add(new ValueTextVo(DeployResourceType.MIRROR_DIFF.getValue(), DeployResourceType.MIRROR_DIFF.getText()));
             } else {
                 list.add(new ValueTextVo(DeployResourceType.ENV_PRODUCT.getValue(), DeployResourceType.ENV_PRODUCT.getText()));
                 list.add(new ValueTextVo(DeployResourceType.DIFF_DIRECTORY.getValue(), DeployResourceType.DIFF_DIRECTORY.getText()));
