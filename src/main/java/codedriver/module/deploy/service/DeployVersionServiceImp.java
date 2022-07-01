@@ -69,7 +69,7 @@ public class DeployVersionServiceImp implements DeployVersionService {
     public String getVersionResourceFullPath(DeployVersionVo version, DeployResourceType resourceType, Integer buildNo, String envName, String customPath) {
         StringBuilder path = new StringBuilder();
         path.append(version.getAppSystemId()).append("/").append(version.getAppModuleId()).append("/");
-        if (resourceType.getValue().startsWith("version")) {
+        if (resourceType.getValue().startsWith("build")) {
             path.append("artifact/")
                     .append(version.getVersion()).append("/")
                     .append("build/").append(buildNo).append("/")

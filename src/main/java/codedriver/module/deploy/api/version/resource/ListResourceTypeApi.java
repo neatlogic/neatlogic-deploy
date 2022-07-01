@@ -60,8 +60,8 @@ public class ListResourceTypeApi extends PrivateApiComponentBase {
             throw new ParamNotExistsException("buildNo", "envId");
         }
         if (buildNo != null) {
-            list.add(new ValueTextVo(DeployResourceType.VERSION_PRODUCT.getValue(), DeployResourceType.VERSION_PRODUCT.getText()));
-            list.add(new ValueTextVo(DeployResourceType.VERSION_SQL_SCRIPT.getValue(), DeployResourceType.VERSION_SQL_SCRIPT.getText()));
+            list.add(new ValueTextVo(DeployResourceType.BUILD_PRODUCT.getValue(), DeployResourceType.BUILD_PRODUCT.getText()));
+            list.add(new ValueTextVo(DeployResourceType.BUILD_SQL_SCRIPT.getValue(), DeployResourceType.BUILD_SQL_SCRIPT.getText()));
         } else {
             if (Objects.equals(hasMirror, 1)) {
                 list.add(new ValueTextVo(DeployResourceType.MIRROR_PRODUCT.getValue(), DeployResourceType.MIRROR_PRODUCT.getText()));
