@@ -92,9 +92,10 @@ public class GetDirectoryContentApi extends PrivateApiComponentBase {
         }
         String url = deployVersionService.getVersionRunnerUrl(paramObj, version, envName);
         url += "api/rest/file/directory/content/get";
-        String fullPath = deployVersionService.getVersionResourceFullPath(version, resourceType, buildNo, envName, path);
+        String homePath = deployVersionService.getVersionResourceHomePath(version, resourceType, buildNo, envName);
         JSONObject paramJson = new JSONObject();
-        paramJson.put("path", fullPath);
+        paramJson.put("home", homePath);
+        paramJson.put("path", path);
         HttpRequestUtil request = HttpRequestUtil.post(url).setPayload(paramJson.toJSONString()).setAuthType(AuthenticateType.BUILDIN).sendRequest();
         int responseCode = request.getResponseCode();
         JSONObject resultJson = request.getResultJson();

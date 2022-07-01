@@ -67,6 +67,11 @@ public class DeployVersionServiceImp implements DeployVersionService {
 
     @Override
     public String getVersionResourceFullPath(DeployVersionVo version, DeployResourceType resourceType, Integer buildNo, String envName, String customPath) {
+        return getVersionResourceHomePath(version, resourceType, buildNo, envName) + customPath;
+    }
+
+    @Override
+    public String getVersionResourceHomePath(DeployVersionVo version, DeployResourceType resourceType, Integer buildNo, String envName) {
         StringBuilder path = new StringBuilder();
         path.append(version.getAppSystemId()).append("/").append(version.getAppModuleId()).append("/");
         if (resourceType.getValue().startsWith("build")) {
@@ -82,7 +87,7 @@ public class DeployVersionServiceImp implements DeployVersionService {
         } else if (resourceType.getValue().startsWith("mirror")) {
             path.append("mirror/").append(envName).append("/").append(resourceType.getDirectoryName());
         }
-        path.append("/").append(customPath);
+        path.append("/");
         return path.toString();
     }
 
