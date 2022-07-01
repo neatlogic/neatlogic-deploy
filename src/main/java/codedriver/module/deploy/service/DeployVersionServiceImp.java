@@ -4,6 +4,7 @@ import codedriver.framework.cmdb.crossover.ICiEntityCrossoverMapper;
 import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
 import codedriver.framework.crossover.CrossoverServiceFactory;
 import codedriver.framework.dao.mapper.runner.RunnerMapper;
+import codedriver.framework.deploy.constvalue.DeployResourceType;
 import codedriver.framework.deploy.dto.DeployJobVo;
 import codedriver.framework.deploy.dto.version.DeployVersionVo;
 import codedriver.framework.deploy.exception.DeployVersionJobNotFoundException;
@@ -66,10 +67,42 @@ public class DeployVersionServiceImp implements DeployVersionService {
 
     @Override
     public String getVersionResourceFullPath(DeployVersionVo version, String resourceType, Integer buildNo, String envName, String customPath) {
-        // todo 路径待定
-        return version.getAppSystemId() + "/" + version.getAppModuleId() + "/"
-                + version.getVersion() + "/" + (buildNo != null ? "build" + "/" + buildNo : "env" + "/" + envName) + "/"
-                + resourceType + "/" + customPath;
+        StringBuilder path = new StringBuilder();
+        path.append(version.getAppSystemId()).append("/").append(version.getAppModuleId()).append("/");
+        if (DeployResourceType.VERSION_PRODUCT.getValue().equals(resourceType)) {
+            path.append("artifact/")
+                    .append(version.getVersion()).append("/")
+                    .append("build/").append(buildNo).append("/")
+                    .append(DeployResourceType.VERSION_PRODUCT.getDirectoryName());
+        } else if (DeployResourceType.VERSION_SQL_SCRIPT.getValue().equals(resourceType)) {
+            path.append("artifact/")
+                    .append(version.getVersion()).append("/")
+                    .append("build/").append(buildNo).append("/")
+                    .append(DeployResourceType.VERSION_SQL_SCRIPT.getDirectoryName());
+        } else if (DeployResourceType.ENV_PRODUCT.getValue().equals(resourceType)) {
+            path.append("artifact/")
+                    .append(version.getVersion()).append("/")
+                    .append("env/").append(envName).append("/")
+                    .append(DeployResourceType.ENV_PRODUCT.getDirectoryName());
+        } else if (DeployResourceType.DIFF_DIRECTORY.getValue().equals(resourceType)) {
+            path.append("artifact/")
+                    .append(version.getVersion()).append("/")
+                    .append("env/").append(envName).append("/")
+                    .append(DeployResourceType.DIFF_DIRECTORY.getDirectoryName());
+        } else if (DeployResourceType.ENV_SQL_SCRIPT.getValue().equals(resourceType)) {
+            path.append("artifact/")
+                    .append(version.getVersion()).append("/")
+                    .append("env/").append(envName).append("/")
+                    .append(DeployResourceType.ENV_SQL_SCRIPT.getDirectoryName());
+        } else if (DeployResourceType.MIRROR_PRODUCT.getValue().equals(resourceType)) {
+            path.append("mirror/").append(envName).append("/").append(DeployResourceType.MIRROR_PRODUCT.getDirectoryName());
+        } else if (DeployResourceType.MIRROR_DIFF.getValue().equals(resourceType)) {
+            path.append("mirror/").append(envName).append("/").append(DeployResourceType.MIRROR_DIFF.getDirectoryName());
+        } else if (DeployResourceType.MIRROR_SQL_SCRIPT.getValue().equals(resourceType)) {
+            path.append("mirror/").append(envName).append("/").append(DeployResourceType.MIRROR_SQL_SCRIPT.getDirectoryName());
+        }
+        path.append("/").append(customPath);
+        return path.toString();
     }
 
     @Override
