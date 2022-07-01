@@ -5,6 +5,7 @@ import codedriver.framework.deploy.constvalue.DeployResourceType;
 import codedriver.framework.deploy.dto.version.DeployVersionVo;
 import codedriver.framework.deploy.exception.DeployVersionEnvNotFoundException;
 import codedriver.framework.deploy.exception.DeployVersionNotFoundException;
+import codedriver.framework.deploy.exception.DeployVersionResourceTypeNotFoundException;
 import codedriver.framework.deploy.exception.GetDirectoryFailedException;
 import codedriver.framework.integration.authentication.enums.AuthenticateType;
 import codedriver.framework.restful.annotation.*;
@@ -56,8 +57,8 @@ public class GetDirectoryContentApi extends PrivateApiComponentBase {
             @Param(name = "id", desc = "版本id", isRequired = true, type = ApiParamType.LONG),
             @Param(name = "buildNo", desc = "buildNo", type = ApiParamType.INTEGER),
             @Param(name = "envId", desc = "环境ID", type = ApiParamType.LONG),
-            @Param(name = "resourceType", rule = "version_product,env_product,diff_directory,sql_script", desc = "资源类型(version_product:版本制品;env_product:环境制品;diff_directory:差异目录;sql_script:SQL脚本)", isRequired = true, type = ApiParamType.ENUM),
-            @Param(name = "path", desc = "目标路径", isRequired = true, type = ApiParamType.STRING)
+            @Param(name = "resourceType", rule = "build_product,build_sql_script,env_product,env_diff_directory,env_sql_script,mirror_product,mirror_diff,mirror_sql_script", desc = "制品类型", isRequired = true, type = ApiParamType.ENUM),
+            @Param(name = "path", desc = "目标路径(路径一律以'/'开头，HOME本身的路径为'/')", isRequired = true, type = ApiParamType.STRING)
     })
     @Output({
             @Param(name = "name", type = ApiParamType.STRING, desc = "文件名"),
@@ -73,8 +74,11 @@ public class GetDirectoryContentApi extends PrivateApiComponentBase {
         Long id = paramObj.getLong("id");
         Integer buildNo = paramObj.getInteger("buildNo");
         Long envId = paramObj.getLong("envId");
-        String resourceType = DeployResourceType.getDeployResourceType(paramObj.getString("resourceType")).getDirectoryName();
         String path = paramObj.getString("path");
+        DeployResourceType resourceType = DeployResourceType.getDeployResourceType(paramObj.getString("resourceType"));
+        if (resourceType == null) {
+            throw new DeployVersionResourceTypeNotFoundException(paramObj.getString("resourceType"));
+        }
         DeployVersionVo version = deployVersionMapper.getDeployVersionById(id);
         if (version == null) {
             throw new DeployVersionNotFoundException(id);
