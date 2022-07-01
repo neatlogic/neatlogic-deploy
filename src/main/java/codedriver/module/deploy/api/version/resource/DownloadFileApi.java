@@ -9,6 +9,7 @@ import codedriver.framework.deploy.constvalue.DeployResourceType;
 import codedriver.framework.deploy.dto.version.DeployVersionVo;
 import codedriver.framework.deploy.exception.DeployVersionEnvNotFoundException;
 import codedriver.framework.deploy.exception.DeployVersionNotFoundException;
+import codedriver.framework.deploy.exception.DeployVersionResourceTypeNotFoundException;
 import codedriver.framework.deploy.exception.DownloadFileFailedException;
 import codedriver.framework.integration.authentication.enums.AuthenticateType;
 import codedriver.framework.restful.annotation.*;
@@ -73,9 +74,12 @@ public class DownloadFileApi extends PrivateBinaryStreamApiComponentBase {
         Long id = paramObj.getLong("id");
         Integer buildNo = paramObj.getInteger("buildNo");
         Long envId = paramObj.getLong("envId");
-        String resourceType = DeployResourceType.getDeployResourceType(paramObj.getString("resourceType")).getValue();
         String path = paramObj.getString("path");
         Integer isPack = paramObj.getInteger("isPack");
+        DeployResourceType resourceType = DeployResourceType.getDeployResourceType(paramObj.getString("resourceType"));
+        if (resourceType == null) {
+            throw new DeployVersionResourceTypeNotFoundException(paramObj.getString("resourceType"));
+        }
         DeployVersionVo version = deployVersionMapper.getDeployVersionById(id);
         if (version == null) {
             throw new DeployVersionNotFoundException(id);

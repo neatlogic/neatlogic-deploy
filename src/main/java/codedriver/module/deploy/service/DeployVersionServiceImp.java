@@ -66,21 +66,21 @@ public class DeployVersionServiceImp implements DeployVersionService {
     }
 
     @Override
-    public String getVersionResourceFullPath(DeployVersionVo version, String resourceType, Integer buildNo, String envName, String customPath) {
+    public String getVersionResourceFullPath(DeployVersionVo version, DeployResourceType resourceType, Integer buildNo, String envName, String customPath) {
         StringBuilder path = new StringBuilder();
         path.append(version.getAppSystemId()).append("/").append(version.getAppModuleId()).append("/");
-        if (resourceType.startsWith("version")) {
+        if (resourceType.getValue().startsWith("version")) {
             path.append("artifact/")
                     .append(version.getVersion()).append("/")
                     .append("build/").append(buildNo).append("/")
-                    .append(DeployResourceType.getDeployResourceType(resourceType).getDirectoryName());
-        } else if (resourceType.startsWith("env")) {
+                    .append(resourceType.getDirectoryName());
+        } else if (resourceType.getValue().startsWith("env")) {
             path.append("artifact/")
                     .append(version.getVersion()).append("/")
                     .append("env/").append(envName).append("/")
-                    .append(DeployResourceType.getDeployResourceType(resourceType).getDirectoryName());
-        } else if (resourceType.startsWith("mirror")) {
-            path.append("mirror/").append(envName).append("/").append(DeployResourceType.getDeployResourceType(resourceType).getDirectoryName());
+                    .append(resourceType.getDirectoryName());
+        } else if (resourceType.getValue().startsWith("mirror")) {
+            path.append("mirror/").append(envName).append("/").append(resourceType.getDirectoryName());
         }
         path.append("/").append(customPath);
         return path.toString();

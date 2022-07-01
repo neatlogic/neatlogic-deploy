@@ -5,6 +5,7 @@ import codedriver.framework.deploy.constvalue.DeployResourceType;
 import codedriver.framework.deploy.dto.version.DeployVersionVo;
 import codedriver.framework.deploy.exception.DeployVersionEnvNotFoundException;
 import codedriver.framework.deploy.exception.DeployVersionNotFoundException;
+import codedriver.framework.deploy.exception.DeployVersionResourceTypeNotFoundException;
 import codedriver.framework.deploy.exception.MoveFileFailedException;
 import codedriver.framework.exception.type.ParamNotExistsException;
 import codedriver.framework.integration.authentication.enums.AuthenticateType;
@@ -73,11 +74,14 @@ public class MoveFileApi extends PrivateApiComponentBase {
         Long id = paramObj.getLong("id");
         Integer buildNo = paramObj.getInteger("buildNo");
         Long envId = paramObj.getLong("envId");
-        String resourceType = DeployResourceType.getDeployResourceType(paramObj.getString("resourceType")).getValue();
         String name = paramObj.getString("name");
         String src = paramObj.getString("src");
         String dest = paramObj.getString("dest");
         String operation = paramObj.getString("operation");
+        DeployResourceType resourceType = DeployResourceType.getDeployResourceType(paramObj.getString("resourceType"));
+        if (resourceType == null) {
+            throw new DeployVersionResourceTypeNotFoundException(paramObj.getString("resourceType"));
+        }
         if ("move".equals(operation) && StringUtils.isBlank(dest)) {
             throw new ParamNotExistsException("dest");
         }

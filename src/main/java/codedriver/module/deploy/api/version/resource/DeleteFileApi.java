@@ -6,6 +6,7 @@ import codedriver.framework.deploy.dto.version.DeployVersionVo;
 import codedriver.framework.deploy.exception.DeleteFileFailedException;
 import codedriver.framework.deploy.exception.DeployVersionEnvNotFoundException;
 import codedriver.framework.deploy.exception.DeployVersionNotFoundException;
+import codedriver.framework.deploy.exception.DeployVersionResourceTypeNotFoundException;
 import codedriver.framework.integration.authentication.enums.AuthenticateType;
 import codedriver.framework.restful.annotation.Description;
 import codedriver.framework.restful.annotation.Input;
@@ -68,8 +69,11 @@ public class DeleteFileApi extends PrivateApiComponentBase {
         Long id = paramObj.getLong("id");
         Integer buildNo = paramObj.getInteger("buildNo");
         Long envId = paramObj.getLong("envId");
-        String resourceType = DeployResourceType.getDeployResourceType(paramObj.getString("resourceType")).getValue();
         String path = paramObj.getString("path");
+        DeployResourceType resourceType = DeployResourceType.getDeployResourceType(paramObj.getString("resourceType"));
+        if (resourceType == null) {
+            throw new DeployVersionResourceTypeNotFoundException(paramObj.getString("resourceType"));
+        }
         DeployVersionVo version = deployVersionMapper.getDeployVersionById(id);
         if (version == null) {
             throw new DeployVersionNotFoundException(id);

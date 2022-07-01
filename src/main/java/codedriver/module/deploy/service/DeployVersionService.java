@@ -5,6 +5,7 @@
 
 package codedriver.module.deploy.service;
 
+import codedriver.framework.deploy.constvalue.DeployResourceType;
 import codedriver.framework.deploy.dto.version.DeployVersionVo;
 import com.alibaba.fastjson.JSONObject;
 
@@ -29,7 +30,7 @@ public interface DeployVersionService {
      * @param customPath
      * @return
      */
-    String getVersionResourceFullPath(DeployVersionVo version, String resourceType, Integer buildNo, String envName, String customPath);
+    String getVersionResourceFullPath(DeployVersionVo version, DeployResourceType resourceType, Integer buildNo, String envName, String customPath);
 
     String getVersionEnvNameByEnvId(Long envId);
 }
