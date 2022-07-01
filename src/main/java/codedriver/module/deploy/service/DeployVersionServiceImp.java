@@ -4,6 +4,7 @@ import codedriver.framework.cmdb.crossover.ICiEntityCrossoverMapper;
 import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
 import codedriver.framework.crossover.CrossoverServiceFactory;
 import codedriver.framework.dao.mapper.runner.RunnerMapper;
+import codedriver.framework.deploy.constvalue.DeployResourceType;
 import codedriver.framework.deploy.dto.DeployJobVo;
 import codedriver.framework.deploy.dto.version.DeployVersionVo;
 import codedriver.framework.deploy.exception.DeployVersionJobNotFoundException;
@@ -65,11 +66,24 @@ public class DeployVersionServiceImp implements DeployVersionService {
     }
 
     @Override
-    public String getVersionResourceFullPath(DeployVersionVo version, String resourceType, Integer buildNo, String envName, String customPath) {
-        // todo 路径待定
-        return version.getAppSystemId() + "/" + version.getAppModuleId() + "/"
-                + version.getVersion() + "/" + (buildNo != null ? "build" + "/" + buildNo : "env" + "/" + envName) + "/"
-                + resourceType + "/" + customPath;
+    public String getVersionResourceFullPath(DeployVersionVo version, DeployResourceType resourceType, Integer buildNo, String envName, String customPath) {
+        StringBuilder path = new StringBuilder();
+        path.append(version.getAppSystemId()).append("/").append(version.getAppModuleId()).append("/");
+        if (resourceType.getValue().startsWith("build")) {
+            path.append("artifact/")
+                    .append(version.getVersion()).append("/")
+                    .append("build/").append(buildNo).append("/")
+                    .append(resourceType.getDirectoryName());
+        } else if (resourceType.getValue().startsWith("env")) {
+            path.append("artifact/")
+                    .append(version.getVersion()).append("/")
+                    .append("env/").append(envName).append("/")
+                    .append(resourceType.getDirectoryName());
+        } else if (resourceType.getValue().startsWith("mirror")) {
+            path.append("mirror/").append(envName).append("/").append(resourceType.getDirectoryName());
+        }
+        path.append("/").append(customPath);
+        return path.toString();
     }
 
     @Override
