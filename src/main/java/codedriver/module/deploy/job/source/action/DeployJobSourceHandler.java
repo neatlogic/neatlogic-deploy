@@ -19,6 +19,7 @@ import codedriver.framework.autoexec.job.source.action.AutoexecJobSourceActionHa
 import codedriver.framework.autoexec.util.AutoexecUtil;
 import codedriver.framework.cmdb.crossover.ICiEntityCrossoverMapper;
 import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
+import codedriver.framework.cmdb.exception.cientity.CiEntityNotFoundException;
 import codedriver.framework.crossover.CrossoverServiceFactory;
 import codedriver.framework.dao.mapper.runner.RunnerMapper;
 import codedriver.framework.deploy.constvalue.JobSourceType;
@@ -218,9 +219,18 @@ public class DeployJobSourceHandler extends AutoexecJobSourceActionHandlerBase {
             }
         } else {
             //其它则根据模块均衡分配runner
-            RunnerGroupVo appModuleRunnerGroup = deployAppConfigMapper.getAppModuleRunnerGroupByAppSystemIdAndModuleId(deployJobVo.getAppSystemId(), deployJobVo.getSystemModuleId());
+            ICiEntityCrossoverMapper iCiEntityCrossoverMapper = CrossoverServiceFactory.getApi(ICiEntityCrossoverMapper.class);
+            CiEntityVo appSystemEntity = iCiEntityCrossoverMapper.getCiEntityBaseInfoById(deployJobVo.getAppSystemId());
+            if (appSystemEntity == null) {
+                throw new CiEntityNotFoundException(deployJobVo.getAppSystemId());
+            }
+            CiEntityVo appModuleEntity = iCiEntityCrossoverMapper.getCiEntityBaseInfoById(deployJobVo.getAppModuleId());
+            if (appModuleEntity == null) {
+                throw new CiEntityNotFoundException(deployJobVo.getAppModuleId());
+            }
+            RunnerGroupVo appModuleRunnerGroup = deployAppConfigMapper.getAppModuleRunnerGroupByAppSystemIdAndModuleId(deployJobVo.getAppSystemId(), deployJobVo.getAppModuleId());
             if (appModuleRunnerGroup == null) {
-                throw new DeployAppConfigModuleRunnerGroupNotFoundException(deployJobVo.getAppSystemId(), deployJobVo.getSystemModuleId());
+                throw new DeployAppConfigModuleRunnerGroupNotFoundException(appSystemEntity.getName() + "(" + deployJobVo.getAppSystemId() + ")", appModuleEntity.getName() + "(" + deployJobVo.getAppModuleId() + ")");
             }
             RunnerGroupVo groupVo = runnerMapper.getRunnerMapGroupById(appModuleRunnerGroup.getId());
             if (groupVo == null) {
@@ -250,5 +260,43 @@ public class DeployJobSourceHandler extends AutoexecJobSourceActionHandlerBase {
         AutoexecCombopVo combopVo = new AutoexecCombopVo();
         combopVo.setConfigStr(JSONObject.toJSONString(deployPipelineConfigVo));
         return combopVo;
+    }
+
+    @Override
+    public void getMyFireParamJson(JSONObject jsonObject, AutoexecJobVo jobVo) {
+        JSONObject environment = new JSONObject();
+        jsonObject.put("environment", environment);
+        //_DEPLOY_RUNNERGROUP
+        JSONObject runnerMap = new JSONObject();
+        DeployJobVo deployJobVo = deployJobMapper.getDeployJobByJobId(jobVo.getId());
+        ICiEntityCrossoverMapper iCiEntityCrossoverMapper = CrossoverServiceFactory.getApi(ICiEntityCrossoverMapper.class);
+        CiEntityVo appSystemEntity = iCiEntityCrossoverMapper.getCiEntityBaseInfoById(deployJobVo.getAppSystemId());
+        if (appSystemEntity == null) {
+            throw new CiEntityNotFoundException(deployJobVo.getAppSystemId());
+        }
+        CiEntityVo appModuleEntity = iCiEntityCrossoverMapper.getCiEntityBaseInfoById(deployJobVo.getAppModuleId());
+        if (appModuleEntity == null) {
+            throw new CiEntityNotFoundException(deployJobVo.getAppModuleId());
+        }
+        RunnerGroupVo runnerGroupVo = deployAppConfigMapper.getAppModuleRunnerGroupByAppSystemIdAndModuleId(deployJobVo.getAppSystemId(), deployJobVo.getAppModuleId());
+        if (runnerGroupVo == null) {
+            throw new DeployAppConfigModuleRunnerGroupNotFoundException(appSystemEntity.getName() + "(" + deployJobVo.getAppSystemId() + ")", appModuleEntity.getName() + "(" + deployJobVo.getAppModuleId() + ")");
+        }
+        if (CollectionUtils.isEmpty(runnerGroupVo.getRunnerMapList())) {
+            throw new AutoexecJobRunnerGroupRunnerNotFoundException(runnerGroupVo.getName() + ":" + runnerGroupVo.getId());
+        }
+        for (RunnerMapVo runnerMapVo : runnerGroupVo.getRunnerMapList()) {
+            runnerMap.put(runnerMapVo.getRunnerMapId().toString(), runnerMapVo.getHost());
+        }
+        environment.put("_DEPLOY_RUNNERGROUP", runnerMap);
+        //_DEPLOY_PATH
+        CiEntityVo envEntity = iCiEntityCrossoverMapper.getCiEntityBaseInfoById(deployJobVo.getEnvId());
+        if (envEntity == null) {
+            throw new CiEntityNotFoundException(deployJobVo.getEnvId());
+        }
+        environment.put("_DEPLOY_PATH", appSystemEntity.getName() + "/" + appModuleEntity.getName() + "/" + envEntity.getName());
+        environment.put("_DEPLOY_ID_PATH", deployJobVo.getAppSystemId() + "/" + deployJobVo.getAppModuleId() + "/" + deployJobVo.getEnvId());
+        environment.put("_VERSION", deployJobVo.getVersion());
+        environment.put("_BUILD_NO", deployJobVo.getBuildNo());
     }
 }

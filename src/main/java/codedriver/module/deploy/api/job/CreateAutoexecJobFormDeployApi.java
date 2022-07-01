@@ -21,9 +21,6 @@ import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.deploy.dao.mapper.DeployAppConfigMapper;
-import codedriver.module.deploy.dao.mapper.DeployJobMapper;
-import codedriver.module.deploy.service.DeployAppPipelineService;
-import codedriver.module.deploy.service.DeployJobService;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -46,15 +43,6 @@ public class CreateAutoexecJobFormDeployApi extends PrivateApiComponentBase {
 
     @Resource
     DeployAppConfigMapper deployAppConfigMapper;
-
-    @Resource
-    DeployJobService deployJobService;
-
-    @Resource
-    DeployJobMapper deployJobMapper;
-
-    @Resource
-    DeployAppPipelineService deployAppPipelineService;
 
     @Override
     public String getName() {
@@ -94,8 +82,8 @@ public class CreateAutoexecJobFormDeployApi extends PrivateApiComponentBase {
         jobVo.setAction(JobAction.FIRE.getValue());
         jobVo.setIsFirstFire(1);
         JSONObject environment = new JSONObject();
-        environment.put("_VERSION",jsonObj.getString("version"));
-        environment.put("_BUILD_NO",jsonObj.getInteger("buildNo"));
+        //environment.put("_VERSION",jsonObj.getString("version"));
+        //environment.put("_BUILD_NO",jsonObj.getInteger("buildNo"));
         jobVo.setEnvironment(environment);
         fireAction.doService(jobVo);
         return new JSONObject() {{

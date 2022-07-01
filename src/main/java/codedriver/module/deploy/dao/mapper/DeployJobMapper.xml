@@ -20,14 +20,15 @@
     </select>
 
     <insert id="insertDeployJob">
-        insert into deploy_job (`id`, `app_system_id`, `env_id`, `version`, `job_id`, `runner_map_id`,`config`)
+        insert into deploy_job (`id`, `app_system_id`, `env_id`, `version`, `job_id`, `runner_map_id`,`config`,`build_no`)
         values (#{id},
                 #{appSystemId},
                 #{envId},
                 #{version},
                 #{jobId},
                 #{runnerMapId},
-                #{configStr}
+                #{configStr},
+                #{buildNo}
                 )
     </insert>
 
