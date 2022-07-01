@@ -57,7 +57,7 @@ public class GetDirectoryContentApi extends PrivateApiComponentBase {
             @Param(name = "id", desc = "版本id", isRequired = true, type = ApiParamType.LONG),
             @Param(name = "buildNo", desc = "buildNo", type = ApiParamType.INTEGER),
             @Param(name = "envId", desc = "环境ID", type = ApiParamType.LONG),
-            @Param(name = "resourceType", rule = "build_product,build_sql_script,env_product,env_diff_directory,env_sql_script,mirror_product,mirror_diff,mirror_sql_script", desc = "制品类型", isRequired = true, type = ApiParamType.ENUM),
+            @Param(name = "resourceType", rule = "build_product,build_sql_script,env_product,env_diff_directory,env_sql_script,mirror_product,mirror_diff", desc = "制品类型", isRequired = true, type = ApiParamType.ENUM),
             @Param(name = "path", desc = "目标路径(路径一律以'/'开头，HOME本身的路径为'/')", isRequired = true, type = ApiParamType.STRING)
     })
     @Output({
@@ -92,9 +92,10 @@ public class GetDirectoryContentApi extends PrivateApiComponentBase {
         }
         String url = deployVersionService.getVersionRunnerUrl(paramObj, version, envName);
         url += "api/rest/file/directory/content/get";
-        String fullPath = deployVersionService.getVersionResourceFullPath(version, resourceType, buildNo, envName, path);
+        String homePath = deployVersionService.getVersionResourceHomePath(version, resourceType, buildNo, envName);
         JSONObject paramJson = new JSONObject();
-        paramJson.put("path", fullPath);
+        paramJson.put("home", homePath);
+        paramJson.put("path", path);
         HttpRequestUtil request = HttpRequestUtil.post(url).setPayload(paramJson.toJSONString()).setAuthType(AuthenticateType.BUILDIN).sendRequest();
         int responseCode = request.getResponseCode();
         JSONObject resultJson = request.getResultJson();

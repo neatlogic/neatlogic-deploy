@@ -32,5 +32,7 @@ public interface DeployVersionService {
      */
     String getVersionResourceFullPath(DeployVersionVo version, DeployResourceType resourceType, Integer buildNo, String envName, String customPath);
 
+    String getVersionResourceHomePath(DeployVersionVo version, DeployResourceType resourceType, Integer buildNo, String envName);
+
     String getVersionEnvNameByEnvId(Long envId);
 }
