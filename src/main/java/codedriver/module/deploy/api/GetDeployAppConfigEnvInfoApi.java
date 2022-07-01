@@ -6,10 +6,13 @@
 package codedriver.module.deploy.api;
 
 import codedriver.framework.asynchronization.threadlocal.TenantContext;
+import codedriver.framework.cmdb.crossover.IResourceCenterResourceCrossoverService;
 import codedriver.framework.cmdb.dao.mapper.resourcecenter.ResourceCenterMapper;
 import codedriver.framework.cmdb.dto.resourcecenter.ResourceVo;
+import codedriver.framework.cmdb.dto.resourcecenter.config.ResourceInfo;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.dto.BasePageVo;
+import codedriver.framework.crossover.CrossoverServiceFactory;
 import codedriver.framework.deploy.dto.app.DeployAppEnvAutoConfigKeyValueVo;
 import codedriver.framework.deploy.dto.app.DeployAppEnvAutoConfigVo;
 import codedriver.framework.restful.annotation.*;
@@ -18,9 +21,11 @@ import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.deploy.dao.mapper.DeployAppConfigMapper;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -78,7 +83,20 @@ public class GetDeployAppConfigEnvInfoApi extends PrivateApiComponentBase {
 
         //获取实例autoConfig
         if (CollectionUtils.isNotEmpty(instanceIdList)) {
-            List<ResourceVo> instanceList = resourceCenterMapper.getResourceListByIdList(instanceIdList, TenantContext.get().getDataDbName());
+            List<ResourceVo> instanceList = new ArrayList<>();
+            List<ResourceInfo> unavailableResourceInfoList = new ArrayList<>();
+            List<ResourceInfo> theadList = new ArrayList<>();
+            theadList.add(new ResourceInfo("resource_ipobject", "id"));
+            theadList.add(new ResourceInfo("resource_ipobject", "name"));
+            theadList.add(new ResourceInfo("resource_ipobject", "ip"));
+            theadList.add(new ResourceInfo("resource_ipobject", "port"));
+            theadList.add(new ResourceInfo("resource_ipobject", "maintenance_window"));
+            IResourceCenterResourceCrossoverService resourceCenterResourceCrossoverService = CrossoverServiceFactory.getApi(IResourceCenterResourceCrossoverService.class);
+            String sql = resourceCenterResourceCrossoverService.getResourceListByIdListSql(theadList, instanceIdList, unavailableResourceInfoList, "resource_ipobject");
+            if (StringUtils.isNotBlank(sql)) {
+                instanceList = resourceCenterMapper.getResourceListByIdList(sql);
+            }
+//            List<ResourceVo> instanceList = resourceCenterMapper.getResourceListByIdList(instanceIdList, TenantContext.get().getDataDbName());
             envInfo.put("instanceList", instanceList);
             List<DeployAppEnvAutoConfigVo> instanceAutoConfigList = deployAppConfigMapper.getAppEnvAutoConfigListBySystemIdAndModuleIdAndEnvIdAndInstanceIdList(paramObj.getLong("appSystemId"), paramObj.getLong("appModuleId"), paramObj.getLong("envId"), instanceIdList);
             envInfo.put("instanceAutoConfigList", instanceAutoConfigList);
