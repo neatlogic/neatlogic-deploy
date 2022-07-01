@@ -28,7 +28,7 @@ public class ListResourceTypeApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "获取资源类型列表";
+        return "获取制品类型列表";
     }
 
     @Override
@@ -49,7 +49,7 @@ public class ListResourceTypeApi extends PrivateApiComponentBase {
     @Output({
             @Param(explode = ValueTextVo[].class)
     })
-    @Description(desc = "获取资源类型列表")
+    @Description(desc = "获取制品类型列表")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         List<ValueTextVo> list = new ArrayList<>();
@@ -69,7 +69,7 @@ public class ListResourceTypeApi extends PrivateApiComponentBase {
                 list.add(new ValueTextVo(DeployResourceType.MIRROR_SQL_SCRIPT.getValue(), DeployResourceType.MIRROR_SQL_SCRIPT.getText()));
             } else {
                 list.add(new ValueTextVo(DeployResourceType.ENV_PRODUCT.getValue(), DeployResourceType.ENV_PRODUCT.getText()));
-                list.add(new ValueTextVo(DeployResourceType.DIFF_DIRECTORY.getValue(), DeployResourceType.DIFF_DIRECTORY.getText()));
+                list.add(new ValueTextVo(DeployResourceType.ENV_DIFF_DIRECTORY.getValue(), DeployResourceType.ENV_DIFF_DIRECTORY.getText()));
                 list.add(new ValueTextVo(DeployResourceType.ENV_SQL_SCRIPT.getValue(), DeployResourceType.ENV_SQL_SCRIPT.getText()));
             }
         }

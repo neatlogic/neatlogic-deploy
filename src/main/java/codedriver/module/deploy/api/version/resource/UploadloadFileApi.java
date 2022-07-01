@@ -67,7 +67,7 @@ public class UploadloadFileApi extends PrivateBinaryStreamApiComponentBase {
             @Param(name = "id", desc = "版本id", isRequired = true, type = ApiParamType.LONG),
             @Param(name = "buildNo", desc = "buildNo", type = ApiParamType.INTEGER),
             @Param(name = "envId", desc = "环境ID", type = ApiParamType.LONG),
-            @Param(name = "resourceType", rule = "version_product,version_sql_script,env_product,diff_directory,env_sql_script,mirror_product,mirror_diff,mirror_sql_script", desc = "资源类型", isRequired = true, type = ApiParamType.ENUM),
+            @Param(name = "resourceType", rule = "version_product,version_sql_script,env_product,env_diff_directory,env_sql_script,mirror_product,mirror_diff,mirror_sql_script", desc = "制品类型", isRequired = true, type = ApiParamType.ENUM),
             @Param(name = "path", type = ApiParamType.STRING, desc = "文件路径(路径一律以'/'开头，HOME本身的路径为'/')", isRequired = true),
             @Param(name = "unpack", type = ApiParamType.ENUM, rule = "1,0", desc = "是否解压"),
             @Param(name = "fileParamName", type = ApiParamType.STRING, desc = "文件参数名称", isRequired = true),
