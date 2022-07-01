@@ -61,16 +61,18 @@ public class ListResourceTypeApi extends PrivateApiComponentBase {
         }
         if (buildNo != null) {
             list.add(new ValueTextVo(DeployResourceType.VERSION_PRODUCT.getValue(), DeployResourceType.VERSION_PRODUCT.getText()));
+            list.add(new ValueTextVo(DeployResourceType.VERSION_SQL_SCRIPT.getValue(), DeployResourceType.VERSION_SQL_SCRIPT.getText()));
         } else {
             if (Objects.equals(hasMirror, 1)) {
                 list.add(new ValueTextVo(DeployResourceType.MIRROR_PRODUCT.getValue(), DeployResourceType.MIRROR_PRODUCT.getText()));
                 list.add(new ValueTextVo(DeployResourceType.MIRROR_DIFF.getValue(), DeployResourceType.MIRROR_DIFF.getText()));
+                list.add(new ValueTextVo(DeployResourceType.MIRROR_SQL_SCRIPT.getValue(), DeployResourceType.MIRROR_SQL_SCRIPT.getText()));
             } else {
                 list.add(new ValueTextVo(DeployResourceType.ENV_PRODUCT.getValue(), DeployResourceType.ENV_PRODUCT.getText()));
                 list.add(new ValueTextVo(DeployResourceType.DIFF_DIRECTORY.getValue(), DeployResourceType.DIFF_DIRECTORY.getText()));
+                list.add(new ValueTextVo(DeployResourceType.ENV_SQL_SCRIPT.getValue(), DeployResourceType.ENV_SQL_SCRIPT.getText()));
             }
         }
-        list.add(new ValueTextVo(DeployResourceType.SQL_SCRIPT.getValue(), DeployResourceType.SQL_SCRIPT.getText()));
         return list;
     }
 }
