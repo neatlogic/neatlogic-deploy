@@ -3,7 +3,6 @@ package codedriver.module.deploy.api.version.resource;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.dto.ValueTextVo;
 import codedriver.framework.deploy.constvalue.DeployResourceType;
-import codedriver.framework.exception.type.ParamNotExistsException;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
@@ -42,9 +41,8 @@ public class ListResourceTypeApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "buildNo", desc = "buildNo", type = ApiParamType.INTEGER),
-            @Param(name = "envId", desc = "环境ID", type = ApiParamType.LONG),
-            @Param(name = "hasMirror", desc = "是否有镜像制品", rule = "0,1", type = ApiParamType.ENUM),
+            @Param(name = "type", rule = "build,env", desc = "查看制品的来源(build:从buildNo查看;env:从环境查看)", isRequired = true, type = ApiParamType.ENUM),
+            @Param(name = "hasMirror", desc = "是否有镜像制品(环境才可能有镜像制品，type=env时才需要此参数)", rule = "0,1", type = ApiParamType.ENUM),
     })
     @Output({
             @Param(explode = ValueTextVo[].class)
@@ -53,13 +51,9 @@ public class ListResourceTypeApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         List<ValueTextVo> list = new ArrayList<>();
-        Integer buildNo = paramObj.getInteger("buildNo");
-        Long envId = paramObj.getLong("envId");
+        String type = paramObj.getString("type");
         Integer hasMirror = paramObj.getInteger("hasMirror");
-        if (buildNo == null && envId == null) {
-            throw new ParamNotExistsException("buildNo", "envId");
-        }
-        if (buildNo != null) {
+        if ("build".equals(type)) {
             list.add(new ValueTextVo(DeployResourceType.BUILD_PRODUCT.getValue(), DeployResourceType.BUILD_PRODUCT.getText()));
             list.add(new ValueTextVo(DeployResourceType.BUILD_SQL_SCRIPT.getValue(), DeployResourceType.BUILD_SQL_SCRIPT.getText()));
         } else {
