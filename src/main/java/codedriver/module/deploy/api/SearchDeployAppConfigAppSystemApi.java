@@ -131,6 +131,7 @@ public class SearchDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
 //        return TableResultUtil.getResult(returnAppSystemList, searchVo);
         List<DeployAppSystemVo> deployAppSystemList = new ArrayList<>();
         DeployResourceSearchVo searchVo = paramObj.toJavaObject(DeployResourceSearchVo.class);
+        //如果当前用户没有”自动发布管理员权限“，先查出当前用户拥有查看或编辑权限的应用系统ID列表
         if (!AuthActionChecker.checkByUserUuid(UserContext.get().getUserUuid(), DEPLOY_MODIFY.class.getSimpleName())) {
             AuthenticationInfoVo authenticationInfoVo = authenticationInfoService.getAuthenticationInfo(UserContext.get().getUserUuid(true));
             Set<Long> appSystemIdSet = deployAppConfigMapper.getViewableAppSystemIdList(authenticationInfoVo);
@@ -140,11 +141,13 @@ public class SearchDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
             JSONArray defaultValue = new JSONArray(new ArrayList<>(appSystemIdSet));
             searchVo.setDefaultValue(defaultValue);
         }
-        String mainResourceId = "resource_appsystem";
+        //查出资源中心数据初始化配置信息来创建ResourceSearchGenerateSqlUtil对象
         IResourceCenterResourceCrossoverService resourceCenterResourceCrossoverService = CrossoverServiceFactory.getApi(IResourceCenterResourceCrossoverService.class);
         List<ResourceEntityVo> resourceEntityList = resourceCenterResourceCrossoverService.getResourceEntityList();
         ResourceSearchGenerateSqlUtil resourceSearchGenerateSqlUtil = new ResourceSearchGenerateSqlUtil(resourceEntityList);
+
         List<ResourceInfo> unavailableResourceInfoList = new ArrayList<>();
+        String mainResourceId = "resource_appsystem";
         PlainSelect filterPlainSelect = getPlainSelectBySearchCondition(searchVo, resourceSearchGenerateSqlUtil, unavailableResourceInfoList, mainResourceId);
         String sql = getResourceCountSql(filterPlainSelect);
         if (StringUtils.isBlank(sql)) {
