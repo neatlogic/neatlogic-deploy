@@ -14,6 +14,7 @@ import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.framework.util.TableResultUtil;
 import codedriver.module.deploy.dao.mapper.DeployAppConfigMapper;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
@@ -28,7 +29,7 @@ import java.util.List;
  */
 @Service
 @OperationType(type = OperationTypeEnum.SEARCH)
-public class SearchAppModuleEnvAutoConfigResourceApi extends PrivateApiComponentBase {
+public class SearchAppModuleEnvAutoConfigInstanceApi extends PrivateApiComponentBase {
 
     @Resource
     private DeployAppConfigMapper deployAppConfigMapper;
@@ -48,7 +49,7 @@ public class SearchAppModuleEnvAutoConfigResourceApi extends PrivateApiComponent
 
     @Override
     public String getToken() {
-        return "deploy/app/module/env/autoConfig/instance/search";
+        return "deploy/app/module/env/auto/config/instance/search";
     }
 
     @Input({
@@ -68,12 +69,17 @@ public class SearchAppModuleEnvAutoConfigResourceApi extends PrivateApiComponent
     public Object myDoService(JSONObject paramObj) throws Exception {
         DeployAppEnvAutoConfigVo searchVo = paramObj.toJavaObject(DeployAppEnvAutoConfigVo.class);
         List<ResourceVo> instanceList = new ArrayList<>();
-        int count = deployAppConfigMapper.getAppModuleEnvAutoConfigInstanceIdCount(searchVo, TenantContext.get().getDataDbName());
-        if (count > 0) {
-            searchVo.setRowNum(count);
-            List<Long> instanceIdList = deployAppConfigMapper.getAppModuleEnvAutoConfigInstanceIdList(searchVo, TenantContext.get().getDataDbName());
-            if (CollectionUtils.isNotEmpty(instanceIdList)) {
-                instanceList = resourceCenterMapper.getResourceByIdList(instanceIdList, TenantContext.get().getDataDbName());
+        JSONArray defaultValue = searchVo.getDefaultValue();
+        if (CollectionUtils.isNotEmpty(defaultValue)) {
+            instanceList = resourceCenterMapper.getResourceByIdList(defaultValue.toJavaList(Long.class), TenantContext.get().getDataDbName());
+        } else {
+            int count = deployAppConfigMapper.getAppModuleEnvAutoConfigInstanceIdCount(searchVo, TenantContext.get().getDataDbName());
+            if (count > 0) {
+                searchVo.setRowNum(count);
+                List<Long> instanceIdList = deployAppConfigMapper.getAppModuleEnvAutoConfigInstanceIdList(searchVo, TenantContext.get().getDataDbName());
+                if (CollectionUtils.isNotEmpty(instanceIdList)) {
+                    instanceList = resourceCenterMapper.getResourceByIdList(instanceIdList, TenantContext.get().getDataDbName());
+                }
             }
         }
         return TableResultUtil.getResult(instanceList, searchVo);
