@@ -116,4 +116,9 @@ public class DeployVersionServiceImp implements DeployVersionService {
         }
         return url;
     }
+
+    @Override
+    public String getWorkspaceResourceFullPath(Long appSystemId, Long appModuleId, String customPath) {
+        return appSystemId + "/" + appModuleId + "/" + DeployResourceType.WORKSPACE.getDirectoryName() + "/" + customPath;
+    }
 }

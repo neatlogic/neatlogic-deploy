@@ -42,4 +42,14 @@ public interface DeployVersionService {
      */
     String getWorkspaceRunnerUrl(Long appSystemId, Long appModuleId);
 
+    /**
+     * 获取工程目录下文件完整路径
+     *
+     * @param appSystemId 应用ID
+     * @param appModuleId 模块ID
+     * @param customPath
+     * @return
+     */
+    String getWorkspaceResourceFullPath(Long appSystemId, Long appModuleId, String customPath);
+
 }

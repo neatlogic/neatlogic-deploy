@@ -108,7 +108,7 @@ public class ChangeFilePermissionApi extends PrivateApiComponentBase {
             fullPath = deployVersionService.getVersionResourceFullPath(version, resourceType, buildNo, envName, path);
         } else {
             url = deployVersionService.getWorkspaceRunnerUrl(appSystemId, appModuleId);
-            fullPath = appSystemId + "/" + appModuleId + "/" + resourceType.getDirectoryName() + "/" + path;
+            fullPath = deployVersionService.getWorkspaceResourceFullPath(appSystemId, appModuleId, path);
         }
         url += "api/rest/file/chmod";
         JSONObject paramJson = new JSONObject();
