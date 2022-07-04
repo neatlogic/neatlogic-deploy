@@ -1,11 +1,13 @@
 package codedriver.module.deploy.dao.mapper;
 
 import codedriver.framework.deploy.dto.app.*;
+import codedriver.framework.dto.AuthenticationInfoVo;
 import codedriver.framework.dto.runner.RunnerGroupVo;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author lvzk
@@ -20,6 +22,8 @@ public interface DeployAppConfigMapper {
     List<DeployAppConfigResourceVo> getAppSystemModuleListBySystemIdList(@Param("idList") List<Long> idList, @Param("isConfig") Integer isConfig, @Param("schemaName") String schemaName, @Param("userUuid") String userUuid);
 
     List<DeployAppConfigResourceVo> getAppSystemListByUserUuid(@Param("userUuid") String userUuid, @Param("searchVo") DeployResourceSearchVo searchVo);
+
+    Set<Long> getViewableAppSystemIdList(AuthenticationInfoVo authenticationInfoVo);
 
     Integer getAppConfigAuthorityCount(DeployAppConfigAuthorityVo searchVo);
 
@@ -59,6 +63,10 @@ public interface DeployAppConfigMapper {
 
     int getAppConfigEnv(DeployAppConfigVo deployAppConfigVo);
 
+    List<Long> getAppConfigAppSystemIdListByAppSystemIdList(List<Long> list);
+
+    List<Long> getAppConfigUserAppSystemIdList(@Param("userUuid") String userUuid, @Param("appSystemIdList") List<Long> appSystemIdList);
+
     Integer insertAppConfigAuthority(DeployAppConfigAuthorityVo deployAppConfigAuthorityVo);
 
     Integer insertAppModuleRunnerGroup(@Param("appSystemId") Long appSystemId, @Param("appModuleId") Long appModuleId, @Param("runnerGroupId") Long runnerGroupId);
@@ -92,6 +100,12 @@ public interface DeployAppConfigMapper {
     int getAppModuleEnvAutoConfigInstanceIdCount(@Param("searchVo") DeployAppEnvAutoConfigVo searchVo, @Param("schemaName") String schemaName);
 
     int getAppModuleEnvNotEnvOrSameEnvAndNotModuleInstanceIdCount(@Param("searchVo") DeployAppConfigInstanceVo searchVo, @Param("schemaName") String schemaName);
+
+    int getAppSystemCountNew(String sql);
+
+    List<Long> getAppSystemIdListNew(String sql);
+
+    List<DeployAppSystemVo> getAppSystemListByIdListNew(String sql);
 
     void deleteAppConfigSystemFavoriteByAppSystemIdAndUserUuid(@Param("appSystemId") Long appSystemId, @Param("userUuid") String userUuid);
 
