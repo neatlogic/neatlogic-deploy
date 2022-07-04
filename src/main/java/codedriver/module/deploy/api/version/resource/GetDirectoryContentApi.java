@@ -57,11 +57,11 @@ public class GetDirectoryContentApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "id", desc = "版本id", type = ApiParamType.LONG),
-            @Param(name = "buildNo", desc = "buildNo", type = ApiParamType.INTEGER),
-            @Param(name = "envId", desc = "环境ID", type = ApiParamType.LONG),
-            @Param(name = "appSystemId", desc = "应用ID(仅当resourceType为工程目录时需要)", type = ApiParamType.LONG),
-            @Param(name = "appModuleId", desc = "模块ID(仅当resourceType为工程目录时需要)", type = ApiParamType.LONG),
+            @Param(name = "id", desc = "版本id(当resourceType为workspace时不需要)", type = ApiParamType.LONG),
+            @Param(name = "buildNo", desc = "buildNo(当resourceType为workspace时不需要)", type = ApiParamType.INTEGER),
+            @Param(name = "envId", desc = "环境ID(当resourceType为workspace时不需要)", type = ApiParamType.LONG),
+            @Param(name = "appSystemId", desc = "应用ID(仅当resourceType为workspace时需要)", type = ApiParamType.LONG),
+            @Param(name = "appModuleId", desc = "模块ID(仅当resourceType为workspace时需要)", type = ApiParamType.LONG),
             @Param(name = "resourceType", rule = "build_product,build_sql_script,env_product,env_diff_directory,env_sql_script,mirror_product,mirror_diff,workspace", desc = "制品类型", isRequired = true, type = ApiParamType.ENUM),
             @Param(name = "path", desc = "目标路径(路径一律以'/'开头，HOME本身的路径为'/')", isRequired = true, type = ApiParamType.STRING)
     })
@@ -89,8 +89,8 @@ public class GetDirectoryContentApi extends PrivateApiComponentBase {
         if (resourceType == null) {
             throw new DeployVersionResourceTypeNotFoundException(paramObj.getString("resourceType"));
         }
-        String url = null;
-        String homePath = null;
+        String url;
+        String homePath;
         if (!DeployResourceType.WORKSPACE.equals(resourceType)) {
             if (id == null) {
                 throw new ParamNotExistsException("id");
