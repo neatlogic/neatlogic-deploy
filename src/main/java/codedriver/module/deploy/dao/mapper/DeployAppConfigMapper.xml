@@ -668,6 +668,53 @@
         </where>
     </select>
 
+    <resultMap id="DBConfigMap" type="codedriver.framework.deploy.dto.app.DeployAppConfigEnvDBConfigVo">
+        <id column="id" property="id"/>
+        <result column="appSystemId" property="appSystemId"/>
+        <result column="appModuleId" property="appModuleId"/>
+        <result column="envId" property="envId"/>
+        <result column="DBAlias" property="DBAlias"/>
+        <result column="DBResourceId" property="DBResourceId"/>
+        <result column="configStr" property="configStr"/>
+        <collection property="accountList" ofType="codedriver.framework.deploy.dto.app.DeployAppConfigEnvDBConfigAccountVo">
+            <id column="DBConfigAccountId" property="id"/>
+            <result column="accountAlias" property="accountAlias"/>
+            <result column="accountId" property="accountId"/>
+        </collection>
+    </resultMap>
+
+    <select id="getAppConfigEnvDBConfigByAppSystemIdAndAppModuleIdAndEnvIdAndResourceId"
+            resultMap="DBConfigMap">
+        SELECT a.id,
+               a.app_system_id  as appSystemId,
+               a.app_module_id  as appModuleId,
+               a.env_id         as envId,
+               a.db_alias       as DBAlias,
+               a.db_resource_id as DBResourceId,
+               a.config         as configStr,
+               b.id             as DBConfigAccountId,
+               b.account_alias  as accountAlias,
+               b.account_id     as accountId
+        FROM deploy_app_config_env_db_config a
+                 LEFT JOIN deploy_app_config_env_db_config_account b ON a.id = b.db_config_id
+        WHERE a.app_module_id = #{appSystemId}
+          AND a.app_module_id = #{appModuleId}
+          AND a.env_id = #{envId}
+          AND a.db_resource_id = #{resourceId}
+    </select>
+
+    <select id="getDeployDatabaseResourceCount" resultType="java.lang.Integer">
+
+    </select>
+
+    <select id="getDeployDatabaseResourceIdList" resultType="java.lang.Long">
+
+    </select>
+
+    <select id="getDeployDatabaseResourceList" resultType="codedriver.framework.deploy.dto.app.DeployResourceSearchVo">
+
+    </select>
+
     <resultMap id="appEnvAutoConfigMap" type="codedriver.framework.deploy.dto.app.DeployAppEnvAutoConfigVo">
         <result column="appSystemId" property="appSystemId"/>
         <result column="appModuleId" property="appModuleId"/>
@@ -785,6 +832,37 @@
                 #{userUuid}) ON DUPLICATE KEY
         UPDATE `app_system_id` = #{appSystemId},
             `user_uuid` = #{userUuid}
+    </insert>
+
+    <insert id="insertAppConfigEnvDBConfig"
+            parameterType="codedriver.framework.deploy.dto.app.DeployAppConfigEnvDBConfigAccountVo">
+        INSERT INTO deploy_app_config_env_db_config (id, db_alias, app_system_id, app_module_id, env_id, db_resource_id,
+                                                     config)
+        VALUES (#{id},
+                #{DBAlias},
+                #{appSystemId},
+                #{appModuleId},
+                #{envId},
+                #{DBResourceId},
+                #{config}) ON DUPLICATE KEY
+        UPDATE `db_alias` = #{DBAlias},
+            `config` = #{config}
+    </insert>
+
+    <insert id="insertAppConfigEnvDBConfigAccount"
+            parameterType="codedriver.framework.deploy.dto.app.DeployAppConfigEnvDBConfigVo">
+        INSERT INTO deploy_app_config_env_db_config_account (id, account_id, account_alias, db_config_id)
+        VALUES
+        <foreach collection="accountList" separator="," item="item">
+            (#{item.id},
+            #{item.accountId},
+            #{item.accountAlias},
+            #{DBConfigId})
+        </foreach>
+        ON DUPLICATE KEY
+        UPDATE `account_id` =VALUES(account_id),
+        `account_alias` = VALUES(account_alias),
+        `db_config_id` = VALUES(db_config_id)
     </insert>
 
     <update id="updateAppConfig" parameterType="codedriver.framework.deploy.dto.app.DeployAppConfigVo">
