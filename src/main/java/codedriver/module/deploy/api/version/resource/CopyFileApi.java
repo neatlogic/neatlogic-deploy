@@ -90,6 +90,9 @@ public class CopyFileApi extends PrivateApiComponentBase {
         String fullSrcPath;
         String fullDestPath;
         if (!DeployResourceType.WORKSPACE.equals(resourceType)) {
+            if (id == null) {
+                throw new ParamNotExistsException("id");
+            }
             DeployVersionVo version = deployVersionMapper.getDeployVersionById(id);
             if (version == null) {
                 throw new DeployVersionNotFoundException(id);
