@@ -119,24 +119,27 @@
         SELECT
         `app_system_id`
         FROM `deploy_app_config_authority`
-        (type = 'common' AND `auth_uuid` = 'alluser')
-        <if test="userUuid != null and userUuid != ''">
-            OR (type = 'user' AND `auth_uuid` = #{userUuid})
-        </if>
-        <if test="teamUuidList != null and teamUuidList.size() > 0">
-            OR (type = 'team' AND `auth_uuid` IN
-            <foreach collection="teamUuidList" item="teamUuid" open="(" separator="," close=")">
-                #{teamUuid}
-            </foreach>
-            )
-        </if>
-        <if test="roleUuidList != null and roleUuidList.size() > 0">
-            OR (type = 'role' AND `auth_uuid` IN
-            <foreach collection="roleUuidList" item="roleUuid" open="(" separator="," close=")">
-                #{roleUuid}
-            </foreach>
-            )
-        </if>
+        WHERE `action` IN ('view', 'edit')
+        AND (
+              (`auth_type` = 'common' AND `auth_uuid` = 'alluser')
+            <if test="userUuid != null and userUuid != ''">
+                OR (`auth_type` = 'user' AND `auth_uuid` = #{userUuid})
+            </if>
+            <if test="teamUuidList != null and teamUuidList.size() > 0">
+                OR (`auth_type` = 'team' AND `auth_uuid` IN
+                <foreach collection="teamUuidList" item="teamUuid" open="(" separator="," close=")">
+                    #{teamUuid}
+                </foreach>
+                )
+            </if>
+            <if test="roleUuidList != null and roleUuidList.size() > 0">
+                OR (`auth_type` = 'role' AND `auth_uuid` IN
+                <foreach collection="roleUuidList" item="roleUuid" open="(" separator="," close=")">
+                    #{roleUuid}
+                </foreach>
+                )
+            </if>
+        )
     </select>
 
     <select id="getAppConfigAuthorityCount" resultType="java.lang.Integer">
@@ -729,7 +732,7 @@
 
     <select id="getAppConfigAppSystemIdListByAppSystemIdList" parameterType="java.lang.Long" resultType="java.lang.Long">
         SELECT
-            `app_system_id`,
+            `app_system_id`
         FROM `deploy_app_config`
         WHERE `app_module_id` = 0
           AND `env_id` = 0

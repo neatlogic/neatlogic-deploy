@@ -129,30 +129,31 @@ public class SearchDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
 //            }
 //        }
 //        return TableResultUtil.getResult(returnAppSystemList, searchVo);
-        DeployResourceSearchVo searchVo = paramObj.toJavaObject(DeployResourceSearchVo.class);
-        String mainResourceId = "resource_appsystem";
         List<DeployAppSystemVo> deployAppSystemList = new ArrayList<>();
+        DeployResourceSearchVo searchVo = paramObj.toJavaObject(DeployResourceSearchVo.class);
+        if (!AuthActionChecker.checkByUserUuid(UserContext.get().getUserUuid(), DEPLOY_MODIFY.class.getSimpleName())) {
+            AuthenticationInfoVo authenticationInfoVo = authenticationInfoService.getAuthenticationInfo(UserContext.get().getUserUuid(true));
+            Set<Long> appSystemIdSet = deployAppConfigMapper.getViewableAppSystemIdList(authenticationInfoVo);
+            if (CollectionUtils.isEmpty(appSystemIdSet)) {
+                return TableResultUtil.getResult(deployAppSystemList, searchVo);
+            }
+            JSONArray defaultValue = new JSONArray(new ArrayList<>(appSystemIdSet));
+            searchVo.setDefaultValue(defaultValue);
+        }
+        String mainResourceId = "resource_appsystem";
         IResourceCenterResourceCrossoverService resourceCenterResourceCrossoverService = CrossoverServiceFactory.getApi(IResourceCenterResourceCrossoverService.class);
         List<ResourceEntityVo> resourceEntityList = resourceCenterResourceCrossoverService.getResourceEntityList();
         ResourceSearchGenerateSqlUtil resourceSearchGenerateSqlUtil = new ResourceSearchGenerateSqlUtil(resourceEntityList);
         List<ResourceInfo> unavailableResourceInfoList = new ArrayList<>();
-        if (!AuthActionChecker.checkByUserUuid(UserContext.get().getUserUuid(), DEPLOY_MODIFY.class.getSimpleName())) {
-            AuthenticationInfoVo authenticationInfoVo = authenticationInfoService.getAuthenticationInfo(UserContext.get().getUserUuid(true));
-            Set<Long> appSystemIdSet = deployAppConfigMapper.getViewableAppSystemIdList(authenticationInfoVo);
-            JSONArray defaultValue = new JSONArray(new ArrayList<>(appSystemIdSet));
-            searchVo.setDefaultValue(defaultValue);
-        }
         PlainSelect filterPlainSelect = getPlainSelectBySearchCondition(searchVo, resourceSearchGenerateSqlUtil, unavailableResourceInfoList, mainResourceId);
         String sql = getResourceCountSql(filterPlainSelect);
         if (StringUtils.isBlank(sql)) {
             return TableResultUtil.getResult(deployAppSystemList, searchVo);
         }
         int count = deployAppConfigMapper.getAppSystemCountNew(sql);
-        System.out.println(sql + ";");
         if (count > 0) {
             searchVo.setRowNum(count);
             sql = getResourceIdListSql(filterPlainSelect, searchVo);
-            System.out.println(sql + ";");
             if (StringUtils.isBlank(sql)) {
                 return TableResultUtil.getResult(deployAppSystemList, searchVo);
             }
@@ -161,7 +162,6 @@ public class SearchDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
                 return TableResultUtil.getResult(deployAppSystemList, searchVo);
             }
             sql = getResourceListByIdListSql(idList, resourceSearchGenerateSqlUtil, unavailableResourceInfoList, mainResourceId);
-            System.out.println(sql + ";");
             if (StringUtils.isBlank(sql)) {
                 return TableResultUtil.getResult(deployAppSystemList, searchVo);
             }
@@ -190,7 +190,6 @@ public class SearchDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
             sql = getAppSystemModuleCountSql(idList, resourceSearchGenerateSqlUtil, unavailableResourceInfoList, mainResourceId);
             List<DeployAppSystemVo> list = deployAppConfigMapper.getAppSystemListByIdListNew(sql);
             Map<Long, Integer> appSystemModuleCountMap = list.stream().collect(Collectors.toMap(e -> e.getId(), e -> e.getModuleCount()));
-//            List<Long> appSystemIdList = resourceCenterMapper.getHasModuleAppSystemIdListByAppSystemIdList(idList, TenantContext.get().getDataDbName());
             for (DeployAppSystemVo deployAppSystemVo : deployAppSystemList) {
                 Long id = deployAppSystemVo.getId();
                 if (hasPipelineAppSystemIdList.contains(id)) {
@@ -206,6 +205,14 @@ public class SearchDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
         return TableResultUtil.getResult(deployAppSystemList, searchVo);
     }
 
+    /**
+     * 查询应用的模块个数
+     * @param idList
+     * @param resourceSearchGenerateSqlUtil
+     * @param unavailableResourceInfoList
+     * @param mainResourceId
+     * @return
+     */
     private String getAppSystemModuleCountSql(List<Long> idList, ResourceSearchGenerateSqlUtil resourceSearchGenerateSqlUtil, List<ResourceInfo> unavailableResourceInfoList, String mainResourceId) {
         PlainSelect plainSelect = resourceSearchGenerateSqlUtil.initPlainSelectByMainResourceId(mainResourceId);
         if (plainSelect == null) {
@@ -213,37 +220,33 @@ public class SearchDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
         }
         List<SelectItem> selectItems = new ArrayList<>();
         List<Expression> groupByExpressions = new ArrayList<>();
-        {
-            ResourceInfo resourceInfo = new ResourceInfo("resource_appsystem","id", false);
-            if (resourceSearchGenerateSqlUtil.additionalInformation(resourceInfo)) {
-                Column column = resourceSearchGenerateSqlUtil.addJoinTableByResourceInfo(resourceInfo, plainSelect);
-                groupByExpressions.add(column);
-                selectItems.add(new SelectExpressionItem(column).withAlias(new Alias("id")));
-                InExpression inExpression = new InExpression();
-                inExpression.setLeftExpression(column);
-                ExpressionList expressionList = new ExpressionList();
-                for (Long id : idList) {
-                    expressionList.addExpressions(new LongValue(id));
-                }
-                inExpression.setRightItemsList(expressionList);
-                Expression where = plainSelect.getWhere();
-                if (where == null) {
-                    plainSelect.setWhere(inExpression);
-                } else {
-                    plainSelect.setWhere(new AndExpression(where, inExpression));
-                }
-            } else {
-                unavailableResourceInfoList.add(resourceInfo);
+        ResourceInfo idResourceInfo = new ResourceInfo("resource_appsystem","id", false);
+        if (resourceSearchGenerateSqlUtil.additionalInformation(idResourceInfo)) {
+            Column column = resourceSearchGenerateSqlUtil.addJoinTableByResourceInfo(idResourceInfo, plainSelect);
+            groupByExpressions.add(column);
+            selectItems.add(new SelectExpressionItem(column).withAlias(new Alias("id")));
+            InExpression inExpression = new InExpression();
+            inExpression.setLeftExpression(column);
+            ExpressionList expressionList = new ExpressionList();
+            for (Long id : idList) {
+                expressionList.addExpressions(new LongValue(id));
             }
+            inExpression.setRightItemsList(expressionList);
+            Expression where = plainSelect.getWhere();
+            if (where == null) {
+                plainSelect.setWhere(inExpression);
+            } else {
+                plainSelect.setWhere(new AndExpression(where, inExpression));
+            }
+        } else {
+            unavailableResourceInfoList.add(idResourceInfo);
         }
-        {
-            ResourceInfo resourceInfo = new ResourceInfo("resource_appsystem_appmodule", "app_module_id", false);
-            if (resourceSearchGenerateSqlUtil.additionalInformation(resourceInfo)) {
-                Column column = resourceSearchGenerateSqlUtil.addJoinTableByResourceInfo(resourceInfo, plainSelect);
-                selectItems.add(new SelectExpressionItem(new Function().withName("COUNT").withDistinct(true).withParameters(new ExpressionList(Arrays.asList(column)))).withAlias(new Alias("moduleCount")));
-            } else {
-                unavailableResourceInfoList.add(resourceInfo);
-            }
+        ResourceInfo appModuleIdResourceInfo = new ResourceInfo("resource_appsystem_appmodule", "app_module_id", false);
+        if (resourceSearchGenerateSqlUtil.additionalInformation(appModuleIdResourceInfo)) {
+            Column column = resourceSearchGenerateSqlUtil.addJoinTableByResourceInfo(appModuleIdResourceInfo, plainSelect);
+            selectItems.add(new SelectExpressionItem(new Function().withName("COUNT").withDistinct(true).withParameters(new ExpressionList(Arrays.asList(column)))).withAlias(new Alias("moduleCount")));
+        } else {
+            unavailableResourceInfoList.add(appModuleIdResourceInfo);
         }
         GroupByElement groupByElement = new GroupByElement();
         groupByElement.withGroupByExpressions(groupByExpressions);
@@ -252,12 +255,19 @@ public class SearchDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
         return plainSelect.toString();
     }
 
+    /**
+     * 查询应用的模块列表
+     * @param searchVo
+     * @param resourceSearchGenerateSqlUtil
+     * @param unavailableResourceInfoList
+     * @param mainResourceId
+     * @return
+     */
     private String getAppSystemModuleListSql(DeployResourceSearchVo searchVo, ResourceSearchGenerateSqlUtil resourceSearchGenerateSqlUtil, List<ResourceInfo> unavailableResourceInfoList, String mainResourceId) {
         PlainSelect plainSelect = resourceSearchGenerateSqlUtil.initPlainSelectByMainResourceId(mainResourceId);
         if (plainSelect == null) {
             return null;
         }
-//        Table mainTable = (Table) plainSelect.getFromItem();
         JSONArray defaultValue = searchVo.getDefaultValue();
         if (CollectionUtils.isNotEmpty(defaultValue)) {
             List<Long> idList = defaultValue.toJavaList(Long.class);
@@ -355,7 +365,6 @@ public class SearchDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
         if (plainSelect == null) {
             return null;
         }
-        Table mainTable = (Table) plainSelect.getFromItem();
 
         Map<String, ResourceInfo> searchConditionMappingMap = new HashMap<>();
         searchConditionMappingMap.put("defaultValue", new ResourceInfo("resource_appsystem","id", false));
@@ -407,9 +416,6 @@ public class SearchDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
                 plainSelect.setWhere(new AndExpression(where, multiOrExpression));
             }
         }
-//        if (!AuthActionChecker.checkByUserUuid(UserContext.get().getUserUuid(), DEPLOY_MODIFY.class.getSimpleName())) {
-//            Table table = new Table("deploy_app_config_authority").withAlias(new Alias("b").withUseAs(false));
-//        }
         return plainSelect;
     }
 
@@ -428,10 +434,6 @@ public class SearchDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
         theadList.add(new ResourceInfo("resource_appsystem", "id"));
         theadList.add(new ResourceInfo("resource_appsystem", "name"));
         theadList.add(new ResourceInfo("resource_appsystem", "abbr_name"));
-
-        theadList.add(new ResourceInfo("resource_appsystem_appmodule", "app_module_id"));
-        theadList.add(new ResourceInfo("resource_appsystem_appmodule", "app_module_name"));
-        theadList.add(new ResourceInfo("resource_appsystem_appmodule", "app_module_abbr_name"));
         for (ResourceInfo resourceInfo : theadList) {
             if (resourceSearchGenerateSqlUtil.additionalInformation(resourceInfo)) {
                 resourceSearchGenerateSqlUtil.addJoinTableByResourceInfo(resourceInfo, plainSelect);
@@ -439,20 +441,18 @@ public class SearchDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
                 unavailableResourceInfoList.add(resourceInfo);
             }
         }
-        if (CollectionUtils.isNotEmpty(idList)) {
-            InExpression inExpression = new InExpression();
-            inExpression.setLeftExpression(new Column((Table) plainSelect.getFromItem(), "id"));
-            ExpressionList expressionList = new ExpressionList();
-            for (Object id : idList) {
-                if (id instanceof Long) {
-                    expressionList.addExpressions(new LongValue((Long)id));
-                } else if (id instanceof String) {
-                    expressionList.addExpressions(new StringValue((String)id));
-                }
+        InExpression inExpression = new InExpression();
+        inExpression.setLeftExpression(new Column((Table) plainSelect.getFromItem(), "id"));
+        ExpressionList expressionList = new ExpressionList();
+        for (Object id : idList) {
+            if (id instanceof Long) {
+                expressionList.addExpressions(new LongValue((Long)id));
+            } else if (id instanceof String) {
+                expressionList.addExpressions(new StringValue((String)id));
             }
-            inExpression.setRightItemsList(expressionList);
-            plainSelect.setWhere(inExpression);
         }
+        inExpression.setRightItemsList(expressionList);
+        plainSelect.setWhere(inExpression);
         return plainSelect.toString();
     }
 }
