@@ -9,27 +9,35 @@
 
     <select id="getDeployJobByJobId" resultType="codedriver.framework.deploy.dto.DeployJobVo">
         select id,
-               app_system_id    as appSystemId,
-               system_module_id as systemModuleId,
-               env_id           as envId,
+               app_system_id as appSystemId,
+               app_module_id as appModuleId,
+               env_id        as envId,
                version,
-               job_id           as jobId,
-               runner_map_id    as runnerMapId
+               job_id        as jobId,
+               runner_map_id as runnerMapId
         from deploy_job
         where job_id = #{value}
     </select>
 
     <insert id="insertDeployJob">
-        insert into deploy_job (`id`, `app_system_id`, `env_id`, `version`, `job_id`, `runner_map_id`,`config`,`build_no`)
+        insert into deploy_job (`id`, `app_system_id`, `app_module_id`, `env_id`, `version`, `job_id`, `runner_map_id`,
+                                `config`,
+                                `build_no`)
         values (#{id},
                 #{appSystemId},
+                #{appModuleId},
                 #{envId},
                 #{version},
                 #{jobId},
                 #{runnerMapId},
                 #{configStr},
-                #{buildNo}
-                )
+                #{buildNo})
     </insert>
+
+    <update id="updateDeployJobRunnerMapId">
+        update deploy_job
+        set `runner_map_id` = #{runnerMapId}
+        where `job_id` = #{jobId}
+    </update>
 
 </mapper>

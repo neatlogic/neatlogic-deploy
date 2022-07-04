@@ -63,8 +63,6 @@ public class CreateAutoexecJobFormDeployApi extends PrivateApiComponentBase {
             @Param(name = "version", type = ApiParamType.STRING, isRequired = true, desc = "版本"),
             @Param(name = "param", type = ApiParamType.JSONOBJECT, isRequired = true, desc = "执行参数"),
             @Param(name = "source", type = ApiParamType.STRING, isRequired = true, desc = "来源 itsm|human|deploy   ITSM|人工发起的等，不传默认是人工发起的"),
-            @Param(name = "invokeId", type = ApiParamType.LONG, desc = "来源id"),
-            @Param(name = "scenarioId", type = ApiParamType.LONG, desc = "场景id"),
             @Param(name = "threadCount", type = ApiParamType.LONG, isRequired = true, desc = "并发线程,2的n次方 "),
             @Param(name = "executeConfig", type = ApiParamType.JSONOBJECT, desc = "执行目标"),
     })
@@ -75,7 +73,9 @@ public class CreateAutoexecJobFormDeployApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         jsonObj.put("operationType", CombopOperationType.PIPELINE.getValue());
-        jsonObj.put("operationId", getOperationId(jsonObj));
+        Long invokeId = getOperationId(jsonObj);
+        jsonObj.put("operationId", invokeId);
+        jsonObj.put("invokeId", invokeId);
         IAutoexecJobActionCrossoverService autoexecJobActionCrossoverService = CrossoverServiceFactory.getApi(IAutoexecJobActionCrossoverService.class);
         AutoexecJobVo jobVo = autoexecJobActionCrossoverService.validateAndCreateJobFromCombop(jsonObj, false);
         IAutoexecJobActionHandler fireAction = AutoexecJobActionHandlerFactory.getAction(JobAction.FIRE.getValue());
@@ -97,20 +97,20 @@ public class CreateAutoexecJobFormDeployApi extends PrivateApiComponentBase {
      * @param jsonObj 入参
      * @return 来源id
      */
-    private Long getOperationId(JSONObject jsonObj){
+    private Long getOperationId(JSONObject jsonObj) {
         Long appSystemId = jsonObj.getLong("appSystemId");
         Long appModuleId = jsonObj.getLong("appModuleId");
         Long envId = jsonObj.getLong("envId");
         List<DeployAppConfigVo> appConfigVoList = deployAppConfigMapper.getAppConfigListByAppSystemId(appSystemId);
-        Map<String,Long> operationIdMap = appConfigVoList.stream().collect(Collectors.toMap(o->o.getAppSystemId().toString()+"-"+o.getAppModuleId().toString()+"-"+o.getEnvId().toString(),DeployAppConfigVo::getId));
-        Long operationId = operationIdMap.get(appSystemId.toString()+"-"+appModuleId.toString()+"-"+envId.toString());
-        if(operationId == null){
-            operationId = operationIdMap.get(appSystemId +"-"+ appModuleId +"-0");
+        Map<String, Long> operationIdMap = appConfigVoList.stream().collect(Collectors.toMap(o -> o.getAppSystemId().toString() + "-" + o.getAppModuleId().toString() + "-" + o.getEnvId().toString(), DeployAppConfigVo::getId));
+        Long operationId = operationIdMap.get(appSystemId.toString() + "-" + appModuleId.toString() + "-" + envId.toString());
+        if (operationId == null) {
+            operationId = operationIdMap.get(appSystemId + "-" + appModuleId + "-0");
         }
-        if(operationId == null){
-            operationId = operationIdMap.get(appSystemId +"-0"+"-0");
+        if (operationId == null) {
+            operationId = operationIdMap.get(appSystemId + "-0" + "-0");
         }
-        if(operationId == null){
+        if (operationId == null) {
             throw new DeployAppConfigNotFoundException(appModuleId);
         }
         return operationId;

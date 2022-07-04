@@ -32,6 +32,7 @@ import codedriver.framework.deploy.exception.DeployAppConfigModuleRunnerGroupNot
 import codedriver.framework.deploy.exception.DeployPipelineConfigNotFoundException;
 import codedriver.framework.dto.runner.RunnerGroupVo;
 import codedriver.framework.dto.runner.RunnerMapVo;
+import codedriver.framework.exception.runner.RunnerNotFoundByRunnerMapIdException;
 import codedriver.framework.integration.authentication.enums.AuthenticateType;
 import codedriver.framework.util.HttpRequestUtil;
 import codedriver.framework.util.TableResultUtil;
@@ -212,11 +213,12 @@ public class DeployJobSourceHandler extends AutoexecJobSourceActionHandlerBase {
         AutoexecJobPhaseVo jobPhaseVo = jobVo.getCurrentPhase();
         DeployJobVo deployJobVo = deployJobMapper.getDeployJobByJobId(jobVo.getId());
         //如果是sqlfile ｜ local ，则保证一个作业使用同一个runner
-        if (Arrays.asList(ExecMode.SQL.getValue(), ExecMode.RUNNER.getValue()).contains(jobPhaseVo.getExecMode())) {
+        if (Arrays.asList(ExecMode.SQL.getValue(), ExecMode.RUNNER.getValue()).contains(jobPhaseVo.getExecMode()) && deployJobVo.getRunnerMapId() != null) {
             RunnerMapVo runnerMapVo = runnerMapper.getRunnerMapByRunnerMapId(deployJobVo.getRunnerMapId());
-            if (runnerMapVo != null) {
-                runnerMapVos = Collections.singletonList(runnerMapVo);
+            if (runnerMapVo == null) {
+                throw new RunnerNotFoundByRunnerMapIdException(deployJobVo.getRunnerMapId());
             }
+            runnerMapVos = Collections.singletonList(runnerMapVo);
         } else {
             //其它则根据模块均衡分配runner
             ICiEntityCrossoverMapper iCiEntityCrossoverMapper = CrossoverServiceFactory.getApi(ICiEntityCrossoverMapper.class);
@@ -245,21 +247,32 @@ public class DeployJobSourceHandler extends AutoexecJobSourceActionHandlerBase {
     }
 
     @Override
+    public void updateJobRunnerMap(Long jobId, Long runnerMapId) {
+        DeployJobVo deployJobVo = new DeployJobVo(jobId, runnerMapId);
+        deployJobMapper.updateDeployJobRunnerMapId(deployJobVo);
+    }
+
+    @Override
     public AutoexecCombopVo getAutoexecCombop(JSONObject paramJson) {
         Long appSystemId = paramJson.getLong("appSystemId");
         Long appModuleId = paramJson.getLong("appModuleId");
         Long envId = paramJson.getLong("envId");
-        DeployJobVo deployJobVo = new DeployJobVo(paramJson);
         //获取最终流水线
         DeployPipelineConfigVo deployPipelineConfigVo = deployAppPipelineService.getDeployPipelineConfigVo(new DeployAppConfigVo(appSystemId, appModuleId, envId));
         if (deployPipelineConfigVo == null) {
             throw new DeployPipelineConfigNotFoundException();
         }
-        deployJobVo.setConfig(deployPipelineConfigVo);
-        deployJobMapper.insertDeployJob(deployJobVo);
         AutoexecCombopVo combopVo = new AutoexecCombopVo();
-        combopVo.setConfigStr(JSONObject.toJSONString(deployPipelineConfigVo));
+        combopVo.setConfig(JSONObject.toJSONString(deployPipelineConfigVo));
         return combopVo;
+    }
+
+    @Override
+    public void updateInvokeJob(JSONObject paramJson, AutoexecJobVo jobVo) {
+        DeployJobVo deployJobVo = new DeployJobVo(paramJson);
+        deployJobVo.setJobId(jobVo.getId());
+        deployJobVo.setConfigStr(jobVo.getConfigStr());
+        deployJobMapper.insertDeployJob(deployJobVo);
     }
 
     @Override

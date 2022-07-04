@@ -10,4 +10,6 @@ public interface DeployJobMapper {
     DeployJobVo getDeployJobByJobId(Long id);
 
     Integer insertDeployJob(DeployJobVo deployJobVo);
+
+    Integer updateDeployJobRunnerMapId(DeployJobVo deployJobVo);
 }
