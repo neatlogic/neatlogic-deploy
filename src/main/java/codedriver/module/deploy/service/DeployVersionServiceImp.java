@@ -1,12 +1,12 @@
 package codedriver.module.deploy.service;
 
-import codedriver.framework.cmdb.crossover.ICiEntityCrossoverMapper;
-import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
+import codedriver.framework.cmdb.crossover.ICiEntityCrossoverService;
 import codedriver.framework.crossover.CrossoverServiceFactory;
 import codedriver.framework.dao.mapper.runner.RunnerMapper;
 import codedriver.framework.deploy.constvalue.DeployResourceType;
 import codedriver.framework.deploy.dto.DeployJobVo;
 import codedriver.framework.deploy.dto.version.DeployVersionVo;
+import codedriver.framework.deploy.exception.DeployJobNotFoundException;
 import codedriver.framework.deploy.exception.DeployVersionJobNotFoundException;
 import codedriver.framework.dto.runner.RunnerMapVo;
 import codedriver.framework.exception.runner.RunnerNotFoundByRunnerMapIdException;
@@ -92,12 +92,28 @@ public class DeployVersionServiceImp implements DeployVersionService {
     }
 
     @Override
-    public String getVersionEnvNameByEnvId(Long envId) {
-        ICiEntityCrossoverMapper ciEntityCrossoverMapper = CrossoverServiceFactory.getApi(ICiEntityCrossoverMapper.class);
-        CiEntityVo env = ciEntityCrossoverMapper.getCiEntityBaseInfoById(envId);
-        if (env != null) {
-            return env.getName();
+    public String getWorkspaceRunnerUrl(Long appSystemId, Long appModuleId) {
+        if (appSystemId == null) {
+            throw new ParamNotExistsException("appSystemId");
         }
-        return null;
+        if (appModuleId == null) {
+            throw new ParamNotExistsException("appModuleId");
+        }
+        Long runnerMapId = deployJobMapper.getRecentlyJobRunnerMapIdByAppSystemIdAndAppModuleId(appSystemId, appModuleId);
+        if (runnerMapId == null) {
+            ICiEntityCrossoverService ciEntityCrossoverService = CrossoverServiceFactory.getApi(ICiEntityCrossoverService.class);
+            String appName = ciEntityCrossoverService.getCiEntityNameByCiEntityId(appSystemId);
+            String moduleName = ciEntityCrossoverService.getCiEntityNameByCiEntityId(appModuleId);
+            throw new DeployJobNotFoundException(appName != null ? appName : appSystemId.toString(), moduleName != null ? moduleName : appModuleId.toString());
+        }
+        RunnerMapVo runner = runnerMapper.getRunnerByRunnerMapId(runnerMapId);
+        if (runner == null) {
+            throw new RunnerNotFoundByRunnerMapIdException(runnerMapId);
+        }
+        String url = runner.getUrl();
+        if (!url.endsWith("/")) {
+            url += "/";
+        }
+        return url;
     }
 }

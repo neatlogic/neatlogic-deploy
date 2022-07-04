@@ -4,7 +4,9 @@
  */
 package codedriver.module.deploy.api.version.resource;
 
+import codedriver.framework.cmdb.crossover.ICiEntityCrossoverService;
 import codedriver.framework.common.constvalue.ApiParamType;
+import codedriver.framework.crossover.CrossoverServiceFactory;
 import codedriver.framework.deploy.constvalue.DeployResourceType;
 import codedriver.framework.deploy.dto.version.DeployVersionVo;
 import codedriver.framework.deploy.exception.DeployVersionEnvNotFoundException;
@@ -86,7 +88,8 @@ public class DownloadFileApi extends PrivateBinaryStreamApiComponentBase {
         }
         String envName = null;
         if (envId != null) {
-            envName = deployVersionService.getVersionEnvNameByEnvId(envId);
+            ICiEntityCrossoverService ciEntityCrossoverService = CrossoverServiceFactory.getApi(ICiEntityCrossoverService.class);
+            envName = ciEntityCrossoverService.getCiEntityNameByCiEntityId(envId);
             if (StringUtils.isBlank(envName)) {
                 throw new DeployVersionEnvNotFoundException(version.getVersion(), envId);
             }

@@ -192,9 +192,9 @@ public class DeployJobSourceHandler extends AutoexecJobSourceActionHandlerBase {
     @Override
     public List<RunnerMapVo> getRunnerMapList(AutoexecJobVo jobVo) {
         DeployJobVo deployJobVo = deployJobMapper.getDeployJobByJobId(jobVo.getId());
-        RunnerGroupVo appModuleRunnerGroup = deployAppConfigMapper.getAppModuleRunnerGroupByAppSystemIdAndModuleId(deployJobVo.getAppSystemId(),deployJobVo.getSystemModuleId());
+        RunnerGroupVo appModuleRunnerGroup = deployAppConfigMapper.getAppModuleRunnerGroupByAppSystemIdAndModuleId(deployJobVo.getAppSystemId(),deployJobVo.getAppModuleId());
         if(appModuleRunnerGroup == null){
-            throw new DeployAppConfigModuleRunnerGroupNotFoundException(deployJobVo.getAppSystemId(),deployJobVo.getSystemModuleId());
+            throw new DeployAppConfigModuleRunnerGroupNotFoundException(deployJobVo.getAppSystemId(),deployJobVo.getAppModuleId());
         }
         RunnerGroupVo groupVo = runnerMapper.getRunnerMapGroupById(appModuleRunnerGroup.getId());
         if(groupVo == null){
