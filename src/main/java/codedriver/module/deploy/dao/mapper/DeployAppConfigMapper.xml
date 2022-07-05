@@ -736,10 +736,12 @@
         FROM `deploy_app_config`
         WHERE `app_module_id` = 0
           AND `env_id` = 0
-          AND `app_system_id` IN
-        <foreach collection="list" item="appSystemId" open="(" separator="," close=")">
-            #{appSystemId}
-        </foreach>
+          <if test="list != null and list.size() > 0">
+            AND `app_system_id` IN
+                <foreach collection="list" item="appSystemId" open="(" separator="," close=")">
+                #{appSystemId}
+                </foreach>
+          </if>
     </select>
 
     <select id="getAppConfigUserAppSystemIdList" resultType="java.lang.Long">
