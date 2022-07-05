@@ -272,6 +272,11 @@ public class DeployJobSourceHandler extends AutoexecJobSourceActionHandlerBase {
         DeployJobVo deployJobVo = new DeployJobVo(paramJson);
         deployJobVo.setJobId(jobVo.getId());
         deployJobVo.setConfigStr(jobVo.getConfigStr());
+        if(paramJson.containsKey("buildNo")){
+            deployJobVo.setBuildNo(paramJson.getInteger("buildNo"));
+        }else{
+
+        }
         deployJobMapper.insertDeployJob(deployJobVo);
     }
 
