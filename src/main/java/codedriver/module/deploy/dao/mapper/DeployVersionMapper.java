@@ -17,11 +17,15 @@ public interface DeployVersionMapper {
 
     DeployVersionVo getDeployVersionById(Long id);
 
+    DeployVersionVo getVersionByAppSystemIdAndAppModuleIdAndVersion(Long appSystemId, Long appModuleId, String version);
+
     List<DeployVersionVo> searchDeployVersion(DeployVersionVo versionVo);
 
     Long getJobIdByDeployVersionIdAndBuildNo(@Param("versionId") Long versionId, @Param("buildNo") Integer buildNo);
 
     Long getJobIdByDeployVersionIdAndEnvId(@Param("versionId") Long versionId, @Param("envId") Long envId);
+
+    Integer getDeployVersionMaxBuildNoByVersionIdLock(Long id);
 
     void unLockDeployVersionById(@Param("id") Long id, @Param("isLocked") Long isLocked);
 

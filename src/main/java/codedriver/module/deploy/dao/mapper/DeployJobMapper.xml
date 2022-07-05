@@ -14,15 +14,19 @@
                env_id        as envId,
                version,
                job_id        as jobId,
+               build_no      as buildNo,
                runner_map_id as runnerMapId
         from deploy_job
         where job_id = #{value}
     </select>
 
     <select id="getRecentlyJobRunnerMapIdByAppSystemIdAndAppModuleId" resultType="java.lang.Long">
-        select runner_map_id from deploy_job
-        where app_system_id = #{appSystemId} and app_module_id = #{appModuleId}
-        order by job_id desc limit 1
+        select runner_map_id
+        from deploy_job
+        where app_system_id = #{appSystemId}
+          and app_module_id = #{appModuleId}
+        order by job_id desc
+        limit 1
     </select>
 
     <insert id="insertDeployJob">

@@ -28,6 +28,7 @@ import codedriver.framework.deploy.dto.app.DeployAppConfigVo;
 import codedriver.framework.deploy.dto.app.DeployPipelineConfigVo;
 import codedriver.framework.deploy.dto.sql.DeploySqlDetailVo;
 import codedriver.framework.deploy.dto.sql.DeploySqlJobPhaseVo;
+import codedriver.framework.deploy.dto.version.DeployVersionVo;
 import codedriver.framework.deploy.exception.DeployAppConfigModuleRunnerGroupNotFoundException;
 import codedriver.framework.deploy.exception.DeployPipelineConfigNotFoundException;
 import codedriver.framework.dto.runner.RunnerGroupVo;
@@ -39,6 +40,7 @@ import codedriver.framework.util.TableResultUtil;
 import codedriver.module.deploy.dao.mapper.DeployAppConfigMapper;
 import codedriver.module.deploy.dao.mapper.DeployJobMapper;
 import codedriver.module.deploy.dao.mapper.DeploySqlMapper;
+import codedriver.module.deploy.dao.mapper.DeployVersionMapper;
 import codedriver.module.deploy.service.DeployAppPipelineService;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
@@ -74,6 +76,9 @@ public class DeployJobSourceHandler extends AutoexecJobSourceActionHandlerBase {
 
     @Resource
     DeployAppPipelineService deployAppPipelineService;
+
+    @Resource
+    DeployVersionMapper deployVersionMapper;
 
     @Override
     public String getName() {
@@ -275,7 +280,14 @@ public class DeployJobSourceHandler extends AutoexecJobSourceActionHandlerBase {
         if(paramJson.containsKey("buildNo")){
             deployJobVo.setBuildNo(paramJson.getInteger("buildNo"));
         }else{
-
+            //获取最新buildNo
+            DeployVersionVo deployVersionVo = deployVersionMapper.getVersionByAppSystemIdAndAppModuleIdAndVersion(deployJobVo.getAppSystemId(),deployJobVo.getAppModuleId(),deployJobVo.getVersion());
+            Integer maxBuildNo = deployVersionMapper.getDeployVersionMaxBuildNoByVersionIdLock(deployVersionVo.getId());
+            if(maxBuildNo == null){
+                deployJobVo.setBuildNo(1);
+            }else {
+                deployJobVo.setBuildNo(maxBuildNo+1);
+            }
         }
         deployJobMapper.insertDeployJob(deployJobVo);
     }
