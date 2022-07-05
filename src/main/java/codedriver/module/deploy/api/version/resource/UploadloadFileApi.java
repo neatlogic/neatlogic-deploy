@@ -4,13 +4,16 @@
  */
 package codedriver.module.deploy.api.version.resource;
 
+import codedriver.framework.cmdb.crossover.ICiEntityCrossoverService;
 import codedriver.framework.common.constvalue.ApiParamType;
+import codedriver.framework.crossover.CrossoverServiceFactory;
 import codedriver.framework.deploy.constvalue.DeployResourceType;
 import codedriver.framework.deploy.dto.version.DeployVersionVo;
 import codedriver.framework.deploy.exception.DeployVersionEnvNotFoundException;
 import codedriver.framework.deploy.exception.DeployVersionNotFoundException;
 import codedriver.framework.deploy.exception.DeployVersionResourceTypeNotFoundException;
 import codedriver.framework.deploy.exception.UploadFileFailedException;
+import codedriver.framework.exception.type.ParamNotExistsException;
 import codedriver.framework.integration.authentication.enums.AuthenticateType;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
@@ -65,10 +68,12 @@ public class UploadloadFileApi extends PrivateBinaryStreamApiComponentBase {
     }
 
     @Input({
-            @Param(name = "id", desc = "版本id", isRequired = true, type = ApiParamType.LONG),
-            @Param(name = "buildNo", desc = "buildNo", type = ApiParamType.INTEGER),
-            @Param(name = "envId", desc = "环境ID", type = ApiParamType.LONG),
-            @Param(name = "resourceType", rule = "build_product,build_sql_script,env_product,env_diff_directory,env_sql_script,mirror_product,mirror_diff", desc = "制品类型", isRequired = true, type = ApiParamType.ENUM),
+            @Param(name = "id", desc = "版本id(当resourceType为workspace时不需要)", type = ApiParamType.LONG),
+            @Param(name = "buildNo", desc = "buildNo(当resourceType为workspace时不需要)", type = ApiParamType.INTEGER),
+            @Param(name = "envId", desc = "环境ID(当resourceType为workspace时不需要)", type = ApiParamType.LONG),
+            @Param(name = "appSystemId", desc = "应用ID(仅当resourceType为workspace时需要)", type = ApiParamType.LONG),
+            @Param(name = "appModuleId", desc = "模块ID(仅当resourceType为workspace时需要)", type = ApiParamType.LONG),
+            @Param(name = "resourceType", member = DeployResourceType.class, desc = "制品类型", isRequired = true, type = ApiParamType.ENUM),
             @Param(name = "path", type = ApiParamType.STRING, desc = "文件路径(路径一律以'/'开头，HOME本身的路径为'/')", isRequired = true),
             @Param(name = "unpack", type = ApiParamType.ENUM, rule = "1,0", desc = "是否解压"),
             @Param(name = "fileParamName", type = ApiParamType.STRING, desc = "文件参数名称", isRequired = true),
@@ -80,27 +85,43 @@ public class UploadloadFileApi extends PrivateBinaryStreamApiComponentBase {
         Long id = paramObj.getLong("id");
         Integer buildNo = paramObj.getInteger("buildNo");
         Long envId = paramObj.getLong("envId");
+        Long appSystemId = paramObj.getLong("appSystemId");
+        Long appModuleId = paramObj.getLong("appModuleId");
         String path = paramObj.getString("path");
         String fileParamName = paramObj.getString("fileParamName");
         Integer unpack = paramObj.getInteger("unpack");
+        if (id == null && appSystemId == null && appModuleId == null) {
+            throw new ParamNotExistsException("id", "appSystemId", "appModuleId");
+        }
         DeployResourceType resourceType = DeployResourceType.getDeployResourceType(paramObj.getString("resourceType"));
         if (resourceType == null) {
             throw new DeployVersionResourceTypeNotFoundException(paramObj.getString("resourceType"));
         }
-        DeployVersionVo version = deployVersionMapper.getDeployVersionById(id);
-        if (version == null) {
-            throw new DeployVersionNotFoundException(id);
-        }
-        String envName = null;
-        if (envId != null) {
-            envName = deployVersionService.getVersionEnvNameByEnvId(envId);
-            if (StringUtils.isBlank(envName)) {
-                throw new DeployVersionEnvNotFoundException(version.getVersion(), envId);
+        String url;
+        String fullPath;
+        if (!DeployResourceType.WORKSPACE.equals(resourceType)) {
+            if (id == null) {
+                throw new ParamNotExistsException("id");
             }
+            DeployVersionVo version = deployVersionMapper.getDeployVersionById(id);
+            if (version == null) {
+                throw new DeployVersionNotFoundException(id);
+            }
+            String envName = null;
+            if (envId != null) {
+                ICiEntityCrossoverService ciEntityCrossoverService = CrossoverServiceFactory.getApi(ICiEntityCrossoverService.class);
+                envName = ciEntityCrossoverService.getCiEntityNameByCiEntityId(envId);
+                if (StringUtils.isBlank(envName)) {
+                    throw new DeployVersionEnvNotFoundException(version.getVersion(), envId);
+                }
+            }
+            url = deployVersionService.getVersionRunnerUrl(paramObj, version, envName);
+            fullPath = deployVersionService.getVersionResourceFullPath(version, resourceType, buildNo, envName, path);
+        } else {
+            url = deployVersionService.getWorkspaceRunnerUrl(appSystemId, appModuleId);
+            fullPath = deployVersionService.getWorkspaceResourceFullPath(appSystemId, appModuleId, path);
         }
-        String url = deployVersionService.getVersionRunnerUrl(paramObj, version, envName);
         url += "api/binary/file/upload";
-        String fullPath = deployVersionService.getVersionResourceFullPath(version, resourceType, buildNo, envName, path);
         MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) request;
         MultipartFile multipartFile = multipartRequest.getFile(fileParamName);
         if (multipartFile != null && multipartFile.getName() != null) {
@@ -109,7 +130,7 @@ public class UploadloadFileApi extends PrivateBinaryStreamApiComponentBase {
             Map<String, InputStream> fileStreamMap = new HashMap<>();
             fileStreamMap.put(filename, inputStream);
             JSONObject paramJson = new JSONObject();
-            paramJson.put("path", fullPath);
+            paramJson.put("path", fullPath + "/" + filename);
             paramJson.put("unpack", unpack);
             HttpRequestUtil httpRequestUtil = HttpRequestUtil.post(url).setContentType(HttpRequestUtil.ContentType.CONTENT_TYPE_MULTIPART_FORM_DATA_FILE_STREAM).setFormData(paramJson).setFileStreamMap(fileStreamMap).setAuthType(AuthenticateType.BUILDIN).sendRequest();
             int responseCode = httpRequestUtil.getResponseCode();
