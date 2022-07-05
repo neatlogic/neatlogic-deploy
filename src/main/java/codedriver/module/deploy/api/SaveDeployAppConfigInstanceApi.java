@@ -20,6 +20,7 @@ import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -31,6 +32,7 @@ import java.util.Map;
  * @date 2022/6/27 6:03 下午
  */
 @Service
+@Transactional
 @OperationType(type = OperationTypeEnum.UPDATE)
 public class SaveDeployAppConfigInstanceApi extends PrivateApiComponentBase {
 

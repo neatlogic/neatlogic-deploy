@@ -6,6 +6,7 @@ import codedriver.framework.deploy.dto.version.DeployVersionVo;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
+import codedriver.framework.util.TableResultUtil;
 import codedriver.module.deploy.dao.mapper.DeployVersionMapper;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.stereotype.Service;
@@ -60,8 +61,9 @@ public class SearchDeployVersionApi extends PrivateApiComponentBase {
         List<DeployVersionVo> returnList = new ArrayList<>();
         int count = deployVersionMapper.searchDeployVersionCount(versionVo);
         if (count > 0) {
+            versionVo.setRowNum(count);
             returnList = deployVersionMapper.searchDeployVersion(versionVo);
         }
-        return returnList;
+        return TableResultUtil.getResult(returnList, versionVo);
     }
 }
