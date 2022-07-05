@@ -115,6 +115,33 @@
         limit #{searchVo.startNum}, #{searchVo.pageSize}
     </select>
 
+    <select id="getViewableAppSystemIdList" resultType="java.lang.Long" useCache="false">
+        SELECT
+        `app_system_id`
+        FROM `deploy_app_config_authority`
+        WHERE `action` IN ('view', 'edit')
+        AND (
+              (`auth_type` = 'common' AND `auth_uuid` = 'alluser')
+            <if test="userUuid != null and userUuid != ''">
+                OR (`auth_type` = 'user' AND `auth_uuid` = #{userUuid})
+            </if>
+            <if test="teamUuidList != null and teamUuidList.size() > 0">
+                OR (`auth_type` = 'team' AND `auth_uuid` IN
+                <foreach collection="teamUuidList" item="teamUuid" open="(" separator="," close=")">
+                    #{teamUuid}
+                </foreach>
+                )
+            </if>
+            <if test="roleUuidList != null and roleUuidList.size() > 0">
+                OR (`auth_type` = 'role' AND `auth_uuid` IN
+                <foreach collection="roleUuidList" item="roleUuid" open="(" separator="," close=")">
+                    #{roleUuid}
+                </foreach>
+                )
+            </if>
+        )
+    </select>
+
     <select id="getAppConfigAuthorityCount" resultType="java.lang.Integer">
         select count(distinct app_system_id,env_id,auth_uuid)
         from deploy_app_config_authority
@@ -726,6 +753,54 @@
             <result column="value" property="value"/>
         </collection>
     </resultMap>
+
+    <resultMap id="AppSystemMap" type="codedriver.framework.deploy.dto.app.DeployAppSystemVo">
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="abbr_name" property="abbrName"/>
+        <result column="moduleCount" property="moduleCount"/>
+        <collection property="appModuleList" ofType="codedriver.framework.deploy.dto.app.DeployAppModuleVo">
+            <id column="app_module_id" property="id"/>
+            <result column="app_module_name" property="name"/>
+            <result column="app_module_abbr_name" property="abbrName"/>
+        </collection>
+    </resultMap>
+    <select id="getAppSystemCountNew" parameterType="java.lang.String" resultType="int">
+        ${sql}
+    </select>
+
+    <select id="getAppSystemIdListNew" parameterType="java.lang.String" resultType="java.lang.Long">
+        ${sql}
+    </select>
+
+    <select id="getAppSystemListByIdListNew" parameterType="java.lang.String" resultMap="AppSystemMap">
+        ${sql}
+    </select>
+
+    <select id="getAppConfigAppSystemIdListByAppSystemIdList" parameterType="java.lang.Long" resultType="java.lang.Long">
+        SELECT
+            `app_system_id`
+        FROM `deploy_app_config`
+        WHERE `app_module_id` = 0
+          AND `env_id` = 0
+          AND `app_system_id` IN
+        <foreach collection="list" item="appSystemId" open="(" separator="," close=")">
+            #{appSystemId}
+        </foreach>
+    </select>
+
+    <select id="getAppConfigUserAppSystemIdList" resultType="java.lang.Long">
+        SELECT
+            `app_system_id`
+        FROM `deploy_app_config_user`
+        WHERE `user_uuid` = #{userUuid}
+        <if test="appSystemIdList != null and appSystemIdList.size() > 0">
+            AND `app_system_id` IN
+            <foreach collection="appSystemIdList" item="appSystemId" open="(" separator="," close=")">
+                #{appSystemId}
+            </foreach>
+        </if>
+    </select>
 
     <insert id="insertAppConfigAuthority">
         INSERT INTO `deploy_app_config_authority` (`app_system_id`,
