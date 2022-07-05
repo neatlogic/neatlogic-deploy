@@ -68,7 +68,7 @@ public class DownloadFileApi extends PrivateBinaryStreamApiComponentBase {
             @Param(name = "envId", desc = "环境ID(当resourceType为workspace时不需要)", type = ApiParamType.LONG),
             @Param(name = "appSystemId", desc = "应用ID(仅当resourceType为workspace时需要)", type = ApiParamType.LONG),
             @Param(name = "appModuleId", desc = "模块ID(仅当resourceType为workspace时需要)", type = ApiParamType.LONG),
-            @Param(name = "resourceType", rule = "build_product,build_sql_script,env_product,env_diff_directory,env_sql_script,mirror_product,mirror_diff,workspace", desc = "制品类型", isRequired = true, type = ApiParamType.ENUM),
+            @Param(name = "resourceType", member = DeployResourceType.class, desc = "制品类型", isRequired = true, type = ApiParamType.ENUM),
             @Param(name = "path", type = ApiParamType.STRING, desc = "文件路径(路径一律以'/'开头，HOME本身的路径为'/')", isRequired = true),
             @Param(name = "isPack", type = ApiParamType.ENUM, rule = "1,0", desc = "是否打包")
     })
