@@ -41,7 +41,7 @@ public class GetDeployAppConfigEnvDBConfigApi extends PrivateApiComponentBase {
             @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "应用系统id"),
             @Param(name = "appModuleId", type = ApiParamType.LONG, isRequired = true, desc = "应用模块id"),
             @Param(name = "envId", type = ApiParamType.LONG, isRequired = true, desc = "环境id"),
-            @Param(name = "resourceId", type = ApiParamType.LONG, isRequired = true, desc = "数据库id")
+            @Param(name = "id", type = ApiParamType.LONG, isRequired = true, desc = "数据库id")
     })
     @Output({
             @Param(name = "tbodyList", explode = ColumnVo[].class, desc = "矩阵属性集合")
@@ -50,6 +50,6 @@ public class GetDeployAppConfigEnvDBConfigApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
 
-        return deployAppConfigMapper.getAppConfigEnvDBConfigByAppSystemIdAndAppModuleIdAndEnvIdAndResourceId(paramObj.getLong("appSystemId"), paramObj.getLong("appModuleId"), paramObj.getLong("envId"), paramObj.getLong("resourceId"));
+        return deployAppConfigMapper.getAppConfigEnvDBConfigByAppSystemIdAndAppModuleIdAndEnvIdAndResourceId(paramObj.getLong("appSystemId"), paramObj.getLong("appModuleId"), paramObj.getLong("envId"), paramObj.getLong("id"));
     }
 }
