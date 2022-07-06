@@ -728,7 +728,7 @@
         WHERE a.app_system_id = #{appSystemId}
           AND a.app_module_id = #{appModuleId}
           AND a.env_id = #{envId}
-          AND a.db_resource_id = #{id}
+          AND a.db_resource_id = #{DBResourceId}
     </select>
 
     <select id="getAppConfigEnvDBConfigListByAppSystemIdAndAppModuleIdAndEnvId"
