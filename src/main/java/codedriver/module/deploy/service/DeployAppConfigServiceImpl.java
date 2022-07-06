@@ -77,12 +77,12 @@ public class DeployAppConfigServiceImpl implements DeployAppConfigService {
         ICiEntityCrossoverMapper iCiEntityCrossoverMapper = CrossoverServiceFactory.getApi(ICiEntityCrossoverMapper.class);
         IRelCrossoverMapper relCrossoverMapper = CrossoverServiceFactory.getApi(IRelCrossoverMapper.class);
 
-        RelVo aPPComponentRel = relCrossoverMapper.getRelByCiIdAndRelName(paramObj.getLong("ciId"), "APPComponent");
-        if (aPPComponentRel == null) {
+        RelVo APPComponentRel = relCrossoverMapper.getRelByCiIdAndRelName(paramObj.getLong("ciId"), "APPComponent");
+        if (APPComponentRel == null) {
             return;
         }
         CiEntityVo appModuleCiEntity = iCiEntityCrossoverMapper.getCiEntityBaseInfoById(paramObj.getLong("appModuleId"));
-        ciEntityTransactionVo.addRelEntityData(aPPComponentRel, aPPComponentRel.getDirection(), appModuleCiEntity.getCiId(), appModuleCiEntity.getId());
+        ciEntityTransactionVo.addRelEntityData(APPComponentRel, APPComponentRel.getDirection(), appModuleCiEntity.getCiId(), appModuleCiEntity.getId());
     }
 
     /**
