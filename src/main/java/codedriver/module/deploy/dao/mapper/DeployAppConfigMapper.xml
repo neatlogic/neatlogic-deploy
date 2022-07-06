@@ -752,18 +752,6 @@
           AND a.env_id = #{envId}
     </select>
 
-    <select id="getDeployDatabaseResourceCount" resultType="java.lang.Integer">
-
-    </select>
-
-    <select id="getDeployDatabaseResourceIdList" resultType="java.lang.Long">
-
-    </select>
-
-    <select id="getDeployDatabaseResourceList" resultType="codedriver.framework.deploy.dto.app.DeployResourceSearchVo">
-
-    </select>
-
     <resultMap id="appEnvAutoConfigMap" type="codedriver.framework.deploy.dto.app.DeployAppEnvAutoConfigVo">
         <result column="appSystemId" property="appSystemId"/>
         <result column="appModuleId" property="appModuleId"/>

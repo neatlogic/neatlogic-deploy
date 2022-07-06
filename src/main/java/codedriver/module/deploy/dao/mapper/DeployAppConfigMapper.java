@@ -56,13 +56,9 @@ public interface DeployAppConfigMapper {
 
     List<DeployAppEnvironmentVo> getDeployAppHasNotEnvListByAppSystemIdAndModuleIdList(@Param("appSystemId") Long appSystemId, @Param("appModuleIdList") List<Long> appModuleIdList, @Param("schemaName") String schemaName);
 
-    DeployResourceSearchVo getDeployDatabaseResourceList(@Param("idList") List<Long> idList, @Param("id") Long id, @Param("schemaName") String schemaName);
-
     List<Long> getHasEnvAppModuleIdListByAppSystemIdAndModuleIdList(@Param("appSystemId") Long appSystemId, @Param("appModuleIdList") List<Long> appModuleIdList, @Param("schemaName") String schemaName);
 
     List<Long> getAppModuleEnvAutoConfigInstanceIdList(@Param("searchVo") DeployAppEnvAutoConfigVo searchVo, @Param("schemaName") String schemaName);
-
-    List<Long> getDeployDatabaseResourceIdList(@Param("searchVo") DeployResourceSearchVo searchVo, @Param("id") Long id, @Param("schemaName") String schemaName);
 
     List<Long> getAppConfigEnvDBConfigResourceIdByAppSystemIdAndAppModuleIdAndEnvId(@Param("appSystemId") Long appSystemId, @Param("appModuleId") Long appModuleId, @Param("envId") Long envId);
 
@@ -115,8 +111,6 @@ public interface DeployAppConfigMapper {
     int getAppModuleEnvAutoConfigInstanceIdCount(@Param("searchVo") DeployAppEnvAutoConfigVo searchVo, @Param("schemaName") String schemaName);
 
     int getAppModuleEnvNotEnvOrSameEnvAndNotModuleInstanceIdCount(@Param("searchVo") DeployAppConfigInstanceVo searchVo, @Param("schemaName") String schemaName);
-
-    int getDeployDatabaseResourceCount(@Param("searchVo") DeployResourceSearchVo searchVo, @Param("id") Long id, @Param("schemaName") String schemaName);
 
     int checkDeployAppConfigEnvDBAliasNameIsRepeat(DeployAppConfigEnvDBConfigVo configVo);
 
