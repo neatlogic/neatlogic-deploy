@@ -318,15 +318,15 @@ public class DeployJobSourceHandler extends AutoexecJobSourceActionHandlerBase {
         for (RunnerMapVo runnerMapVo : runnerGroupVo.getRunnerMapList()) {
             runnerMap.put(runnerMapVo.getRunnerMapId().toString(), runnerMapVo.getHost());
         }
-        environment.put("_DEPLOY_RUNNERGROUP", runnerMap);
+        environment.put("DEPLOY_RUNNERGROUP", runnerMap);
         //_DEPLOY_PATH
         CiEntityVo envEntity = iCiEntityCrossoverMapper.getCiEntityBaseInfoById(deployJobVo.getEnvId());
         if (envEntity == null) {
             throw new CiEntityNotFoundException(deployJobVo.getEnvId());
         }
-        environment.put("_DEPLOY_PATH", appSystemEntity.getName() + "/" + appModuleEntity.getName() + "/" + envEntity.getName());
-        environment.put("_DEPLOY_ID_PATH", deployJobVo.getAppSystemId() + "/" + deployJobVo.getAppModuleId() + "/" + deployJobVo.getEnvId());
-        environment.put("_VERSION", deployJobVo.getVersion());
-        environment.put("_BUILD_NO", deployJobVo.getBuildNo());
+        environment.put("DEPLOY_PATH", appSystemEntity.getName() + "/" + appModuleEntity.getName() + "/" + envEntity.getName());
+        environment.put("DEPLOY_ID_PATH", deployJobVo.getAppSystemId() + "/" + deployJobVo.getAppModuleId() + "/" + deployJobVo.getEnvId());
+        environment.put("VERSION", deployJobVo.getVersion());
+        environment.put("BUILD_NO", deployJobVo.getBuildNo());
     }
 }

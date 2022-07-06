@@ -12,6 +12,7 @@ import codedriver.framework.exception.type.ParamIrregularException;
 import codedriver.framework.globallock.GlobalLockManager;
 import codedriver.framework.globallock.core.GlobalLockHandlerBase;
 import com.alibaba.fastjson.JSONObject;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
@@ -55,7 +56,7 @@ public class DeployGlobalLockHandler extends GlobalLockHandlerBase {
     @Override
     public JSONObject getLock(JSONObject paramJson) {
         JSONObject jsonObject = new JSONObject();
-        GlobalLockVo globalLockVo = new GlobalLockVo(JobSourceType.DEPLOY.getValue(),paramJson.getString("lockOwner")+"/"+paramJson.getString("lockTarget"),paramJson.toJSONString(),paramJson.getString("lockOwnerName"));
+        GlobalLockVo globalLockVo = new GlobalLockVo(JobSourceType.DEPLOY.getValue(),paramJson.getString("jobId")+"/"+paramJson.getString("runnerId")+"/"+paramJson.getString("pid")+"/"+paramJson.getString("lockOwner")+"/"+paramJson.getString("lockTarget"),paramJson.toJSONString(),paramJson.getString("lockOwnerName"));
         GlobalLockManager.getLock(globalLockVo);
         if (globalLockVo.getIsLock() == 1) {
             jsonObject.put("lockId", globalLockVo.getId());
@@ -83,6 +84,20 @@ public class DeployGlobalLockHandler extends GlobalLockHandlerBase {
             throw new ApiRuntimeException(globalLockVo.getWaitReason());
         }
         return jsonObject;
+    }
+
+    @Override
+    protected boolean getMyIsCanInsertLock(List<GlobalLockVo> globalLockVoList, GlobalLockVo globalLockVo) {
+        //如果uuid存在则共享lockId
+        if(CollectionUtils.isNotEmpty(globalLockVoList)){
+            Optional<GlobalLockVo> globalLockVoOptional = globalLockVoList.stream().filter(g->Objects.equals(g.getUuid(),globalLockVo.getUuid())).findFirst();
+            if(globalLockVoOptional.isPresent()){
+                globalLockVo.setId(globalLockVoOptional.get().getId());
+                globalLockVo.setIsLock(1);
+            }
+            return false;
+        }
+        return true;
     }
 
 }
