@@ -61,8 +61,8 @@ public class ChangeFilePermissionApi extends PrivateApiComponentBase {
 
     @Input({
             @Param(name = "id", desc = "版本id(当resourceType为workspace时不需要)", type = ApiParamType.LONG),
-            @Param(name = "buildNo", desc = "buildNo(当resourceType为workspace时不需要)", type = ApiParamType.INTEGER),
-            @Param(name = "envId", desc = "环境ID(当resourceType为workspace时不需要)", type = ApiParamType.LONG),
+            @Param(name = "buildNo", desc = "buildNo(当resourceType为[mirror*|workspace]时不需要)", type = ApiParamType.INTEGER),
+            @Param(name = "envId", desc = "环境ID(当resourceType为[build*|workspace]时不需要)", type = ApiParamType.LONG),
             @Param(name = "appSystemId", desc = "应用ID(仅当resourceType为workspace时需要)", type = ApiParamType.LONG),
             @Param(name = "appModuleId", desc = "模块ID(仅当resourceType为workspace时需要)", type = ApiParamType.LONG),
             @Param(name = "resourceType", member = DeployResourceType.class, desc = "制品类型", isRequired = true, type = ApiParamType.ENUM),

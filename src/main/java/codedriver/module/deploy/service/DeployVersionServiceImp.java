@@ -73,15 +73,13 @@ public class DeployVersionServiceImp implements DeployVersionService {
     @Override
     public String getVersionResourceHomePath(DeployVersionVo version, DeployResourceType resourceType, Integer buildNo, String envName) {
         StringBuilder path = new StringBuilder();
-        path.append(version.getAppSystemId()).append("/").append(version.getAppModuleId()).append("/");
+        path.append(version.getAppSystemId()).append("/").append(version.getAppModuleId()).append("/").append("artifact/");
         if (resourceType.getValue().startsWith("build")) {
-            path.append("artifact/")
-                    .append(version.getVersion()).append("/")
+            path.append(version.getVersion()).append("/")
                     .append("build/").append(buildNo).append("/")
                     .append(resourceType.getDirectoryName());
         } else if (resourceType.getValue().startsWith("env")) {
-            path.append("artifact/")
-                    .append(version.getVersion()).append("/")
+            path.append(version.getVersion()).append("/")
                     .append("env/").append(envName).append("/")
                     .append(resourceType.getDirectoryName());
         } else if (resourceType.getValue().startsWith("mirror")) {

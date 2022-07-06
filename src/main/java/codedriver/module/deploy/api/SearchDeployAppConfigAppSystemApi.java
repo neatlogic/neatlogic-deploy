@@ -10,7 +10,6 @@ import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.dto.BasePageVo;
 import codedriver.framework.crossover.CrossoverServiceFactory;
 import codedriver.framework.deploy.auth.DEPLOY_MODIFY;
-import codedriver.framework.deploy.dto.app.DeployAppConfigResourceVo;
 import codedriver.framework.deploy.dto.app.DeployAppModuleVo;
 import codedriver.framework.deploy.dto.app.DeployAppSystemVo;
 import codedriver.framework.deploy.dto.app.DeployResourceSearchVo;
@@ -71,6 +70,8 @@ public class SearchDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
 
     @Input({
             @Param(name = "keyword", type = ApiParamType.STRING, desc = "模糊搜索-应用名|模块名"),
+            @Param(name = "isFavorite", type = ApiParamType.ENUM, rule = "0,1", desc = "是否只显示已收藏的"),
+            @Param(name = "isConfig", type = ApiParamType.ENUM, rule = "0,1", desc = "是否只显示已配置的"),
             @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "当前页"),
             @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "每页数据条目"),
             @Param(name = "needPage", type = ApiParamType.BOOLEAN, desc = "是否需要分页，默认true")
@@ -140,6 +141,28 @@ public class SearchDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
             }
             JSONArray defaultValue = new JSONArray(new ArrayList<>(appSystemIdSet));
             searchVo.setDefaultValue(defaultValue);
+        }
+        //只查出已收藏的
+        Integer isFavorite = paramObj.getInteger("isFavorite");
+        if (Objects.equals(isFavorite, 1)) {
+            List<Long> idList = new ArrayList<>();
+            JSONArray defaultValue = searchVo.getDefaultValue();
+            if (CollectionUtils.isNotEmpty(defaultValue)) {
+                idList = defaultValue.toJavaList(Long.class);
+            }
+            List<Long> userAppSystemIdList = deployAppConfigMapper.getAppConfigUserAppSystemIdList(UserContext.get().getUserUuid(), idList);
+            searchVo.setDefaultValue(new JSONArray(new ArrayList<>(userAppSystemIdList)));
+        }
+        //只查出已配置的
+        Integer isConfig = paramObj.getInteger("isConfig");
+        if (Objects.equals(isConfig, 1)) {
+            List<Long> idList = new ArrayList<>();
+            JSONArray defaultValue = searchVo.getDefaultValue();
+            if (CollectionUtils.isNotEmpty(defaultValue)) {
+                idList = defaultValue.toJavaList(Long.class);
+            }
+            List<Long> hasPipelineAppSystemIdList = deployAppConfigMapper.getAppConfigAppSystemIdListByAppSystemIdList(idList);
+            searchVo.setDefaultValue(new JSONArray(new ArrayList<>(hasPipelineAppSystemIdList)));
         }
         //查出资源中心数据初始化配置信息来创建ResourceSearchGenerateSqlUtil对象
         IResourceCenterResourceCrossoverService resourceCenterResourceCrossoverService = CrossoverServiceFactory.getApi(IResourceCenterResourceCrossoverService.class);
