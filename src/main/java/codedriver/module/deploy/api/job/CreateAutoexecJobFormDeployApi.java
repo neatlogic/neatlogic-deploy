@@ -12,11 +12,14 @@ import codedriver.framework.autoexec.crossover.IAutoexecJobActionCrossoverServic
 import codedriver.framework.autoexec.dto.job.AutoexecJobVo;
 import codedriver.framework.autoexec.job.action.core.AutoexecJobActionHandlerFactory;
 import codedriver.framework.autoexec.job.action.core.IAutoexecJobActionHandler;
+import codedriver.framework.cmdb.crossover.ICiEntityCrossoverMapper;
+import codedriver.framework.cmdb.exception.cientity.CiEntityNotFoundException;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.crossover.CrossoverServiceFactory;
 import codedriver.framework.deploy.constvalue.CombopOperationType;
 import codedriver.framework.deploy.dto.app.DeployAppConfigVo;
 import codedriver.framework.deploy.exception.DeployAppConfigNotFoundException;
+import codedriver.framework.exception.type.ParamIrregularException;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
@@ -56,9 +59,13 @@ public class CreateAutoexecJobFormDeployApi extends PrivateApiComponentBase {
 
     @Input({
             @Param(name = "scenarioId", type = ApiParamType.LONG, desc = "场景id"),
-            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "应用系统id"),
-            @Param(name = "appModuleId", type = ApiParamType.LONG, isRequired = true, desc = "模块id"),
-            @Param(name = "envId", type = ApiParamType.LONG, isRequired = true, desc = "环境id"),
+            @Param(name = "scenarioName", type = ApiParamType.STRING, desc = "场景名, 如果入参也有scenarioId，则会以scenarioName为准"),
+            @Param(name = "appSystemId", type = ApiParamType.LONG, desc = "应用系统id"),
+            @Param(name = "appSystemName", type = ApiParamType.LONG, desc = "应用系统名，如果入参也有appSystemId，则会以appSystemName为准"),
+            @Param(name = "appModuleId", type = ApiParamType.LONG, desc = "模块id"),
+            @Param(name = "appModuleName", type = ApiParamType.LONG, desc = "模块名，如果入参也有appModuleId，则会以appModuleName为准"),
+            @Param(name = "envId", type = ApiParamType.LONG, desc = "环境id"),
+            @Param(name = "envName", type = ApiParamType.LONG, desc = "环境id，如果入参也有envId，则会以envName为准"),
             @Param(name = "buildNo", type = ApiParamType.INTEGER, desc = "编译号"),
             @Param(name = "version", type = ApiParamType.STRING, isRequired = true, desc = "版本"),
             @Param(name = "param", type = ApiParamType.JSONOBJECT, isRequired = true, desc = "执行参数"),
@@ -72,6 +79,28 @@ public class CreateAutoexecJobFormDeployApi extends PrivateApiComponentBase {
     @ResubmitInterval(value = 2)
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
+        ICiEntityCrossoverMapper iCiEntityCrossoverMapper = CrossoverServiceFactory.getApi(ICiEntityCrossoverMapper.class);
+        if(jsonObj.containsKey("appSystemName")){
+            if (iCiEntityCrossoverMapper.getCiEntityBaseInfoById(jsonObj.getLong("appSystemId")) == null) {
+                throw new CiEntityNotFoundException(jsonObj.getLong("appSystemName"));
+            }
+        }else if(jsonObj.containsKey("appSystemId")){
+
+           /* if (iCiEntityCrossoverMapper.getCiEntityBaseInfoByName() == null) {
+                throw new CiEntityNotFoundException(jsonObj.getLong("appSystemId"));
+            }*/
+        }else{
+            throw new ParamIrregularException("appSystemId | appSystemName");
+        }
+
+
+        if (iCiEntityCrossoverMapper.getCiEntityBaseInfoById(jsonObj.getLong("appSystemId")) == null) {
+            throw new CiEntityNotFoundException(jsonObj.getLong("appSystemId"));
+        }
+        if (iCiEntityCrossoverMapper.getCiEntityBaseInfoById(jsonObj.getLong("appModuleId")) == null) {
+            throw new CiEntityNotFoundException(jsonObj.getLong("appModuleId"));
+        }
+
         jsonObj.put("operationType", CombopOperationType.PIPELINE.getValue());
         Long invokeId = getOperationId(jsonObj);
         jsonObj.put("operationId", invokeId);
@@ -81,10 +110,10 @@ public class CreateAutoexecJobFormDeployApi extends PrivateApiComponentBase {
         IAutoexecJobActionHandler fireAction = AutoexecJobActionHandlerFactory.getAction(JobAction.FIRE.getValue());
         jobVo.setAction(JobAction.FIRE.getValue());
         jobVo.setIsFirstFire(1);
-        JSONObject environment = new JSONObject();
+        //JSONObject environment = new JSONObject();
         //environment.put("_VERSION",jsonObj.getString("version"));
         //environment.put("_BUILD_NO",jsonObj.getInteger("buildNo"));
-        jobVo.setEnvironment(environment);
+        //jobVo.setEnvironment(environment);
         fireAction.doService(jobVo);
         return new JSONObject() {{
             put("jobId", jobVo.getId());
