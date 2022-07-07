@@ -1,9 +1,9 @@
 package codedriver.module.deploy.api;
 
-import codedriver.framework.cmdb.crossover.*;
-import codedriver.framework.cmdb.dto.ci.AttrVo;
+import codedriver.framework.cmdb.crossover.ICiCrossoverMapper;
+import codedriver.framework.cmdb.crossover.ICiEntityCrossoverMapper;
+import codedriver.framework.cmdb.crossover.ICiEntityCrossoverService;
 import codedriver.framework.cmdb.dto.ci.CiVo;
-import codedriver.framework.cmdb.dto.ci.RelVo;
 import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
 import codedriver.framework.cmdb.dto.transaction.CiEntityTransactionVo;
 import codedriver.framework.cmdb.enums.EditModeType;
@@ -18,14 +18,16 @@ import codedriver.framework.restful.annotation.Output;
 import codedriver.framework.restful.annotation.Param;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
+import codedriver.module.deploy.service.DeployAppConfigService;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Resource;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
 /**
  * @author longrf
@@ -35,6 +37,9 @@ import java.util.Map;
 @Transactional
 @OperationType(type = OperationTypeEnum.UPDATE)
 public class SaveDeployAppConfigInstanceApi extends PrivateApiComponentBase {
+
+    @Resource
+    DeployAppConfigService deployAppConfigService;
 
     @Override
     public String getName() {
@@ -88,36 +93,31 @@ public class SaveDeployAppConfigInstanceApi extends PrivateApiComponentBase {
             //获取实例的具体信息
             ICiEntityCrossoverMapper ciEntityCrossoverMapper = CrossoverServiceFactory.getApi(ICiEntityCrossoverMapper.class);
             CiEntityVo instanceCiEntity = ciEntityCrossoverMapper.getCiEntityBaseInfoById(instanceId);
+            if (instanceCiEntity == null) {
+                throw new CiEntityNotFoundException(instanceId);
+            }
             ICiEntityCrossoverService ciEntityService = CrossoverServiceFactory.getApi(ICiEntityCrossoverService.class);
             CiEntityVo instanceCiEntityInfo = ciEntityService.getCiEntityById(instanceCiEntity.getCiId(), instanceId);
 
             CiEntityTransactionVo ciEntityTransactionVo = new CiEntityTransactionVo(instanceCiEntityInfo);
-
-            //添加环境属性
-            IAttrCrossoverMapper attrCrossoverMapper = CrossoverServiceFactory.getApi(IAttrCrossoverMapper.class);
-            AttrVo appEnvironmentAttrVo = attrCrossoverMapper.getAttrByCiIdAndName(instanceCiEntity.getCiId(), "app_environment");
             JSONObject attrEntityData = instanceCiEntityInfo.getAttrEntityData();
-            ciEntityTransactionVo.addAttrEntityData(appEnvironmentAttrVo, paramObj.getString("envId"));
+            ciEntityTransactionVo.setAttrEntityData(attrEntityData);
 
-            //添加模块关系
+            //添加环境属性、模块关系
             paramObj.put("ciId", instanceCiEntity.getCiId());
-            addRelEntityData(ciEntityTransactionVo, paramObj);
+            paramObj.put("needUpdateAttrList", new JSONArray(Arrays.asList("app_environment")));
+            deployAppConfigService.addAttrEntityDataAndRelEntityData(ciEntityTransactionVo, paramObj);
 
             //设置基础信息
-            ciEntityTransactionVo.setCiId(instanceCiEntityInfo.getCiId());
-            ciEntityTransactionVo.setCiEntityId(instanceCiEntityInfo.getId());
             ciEntityTransactionVo.setAction(TransactionActionType.UPDATE.getValue());
-            ciEntityTransactionVo.setAllowCommit(true);
-            ciEntityTransactionVo.setAttrEntityData(attrEntityData);
             ciEntityTransactionVo.setEditMode(EditModeType.GLOBAL.getValue());
 
             List<CiEntityTransactionVo> ciEntityTransactionList = new ArrayList<>();
             ciEntityTransactionList.add(ciEntityTransactionVo);
             ciEntityService.saveCiEntity(ciEntityTransactionList);
         } else {
-            //新增实例到cmdb
 
-            //判断模型是否存在
+            //新增实例到cmdb
             ICiCrossoverMapper ciCrossoverMapper = CrossoverServiceFactory.getApi(ICiCrossoverMapper.class);
             CiVo paramCiVo = ciCrossoverMapper.getCiById(paramObj.getLong("ciId"));
             if (paramCiVo == null) {
@@ -125,9 +125,11 @@ public class SaveDeployAppConfigInstanceApi extends PrivateApiComponentBase {
             }
             CiEntityTransactionVo ciEntityTransactionVo = new CiEntityTransactionVo();
 
-            //添加属性和关系
-            addAttrEntityDataAndRelEntityData(ciEntityTransactionVo, paramObj);
+            //添加环境属性、模块关系
+            deployAppConfigService.addAttrEntityDataAndRelEntityData(ciEntityTransactionVo, paramObj);
 
+            ciEntityTransactionVo.setEditMode(EditModeType.PARTIAL.getValue());
+            ciEntityTransactionVo.setAction(TransactionActionType.INSERT.getValue());
             List<CiEntityTransactionVo> ciEntityTransactionList = new ArrayList<>();
             ciEntityTransactionList.add(ciEntityTransactionVo);
             ICiEntityCrossoverService ciEntityService = CrossoverServiceFactory.getApi(ICiEntityCrossoverService.class);
@@ -136,73 +138,4 @@ public class SaveDeployAppConfigInstanceApi extends PrivateApiComponentBase {
 
         return null;
     }
-
-    /**
-     * 添加属性和关系
-     *
-     * @param ciEntityTransactionVo 配置项
-     * @param paramObj              入参
-     */
-    private void addAttrEntityDataAndRelEntityData(CiEntityTransactionVo ciEntityTransactionVo, JSONObject paramObj) {
-
-        //添加属性
-        addAttrEntityData(ciEntityTransactionVo, paramObj);
-        //添加关系
-        addRelEntityData(ciEntityTransactionVo, paramObj);
-        //设置基础信息
-        ciEntityTransactionVo.setCiId(paramObj.getLong("ciId"));
-        ciEntityTransactionVo.setAction(TransactionActionType.INSERT.getValue());
-        ciEntityTransactionVo.setAllowCommit(true);
-        ciEntityTransactionVo.setDescription(null);
-        ciEntityTransactionVo.setEditMode(EditModeType.PARTIAL.getValue());
-    }
-
-    /**
-     * 添加关系
-     *
-     * @param ciEntityTransactionVo 配置项
-     * @param paramObj              入参
-     */
-    private void addRelEntityData(CiEntityTransactionVo ciEntityTransactionVo, JSONObject paramObj) {
-        ICiEntityCrossoverMapper iCiEntityCrossoverMapper = CrossoverServiceFactory.getApi(ICiEntityCrossoverMapper.class);
-        IRelCrossoverMapper relCrossoverMapper = CrossoverServiceFactory.getApi(IRelCrossoverMapper.class);
-
-        RelVo aPPComponentRel = relCrossoverMapper.getRelByCiIdAndRelName(paramObj.getLong("ciId"), "APPComponent");
-        if (aPPComponentRel == null) {
-            return;
-        }
-        CiEntityVo appModuleCiEntity = iCiEntityCrossoverMapper.getCiEntityBaseInfoById(paramObj.getLong("appModuleId"));
-        ciEntityTransactionVo.addRelEntityData(aPPComponentRel, aPPComponentRel.getDirection(), appModuleCiEntity.getCiId(), appModuleCiEntity.getId());
-    }
-
-    /**
-     * 添加属性
-     *
-     * @param ciEntityTransactionVo 配置项
-     * @param paramObj              入参
-     */
-    void addAttrEntityData(CiEntityTransactionVo ciEntityTransactionVo, JSONObject paramObj) {
-        IAttrCrossoverMapper attrCrossoverMapper = CrossoverServiceFactory.getApi(IAttrCrossoverMapper.class);
-        List<AttrVo> attrVoList = attrCrossoverMapper.getAttrByCiId(paramObj.getLong("ciId"));
-
-        for (AttrVo attrVo : attrVoList) {
-            if (getAttrMap().containsKey(attrVo.getName())) {
-                ciEntityTransactionVo.addAttrEntityData(attrVo, paramObj.getString(getAttrMap().get(attrVo.getName())));
-                continue;
-            }
-            ciEntityTransactionVo.addAttrEntityData(attrVo);
-        }
-    }
-
-    public static Map<String,String> getAttrMap() {
-        Map<String,String> map = new HashMap<>();
-        map.put("name", "name");
-        map.put("ip", "ip");
-        map.put("maintenance_window", "maintenanceWindow");
-        map.put("port", "port");
-        map.put("app_environment", "envId");
-        return map;
-    }
-
-
 }
