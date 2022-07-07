@@ -274,7 +274,6 @@
         SELECT
         rse.env_id AS envId,
         rse.env_name AS envName,
-        '0' AS isEdit,
         ria.app_module_id AS appModuleId,
         ria.app_module_name AS appModuleName
         FROM
@@ -306,7 +305,6 @@
         SELECT
         cc.id AS envId,
         cc.name AS envName,
-        '1' AS isEdit,
         cce.id AS appModuleId,
         cce.name AS appModuleName
         FROM
@@ -747,9 +745,17 @@
         FROM deploy_app_config_env_db a
                  LEFT JOIN deploy_app_config_env_db_account b ON a.id = b.db_config_id
                  LEFT JOIN `cmdb_resourcecenter_account` c ON c.`id` = b.account_id
-        WHERE a.app_system_id = #{appSystemId}
-          AND a.app_module_id = #{appModuleId}
-          AND a.env_id = #{envId}
+        <where>
+            <if test="appSystemId != null">
+                AND a.`app_system_id` = #{appSystemId}
+            </if>
+            <if test="appModuleId != 0L">
+                AND a.`app_module_id` = #{appModuleId}
+            </if>
+            <if test="envId != 0L">
+                AND a.`env_id` = #{envId}
+            </if>
+        </where>
     </select>
 
     <resultMap id="appEnvAutoConfigMap" type="codedriver.framework.deploy.dto.app.DeployAppEnvAutoConfigVo">
@@ -803,6 +809,16 @@
     </select>
 
     <select id="getAppConfigEnvDatabaseResourceListByIdList" resultMap="DatabaseResourceMap">
+        ${sql}
+    </select>
+
+    <resultMap id="AppModuleMap" type="codedriver.framework.deploy.dto.app.DeployAppModuleVo">
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="abbr_name" property="abbrName"/>
+    </resultMap>
+
+    <select id="getAppModuleListByIdList" resultMap="AppModuleMap">
         ${sql}
     </select>
 
@@ -1117,6 +1133,22 @@
         delete
         from deploy_app_config_env_db_account
         where db_config_id = #{id}
+    </delete>
+
+    <delete id="deleteAppConfigDBConfig">
+        delete
+        from deploy_app_config_env_db
+        <where>
+            <if test="appSystemId != null">
+                AND `app_system_id` = #{appSystemId}
+            </if>
+            <if test="appModuleId != 0L">
+                AND `app_module_id` = #{appModuleId}
+            </if>
+            <if test="envId != 0L">
+                AND `env_id` = #{envId}
+            </if>
+        </where>
     </delete>
 
 </mapper>

@@ -126,6 +126,8 @@ public interface DeployAppConfigMapper {
 
     List<ResourceVo> getAppConfigEnvDatabaseResourceListByIdList(String sql);
 
+    List<DeployAppModuleVo> getAppModuleListByIdList(String sql);
+
     void deleteAppConfigSystemFavoriteByAppSystemIdAndUserUuid(@Param("appSystemId") Long appSystemId, @Param("userUuid") String userUuid);
 
     void deleteAppConfig(DeployAppConfigVo configVo);
@@ -137,5 +139,7 @@ public interface DeployAppConfigMapper {
     void deleteAppModuleRunnerGroup(DeployAppConfigVo configVo);
 
     void deleteAppConfigDBConfigAccountByDBConfigId(Long id);
+
+    void deleteAppConfigDBConfig(DeployAppConfigEnvDBConfigVo deployAppConfigEnvDBConfigVo);
 
 }

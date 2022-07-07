@@ -5,38 +5,39 @@
 
 package codedriver.module.deploy.api.job;
 
-import codedriver.framework.auth.core.AuthAction;
-import codedriver.framework.autoexec.auth.AUTOEXEC_BASE;
+import codedriver.framework.asynchronization.threadlocal.TenantContext;
+import codedriver.framework.cmdb.crossover.ICiEntityCrossoverMapper;
+import codedriver.framework.cmdb.dao.mapper.resourcecenter.ResourceCenterMapper;
+import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
 import codedriver.framework.common.constvalue.ApiParamType;
-import codedriver.framework.deploy.dto.app.DeployAppConfigVo;
-import codedriver.framework.deploy.dto.app.DeployPipelineConfigVo;
+import codedriver.framework.crossover.CrossoverServiceFactory;
+import codedriver.framework.deploy.dto.app.DeployAppEnvironmentVo;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.deploy.dao.mapper.DeployAppConfigMapper;
-import codedriver.module.deploy.service.DeployJobService;
 import com.alibaba.fastjson.JSONObject;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author lvzk
  * @since 2022/6/29 11:20
  **/
 
-@Transactional
 @Service
-@AuthAction(action = AUTOEXEC_BASE.class)
-@OperationType(type = OperationTypeEnum.CREATE)
+@OperationType(type = OperationTypeEnum.SEARCH)
 public class GetDeployJobCreateInfoApi extends PrivateApiComponentBase {
 
     @Resource
     DeployAppConfigMapper deployAppConfigMapper;
 
     @Resource
-    DeployJobService deployJobService;
+    private ResourceCenterMapper resourceCenterMapper;
 
     @Override
     public String getName() {
@@ -64,15 +65,32 @@ public class GetDeployJobCreateInfoApi extends PrivateApiComponentBase {
         if (jsonObj.containsKey("appModuleId")) {
             appModuleId = jsonObj.getLong("appModuleId");
         }
-        DeployAppConfigVo appConfigVo = deployAppConfigMapper.getAppConfigVo(new DeployAppConfigVo(appSystemId, appModuleId, 0L));
-        DeployPipelineConfigVo pipelineConfigVo = appConfigVo.getConfig();
+//        DeployAppConfigVo appConfigVo = deployAppConfigMapper.getAppConfigVo(new DeployAppConfigVo(appSystemId, appModuleId, 0L));
+//        DeployPipelineConfigVo pipelineConfigVo = appConfigVo.getConfig();
         //场景
-        result.put("scenarioList", pipelineConfigVo.getScenarioList());
-        //环境 TODO 根据appId、moduleId 获取envList
-        result.put("envList", null);
+//        result.put("scenarioList", pipelineConfigVo.getScenarioList());
+
+        //环境 根据appSystemId、appModuleId 获取 envList
+        //模块 根据appSystemId、appModuleId 获取 appModuleList
+        List<Long> appModuleIdList = new ArrayList<>();
+        List<DeployAppEnvironmentVo> envList = new ArrayList<>();
+        List<CiEntityVo> appModuleList = new ArrayList<>();
+        if (appModuleId != 0L) {
+            appModuleIdList.add(appModuleId);
+        } else {
+            appModuleIdList.addAll(resourceCenterMapper.getAppSystemModuleIdListByAppSystemId(appSystemId, TenantContext.get().getDataDbName()));
+        }
+        if (CollectionUtils.isNotEmpty(appModuleIdList)) {
+            envList = deployAppConfigMapper.getDeployAppEnvListByAppSystemIdAndModuleIdList(appSystemId, appModuleIdList, TenantContext.get().getDataDbName());
+            ICiEntityCrossoverMapper ciEntityCrossoverMapper = CrossoverServiceFactory.getApi(ICiEntityCrossoverMapper.class);
+            appModuleList = ciEntityCrossoverMapper.getCiEntityBaseInfoByIdList(appModuleIdList);
+        }
+        result.put("envList", envList);
+        result.put("appModuleList", appModuleList);
+
+
         return result;
     }
-
 
     @Override
     public String getToken() {
