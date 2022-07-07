@@ -1,5 +1,6 @@
 package codedriver.module.deploy.dao.mapper;
 
+import codedriver.framework.cmdb.dto.resourcecenter.ResourceVo;
 import codedriver.framework.deploy.dto.app.*;
 import codedriver.framework.dto.AuthenticationInfoVo;
 import codedriver.framework.dto.runner.RunnerGroupVo;
@@ -59,7 +60,13 @@ public interface DeployAppConfigMapper {
 
     List<Long> getAppModuleEnvAutoConfigInstanceIdList(@Param("searchVo") DeployAppEnvAutoConfigVo searchVo, @Param("schemaName") String schemaName);
 
+    List<Long> getAppConfigEnvDBConfigResourceIdByAppSystemIdAndAppModuleIdAndEnvId(@Param("appSystemId") Long appSystemId, @Param("appModuleId") Long appModuleId, @Param("envId") Long envId);
+
     RunnerGroupVo getAppModuleRunnerGroupByAppSystemIdAndModuleId(@Param("appSystemId") Long appSystemId, @Param("appModuleId") Long appModuleId);
+
+    DeployAppConfigEnvDBConfigVo getAppConfigEnvDBConfigByAppSystemIdAndAppModuleIdAndEnvIdAndResourceId(@Param("appSystemId") Long appSystemId, @Param("appModuleId") Long appModuleId, @Param("envId") Long envId, @Param("DBResourceId") Long DBResourceId);
+
+    List<DeployAppConfigEnvDBConfigVo> getAppConfigEnvDBConfigListByAppSystemIdAndAppModuleIdAndEnvId(@Param("appSystemId") Long appSystemId, @Param("appModuleId") Long appModuleId, @Param("envId") Long envId);
 
     int getAppConfigEnv(DeployAppConfigVo deployAppConfigVo);
 
@@ -83,6 +90,10 @@ public interface DeployAppConfigMapper {
 
     void insertAppConfigSystemFavorite(@Param("appSystemId") Long appSystemId, @Param("userUuid") String userUuid);
 
+    void insertAppConfigEnvDBConfig(DeployAppConfigEnvDBConfigVo dbConfigVo);
+
+    void insertAppConfigEnvDBConfigAccount(@Param("DBConfigId") Long DBConfigId, @Param("accountList") List<DeployAppConfigEnvDBConfigAccountVo> accountList);
+
     Integer updateAppConfig(DeployAppConfigVo deployAppConfigVo);
 
     Integer updateAppConfigDraft(DeployAppConfigVo deployAppConfigDraftVo);
@@ -101,11 +112,19 @@ public interface DeployAppConfigMapper {
 
     int getAppModuleEnvNotEnvOrSameEnvAndNotModuleInstanceIdCount(@Param("searchVo") DeployAppConfigInstanceVo searchVo, @Param("schemaName") String schemaName);
 
+    int checkDeployAppConfigEnvDBAliasNameIsRepeat(DeployAppConfigEnvDBConfigVo configVo);
+
     int getAppSystemCountNew(String sql);
 
     List<Long> getAppSystemIdListNew(String sql);
 
     List<DeployAppSystemVo> getAppSystemListByIdListNew(String sql);
+
+    int getAppConfigEnvDatabaseCount(String sql);
+
+    List<Long> getAppConfigEnvDatabaseResourceIdList(String sql);
+
+    List<ResourceVo> getAppConfigEnvDatabaseResourceListByIdList(String sql);
 
     void deleteAppConfigSystemFavoriteByAppSystemIdAndUserUuid(@Param("appSystemId") Long appSystemId, @Param("userUuid") String userUuid);
 
@@ -116,5 +135,7 @@ public interface DeployAppConfigMapper {
     void deleteAppConfigAuthorityByAppSystemId(Long appSystemId);
 
     void deleteAppModuleRunnerGroup(DeployAppConfigVo configVo);
+
+    void deleteAppConfigDBConfigAccountByDBConfigId(Long id);
 
 }

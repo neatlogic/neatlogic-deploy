@@ -61,6 +61,7 @@ public class SearchDeployAppConfigInstanceApi extends PrivateApiComponentBase {
     public Object myDoService(JSONObject paramObj) throws Exception {
         DeployAppConfigInstanceVo searchVo = paramObj.toJavaObject(DeployAppConfigInstanceVo.class);
         List<DeployAppConfigInstanceVo> instanceList = new ArrayList<>();
+        //TODO 应查找同模块的无环境或者同环境且无模块的实例，现在查询的是无环境或者同环境且无模块的实例，优化sql时修改逻辑
         int count = deployAppConfigMapper.getAppModuleEnvNotEnvOrSameEnvAndNotModuleInstanceIdCount(searchVo, TenantContext.get().getDataDbName());
         if (count > 0) {
             searchVo.setRowNum(count);
