@@ -1,7 +1,6 @@
 package codedriver.module.deploy.api;
 
 import codedriver.framework.common.constvalue.ApiParamType;
-import codedriver.framework.deploy.exception.DeployAppConfigEnvDBNotFoundException;
 import codedriver.framework.restful.annotation.Description;
 import codedriver.framework.restful.annotation.Input;
 import codedriver.framework.restful.annotation.OperationType;
@@ -50,9 +49,6 @@ public class DeleteDeployAppConfigEnvDbConfigApi extends PrivateApiComponentBase
     public Object myDoService(JSONObject paramObj) throws Exception {
         Long id = paramObj.getLong("id");
 
-        if (deployAppConfigMapper.checkDeployAppConfigEnvDBExistsById(id) == 0) {
-            throw new DeployAppConfigEnvDBNotFoundException(id);
-        }
         deployAppConfigMapper.deleteAppConfigDBConfigById(id);
         deployAppConfigMapper.deleteAppConfigDBConfigAccountByDBConfigId(id);
         return null;
