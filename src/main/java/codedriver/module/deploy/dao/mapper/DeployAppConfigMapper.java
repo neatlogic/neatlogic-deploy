@@ -64,7 +64,7 @@ public interface DeployAppConfigMapper {
 
     RunnerGroupVo getAppModuleRunnerGroupByAppSystemIdAndModuleId(@Param("appSystemId") Long appSystemId, @Param("appModuleId") Long appModuleId);
 
-    DeployAppConfigEnvDBConfigVo getAppConfigEnvDBConfigByAppSystemIdAndAppModuleIdAndEnvIdAndResourceId(@Param("appSystemId") Long appSystemId, @Param("appModuleId") Long appModuleId, @Param("envId") Long envId, @Param("DBResourceId") Long DBResourceId);
+    DeployAppConfigEnvDBConfigVo getAppConfigEnvDBConfigById(Long id);
 
     List<DeployAppConfigEnvDBConfigVo> getAppConfigEnvDBConfigListByAppSystemIdAndAppModuleIdAndEnvId(@Param("appSystemId") Long appSystemId, @Param("appModuleId") Long appModuleId, @Param("envId") Long envId);
 
@@ -92,7 +92,7 @@ public interface DeployAppConfigMapper {
 
     void insertAppConfigEnvDBConfig(DeployAppConfigEnvDBConfigVo dbConfigVo);
 
-    void insertAppConfigEnvDBConfigAccount(@Param("DBConfigId") Long DBConfigId, @Param("accountList") List<DeployAppConfigEnvDBConfigAccountVo> accountList);
+    void insertAppConfigEnvDBConfigAccount(@Param("dbConfigId") Long dbConfigId, @Param("accountList") List<DeployAppConfigEnvDBConfigAccountVo> accountList);
 
     Integer updateAppConfig(DeployAppConfigVo deployAppConfigVo);
 
@@ -113,6 +113,8 @@ public interface DeployAppConfigMapper {
     int getAppModuleEnvNotEnvOrSameEnvAndNotModuleInstanceIdCount(@Param("searchVo") DeployAppConfigInstanceVo searchVo, @Param("schemaName") String schemaName);
 
     int checkDeployAppConfigEnvDBAliasNameIsRepeat(DeployAppConfigEnvDBConfigVo configVo);
+
+    int checkDeployAppConfigEnvDBExistsById(Long id);
 
     int getAppSystemCountNew(String sql);
 
@@ -140,6 +142,9 @@ public interface DeployAppConfigMapper {
 
     void deleteAppConfigDBConfigAccountByDBConfigId(Long id);
 
-    void deleteAppConfigDBConfig(DeployAppConfigEnvDBConfigVo deployAppConfigEnvDBConfigVo);
+    void deleteAppConfigDBConfigAccount(DeployAppConfigEnvDBConfigVo appConfigEnvDBConfigVo);
 
+    void deleteAppConfigDBConfig(DeployAppConfigEnvDBConfigVo appConfigEnvDBConfigVo);
+
+    void deleteAppConfigDBConfigById(Long id);
 }
