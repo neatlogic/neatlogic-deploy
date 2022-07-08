@@ -67,8 +67,8 @@ public class SaveDeployAppConfigEnvDBConfigApi extends PrivateApiComponentBase {
             @Param(name = "appModuleId", type = ApiParamType.LONG, isRequired = true, desc = "应用模块id"),
             @Param(name = "envId", type = ApiParamType.LONG, isRequired = true, desc = "环境id"),
             @Param(name = "id", type = ApiParamType.LONG, desc = "id"),
-            @Param(name = "DBAlias", type = ApiParamType.STRING, isRequired = true, desc = "数据库别名"),
-            @Param(name = "DBResourceId", type = ApiParamType.LONG, isRequired = true, desc = "数据库资产id"),
+            @Param(name = "dbAlias", type = ApiParamType.STRING, isRequired = true, desc = "数据库别名"),
+            @Param(name = "dbResourceId", type = ApiParamType.LONG, isRequired = true, desc = "数据库资产id"),
             @Param(name = "accountList", type = ApiParamType.JSONARRAY, isRequired = true, desc = "执行用户列表"),
             @Param(name = "config", type = ApiParamType.JSONOBJECT, desc = "高级设置")
     })
@@ -89,15 +89,15 @@ public class SaveDeployAppConfigEnvDBConfigApi extends PrivateApiComponentBase {
         if (iCiEntityCrossoverMapper.getCiEntityBaseInfoById(paramObj.getLong("envId")) == null) {
             throw new CiEntityNotFoundException(paramObj.getLong("envId"));
         }
-        CiEntityVo DBCiEntityVo = iCiEntityCrossoverMapper.getCiEntityBaseInfoById(paramObj.getLong("DBResourceId"));
+        CiEntityVo DBCiEntityVo = iCiEntityCrossoverMapper.getCiEntityBaseInfoById(paramObj.getLong("dbResourceId"));
         if (DBCiEntityVo == null) {
-            throw new CiEntityNotFoundException(paramObj.getLong("DBResourceId"));
+            throw new CiEntityNotFoundException(paramObj.getLong("dbResourceId"));
         }
 
         //保存DB发布配置
         DeployAppConfigEnvDBConfigVo dbConfigVo = paramObj.toJavaObject(DeployAppConfigEnvDBConfigVo.class);
         if (deployAppConfigMapper.checkDeployAppConfigEnvDBAliasNameIsRepeat(dbConfigVo) > 0) {
-            throw new DeployAppConfigEnvDBAliasNameRepeatException(dbConfigVo.getDBAlias());
+            throw new DeployAppConfigEnvDBAliasNameRepeatException(dbConfigVo.getDbAlias());
         }
         deployAppConfigMapper.insertAppConfigEnvDBConfig(dbConfigVo);
         deployAppConfigMapper.deleteAppConfigDBConfigAccountByDBConfigId(dbConfigVo.getId());
@@ -127,7 +127,7 @@ public class SaveDeployAppConfigEnvDBConfigApi extends PrivateApiComponentBase {
         return value -> {
             DeployAppConfigEnvDBConfigVo configVo = JSON.toJavaObject(value, DeployAppConfigEnvDBConfigVo.class);
             if (deployAppConfigMapper.checkDeployAppConfigEnvDBAliasNameIsRepeat(configVo) > 0) {
-                return new FieldValidResultVo(new DeployAppConfigEnvDBAliasNameRepeatException(configVo.getDBAlias()));
+                return new FieldValidResultVo(new DeployAppConfigEnvDBAliasNameRepeatException(configVo.getDbAlias()));
             }
             return new FieldValidResultVo();
         };
