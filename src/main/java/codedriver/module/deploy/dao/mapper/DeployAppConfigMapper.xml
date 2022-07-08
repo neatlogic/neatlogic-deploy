@@ -261,7 +261,6 @@
     <resultMap id="appEnvMap" type="codedriver.framework.deploy.dto.app.DeployAppEnvironmentVo">
         <result column="envId" property="id"/>
         <result column="envName" property="name"/>
-        <result column="isEdit" property="isEdit"/>
         <collection property="appModuleList" ofType="codedriver.framework.cmdb.dto.resourcecenter.entity.AppModuleVo">
             <id column="appModuleId" property="id"/>
             <result column="appModuleName" property="name"/>
@@ -274,7 +273,6 @@
         SELECT
         rse.env_id AS envId,
         rse.env_name AS envName,
-        '0' AS isEdit,
         ria.app_module_id AS appModuleId,
         ria.app_module_name AS appModuleName
         FROM
@@ -306,7 +304,6 @@
         SELECT
         cc.id AS envId,
         cc.name AS envName,
-        '1' AS isEdit,
         cce.id AS appModuleId,
         cce.name AS appModuleName
         FROM
