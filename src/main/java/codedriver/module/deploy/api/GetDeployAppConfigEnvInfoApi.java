@@ -6,7 +6,7 @@
 package codedriver.module.deploy.api;
 
 import codedriver.framework.asynchronization.threadlocal.TenantContext;
-import codedriver.framework.cmdb.crossover.IResourceCenterResourceCrossoverService;
+import codedriver.framework.cmdb.crossover.IResourceCenterCommonGenerateSqlCrossoverService;
 import codedriver.framework.cmdb.dao.mapper.resourcecenter.ResourceCenterMapper;
 import codedriver.framework.cmdb.dto.resourcecenter.ResourceVo;
 import codedriver.framework.cmdb.dto.resourcecenter.config.ResourceInfo;
@@ -92,10 +92,10 @@ public class GetDeployAppConfigEnvInfoApi extends PrivateApiComponentBase {
             theadList.add(new ResourceInfo("resource_ipobject", "ip"));
             theadList.add(new ResourceInfo("resource_softwareservice", "port"));
             theadList.add(new ResourceInfo("resource_ipobject", "maintenance_window"));
-            IResourceCenterResourceCrossoverService resourceCenterResourceCrossoverService = CrossoverServiceFactory.getApi(IResourceCenterResourceCrossoverService.class);
-            String sql = resourceCenterResourceCrossoverService.getResourceListByIdListSql(theadList, instanceIdList, unavailableResourceInfoList, "resource_ipobject");
+            IResourceCenterCommonGenerateSqlCrossoverService resourceCenterCrossoverService = CrossoverServiceFactory.getApi(IResourceCenterCommonGenerateSqlCrossoverService.class);
+            String sql = resourceCenterCrossoverService.getResourceListByIdListSql(theadList, instanceIdList, unavailableResourceInfoList, "resource_ipobject");
             if (StringUtils.isNotBlank(sql)) {
-                instanceList = resourceCenterMapper.getResourceListByIdList(sql);
+                instanceList = resourceCenterCrossoverService.getResourceList(sql);
             }
 //            List<ResourceVo> instanceList = resourceCenterMapper.getResourceListByIdList(instanceIdList, TenantContext.get().getDataDbName());
             envInfo.put("instanceList", instanceList);

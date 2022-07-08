@@ -1,6 +1,6 @@
 package codedriver.module.deploy.api;
 
-import codedriver.framework.cmdb.crossover.IResourceCenterResourceCrossoverService;
+import codedriver.framework.cmdb.crossover.IResourceCenterCommonGenerateSqlCrossoverService;
 import codedriver.framework.cmdb.dto.resourcecenter.ResourceVo;
 import codedriver.framework.cmdb.dto.resourcecenter.config.ResourceEntityVo;
 import codedriver.framework.cmdb.dto.resourcecenter.config.ResourceInfo;
@@ -85,8 +85,8 @@ public class SearchDeployAppConfigEnvDatabaseApi extends PrivateApiComponentBase
         }
 
         //查出资源中心数据初始化配置信息来创建ResourceSearchGenerateSqlUtil对象
-        IResourceCenterResourceCrossoverService resourceCenterResourceCrossoverService = CrossoverServiceFactory.getApi(IResourceCenterResourceCrossoverService.class);
-        List<ResourceEntityVo> resourceEntityList = resourceCenterResourceCrossoverService.getResourceEntityList();
+        IResourceCenterCommonGenerateSqlCrossoverService resourceCenterCrossoverService = CrossoverServiceFactory.getApi(IResourceCenterCommonGenerateSqlCrossoverService.class);
+        List<ResourceEntityVo> resourceEntityList = resourceCenterCrossoverService.getResourceEntityList();
         ResourceSearchGenerateSqlUtil resourceSearchGenerateSqlUtil = new ResourceSearchGenerateSqlUtil(resourceEntityList);
         List<ResourceInfo> unavailableResourceInfoList = new ArrayList<>();
         String mainResourceId = "resource_database";

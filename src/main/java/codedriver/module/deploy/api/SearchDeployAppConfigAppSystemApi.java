@@ -2,7 +2,9 @@ package codedriver.module.deploy.api;
 
 import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.auth.core.AuthActionChecker;
-import codedriver.framework.cmdb.crossover.IResourceCenterResourceCrossoverService;
+import codedriver.framework.cmdb.crossover.IResourceCenterCommonGenerateSqlCrossoverService;
+import codedriver.framework.cmdb.crossover.IResourceCenterCustomGenerateSqlCrossoverService;
+import codedriver.framework.cmdb.dto.resourcecenter.ResourceVo;
 import codedriver.framework.cmdb.dto.resourcecenter.config.ResourceEntityVo;
 import codedriver.framework.cmdb.dto.resourcecenter.config.ResourceInfo;
 import codedriver.framework.cmdb.utils.ResourceSearchGenerateSqlUtil;
@@ -37,6 +39,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.*;
+import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
 /**
@@ -165,68 +168,86 @@ public class SearchDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
             searchVo.setDefaultValue(new JSONArray(new ArrayList<>(hasPipelineAppSystemIdList)));
         }
         //查出资源中心数据初始化配置信息来创建ResourceSearchGenerateSqlUtil对象
-        IResourceCenterResourceCrossoverService resourceCenterResourceCrossoverService = CrossoverServiceFactory.getApi(IResourceCenterResourceCrossoverService.class);
-        List<ResourceEntityVo> resourceEntityList = resourceCenterResourceCrossoverService.getResourceEntityList();
+        IResourceCenterCommonGenerateSqlCrossoverService resourceCenterCrossoverService = CrossoverServiceFactory.getApi(IResourceCenterCommonGenerateSqlCrossoverService.class);
+        List<ResourceEntityVo> resourceEntityList = resourceCenterCrossoverService.getResourceEntityList();
         ResourceSearchGenerateSqlUtil resourceSearchGenerateSqlUtil = new ResourceSearchGenerateSqlUtil(resourceEntityList);
 
         List<ResourceInfo> unavailableResourceInfoList = new ArrayList<>();
         String mainResourceId = "resource_appsystem";
-        PlainSelect filterPlainSelect = getPlainSelectBySearchCondition(searchVo, resourceSearchGenerateSqlUtil, unavailableResourceInfoList, mainResourceId);
-        String sql = getResourceCountSql(filterPlainSelect);
-        if (StringUtils.isBlank(sql)) {
-            return TableResultUtil.getResult(deployAppSystemList, searchVo);
-        }
-        int count = deployAppConfigMapper.getAppSystemCountNew(sql);
-        if (count > 0) {
-            searchVo.setRowNum(count);
-            sql = getResourceIdListSql(filterPlainSelect, searchVo);
-            if (StringUtils.isBlank(sql)) {
-                return TableResultUtil.getResult(deployAppSystemList, searchVo);
-            }
-            List<Long> idList = deployAppConfigMapper.getAppSystemIdListNew(sql);
-            if (CollectionUtils.isEmpty(idList)) {
-                return TableResultUtil.getResult(deployAppSystemList, searchVo);
-            }
-            sql = getResourceListByIdListSql(idList, resourceSearchGenerateSqlUtil, unavailableResourceInfoList, mainResourceId);
-            if (StringUtils.isBlank(sql)) {
-                return TableResultUtil.getResult(deployAppSystemList, searchVo);
-            }
-            deployAppSystemList = deployAppConfigMapper.getAppSystemListByIdListNew(sql);
-            if (CollectionUtils.isEmpty(deployAppSystemList)) {
-                return TableResultUtil.getResult(deployAppSystemList, searchVo);
-            }
-            //补充是否有配置流水线
-            List<Long> hasPipelineAppSystemIdList = deployAppConfigMapper.getAppConfigAppSystemIdListByAppSystemIdList(idList);
-            //补充是否有已收藏
-            List<Long> userAppSystemIdList = deployAppConfigMapper.getAppConfigUserAppSystemIdList(UserContext.get().getUserUuid(), idList);
-            JSONArray defaultValue = new JSONArray(new ArrayList<>(idList));
-            searchVo.setDefaultValue(defaultValue);
-            //如果是模糊搜索，补充模块信息
-            Map<Long, List<DeployAppModuleVo>> appSystemModuleListMap = new HashMap<>();
-            String keyword = searchVo.getKeyword();
-            if (StringUtils.isNotBlank(keyword)) {
-                sql = getAppSystemModuleListSql(searchVo, resourceSearchGenerateSqlUtil, unavailableResourceInfoList, mainResourceId);
-                if (StringUtils.isNotBlank(sql)) {
-                    List<DeployAppSystemVo> list = deployAppConfigMapper.getAppSystemListByIdListNew(sql);
-                    appSystemModuleListMap = list.stream().collect(Collectors.toMap(e -> e.getId(), e -> e.getAppModuleList()));
-                }
-            }
+        IResourceCenterCommonGenerateSqlCrossoverService resourceCenterCommonGenerateSqlCrossoverService = CrossoverServiceFactory.getApi(IResourceCenterCommonGenerateSqlCrossoverService.class);
 
-            //补充系统是否有模块
-            sql = getAppSystemModuleCountSql(idList, resourceSearchGenerateSqlUtil, unavailableResourceInfoList, mainResourceId);
-            List<DeployAppSystemVo> list = deployAppConfigMapper.getAppSystemListByIdListNew(sql);
-            Map<Long, Integer> appSystemModuleCountMap = list.stream().collect(Collectors.toMap(e -> e.getId(), e -> e.getModuleCount()));
-            for (DeployAppSystemVo deployAppSystemVo : deployAppSystemList) {
-                Long id = deployAppSystemVo.getId();
-                if (hasPipelineAppSystemIdList.contains(id)) {
-                    deployAppSystemVo.setIsConfig(1);
-                }
-                if (userAppSystemIdList.contains(id)) {
-                    deployAppSystemVo.setIsFavorite(1);
-                }
-                deployAppSystemVo.setAppModuleList(appSystemModuleListMap.get(id));
-                deployAppSystemVo.setModuleCount(appSystemModuleCountMap.get(id));
+        List<BiConsumer<ResourceSearchGenerateSqlUtil, PlainSelect>> biConsumerList = new ArrayList<>();
+        JSONObject commonConditionObj = new JSONObject();
+        commonConditionObj.put("defaultValue", searchVo.getDefaultValue());
+        biConsumerList.add(resourceCenterCommonGenerateSqlCrossoverService.getBiConsumerByCommonCondition(commonConditionObj, unavailableResourceInfoList));
+        biConsumerList.add(getBiConsumerByKeyword(searchVo.getKeyword(), unavailableResourceInfoList));
+
+        List<ResourceVo> resourceList = resourceCenterCommonGenerateSqlCrossoverService.getResourceList(biConsumerList, searchVo, unavailableResourceInfoList, mainResourceId, getTheadList());
+        if (CollectionUtils.isEmpty(resourceList)) {
+            TableResultUtil.getResult(resourceList, searchVo);
+        }
+        List<Long> idList = new ArrayList<>();
+        for (ResourceVo resourceVo : resourceList) {
+            idList.add(resourceVo.getId());
+            deployAppSystemList.add(new DeployAppSystemVo(resourceVo.getId(), resourceVo.getName(), resourceVo.getAbbrName()));
+        }
+//        PlainSelect filterPlainSelect = getPlainSelectBySearchCondition(searchVo, resourceSearchGenerateSqlUtil, unavailableResourceInfoList, mainResourceId);
+//        String sql = getResourceCountSql(filterPlainSelect);
+//        if (StringUtils.isBlank(sql)) {
+//            return TableResultUtil.getResult(deployAppSystemList, searchVo);
+//        }
+//        int count = deployAppConfigMapper.getAppSystemCountNew(sql);
+//        if (count == 0) {
+//            return TableResultUtil.getResult(deployAppSystemList, searchVo);
+//        }
+//        searchVo.setRowNum(count);
+//        sql = getResourceIdListSql(filterPlainSelect, searchVo);
+//        if (StringUtils.isBlank(sql)) {
+//            return TableResultUtil.getResult(deployAppSystemList, searchVo);
+//        }
+//        List<Long> idList = deployAppConfigMapper.getAppSystemIdListNew(sql);
+//        if (CollectionUtils.isEmpty(idList)) {
+//            return TableResultUtil.getResult(deployAppSystemList, searchVo);
+//        }
+//        sql = getResourceListByIdListSql(idList, resourceSearchGenerateSqlUtil, unavailableResourceInfoList, mainResourceId);
+//        if (StringUtils.isBlank(sql)) {
+//            return TableResultUtil.getResult(deployAppSystemList, searchVo);
+//        }
+//        deployAppSystemList = deployAppConfigMapper.getAppSystemListByIdListNew(sql);
+//        if (CollectionUtils.isEmpty(deployAppSystemList)) {
+//            return TableResultUtil.getResult(deployAppSystemList, searchVo);
+//        }
+        //补充是否有配置流水线
+        List<Long> hasPipelineAppSystemIdList = deployAppConfigMapper.getAppConfigAppSystemIdListByAppSystemIdList(idList);
+        //补充是否有已收藏
+        List<Long> userAppSystemIdList = deployAppConfigMapper.getAppConfigUserAppSystemIdList(UserContext.get().getUserUuid(), idList);
+        JSONArray defaultValue = new JSONArray(new ArrayList<>(idList));
+        searchVo.setDefaultValue(defaultValue);
+        //如果是模糊搜索，补充模块信息
+        Map<Long, List<DeployAppModuleVo>> appSystemModuleListMap = new HashMap<>();
+        String keyword = searchVo.getKeyword();
+        if (StringUtils.isNotBlank(keyword)) {
+            sql = getAppSystemModuleListSql(searchVo, resourceSearchGenerateSqlUtil, unavailableResourceInfoList, mainResourceId);
+            if (StringUtils.isNotBlank(sql)) {
+                List<DeployAppSystemVo> list = deployAppConfigMapper.getAppSystemListByIdListNew(sql);
+                appSystemModuleListMap = list.stream().collect(Collectors.toMap(e -> e.getId(), e -> e.getAppModuleList()));
             }
+        }
+
+        //补充系统是否有模块
+        sql = getAppSystemModuleCountSql(idList, resourceSearchGenerateSqlUtil, unavailableResourceInfoList, mainResourceId);
+        List<DeployAppSystemVo> list = deployAppConfigMapper.getAppSystemListByIdListNew(sql);
+        Map<Long, Integer> appSystemModuleCountMap = list.stream().collect(Collectors.toMap(e -> e.getId(), e -> e.getModuleCount()));
+        for (DeployAppSystemVo deployAppSystemVo : deployAppSystemList) {
+            Long id = deployAppSystemVo.getId();
+            if (hasPipelineAppSystemIdList.contains(id)) {
+                deployAppSystemVo.setIsConfig(1);
+            }
+            if (userAppSystemIdList.contains(id)) {
+                deployAppSystemVo.setIsFavorite(1);
+            }
+            deployAppSystemVo.setAppModuleList(appSystemModuleListMap.get(id));
+            deployAppSystemVo.setModuleCount(appSystemModuleCountMap.get(id));
         }
         return TableResultUtil.getResult(deployAppSystemList, searchVo);
     }
@@ -480,6 +501,42 @@ public class SearchDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
         inExpression.setRightItemsList(expressionList);
         plainSelect.setWhere(inExpression);
         return plainSelect.toString();
+    }
+
+    private List<ResourceInfo> getTheadList() {
+        List<ResourceInfo> theadList = new ArrayList<>();
+        theadList.add(new ResourceInfo("resource_appsystem", "id"));
+        theadList.add(new ResourceInfo("resource_appsystem", "name"));
+        theadList.add(new ResourceInfo("resource_appsystem", "abbr_name"));
+        return theadList;
+    }
+
+    private BiConsumer<ResourceSearchGenerateSqlUtil, PlainSelect> getBiConsumerByKeyword(String keyword, List<ResourceInfo> unavailableResourceInfoList) {
+        BiConsumer<ResourceSearchGenerateSqlUtil, PlainSelect> biConsumer = new BiConsumer<ResourceSearchGenerateSqlUtil, PlainSelect>() {
+            @Override
+            public void accept(ResourceSearchGenerateSqlUtil resourceSearchGenerateSqlUtil, PlainSelect plainSelect) {
+                if (StringUtils.isNotBlank(keyword)) {
+                    List<ResourceInfo> keywordList = new ArrayList<>();
+                    keywordList.add(new ResourceInfo("resource_appsystem", "name"));
+                    keywordList.add(new ResourceInfo("resource_appsystem", "abbr_name"));
+                    keywordList.add(new ResourceInfo("resource_appsystem_appmodule", "app_module_name"));
+                    keywordList.add(new ResourceInfo("resource_appsystem_appmodule", "app_module_abbr_name"));
+                    String keyword2 = "%" + keyword + "%";
+                    List<Expression> expressionList = new ArrayList<>();
+                    for (ResourceInfo resourceInfo : keywordList) {
+                        if (resourceSearchGenerateSqlUtil.additionalInformation(resourceInfo)) {
+                            Column column = resourceSearchGenerateSqlUtil.addJoinTableByResourceInfo(resourceInfo, plainSelect);
+                            expressionList.add(new LikeExpression().withLeftExpression(column).withRightExpression(new StringValue(keyword2)));
+                        } else {
+                            unavailableResourceInfoList.add(resourceInfo);
+                        }
+                    }
+                    MultiOrExpression multiOrExpression = new MultiOrExpression(expressionList);
+                    resourceSearchGenerateSqlUtil.addWhere(plainSelect, multiOrExpression);
+                }
+            }
+        };
+        return biConsumer;
     }
 }
 
