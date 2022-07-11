@@ -3,7 +3,6 @@ package codedriver.module.deploy.api;
 import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.auth.core.AuthActionChecker;
 import codedriver.framework.cmdb.crossover.IResourceCenterCommonGenerateSqlCrossoverService;
-import codedriver.framework.cmdb.crossover.IResourceCenterCustomGenerateSqlCrossoverService;
 import codedriver.framework.cmdb.dto.resourcecenter.ResourceVo;
 import codedriver.framework.cmdb.dto.resourcecenter.config.ResourceEntityVo;
 import codedriver.framework.cmdb.dto.resourcecenter.config.ResourceInfo;
@@ -181,7 +180,7 @@ public class SearchDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
         biConsumerList.add(getBiConsumerByDefaultValue(searchVo.getDefaultValue(), unavailableResourceInfoList));
         biConsumerList.add(getBiConsumerByKeyword(searchVo.getKeyword(), unavailableResourceInfoList));
 
-        List<ResourceVo> resourceList = resourceCenterCommonGenerateSqlCrossoverService.getResourceList(biConsumerList, searchVo, unavailableResourceInfoList, mainResourceId, getTheadList());
+        List<ResourceVo> resourceList = resourceCenterCommonGenerateSqlCrossoverService.getResourceList(mainResourceId, getTheadList(), biConsumerList, searchVo, unavailableResourceInfoList);
         if (CollectionUtils.isEmpty(resourceList)) {
             TableResultUtil.getResult(resourceList, searchVo);
         }
@@ -322,7 +321,7 @@ public class SearchDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
         theadList.add(new ResourceInfo("resource_appsystem_appmodule", "app_module_id"));
         theadList.add(new ResourceInfo("resource_appsystem_appmodule", "app_module_name"));
         theadList.add(new ResourceInfo("resource_appsystem_appmodule", "app_module_abbr_name"));
-        String sql  = resourceCenterCommonGenerateSqlCrossoverService.getResourceListSql(biConsumerList, unavailableResourceInfoList, "resource_appsystem", theadList);
+        String sql  = resourceCenterCommonGenerateSqlCrossoverService.getResourceListSql("resource_appsystem", theadList, biConsumerList, unavailableResourceInfoList);
         if (StringUtils.isNotBlank(sql)) {
             return deployAppConfigMapper.getAppSystemListByIdListNew(sql);
         }

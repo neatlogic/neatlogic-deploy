@@ -93,7 +93,7 @@ public class GetDeployAppConfigEnvInfoApi extends PrivateApiComponentBase {
             theadList.add(new ResourceInfo("resource_softwareservice", "port"));
             theadList.add(new ResourceInfo("resource_ipobject", "maintenance_window"));
             IResourceCenterCommonGenerateSqlCrossoverService resourceCenterCrossoverService = CrossoverServiceFactory.getApi(IResourceCenterCommonGenerateSqlCrossoverService.class);
-            String sql = resourceCenterCrossoverService.getResourceListByIdListSql(theadList, instanceIdList, unavailableResourceInfoList, "resource_ipobject");
+            String sql = resourceCenterCrossoverService.getResourceListByIdListSql("resource_ipobject", theadList, instanceIdList, unavailableResourceInfoList);
             if (StringUtils.isNotBlank(sql)) {
                 instanceList = resourceCenterCrossoverService.getResourceList(sql);
             }
