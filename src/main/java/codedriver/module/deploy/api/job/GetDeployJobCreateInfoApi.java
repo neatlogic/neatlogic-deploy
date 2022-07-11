@@ -81,12 +81,12 @@ public class GetDeployJobCreateInfoApi extends PrivateApiComponentBase {
 
         //1、找出当前组合工具的所有包含BUILD分类的工具的阶段
         List<DeployPipelinePhaseVo> combopPhaseList = pipelineConfigVo.getCombopPhaseList();
-        List<String> combopPhaseListHasToolType = new ArrayList<>();
+        List<String> combopPhaseListHasBuildTypeTool = new ArrayList<>();
         for (DeployPipelinePhaseVo pipelinePhaseVo : combopPhaseList) {
             List<AutoexecCombopPhaseOperationVo> phaseOperationList = pipelinePhaseVo.getConfig().getPhaseOperationList();
             for (AutoexecCombopPhaseOperationVo operationVo : phaseOperationList) {
                 if (StringUtils.equals(ToolType.TOOL.getValue(), operationVo.getOperationType()) && StringUtils.equals(operationVo.getTypeName(), "build")) {
-                    combopPhaseListHasToolType.add(pipelinePhaseVo.getName());
+                    combopPhaseListHasBuildTypeTool.add(pipelinePhaseVo.getName());
                 }
             }
         }
@@ -94,7 +94,7 @@ public class GetDeployJobCreateInfoApi extends PrivateApiComponentBase {
         //2、查询场景的阶段列表是否有BUILD分类的工具
         if (CollectionUtils.isNotEmpty(scenarioList)) {
             for (AutoexecCombopScenarioVo scenarioVo : scenarioList) {
-                if (CollectionUtils.isNotEmpty(scenarioVo.getCombopPhaseNameList()) && Collections.disjoint(combopPhaseListHasToolType, scenarioVo.getCombopPhaseNameList())) {
+                if (CollectionUtils.isNotEmpty(scenarioVo.getCombopPhaseNameList()) && Collections.disjoint(combopPhaseListHasBuildTypeTool, scenarioVo.getCombopPhaseNameList())) {
                     scenarioVo.setIsHasBuildTypeTool(1);
                 }
             }
