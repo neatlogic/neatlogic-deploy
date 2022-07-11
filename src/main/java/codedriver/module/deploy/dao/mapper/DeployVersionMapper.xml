@@ -129,9 +129,33 @@
         SELECT `job_id` FROM `deploy_version_env` WHERE `version_id` = #{versionId} AND `env_id` = #{envId}
     </select>
 
+    <select id="getDeployVersionBySystemIdAndModuleIdAndVersion" parameterType="codedriver.framework.deploy.dto.version.DeployVersionVo"
+            resultType="codedriver.framework.deploy.dto.version.DeployVersionVo">
+        select id,
+               version,
+               app_system_id   as appSystemId,
+               app_system_name as appSystemName,
+               app_module_id   as appModuleId,
+               app_module_name as appModuleName,
+               is_locked       as isLocked,
+               config,
+               fcu,
+               fcd,
+               lcu,
+               lcd
+        from deploy_version
+        where version = #{version} and app_system_id = #{appSystemId} and app_module_id = #{appModuleId}
+    </select>
+
     <update id="unLockDeployVersionById">
         update deploy_version
         set is_locked = #{isLocked}
+        where id = #{id}
+    </update>
+
+    <update id="updateDeployVersionConfig" parameterType="codedriver.framework.deploy.dto.version.DeployVersionVo">
+        update deploy_version
+        set config = #{configStr}
         where id = #{id}
     </update>
 

@@ -23,10 +23,14 @@ public interface DeployVersionMapper {
 
     Long getJobIdByDeployVersionIdAndEnvId(@Param("versionId") Long versionId, @Param("envId") Long envId);
 
-    void unLockDeployVersionById(@Param("id") Long id, @Param("isLocked") Long isLocked);
+    DeployVersionVo getDeployVersionBySystemIdAndModuleIdAndVersion(DeployVersionVo versionVo);
 
-    void insertDeployVersion(DeployVersionVo versionVo);
+    int unLockDeployVersionById(@Param("id") Long id, @Param("isLocked") Long isLocked);
 
-    void deleteDeployVersionById(Long id);
+    int updateDeployVersionConfig(DeployVersionVo versionVo);
+
+    int insertDeployVersion(DeployVersionVo versionVo);
+
+    int deleteDeployVersionById(Long id);
 
 }
