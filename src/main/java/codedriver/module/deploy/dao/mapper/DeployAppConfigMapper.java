@@ -116,6 +116,8 @@ public interface DeployAppConfigMapper {
 
     int checkDeployAppConfigEnvDBExistsById(Long id);
 
+    int getAppModuleCountBySystemIdAndEnvId(@Param("appSystemId") Long appSystemId, @Param("envId") Long envId, @Param("schemaName") String schemaName);
+
     int getAppSystemCountNew(String sql);
 
     List<Long> getAppSystemIdListNew(String sql);
@@ -127,6 +129,10 @@ public interface DeployAppConfigMapper {
     List<Long> getAppConfigEnvDatabaseResourceIdList(String sql);
 
     List<ResourceVo> getAppConfigEnvDatabaseResourceListByIdList(String sql);
+
+    List<DeployAppModuleVo> getAppModuleListByIdList(String sql);
+
+    List<DeployAppModuleVo> getAppModuleListBySystemIdAndEnvId(@Param("appSystemId") Long appSystemId, @Param("envId") Long envId, @Param("schemaName") String schemaName);
 
     void deleteAppConfigSystemFavoriteByAppSystemIdAndUserUuid(@Param("appSystemId") Long appSystemId, @Param("userUuid") String userUuid);
 
