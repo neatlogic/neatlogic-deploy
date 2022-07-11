@@ -173,4 +173,10 @@
         from deploy_version
         where id = #{id}
     </delete>
+
+    <delete id="deleteDeployVersionBySystemIdAndModuleIdAndVersion" parameterType="codedriver.framework.deploy.dto.version.DeployVersionVo">
+        delete
+        from deploy_version
+        where version = #{version} and app_system_id = #{appSystemId} and app_module_id = #{appModuleId}
+    </delete>
 </mapper>
