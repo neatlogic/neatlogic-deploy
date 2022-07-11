@@ -3,6 +3,8 @@ package codedriver.module.deploy.dao.mapper;
 import codedriver.framework.deploy.dto.DeployJobVo;
 import org.apache.ibatis.annotations.Param;
 
+import java.util.List;
+
 /**
  * @author lvzk
  * @date 2022/6/27 16:19 下午
@@ -18,4 +20,6 @@ public interface DeployJobMapper {
      * @return
      */
     Long getRecentlyJobRunnerMapIdByAppSystemIdAndAppModuleId(@Param("appSystemId") Long appSystemId, @Param("appModuleId") Long appModuleId);
+
+    List<DeployJobVo> getDeployJobListByAppSystemIdAndAppModuleId(@Param("appSystemId") Long appSystemId,@Param("appModuleId") Long appModuleId);
 }

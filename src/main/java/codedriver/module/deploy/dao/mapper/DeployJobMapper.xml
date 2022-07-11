@@ -9,19 +9,43 @@
 
     <select id="getDeployJobByJobId" resultType="codedriver.framework.deploy.dto.DeployJobVo">
         select id,
-               app_system_id    as appSystemId,
-               app_module_id    as appModuleId,
-               env_id           as envId,
+               app_system_id as appSystemId,
+               app_module_id as appModuleId,
+               env_id        as envId,
                version,
-               job_id           as jobId,
-               runner_map_id    as runnerMapId
+               job_id        as jobId,
+               runner_map_id as runnerMapId
         from deploy_job
         where job_id = #{value}
     </select>
 
     <select id="getRecentlyJobRunnerMapIdByAppSystemIdAndAppModuleId" resultType="java.lang.Long">
-        select runner_map_id from deploy_job
-        where app_system_id = #{appSystemId} and app_module_id = #{appModuleId}
-        order by job_id desc limit 1
+        select runner_map_id
+        from deploy_job
+        where app_system_id = #{appSystemId}
+          and app_module_id = #{appModuleId}
+        order by job_id desc
+        limit 1
+    </select>
+
+    <select id="getDeployJobListByAppSystemIdAndAppModuleId"
+            resultType="codedriver.framework.deploy.dto.DeployJobVo">
+        select id,
+               app_system_id as appSystemId,
+               app_module_id as appModuleId,
+               env_id        as envId,
+               version,
+               job_id        as jobId,
+               runner_map_id as runnerMapId
+        from deploy_job
+        <where>
+            <if test="appSystemId != null">
+                app_system_id = #{appSystemId}
+            </if>
+            <if test="appModuleId != null">
+                and app_module_id = #{appModuleId}
+            </if>
+        </where>
+
     </select>
 </mapper>
