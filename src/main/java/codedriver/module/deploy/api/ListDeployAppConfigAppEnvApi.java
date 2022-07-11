@@ -51,7 +51,7 @@ public class ListDeployAppConfigAppEnvApi extends PrivateApiComponentBase {
     @Input({
             @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "应用系统id"),
             @Param(name = "appModuleIdList", type = ApiParamType.JSONARRAY, isRequired = true, desc = "应用模块id列表"),
-            @Param(name = "isHasEnv", type = ApiParamType.INTEGER, desc = "是否拥有环境"),
+            @Param(name = "isHasEnv", type = ApiParamType.INTEGER, desc = "是否拥有环境 (0:查找现没有的环境，1：查找现有的环境)"),
     })
     @Output({
             @Param(explode = AppEnvironmentVo[].class, desc = "发布应用配置的应用系统环境列表"),
@@ -66,7 +66,7 @@ public class ListDeployAppConfigAppEnvApi extends PrivateApiComponentBase {
         }
         Long appSystemId = paramObj.getLong("appSystemId");
         List<DeployAppEnvironmentVo> returnEnvList = null;
-        if (Objects.nonNull(paramObj.getInteger("isHasEnv")) && paramObj.getInteger("isHasEnv") == 1) {
+        if (Objects.nonNull(paramObj.getInteger("isHasEnv")) && paramObj.getInteger("isHasEnv") == 0) {
             returnEnvList = deployAppConfigMapper.getDeployAppHasNotEnvListByAppSystemIdAndModuleIdList(appSystemId, appModuleIdList, TenantContext.get().getDataDbName());
         } else {
             returnEnvList = deployAppConfigMapper.getDeployAppEnvListByAppSystemIdAndModuleIdList(appSystemId, appModuleIdList, TenantContext.get().getDataDbName());

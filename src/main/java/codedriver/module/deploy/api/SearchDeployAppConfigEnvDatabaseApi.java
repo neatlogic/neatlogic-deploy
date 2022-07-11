@@ -62,6 +62,7 @@ public class SearchDeployAppConfigEnvDatabaseApi extends PrivateApiComponentBase
     @Input({
             @Param(name = "keyword", type = ApiParamType.STRING, desc = "关键词", xss = true),
             @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "当前页"),
+            @Param(name = "defaultValue", type = ApiParamType.JSONARRAY, desc = "默认值"),
             @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "每页数据条目"),
             @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "应用系统id"),
             @Param(name = "appModuleId", type = ApiParamType.LONG, isRequired = true, desc = "应用模块id"),
@@ -78,10 +79,12 @@ public class SearchDeployAppConfigEnvDatabaseApi extends PrivateApiComponentBase
 
         List<ResourceVo> deployDBResourceVoList = new ArrayList<>();
 
-        //查询当前模块的环境且发布已配置的数据库
-        List<Long> DBResourceIdList = deployAppConfigMapper.getAppConfigEnvDBConfigResourceIdByAppSystemIdAndAppModuleIdAndEnvId(searchVo.getAppSystemId(), searchVo.getAppModuleId(), searchVo.getEnvId());
-        if (CollectionUtils.isNotEmpty(DBResourceIdList)) {
-            searchVo.setNotInIdList(DBResourceIdList);
+        if (CollectionUtils.isEmpty(paramObj.getJSONArray("defaultValue"))) {
+            //查询当前模块的环境且发布已配置的数据库
+            List<Long> DBResourceIdList = deployAppConfigMapper.getAppConfigEnvDBConfigResourceIdByAppSystemIdAndAppModuleIdAndEnvId(searchVo.getAppSystemId(), searchVo.getAppModuleId(), searchVo.getEnvId());
+            if (CollectionUtils.isNotEmpty(DBResourceIdList)) {
+                searchVo.setNotInIdList(DBResourceIdList);
+            }
         }
 
         //查出资源中心数据初始化配置信息来创建ResourceSearchGenerateSqlUtil对象
@@ -190,9 +193,9 @@ public class SearchDeployAppConfigEnvDatabaseApi extends PrivateApiComponentBase
             }
         }
 
-        //条件：（envId同 or moduleId is null) and (envId同 or moduleId同)
-        searchConditionMappingMap.put("env_id", new ResourceInfo("resource_softwareservice_env", "env_id", false));
-        searchConditionMappingMap.put("app_module_id", new ResourceInfo("resource_database_appmodule", "app_module_id", false));
+        //条件：（envId同 or envId is null) and (moduleId is null or moduleId同)
+        searchConditionMappingMap.put("env_id", new ResourceInfo("resource_softwareservice_env", "env_id", true));
+        searchConditionMappingMap.put("app_module_id", new ResourceInfo("resource_database_appmodule", "app_module_id", true));
         if (searchVo.getAppModuleId() != null && searchVo.getEnvId() != null) {
             ResourceInfo envResourceInfo = searchConditionMappingMap.get("env_id");
             ResourceInfo moduleResourceInfo = searchConditionMappingMap.get("app_module_id");
@@ -201,10 +204,10 @@ public class SearchDeployAppConfigEnvDatabaseApi extends PrivateApiComponentBase
                 Column envColumn = resourceSearchGenerateSqlUtil.addJoinTableByResourceInfo(envResourceInfo, plainSelect);
                 Column moduleColumn = resourceSearchGenerateSqlUtil.addJoinTableByResourceInfo(moduleResourceInfo, plainSelect);
 
-                //条件1：（envId同 or moduleId is null)
+                //条件1：（envId同 or  envId is null)
                 List<Expression> expressionList1 = new ArrayList<>();
                 expressionList1.add(new EqualsTo().withLeftExpression(envColumn).withRightExpression(new LongValue(searchVo.getEnvId())));
-                expressionList1.add(new IsNullExpression().withLeftExpression(moduleColumn));
+                expressionList1.add(new IsNullExpression().withLeftExpression(envColumn));
                 MultiOrExpression multiOrExpression = new MultiOrExpression(expressionList1);
                 Expression where1 = plainSelect.getWhere();
                 if (where1 == null) {
@@ -213,14 +216,15 @@ public class SearchDeployAppConfigEnvDatabaseApi extends PrivateApiComponentBase
                     plainSelect.setWhere(new AndExpression(where1, multiOrExpression));
                 }
 
-                //条件2： (envId同 or moduleId同)
+                //条件2： (moduleId is null or moduleId同)
                 List<Expression> expressionList2 = new ArrayList<>();
-                expressionList2.add(new EqualsTo().withLeftExpression(envColumn).withRightExpression(new LongValue(searchVo.getEnvId())));
                 expressionList2.add(new EqualsTo().withLeftExpression(moduleColumn).withRightExpression(new LongValue(searchVo.getAppModuleId())));
+                expressionList2.add(new IsNullExpression().withLeftExpression(moduleColumn));
                 MultiOrExpression multiOrExpression2 = new MultiOrExpression(expressionList2);
                 Expression where2 = plainSelect.getWhere();
                 plainSelect.setWhere(new AndExpression(where2, multiOrExpression2));
 
+                System.out.println(plainSelect.toString());
             } else {
                 unavailableResourceInfoList.add(envResourceInfo);
             }
@@ -294,6 +298,7 @@ public class SearchDeployAppConfigEnvDatabaseApi extends PrivateApiComponentBase
             return null;
         }
         List<ResourceInfo> theadList = new ArrayList<>();
+        theadList.add(new ResourceInfo("resource_database", "id"));
         theadList.add(new ResourceInfo("resource_database", "ip"));
         theadList.add(new ResourceInfo("resource_database", "port"));
         theadList.add(new ResourceInfo("resource_database", "name"));
