@@ -29,7 +29,6 @@ import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.expression.operators.relational.InExpression;
 import net.sf.jsqlparser.expression.operators.relational.LikeExpression;
 import net.sf.jsqlparser.schema.Column;
-import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.select.*;
 import net.sf.jsqlparser.util.cnfexpression.MultiOrExpression;
 import org.apache.commons.collections4.CollectionUtils;
@@ -176,7 +175,6 @@ public class SearchDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
         IResourceCenterCommonGenerateSqlCrossoverService resourceCenterCommonGenerateSqlCrossoverService = CrossoverServiceFactory.getApi(IResourceCenterCommonGenerateSqlCrossoverService.class);
 
         List<BiConsumer<ResourceSearchGenerateSqlUtil, PlainSelect>> biConsumerList = new ArrayList<>();
-        JSONObject commonConditionObj = new JSONObject();
         biConsumerList.add(getBiConsumerByDefaultValue(searchVo.getDefaultValue(), unavailableResourceInfoList));
         biConsumerList.add(getBiConsumerByKeyword(searchVo.getKeyword(), unavailableResourceInfoList));
 
@@ -189,32 +187,6 @@ public class SearchDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
             idList.add(resourceVo.getId());
             deployAppSystemList.add(new DeployAppSystemVo(resourceVo.getId(), resourceVo.getName(), resourceVo.getAbbrName()));
         }
-//        PlainSelect filterPlainSelect = getPlainSelectBySearchCondition(searchVo, resourceSearchGenerateSqlUtil, unavailableResourceInfoList, mainResourceId);
-//        String sql = getResourceCountSql(filterPlainSelect);
-//        if (StringUtils.isBlank(sql)) {
-//            return TableResultUtil.getResult(deployAppSystemList, searchVo);
-//        }
-//        int count = deployAppConfigMapper.getAppSystemCountNew(sql);
-//        if (count == 0) {
-//            return TableResultUtil.getResult(deployAppSystemList, searchVo);
-//        }
-//        searchVo.setRowNum(count);
-//        sql = getResourceIdListSql(filterPlainSelect, searchVo);
-//        if (StringUtils.isBlank(sql)) {
-//            return TableResultUtil.getResult(deployAppSystemList, searchVo);
-//        }
-//        List<Long> idList = deployAppConfigMapper.getAppSystemIdListNew(sql);
-//        if (CollectionUtils.isEmpty(idList)) {
-//            return TableResultUtil.getResult(deployAppSystemList, searchVo);
-//        }
-//        sql = getResourceListByIdListSql(idList, resourceSearchGenerateSqlUtil, unavailableResourceInfoList, mainResourceId);
-//        if (StringUtils.isBlank(sql)) {
-//            return TableResultUtil.getResult(deployAppSystemList, searchVo);
-//        }
-//        deployAppSystemList = deployAppConfigMapper.getAppSystemListByIdListNew(sql);
-//        if (CollectionUtils.isEmpty(deployAppSystemList)) {
-//            return TableResultUtil.getResult(deployAppSystemList, searchVo);
-//        }
         //补充是否有配置流水线
         List<Long> hasPipelineAppSystemIdList = deployAppConfigMapper.getAppConfigAppSystemIdListByAppSystemIdList(idList);
         //补充是否有已收藏
@@ -225,7 +197,7 @@ public class SearchDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
         Map<Long, List<DeployAppModuleVo>> appSystemModuleListMap = new HashMap<>();
         String keyword = searchVo.getKeyword();
         if (StringUtils.isNotBlank(keyword)) {
-            List<DeployAppSystemVo> list = getAppSystemModuleListSql(searchVo, resourceSearchGenerateSqlUtil, unavailableResourceInfoList);
+            List<DeployAppSystemVo> list = getAppSystemModuleListSql(searchVo, unavailableResourceInfoList);
             appSystemModuleListMap = list.stream().collect(Collectors.toMap(e -> e.getId(), e -> e.getAppModuleList()));
         }
 
@@ -303,18 +275,14 @@ public class SearchDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
     /**
      * 查询应用的模块列表
      * @param searchVo
-     * @param resourceSearchGenerateSqlUtil
      * @param unavailableResourceInfoList
      * @return
      */
-    private List<DeployAppSystemVo> getAppSystemModuleListSql(DeployResourceSearchVo searchVo, ResourceSearchGenerateSqlUtil resourceSearchGenerateSqlUtil, List<ResourceInfo> unavailableResourceInfoList) {
-        List<DeployAppSystemVo> resultList = new ArrayList<>();
-        //        List<ResourceInfo> unavailableResourceInfoList = new ArrayList<>();
+    private List<DeployAppSystemVo> getAppSystemModuleListSql(DeployResourceSearchVo searchVo, List<ResourceInfo> unavailableResourceInfoList) {
         IResourceCenterCommonGenerateSqlCrossoverService resourceCenterCommonGenerateSqlCrossoverService = CrossoverServiceFactory.getApi(IResourceCenterCommonGenerateSqlCrossoverService.class);
-//        JSONObject paramObj = (JSONObject) JSONObject.toJSON(searchVo);
         List<BiConsumer<ResourceSearchGenerateSqlUtil, PlainSelect>> biConsumerList = new ArrayList<>();
         biConsumerList.add(getBiConsumerByDefaultValue(searchVo.getDefaultValue(), unavailableResourceInfoList));
-        biConsumerList.add(getBiConsumerByKeyword2(searchVo.getKeyword(), unavailableResourceInfoList));
+        biConsumerList.add(getBiConsumerByKeywordModule(searchVo.getKeyword(), unavailableResourceInfoList));
 
         List<ResourceInfo> theadList = new ArrayList<>();
         theadList.add(new ResourceInfo("resource_appsystem", "id"));
@@ -326,196 +294,6 @@ public class SearchDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
             return deployAppConfigMapper.getAppSystemListByIdListNew(sql);
         }
         return new ArrayList<>();
-//        PlainSelect plainSelect = resourceSearchGenerateSqlUtil.initPlainSelectByMainResourceId(mainResourceId);
-//        if (plainSelect == null) {
-//            return null;
-//        }
-//        JSONArray defaultValue = searchVo.getDefaultValue();
-//        if (CollectionUtils.isNotEmpty(defaultValue)) {
-//            List<Long> idList = defaultValue.toJavaList(Long.class);
-//            ResourceInfo resourceInfo = new ResourceInfo("resource_appsystem","id", false);
-//            if (resourceSearchGenerateSqlUtil.additionalInformation(resourceInfo)) {
-//                Column column = resourceSearchGenerateSqlUtil.addJoinTableByResourceInfo(resourceInfo, plainSelect);
-//                InExpression inExpression = new InExpression();
-//                inExpression.setLeftExpression(column);
-//                ExpressionList expressionList = new ExpressionList();
-//                for (Long id : idList) {
-//                    expressionList.addExpressions(new LongValue(id));
-//                }
-//                inExpression.setRightItemsList(expressionList);
-//                Expression where = plainSelect.getWhere();
-//                if (where == null) {
-//                    plainSelect.setWhere(inExpression);
-//                } else {
-//                    plainSelect.setWhere(new AndExpression(where, inExpression));
-//                }
-//            } else {
-//                unavailableResourceInfoList.add(resourceInfo);
-//            }
-//        }
-//        {
-//            ResourceInfo resourceInfo = new ResourceInfo("resource_appsystem_appmodule", "app_module_id", false);
-//            if (resourceSearchGenerateSqlUtil.additionalInformation(resourceInfo)) {
-//                resourceSearchGenerateSqlUtil.addJoinTableByResourceInfo(resourceInfo, plainSelect);
-//            } else {
-//                unavailableResourceInfoList.add(resourceInfo);
-//            }
-//        }
-//        String keyword = searchVo.getKeyword();
-//        if (StringUtils.isNotBlank(keyword)) {
-//            List<ResourceInfo> keywordList = new ArrayList<>();
-//            keywordList.add(new ResourceInfo("resource_appsystem_appmodule", "app_module_name"));
-//            keywordList.add(new ResourceInfo("resource_appsystem_appmodule", "app_module_abbr_name"));
-//            keyword = "%" + keyword + "%";
-//            List<Expression> expressionList = new ArrayList<>();
-//            for (ResourceInfo resourceInfo : keywordList) {
-//                if (resourceSearchGenerateSqlUtil.additionalInformation(resourceInfo)) {
-//                    Column column = resourceSearchGenerateSqlUtil.addJoinTableByResourceInfo(resourceInfo, plainSelect);
-//                    expressionList.add(new LikeExpression().withLeftExpression(column).withRightExpression(new StringValue(keyword)));
-//                } else {
-//                    unavailableResourceInfoList.add(resourceInfo);
-//                }
-//            }
-//            MultiOrExpression multiOrExpression = new MultiOrExpression(expressionList);
-//            Expression where = plainSelect.getWhere();
-//            if (where == null) {
-//                plainSelect.setWhere(multiOrExpression);
-//            } else {
-//                plainSelect.setWhere(new AndExpression(where, multiOrExpression));
-//            }
-//        }
-//        return plainSelect.toString();
-    }
-
-    /**
-     * 拼装查询总数sql语句
-     * @param filterPlainSelect
-     * @return
-     */
-    private String getResourceCountSql(PlainSelect filterPlainSelect) {
-        Table mainTable = (Table)filterPlainSelect.getFromItem();
-        filterPlainSelect.setSelectItems(Arrays.asList(new SelectExpressionItem(new Function().withName("COUNT").withDistinct(true).withParameters(new ExpressionList(Arrays.asList(new Column(mainTable, "id")))))));
-        return filterPlainSelect.toString();
-    }
-
-    /**
-     * 拼装查询当前页id列表sql语句
-     * @param filterPlainSelect
-     * @param searchVo
-     * @return
-     */
-    private String getResourceIdListSql(PlainSelect filterPlainSelect, DeployResourceSearchVo searchVo) {
-        Table mainTable = (Table)filterPlainSelect.getFromItem();
-        List<OrderByElement> orderByElements = new ArrayList<>();
-        OrderByElement orderByElement = new OrderByElement();
-        orderByElement.withExpression(new Column(mainTable, "id")).withAsc(true);
-        orderByElements.add(orderByElement);
-        filterPlainSelect.withOrderByElements(orderByElements);
-        filterPlainSelect.withDistinct(new Distinct()).setSelectItems(Arrays.asList((new SelectExpressionItem(new Column(mainTable, "id")))));
-        filterPlainSelect.withLimit(new Limit().withOffset(new LongValue(searchVo.getStartNum())).withRowCount(new LongValue(searchVo.getPageSize())));
-        return filterPlainSelect.toString();
-    }
-
-    /**
-     * 根据查询过滤条件，生成对应的sql语句
-     * @param searchVo
-     * @param resourceSearchGenerateSqlUtil
-     * @return
-     */
-    private PlainSelect getPlainSelectBySearchCondition(DeployResourceSearchVo searchVo, ResourceSearchGenerateSqlUtil resourceSearchGenerateSqlUtil, List<ResourceInfo> unavailableResourceInfoList, String mainResourceId) {
-        PlainSelect plainSelect = resourceSearchGenerateSqlUtil.initPlainSelectByMainResourceId(mainResourceId);
-        if (plainSelect == null) {
-            return null;
-        }
-
-        Map<String, ResourceInfo> searchConditionMappingMap = new HashMap<>();
-        searchConditionMappingMap.put("defaultValue", new ResourceInfo("resource_appsystem","id", false));
-        JSONArray defaultValue = searchVo.getDefaultValue();
-        if (CollectionUtils.isNotEmpty(defaultValue)) {
-            List<Long> idList = defaultValue.toJavaList(Long.class);
-            ResourceInfo resourceInfo = searchConditionMappingMap.get("defaultValue");
-            if (resourceSearchGenerateSqlUtil.additionalInformation(resourceInfo)) {
-                Column column = resourceSearchGenerateSqlUtil.addJoinTableByResourceInfo(resourceInfo, plainSelect);
-                InExpression inExpression = new InExpression();
-                inExpression.setLeftExpression(column);
-                ExpressionList expressionList = new ExpressionList();
-                for (Long id : idList) {
-                    expressionList.addExpressions(new LongValue(id));
-                }
-                inExpression.setRightItemsList(expressionList);
-                Expression where = plainSelect.getWhere();
-                if (where == null) {
-                    plainSelect.setWhere(inExpression);
-                } else {
-                    plainSelect.setWhere(new AndExpression(where, inExpression));
-                }
-            } else {
-                unavailableResourceInfoList.add(resourceInfo);
-            }
-        }
-        String keyword = searchVo.getKeyword();
-        if (StringUtils.isNotBlank(keyword)) {
-            List<ResourceInfo> keywordList = new ArrayList<>();
-            keywordList.add(new ResourceInfo("resource_appsystem", "name"));
-            keywordList.add(new ResourceInfo("resource_appsystem", "abbr_name"));
-            keywordList.add(new ResourceInfo("resource_appsystem_appmodule", "app_module_name"));
-            keywordList.add(new ResourceInfo("resource_appsystem_appmodule", "app_module_abbr_name"));
-            keyword = "%" + keyword + "%";
-            List<Expression> expressionList = new ArrayList<>();
-            for (ResourceInfo resourceInfo : keywordList) {
-                if (resourceSearchGenerateSqlUtil.additionalInformation(resourceInfo)) {
-                    Column column = resourceSearchGenerateSqlUtil.addJoinTableByResourceInfo(resourceInfo, plainSelect);
-                    expressionList.add(new LikeExpression().withLeftExpression(column).withRightExpression(new StringValue(keyword)));
-                } else {
-                    unavailableResourceInfoList.add(resourceInfo);
-                }
-            }
-            MultiOrExpression multiOrExpression = new MultiOrExpression(expressionList);
-            Expression where = plainSelect.getWhere();
-            if (where == null) {
-                plainSelect.setWhere(multiOrExpression);
-            } else {
-                plainSelect.setWhere(new AndExpression(where, multiOrExpression));
-            }
-        }
-        return plainSelect;
-    }
-
-    /**
-     * 根据需要查询的列，生成对应的sql语句
-     * @param idList
-     * @param resourceSearchGenerateSqlUtil
-     * @return
-     */
-    public String getResourceListByIdListSql(List<Long> idList, ResourceSearchGenerateSqlUtil resourceSearchGenerateSqlUtil, List<ResourceInfo> unavailableResourceInfoList, String mainResourceId) {
-        PlainSelect plainSelect = resourceSearchGenerateSqlUtil.initPlainSelectByMainResourceId(mainResourceId);
-        if (plainSelect == null) {
-            return null;
-        }
-        List<ResourceInfo> theadList = new ArrayList<>();
-        theadList.add(new ResourceInfo("resource_appsystem", "id"));
-        theadList.add(new ResourceInfo("resource_appsystem", "name"));
-        theadList.add(new ResourceInfo("resource_appsystem", "abbr_name"));
-        for (ResourceInfo resourceInfo : theadList) {
-            if (resourceSearchGenerateSqlUtil.additionalInformation(resourceInfo)) {
-                resourceSearchGenerateSqlUtil.addJoinTableByResourceInfo(resourceInfo, plainSelect);
-            } else {
-                unavailableResourceInfoList.add(resourceInfo);
-            }
-        }
-        InExpression inExpression = new InExpression();
-        inExpression.setLeftExpression(new Column((Table) plainSelect.getFromItem(), "id"));
-        ExpressionList expressionList = new ExpressionList();
-        for (Object id : idList) {
-            if (id instanceof Long) {
-                expressionList.addExpressions(new LongValue((Long)id));
-            } else if (id instanceof String) {
-                expressionList.addExpressions(new StringValue((String)id));
-            }
-        }
-        inExpression.setRightItemsList(expressionList);
-        plainSelect.setWhere(inExpression);
-        return plainSelect.toString();
     }
 
     private List<ResourceInfo> getTheadList() {
@@ -572,7 +350,7 @@ public class SearchDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
         return biConsumer;
     }
 
-    private BiConsumer<ResourceSearchGenerateSqlUtil, PlainSelect> getBiConsumerByKeyword2(String keyword, List<ResourceInfo> unavailableResourceInfoList) {
+    private BiConsumer<ResourceSearchGenerateSqlUtil, PlainSelect> getBiConsumerByKeywordModule(String keyword, List<ResourceInfo> unavailableResourceInfoList) {
         BiConsumer<ResourceSearchGenerateSqlUtil, PlainSelect> biConsumer = new BiConsumer<ResourceSearchGenerateSqlUtil, PlainSelect>() {
             @Override
             public void accept(ResourceSearchGenerateSqlUtil resourceSearchGenerateSqlUtil, PlainSelect plainSelect) {
