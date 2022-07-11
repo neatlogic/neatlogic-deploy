@@ -6,22 +6,30 @@
 package codedriver.module.deploy.api.job;
 
 import codedriver.framework.asynchronization.threadlocal.TenantContext;
+import codedriver.framework.autoexec.constvalue.ToolType;
+import codedriver.framework.autoexec.dto.combop.AutoexecCombopPhaseOperationVo;
+import codedriver.framework.autoexec.dto.combop.AutoexecCombopScenarioVo;
 import codedriver.framework.cmdb.crossover.ICiEntityCrossoverMapper;
 import codedriver.framework.cmdb.dao.mapper.resourcecenter.ResourceCenterMapper;
 import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.crossover.CrossoverServiceFactory;
+import codedriver.framework.deploy.dto.app.DeployAppConfigVo;
 import codedriver.framework.deploy.dto.app.DeployAppEnvironmentVo;
+import codedriver.framework.deploy.dto.app.DeployPipelineConfigVo;
+import codedriver.framework.deploy.dto.app.DeployPipelinePhaseVo;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.deploy.dao.mapper.DeployAppConfigMapper;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -65,10 +73,33 @@ public class GetDeployJobCreateInfoApi extends PrivateApiComponentBase {
         if (jsonObj.containsKey("appModuleId")) {
             appModuleId = jsonObj.getLong("appModuleId");
         }
-//        DeployAppConfigVo appConfigVo = deployAppConfigMapper.getAppConfigVo(new DeployAppConfigVo(appSystemId, appModuleId, 0L));
-//        DeployPipelineConfigVo pipelineConfigVo = appConfigVo.getConfig();
         //场景
-//        result.put("scenarioList", pipelineConfigVo.getScenarioList());
+        DeployAppConfigVo appConfigVo = deployAppConfigMapper.getAppConfigVo(new DeployAppConfigVo(appSystemId, appModuleId, 0L));
+        DeployPipelineConfigVo pipelineConfigVo = appConfigVo.getConfig();
+        /*补充当前场景是否有BUILD分类的工具，前端需要根据此标识调用 不同的选择版本下拉接口*/
+        List<AutoexecCombopScenarioVo> scenarioList = pipelineConfigVo.getScenarioList();
+
+        //1、找出当前组合工具的所有包含BUILD分类的工具的阶段
+        List<DeployPipelinePhaseVo> combopPhaseList = pipelineConfigVo.getCombopPhaseList();
+        List<String> combopPhaseListHasToolType = new ArrayList<>();
+        for (DeployPipelinePhaseVo pipelinePhaseVo : combopPhaseList) {
+            List<AutoexecCombopPhaseOperationVo> phaseOperationList = pipelinePhaseVo.getConfig().getPhaseOperationList();
+            for (AutoexecCombopPhaseOperationVo operationVo : phaseOperationList) {
+                if (StringUtils.equals(ToolType.TOOL.getValue(), operationVo.getOperationType()) && StringUtils.equals(operationVo.getTypeName(), "build")) {
+                    combopPhaseListHasToolType.add(pipelinePhaseVo.getName());
+                }
+            }
+        }
+
+        //2、查询场景的阶段列表是否有BUILD分类的工具
+        if (CollectionUtils.isNotEmpty(scenarioList)) {
+            for (AutoexecCombopScenarioVo scenarioVo : scenarioList) {
+                if (CollectionUtils.isNotEmpty(scenarioVo.getCombopPhaseNameList()) && Collections.disjoint(combopPhaseListHasToolType, scenarioVo.getCombopPhaseNameList())) {
+                    scenarioVo.setIsHasBuildTypeTool(1);
+                }
+            }
+        }
+        result.put("scenarioList", scenarioList);
 
         //环境 根据appSystemId、appModuleId 获取 envList
         //模块 根据appSystemId、appModuleId 获取 appModuleList
@@ -87,8 +118,6 @@ public class GetDeployJobCreateInfoApi extends PrivateApiComponentBase {
         }
         result.put("envList", envList);
         result.put("appModuleList", appModuleList);
-
-
         return result;
     }
 

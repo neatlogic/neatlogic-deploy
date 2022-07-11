@@ -514,18 +514,20 @@
         WHERE raa.resource_id = #{searchVo.appSystemId}
         AND ria.app_module_id = #{searchVo.appModuleId}
         AND rse.env_id = #{searchVo.envId}
-        AND rse.resource_id
-        <if test="searchVo.isAutoConfig == 1">
-            in
+        <if test="searchVo.isAutoConfig != null">
+            AND rse.resource_id
+            <if test="searchVo.isAutoConfig == 1">
+                in
+            </if>
+            <if test="searchVo.isAutoConfig == 0">
+                not in
+            </if>
+            (select `instance_id`
+            from deploy_app_env_auto_config
+            WHERE `app_system_id` = #{searchVo.appSystemId}
+            and `app_module_id` = #{searchVo.appModuleId}
+            and `env_id` = #{searchVo.envId})
         </if>
-        <if test="searchVo.isAutoConfig == 0">
-            not in
-        </if>
-        (select `instance_id`
-        from deploy_app_env_auto_config
-        WHERE `app_system_id` = #{searchVo.appSystemId}
-        and `app_module_id` = #{searchVo.appModuleId}
-        and `env_id` = #{searchVo.envId})
     </sql>
 
     <select id="getAppModuleEnvAutoConfigInstanceIdCount" resultType="int">
@@ -864,6 +866,27 @@
         WHERE `app_system_id` = #{appSystemId}
           and `app_module_id` = #{appModuleId}
           and `env_id` = #{envId}
+    </select>
+
+    <select id="getAppModuleListBySystemIdAndEnvId"
+            resultType="codedriver.framework.deploy.dto.app.DeployAppModuleVo">
+        SELECT distinct raa.app_module_id        as id,
+                        raa.app_module_name      as name,
+                        raa.app_module_abbr_name as abbrName
+        FROM ${schemaName}.resource_appsystem_appmodule raa
+                 LEFT JOIN ${schemaName}.resource_ipobject_appmodule ria ON ria.app_module_id = raa.app_module_id
+                 LEFT JOIN ${schemaName}.resource_softwareservice_env rse ON rse.resource_id = ria.resource_id
+        WHERE raa.resource_id = #{appSystemId}
+          AND rse.env_id = #{envId}
+    </select>
+
+    <select id="getAppModuleCountBySystemIdAndEnvId" resultType="java.lang.Integer">
+        SELECT count(distinct raa.app_module_id)
+        FROM ${schemaName}.resource_appsystem_appmodule raa
+                 LEFT JOIN ${schemaName}.resource_ipobject_appmodule ria ON ria.app_module_id = raa.app_module_id
+                 LEFT JOIN ${schemaName}.resource_softwareservice_env rse ON rse.resource_id = ria.resource_id
+        WHERE raa.resource_id = #{appSystemId}
+          AND rse.env_id = #{envId}
     </select>
 
     <insert id="insertAppConfigAuthority">

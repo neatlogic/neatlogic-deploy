@@ -224,7 +224,6 @@ public class SearchDeployAppConfigEnvDatabaseApi extends PrivateApiComponentBase
                 Expression where2 = plainSelect.getWhere();
                 plainSelect.setWhere(new AndExpression(where2, multiOrExpression2));
 
-                System.out.println(plainSelect.toString());
             } else {
                 unavailableResourceInfoList.add(envResourceInfo);
             }
