@@ -85,7 +85,7 @@ public class GetDeployJobCreateInfoApi extends PrivateApiComponentBase {
         for (DeployPipelinePhaseVo pipelinePhaseVo : combopPhaseList) {
             List<AutoexecCombopPhaseOperationVo> phaseOperationList = pipelinePhaseVo.getConfig().getPhaseOperationList();
             for (AutoexecCombopPhaseOperationVo operationVo : phaseOperationList) {
-                if (StringUtils.equals(ToolType.TOOL.getValue(), operationVo.getOperationType()) && StringUtils.equals(operationVo.getTypeName(), "build")) {
+                if (StringUtils.equals(ToolType.TOOL.getValue(), operationVo.getOperationType()) && StringUtils.equals(operationVo.getTypeName(), "BUILD")) {
                     combopPhaseListHasBuildTypeTool.add(pipelinePhaseVo.getName());
                 }
             }
