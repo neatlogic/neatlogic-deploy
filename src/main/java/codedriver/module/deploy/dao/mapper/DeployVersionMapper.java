@@ -35,4 +35,8 @@ public interface DeployVersionMapper {
 
     int deleteDeployVersionBySystemIdAndModuleIdAndVersion(DeployVersionVo versionVo);
 
+    int deleteDeployVersionBuildNoByVersionId(Long versionId);
+
+    int deleteDeployVersionEnvByVersionId(Long versionId);
+
 }

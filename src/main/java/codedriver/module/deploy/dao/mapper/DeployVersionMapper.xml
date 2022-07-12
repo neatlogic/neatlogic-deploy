@@ -179,4 +179,16 @@
         from deploy_version
         where version = #{version} and app_system_id = #{appSystemId} and app_module_id = #{appModuleId}
     </delete>
+
+    <delete id="deleteDeployVersionBuildNoByVersionId" parameterType="java.lang.Long">
+        delete
+        from deploy_version_buildno
+        where version_id = #{value}
+    </delete>
+
+    <delete id="deleteDeployVersionEnvByVersionId" parameterType="java.lang.Long">
+        delete
+        from deploy_version_env
+        where version_id = #{value}
+    </delete>
 </mapper>
