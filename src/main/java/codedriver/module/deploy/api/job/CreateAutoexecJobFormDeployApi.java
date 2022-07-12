@@ -8,13 +8,18 @@ package codedriver.module.deploy.api.job;
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.autoexec.auth.AUTOEXEC_BASE;
 import codedriver.framework.autoexec.constvalue.JobAction;
+import codedriver.framework.autoexec.crossover.IAutoexecJobActionCrossoverService;
 import codedriver.framework.autoexec.dto.job.AutoexecJobVo;
 import codedriver.framework.autoexec.job.action.core.AutoexecJobActionHandlerFactory;
 import codedriver.framework.autoexec.job.action.core.IAutoexecJobActionHandler;
+import codedriver.framework.cmdb.crossover.ICiEntityCrossoverMapper;
+import codedriver.framework.cmdb.exception.cientity.CiEntityNotFoundException;
 import codedriver.framework.common.constvalue.ApiParamType;
+import codedriver.framework.crossover.CrossoverServiceFactory;
 import codedriver.framework.deploy.constvalue.CombopOperationType;
 import codedriver.framework.deploy.dto.app.DeployAppConfigVo;
 import codedriver.framework.deploy.exception.DeployAppConfigNotFoundException;
+import codedriver.framework.exception.type.ParamIrregularException;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
@@ -54,13 +59,17 @@ public class CreateAutoexecJobFormDeployApi extends PrivateApiComponentBase {
 
     @Input({
             @Param(name = "scenarioId", type = ApiParamType.LONG, desc = "场景id"),
-            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "应用系统id"),
-            @Param(name = "appModuleId", type = ApiParamType.LONG, isRequired = true, desc = "模块id"),
-            @Param(name = "envId", type = ApiParamType.LONG, isRequired = true, desc = "环境id"),
+            @Param(name = "scenarioName", type = ApiParamType.STRING, desc = "场景名, 如果入参也有scenarioId，则会以scenarioName为准"),
+            @Param(name = "appSystemId", type = ApiParamType.LONG, desc = "应用系统id"),
+            @Param(name = "appSystemName", type = ApiParamType.LONG, desc = "应用系统名，如果入参也有appSystemId，则会以appSystemName为准"),
+            @Param(name = "appModuleId", type = ApiParamType.LONG, desc = "模块id"),
+            @Param(name = "appModuleName", type = ApiParamType.LONG, desc = "模块名，如果入参也有appModuleId，则会以appModuleName为准"),
+            @Param(name = "envId", type = ApiParamType.LONG, desc = "环境id"),
+            @Param(name = "envName", type = ApiParamType.LONG, desc = "环境id，如果入参也有envId，则会以envName为准"),
+            @Param(name = "buildNo", type = ApiParamType.INTEGER, desc = "编译号"),
             @Param(name = "version", type = ApiParamType.STRING, isRequired = true, desc = "版本"),
             @Param(name = "param", type = ApiParamType.JSONOBJECT, isRequired = true, desc = "执行参数"),
             @Param(name = "source", type = ApiParamType.STRING, isRequired = true, desc = "来源 itsm|human|deploy   ITSM|人工发起的等，不传默认是人工发起的"),
-            @Param(name = "invokeId", type = ApiParamType.LONG, desc = "来源id"),
             @Param(name = "threadCount", type = ApiParamType.LONG, isRequired = true, desc = "并发线程,2的n次方 "),
             @Param(name = "executeConfig", type = ApiParamType.JSONOBJECT, desc = "执行目标"),
     })
@@ -70,12 +79,41 @@ public class CreateAutoexecJobFormDeployApi extends PrivateApiComponentBase {
     @ResubmitInterval(value = 2)
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
+        ICiEntityCrossoverMapper iCiEntityCrossoverMapper = CrossoverServiceFactory.getApi(ICiEntityCrossoverMapper.class);
+        if(jsonObj.containsKey("appSystemName")){
+            if (iCiEntityCrossoverMapper.getCiEntityBaseInfoById(jsonObj.getLong("appSystemId")) == null) {
+                throw new CiEntityNotFoundException(jsonObj.getLong("appSystemName"));
+            }
+        }else if(jsonObj.containsKey("appSystemId")){
+
+           /* if (iCiEntityCrossoverMapper.getCiEntityBaseInfoByName() == null) {
+                throw new CiEntityNotFoundException(jsonObj.getLong("appSystemId"));
+            }*/
+        }else{
+            throw new ParamIrregularException("appSystemId | appSystemName");
+        }
+
+
+        if (iCiEntityCrossoverMapper.getCiEntityBaseInfoById(jsonObj.getLong("appSystemId")) == null) {
+            throw new CiEntityNotFoundException(jsonObj.getLong("appSystemId"));
+        }
+        if (iCiEntityCrossoverMapper.getCiEntityBaseInfoById(jsonObj.getLong("appModuleId")) == null) {
+            throw new CiEntityNotFoundException(jsonObj.getLong("appModuleId"));
+        }
+
         jsonObj.put("operationType", CombopOperationType.PIPELINE.getValue());
-        jsonObj.put("operationId", getOperationId(jsonObj));
-        AutoexecJobVo jobVo = null;
+        Long invokeId = getOperationId(jsonObj);
+        jsonObj.put("operationId", invokeId);
+        jsonObj.put("invokeId", invokeId);
+        IAutoexecJobActionCrossoverService autoexecJobActionCrossoverService = CrossoverServiceFactory.getApi(IAutoexecJobActionCrossoverService.class);
+        AutoexecJobVo jobVo = autoexecJobActionCrossoverService.validateAndCreateJobFromCombop(jsonObj, false);
         IAutoexecJobActionHandler fireAction = AutoexecJobActionHandlerFactory.getAction(JobAction.FIRE.getValue());
         jobVo.setAction(JobAction.FIRE.getValue());
         jobVo.setIsFirstFire(1);
+        //JSONObject environment = new JSONObject();
+        //environment.put("_VERSION",jsonObj.getString("version"));
+        //environment.put("_BUILD_NO",jsonObj.getInteger("buildNo"));
+        //jobVo.setEnvironment(environment);
         fireAction.doService(jobVo);
         return new JSONObject() {{
             put("jobId", jobVo.getId());
@@ -88,20 +126,20 @@ public class CreateAutoexecJobFormDeployApi extends PrivateApiComponentBase {
      * @param jsonObj 入参
      * @return 来源id
      */
-    private Long getOperationId(JSONObject jsonObj){
+    private Long getOperationId(JSONObject jsonObj) {
         Long appSystemId = jsonObj.getLong("appSystemId");
         Long appModuleId = jsonObj.getLong("appModuleId");
         Long envId = jsonObj.getLong("envId");
         List<DeployAppConfigVo> appConfigVoList = deployAppConfigMapper.getAppConfigListByAppSystemId(appSystemId);
-        Map<String,Long> operationIdMap = appConfigVoList.stream().collect(Collectors.toMap(o->o.getAppSystemId().toString()+"-"+o.getAppModuleId().toString()+"-"+o.getEnvId().toString(),DeployAppConfigVo::getId));
-        Long operationId = operationIdMap.get(appSystemId.toString()+"-"+appModuleId.toString()+"-"+envId.toString());
-        if(operationId == null){
-            operationId = operationIdMap.get(appSystemId +"-"+ appModuleId +"-0");
+        Map<String, Long> operationIdMap = appConfigVoList.stream().collect(Collectors.toMap(o -> o.getAppSystemId().toString() + "-" + o.getAppModuleId().toString() + "-" + o.getEnvId().toString(), DeployAppConfigVo::getId));
+        Long operationId = operationIdMap.get(appSystemId.toString() + "-" + appModuleId.toString() + "-" + envId.toString());
+        if (operationId == null) {
+            operationId = operationIdMap.get(appSystemId + "-" + appModuleId + "-0");
         }
-        if(operationId == null){
-            operationId = operationIdMap.get(appSystemId +"-0"+"-0");
+        if (operationId == null) {
+            operationId = operationIdMap.get(appSystemId + "-0" + "-0");
         }
-        if(operationId == null){
+        if (operationId == null) {
             throw new DeployAppConfigNotFoundException(appModuleId);
         }
         return operationId;

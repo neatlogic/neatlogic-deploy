@@ -54,7 +54,7 @@ public class DeployVersionServiceImp implements DeployVersionService {
             }
             runnerMapId = job.getRunnerMapId();
         }
-        RunnerMapVo runner = runnerMapper.getRunnerByRunnerMapId(runnerMapId);
+        RunnerMapVo runner = runnerMapper.getRunnerMapByRunnerMapId(runnerMapId);
         if (runner == null) {
             throw new RunnerNotFoundByRunnerMapIdException(runnerMapId);
         }
@@ -104,7 +104,7 @@ public class DeployVersionServiceImp implements DeployVersionService {
             String moduleName = ciEntityCrossoverService.getCiEntityNameByCiEntityId(appModuleId);
             throw new DeployJobNotFoundException(appName != null ? appName : appSystemId.toString(), moduleName != null ? moduleName : appModuleId.toString());
         }
-        RunnerMapVo runner = runnerMapper.getRunnerByRunnerMapId(runnerMapId);
+        RunnerMapVo runner = runnerMapper.getRunnerMapByRunnerMapId(runnerMapId);
         if (runner == null) {
             throw new RunnerNotFoundByRunnerMapIdException(runnerMapId);
         }

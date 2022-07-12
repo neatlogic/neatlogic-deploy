@@ -20,6 +20,8 @@ public interface DeployVersionMapper {
 
     DeployVersionVo getDeployVersionById(Long id);
 
+    DeployVersionVo getVersionByAppSystemIdAndAppModuleIdAndVersion(Long appSystemId, Long appModuleId, String version);
+
     List<DeployVersionVo> searchDeployVersion(DeployVersionVo versionVo);
 
     List<DeployVersionBuildNoVo> searchDeployVersionBuildNoList(DeployVersionBuildNoVo versionBuildNoVo);
@@ -28,10 +30,22 @@ public interface DeployVersionMapper {
 
     Long getJobIdByDeployVersionIdAndEnvId(@Param("versionId") Long versionId, @Param("envId") Long envId);
 
-    void unLockDeployVersionById(@Param("id") Long id, @Param("isLocked") Long isLocked);
+    DeployVersionVo getDeployVersionBySystemIdAndModuleIdAndVersion(DeployVersionVo versionVo);
 
-    void insertDeployVersion(DeployVersionVo versionVo);
+    int unLockDeployVersionById(@Param("id") Long id, @Param("isLocked") Long isLocked);
 
-    void deleteDeployVersionById(Long id);
+    Integer getDeployVersionMaxBuildNoByVersionIdLock(Long id);
+
+    int updateDeployVersionConfigById(@Param("id") Long id, @Param("config") String configStr);
+
+    int insertDeployVersion(DeployVersionVo versionVo);
+
+    int deleteDeployVersionById(Long id);
+
+    int deleteDeployVersionBuildNoByVersionId(Long versionId);
+
+    int deleteDeployVersionEnvByVersionId(Long versionId);
+
+    int deleteDeployVersionBuildNoByVersionIdAndBuildNo(@Param("versionId") Long versionId, @Param("buildNo") Integer buildNo);
 
 }

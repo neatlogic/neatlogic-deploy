@@ -39,9 +39,9 @@
         limit #{searchVo.startNum}, #{searchVo.pageSize}
     </select>
 
-    <resultMap id="appConfigSystemMap" type="codedriver.framework.deploy.dto.app.DeployAppConfigResourceVo">
-        <result column="appSystemId" property="appSystemId"/>
-        <result column="appSystemName" property="appSystemName"/>
+    <resultMap id="appConfigSystemMap" type="codedriver.framework.deploy.dto.app.DeployAppSystemVo">
+        <result column="appSystemId" property="id"/>
+        <result column="appSystemName" property="name"/>
         <result column="isFavorite" property="isFavorite"/>
         <result column="isConfig" property="isConfig"/>
         <collection property="appModuleList" ofType="codedriver.framework.deploy.dto.app.DeployAppModuleVo">
@@ -53,7 +53,7 @@
     <select id="getAppSystemListByIdList" resultMap="appConfigSystemMap">
         select ce.id as appSystemId,ce.`name` as appSystemName, if(dacu.user_uuid is null,0,1) as isFavorite,
         if(dac.config is null,0,1) as isConfig
-        from  cmdb_cientity ce
+        from cmdb_cientity ce
         left join deploy_app_config_user dacu on ce.id = dacu.app_system_id and dacu.user_uuid = #{userUuid}
         left join deploy_app_config dac on ce.id = dac.app_system_id and dac.app_module_id = 0 and dac.env_id = 0
         where ce.id in
@@ -78,10 +78,10 @@
             #{id}
         </foreach>
         <choose>
-            <when  test="isConfig != null and isConfig == 1">
+            <when test="isConfig != null and isConfig == 1">
                 and dac.`config` is not NULL
             </when>
-            <when  test="isConfig != null and isConfig == 0">
+            <when test="isConfig != null and isConfig == 0">
                 and dac.`config` is NULL
             </when>
             <otherwise>
@@ -90,14 +90,14 @@
     </select>
 
     <select id="getAppSystemListByUserUuid" resultMap="appConfigSystemMap">
-        select cc.id                            as appSystemId,
-               cc.name                          as appSystemName,
-               if(dacu.user_uuid is null, 0, 1) as isFavorite,
-               if(dac.config is null, 0, 1)     as isConfig
+        select cc.id as appSystemId,
+        cc.name as appSystemName,
+        if(dacu.user_uuid is null, 0, 1) as isFavorite,
+        if(dac.config is null, 0, 1) as isConfig
         FROM cmdb_cientity cc
-                 JOIN cmdb_ci cci ON cc.ci_id = cci.id AND cci.name = 'APP'
-                 left join deploy_app_config_user dacu on cc.id = dacu.app_system_id and dacu.user_uuid = #{userUuid}
-                 left join deploy_app_config dac on cc.id = dac.app_system_id and dac.app_module_id = 0 and dac.env_id = 0
+        JOIN cmdb_ci cci ON cc.ci_id = cci.id AND cci.name = 'APP'
+        left join deploy_app_config_user dacu on cc.id = dacu.app_system_id and dacu.user_uuid = #{userUuid}
+        left join deploy_app_config dac on cc.id = dac.app_system_id and dac.app_module_id = 0 and dac.env_id = 0
         <where>
             <choose>
                 <when test="searchVo.isConfig != null and searchVo.isConfig == 1">
@@ -210,7 +210,7 @@
     <select id="getAppConfigVo" parameterType="codedriver.framework.deploy.dto.app.DeployAppConfigVo"
             resultType="codedriver.framework.deploy.dto.app.DeployAppConfigVo">
         SELECT `app_system_id` as appSystemId,
-               `app_module_id`     as appModuleId,
+               `app_module_id` as appModuleId,
                `env_id`        as envId,
                `config`        as configStr,
                `fcd`,
@@ -235,7 +235,7 @@
     <select id="getAppConfigOverrideListByAppSystemId" parameterType="java.lang.Long"
             resultType="codedriver.framework.deploy.dto.app.DeployAppConfigOverrideVo">
         SELECT `app_system_id` AS appSystemId,
-               `app_module_id`     AS appModuleId,
+               `app_module_id` AS appModuleId,
                `env_id`        AS envId,
                `config`        AS configStr
         FROM `deploy_app_config_override`
@@ -245,7 +245,7 @@
     <select id="getAppConfigDraft" parameterType="codedriver.framework.deploy.dto.app.DeployAppConfigVo"
             resultType="codedriver.framework.deploy.dto.app.DeployAppConfigVo">
         SELECT `app_system_id` as appSystemId,
-               `app_module_id`     as appModuleId,
+               `app_module_id` as appModuleId,
                `env_id`        as envId,
                `config`        as configStr,
                `fcd`,
@@ -290,7 +290,7 @@
             a.lft &gt;= ( SELECT a.lft FROM `cmdb_ci` a WHERE a.name = 'APPIns' )
             AND a.rht &lt;= ( SELECT a.rht FROM `cmdb_ci` a WHERE a.name = 'APPIns' ))
             <if test="appSystemId != null">
-                AND   raa.resource_id = #{appSystemId}
+                AND raa.resource_id = #{appSystemId}
             </if>
             <if test="appModuleIdList != null and appModuleIdList.size() > 0">
                 and ria.app_module_id in
@@ -327,7 +327,7 @@
     <select id="getDeployAppHasNotEnvListByAppSystemIdAndModuleIdList"
             resultType="codedriver.framework.deploy.dto.app.DeployAppEnvironmentVo">
         SELECT a.`id`,
-               a.`name`
+        a.`name`
         FROM `cmdb_cientity` a
         JOIN `cmdb_ci` b ON a.ci_id = b.id
         WHERE b.name = 'APPEnv'
@@ -432,10 +432,10 @@
         )
     </select>
 
-    <select id="getAppEnvAutoConfigKeyValueList" parameterType="codedriver.framework.deploy.dto.app.DeployAppEnvAutoConfigVo"
+    <select id="getAppEnvAutoConfigKeyValueList"
+            parameterType="codedriver.framework.deploy.dto.app.DeployAppEnvAutoConfigVo"
             resultType="codedriver.framework.deploy.dto.app.DeployAppEnvAutoConfigKeyValueVo">
-        select
-               `key`,
+        select `key`,
                `value`
         from deploy_app_env_auto_config
         WHERE `app_system_id` = #{appSystemId}
@@ -451,6 +451,19 @@
         <collection property="runnerList" ofType="codedriver.framework.dto.runner.RunnerVo">
             <id column="runnerId" property="id"/>
             <result column="runnerName" property="name"/>
+            <result column="runnerUrl" property="url"/>
+            <result column="runnerAccessKey" property="accessKey"/>
+            <result column="runnerAccessSecret" property="accessSecret"/>
+            <result column="runnerAuthType" property="authType"/>
+            <result column="runnerNettyIp" property="nettyIp"/>
+            <result column="runnerNettyPort" property="nettyPort"/>
+            <result column="runnerHost" property="host"/>
+            <result column="runnerPort" property="port"/>
+        </collection>
+        <collection property="runnerMapList" ofType="codedriver.framework.dto.runner.RunnerMapVo">
+            <id column="runnerId" property="id"/>
+            <result column="runnerName" property="name"/>
+            <result column="runnerMapId" property="runnerMapId"/>
             <result column="runnerUrl" property="url"/>
             <result column="runnerAccessKey" property="accessKey"/>
             <result column="runnerAccessSecret" property="accessSecret"/>
@@ -476,11 +489,13 @@
                r.`netty_ip`      AS runnerNettyIp,
                r.`netty_port`    AS runnerNettyPort,
                r.`host`          AS runnerHost,
-               r.`port`          AS runnerPort
+               r.`port`          AS runnerPort,
+               rm.id             as runnerMapId
         FROM deploy_app_module_runner_group damrg
                  JOIN runnergroup rg ON rg.id = damrg.runner_group_id
                  LEFT JOIN runnergroup_runner rgr ON rg.`id` = rgr.`runnergroup_id`
                  LEFT JOIN runner r ON r.`id` = rgr.`runner_id`
+                 LEFT JOIN `runner_map` rm ON r.`id` = rm.`runner_id`
         WHERE damrg.app_system_id = #{appSystemId}
           AND damrg.app_module_id = #{appModuleId}
     </select>
@@ -550,7 +565,8 @@
         AND rse.env_id = #{searchVo.envId}
         WHERE ra.id NOT IN (SELECT resource_id FROM ${schemaName}.resource_ipobject_appmodule)
         <if test="searchVo.keyword != null and searchVo.keyword != ''">
-            AND ra.`ip` LIKE concat('%', #{searchVo.keyword}, '%') or ra.`port` LIKE concat('%', #{searchVo.keyword}, '%')
+            AND ra.`ip` LIKE concat('%', #{searchVo.keyword}, '%') or ra.`port` LIKE concat('%', #{searchVo.keyword},
+            '%')
         </if>
         )
         UNION
@@ -558,7 +574,8 @@
         FROM ${schemaName}.resource_appinstance ra
         WHERE ra.id NOT IN (SELECT resource_id FROM ${schemaName}.resource_softwareservice_env)
         <if test="searchVo.keyword != null and searchVo.keyword != ''">
-            AND ra.`ip` LIKE concat('%', #{searchVo.keyword}, '%') or ra.`port` LIKE concat('%', #{searchVo.keyword}, '%')
+            AND ra.`ip` LIKE concat('%', #{searchVo.keyword}, '%') or ra.`port` LIKE concat('%', #{searchVo.keyword},
+            '%')
         </if>
         )) a
         WHERE a.id NOT IN (
@@ -584,7 +601,8 @@
         AND rse.env_id = #{searchVo.envId}
         WHERE ra.id NOT IN (SELECT resource_id FROM ${schemaName}.resource_ipobject_appmodule)
         <if test="searchVo.keyword != null and searchVo.keyword != ''">
-            AND ra.`ip` LIKE concat('%', #{searchVo.keyword}, '%') or ra.`port` LIKE concat('%', #{searchVo.keyword}, '%')
+            AND ra.`ip` LIKE concat('%', #{searchVo.keyword}, '%') or ra.`port` LIKE concat('%', #{searchVo.keyword},
+            '%')
         </if>)
         UNION
         (SELECT ra.id,
@@ -593,7 +611,8 @@
         FROM ${schemaName}.resource_appinstance ra
         WHERE ra.id NOT IN (SELECT resource_id FROM ${schemaName}.resource_softwareservice_env)
         <if test="searchVo.keyword != null and searchVo.keyword != ''">
-            AND ra.`ip` LIKE concat('%', #{searchVo.keyword}, '%') or ra.`port` LIKE concat('%', #{searchVo.keyword}, '%')
+            AND ra.`ip` LIKE concat('%', #{searchVo.keyword}, '%') or ra.`port` LIKE concat('%', #{searchVo.keyword},
+            '%')
         </if>)) a
         WHERE a.id NOT IN (
         SELECT rse.resource_id
@@ -618,10 +637,10 @@
                 ra.`name` LIKE concat('%', #{keyword}, '%') or raa.app_module_name LIKE concat('%', #{keyword}, '%')
             </if>
             <choose>
-                <when  test="isConfig != null and isConfig == 1">
+                <when test="isConfig != null and isConfig == 1">
                     and dac.`config` is not NULL
                 </when>
-                <when  test="isConfig != null and isConfig == 0">
+                <when test="isConfig != null and isConfig == 0">
                     and dac.`config` is NULL
                 </when>
                 <otherwise>
@@ -639,10 +658,10 @@
         </if>
         where b.name = 'APP'
         <choose>
-            <when  test="isConfig != null and isConfig == 1">
+            <when test="isConfig != null and isConfig == 1">
                 and dac.`config` is not NULL
             </when>
-            <when  test="isConfig != null and isConfig == 0">
+            <when test="isConfig != null and isConfig == 0">
                 and dac.`config` is NULL
             </when>
             <otherwise>
@@ -652,7 +671,7 @@
     <select id="getAppConfigListByAppSystemId"
             resultType="codedriver.framework.deploy.dto.app.DeployAppConfigVo">
         SELECT `app_system_id` as appSystemId,
-               `app_module_id`     as appModuleId,
+               `app_module_id` as appModuleId,
                `env_id`        as envId,
                `config`        as configStr,
                `fcd`,
@@ -665,7 +684,7 @@
     <select id="getAppConfigByAppSystemIdAndAppModuleIdAndEnvId"
             resultType="codedriver.framework.deploy.dto.app.DeployAppConfigVo">
         SELECT `app_system_id` as appSystemId,
-               `app_module_id`     as appModuleId,
+               `app_module_id` as appModuleId,
                `env_id`        as envId,
                `config`        as configStr,
                `fcd`,
@@ -757,7 +776,8 @@
         <result column="envId" property="envId"/>
         <result column="instanceId" property="instanceId"/>
         <result column="instanceName" property="instanceName"/>
-        <collection property="keyValueList" ofType="codedriver.framework.deploy.dto.app.DeployAppEnvAutoConfigKeyValueVo">
+        <collection property="keyValueList"
+                    ofType="codedriver.framework.deploy.dto.app.DeployAppEnvAutoConfigKeyValueVo">
             <id column="key" property="key"/>
             <result column="value" property="value"/>
         </collection>
@@ -991,9 +1011,10 @@
     <insert id="insertAppConfigSystemFavorite">
         insert into deploy_app_config_user(`app_system_id`, `user_uuid`)
         VALUES (#{appSystemId},
-                #{userUuid}) ON DUPLICATE KEY
-        UPDATE `app_system_id` = #{appSystemId},
-            `user_uuid` = #{userUuid}
+                #{userUuid})
+        ON DUPLICATE KEY
+            UPDATE `app_system_id` = #{appSystemId},
+                   `user_uuid`     = #{userUuid}
     </insert>
 
     <insert id="insertAppConfigEnvDBConfig"
@@ -1112,7 +1133,8 @@
     </delete>
 
     <delete id="deleteAppConfigSystemFavoriteByAppSystemIdAndUserUuid">
-        DELETE FROM `deploy_app_config_user`
+        DELETE
+        FROM `deploy_app_config_user`
         WHERE `app_system_id` = #{appSystemId}
           and `user_uuid` = #{userUuid}
     </delete>

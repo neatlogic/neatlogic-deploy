@@ -22,4 +22,8 @@ public interface DeployJobMapper {
     Long getRecentlyJobRunnerMapIdByAppSystemIdAndAppModuleId(@Param("appSystemId") Long appSystemId, @Param("appModuleId") Long appModuleId);
 
     List<DeployJobVo> getDeployJobListByAppSystemIdAndAppModuleId(@Param("appSystemId") Long appSystemId,@Param("appModuleId") Long appModuleId);
+
+    Integer insertDeployJob(DeployJobVo deployJobVo);
+
+    Integer updateDeployJobRunnerMapId(DeployJobVo deployJobVo);
 }
