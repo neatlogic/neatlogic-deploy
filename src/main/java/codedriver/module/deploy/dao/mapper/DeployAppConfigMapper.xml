@@ -815,11 +815,41 @@
     </resultMap>
 
     <select id="getAppConfigEnvDatabaseCount" parameterType="java.lang.String" resultType="java.lang.Integer">
-        ${sql}
+        SELECT count(rd.id)
+        <include refid="searchDatabase"></include>
     </select>
+    <sql id="searchDatabase">
+        FROM ${schemaName}.resource_database rd
+        LEFT JOIN ${schemaName}.resource_database_appmodule rda ON rda.resource_id = rd.id
+        LEFT JOIN ${schemaName}.resource_softwareservice_env rse ON rse.resource_id = rd.id
+
+        <where>
+            (rse.env_id = #{searchVo.envId} OR rse.env_id IS NULL)
+            AND (
+            rda.app_module_id = #{searchVo.appModuleId}
+            OR rda.app_module_id IS NULL
+            )
+            <if test="searchVo.defaultValue != null and searchVo.defaultValue.size() > 0">
+                AND rd.`id` IN
+                <foreach collection="searchVo.defaultValue" item="id" open="(" separator="," close=")">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="searchVo.notInIdList != null and searchVo.notInIdList.size() > 0">
+                AND rd.`id` NOT IN
+                <foreach collection="searchVo.notInIdList" item="id" open="(" separator="," close=")">
+                    #{id}
+                </foreach>
+            </if>
+        </where>
+    </sql>
 
     <select id="getAppConfigEnvDatabaseResourceIdList" parameterType="java.lang.String" resultType="java.lang.Long">
-        ${sql}
+        SELECT rd.id
+        <include refid="searchDatabase"></include>
+        <if test="searchVo.needPage">
+            LIMIT #{searchVo.startNum}, #{searchVo.pageSize}
+        </if>
     </select>
 
     <select id="getAppConfigEnvDatabaseResourceListByIdList" resultMap="DatabaseResourceMap">
@@ -1091,6 +1121,9 @@
             </if>
             <if test="envId != 0L">
                 AND `env_id` = #{envId}
+            </if>
+            <if test="instanceId ==  0L">
+                And `instance_id` = 0
             </if>
             <if test="instanceId !=  0L">
                 and `instance_id` = #{instanceId}

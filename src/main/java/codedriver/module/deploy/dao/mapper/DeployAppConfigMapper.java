@@ -124,9 +124,9 @@ public interface DeployAppConfigMapper {
 
     List<DeployAppSystemVo> getAppSystemListByIdListNew(String sql);
 
-    int getAppConfigEnvDatabaseCount(String sql);
+    int getAppConfigEnvDatabaseCount(@Param("searchVo") DeployResourceSearchVo searchVo, @Param("schemaName") String schemaName);
 
-    List<Long> getAppConfigEnvDatabaseResourceIdList(String sql);
+    List<Long> getAppConfigEnvDatabaseResourceIdList(@Param("searchVo") DeployResourceSearchVo searchVo, @Param("schemaName") String schemaName);
 
     List<ResourceVo> getAppConfigEnvDatabaseResourceListByIdList(String sql);
 
