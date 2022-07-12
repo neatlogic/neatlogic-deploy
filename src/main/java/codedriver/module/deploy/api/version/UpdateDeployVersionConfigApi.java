@@ -68,7 +68,7 @@ public class UpdateDeployVersionConfigApi extends PrivateApiComponentBase {
             } else {
                 config = verInfo;
             }
-            deployVersionMapper.updateDeployVersionConfig(new DeployVersionVo(versionVo.getId(), config));
+            deployVersionMapper.updateDeployVersionConfigById(versionVo.getId(), config.toJSONString());
         }
         return null;
     }

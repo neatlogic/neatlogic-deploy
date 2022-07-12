@@ -27,7 +27,7 @@ public interface DeployVersionMapper {
 
     int unLockDeployVersionById(@Param("id") Long id, @Param("isLocked") Long isLocked);
 
-    int updateDeployVersionConfig(DeployVersionVo versionVo);
+    int updateDeployVersionConfigById(@Param("id") Long id, @Param("config") String configStr);
 
     int insertDeployVersion(DeployVersionVo versionVo);
 

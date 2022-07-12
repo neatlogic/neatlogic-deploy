@@ -153,9 +153,9 @@
         where id = #{id}
     </update>
 
-    <update id="updateDeployVersionConfig" parameterType="codedriver.framework.deploy.dto.version.DeployVersionVo">
+    <update id="updateDeployVersionConfigById">
         update deploy_version
-        set config = #{configStr}
+        set config = #{config}
         where id = #{id}
     </update>
 
