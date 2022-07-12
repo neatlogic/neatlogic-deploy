@@ -191,4 +191,10 @@
         from deploy_version_env
         where version_id = #{value}
     </delete>
+
+    <delete id="deleteDeployVersionBuildNoByVersionIdAndBuildNo">
+        delete
+        from deploy_version_buildno
+        where version_id = #{versionId} and build_no = #{buildNo}
+    </delete>
 </mapper>

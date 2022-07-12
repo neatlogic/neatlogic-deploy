@@ -47,7 +47,7 @@ public class DeleteDeployVersionApi extends PrivateApiComponentBase {
     @Input({
             @Param(name = "id", desc = "版本id", type = ApiParamType.LONG),
             @Param(name = "sysId", desc = "应用ID", type = ApiParamType.LONG),
-            @Param(name = "moduleId", desc = "应用系统id", type = ApiParamType.LONG),
+            @Param(name = "moduleId", desc = "应用模块id", type = ApiParamType.LONG),
             @Param(name = "version", desc = "版本号", type = ApiParamType.STRING),
     })
     @Description(desc = "删除发布版本")
