@@ -64,6 +64,10 @@
                     #{id}
                 </foreach>
             </if>
+            <if test="startTime != null and startTime != null">
+                AND dv.`fcd` &gt;= #{startTime}
+                AND dv.`fcd` &lt;= #{endTime}
+            </if>
         </where>
     </sql>
 
@@ -82,7 +86,6 @@
         <collection property="buildNoList" ofType="codedriver.framework.deploy.dto.version.DeployVersionBuildNoVo">
             <result column="buildNo" property="buildNo"/>
             <result column="buildNoStatus" property="status"/>
-            <result column="buildNoFcd" property="fcd"/>
         </collection>
         <collection property="envList" ofType="codedriver.framework.deploy.dto.version.DeployVersionEnvVo">
             <id column="envId" property="envId"/>
@@ -102,7 +105,6 @@
         dv.is_locked as isLocked,
         dvb.build_no as buildNo,
         dvb.status as buildNoStatus,
-        dvb.fcd as buildNoFcd,
         dve.env_id as envId,
         cc.name as envName,
         dve.status as envStatus,
@@ -115,7 +117,7 @@
         left join deploy_version_env dve on dve.version_id = dv.id
         left join cmdb_cientity cc on cc.id = dve.env_id
         <include refid="searchVersionWhere"></include>
-        ORDER BY dv.fcd DESC, dvb.fcd DESC
+        ORDER BY dv.fcd DESC, dvb.compile_start_time DESC
         <if test="needPage == true">
             LIMIT #{startNum}, #{pageSize}
         </if>
@@ -128,6 +130,41 @@
     <select id="getJobIdByDeployVersionIdAndEnvId" resultType="java.lang.Long">
         SELECT `job_id` FROM `deploy_version_env` WHERE `version_id` = #{versionId} AND `env_id` = #{envId}
     </select>
+
+    <select id="getDeployVersionBuildNoListCount" resultType="java.lang.Integer">
+        SELECT count(dvb.build_no)
+        <include refid="searchDeployVersionBuildNo"></include>
+    </select>
+
+    <select id="searchDeployVersionBuildNoList"
+            resultType="codedriver.framework.deploy.dto.version.DeployVersionBuildNoVo">
+        SELECT dvb.build_no AS buildNo,
+        dvb.status AS status,
+        dvb.compile_start_time AS compileStartTime,
+        dvb.compile_end_time AS compileEndTime,
+        dv.id as versionId,
+        dv.version,
+        dv.is_locked AS versionIsLocked
+        <include refid="searchDeployVersionBuildNo"></include>
+        ORDER BY dvb.compile_start_time DESC
+        <if test="needPage == true">
+            LIMIT #{startNum}, #{pageSize}
+        </if>
+    </select>
+
+    <sql id="searchDeployVersionBuildNo">
+        FROM deploy_version_buildno dvb
+        LEFT JOIN deploy_version dv ON dv.id = dvb.version_id
+        <where>
+            <if test="keyword != null and keyword != ''">
+                and dv.`version` like CONCAT('%', #{keyword}, '%')
+            </if>
+            <if test="startTime != null and startTime != null">
+                AND dvb.compile_start_time &gt;= #{startTime}
+                AND dvb.compile_start_time &lt;= #{endTime}
+            </if>
+        </where>
+    </sql>
 
     <update id="unLockDeployVersionById">
         update deploy_version
