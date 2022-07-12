@@ -19,7 +19,6 @@
     <select id="getDeployVersionById" resultType="codedriver.framework.deploy.dto.version.DeployVersionVo">
         select id,
                version,
-               status,
                app_system_id   as appSystemId,
                app_system_name as appSystemName,
                app_module_id   as appModuleId,
@@ -34,42 +33,33 @@
     </select>
 
     <select id="searchDeployVersionCount" resultType="java.lang.Integer">
-        select count(id)
-        from deploy_version
+        select count(dv.id)
+        from deploy_version dv
         <include refid="searchVersionWhere"></include>
     </select>
 
     <sql id="searchVersionWhere">
         <where>
             <if test="keyword != null and keyword != ''">
-                and `version` like CONCAT('%', #{keyword}, '%')
-            </if>
-            <if test="status != null">
-                and status = #{status}
+                and dv.`version` like CONCAT('%', #{keyword}, '%')
             </if>
             <if test="isLocked != null">
-                and isLocked = #{isLocked}
+                and dv.is_locked = #{isLocked}
             </if>
             <if test="appSystemIdList != null and appSystemIdList.size() > 0">
-                AND app_system_id IN
+                AND dv.app_system_id IN
                 <foreach collection="appSystemIdList" item="appSystemId" open="(" separator="," close=")">
                     #{appSystemId}
                 </foreach>
             </if>
             <if test="appModuleIdList != null and appModuleIdList.size() > 0">
-                AND app_module_id IN
+                AND dv.app_module_id IN
                 <foreach collection="appModuleIdList" item="appModuleId" open="(" separator="," close=")">
                     #{appModuleId}
                 </foreach>
             </if>
-            <if test="statusList != null and statusList.size() > 0">
-                AND status IN
-                <foreach collection="statusList" item="status" open="(" separator="," close=")">
-                    #{appSystemId}
-                </foreach>
-            </if>
             <if test="defaultValue != null and defaultValue.size() > 0">
-                AND id IN
+                AND dv.id IN
                 <foreach collection="defaultValue" item="id" open="(" separator="," close=")">
                     #{id}
                 </foreach>
@@ -77,22 +67,55 @@
         </where>
     </sql>
 
-    <select id="searchDeployVersion" resultType="codedriver.framework.deploy.dto.version.DeployVersionVo">
-        select id,
-        version,
-        status,
-        app_system_id as appSystemId,
-        app_system_name as appSystemName,
-        app_module_id as appModuleId,
-        app_module_name as appModuleName,
-        is_locked as isLocked,
-        fcu,
-        fcd,
-        lcu,
-        lcd
-        from deploy_version
+    <resultMap id="deployVersionMap" type="codedriver.framework.deploy.dto.version.DeployVersionVo">
+        <id column="id" property="id"/>
+        <result column="version" property="version"/>
+        <result column="appSystemId" property="appSystemId"/>
+        <result column="appSystemName" property="appSystemName"/>
+        <result column="appModuleId" property="appModuleId"/>
+        <result column="appModuleName" property="appModuleName"/>
+        <result column="isLocked" property="isLocked"/>
+        <result column="fcu" property="fcu"/>
+        <result column="fcd" property="fcd"/>
+        <result column="lcu" property="lcu"/>
+        <result column="lcd" property="lcd"/>
+        <collection property="buildNoList" ofType="codedriver.framework.deploy.dto.version.DeployVersionBuildNoVo">
+            <result column="buildNo" property="buildNo"/>
+            <result column="buildNoStatus" property="status"/>
+            <result column="buildNoFcd" property="fcd"/>
+        </collection>
+        <collection property="envList" ofType="codedriver.framework.deploy.dto.version.DeployVersionEnvVo">
+            <id column="envId" property="envId"/>
+            <result column="envName" property="envName"/>
+            <result column="envStatus" property="status"/>
+        </collection>
+    </resultMap>
+
+    <select id="searchDeployVersion" resultMap="deployVersionMap">
+        select
+        dv.id,
+        dv.version,
+        dv.app_system_id as appSystemId,
+        dv.app_system_name as appSystemName,
+        dv.app_module_id as appModuleId,
+        dv.app_module_name as appModuleName,
+        dv.is_locked as isLocked,
+        dvb.build_no as buildNo,
+        dvb.status as buildNoStatus,
+        dvb.fcd as buildNoFcd,
+        dve.env_id as envId,
+        cc.name as envName,
+        dve.status as envStatus,
+        dv.fcu,
+        dv.fcd,
+        dv.lcu,
+        dv.lcd
+        from deploy_version dv
+        left join deploy_version_buildno dvb on dvb.version_id = dv.id
+        left join deploy_version_env dve on dve.version_id = dv.id
+        left join cmdb_cientity cc on cc.id = dve.env_id
         <include refid="searchVersionWhere"></include>
-        ORDER BY fcd DESC
+        ORDER BY dv.fcd DESC, dvb.fcd DESC
         <if test="needPage == true">
             LIMIT #{startNum}, #{pageSize}
         </if>
@@ -135,17 +158,41 @@
         select max(build_no) from deploy_version_buildno where version_id = #{value} for update
     </select>
 
+    <select id="getDeployVersionBySystemIdAndModuleIdAndVersion" parameterType="codedriver.framework.deploy.dto.version.DeployVersionVo"
+            resultType="codedriver.framework.deploy.dto.version.DeployVersionVo">
+        select id,
+               version,
+               app_system_id   as appSystemId,
+               app_system_name as appSystemName,
+               app_module_id   as appModuleId,
+               app_module_name as appModuleName,
+               is_locked       as isLocked,
+               config,
+               fcu,
+               fcd,
+               lcu,
+               lcd
+        from deploy_version
+        where version = #{version} and app_system_id = #{appSystemId} and app_module_id = #{appModuleId}
+    </select>
+
     <update id="unLockDeployVersionById">
         update deploy_version
         set is_locked = #{isLocked}
         where id = #{id}
     </update>
 
+    <update id="updateDeployVersionConfigById">
+        update deploy_version
+        set config = #{config}
+        where id = #{id}
+    </update>
+
     <insert id="insertDeployVersion">
         insert into deploy_version
-        (id, version, status, app_system_id, app_system_name, app_module_id, app_module_name, is_locked, fcu, fcd, lcu,
+        (id, version, app_system_id, app_system_name, app_module_id, app_module_name, is_locked, fcu, fcd, lcu,
          lcd)
-        values (#{id}, #{version}, #{status}, #{appSystemId}, #{appSystemName}, #{appModuleId}, #{appModuleName},
+        values (#{id}, #{version}, #{appSystemId}, #{appSystemName}, #{appModuleId}, #{appModuleName},
                 #{isLocked},
                 #{fcu}, now(3), #{lcu}, now(3))
     </insert>
@@ -154,5 +201,11 @@
         delete
         from deploy_version
         where id = #{id}
+    </delete>
+
+    <delete id="deleteDeployVersionBySystemIdAndModuleIdAndVersion" parameterType="codedriver.framework.deploy.dto.version.DeployVersionVo">
+        delete
+        from deploy_version
+        where version = #{version} and app_system_id = #{appSystemId} and app_module_id = #{appModuleId}
     </delete>
 </mapper>

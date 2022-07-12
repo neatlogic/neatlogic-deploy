@@ -64,7 +64,7 @@ public interface DeployAppConfigMapper {
 
     RunnerGroupVo getAppModuleRunnerGroupByAppSystemIdAndModuleId(@Param("appSystemId") Long appSystemId, @Param("appModuleId") Long appModuleId);
 
-    DeployAppConfigEnvDBConfigVo getAppConfigEnvDBConfigByAppSystemIdAndAppModuleIdAndEnvIdAndResourceId(@Param("appSystemId") Long appSystemId, @Param("appModuleId") Long appModuleId, @Param("envId") Long envId, @Param("DBResourceId") Long DBResourceId);
+    DeployAppConfigEnvDBConfigVo getAppConfigEnvDBConfigById(Long id);
 
     List<DeployAppConfigEnvDBConfigVo> getAppConfigEnvDBConfigListByAppSystemIdAndAppModuleIdAndEnvId(@Param("appSystemId") Long appSystemId, @Param("appModuleId") Long appModuleId, @Param("envId") Long envId);
 
@@ -92,7 +92,7 @@ public interface DeployAppConfigMapper {
 
     void insertAppConfigEnvDBConfig(DeployAppConfigEnvDBConfigVo dbConfigVo);
 
-    void insertAppConfigEnvDBConfigAccount(@Param("DBConfigId") Long DBConfigId, @Param("accountList") List<DeployAppConfigEnvDBConfigAccountVo> accountList);
+    void insertAppConfigEnvDBConfigAccount(@Param("dbConfigId") Long dbConfigId, @Param("accountList") List<DeployAppConfigEnvDBConfigAccountVo> accountList);
 
     Integer updateAppConfig(DeployAppConfigVo deployAppConfigVo);
 
@@ -114,6 +114,10 @@ public interface DeployAppConfigMapper {
 
     int checkDeployAppConfigEnvDBAliasNameIsRepeat(DeployAppConfigEnvDBConfigVo configVo);
 
+    int checkDeployAppConfigEnvDBExistsById(Long id);
+
+    int getAppModuleCountBySystemIdAndEnvId(@Param("appSystemId") Long appSystemId, @Param("envId") Long envId, @Param("schemaName") String schemaName);
+
     int getAppSystemCountNew(String sql);
 
     List<Long> getAppSystemIdListNew(String sql);
@@ -125,6 +129,10 @@ public interface DeployAppConfigMapper {
     List<Long> getAppConfigEnvDatabaseResourceIdList(String sql);
 
     List<ResourceVo> getAppConfigEnvDatabaseResourceListByIdList(String sql);
+
+    List<DeployAppModuleVo> getAppModuleListByIdList(String sql);
+
+    List<DeployAppModuleVo> getAppModuleListBySystemIdAndEnvId(@Param("appSystemId") Long appSystemId, @Param("envId") Long envId, @Param("schemaName") String schemaName);
 
     void deleteAppConfigSystemFavoriteByAppSystemIdAndUserUuid(@Param("appSystemId") Long appSystemId, @Param("userUuid") String userUuid);
 
@@ -138,4 +146,9 @@ public interface DeployAppConfigMapper {
 
     void deleteAppConfigDBConfigAccountByDBConfigId(Long id);
 
+    void deleteAppConfigDBConfigAccount(DeployAppConfigEnvDBConfigVo appConfigEnvDBConfigVo);
+
+    void deleteAppConfigDBConfig(DeployAppConfigEnvDBConfigVo appConfigEnvDBConfigVo);
+
+    void deleteAppConfigDBConfigById(Long id);
 }

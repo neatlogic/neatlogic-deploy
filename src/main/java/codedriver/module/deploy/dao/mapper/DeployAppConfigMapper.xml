@@ -261,7 +261,6 @@
     <resultMap id="appEnvMap" type="codedriver.framework.deploy.dto.app.DeployAppEnvironmentVo">
         <result column="envId" property="id"/>
         <result column="envName" property="name"/>
-        <result column="isEdit" property="isEdit"/>
         <collection property="appModuleList" ofType="codedriver.framework.cmdb.dto.resourcecenter.entity.AppModuleVo">
             <id column="appModuleId" property="id"/>
             <result column="appModuleName" property="name"/>
@@ -274,7 +273,6 @@
         SELECT
         rse.env_id AS envId,
         rse.env_name AS envName,
-        '0' AS isEdit,
         ria.app_module_id AS appModuleId,
         ria.app_module_name AS appModuleName
         FROM
@@ -306,7 +304,6 @@
         SELECT
         cc.id AS envId,
         cc.name AS envName,
-        '1' AS isEdit,
         cce.id AS appModuleId,
         cce.name AS appModuleName
         FROM
@@ -532,18 +529,20 @@
         WHERE raa.resource_id = #{searchVo.appSystemId}
         AND ria.app_module_id = #{searchVo.appModuleId}
         AND rse.env_id = #{searchVo.envId}
-        AND rse.resource_id
-        <if test="searchVo.isAutoConfig == 1">
-            in
+        <if test="searchVo.isAutoConfig != null">
+            AND rse.resource_id
+            <if test="searchVo.isAutoConfig == 1">
+                in
+            </if>
+            <if test="searchVo.isAutoConfig == 0">
+                not in
+            </if>
+            (select `instance_id`
+            from deploy_app_env_auto_config
+            WHERE `app_system_id` = #{searchVo.appSystemId}
+            and `app_module_id` = #{searchVo.appModuleId}
+            and `env_id` = #{searchVo.envId})
         </if>
-        <if test="searchVo.isAutoConfig == 0">
-            not in
-        </if>
-        (select `instance_id`
-        from deploy_app_env_auto_config
-        WHERE `app_system_id` = #{searchVo.appSystemId}
-        and `app_module_id` = #{searchVo.appModuleId}
-        and `env_id` = #{searchVo.envId})
     </sql>
 
     <select id="getAppModuleEnvAutoConfigInstanceIdCount" resultType="int">
@@ -719,8 +718,9 @@
         <result column="appSystemId" property="appSystemId"/>
         <result column="appModuleId" property="appModuleId"/>
         <result column="envId" property="envId"/>
-        <result column="DBAlias" property="DBAlias"/>
-        <result column="DBResourceId" property="DBResourceId"/>
+        <result column="DBAlias" property="dbAlias"/>
+        <result column="dbResourceId" property="dbResourceId"/>
+        <result column="dbResourceName" property="dbResourceName"/>
         <result column="configStr" property="configStr"/>
         <collection property="accountList" ofType="codedriver.framework.deploy.dto.app.DeployAppConfigEnvDBConfigAccountVo">
             <id column="DBConfigAccountId" property="id"/>
@@ -730,24 +730,21 @@
         </collection>
     </resultMap>
 
-    <select id="getAppConfigEnvDBConfigByAppSystemIdAndAppModuleIdAndEnvIdAndResourceId"
+    <select id="getAppConfigEnvDBConfigById"
             resultMap="DBConfigMap">
         SELECT a.id,
                a.app_system_id  as appSystemId,
                a.app_module_id  as appModuleId,
                a.env_id         as envId,
-               a.db_alias       as DBAlias,
-               a.db_resource_id as DBResourceId,
+               a.db_alias       as dbAlias,
+               a.db_resource_id as dbResourceId,
                a.config         as configStr,
                b.id             as DBConfigAccountId,
                b.account_alias  as accountAlias,
                b.account_id     as accountId
         FROM deploy_app_config_env_db a
                  LEFT JOIN deploy_app_config_env_db_account b ON a.id = b.db_config_id
-        WHERE a.app_system_id = #{appSystemId}
-          AND a.app_module_id = #{appModuleId}
-          AND a.env_id = #{envId}
-          AND a.db_resource_id = #{DBResourceId}
+        WHERE a.id = #{id}
     </select>
 
     <select id="getAppConfigEnvDBConfigListByAppSystemIdAndAppModuleIdAndEnvId"
@@ -756,14 +753,16 @@
                a.app_system_id  as appSystemId,
                a.app_module_id  as appModuleId,
                a.env_id         as envId,
-               a.db_alias       as DBAlias,
-               a.db_resource_id as DBResourceId,
+               a.db_alias       as dbAlias,
+               a.db_resource_id as dbResourceId,
+               cc.name          as dbResourceName,
                a.config         as configStr,
                b.id             as DBConfigAccountId,
                b.account_alias  as accountAlias,
                b.account_id     as accountId,
                c.account        as account
         FROM deploy_app_config_env_db a
+                 LEFT JOIN cmdb_cientity cc ON cc.id = a.db_resource_id
                  LEFT JOIN deploy_app_config_env_db_account b ON a.id = b.db_config_id
                  LEFT JOIN `cmdb_resourcecenter_account` c ON c.`id` = b.account_id
         WHERE a.app_system_id = #{appSystemId}
@@ -812,6 +811,7 @@
         <result column="name" property="name"/>
         <result column="type_name" property="typeName"/>
         <result column="ip" property="ip"/>
+        <result column="port" property="port"/>
     </resultMap>
 
     <select id="getAppConfigEnvDatabaseCount" parameterType="java.lang.String" resultType="java.lang.Integer">
@@ -823,6 +823,16 @@
     </select>
 
     <select id="getAppConfigEnvDatabaseResourceListByIdList" resultMap="DatabaseResourceMap">
+        ${sql}
+    </select>
+
+    <resultMap id="AppModuleMap" type="codedriver.framework.deploy.dto.app.DeployAppModuleVo">
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="abbr_name" property="abbrName"/>
+    </resultMap>
+
+    <select id="getAppModuleListByIdList" resultMap="AppModuleMap">
         ${sql}
     </select>
 
@@ -857,10 +867,16 @@
         select count(1)
         from deploy_app_config_env_db
         where id != #{id}
-          and db_alias = #{DBAlias}
+          and db_alias = #{dbAlias}
           and `app_system_id` = #{appSystemId}
           and `app_module_id` = #{appModuleId}
           and `env_id` = #{envId}
+    </select>
+
+    <select id="checkDeployAppConfigEnvDBExistsById" resultType="java.lang.Integer">
+        select count(1)
+        from deploy_app_config_env_db
+        where id = #{id}
     </select>
 
     <select id="getAppConfigEnvDBConfigResourceIdByAppSystemIdAndAppModuleIdAndEnvId"
@@ -870,6 +886,27 @@
         WHERE `app_system_id` = #{appSystemId}
           and `app_module_id` = #{appModuleId}
           and `env_id` = #{envId}
+    </select>
+
+    <select id="getAppModuleListBySystemIdAndEnvId"
+            resultType="codedriver.framework.deploy.dto.app.DeployAppModuleVo">
+        SELECT distinct raa.app_module_id        as id,
+                        raa.app_module_name      as name,
+                        raa.app_module_abbr_name as abbrName
+        FROM ${schemaName}.resource_appsystem_appmodule raa
+                 LEFT JOIN ${schemaName}.resource_ipobject_appmodule ria ON ria.app_module_id = raa.app_module_id
+                 LEFT JOIN ${schemaName}.resource_softwareservice_env rse ON rse.resource_id = ria.resource_id
+        WHERE raa.resource_id = #{appSystemId}
+          AND rse.env_id = #{envId}
+    </select>
+
+    <select id="getAppModuleCountBySystemIdAndEnvId" resultType="java.lang.Integer">
+        SELECT count(distinct raa.app_module_id)
+        FROM ${schemaName}.resource_appsystem_appmodule raa
+                 LEFT JOIN ${schemaName}.resource_ipobject_appmodule ria ON ria.app_module_id = raa.app_module_id
+                 LEFT JOIN ${schemaName}.resource_softwareservice_env rse ON rse.resource_id = ria.resource_id
+        WHERE raa.resource_id = #{appSystemId}
+          AND rse.env_id = #{envId}
     </select>
 
     <insert id="insertAppConfigAuthority">
@@ -985,13 +1022,13 @@
         INSERT INTO deploy_app_config_env_db (id, db_alias, app_system_id, app_module_id, env_id, db_resource_id,
                                                      config)
         VALUES (#{id},
-                #{DBAlias},
+                #{dbAlias},
                 #{appSystemId},
                 #{appModuleId},
                 #{envId},
-                #{DBResourceId},
+                #{dbResourceId},
                 #{configStr}) ON DUPLICATE KEY
-        UPDATE `db_alias` = #{DBAlias},
+        UPDATE `db_alias` = #{dbAlias},
             `config` = #{configStr}
     </insert>
 
@@ -1003,7 +1040,7 @@
             (#{item.id},
             #{item.accountId},
             #{item.accountAlias},
-            #{DBConfigId})
+            #{dbConfigId})
         </foreach>
         ON DUPLICATE KEY
         UPDATE `account_id` =VALUES(account_id),
@@ -1139,6 +1176,52 @@
         delete
         from deploy_app_config_env_db_account
         where db_config_id = #{id}
+    </delete>
+
+    <delete id="deleteAppConfigDBConfigAccount">
+        DELETE
+        FROM
+        deploy_app_config_env_db_account
+        WHERE
+        db_config_id IN (
+        SELECT
+        id
+        FROM
+        deploy_app_config_env_db
+        <where>
+            <if test="appSystemId != null">
+                AND `app_system_id` = #{appSystemId}
+            </if>
+            <if test="appModuleId != 0L">
+                AND `app_module_id` = #{appModuleId}
+            </if>
+            <if test="envId != 0L">
+                AND `env_id` = #{envId}
+            </if>
+        </where>
+        )
+    </delete>
+
+    <delete id="deleteAppConfigDBConfig">
+        delete
+        from deploy_app_config_env_db
+        <where>
+            <if test="appSystemId != null">
+                AND `app_system_id` = #{appSystemId}
+            </if>
+            <if test="appModuleId != 0L">
+                AND `app_module_id` = #{appModuleId}
+            </if>
+            <if test="envId != 0L">
+                AND `env_id` = #{envId}
+            </if>
+        </where>
+    </delete>
+
+    <delete id="deleteAppConfigDBConfigById">
+        delete
+        from deploy_app_config_env_db
+        where id = #{id}
     </delete>
 
 </mapper>
