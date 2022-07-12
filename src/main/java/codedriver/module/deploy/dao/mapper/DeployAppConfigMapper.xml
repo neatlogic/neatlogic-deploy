@@ -39,9 +39,9 @@
         limit #{searchVo.startNum}, #{searchVo.pageSize}
     </select>
 
-    <resultMap id="appConfigSystemMap" type="codedriver.framework.deploy.dto.app.DeployAppConfigResourceVo">
-        <result column="appSystemId" property="appSystemId"/>
-        <result column="appSystemName" property="appSystemName"/>
+    <resultMap id="appConfigSystemMap" type="codedriver.framework.deploy.dto.app.DeployAppSystemVo">
+        <result column="appSystemId" property="id"/>
+        <result column="appSystemName" property="name"/>
         <result column="isFavorite" property="isFavorite"/>
         <result column="isConfig" property="isConfig"/>
         <collection property="appModuleList" ofType="codedriver.framework.deploy.dto.app.DeployAppModuleVo">

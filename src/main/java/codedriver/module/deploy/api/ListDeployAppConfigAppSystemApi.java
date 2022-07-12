@@ -9,7 +9,7 @@ import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.cmdb.dao.mapper.resourcecenter.ResourceCenterMapper;
 import codedriver.framework.common.dto.BasePageVo;
-import codedriver.framework.deploy.dto.app.DeployAppConfigResourceVo;
+import codedriver.framework.deploy.dto.app.DeployAppSystemVo;
 import codedriver.framework.deploy.dto.app.DeployResourceSearchVo;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
@@ -58,13 +58,13 @@ public class ListDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
     })
     @Output({
             @Param(explode = BasePageVo.class),
-            @Param(name = "tbodyList", explode = DeployAppConfigResourceVo[].class, desc = "发布应用配置的应用系统列表")
+            @Param(name = "tbodyList", explode = DeployAppSystemVo[].class, desc = "发布应用配置的应用系统列表")
     })
     @Description(desc = "查询发布应用配置的应用系统列表（没有关键字过滤）")
     @Override
     public Object myDoService(JSONObject paramObj) {
         DeployResourceSearchVo searchVo = paramObj.toJavaObject(DeployResourceSearchVo.class);
-        List<DeployAppConfigResourceVo> resourceVoList = new ArrayList<>();
+        List<DeployAppSystemVo> resourceVoList = new ArrayList<>();
 
         int count = deployAppConfigMapper.getCiEntityIdListCount(paramObj.getInteger("isConfig"));
         if (count > 0) {
@@ -72,9 +72,9 @@ public class ListDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
             resourceVoList = deployAppConfigMapper.getAppSystemListByUserUuid(UserContext.get().getUserUuid(), searchVo);
             if (CollectionUtils.isNotEmpty(resourceVoList)) {
                 //补充系统是否有模块
-                List<Long> appSystemIdList = resourceCenterMapper.getHasModuleAppSystemIdListByAppSystemIdList(resourceVoList.stream().map(DeployAppConfigResourceVo::getAppSystemId).collect(Collectors.toList()), TenantContext.get().getDataDbName());
-                for (DeployAppConfigResourceVo resourceVo : resourceVoList) {
-                    if (appSystemIdList.contains(resourceVo.getAppSystemId())) {
+                List<Long> appSystemIdList = resourceCenterMapper.getHasModuleAppSystemIdListByAppSystemIdList(resourceVoList.stream().map(DeployAppSystemVo::getId).collect(Collectors.toList()), TenantContext.get().getDataDbName());
+                for (DeployAppSystemVo resourceVo : resourceVoList) {
+                    if (appSystemIdList.contains(resourceVo.getId())) {
                         resourceVo.setIsHasModule(1);
                     }
                 }
