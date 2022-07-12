@@ -17,6 +17,8 @@ public interface DeployVersionMapper {
 
     DeployVersionVo getDeployVersionById(Long id);
 
+    DeployVersionVo getVersionByAppSystemIdAndAppModuleIdAndVersion(Long appSystemId, Long appModuleId, String version);
+
     List<DeployVersionVo> searchDeployVersion(DeployVersionVo versionVo);
 
     Long getJobIdByDeployVersionIdAndBuildNo(@Param("versionId") Long versionId, @Param("buildNo") Integer buildNo);
@@ -26,6 +28,8 @@ public interface DeployVersionMapper {
     DeployVersionVo getDeployVersionBySystemIdAndModuleIdAndVersion(DeployVersionVo versionVo);
 
     int unLockDeployVersionById(@Param("id") Long id, @Param("isLocked") Long isLocked);
+
+    Integer getDeployVersionMaxBuildNoByVersionIdLock(Long id);
 
     int updateDeployVersionConfigById(@Param("id") Long id, @Param("config") String configStr);
 

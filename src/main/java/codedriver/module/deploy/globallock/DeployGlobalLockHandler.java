@@ -5,13 +5,14 @@
 
 package codedriver.module.deploy.globallock;
 
-import codedriver.framework.deploy.constvalue.DeployOperType;
+import codedriver.framework.deploy.constvalue.JobSourceType;
 import codedriver.framework.dto.globallock.GlobalLockVo;
 import codedriver.framework.exception.core.ApiRuntimeException;
 import codedriver.framework.exception.type.ParamIrregularException;
 import codedriver.framework.globallock.GlobalLockManager;
 import codedriver.framework.globallock.core.GlobalLockHandlerBase;
 import com.alibaba.fastjson.JSONObject;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
@@ -23,7 +24,7 @@ import java.util.Optional;
 public class DeployGlobalLockHandler extends GlobalLockHandlerBase {
     @Override
     public String getHandler() {
-        return DeployOperType.DEPLOY.getValue();
+        return JobSourceType.DEPLOY.getValue();
     }
 
     @Override
@@ -55,7 +56,7 @@ public class DeployGlobalLockHandler extends GlobalLockHandlerBase {
     @Override
     public JSONObject getLock(JSONObject paramJson) {
         JSONObject jsonObject = new JSONObject();
-        GlobalLockVo globalLockVo = new GlobalLockVo(DeployOperType.DEPLOY.getValue(),paramJson.getString("lockOwner")+"/"+paramJson.getString("lockTarget"),paramJson.toJSONString(),paramJson.getString("lockOwnerName"));
+        GlobalLockVo globalLockVo = new GlobalLockVo(JobSourceType.DEPLOY.getValue(),paramJson.getString("jobId")+"/"+paramJson.getString("runnerId")+"/"+paramJson.getString("pid")+"/"+paramJson.getString("lockOwner")+"/"+paramJson.getString("lockTarget"),paramJson.toJSONString(),paramJson.getString("lockOwnerName"));
         GlobalLockManager.getLock(globalLockVo);
         if (globalLockVo.getIsLock() == 1) {
             jsonObject.put("lockId", globalLockVo.getId());
@@ -75,7 +76,7 @@ public class DeployGlobalLockHandler extends GlobalLockHandlerBase {
         }
         //预防如果不存在，需重新insert lock
         String jobId = paramJson.getString("jobId");
-        GlobalLockVo globalLockVo = new GlobalLockVo(lockId,DeployOperType.DEPLOY.getValue(),paramJson.getString("lockOwner")+"/"+paramJson.getString("lockTarget"),paramJson.toJSONString(),paramJson.getString("lockOwnerName"));
+        GlobalLockVo globalLockVo = new GlobalLockVo(lockId, JobSourceType.DEPLOY.getValue(),paramJson.getString("lockOwner")+"/"+paramJson.getString("lockTarget"),paramJson.toJSONString(),paramJson.getString("lockOwnerName"));
         GlobalLockManager.retryLock(globalLockVo);
         if (globalLockVo.getIsLock() == 1) {
             jsonObject.put("lockId", globalLockVo.getId());
@@ -83,6 +84,20 @@ public class DeployGlobalLockHandler extends GlobalLockHandlerBase {
             throw new ApiRuntimeException(globalLockVo.getWaitReason());
         }
         return jsonObject;
+    }
+
+    @Override
+    protected boolean getMyIsCanInsertLock(List<GlobalLockVo> globalLockVoList, GlobalLockVo globalLockVo) {
+        //如果uuid存在则共享lockId
+        if(CollectionUtils.isNotEmpty(globalLockVoList)){
+            Optional<GlobalLockVo> globalLockVoOptional = globalLockVoList.stream().filter(g->Objects.equals(g.getUuid(),globalLockVo.getUuid())).findFirst();
+            if(globalLockVoOptional.isPresent()){
+                globalLockVo.setId(globalLockVoOptional.get().getId());
+                globalLockVo.setIsLock(1);
+            }
+            return false;
+        }
+        return true;
     }
 
 }

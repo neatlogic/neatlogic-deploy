@@ -23,7 +23,7 @@
                app_system_name as appSystemName,
                app_module_id   as appModuleId,
                app_module_name as appModuleName,
-               is_locked         as isLocked,
+               is_locked       as isLocked,
                fcu,
                fcd,
                lcu,
@@ -122,11 +122,40 @@
     </select>
 
     <select id="getJobIdByDeployVersionIdAndBuildNo" resultType="java.lang.Long">
-        SELECT `job_id` FROM `deploy_version_buildno` WHERE `version_id` = #{versionId} AND `build_no` = #{buildNo}
+        SELECT `job_id`
+        FROM `deploy_version_buildno`
+        WHERE `version_id` = #{versionId}
+          AND `build_no` = #{buildNo}
     </select>
 
     <select id="getJobIdByDeployVersionIdAndEnvId" resultType="java.lang.Long">
-        SELECT `job_id` FROM `deploy_version_env` WHERE `version_id` = #{versionId} AND `env_id` = #{envId}
+        SELECT `job_id`
+        FROM `deploy_version_env`
+        WHERE `version_id` = #{versionId}
+          AND `env_id` = #{envId}
+    </select>
+    <select id="getVersionByAppSystemIdAndAppModuleIdAndVersion"
+            resultType="codedriver.framework.deploy.dto.version.DeployVersionVo">
+        select id,
+               version,
+               status,
+               app_system_id   as appSystemId,
+               app_system_name as appSystemName,
+               app_module_id   as appModuleId,
+               app_module_name as appModuleName,
+               is_locked       as isLocked,
+               fcu,
+               fcd,
+               lcu,
+               lcd
+        from deploy_version
+        where app_system_id = #{appSystemId}
+          and app_module_id = #{appModuleId}
+          and version = #{version}
+    </select>
+
+    <select id="getDeployVersionMaxBuildNoByVersionIdLock" resultType="java.lang.Integer">
+        select max(build_no) from deploy_version_buildno where version_id = #{value} for update
     </select>
 
     <select id="getDeployVersionBySystemIdAndModuleIdAndVersion" parameterType="codedriver.framework.deploy.dto.version.DeployVersionVo"
