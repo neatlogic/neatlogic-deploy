@@ -31,8 +31,6 @@ public interface DeployVersionMapper {
 
     Integer getDeployVersionMaxBuildNoByVersionIdLock(Long id);
 
-    void unLockDeployVersionById(@Param("id") Long id, @Param("isLocked") Long isLocked);
-
     int updateDeployVersionConfigById(@Param("id") Long id, @Param("config") String configStr);
 
     int insertDeployVersion(DeployVersionVo versionVo);
