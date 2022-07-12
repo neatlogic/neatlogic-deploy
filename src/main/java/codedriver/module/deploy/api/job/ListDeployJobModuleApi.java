@@ -45,7 +45,7 @@ public class ListDeployJobModuleApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "根据系统、环境查询一键发布页面的模块列表";
+        return "根据系统、环境、场景查询一键发布页面的模块信息列表";
     }
 
     @Override
@@ -64,7 +64,7 @@ public class ListDeployJobModuleApi extends PrivateApiComponentBase {
             @Param(name = "scenarioId", type = ApiParamType.LONG, isRequired = true, desc = "场景id")
     })
     @Output({
-            @Param(explode = DeployAppModuleVo[].class, desc = "根据系统、环境查询一键发布页面的模块列表")
+            @Param(explode = DeployAppModuleVo[].class, desc = "根据系统、环境、场景查询一键发布页面的模块信息列表")
     })
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
