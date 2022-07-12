@@ -62,7 +62,7 @@ public class ListDeployAppConfigAppModuleApi extends PrivateApiComponentBase {
         List<DeployAppModuleVo> returnAppModuleVoList = new ArrayList<>();
 
         //查询系统下模块列表
-        //TODO 补模块简称、考虑权限问题 优化为动态sql时补充
+        //TODO 补模块简称、考虑权限问题
         List<Long> idList = resourceCenterMapper.getAppSystemModuleIdListByAppSystemId(paramObj.getLong("appSystemId"), TenantContext.get().getDataDbName());
         if (CollectionUtils.isNotEmpty(idList)) {
             ICiEntityCrossoverMapper ciEntityCrossoverMapper = CrossoverServiceFactory.getApi(ICiEntityCrossoverMapper.class);
