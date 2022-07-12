@@ -6,7 +6,6 @@
 package codedriver.module.deploy.api.job;
 
 import codedriver.framework.asynchronization.threadlocal.TenantContext;
-import codedriver.framework.autoexec.dto.combop.AutoexecCombopScenarioVo;
 import codedriver.framework.cmdb.crossover.ICiEntityCrossoverMapper;
 import codedriver.framework.cmdb.dao.mapper.resourcecenter.ResourceCenterMapper;
 import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
@@ -87,30 +86,7 @@ public class GetDeployJobCreateInfoApi extends PrivateApiComponentBase {
         //场景
         DeployAppConfigVo appConfigVo = deployAppConfigMapper.getAppConfigVo(new DeployAppConfigVo(appSystemId, appModuleId, 0L));
         DeployPipelineConfigVo pipelineConfigVo = appConfigVo.getConfig();
-        /*补充当前场景是否有BUILD分类的工具，前端需要根据此标识调用 不同的选择版本下拉接口*/
-
-        //1、找出当前组合工具的所有包含BUILD分类的工具的阶段
-//        List<DeployPipelinePhaseVo> combopPhaseList = pipelineConfigVo.getCombopPhaseList();
-//        List<String> combopPhaseListHasBuildTypeTool = new ArrayList<>();
-//        for (DeployPipelinePhaseVo pipelinePhaseVo : combopPhaseList) {
-//            List<AutoexecCombopPhaseOperationVo> phaseOperationList = pipelinePhaseVo.getConfig().getPhaseOperationList();
-//            for (AutoexecCombopPhaseOperationVo operationVo : phaseOperationList) {
-//                if (StringUtils.equals(ToolType.TOOL.getValue(), operationVo.getOperationType()) && StringUtils.equals(operationVo.getTypeName(), "BUILD")) {
-//                    combopPhaseListHasBuildTypeTool.add(pipelinePhaseVo.getName());
-//                }
-//            }
-//        }
-
-        //2、查询场景的阶段列表是否有BUILD分类的工具
-        List<AutoexecCombopScenarioVo> scenarioList = pipelineConfigVo.getScenarioList();
-//        if (CollectionUtils.isNotEmpty(scenarioList)) {
-//            for (AutoexecCombopScenarioVo scenarioVo : scenarioList) {
-//                if (CollectionUtils.isNotEmpty(scenarioVo.getCombopPhaseNameList()) && Collections.disjoint(combopPhaseListHasBuildTypeTool, scenarioVo.getCombopPhaseNameList())) {
-//                    scenarioVo.setIsHasBuildTypeTool(1);
-//                }
-//            }
-//        }
-        result.put("scenarioList", scenarioList);
+        result.put("scenarioList", pipelineConfigVo.getScenarioList());
 
         //环境 根据appSystemId、appModuleId 获取 envList
         //模块 根据appSystemId、appModuleId 获取 appModuleList
