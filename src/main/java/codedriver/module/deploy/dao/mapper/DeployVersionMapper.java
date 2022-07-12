@@ -1,5 +1,6 @@
 package codedriver.module.deploy.dao.mapper;
 
+import codedriver.framework.deploy.dto.version.DeployVersionBuildNoVo;
 import codedriver.framework.deploy.dto.version.DeployVersionVo;
 import org.apache.ibatis.annotations.Param;
 
@@ -15,11 +16,15 @@ public interface DeployVersionMapper {
 
     int searchDeployVersionCount(DeployVersionVo versionVo);
 
+    int getDeployVersionBuildNoListCount(DeployVersionBuildNoVo versionBuildNoVo);
+
     DeployVersionVo getDeployVersionById(Long id);
 
     DeployVersionVo getVersionByAppSystemIdAndAppModuleIdAndVersion(Long appSystemId, Long appModuleId, String version);
 
     List<DeployVersionVo> searchDeployVersion(DeployVersionVo versionVo);
+
+    List<DeployVersionBuildNoVo> searchDeployVersionBuildNoList(DeployVersionBuildNoVo versionBuildNoVo);
 
     Long getJobIdByDeployVersionIdAndBuildNo(@Param("versionId") Long versionId, @Param("buildNo") Integer buildNo);
 
