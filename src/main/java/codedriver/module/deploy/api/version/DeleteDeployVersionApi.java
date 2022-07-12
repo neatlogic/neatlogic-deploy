@@ -1,6 +1,8 @@
 package codedriver.module.deploy.api.version;
 
+import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.common.constvalue.ApiParamType;
+import codedriver.framework.deploy.auth.DEPLOY_MODIFY;
 import codedriver.framework.deploy.dto.version.DeployVersionVo;
 import codedriver.framework.exception.type.ParamNotExistsException;
 import codedriver.framework.restful.annotation.Description;
@@ -23,6 +25,7 @@ import java.util.List;
  * @date 2022/6/14 9:59 上午
  */
 @Service
+@AuthAction(action = DEPLOY_MODIFY.class)
 @OperationType(type = OperationTypeEnum.DELETE)
 public class DeleteDeployVersionApi extends PrivateApiComponentBase {
 
