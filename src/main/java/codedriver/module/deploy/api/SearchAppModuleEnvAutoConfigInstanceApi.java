@@ -56,7 +56,7 @@ public class SearchAppModuleEnvAutoConfigInstanceApi extends PrivateApiComponent
             @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "应用 id"),
             @Param(name = "appModuleId", type = ApiParamType.LONG, isRequired = true, desc = "模块 id"),
             @Param(name = "envId", type = ApiParamType.LONG, isRequired = true, desc = "环境 id"),
-            @Param(name = "isAutoConfig", type = ApiParamType.INTEGER, isRequired = true, desc = "是否有AutoConfig"),
+            @Param(name = "isAutoConfig", type = ApiParamType.INTEGER, desc = "是否有AutoConfig"),
             @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "当前页"),
             @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "每页数据条目"),
             @Param(name = "needPage", type = ApiParamType.BOOLEAN, desc = "是否需要分页，默认true")
