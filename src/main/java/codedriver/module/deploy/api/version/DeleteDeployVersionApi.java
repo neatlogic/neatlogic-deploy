@@ -70,8 +70,8 @@ public class DeleteDeployVersionApi extends PrivateApiComponentBase {
             DeployVersionVo versionVo = deployVersionMapper.getDeployVersionBySystemIdAndModuleIdAndVersion(new DeployVersionVo(version, sysId, moduleId));
             if (versionVo != null) {
                 versionId = versionVo.getId();
+                deployVersionMapper.deleteDeployVersionById(versionId);
             }
-            deployVersionMapper.deleteDeployVersionBySystemIdAndModuleIdAndVersion(new DeployVersionVo(version, sysId, moduleId));
         }
         if (versionId != null) {
             deployVersionMapper.deleteDeployVersionBuildNoByVersionId(versionId);
