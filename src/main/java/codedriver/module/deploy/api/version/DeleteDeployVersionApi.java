@@ -14,6 +14,9 @@ import com.alibaba.fastjson.JSONObject;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * @author longrf
@@ -54,21 +57,16 @@ public class DeleteDeployVersionApi extends PrivateApiComponentBase {
         Long sysId = paramObj.getLong("sysId");
         Long moduleId = paramObj.getLong("moduleId");
         String version = paramObj.getString("version");
-        if (versionId == null && sysId == null && moduleId == null && version == null) {
-            throw new ParamNotExistsException("id", "sysId", "moduleId", "version");
+        if (versionId == null && (sysId == null || moduleId == null || version == null)) {
+            List<String> paramList = new ArrayList<>();
+            paramList.add("sysId");
+            paramList.add("moduleId");
+            paramList.add("version");
+            throw new ParamNotExistsException(Collections.singletonList("id"), paramList);
         }
         if (versionId != null) {
             deployVersionMapper.deleteDeployVersionById(versionId);
         } else {
-            if (sysId == null) {
-                throw new ParamNotExistsException("sysId");
-            }
-            if (moduleId == null) {
-                throw new ParamNotExistsException("moduleId");
-            }
-            if (version == null) {
-                throw new ParamNotExistsException("version");
-            }
             deployVersionMapper.deleteDeployVersionBySystemIdAndModuleIdAndVersion(new DeployVersionVo(version, sysId, moduleId));
         }
         return null;
