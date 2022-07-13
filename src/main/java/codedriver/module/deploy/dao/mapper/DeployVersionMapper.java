@@ -20,7 +20,7 @@ public interface DeployVersionMapper {
 
     DeployVersionVo getDeployVersionById(Long id);
 
-    DeployVersionVo getVersionByAppSystemIdAndAppModuleIdAndVersion(Long appSystemId, Long appModuleId, String version);
+    DeployVersionVo getVersionByAppSystemIdAndAppModuleIdAndVersion(@Param("appSystemId")Long appSystemId,@Param("appModuleId") Long appModuleId,@Param("version") String version);
 
     List<DeployVersionVo> searchDeployVersion(DeployVersionVo versionVo);
 
