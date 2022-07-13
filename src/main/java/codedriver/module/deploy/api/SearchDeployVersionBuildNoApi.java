@@ -55,8 +55,6 @@ public class SearchDeployVersionBuildNoApi extends PrivateApiComponentBase {
     })
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
-
-
         DeployVersionBuildNoVo versionBuildNoVo = JSONObject.toJavaObject(paramObj, DeployVersionBuildNoVo.class);
         List<DeployVersionBuildNoVo> returnList = null;
 

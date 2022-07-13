@@ -61,7 +61,6 @@ public class SearchDeployVersionApi extends PrivateApiComponentBase {
         DeployVersionVo versionVo = paramObj.toJavaObject(DeployVersionVo.class);
         List<DeployVersionVo> returnList = new ArrayList<>();
 
-
         int count = deployVersionMapper.searchDeployVersionCount(versionVo);
         if (count > 0) {
             versionVo.setRowNum(count);
