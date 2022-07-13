@@ -64,9 +64,12 @@
                     #{id}
                 </foreach>
             </if>
-            <if test="startTime != null and startTime != null">
-                AND dv.`fcd` &gt;= #{startTime}
-                AND dv.`fcd` &lt;= #{endTime}
+            <if test="startTimeRange != null and startTimeRange.size() == 2">
+                and (
+                dv.`fcd` &gt;= FROM_UNIXTIME(#{startTimeRange[0]})
+                and
+                dv.`fcd` &lt;= FROM_UNIXTIME(#{startTimeRange[1]})
+                )
             </if>
         </where>
     </sql>
@@ -206,9 +209,12 @@
             <if test="keyword != null and keyword != ''">
                 and dv.`version` like CONCAT('%', #{keyword}, '%')
             </if>
-            <if test="startTime != null and startTime != null">
-                AND dvb.compile_start_time &gt;= #{startTime}
-                AND dvb.compile_start_time &lt;= #{endTime}
+            <if test="startTimeRange != null and startTimeRange.size() == 2">
+                and (
+                dvb.compile_start_time &gt;= FROM_UNIXTIME(#{startTimeRange[0]})
+                and
+                dvb.compile_start_time &lt;= FROM_UNIXTIME(#{startTimeRange[1]})
+                )
             </if>
         </where>
     </sql>
