@@ -17,11 +17,13 @@ import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.deploy.dao.mapper.DeployAppConfigMapper;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import org.apache.commons.collections4.MapUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -66,8 +68,11 @@ public class GetDeployAppEnvAutoConfigApi extends PrivateApiComponentBase {
         Long sysId = paramObj.getLong("sysId");
         Long moduleId = paramObj.getLong("moduleId");
         Long envId = paramObj.getLong("envId");
-        List<DeployAppEnvAutoConfigVo> configVoList = deployAppConfigMapper.getAppEnvAutoConfigBySystemIdAndModuleIdAndEnvId(sysId, moduleId, envId);
-        if (configVoList.size() > 0) {
+        List<Long> instanceIdList = resourceCenterMapper.getResourceIdListByAppSystemIdAndModuleIdAndEnvId(new ResourceVo(sysId, moduleId, envId), TenantContext.get().getDataDbName());
+        if (instanceIdList.size() > 0) {
+            List<ResourceVo> instanceList = resourceCenterMapper.getResourceListByIdList(instanceIdList, TenantContext.get().getDataDbName());
+            List<DeployAppEnvAutoConfigVo> configVoList = deployAppConfigMapper.getAppEnvAutoConfigBySystemIdAndModuleIdAndEnvId(sysId, moduleId, envId);
+            // env配置
             Optional<List<DeployAppEnvAutoConfigKeyValueVo>> envConfigOpt = configVoList.stream().filter(o -> Objects.equals(o.getInstanceId(), 0L))
                     .map(DeployAppEnvAutoConfigVo::getKeyValueList).findFirst();
             if (envConfigOpt.isPresent()) {
@@ -76,20 +81,16 @@ public class GetDeployAppEnvAutoConfigApi extends PrivateApiComponentBase {
                     autoCfg.put(keyValueVo.getKey(), keyValueVo.getValue());
                 }
             }
+            // 实例配置
             Map<Long, Map<String, String>> configMap = configVoList.stream().filter(o -> !Objects.equals(o.getInstanceId(), 0L))
                     .collect(Collectors.toMap(DeployAppEnvAutoConfigVo::getInstanceId, o -> o.getKeyValueList().stream().collect(Collectors.toMap(DeployAppEnvAutoConfigKeyValueVo::getKey, DeployAppEnvAutoConfigKeyValueVo::getValue))));
-            if (MapUtils.isNotEmpty(configMap)) {
-                List<ResourceVo> instanceList = resourceCenterMapper.getResourceListByIdList(new ArrayList<>(configMap.keySet()), TenantContext.get().getDataDbName());
-                if (instanceList.size() > 0) {
-                    for (ResourceVo vo : instanceList) {
-                        JSONObject insCfg = new JSONObject();
-                        insCfg.put("nodeName", vo.getName());
-                        insCfg.put("host", vo.getIp());
-                        insCfg.put("port", vo.getPort());
-                        insCfg.put("autoCfg", configMap.get(vo.getId()) != null ? configMap.get(vo.getId()) : new JSONObject());
-                        insCfgList.add(insCfg);
-                    }
-                }
+            for (ResourceVo vo : instanceList) {
+                JSONObject insCfg = new JSONObject();
+                insCfg.put("nodeName", vo.getName());
+                insCfg.put("host", vo.getIp());
+                insCfg.put("port", vo.getPort());
+                insCfg.put("autoCfg", configMap.get(vo.getId()) != null ? configMap.get(vo.getId()) : new JSONObject());
+                insCfgList.add(insCfg);
             }
         }
         return result;
