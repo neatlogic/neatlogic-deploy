@@ -670,7 +670,8 @@
     </select>
     <select id="getAppConfigListByAppSystemId"
             resultType="codedriver.framework.deploy.dto.app.DeployAppConfigVo">
-        SELECT `app_system_id` as appSystemId,
+        SELECT `id`,
+               `app_system_id` as appSystemId,
                `app_module_id` as appModuleId,
                `env_id`        as envId,
                `config`        as configStr,
