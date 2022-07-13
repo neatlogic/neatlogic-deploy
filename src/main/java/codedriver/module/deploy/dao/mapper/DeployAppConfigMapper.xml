@@ -1123,10 +1123,7 @@
             <if test="envId != 0L">
                 AND `env_id` = #{envId}
             </if>
-            <if test="instanceId ==  0L">
-                And `instance_id` = 0
-            </if>
-            <if test="instanceId !=  0L">
+            <if test="instanceId != null">
                 and `instance_id` = #{instanceId}
             </if>
             <if test="lcd != null">
