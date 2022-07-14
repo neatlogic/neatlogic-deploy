@@ -42,32 +42,35 @@
     <resultMap id="appConfigSystemMap" type="codedriver.framework.deploy.dto.app.DeployAppSystemVo">
         <result column="appSystemId" property="id"/>
         <result column="appSystemName" property="name"/>
+        <result column="appSystemNameAbbrName" property="abbrName"/>
         <result column="isFavorite" property="isFavorite"/>
         <result column="isConfig" property="isConfig"/>
         <collection property="appModuleList" ofType="codedriver.framework.deploy.dto.app.DeployAppModuleVo">
             <id column="appModuleId" property="id"/>
             <result column="appModuleName" property="name"/>
+            <result column="appModuleNameAbbrName" property="abbrName"/>
         </collection>
     </resultMap>
 
     <select id="getAppSystemListByIdList" resultMap="appConfigSystemMap">
-        select ce.id as appSystemId,ce.`name` as appSystemName, if(dacu.user_uuid is null,0,1) as isFavorite,
+        select ra.id as appSystemId,ra.`name` as appSystemName,ra.`abbr_name` as appSystemNameAbbrName, if(dacu.user_uuid is null,0,1) as isFavorite,
         if(dac.config is null,0,1) as isConfig
-        from cmdb_cientity ce
-        left join deploy_app_config_user dacu on ce.id = dacu.app_system_id and dacu.user_uuid = #{userUuid}
-        left join deploy_app_config dac on ce.id = dac.app_system_id and dac.app_module_id = 0 and dac.env_id = 0
-        where ce.id in
+        from ${schemaName}.resource_appsystem ra
+        left join deploy_app_config_user dacu on ra.id = dacu.app_system_id and dacu.user_uuid = #{userUuid}
+        left join deploy_app_config dac on ra.id = dac.app_system_id and dac.app_module_id = 0 and dac.env_id = 0
+        where ra.id in
         <foreach collection="idList" item="id" open="(" close=")" separator=",">
             #{id}
         </foreach>
         order by if(dacu.user_uuid = #{userUuid},1,0) desc,
-        CONVERT(ce.name USING gbk) COLLATE gbk_chinese_ci ASC
+        CONVERT(ra.name USING gbk) COLLATE gbk_chinese_ci ASC
     </select>
 
     <select id="getAppSystemModuleListBySystemIdList" resultMap="appConfigSystemMap">
         select ce.id as appSystemId,ce.`name` as appSystemName,
         raa.app_module_id AS appModuleId,
-        raa.app_module_name AS appModuleName
+        raa.app_module_name AS appModuleName,
+        raa.app_module_abbr_name AS appModuleNameAbbrName
         from cmdb_cientity ce
         join ${schemaName}.`resource_appsystem_appmodule` raa on raa.resource_id = ce.id
         <if test="isConfig != null">
