@@ -592,10 +592,12 @@
             resultType="codedriver.framework.deploy.dto.app.DeployAppConfigInstanceVo">
         SELECT a.id,
         a.ip,
-        a.port
+        a.port,
+        a.name
         FROM ((SELECT ra.id,
         ra.ip,
-        ra.port
+        ra.port,
+        ra.name
         FROM ${schemaName}.resource_appinstance ra
         JOIN ${schemaName}.resource_softwareservice_env rse ON rse.resource_id = ra.id
         AND rse.env_id = #{searchVo.envId}
@@ -607,7 +609,8 @@
         UNION
         (SELECT ra.id,
         ra.ip,
-        ra.port
+        ra.port,
+        ra.name
         FROM ${schemaName}.resource_appinstance ra
         WHERE ra.id NOT IN (SELECT resource_id FROM ${schemaName}.resource_softwareservice_env)
         <if test="searchVo.keyword != null and searchVo.keyword != ''">
