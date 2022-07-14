@@ -61,10 +61,12 @@ public class ListDeployAppConfigAppModuleApi extends PrivateApiComponentBase {
 
         //查询系统下模块列表
         //TODO 考虑权限问题
-        List<Long> idList = resourceCenterMapper.getAppSystemModuleIdListByAppSystemId(paramObj.getLong("appSystemId"), TenantContext.get().getDataDbName());
+        TenantContext.get().switchDataDatabase();
+        List<Long> idList = resourceCenterMapper.getAppSystemModuleIdListByAppSystemId(paramObj.getLong("appSystemId"));
         if (CollectionUtils.isNotEmpty(idList)) {
-            moduleResourceList = resourceCenterMapper.getResourceByIdList(idList, TenantContext.init().getDataDbName());
+            moduleResourceList = resourceCenterMapper.getAppModuleListByIdListSimple(idList);
         }
+        TenantContext.get().switchDefaultDatabase();
 
         //补充模块是否有环境（有实例的环境）
         List<Long> hasEnvAppModuleIdList = deployAppConfigMapper.getHasEnvAppModuleIdListByAppSystemIdAndModuleIdList(paramObj.getLong("appSystemId"), moduleResourceList.stream().map(ResourceVo::getId).collect(Collectors.toList()), TenantContext.get().getDataDbName());
