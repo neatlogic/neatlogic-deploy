@@ -940,6 +940,19 @@
           AND rse.env_id = #{envId}
     </select>
 
+    <select id="getAppEnvAutoConfigBySystemIdAndModuleIdAndEnvId"
+            resultMap="appEnvAutoConfigMap">
+        select
+            `app_system_id` AS appSystemId,
+            `app_module_id` AS appModuleId,
+            `env_id` AS envId,
+            `instance_id` AS instanceId,
+            `key`,
+            `value`
+        from `deploy_app_env_auto_config`
+        where `app_system_id` = #{systemId} and `app_module_id` = #{moduleId} and `env_id` = #{envId}
+    </select>
+
     <insert id="insertAppConfigAuthority">
         INSERT INTO `deploy_app_config_authority` (`app_system_id`,
                                                    `env_id`,

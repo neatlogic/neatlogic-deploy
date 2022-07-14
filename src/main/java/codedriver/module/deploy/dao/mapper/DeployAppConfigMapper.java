@@ -74,6 +74,8 @@ public interface DeployAppConfigMapper {
 
     List<Long> getAppConfigUserAppSystemIdList(@Param("userUuid") String userUuid, @Param("appSystemIdList") List<Long> appSystemIdList);
 
+    List<DeployAppEnvAutoConfigVo> getAppEnvAutoConfigBySystemIdAndModuleIdAndEnvId(@Param("systemId") Long systemId, @Param("moduleId") Long moduleId, @Param("envId") Long envId);
+
     Integer insertAppConfigAuthority(DeployAppConfigAuthorityVo deployAppConfigAuthorityVo);
 
     Integer insertAppModuleRunnerGroup(@Param("appSystemId") Long appSystemId, @Param("appModuleId") Long appModuleId, @Param("runnerGroupId") Long runnerGroupId);
