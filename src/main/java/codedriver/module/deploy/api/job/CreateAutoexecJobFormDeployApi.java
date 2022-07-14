@@ -16,10 +16,13 @@ import codedriver.framework.autoexec.exception.AutoexecScenarioIsNotFoundExcepti
 import codedriver.framework.autoexec.job.action.core.AutoexecJobActionHandlerFactory;
 import codedriver.framework.autoexec.job.action.core.IAutoexecJobActionHandler;
 import codedriver.framework.cmdb.crossover.ICiEntityCrossoverMapper;
+import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
 import codedriver.framework.cmdb.exception.cientity.CiEntityNotFoundException;
+import codedriver.framework.cmdb.exception.resourcecenter.AppModuleNotFoundException;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.crossover.CrossoverServiceFactory;
 import codedriver.framework.deploy.constvalue.CombopOperationType;
+import codedriver.framework.deploy.constvalue.JobSource;
 import codedriver.framework.deploy.dto.app.DeployAppConfigVo;
 import codedriver.framework.deploy.exception.DeployAppConfigNotFoundException;
 import codedriver.framework.exception.type.ParamIrregularException;
@@ -27,7 +30,11 @@ import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.deploy.dao.mapper.DeployAppConfigMapper;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import org.apache.commons.collections4.MapUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -46,6 +53,7 @@ import java.util.stream.Collectors;
 @AuthAction(action = AUTOEXEC_BASE.class)
 @OperationType(type = OperationTypeEnum.CREATE)
 public class CreateAutoexecJobFormDeployApi extends PrivateApiComponentBase {
+    private final static Logger logger = LoggerFactory.getLogger(CreateAutoexecJobFormDeployApi.class);
 
     @Resource
     DeployAppConfigMapper deployAppConfigMapper;
@@ -65,14 +73,11 @@ public class CreateAutoexecJobFormDeployApi extends PrivateApiComponentBase {
             @Param(name = "scenarioName", type = ApiParamType.STRING, desc = "场景名, 如果入参也有scenarioId，则会以scenarioName为准"),
             @Param(name = "appSystemId", type = ApiParamType.LONG, desc = "应用系统id"),
             @Param(name = "appSystemName", type = ApiParamType.STRING, desc = "应用系统名，如果入参也有appSystemId，则会以appSystemName为准"),
-            @Param(name = "appModuleId", type = ApiParamType.LONG, desc = "模块id"),
-            @Param(name = "appModuleName", type = ApiParamType.STRING, desc = "模块名，如果入参也有appModuleId，则会以appModuleName为准"),
+            @Param(name = "moduleList", type = ApiParamType.JSONARRAY, isRequired = true, desc = "模块列表"),
             @Param(name = "envId", type = ApiParamType.LONG, desc = "环境id"),
             @Param(name = "envName", type = ApiParamType.STRING, desc = "环境id，如果入参也有envId，则会以envName为准"),
-            @Param(name = "buildNo", type = ApiParamType.INTEGER, desc = "编译号"),
-            @Param(name = "version", type = ApiParamType.STRING, isRequired = true, desc = "版本"),
             @Param(name = "param", type = ApiParamType.JSONOBJECT, isRequired = true, desc = "执行参数"),
-            @Param(name = "source", type = ApiParamType.STRING, isRequired = true, desc = "来源 itsm|human|deploy   ITSM|人工发起的等，不传默认是人工发起的"),
+            @Param(name = "source", type = ApiParamType.STRING, desc = "来源 itsm|human|deploy   ITSM|人工发起的等，不传默认是发布发起的"),
             @Param(name = "threadCount", type = ApiParamType.LONG, isRequired = true, desc = "并发线程,2的n次方 "),
             @Param(name = "executeConfig", type = ApiParamType.JSONOBJECT, desc = "执行目标"),
     })
@@ -82,8 +87,8 @@ public class CreateAutoexecJobFormDeployApi extends PrivateApiComponentBase {
     @ResubmitInterval(value = 2)
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
+        JSONArray result = new JSONArray();
         Long appSystemId = jsonObj.getLong("appSystemId");
-        Long appModuleId = jsonObj.getLong("appModuleId");
         Long envId = jsonObj.getLong("envId");
         Long scenarioId = jsonObj.getLong("scenarioId");
         ICiEntityCrossoverMapper iCiEntityCrossoverMapper = CrossoverServiceFactory.getApi(ICiEntityCrossoverMapper.class);
@@ -98,19 +103,6 @@ public class CreateAutoexecJobFormDeployApi extends PrivateApiComponentBase {
             }
         } else {
             throw new ParamIrregularException("appSystemId | appSystemName");
-        }
-
-        if (jsonObj.containsKey("appModuleName")) {
-            appModuleId = iCiEntityCrossoverMapper.getCiEntityIdByCiNameAndCiEntityName("APPComponent", jsonObj.getString("appModuleName"));
-            if (appModuleId == null) {
-                throw new CiEntityNotFoundException(jsonObj.getString("appModuleName"));
-            }
-        } else if (appModuleId != null) {
-            if (iCiEntityCrossoverMapper.getCiEntityBaseInfoById(appModuleId) == null) {
-                throw new CiEntityNotFoundException(jsonObj.getLong("appModuleId"));
-            }
-        } else {
-            throw new ParamIrregularException("appModuleId | appModuleName");
         }
 
         if (jsonObj.containsKey("envName")) {
@@ -141,20 +133,81 @@ public class CreateAutoexecJobFormDeployApi extends PrivateApiComponentBase {
             throw new ParamIrregularException("scenarioId");
         }
 
+        if (!jsonObj.containsKey("source")) {
+            jsonObj.put("source", JobSource.DEPLOY.getValue());
+        }
         jsonObj.put("operationType", CombopOperationType.PIPELINE.getValue());
+        JSONArray moduleArray = jsonObj.getJSONArray("moduleList");
+        for (int i = 0; i < moduleArray.size(); i++) {
+            JSONObject moduleJson = moduleArray.getJSONObject(i);
+            if (MapUtils.isNotEmpty(moduleJson)) {
+                result.add(convertModule(jsonObj, moduleJson));
+            }
+        }
+        return result;
+    }
+
+    /**
+     * 转为自动化通用格式
+     * @param jsonObj 入参
+     * @param moduleJson 模块入参
+     * @return 自动化通用json格式
+     */
+    private JSONObject convertModule(JSONObject jsonObj, JSONObject moduleJson) {
+        ICiEntityCrossoverMapper iCiEntityCrossoverMapper = CrossoverServiceFactory.getApi(ICiEntityCrossoverMapper.class);
+        Long appModuleId = moduleJson.getLong("id");
+        if (moduleJson.containsKey("name")) {
+            appModuleId = iCiEntityCrossoverMapper.getCiEntityIdByCiNameAndCiEntityName("APPComponent", moduleJson.getString("name"));
+            if (appModuleId == null) {
+                throw new CiEntityNotFoundException(moduleJson.getString("name"));
+            }
+            jsonObj.put("appModuleId", appModuleId);
+            jsonObj.put("appModuleName", moduleJson.getString("name"));
+        } else if (appModuleId != null) {
+            CiEntityVo entityVo = iCiEntityCrossoverMapper.getCiEntityBaseInfoById(appModuleId);
+            if (entityVo == null) {
+                throw new CiEntityNotFoundException(moduleJson.getLong("id"));
+            }
+            jsonObj.put("appModuleName", entityVo.getName());
+        } else {
+            throw new AppModuleNotFoundException();
+        }
+        jsonObj.put("buildNo",moduleJson.getInteger("buildNo"));
+        jsonObj.put("version",moduleJson.getString("version"));
+        JSONObject executeConfig = jsonObj.getJSONObject("executeConfig");
+        executeConfig.put("executeNodeConfig",new JSONObject(){{
+            put("selectNodeList", moduleJson.getJSONArray("selectNodeList"));
+        }});
         Long invokeId = getOperationId(jsonObj);
         jsonObj.put("operationId", invokeId);
         jsonObj.put("invokeId", invokeId);
+        return createJob(jsonObj);
+
+    }
+
+    /**
+     * 创建发布作业
+     * @param jsonObj 作业入参
+     * @return result
+     */
+    private JSONObject createJob(JSONObject jsonObj) {
+        JSONObject resultJson = new JSONObject();
         IAutoexecJobActionCrossoverService autoexecJobActionCrossoverService = CrossoverServiceFactory.getApi(IAutoexecJobActionCrossoverService.class);
         AutoexecJobVo jobVo = autoexecJobActionCrossoverService.validateAndCreateJobFromCombop(jsonObj, false);
         IAutoexecJobActionHandler fireAction = AutoexecJobActionHandlerFactory.getAction(JobAction.FIRE.getValue());
         jobVo.setAction(JobAction.FIRE.getValue());
         jobVo.setIsFirstFire(1);
-        fireAction.doService(jobVo);
-        return new JSONObject() {{
-            put("jobId", jobVo.getId());
-        }};
+        try {
+            fireAction.doService(jobVo);
+            resultJson.put("jobId",jobVo.getId());
+            resultJson.put("appModuleName",jsonObj.getString("appModuleName"));
+        } catch (Exception ex) {
+            logger.error(ex.getMessage(), ex);
+            resultJson.put("errorMsg",ex.getMessage());
+        }
+        return resultJson;
     }
+
 
     /**
      * 获取来源id
