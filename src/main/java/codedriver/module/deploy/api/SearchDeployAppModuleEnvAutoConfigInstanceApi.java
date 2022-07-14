@@ -29,7 +29,7 @@ import java.util.List;
  */
 @Service
 @OperationType(type = OperationTypeEnum.SEARCH)
-public class SearchAppModuleEnvAutoConfigInstanceApi extends PrivateApiComponentBase {
+public class SearchDeployAppModuleEnvAutoConfigInstanceApi extends PrivateApiComponentBase {
 
     @Resource
     private DeployAppConfigMapper deployAppConfigMapper;
@@ -78,7 +78,7 @@ public class SearchAppModuleEnvAutoConfigInstanceApi extends PrivateApiComponent
                 searchVo.setRowNum(count);
                 List<Long> instanceIdList = deployAppConfigMapper.getAppModuleEnvAutoConfigInstanceIdList(searchVo, TenantContext.get().getDataDbName());
                 if (CollectionUtils.isNotEmpty(instanceIdList)) {
-                    instanceList = resourceCenterMapper.getResourceByIdList(instanceIdList, TenantContext.get().getDataDbName());
+                    instanceList = resourceCenterMapper.getAppInstanceResourceListByIdListSimple(instanceIdList, TenantContext.get().getDataDbName());
                 }
             }
         }
