@@ -39,12 +39,12 @@ public class GetDeployAppEnvAutoConfigApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "获取环境autoConfig（对接专用）";
+        return "获取指定环境下所有实例的autoConfig";
     }
 
     @Override
     public String getToken() {
-        return "deploy/app/env/config/get";
+        return "deploy/app/env/all/autoconfig/get";
     }
 
     @Override
@@ -57,7 +57,7 @@ public class GetDeployAppEnvAutoConfigApi extends PrivateApiComponentBase {
             @Param(name = "moduleId", desc = "应用系统id", isRequired = true, type = ApiParamType.LONG),
             @Param(name = "envId", desc = "版本号", isRequired = true, type = ApiParamType.LONG),
     })
-    @Description(desc = "获取环境autoConfig（对接专用）")
+    @Description(desc = "获取指定环境下所有实例的autoConfig")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         JSONObject result = new JSONObject();
