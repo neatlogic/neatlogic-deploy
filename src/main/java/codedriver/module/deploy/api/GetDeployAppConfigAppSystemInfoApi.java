@@ -53,8 +53,6 @@ public class GetDeployAppConfigAppSystemInfoApi extends PrivateApiComponentBase 
             throw new CiEntityNotFoundException(paramObj.getLong("appSystemId"));
         }
 
-        //TODO 根据appSystemId获取阶段信息
-
         CiEntityVo ciEntityVo = iCiEntityCrossoverMapper.getCiEntityBaseInfoById(paramObj.getLong("appSystemId"));
         ICiEntityCrossoverService ciEntityService = CrossoverServiceFactory.getApi(ICiEntityCrossoverService.class);
         CiEntityVo appSystemInfo = ciEntityService.getCiEntityById(ciEntityVo.getCiId(), paramObj.getLong("appSystemId"));

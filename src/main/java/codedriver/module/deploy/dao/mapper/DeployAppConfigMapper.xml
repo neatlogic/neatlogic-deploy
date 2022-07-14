@@ -557,76 +557,38 @@
         LIMIT #{searchVo.startNum}, #{searchVo.pageSize}
     </select>
 
-    <select id="getAppModuleEnvNotEnvOrSameEnvAndNotModuleInstanceIdCount" resultType="int">
-        SELECT count(a.id)
-        FROM ((SELECT ra.id
-        FROM ${schemaName}.resource_appinstance ra
-        JOIN ${schemaName}.resource_softwareservice_env rse ON rse.resource_id = ra.id
-        AND rse.env_id = #{searchVo.envId}
-        WHERE ra.id NOT IN (SELECT resource_id FROM ${schemaName}.resource_ipobject_appmodule)
-        <if test="searchVo.keyword != null and searchVo.keyword != ''">
-            AND ra.`ip` LIKE concat('%', #{searchVo.keyword}, '%') or ra.`port` LIKE concat('%', #{searchVo.keyword},
-            '%')
+    <select id="getAppConfigEnvInstanceCount" resultType="int">
+        SELECT count(ra.id)
+        FROM resource_appinstance ra
+        LEFT JOIN resource_softwareservice_env rse ON rse.resource_id = ra.id
+        LEFT JOIN resource_ipobject_appmodule ria ON ria.resource_id = ra.id
+        WHERE
+        ( ria.app_module_id IS NULL AND rse.env_id IS NULL )
+        OR ( ria.app_module_id IS NULL AND rse.env_id = #{envId} )
+        OR (ria.app_module_id = #{appModuleId} AND rse.env_id IS NULL)
+        <if test="keyword != null and keyword != ''">
+            AND ra.`ip` LIKE concat('%', #{keyword}, '%') or ra.`port` LIKE concat('%', #{keyword},'%')
         </if>
-        )
-        UNION
-        (SELECT ra.id
-        FROM ${schemaName}.resource_appinstance ra
-        WHERE ra.id NOT IN (SELECT resource_id FROM ${schemaName}.resource_softwareservice_env)
-        <if test="searchVo.keyword != null and searchVo.keyword != ''">
-            AND ra.`ip` LIKE concat('%', #{searchVo.keyword}, '%') or ra.`port` LIKE concat('%', #{searchVo.keyword},
-            '%')
-        </if>
-        )) a
-        WHERE a.id NOT IN (
-        SELECT rse.resource_id
-        FROM ${schemaName}.resource_appsystem_appmodule raa
-        JOIN ${schemaName}.resource_ipobject_appmodule ria ON raa.app_module_id = ria.app_module_id
-        JOIN ${schemaName}.resource_softwareservice_env rse ON ria.resource_id = rse.resource_id
-        WHERE raa.resource_id = #{searchVo.appSystemId}
-        AND ria.app_module_id = #{searchVo.appModuleId}
-        AND rse.env_id = #{searchVo.envId})
     </select>
 
-    <select id="getAppModuleEnvNotEnvOrSameEnvAndNotModuleInstanceList"
+    <select id="searchAppConfigEnvInstanceList"
             resultType="codedriver.framework.deploy.dto.app.DeployAppConfigInstanceVo">
-        SELECT a.id,
-        a.ip,
-        a.port,
-        a.name
-        FROM ((SELECT ra.id,
+        SELECT ra.id,
         ra.ip,
         ra.port,
         ra.name
-        FROM ${schemaName}.resource_appinstance ra
-        JOIN ${schemaName}.resource_softwareservice_env rse ON rse.resource_id = ra.id
-        AND rse.env_id = #{searchVo.envId}
-        WHERE ra.id NOT IN (SELECT resource_id FROM ${schemaName}.resource_ipobject_appmodule)
-        <if test="searchVo.keyword != null and searchVo.keyword != ''">
-            AND ra.`ip` LIKE concat('%', #{searchVo.keyword}, '%') or ra.`port` LIKE concat('%', #{searchVo.keyword},
-            '%')
-        </if>)
-        UNION
-        (SELECT ra.id,
-        ra.ip,
-        ra.port,
-        ra.name
-        FROM ${schemaName}.resource_appinstance ra
-        WHERE ra.id NOT IN (SELECT resource_id FROM ${schemaName}.resource_softwareservice_env)
-        <if test="searchVo.keyword != null and searchVo.keyword != ''">
-            AND ra.`ip` LIKE concat('%', #{searchVo.keyword}, '%') or ra.`port` LIKE concat('%', #{searchVo.keyword},
-            '%')
-        </if>)) a
-        WHERE a.id NOT IN (
-        SELECT rse.resource_id
-        FROM ${schemaName}.resource_appsystem_appmodule raa
-        JOIN ${schemaName}.resource_ipobject_appmodule ria ON raa.app_module_id = ria.app_module_id
-        JOIN ${schemaName}.resource_softwareservice_env rse ON ria.resource_id = rse.resource_id
-        WHERE raa.resource_id = #{searchVo.appSystemId}
-        AND ria.app_module_id = #{searchVo.appModuleId}
-        AND rse.env_id = #{searchVo.envId})
-        ORDER BY a.id DESC
-        LIMIT #{searchVo.startNum}, #{searchVo.pageSize}
+        FROM resource_appinstance ra
+        LEFT JOIN resource_softwareservice_env rse ON rse.resource_id = ra.id
+        LEFT JOIN resource_ipobject_appmodule ria ON ria.resource_id = ra.id
+        WHERE
+        ( ria.app_module_id IS NULL AND rse.env_id IS NULL )
+        OR ( ria.app_module_id IS NULL AND rse.env_id = #{envId} )
+        OR (ria.app_module_id = #{appModuleId} AND rse.env_id IS NULL)
+        <if test="keyword != null and keyword != ''">
+            AND ra.`ip` LIKE concat('%', #{keyword}, '%') or ra.`port` LIKE concat('%', #{keyword},'%')
+        </if>
+        ORDER BY ra.id DESC
+        LIMIT #{startNum}, #{pageSize}
     </select>
 
     <select id="getAppSystemIdListCount" resultType="java.lang.Integer">

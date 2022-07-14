@@ -30,7 +30,7 @@ public class SearchDeployAppConfigInstanceApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "查询发布应用配置实例";
+        return "查询发布应用配置的应用实例下的无模块无环境、无模块同环境、同模块无环境的实例列表";
     }
 
     @Override
@@ -56,17 +56,19 @@ public class SearchDeployAppConfigInstanceApi extends PrivateApiComponentBase {
             @Param(explode = BasePageVo.class),
             @Param(name = "tbodyList", explode = ResourceVo[].class, desc = "实例列表"),
     })
-    @Description(desc = "查询无环境的实例，或者同环境且无模块的实例")
+    @Description(desc = "查询发布应用配置的应用实例下的无模块无环境、无模块同环境、同模块无环境的实例")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         DeployAppConfigInstanceVo searchVo = paramObj.toJavaObject(DeployAppConfigInstanceVo.class);
         List<DeployAppConfigInstanceVo> instanceList = new ArrayList<>();
-        //TODO 应查找同模块的无环境或者同环境且无模块的实例，现在查询的是无环境或者同环境且无模块的实例，优化sql时修改逻辑
-        int count = deployAppConfigMapper.getAppModuleEnvNotEnvOrSameEnvAndNotModuleInstanceIdCount(searchVo, TenantContext.get().getDataDbName());
+
+        TenantContext.get().switchDataDatabase();
+        int count = deployAppConfigMapper.getAppConfigEnvInstanceCount(searchVo);
         if (count > 0) {
             searchVo.setRowNum(count);
-            instanceList = deployAppConfigMapper.getAppModuleEnvNotEnvOrSameEnvAndNotModuleInstanceList(searchVo, TenantContext.get().getDataDbName());
+            instanceList = deployAppConfigMapper.searchAppConfigEnvInstanceList(searchVo);
         }
+        TenantContext.get().switchDefaultDatabase();
         return TableResultUtil.getResult(instanceList, searchVo);
     }
 }
