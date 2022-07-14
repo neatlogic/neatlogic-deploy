@@ -670,7 +670,8 @@
     </select>
     <select id="getAppConfigListByAppSystemId"
             resultType="codedriver.framework.deploy.dto.app.DeployAppConfigVo">
-        SELECT `app_system_id` as appSystemId,
+        SELECT `id`,
+               `app_system_id` as appSystemId,
                `app_module_id` as appModuleId,
                `env_id`        as envId,
                `config`        as configStr,
@@ -1135,10 +1136,7 @@
             <if test="envId != 0L">
                 AND `env_id` = #{envId}
             </if>
-            <if test="instanceId ==  0L">
-                And `instance_id` = 0
-            </if>
-            <if test="instanceId !=  0L">
+            <if test="instanceId != null">
                 and `instance_id` = #{instanceId}
             </if>
             <if test="lcd != null">

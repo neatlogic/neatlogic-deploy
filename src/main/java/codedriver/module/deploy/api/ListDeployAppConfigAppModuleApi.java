@@ -1,11 +1,9 @@
 package codedriver.module.deploy.api;
 
 import codedriver.framework.asynchronization.threadlocal.TenantContext;
-import codedriver.framework.cmdb.crossover.ICiEntityCrossoverMapper;
 import codedriver.framework.cmdb.dao.mapper.resourcecenter.ResourceCenterMapper;
-import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
+import codedriver.framework.cmdb.dto.resourcecenter.ResourceVo;
 import codedriver.framework.common.constvalue.ApiParamType;
-import codedriver.framework.crossover.CrossoverServiceFactory;
 import codedriver.framework.deploy.dto.app.DeployAppModuleVo;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
@@ -58,23 +56,22 @@ public class ListDeployAppConfigAppModuleApi extends PrivateApiComponentBase {
     @Description(desc = "查询发布应用配置的应用系统模块列表(树的模块下拉)")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
-        List<CiEntityVo> moduleCiEntityList = new ArrayList<>();
+        List<ResourceVo> moduleResourceList = new ArrayList<>();
         List<DeployAppModuleVo> returnAppModuleVoList = new ArrayList<>();
 
         //查询系统下模块列表
-        //TODO 补模块简称、考虑权限问题
+        //TODO 考虑权限问题
         List<Long> idList = resourceCenterMapper.getAppSystemModuleIdListByAppSystemId(paramObj.getLong("appSystemId"), TenantContext.get().getDataDbName());
         if (CollectionUtils.isNotEmpty(idList)) {
-            ICiEntityCrossoverMapper ciEntityCrossoverMapper = CrossoverServiceFactory.getApi(ICiEntityCrossoverMapper.class);
-            moduleCiEntityList = ciEntityCrossoverMapper.getCiEntityBaseInfoByIdList(idList);
+            moduleResourceList = resourceCenterMapper.getResourceByIdList(idList, TenantContext.init().getDataDbName());
         }
 
         //补充模块是否有环境（有实例的环境）
-        List<Long> hasEnvAppModuleIdList = deployAppConfigMapper.getHasEnvAppModuleIdListByAppSystemIdAndModuleIdList(paramObj.getLong("appSystemId"), moduleCiEntityList.stream().map(CiEntityVo::getId).collect(Collectors.toList()), TenantContext.get().getDataDbName());
-        for (CiEntityVo ciEntityVo : moduleCiEntityList) {
-            DeployAppModuleVo returnAppModuleVo = new DeployAppModuleVo(ciEntityVo.getId(), ciEntityVo.getName());
+        List<Long> hasEnvAppModuleIdList = deployAppConfigMapper.getHasEnvAppModuleIdListByAppSystemIdAndModuleIdList(paramObj.getLong("appSystemId"), moduleResourceList.stream().map(ResourceVo::getId).collect(Collectors.toList()), TenantContext.get().getDataDbName());
+        for (ResourceVo resourceVo : moduleResourceList) {
+            DeployAppModuleVo returnAppModuleVo = new DeployAppModuleVo(resourceVo.getId(), resourceVo.getName(),resourceVo.getAppModuleAbbrName());
             returnAppModuleVoList.add(returnAppModuleVo);
-            if (hasEnvAppModuleIdList.contains(ciEntityVo.getId())) {
+            if (hasEnvAppModuleIdList.contains(resourceVo.getId())) {
                 returnAppModuleVo.setIsHasEnv(1);
             }
         }

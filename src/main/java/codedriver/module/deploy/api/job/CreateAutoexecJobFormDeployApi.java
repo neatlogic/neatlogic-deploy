@@ -9,7 +9,10 @@ import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.autoexec.auth.AUTOEXEC_BASE;
 import codedriver.framework.autoexec.constvalue.JobAction;
 import codedriver.framework.autoexec.crossover.IAutoexecJobActionCrossoverService;
+import codedriver.framework.autoexec.crossover.IAutoexecScenarioCrossoverMapper;
 import codedriver.framework.autoexec.dto.job.AutoexecJobVo;
+import codedriver.framework.autoexec.dto.scenario.AutoexecScenarioVo;
+import codedriver.framework.autoexec.exception.AutoexecScenarioIsNotFoundException;
 import codedriver.framework.autoexec.job.action.core.AutoexecJobActionHandlerFactory;
 import codedriver.framework.autoexec.job.action.core.IAutoexecJobActionHandler;
 import codedriver.framework.cmdb.crossover.ICiEntityCrossoverMapper;
@@ -61,11 +64,11 @@ public class CreateAutoexecJobFormDeployApi extends PrivateApiComponentBase {
             @Param(name = "scenarioId", type = ApiParamType.LONG, desc = "场景id"),
             @Param(name = "scenarioName", type = ApiParamType.STRING, desc = "场景名, 如果入参也有scenarioId，则会以scenarioName为准"),
             @Param(name = "appSystemId", type = ApiParamType.LONG, desc = "应用系统id"),
-            @Param(name = "appSystemName", type = ApiParamType.LONG, desc = "应用系统名，如果入参也有appSystemId，则会以appSystemName为准"),
+            @Param(name = "appSystemName", type = ApiParamType.STRING, desc = "应用系统名，如果入参也有appSystemId，则会以appSystemName为准"),
             @Param(name = "appModuleId", type = ApiParamType.LONG, desc = "模块id"),
-            @Param(name = "appModuleName", type = ApiParamType.LONG, desc = "模块名，如果入参也有appModuleId，则会以appModuleName为准"),
+            @Param(name = "appModuleName", type = ApiParamType.STRING, desc = "模块名，如果入参也有appModuleId，则会以appModuleName为准"),
             @Param(name = "envId", type = ApiParamType.LONG, desc = "环境id"),
-            @Param(name = "envName", type = ApiParamType.LONG, desc = "环境id，如果入参也有envId，则会以envName为准"),
+            @Param(name = "envName", type = ApiParamType.STRING, desc = "环境id，如果入参也有envId，则会以envName为准"),
             @Param(name = "buildNo", type = ApiParamType.INTEGER, desc = "编译号"),
             @Param(name = "version", type = ApiParamType.STRING, isRequired = true, desc = "版本"),
             @Param(name = "param", type = ApiParamType.JSONOBJECT, isRequired = true, desc = "执行参数"),
@@ -79,26 +82,63 @@ public class CreateAutoexecJobFormDeployApi extends PrivateApiComponentBase {
     @ResubmitInterval(value = 2)
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
+        Long appSystemId = jsonObj.getLong("appSystemId");
+        Long appModuleId = jsonObj.getLong("appModuleId");
+        Long envId = jsonObj.getLong("envId");
+        Long scenarioId = jsonObj.getLong("scenarioId");
         ICiEntityCrossoverMapper iCiEntityCrossoverMapper = CrossoverServiceFactory.getApi(ICiEntityCrossoverMapper.class);
-        if(jsonObj.containsKey("appSystemName")){
-            if (iCiEntityCrossoverMapper.getCiEntityBaseInfoById(jsonObj.getLong("appSystemId")) == null) {
-                throw new CiEntityNotFoundException(jsonObj.getLong("appSystemName"));
+        if (jsonObj.containsKey("appSystemName")) {
+            appSystemId = iCiEntityCrossoverMapper.getCiEntityIdByCiNameAndCiEntityName("APP", jsonObj.getString("appSystemName"));
+            if (appSystemId == null) {
+                throw new CiEntityNotFoundException(jsonObj.getString("appSystemName"));
             }
-        }else if(jsonObj.containsKey("appSystemId")){
-
-           /* if (iCiEntityCrossoverMapper.getCiEntityBaseInfoByName() == null) {
+        } else if (appSystemId != null) {
+            if (iCiEntityCrossoverMapper.getCiEntityBaseInfoById(appSystemId) == null) {
                 throw new CiEntityNotFoundException(jsonObj.getLong("appSystemId"));
-            }*/
-        }else{
+            }
+        } else {
             throw new ParamIrregularException("appSystemId | appSystemName");
         }
 
-
-        if (iCiEntityCrossoverMapper.getCiEntityBaseInfoById(jsonObj.getLong("appSystemId")) == null) {
-            throw new CiEntityNotFoundException(jsonObj.getLong("appSystemId"));
+        if (jsonObj.containsKey("appModuleName")) {
+            appModuleId = iCiEntityCrossoverMapper.getCiEntityIdByCiNameAndCiEntityName("APPComponent", jsonObj.getString("appModuleName"));
+            if (appModuleId == null) {
+                throw new CiEntityNotFoundException(jsonObj.getString("appModuleName"));
+            }
+        } else if (appModuleId != null) {
+            if (iCiEntityCrossoverMapper.getCiEntityBaseInfoById(appModuleId) == null) {
+                throw new CiEntityNotFoundException(jsonObj.getLong("appModuleId"));
+            }
+        } else {
+            throw new ParamIrregularException("appModuleId | appModuleName");
         }
-        if (iCiEntityCrossoverMapper.getCiEntityBaseInfoById(jsonObj.getLong("appModuleId")) == null) {
-            throw new CiEntityNotFoundException(jsonObj.getLong("appModuleId"));
+
+        if (jsonObj.containsKey("envName")) {
+            envId = iCiEntityCrossoverMapper.getCiEntityIdByCiNameAndCiEntityName("APPEnv", jsonObj.getString("envName"));
+            if (envId == null) {
+                throw new CiEntityNotFoundException(jsonObj.getString("envName"));
+            }
+        } else if (envId != null) {
+            if (iCiEntityCrossoverMapper.getCiEntityBaseInfoById(envId) == null) {
+                throw new CiEntityNotFoundException(jsonObj.getLong("envId"));
+            }
+        } else {
+            throw new ParamIrregularException("envId | envName");
+        }
+
+        IAutoexecScenarioCrossoverMapper autoexecScenarioCrossoverMapper = CrossoverServiceFactory.getApi(IAutoexecScenarioCrossoverMapper.class);
+        if (jsonObj.containsKey("scenarioName")) {
+            AutoexecScenarioVo scenarioVo = autoexecScenarioCrossoverMapper.getScenarioByName(jsonObj.getString("scenarioName"));
+            if (scenarioVo == null) {
+                throw new CiEntityNotFoundException(jsonObj.getString("scenarioName"));
+            }
+            jsonObj.put("scenarioId", scenarioVo.getId());
+        } else if (scenarioId != null) {
+            if (autoexecScenarioCrossoverMapper.getScenarioById(scenarioId) == null) {
+                throw new AutoexecScenarioIsNotFoundException(jsonObj.getLong("scenarioId"));
+            }
+        } else {
+            throw new ParamIrregularException("scenarioId");
         }
 
         jsonObj.put("operationType", CombopOperationType.PIPELINE.getValue());
@@ -110,10 +150,6 @@ public class CreateAutoexecJobFormDeployApi extends PrivateApiComponentBase {
         IAutoexecJobActionHandler fireAction = AutoexecJobActionHandlerFactory.getAction(JobAction.FIRE.getValue());
         jobVo.setAction(JobAction.FIRE.getValue());
         jobVo.setIsFirstFire(1);
-        //JSONObject environment = new JSONObject();
-        //environment.put("_VERSION",jsonObj.getString("version"));
-        //environment.put("_BUILD_NO",jsonObj.getInteger("buildNo"));
-        //jobVo.setEnvironment(environment);
         fireAction.doService(jobVo);
         return new JSONObject() {{
             put("jobId", jobVo.getId());
