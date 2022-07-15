@@ -50,7 +50,7 @@ public interface DeployAppConfigMapper {
 
     DeployAppConfigVo getAppConfigDraft(DeployAppConfigVo deployAppConfigDraftVo);
 
-    List<DeployAppConfigInstanceVo> getAppModuleEnvNotEnvOrSameEnvAndNotModuleInstanceList(@Param("searchVo") DeployAppConfigInstanceVo searchVo, @Param("schemaName") String schemaName);
+    List<DeployAppConfigInstanceVo> searchAppConfigEnvInstanceList( DeployAppConfigInstanceVo searchVo);
 
     List<DeployAppEnvironmentVo> getDeployAppEnvListByAppSystemIdAndModuleIdList(@Param("appSystemId") Long appSystemId, @Param("appModuleIdList") List<Long> appModuleIdList, @Param("schemaName") String schemaName);
 
@@ -112,7 +112,12 @@ public interface DeployAppConfigMapper {
 
     int getAppModuleEnvAutoConfigInstanceIdCount(@Param("searchVo") DeployAppEnvAutoConfigVo searchVo, @Param("schemaName") String schemaName);
 
-    int getAppModuleEnvNotEnvOrSameEnvAndNotModuleInstanceIdCount(@Param("searchVo") DeployAppConfigInstanceVo searchVo, @Param("schemaName") String schemaName);
+    /**
+     * 查询发布应用配置的应用实例下的无模块无环境、无模块同环境、同模块无环境的实例个数
+     * @param searchVo searchVo
+     * @return count
+     */
+    int getAppConfigEnvInstanceCount(DeployAppConfigInstanceVo searchVo);
 
     int checkDeployAppConfigEnvDBAliasNameIsRepeat(DeployAppConfigEnvDBConfigVo configVo);
 
@@ -126,8 +131,22 @@ public interface DeployAppConfigMapper {
 
     List<DeployAppSystemVo> getAppSystemListByIdListNew(String sql);
 
+    /**
+     * 查询发布应用配置DB库下的无模块无环境、无模块同环境、同模块无环境、同模块同环境且发布没配置的数据库的数量
+     *
+     * @param searchVo   searchVo
+     * @param schemaName schemaName
+     * @return count
+     */
     int getAppConfigEnvDatabaseCount(@Param("searchVo") DeployResourceSearchVo searchVo, @Param("schemaName") String schemaName);
 
+    /**
+     * 查询发布应用配置DB库下的无模块无环境、无模块同环境、同模块无环境、同模块同环境且发布没配置的数据库
+     *
+     * @param searchVo   searchVo
+     * @param schemaName schemaName
+     * @return 数据库idList
+     */
     List<Long> getAppConfigEnvDatabaseResourceIdList(@Param("searchVo") DeployResourceSearchVo searchVo, @Param("schemaName") String schemaName);
 
     List<ResourceVo> getAppConfigEnvDatabaseResourceListByIdList(String sql);

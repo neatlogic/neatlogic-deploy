@@ -42,32 +42,35 @@
     <resultMap id="appConfigSystemMap" type="codedriver.framework.deploy.dto.app.DeployAppSystemVo">
         <result column="appSystemId" property="id"/>
         <result column="appSystemName" property="name"/>
+        <result column="appSystemNameAbbrName" property="abbrName"/>
         <result column="isFavorite" property="isFavorite"/>
         <result column="isConfig" property="isConfig"/>
         <collection property="appModuleList" ofType="codedriver.framework.deploy.dto.app.DeployAppModuleVo">
             <id column="appModuleId" property="id"/>
             <result column="appModuleName" property="name"/>
+            <result column="appModuleNameAbbrName" property="abbrName"/>
         </collection>
     </resultMap>
 
     <select id="getAppSystemListByIdList" resultMap="appConfigSystemMap">
-        select ce.id as appSystemId,ce.`name` as appSystemName, if(dacu.user_uuid is null,0,1) as isFavorite,
+        select ra.id as appSystemId,ra.`name` as appSystemName,ra.`abbr_name` as appSystemNameAbbrName, if(dacu.user_uuid is null,0,1) as isFavorite,
         if(dac.config is null,0,1) as isConfig
-        from cmdb_cientity ce
-        left join deploy_app_config_user dacu on ce.id = dacu.app_system_id and dacu.user_uuid = #{userUuid}
-        left join deploy_app_config dac on ce.id = dac.app_system_id and dac.app_module_id = 0 and dac.env_id = 0
-        where ce.id in
+        from ${schemaName}.resource_appsystem ra
+        left join deploy_app_config_user dacu on ra.id = dacu.app_system_id and dacu.user_uuid = #{userUuid}
+        left join deploy_app_config dac on ra.id = dac.app_system_id and dac.app_module_id = 0 and dac.env_id = 0
+        where ra.id in
         <foreach collection="idList" item="id" open="(" close=")" separator=",">
             #{id}
         </foreach>
         order by if(dacu.user_uuid = #{userUuid},1,0) desc,
-        CONVERT(ce.name USING gbk) COLLATE gbk_chinese_ci ASC
+        CONVERT(ra.name USING gbk) COLLATE gbk_chinese_ci ASC
     </select>
 
     <select id="getAppSystemModuleListBySystemIdList" resultMap="appConfigSystemMap">
         select ce.id as appSystemId,ce.`name` as appSystemName,
         raa.app_module_id AS appModuleId,
-        raa.app_module_name AS appModuleName
+        raa.app_module_name AS appModuleName,
+        raa.app_module_abbr_name AS appModuleNameAbbrName
         from cmdb_cientity ce
         join ${schemaName}.`resource_appsystem_appmodule` raa on raa.resource_id = ce.id
         <if test="isConfig != null">
@@ -557,76 +560,38 @@
         LIMIT #{searchVo.startNum}, #{searchVo.pageSize}
     </select>
 
-    <select id="getAppModuleEnvNotEnvOrSameEnvAndNotModuleInstanceIdCount" resultType="int">
-        SELECT count(a.id)
-        FROM ((SELECT ra.id
-        FROM ${schemaName}.resource_appinstance ra
-        JOIN ${schemaName}.resource_softwareservice_env rse ON rse.resource_id = ra.id
-        AND rse.env_id = #{searchVo.envId}
-        WHERE ra.id NOT IN (SELECT resource_id FROM ${schemaName}.resource_ipobject_appmodule)
-        <if test="searchVo.keyword != null and searchVo.keyword != ''">
-            AND ra.`ip` LIKE concat('%', #{searchVo.keyword}, '%') or ra.`port` LIKE concat('%', #{searchVo.keyword},
-            '%')
+    <select id="getAppConfigEnvInstanceCount" resultType="int">
+        SELECT count(ra.id)
+        FROM resource_appinstance ra
+        LEFT JOIN resource_softwareservice_env rse ON rse.resource_id = ra.id
+        LEFT JOIN resource_ipobject_appmodule ria ON ria.resource_id = ra.id
+        WHERE
+        ( ria.app_module_id IS NULL AND rse.env_id IS NULL )
+        OR ( ria.app_module_id IS NULL AND rse.env_id = #{envId} )
+        OR (ria.app_module_id = #{appModuleId} AND rse.env_id IS NULL)
+        <if test="keyword != null and keyword != ''">
+            AND ra.`ip` LIKE concat('%', #{keyword}, '%') or ra.`port` LIKE concat('%', #{keyword},'%')
         </if>
-        )
-        UNION
-        (SELECT ra.id
-        FROM ${schemaName}.resource_appinstance ra
-        WHERE ra.id NOT IN (SELECT resource_id FROM ${schemaName}.resource_softwareservice_env)
-        <if test="searchVo.keyword != null and searchVo.keyword != ''">
-            AND ra.`ip` LIKE concat('%', #{searchVo.keyword}, '%') or ra.`port` LIKE concat('%', #{searchVo.keyword},
-            '%')
-        </if>
-        )) a
-        WHERE a.id NOT IN (
-        SELECT rse.resource_id
-        FROM ${schemaName}.resource_appsystem_appmodule raa
-        JOIN ${schemaName}.resource_ipobject_appmodule ria ON raa.app_module_id = ria.app_module_id
-        JOIN ${schemaName}.resource_softwareservice_env rse ON ria.resource_id = rse.resource_id
-        WHERE raa.resource_id = #{searchVo.appSystemId}
-        AND ria.app_module_id = #{searchVo.appModuleId}
-        AND rse.env_id = #{searchVo.envId})
     </select>
 
-    <select id="getAppModuleEnvNotEnvOrSameEnvAndNotModuleInstanceList"
+    <select id="searchAppConfigEnvInstanceList"
             resultType="codedriver.framework.deploy.dto.app.DeployAppConfigInstanceVo">
-        SELECT a.id,
-        a.ip,
-        a.port,
-        a.name
-        FROM ((SELECT ra.id,
+        SELECT ra.id,
         ra.ip,
         ra.port,
         ra.name
-        FROM ${schemaName}.resource_appinstance ra
-        JOIN ${schemaName}.resource_softwareservice_env rse ON rse.resource_id = ra.id
-        AND rse.env_id = #{searchVo.envId}
-        WHERE ra.id NOT IN (SELECT resource_id FROM ${schemaName}.resource_ipobject_appmodule)
-        <if test="searchVo.keyword != null and searchVo.keyword != ''">
-            AND ra.`ip` LIKE concat('%', #{searchVo.keyword}, '%') or ra.`port` LIKE concat('%', #{searchVo.keyword},
-            '%')
-        </if>)
-        UNION
-        (SELECT ra.id,
-        ra.ip,
-        ra.port,
-        ra.name
-        FROM ${schemaName}.resource_appinstance ra
-        WHERE ra.id NOT IN (SELECT resource_id FROM ${schemaName}.resource_softwareservice_env)
-        <if test="searchVo.keyword != null and searchVo.keyword != ''">
-            AND ra.`ip` LIKE concat('%', #{searchVo.keyword}, '%') or ra.`port` LIKE concat('%', #{searchVo.keyword},
-            '%')
-        </if>)) a
-        WHERE a.id NOT IN (
-        SELECT rse.resource_id
-        FROM ${schemaName}.resource_appsystem_appmodule raa
-        JOIN ${schemaName}.resource_ipobject_appmodule ria ON raa.app_module_id = ria.app_module_id
-        JOIN ${schemaName}.resource_softwareservice_env rse ON ria.resource_id = rse.resource_id
-        WHERE raa.resource_id = #{searchVo.appSystemId}
-        AND ria.app_module_id = #{searchVo.appModuleId}
-        AND rse.env_id = #{searchVo.envId})
-        ORDER BY a.id DESC
-        LIMIT #{searchVo.startNum}, #{searchVo.pageSize}
+        FROM resource_appinstance ra
+        LEFT JOIN resource_softwareservice_env rse ON rse.resource_id = ra.id
+        LEFT JOIN resource_ipobject_appmodule ria ON ria.resource_id = ra.id
+        WHERE
+        ( ria.app_module_id IS NULL AND rse.env_id IS NULL )
+        OR ( ria.app_module_id IS NULL AND rse.env_id = #{envId} )
+        OR (ria.app_module_id = #{appModuleId} AND rse.env_id IS NULL)
+        <if test="keyword != null and keyword != ''">
+            AND ra.`ip` LIKE concat('%', #{keyword}, '%') or ra.`port` LIKE concat('%', #{keyword},'%')
+        </if>
+        ORDER BY ra.id DESC
+        LIMIT #{startNum}, #{pageSize}
     </select>
 
     <select id="getAppSystemIdListCount" resultType="java.lang.Integer">
