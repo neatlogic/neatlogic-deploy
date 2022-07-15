@@ -64,8 +64,6 @@ public class GetDeployAppConfigAppModuleInfoApi extends PrivateApiComponentBase 
             throw new CiEntityNotFoundException(paramObj.getLong("appModuleId"));
         }
 
-        //TODO 根据appSystemId获取阶段信息
-
         //获取模块基础信息
         CiEntityVo ciEntityVo = iCiEntityCrossoverMapper.getCiEntityBaseInfoById(paramObj.getLong("appModuleId"));
         ICiEntityCrossoverService ciEntityService = CrossoverServiceFactory.getApi(ICiEntityCrossoverService.class);

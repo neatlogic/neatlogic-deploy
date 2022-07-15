@@ -71,7 +71,7 @@ public class SearchDeployAppModuleEnvAutoConfigInstanceApi extends PrivateApiCom
         List<ResourceVo> instanceList = new ArrayList<>();
         JSONArray defaultValue = searchVo.getDefaultValue();
         if (CollectionUtils.isNotEmpty(defaultValue)) {
-            instanceList = resourceCenterMapper.getResourceByIdList(defaultValue.toJavaList(Long.class), TenantContext.get().getDataDbName());
+            instanceList = resourceCenterMapper.getAppInstanceResourceListByIdListSimple(defaultValue.toJavaList(Long.class), TenantContext.get().getDataDbName());
         } else {
             int count = deployAppConfigMapper.getAppModuleEnvAutoConfigInstanceIdCount(searchVo, TenantContext.get().getDataDbName());
             if (count > 0) {
