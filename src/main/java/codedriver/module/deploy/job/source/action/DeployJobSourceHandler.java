@@ -23,6 +23,7 @@ import codedriver.framework.cmdb.exception.cientity.CiEntityNotFoundException;
 import codedriver.framework.crossover.CrossoverServiceFactory;
 import codedriver.framework.dao.mapper.runner.RunnerMapper;
 import codedriver.framework.deploy.constvalue.JobSourceType;
+import codedriver.framework.deploy.dto.DeployJobContentVo;
 import codedriver.framework.deploy.dto.DeployJobVo;
 import codedriver.framework.deploy.dto.app.DeployAppConfigVo;
 import codedriver.framework.deploy.dto.app.DeployPipelineConfigVo;
@@ -276,7 +277,8 @@ public class DeployJobSourceHandler extends AutoexecJobSourceActionHandlerBase {
     public void updateInvokeJob(JSONObject paramJson, AutoexecJobVo jobVo) {
         DeployJobVo deployJobVo = new DeployJobVo(paramJson);
         deployJobVo.setJobId(jobVo.getId());
-        deployJobVo.setConfigStr(jobVo.getConfigStr());
+        deployJobVo.setConfigHash(jobVo.getConfigHash());
+        deployJobMapper.insertIgnoreDeployJobContent(new DeployJobContentVo(deployJobVo.getConfigHash(),jobVo.getConfigStr()));
         if(paramJson.containsKey("buildNo")){
             deployJobVo.setBuildNo(paramJson.getInteger("buildNo"));
         }else{

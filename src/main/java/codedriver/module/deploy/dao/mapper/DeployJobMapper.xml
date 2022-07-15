@@ -27,12 +27,6 @@
           and app_module_id = #{appModuleId}
         order by job_id desc
         limit 1
-        select runner_map_id
-        from deploy_job
-        where app_system_id = #{appSystemId}
-          and app_module_id = #{appModuleId}
-        order by job_id desc
-        limit 1
     </select>
 
     <select id="getDeployJobListByAppSystemIdAndAppModuleId"
@@ -56,9 +50,26 @@
 
     </select>
 
+    <select id="getDeployJobContentLock"
+            resultType="codedriver.framework.deploy.dto.DeployJobContentVo">
+        SELECT `hash`,
+               `content`
+        FROM `autoexec_job_content`
+        where `hash` = #{value} for
+        update
+    </select>
+
+    <select id="getDeployJobContent"
+            resultType="codedriver.framework.deploy.dto.DeployJobContentVo">
+        SELECT `hash`,
+               `content`
+        FROM `autoexec_job_content`
+        where `hash` = #{value}
+    </select>
+
     <insert id="insertDeployJob">
         insert into deploy_job (`id`, `app_system_id`, `app_module_id`, `env_id`, `version`, `job_id`, `runner_map_id`,
-                                `config`,
+                                `config_hash`,
                                 `build_no`)
         values (#{id},
                 #{appSystemId},
@@ -67,8 +78,14 @@
                 #{version},
                 #{jobId},
                 #{runnerMapId},
-                #{configStr},
+                #{configHash},
                 #{buildNo})
+    </insert>
+
+    <insert id="insertIgnoreDeployJobContent"
+            parameterType="codedriver.framework.deploy.dto.DeployJobContentVo">
+        INSERT IGNORE INTO `deploy_job_content` (`hash`, `content`)
+        VALUES (#{hash}, #{content});
     </insert>
 
     <update id="updateDeployJobRunnerMapId">
@@ -76,5 +93,11 @@
         set `runner_map_id` = #{runnerMapId}
         where `job_id` = #{jobId}
     </update>
+
+    <delete id="deleteDeployJobContentByHash" parameterType="java.lang.String">
+        DELETE
+        FROM `deploy_job_content`
+        WHERE `hash` = #{value};
+    </delete>
 
 </mapper>
