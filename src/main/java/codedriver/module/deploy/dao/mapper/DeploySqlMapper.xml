@@ -80,7 +80,7 @@
             `sql_id` = #{sqlId}
     </insert>
 
-    <select id="getDeploySqlBySysIdAndModuleIdAndEnvIdAndVersionAndSqlFile" resultType="codedriver.framework.deploy.dto.sql.DeploySqlDetailVo">
+    <select id="getDeploySqlDetail" resultType="codedriver.framework.deploy.dto.sql.DeploySqlDetailVo">
         SELECT dsd.id,
                dsd.`md5`,
                dsd.`status`,
@@ -93,6 +93,8 @@
           AND dsd.env_id = #{envId}
           AND dsd.version = #{version}
           AND dsd.sql_file = #{sqlFile}
+          and dsjp.job_id = #{jobId}
+          and dsjp.job_phase_name = #{phaseName}
     </select>
 
     <select id="getDeploySqlDetailList"
