@@ -1,4 +1,4 @@
-package codedriver.module.deploy.api;
+package codedriver.module.deploy.api.version;
 
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.deploy.dto.app.DeployAppModuleVo;

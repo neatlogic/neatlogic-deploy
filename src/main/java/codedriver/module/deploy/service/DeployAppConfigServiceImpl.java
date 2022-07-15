@@ -20,6 +20,7 @@ import javax.annotation.Resource;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * @author longrf
@@ -77,15 +78,17 @@ public class DeployAppConfigServiceImpl implements DeployAppConfigService {
      * @param paramObj              入参
      */
     private void addRelEntityData(CiEntityTransactionVo ciEntityTransactionVo, JSONObject paramObj) {
-        ICiEntityCrossoverMapper iCiEntityCrossoverMapper = CrossoverServiceFactory.getApi(ICiEntityCrossoverMapper.class);
-        IRelCrossoverMapper relCrossoverMapper = CrossoverServiceFactory.getApi(IRelCrossoverMapper.class);
+        if (Objects.equals(paramObj.getInteger("isNeedUpdateAPPComponentRel"), 1)) {
+            ICiEntityCrossoverMapper iCiEntityCrossoverMapper = CrossoverServiceFactory.getApi(ICiEntityCrossoverMapper.class);
+            IRelCrossoverMapper relCrossoverMapper = CrossoverServiceFactory.getApi(IRelCrossoverMapper.class);
 
-        RelVo APPComponentRel = relCrossoverMapper.getRelByCiIdAndRelName(paramObj.getLong("ciId"), "APPComponent");
-        if (APPComponentRel == null) {
-            return;
+            RelVo APPComponentRel = relCrossoverMapper.getRelByCiIdAndRelName(paramObj.getLong("ciId"), "APPComponent");
+            if (APPComponentRel == null) {
+                return;
+            }
+            CiEntityVo appModuleCiEntity = iCiEntityCrossoverMapper.getCiEntityBaseInfoById(paramObj.getLong("appModuleId"));
+            ciEntityTransactionVo.addRelEntityData(APPComponentRel, APPComponentRel.getDirection(), appModuleCiEntity.getCiId(), appModuleCiEntity.getId());
         }
-        CiEntityVo appModuleCiEntity = iCiEntityCrossoverMapper.getCiEntityBaseInfoById(paramObj.getLong("appModuleId"));
-        ciEntityTransactionVo.addRelEntityData(APPComponentRel, APPComponentRel.getDirection(), appModuleCiEntity.getCiId(), appModuleCiEntity.getId());
     }
 
     /**
@@ -113,11 +116,18 @@ public class DeployAppConfigServiceImpl implements DeployAppConfigService {
 
     public static Map<String, String> getAttrMap() {
         Map<String, String> map = new HashMap<>();
+        //实例
         map.put("name", "name");
         map.put("ip", "ip");
         map.put("maintenance_window", "maintenanceWindow");
         map.put("port", "port");
         map.put("app_environment", "envId");
+
+        //系统
+        map.put("state", "stateId");
+        map.put("owner", "ownerId");
+        map.put("abbrName", "abbrName");
+        map.put("description", "description");
         return map;
     }
 }
