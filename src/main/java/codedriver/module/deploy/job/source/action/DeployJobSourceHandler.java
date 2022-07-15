@@ -157,23 +157,34 @@ public class DeployJobSourceHandler extends AutoexecJobSourceActionHandlerBase {
 
     @Override
     public void checkinSqlList(JSONObject paramObj) {
+        Long jobId = paramObj.getLong("jobId");
         JSONArray paramSqlVoArray = paramObj.getJSONArray("sqlInfoList");
 
-        List<DeploySqlDetailVo> oldDeploySqlList = deploySqlMapper.getAllDeploySqlDetailList(new DeploySqlDetailVo(paramObj.getLong("sysId"), paramObj.getLong("moduleId"), paramObj.getLong("envId"), paramObj.getString("version"), paramObj.getString("targetPhaseName")));
-        Map<String, DeploySqlDetailVo> oldDeploySqlMap = new HashMap<>();
+        List<DeploySqlDetailVo> oldDeploySqlList = deploySqlMapper.getAllDeploySqlDetailList(new DeploySqlDetailVo(paramObj.getLong("sysId"), paramObj.getLong("moduleId"), paramObj.getLong("envId"), paramObj.getString("version")));
+
+        Map<String, DeploySqlDetailVo> jobPhaseANdSqlDetailMap = new HashMap<>();
+        Map<String, DeploySqlDetailVo> sqlDetailMap = new HashMap<>();
         List<Long> needDeleteSqlIdList = new ArrayList<>();
         if (CollectionUtils.isNotEmpty(oldDeploySqlList)) {
-            oldDeploySqlMap = oldDeploySqlList.stream().collect(Collectors.toMap(DeploySqlDetailVo::getSqlFile, e -> e));
+            jobPhaseANdSqlDetailMap = oldDeploySqlList.stream().collect(Collectors.toMap(e -> e.getJobId().toString() + e.getPhaseName() + e.getResourceId().toString() + e.getSqlFile(), e -> e));
+            for (DeploySqlDetailVo detailVo : oldDeploySqlList) {
+                sqlDetailMap.putIfAbsent(detailVo.getResourceId().toString() + detailVo.getSqlFile(), detailVo);
+            }
             needDeleteSqlIdList = oldDeploySqlList.stream().map(DeploySqlDetailVo::getId).collect(Collectors.toList());
         }
         List<DeploySqlDetailVo> insertSqlList = new ArrayList<>();
         List<Long> reEnabledSqlList = new ArrayList<>();
 
         if (CollectionUtils.isNotEmpty(paramSqlVoArray)) {
+
             for (DeploySqlDetailVo newSqlVo : paramSqlVoArray.toJavaList(DeploySqlDetailVo.class)) {
-                DeploySqlDetailVo oldSqlVo = oldDeploySqlMap.get(newSqlVo.getSqlFile());
+                DeploySqlDetailVo oldSqlVo = jobPhaseANdSqlDetailMap.get(jobId.toString() + newSqlVo.getPhaseName() + newSqlVo.getResourceId().toString() + newSqlVo.getSqlFile());
                 //不存在则新增
                 if (oldSqlVo == null) {
+                    DeploySqlDetailVo deploySqlDetailVo = sqlDetailMap.get(newSqlVo.getResourceId().toString() + newSqlVo.getSqlFile());
+                    if (deploySqlDetailVo != null) {
+                        newSqlVo.setId(deploySqlDetailVo.getId());
+                    }
                     insertSqlList.add(newSqlVo);
                     continue;
                 }
@@ -186,18 +197,19 @@ public class DeployJobSourceHandler extends AutoexecJobSourceActionHandlerBase {
                     reEnabledSqlList.add(oldSqlVo.getId());
                 }
             }
-            if (CollectionUtils.isNotEmpty(needDeleteSqlIdList)) {
-                deploySqlMapper.updateDeploySqlIsDeleteByIdList(needDeleteSqlIdList, 1);
+
+        }
+        if (CollectionUtils.isNotEmpty(needDeleteSqlIdList)) {
+            deploySqlMapper.updateDeploySqlIsDeleteByIdList(needDeleteSqlIdList, 1);
+        }
+        if (CollectionUtils.isNotEmpty(insertSqlList)) {
+            for (DeploySqlDetailVo insertSqlVo : insertSqlList) {
+                deploySqlMapper.insertDeploySql(new DeploySqlJobPhaseVo(paramObj.getLong("jobId"), paramObj.getString("targetPhaseName"), insertSqlVo.getId()));
+                deploySqlMapper.insertDeploySqlDetail(insertSqlVo, paramObj.getLong("sysId"), paramObj.getLong("envId"), paramObj.getLong("moduleId"), paramObj.getString("version"), paramObj.getLong("runnerId"));
             }
-            if (CollectionUtils.isNotEmpty(insertSqlList)) {
-                for (DeploySqlDetailVo insertSqlVo : insertSqlList) {
-                    deploySqlMapper.insertDeploySql(new DeploySqlJobPhaseVo(paramObj.getLong("jobId"), paramObj.getString("targetPhaseName"), insertSqlVo.getId()));
-                    deploySqlMapper.insertDeploySqlDetail(insertSqlVo, paramObj.getLong("sysId"), paramObj.getLong("envId"), paramObj.getLong("moduleId"), paramObj.getString("version"), paramObj.getLong("runnerId"));
-                }
-            }
-            if (CollectionUtils.isNotEmpty(reEnabledSqlList)) {
-                deploySqlMapper.updateDeploySqlIsDeleteByIdList(reEnabledSqlList, 0);
-            }
+        }
+        if (CollectionUtils.isNotEmpty(reEnabledSqlList)) {
+            deploySqlMapper.updateDeploySqlIsDeleteByIdList(reEnabledSqlList, 0);
         }
     }
 
@@ -278,17 +290,17 @@ public class DeployJobSourceHandler extends AutoexecJobSourceActionHandlerBase {
         DeployJobVo deployJobVo = new DeployJobVo(paramJson);
         deployJobVo.setJobId(jobVo.getId());
         deployJobVo.setConfigHash(jobVo.getConfigHash());
-        deployJobMapper.insertIgnoreDeployJobContent(new DeployJobContentVo(deployJobVo.getConfigHash(),jobVo.getConfigStr()));
-        if(paramJson.containsKey("buildNo")){
+        deployJobMapper.insertIgnoreDeployJobContent(new DeployJobContentVo(deployJobVo.getConfigHash(), jobVo.getConfigStr()));
+        if (paramJson.containsKey("buildNo")) {
             deployJobVo.setBuildNo(paramJson.getInteger("buildNo"));
-        }else{
+        } else {
             //获取最新buildNo
-            DeployVersionVo deployVersionVo = deployVersionMapper.getVersionByAppSystemIdAndAppModuleIdAndVersion(deployJobVo.getAppSystemId(),deployJobVo.getAppModuleId(),deployJobVo.getVersion());
+            DeployVersionVo deployVersionVo = deployVersionMapper.getVersionByAppSystemIdAndAppModuleIdAndVersion(deployJobVo.getAppSystemId(), deployJobVo.getAppModuleId(), deployJobVo.getVersion());
             Integer maxBuildNo = deployVersionMapper.getDeployVersionMaxBuildNoByVersionIdLock(deployVersionVo.getId());
-            if(maxBuildNo == null){
+            if (maxBuildNo == null) {
                 deployJobVo.setBuildNo(1);
-            }else {
-                deployJobVo.setBuildNo(maxBuildNo+1);
+            } else {
+                deployJobVo.setBuildNo(maxBuildNo + 1);
             }
         }
         deployJobMapper.insertDeployJob(deployJobVo);
