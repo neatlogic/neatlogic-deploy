@@ -50,7 +50,7 @@ public class GetDeployAppConfigEnvDBConfigForAutoexecApi extends PrivateApiCompo
 
     @Input({
             @Param(name = "runnerId", type = ApiParamType.LONG, desc = "Runner的ID"),
-            @Param(name = "runnerGroup", type = ApiParamType.JSONARRAY, desc = "id"),
+            @Param(name = "runnerGroup", type = ApiParamType.JSONOBJECT, desc = "runner组信息"),
             @Param(name = "jobId", type = ApiParamType.LONG, desc = "作业ID"),
             @Param(name = "phaseName", type = ApiParamType.STRING, desc = "阶段名"),
             @Param(name = "sysId", type = ApiParamType.LONG, desc = "应用ID"),
