@@ -180,7 +180,6 @@
                tags_dir        as tagsDir,
                start_rev       as startRev,
                end_rev         as endRev,
-               config,
                fcu,
                fcd,
                lcu,
@@ -258,12 +257,6 @@
     <update id="unFreezeDeployVersionById">
         update deploy_version
         set is_freeze = #{isFreeze}
-        where id = #{id}
-    </update>
-
-    <update id="updateDeployVersionConfigById">
-        update deploy_version
-        set config = #{config}
         where id = #{id}
     </update>
 
