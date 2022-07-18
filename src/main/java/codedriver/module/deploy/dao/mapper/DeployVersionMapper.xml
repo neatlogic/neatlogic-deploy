@@ -23,7 +23,7 @@
                app_system_name as appSystemName,
                app_module_id   as appModuleId,
                app_module_name as appModuleName,
-               is_locked       as isLocked,
+               is_freeze       as isFreeze,
                fcu,
                fcd,
                lcu,
@@ -43,8 +43,8 @@
             <if test="keyword != null and keyword != ''">
                 and dv.`version` like CONCAT('%', #{keyword}, '%')
             </if>
-            <if test="isLocked != null">
-                and dv.is_locked = #{isLocked}
+            <if test="isFreeze != null">
+                and dv.is_freeze = #{isFreeze}
             </if>
             <if test="appSystemIdList != null and appSystemIdList.size() > 0">
                 AND dv.app_system_id IN
@@ -81,7 +81,7 @@
         <result column="appSystemName" property="appSystemName"/>
         <result column="appModuleId" property="appModuleId"/>
         <result column="appModuleName" property="appModuleName"/>
-        <result column="isLocked" property="isLocked"/>
+        <result column="isFreeze" property="isFreeze"/>
         <result column="fcu" property="fcu"/>
         <result column="fcd" property="fcd"/>
         <result column="lcu" property="lcu"/>
@@ -105,7 +105,7 @@
         dv.app_system_name as appSystemName,
         dv.app_module_id as appModuleId,
         dv.app_module_name as appModuleName,
-        dv.is_locked as isLocked,
+        dv.is_freeze as isFreeze,
         dvb.build_no as buildNo,
         dvb.status as buildNoStatus,
         dve.env_id as envId,
@@ -148,7 +148,7 @@
                app_system_name as appSystemName,
                app_module_id   as appModuleId,
                app_module_name as appModuleName,
-               is_locked       as isLocked,
+               is_freeze       as isFreeze,
                fcu,
                fcd,
                lcu,
@@ -171,7 +171,7 @@
                app_system_name as appSystemName,
                app_module_id   as appModuleId,
                app_module_name as appModuleName,
-               is_locked       as isLocked,
+               is_freeze       as isFreeze,
                config,
                fcu,
                fcd,
@@ -194,7 +194,7 @@
         dvb.compile_end_time AS compileEndTime,
         dv.id as versionId,
         dv.version,
-        dv.is_locked AS versionIsLocked
+        dv.is_freeze AS versionIsLocked
         <include refid="searchDeployVersionBuildNo"></include>
         ORDER BY dvb.compile_start_time DESC
         <if test="needPage == true">
@@ -231,9 +231,9 @@
         </where>
     </sql>
 
-    <update id="unLockDeployVersionById">
+    <update id="unFreezeDeployVersionById">
         update deploy_version
-        set is_locked = #{isLocked}
+        set is_freeze = #{isFreeze}
         where id = #{id}
     </update>
 
@@ -245,10 +245,10 @@
 
     <insert id="insertDeployVersion">
         insert into deploy_version
-        (id, version, app_system_id, app_system_name, app_module_id, app_module_name, is_locked, fcu, fcd, lcu,
+        (id, version, app_system_id, app_system_name, app_module_id, app_module_name, is_freeze, fcu, fcd, lcu,
          lcd)
         values (#{id}, #{version}, #{appSystemId}, #{appSystemName}, #{appModuleId}, #{appModuleName},
-                #{isLocked},
+                #{isFreeze},
                 #{fcu}, now(3), #{lcu}, now(3))
     </insert>
 

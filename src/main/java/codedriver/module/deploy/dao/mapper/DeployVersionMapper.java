@@ -32,7 +32,7 @@ public interface DeployVersionMapper {
 
     DeployVersionVo getDeployVersionBySystemIdAndModuleIdAndVersion(DeployVersionVo versionVo);
 
-    int unLockDeployVersionById(@Param("id") Long id, @Param("isLocked") Long isLocked);
+    int unFreezeDeployVersionById(@Param("id") Long id, @Param("isFreeze") Long isFreeze);
 
     Integer getDeployVersionMaxBuildNoByVersionIdLock(Long id);
 

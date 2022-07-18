@@ -15,6 +15,7 @@ import codedriver.framework.autoexec.dto.scenario.AutoexecScenarioVo;
 import codedriver.framework.autoexec.exception.AutoexecScenarioIsNotFoundException;
 import codedriver.framework.autoexec.job.action.core.AutoexecJobActionHandlerFactory;
 import codedriver.framework.autoexec.job.action.core.IAutoexecJobActionHandler;
+import codedriver.framework.batch.BatchRunner;
 import codedriver.framework.cmdb.crossover.ICiEntityCrossoverMapper;
 import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
 import codedriver.framework.cmdb.exception.cientity.CiEntityNotFoundException;
@@ -138,18 +139,20 @@ public class CreateAutoexecJobFormDeployApi extends PrivateApiComponentBase {
         }
         jsonObj.put("operationType", CombopOperationType.PIPELINE.getValue());
         JSONArray moduleArray = jsonObj.getJSONArray("moduleList");
-        for (int i = 0; i < moduleArray.size(); i++) {
-            JSONObject moduleJson = moduleArray.getJSONObject(i);
+        BatchRunner<Object> runner = new BatchRunner<>();
+        runner.execute(moduleArray, 3, module -> {
+            JSONObject moduleJson = JSONObject.parseObject(module.toString());
             if (MapUtils.isNotEmpty(moduleJson)) {
                 result.add(convertModule(jsonObj, moduleJson));
             }
-        }
+        }, "DEPLOY-JOB-CRATE");
         return result;
     }
 
     /**
      * 转为自动化通用格式
-     * @param jsonObj 入参
+     *
+     * @param jsonObj    入参
      * @param moduleJson 模块入参
      * @return 自动化通用json格式
      */
@@ -172,10 +175,10 @@ public class CreateAutoexecJobFormDeployApi extends PrivateApiComponentBase {
         } else {
             throw new AppModuleNotFoundException();
         }
-        jsonObj.put("buildNo",moduleJson.getInteger("buildNo"));
-        jsonObj.put("version",moduleJson.getString("version"));
+        jsonObj.put("buildNo", moduleJson.getInteger("buildNo"));
+        jsonObj.put("version", moduleJson.getString("version"));
         JSONObject executeConfig = jsonObj.getJSONObject("executeConfig");
-        executeConfig.put("executeNodeConfig",new JSONObject(){{
+        executeConfig.put("executeNodeConfig", new JSONObject() {{
             put("selectNodeList", moduleJson.getJSONArray("selectNodeList"));
         }});
         Long invokeId = getOperationId(jsonObj);
@@ -187,6 +190,7 @@ public class CreateAutoexecJobFormDeployApi extends PrivateApiComponentBase {
 
     /**
      * 创建发布作业
+     *
      * @param jsonObj 作业入参
      * @return result
      */
@@ -199,11 +203,11 @@ public class CreateAutoexecJobFormDeployApi extends PrivateApiComponentBase {
         jobVo.setIsFirstFire(1);
         try {
             fireAction.doService(jobVo);
-            resultJson.put("jobId",jobVo.getId());
-            resultJson.put("appModuleName",jsonObj.getString("appModuleName"));
+            resultJson.put("jobId", jobVo.getId());
+            resultJson.put("appModuleName", jsonObj.getString("appModuleName"));
         } catch (Exception ex) {
             logger.error(ex.getMessage(), ex);
-            resultJson.put("errorMsg",ex.getMessage());
+            resultJson.put("errorMsg", ex.getMessage());
         }
         return resultJson;
     }
