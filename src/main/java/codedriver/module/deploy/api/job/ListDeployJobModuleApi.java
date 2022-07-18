@@ -4,6 +4,8 @@ import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.autoexec.constvalue.ToolType;
 import codedriver.framework.autoexec.dto.combop.AutoexecCombopPhaseOperationVo;
 import codedriver.framework.autoexec.dto.combop.AutoexecCombopScenarioVo;
+import codedriver.framework.cmdb.dao.mapper.resourcecenter.ResourceCenterMapper;
+import codedriver.framework.cmdb.dto.resourcecenter.ResourceVo;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.deploy.dto.app.DeployAppConfigVo;
 import codedriver.framework.deploy.dto.app.DeployAppModuleVo;
@@ -42,6 +44,9 @@ public class ListDeployJobModuleApi extends PrivateApiComponentBase {
 
     @Resource
     private DeployAppPipelineService deployAppPipelineService;
+
+    @Resource
+    private ResourceCenterMapper resourceCenterMapper;
 
     @Override
     public String getName() {
@@ -129,6 +134,14 @@ public class ListDeployJobModuleApi extends PrivateApiComponentBase {
                         }
                     }
                 }
+
+                //4、查询实例列表
+                List<Long> instanceIdList = resourceCenterMapper.getAppInstanceResourceIdListByAppSystemIdAndModuleIdAndEnvId(paramObj.toJavaObject(ResourceVo.class), TenantContext.get().getDataDbName());
+                List<ResourceVo> instanceList = new ArrayList<>();
+                if (CollectionUtils.isNotEmpty(instanceIdList)) {
+                    instanceList = resourceCenterMapper.getAppInstanceResourceListByIdList(instanceIdList, TenantContext.get().getDataDbName());
+                }
+                appModuleVo.setInstanceList(instanceList);
             }
         }
 
