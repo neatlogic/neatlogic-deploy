@@ -1,5 +1,6 @@
 package codedriver.module.deploy.dao.mapper;
 
+import codedriver.framework.deploy.dto.DeployJobContentVo;
 import codedriver.framework.deploy.dto.DeployJobVo;
 import org.apache.ibatis.annotations.Param;
 
@@ -23,7 +24,15 @@ public interface DeployJobMapper {
 
     List<DeployJobVo> getDeployJobListByAppSystemIdAndAppModuleId(@Param("appSystemId") Long appSystemId,@Param("appModuleId") Long appModuleId);
 
+    DeployJobContentVo getDeployJobContentLock(String contentHash);
+
+    DeployJobContentVo getDeployJobContent(String contentHash);
+
     Integer insertDeployJob(DeployJobVo deployJobVo);
 
+    Integer insertIgnoreDeployJobContent(DeployJobContentVo deployJobContentVo);
+
     Integer updateDeployJobRunnerMapId(DeployJobVo deployJobVo);
+
+    Integer deleteDeployJobContentByHash(String contentHash);
 }

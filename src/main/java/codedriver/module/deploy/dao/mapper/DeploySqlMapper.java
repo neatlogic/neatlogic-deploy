@@ -14,7 +14,7 @@ import java.util.List;
  */
 public interface DeploySqlMapper extends IDeploySqlCrossoverMapper {
 
-    DeploySqlDetailVo getDeploySqlBySysIdAndModuleIdAndEnvIdAndVersionAndSqlFile(@Param("sysId") Long sysId, @Param("envId") Long envId, @Param("moduleId") Long moduleId, @Param("version") String version, @Param("sqlFile") String sqlFile);
+    DeploySqlDetailVo getDeploySqlDetail(DeploySqlDetailVo deploySqlDetailVo);
 
     int searchDeploySqlCount(AutoexecJobPhaseNodeVo jobPhaseNodeVo);
 
