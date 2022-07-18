@@ -22,6 +22,7 @@ import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
 import codedriver.framework.cmdb.exception.cientity.CiEntityNotFoundException;
 import codedriver.framework.crossover.CrossoverServiceFactory;
 import codedriver.framework.dao.mapper.runner.RunnerMapper;
+import codedriver.framework.deploy.constvalue.BuildNoStatus;
 import codedriver.framework.deploy.constvalue.JobSourceType;
 import codedriver.framework.deploy.dto.DeployJobContentVo;
 import codedriver.framework.deploy.dto.DeployJobVo;
@@ -29,6 +30,7 @@ import codedriver.framework.deploy.dto.app.DeployAppConfigVo;
 import codedriver.framework.deploy.dto.app.DeployPipelineConfigVo;
 import codedriver.framework.deploy.dto.sql.DeploySqlDetailVo;
 import codedriver.framework.deploy.dto.sql.DeploySqlJobPhaseVo;
+import codedriver.framework.deploy.dto.version.DeployVersionBuildNoVo;
 import codedriver.framework.deploy.dto.version.DeployVersionVo;
 import codedriver.framework.deploy.exception.DeployAppConfigModuleRunnerGroupNotFoundException;
 import codedriver.framework.deploy.exception.DeployPipelineConfigNotFoundException;
@@ -291,7 +293,7 @@ public class DeployJobSourceHandler extends AutoexecJobSourceActionHandlerBase {
         deployJobVo.setJobId(jobVo.getId());
         deployJobVo.setConfigHash(jobVo.getConfigHash());
         deployJobMapper.insertIgnoreDeployJobContent(new DeployJobContentVo(deployJobVo.getConfigHash(), jobVo.getConfigStr()));
-        if (paramJson.containsKey("buildNo")) {
+        if (paramJson.getInteger("buildNo") != null ) {
             deployJobVo.setBuildNo(paramJson.getInteger("buildNo"));
         } else {
             //获取最新buildNo
@@ -302,6 +304,7 @@ public class DeployJobSourceHandler extends AutoexecJobSourceActionHandlerBase {
             } else {
                 deployJobVo.setBuildNo(maxBuildNo + 1);
             }
+            deployJobMapper.insertDeployVersionBuildNo(new DeployVersionBuildNoVo(deployVersionVo.getId(),deployJobVo.getBuildNo(),deployJobVo.getJobId(), BuildNoStatus.PENDING.getValue()));
         }
         deployJobMapper.insertDeployJob(deployJobVo);
     }

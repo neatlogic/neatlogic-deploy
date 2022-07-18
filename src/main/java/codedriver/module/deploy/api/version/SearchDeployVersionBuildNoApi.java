@@ -1,4 +1,4 @@
-package codedriver.module.deploy.api;
+package codedriver.module.deploy.api.version;
 
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.deploy.dto.app.DeployAppModuleVo;
@@ -45,6 +45,8 @@ public class SearchDeployVersionBuildNoApi extends PrivateApiComponentBase {
 
     @Input({
             @Param(name = "keyword", type = ApiParamType.STRING, desc = "模糊搜索", xss = true),
+            @Param(name = "appSystemIdList", type = ApiParamType.JSONARRAY, desc = "应用系统id列表"),
+            @Param(name = "appModuleIdList", type = ApiParamType.JSONARRAY, desc = "应用模块id列表"),
             @Param(name = "startTimeRange", type = ApiParamType.JSONOBJECT, desc = "上传时间范围 (入参：{startTime（开始时间）与endTime（结束时间）}，或者{timeRange（时间范围）与timeUnit（时间范围参数）})"),
             @Param(name = "needPage", type = ApiParamType.BOOLEAN, desc = "是否需要分页，默认true"),
             @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "每页条目"),

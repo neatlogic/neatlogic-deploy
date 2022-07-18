@@ -21,7 +21,7 @@ import javax.annotation.Resource;
  */
 @Service
 @OperationType(type = OperationTypeEnum.UPDATE)
-public class UnLockDeployVersionApi extends PrivateApiComponentBase {
+public class UnFreezeDeployVersionApi extends PrivateApiComponentBase {
 
     @Resource
     DeployVersionMapper deployVersionMapper;
@@ -43,7 +43,7 @@ public class UnLockDeployVersionApi extends PrivateApiComponentBase {
 
     @Input({
             @Param(name = "id", desc = "版本id", isRequired = true, type = ApiParamType.LONG),
-            @Param(name = "isLocked", desc = "是否封版(0：解版，1：封版)", isRequired = true, type = ApiParamType.INTEGER)
+            @Param(name = "isFreeze", desc = "是否封版(0：解版，1：封版)", isRequired = true, type = ApiParamType.INTEGER)
     })
     @Description(desc = "解/封发布版本")
     @Override
@@ -53,7 +53,7 @@ public class UnLockDeployVersionApi extends PrivateApiComponentBase {
         if (deployVersionVo == null) {
             throw new DeployVersionNotFoundException(versionId);
         }
-        deployVersionMapper.unLockDeployVersionById(versionId, paramObj.getLong("isLocked"));
+        deployVersionMapper.unFreezeDeployVersionById(versionId, paramObj.getLong("isFreeze"));
         return null;
     }
 }

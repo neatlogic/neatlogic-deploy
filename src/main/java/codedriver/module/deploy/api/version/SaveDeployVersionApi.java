@@ -54,7 +54,7 @@ public class SaveDeployVersionApi extends PrivateApiComponentBase {
             @Param(name = "appSystemName", desc = "应用名称", type = ApiParamType.STRING),
             @Param(name = "appModuleId", desc = "应用模块id", isRequired = true, type = ApiParamType.LONG),
             @Param(name = "appModuleName", desc = "应用模块名称", type = ApiParamType.STRING),
-            @Param(name = "isLocked", desc = "是否封版", isRequired = true, type = ApiParamType.INTEGER)
+            @Param(name = "isFreeze", desc = "是否封版", isRequired = true, type = ApiParamType.INTEGER)
     })
     @Description(desc = "保存发布版本")
     @Override

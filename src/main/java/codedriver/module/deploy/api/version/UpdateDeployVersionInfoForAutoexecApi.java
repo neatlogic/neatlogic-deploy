@@ -3,7 +3,9 @@ package codedriver.module.deploy.api.version;
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.deploy.auth.DEPLOY_MODIFY;
+import codedriver.framework.deploy.dto.version.DeployVersionBuildNoVo;
 import codedriver.framework.deploy.dto.version.DeployVersionVo;
+import codedriver.framework.deploy.exception.DeployVersionBuildNoNotFoundException;
 import codedriver.framework.deploy.exception.DeployVersionNotFoundException;
 import codedriver.framework.restful.annotation.Description;
 import codedriver.framework.restful.annotation.Input;
@@ -13,16 +15,16 @@ import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.deploy.dao.mapper.DeployVersionMapper;
 import com.alibaba.fastjson.JSONObject;
-import org.apache.commons.collections4.MapUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.util.Map;
 
 @Service
+@Transactional
 @AuthAction(action = DEPLOY_MODIFY.class)
 @OperationType(type = OperationTypeEnum.UPDATE)
-public class UpdateDeployVersionConfigApi extends PrivateApiComponentBase {
+public class UpdateDeployVersionInfoForAutoexecApi extends PrivateApiComponentBase {
 
     @Resource
     DeployVersionMapper deployVersionMapper;
@@ -34,7 +36,7 @@ public class UpdateDeployVersionConfigApi extends PrivateApiComponentBase {
 
     @Override
     public String getToken() {
-        return "deploy/version/config/update";
+        return "deploy/version/info/update/forautoexec";
     }
 
     @Override
@@ -46,7 +48,8 @@ public class UpdateDeployVersionConfigApi extends PrivateApiComponentBase {
             @Param(name = "sysId", desc = "应用ID", isRequired = true, type = ApiParamType.LONG),
             @Param(name = "moduleId", desc = "应用系统id", isRequired = true, type = ApiParamType.LONG),
             @Param(name = "version", desc = "版本号", isRequired = true, type = ApiParamType.STRING),
-            @Param(name = "verInfo", desc = "版本信息", type = ApiParamType.JSONOBJECT),
+            @Param(name = "buildNo", desc = "buildNo", isRequired = true, type = ApiParamType.STRING),
+            @Param(name = "verInfo", desc = "版本信息", isRequired = true, type = ApiParamType.JSONOBJECT),
     })
     @Description(desc = "更新发布版本配置")
     @Override
@@ -54,22 +57,25 @@ public class UpdateDeployVersionConfigApi extends PrivateApiComponentBase {
         Long sysId = paramObj.getLong("sysId");
         Long moduleId = paramObj.getLong("moduleId");
         String version = paramObj.getString("version");
+        Integer buildNo = paramObj.getInteger("buildNo");
         JSONObject verInfo = paramObj.getJSONObject("verInfo");
-        DeployVersionVo versionVo = deployVersionMapper.getDeployVersionBySystemIdAndModuleIdAndVersion(new DeployVersionVo(version, sysId, moduleId));
+        DeployVersionVo versionVo = deployVersionMapper.getDeployVersionBySystemIdAndModuleIdAndVersionLock(new DeployVersionVo(version, sysId, moduleId));
         if (versionVo == null) {
             throw new DeployVersionNotFoundException(version);
         }
-        JSONObject config = versionVo.getConfig();
-        if (MapUtils.isNotEmpty(verInfo)) {
-            if (MapUtils.isNotEmpty(config)) {
-                for (Map.Entry<String, Object> info : verInfo.entrySet()) {
-                    config.put(info.getKey(), info.getValue());
-                }
-            } else {
-                config = verInfo;
-            }
-            deployVersionMapper.updateDeployVersionConfigById(versionVo.getId(), config.toJSONString());
+        DeployVersionVo updateVo = verInfo.toJavaObject(DeployVersionVo.class);
+        updateVo.setId(versionVo.getId());
+        deployVersionMapper.updateDeployVersionInfoById(updateVo);
+        DeployVersionBuildNoVo buildNoVo = deployVersionMapper.getDeployVersionBuildNoByVersionIdAndBuildNo(versionVo.getId(), buildNo);
+        if (buildNoVo == null) {
+            throw new DeployVersionBuildNoNotFoundException(versionVo.getVersion(), buildNo);
         }
+        DeployVersionBuildNoVo updateBuildNo = new DeployVersionBuildNoVo();
+        updateBuildNo.setVersionId(versionVo.getId());
+        updateBuildNo.setBuildNo(buildNo);
+        updateBuildNo.setEndRev(verInfo.getString("endRev"));
+        updateBuildNo.setStatus(verInfo.getString("status"));
+        deployVersionMapper.updateDeployVersionBuildNoByVersionIdAndBuildNo(updateBuildNo);
         return null;
     }
 
