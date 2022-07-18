@@ -143,7 +143,6 @@
             resultType="codedriver.framework.deploy.dto.version.DeployVersionVo">
         select id,
                version,
-               status,
                app_system_id   as appSystemId,
                app_system_name as appSystemName,
                app_module_id   as appModuleId,

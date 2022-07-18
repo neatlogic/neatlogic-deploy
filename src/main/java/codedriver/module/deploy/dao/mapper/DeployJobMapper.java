@@ -2,6 +2,7 @@ package codedriver.module.deploy.dao.mapper;
 
 import codedriver.framework.deploy.dto.DeployJobContentVo;
 import codedriver.framework.deploy.dto.DeployJobVo;
+import codedriver.framework.deploy.dto.version.DeployVersionBuildNoVo;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
@@ -32,7 +33,10 @@ public interface DeployJobMapper {
 
     Integer insertIgnoreDeployJobContent(DeployJobContentVo deployJobContentVo);
 
+    Integer insertDeployVersionBuildNo(DeployVersionBuildNoVo deployVersionBuildNoVo);
+
     Integer updateDeployJobRunnerMapId(DeployJobVo deployJobVo);
 
     Integer deleteDeployJobContentByHash(String contentHash);
+
 }

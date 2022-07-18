@@ -15,8 +15,11 @@ import codedriver.framework.autoexec.dto.scenario.AutoexecScenarioVo;
 import codedriver.framework.autoexec.exception.AutoexecScenarioIsNotFoundException;
 import codedriver.framework.autoexec.job.action.core.AutoexecJobActionHandlerFactory;
 import codedriver.framework.autoexec.job.action.core.IAutoexecJobActionHandler;
+import codedriver.framework.cmdb.crossover.IAppSystemMapper;
 import codedriver.framework.cmdb.crossover.ICiEntityCrossoverMapper;
 import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
+import codedriver.framework.cmdb.dto.resourcecenter.entity.AppModuleVo;
+import codedriver.framework.cmdb.dto.resourcecenter.entity.AppSystemVo;
 import codedriver.framework.cmdb.exception.cientity.CiEntityNotFoundException;
 import codedriver.framework.cmdb.exception.resourcecenter.AppModuleNotFoundException;
 import codedriver.framework.crossover.CrossoverServiceFactory;
@@ -53,11 +56,13 @@ public class DeployJobServiceImpl implements DeployJobService {
         Long envId = jsonObj.getLong("envId");
         Long scenarioId = jsonObj.getLong("scenarioId");
         ICiEntityCrossoverMapper iCiEntityCrossoverMapper = CrossoverServiceFactory.getApi(ICiEntityCrossoverMapper.class);
+        IAppSystemMapper iAppSystemMapper = CrossoverServiceFactory.getApi(IAppSystemMapper.class);
         if (jsonObj.containsKey("appSystemName")) {
-            appSystemId = iCiEntityCrossoverMapper.getCiEntityIdByCiNameAndCiEntityName("APP", jsonObj.getString("appSystemName"));
-            if (appSystemId == null) {
+            AppSystemVo appSystem = iAppSystemMapper.getAppSystemByAbbrName(jsonObj.getString("appSystemName"), TenantContext.get().getDataDbName());
+            if (appSystem == null) {
                 throw new CiEntityNotFoundException(jsonObj.getString("appSystemName"));
             }
+            appSystemId = appSystem.getId();
         } else if (appSystemId != null) {
             if (iCiEntityCrossoverMapper.getCiEntityBaseInfoById(appSystemId) == null) {
                 throw new CiEntityNotFoundException(jsonObj.getLong("appSystemId"));
@@ -103,19 +108,21 @@ public class DeployJobServiceImpl implements DeployJobService {
     @Override
     public void convertModule(JSONObject jsonObj, JSONObject moduleJson) {
         ICiEntityCrossoverMapper iCiEntityCrossoverMapper = CrossoverServiceFactory.getApi(ICiEntityCrossoverMapper.class);
+        IAppSystemMapper iAppSystemMapper = CrossoverServiceFactory.getApi(IAppSystemMapper.class);
         Long appModuleId = moduleJson.getLong("id");
         if (moduleJson.containsKey("name")) {
-            appModuleId = iCiEntityCrossoverMapper.getCiEntityIdByCiNameAndCiEntityName("APPComponent", moduleJson.getString("name"));
-            if (appModuleId == null) {
+            AppModuleVo appModuleVo = iAppSystemMapper.getAppModuleByAbbrName(moduleJson.getString("name"), TenantContext.get().getDataDbName());
+            if (appModuleVo == null) {
                 throw new CiEntityNotFoundException(moduleJson.getString("name"));
             }
-            jsonObj.put("appModuleId", appModuleId);
+            jsonObj.put("appModuleId", appModuleVo.getId());
             jsonObj.put("appModuleName", moduleJson.getString("name"));
         } else if (appModuleId != null) {
             CiEntityVo entityVo = iCiEntityCrossoverMapper.getCiEntityBaseInfoById(appModuleId);
             if (entityVo == null) {
                 throw new CiEntityNotFoundException(moduleJson.getLong("id"));
             }
+            jsonObj.put("appModuleId", moduleJson.getLong("id"));
             jsonObj.put("appModuleName", entityVo.getName());
         } else {
             throw new AppModuleNotFoundException();
@@ -153,16 +160,20 @@ public class DeployJobServiceImpl implements DeployJobService {
     @Override
     public JSONObject createScheduleJob(JSONObject jsonObj) {
         JSONObject resultJson = new JSONObject();
+        IAutoexecJobActionCrossoverService autoexecJobActionCrossoverService = CrossoverServiceFactory.getApi(IAutoexecJobActionCrossoverService.class);
+        AutoexecJobVo jobVo = autoexecJobActionCrossoverService.validateAndCreateJobFromCombop(jsonObj, false);
         try {
-        // 保存之后，如果设置的人工触发，那只有点执行按钮才能触发；如果是自动触发，则启动一个定时作业；如果没到点就人工触发了，则取消定时作业，立即执行
-        if (JobTriggerType.AUTO.getValue().equals(jsonObj.getString("triggerType"))) {
-            IJob jobHandler = SchedulerManager.getHandler(DeployJobAutoFireJob.class.getName());
-            if (jobHandler == null) {
-                throw new ScheduleHandlerNotFoundException(DeployJobAutoFireJob.class.getName());
+            // 保存之后，如果设置的人工触发，那只有点执行按钮才能触发；如果是自动触发，则启动一个定时作业；如果没到点就人工触发了，则取消定时作业，立即执行
+            if (JobTriggerType.AUTO.getValue().equals(jobVo.getTriggerType())) {
+                IJob jobHandler = SchedulerManager.getHandler(DeployJobAutoFireJob.class.getName());
+                if (jobHandler == null) {
+                    throw new ScheduleHandlerNotFoundException(DeployJobAutoFireJob.class.getName());
+                }
+                JobObject.Builder jobObjectBuilder = new JobObject.Builder(jobVo.getId().toString(), jobHandler.getGroupName(), jobHandler.getClassName(), TenantContext.get().getTenantUuid());
+                jobHandler.reloadJob(jobObjectBuilder.build());
             }
-            JobObject.Builder jobObjectBuilder = new JobObject.Builder(jsonObj.getString("jobId"), jobHandler.getGroupName(), jobHandler.getClassName(), TenantContext.get().getTenantUuid());
-            jobHandler.reloadJob(jobObjectBuilder.build());
-        }
+            resultJson.put("jobId", jobVo.getId());
+            resultJson.put("appModuleName", jsonObj.getString("appModuleName"));
         } catch (Exception ex) {
             logger.error(ex.getMessage(), ex);
             resultJson.put("errorMsg", ex.getMessage());
