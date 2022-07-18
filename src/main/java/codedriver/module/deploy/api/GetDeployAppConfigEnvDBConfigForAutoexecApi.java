@@ -1,9 +1,11 @@
 package codedriver.module.deploy.api;
 
+import codedriver.framework.autoexec.dto.job.AutoexecJobVo;
 import codedriver.framework.cmdb.crossover.ICiEntityCrossoverService;
 import codedriver.framework.cmdb.dto.cientity.AttrEntityVo;
 import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
 import codedriver.framework.common.constvalue.ApiParamType;
+import codedriver.framework.common.util.RC4Util;
 import codedriver.framework.crossover.CrossoverServiceFactory;
 import codedriver.framework.deploy.dto.app.DeployAppConfigEnvDBConfigAccountVo;
 import codedriver.framework.deploy.dto.app.DeployAppConfigEnvDBConfigVo;
@@ -50,7 +52,7 @@ public class GetDeployAppConfigEnvDBConfigForAutoexecApi extends PrivateApiCompo
 
     @Input({
             @Param(name = "runnerId", type = ApiParamType.LONG, desc = "Runner的ID"),
-            @Param(name = "runnerGroup", type = ApiParamType.JSONARRAY, desc = "id"),
+            @Param(name = "runnerGroup", type = ApiParamType.JSONOBJECT, desc = "runner组信息"),
             @Param(name = "jobId", type = ApiParamType.LONG, desc = "作业ID"),
             @Param(name = "phaseName", type = ApiParamType.STRING, desc = "阶段名"),
             @Param(name = "sysId", type = ApiParamType.LONG, desc = "应用ID"),
@@ -83,38 +85,42 @@ public class GetDeployAppConfigEnvDBConfigForAutoexecApi extends PrivateApiCompo
         List<CiEntityVo> allDBResourceInfoList = ciEntityCrossoverService.getCiEntityByIdList(paramCiEntityVo);
 
         for (CiEntityVo ciEntityVo : allDBResourceInfoList) {
+            DeployAppConfigEnvDBConfigVo dbConfigVo = configVoMap.get(ciEntityVo.getId());
             //db的账号列表
-            List<DeployAppConfigEnvDBConfigAccountVo> accountList = configVoMap.get(ciEntityVo.getId()).getAccountList();
+            List<DeployAppConfigEnvDBConfigAccountVo> accountList = dbConfigVo.getAccountList();
             if (CollectionUtils.isEmpty(accountList)) {
                 continue;
             }
             for (DeployAppConfigEnvDBConfigAccountVo accountVo : accountList) {
                 JSONObject dbResourceObj = new JSONObject();
-                dbResourceObj.put("resourceId", ciEntityVo.getId());
-                dbResourceObj.put("nodeName", ciEntityVo.getName());
-                dbResourceObj.put("nodeType", ciEntityVo.getCiName());
-                dbResourceObj.put("args", configVoMap.get(ciEntityVo.getId()).getConfig());
-                dbResourceObj.put("username", accountVo.getAccount());
-                dbResourceObj.put("password", accountVo.getPasswordCipher());
+                JSONObject nodeObj = new JSONObject();
+
+                nodeObj.put("resourceId", ciEntityVo.getId());
+                nodeObj.put("nodeName", ciEntityVo.getName());
+                nodeObj.put("nodeType", ciEntityVo.getCiName());
+                nodeObj.put("username", accountVo.getAccount());
+                nodeObj.put("password", "{ENCRYPTED}" + RC4Util.encrypt(AutoexecJobVo.AUTOEXEC_RC4_KEY, RC4Util.decrypt(accountVo.getPasswordCipher().replace("RC4:", StringUtils.EMPTY))));
                 List<AttrEntityVo> attrEntityList = ciEntityVo.getAttrEntityList();
                 for (AttrEntityVo attrEntityVo : attrEntityList) {
                     if (StringUtils.equals("ip", attrEntityVo.getAttrName())) {
-                        dbResourceObj.put("host", attrEntityVo.getValueList().get(0));
+                        nodeObj.put("host", attrEntityVo.getValueList().get(0));
                         continue;
                     }
                     if (StringUtils.equals("name", attrEntityVo.getAttrName())) {
-                        dbResourceObj.put("name", attrEntityVo.getValueList().get(0));
+                        nodeObj.put("name", attrEntityVo.getValueList().get(0));
                         continue;
                     }
                     if (StringUtils.equals("service_addr", attrEntityVo.getAttrName())) {
-                        dbResourceObj.put("serviceAddr", attrEntityVo.getValueList().get(0));
+                        nodeObj.put("serviceAddr", attrEntityVo.getValueList().get(0));
                         continue;
                     }
                     if (StringUtils.equals("port", attrEntityVo.getAttrName())) {
-                        dbResourceObj.put("port", attrEntityVo.getValueList().get(0));
+                        nodeObj.put("port", attrEntityVo.getValueList().get(0));
                         continue;
                     }
-                    returnDBUserObject.put(ciEntityVo.getName() + "." + accountVo.getAccount(), dbResourceObj);
+                    dbResourceObj.put("node", nodeObj);
+                    dbResourceObj.put("args", dbConfigVo.getConfig());
+                    returnDBUserObject.put(dbConfigVo.getDbAlias() + "." + accountVo.getAccountAlias(), dbResourceObj);
                 }
             }
         }
