@@ -61,7 +61,7 @@ public class GetDeployAppConfigEnvDBConfigPublicApi extends PrivateApiComponentB
             @Param(name = "envName", type = ApiParamType.STRING, desc = "环境名")
     })
     @Output({
-            @Param(name = "tbodyList", explode = DeployAppConfigEnvDBConfigVo[].class, desc = "DB配置")
+            @Param(name = "tbodyList", desc = "DB配置")
     })
     @Description(desc = "发布作业专用-获取某个环境的DBConfig配置")
     @Override
