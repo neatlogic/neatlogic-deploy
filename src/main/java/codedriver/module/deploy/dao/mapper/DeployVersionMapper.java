@@ -34,7 +34,7 @@ public interface DeployVersionMapper {
 
     DeployVersionBuildNoVo getDeployVersionBuildNoByVersionIdAndBuildNo(@Param("versionId") Long versionId, @Param("buildNo") Integer buildNo);
 
-    int unLockDeployVersionById(@Param("id") Long id, @Param("isLocked") Long isLocked);
+    int unFreezeDeployVersionById(@Param("id") Long id, @Param("isFreeze") Long isFreeze);
 
     Integer getDeployVersionMaxBuildNoByVersionIdLock(Long id);
 

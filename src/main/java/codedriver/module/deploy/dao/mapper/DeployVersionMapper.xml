@@ -43,8 +43,8 @@
             <if test="keyword != null and keyword != ''">
                 and dv.`version` like CONCAT('%', #{keyword}, '%')
             </if>
-            <if test="isLocked != null">
-                and dv.is_locked = #{isLocked}
+            <if test="isFreeze != null">
+                and dv.is_freeze = #{isFreeze}
             </if>
             <if test="appSystemIdList != null and appSystemIdList.size() > 0">
                 AND dv.app_system_id IN
@@ -203,7 +203,7 @@
         dvb.compile_end_time AS compileEndTime,
         dv.id as versionId,
         dv.version,
-        dv.is_locked AS versionIsLocked
+        dv.is_freeze AS versionIsFreeze
         <include refid="searchDeployVersionBuildNo"></include>
         ORDER BY dvb.compile_start_time DESC
         <if test="needPage == true">
@@ -225,6 +225,18 @@
                 dvb.compile_start_time &lt;= FROM_UNIXTIME(#{startTimeRange[1]})
                 )
             </if>
+            <if test="appSystemIdList != null and appSystemIdList.size() > 0">
+                AND dv.app_system_id IN
+                <foreach collection="appSystemIdList" item="systemId" open="(" separator="," close=")">
+                    #{systemId}
+                </foreach>
+            </if>
+            <if test="appModuleIdList != null and appModuleIdList.size() > 0">
+                AND dv.app_module_id IN
+                <foreach collection="appModuleIdList" item="moduleId" open="(" separator="," close=")">
+                    #{moduleId}
+                </foreach>
+            </if>
         </where>
     </sql>
 
@@ -243,9 +255,15 @@
         where version_id = #{versionId} and build_no = #{buildNo}
     </select>
 
-    <update id="unLockDeployVersionById">
+    <update id="unFreezeDeployVersionById">
         update deploy_version
-        set is_locked = #{isLocked}
+        set is_freeze = #{isFreeze}
+        where id = #{id}
+    </update>
+
+    <update id="updateDeployVersionConfigById">
+        update deploy_version
+        set config = #{config}
         where id = #{id}
     </update>
 
@@ -298,10 +316,10 @@
 
     <insert id="insertDeployVersion">
         insert into deploy_version
-        (id, version, app_system_id, app_system_name, app_module_id, app_module_name, is_locked, fcu, fcd, lcu,
+        (id, version, app_system_id, app_system_name, app_module_id, app_module_name, is_freeze, fcu, fcd, lcu,
          lcd)
         values (#{id}, #{version}, #{appSystemId}, #{appSystemName}, #{appModuleId}, #{appModuleName},
-                #{isLocked},
+                #{isFreeze},
                 #{fcu}, now(3), #{lcu}, now(3))
     </insert>
 

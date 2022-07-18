@@ -1,7 +1,7 @@
 package codedriver.module.deploy.api;
 
 import codedriver.framework.common.constvalue.ApiParamType;
-import codedriver.framework.integration.dto.table.ColumnVo;
+import codedriver.framework.deploy.dto.app.DeployAppConfigEnvDBConfigVo;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
@@ -41,7 +41,7 @@ public class GetDeployAppConfigEnvDBConfigApi extends PrivateApiComponentBase {
             @Param(name = "id", type = ApiParamType.LONG, isRequired = true, desc = "id")
     })
     @Output({
-            @Param(name = "tbodyList", explode = ColumnVo[].class, desc = "矩阵属性集合")
+            @Param(name = "tbodyList", explode = DeployAppConfigEnvDBConfigVo[].class, desc = "DB配置")
     })
     @Description(desc = "获取发布应用配置DB配置")
     @Override
