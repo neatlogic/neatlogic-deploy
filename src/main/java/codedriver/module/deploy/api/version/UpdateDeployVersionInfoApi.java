@@ -63,18 +63,8 @@ public class UpdateDeployVersionInfoApi extends PrivateApiComponentBase {
         if (versionVo == null) {
             throw new DeployVersionNotFoundException(version);
         }
-        DeployVersionVo updateVo = new DeployVersionVo();
+        DeployVersionVo updateVo = verInfo.toJavaObject(DeployVersionVo.class);
         updateVo.setId(versionVo.getId());
-        updateVo.setRepoType(verInfo.getString("repoType"));
-        updateVo.setRepo(verInfo.getString("repo"));
-        updateVo.setTrunk(verInfo.getString("trunk"));
-        updateVo.setBranch(verInfo.getString("branch"));
-        updateVo.setTag(verInfo.getString("tag"));
-        updateVo.setTagsDir(verInfo.getString("tagsDir"));
-        updateVo.setIsFreeze(verInfo.getInteger("isFreeze"));
-        updateVo.setStartRev(verInfo.getString("startRev"));
-        String endRev = verInfo.getString("endRev");
-        updateVo.setEndRev(endRev);
         deployVersionMapper.updateDeployVersionInfoById(updateVo);
         DeployVersionBuildNoVo buildNoVo = deployVersionMapper.getDeployVersionBuildNoByVersionIdAndBuildNo(versionVo.getId(), buildNo);
         if (buildNoVo == null) {
@@ -83,7 +73,7 @@ public class UpdateDeployVersionInfoApi extends PrivateApiComponentBase {
         DeployVersionBuildNoVo updateBuildNo = new DeployVersionBuildNoVo();
         updateBuildNo.setVersionId(versionVo.getId());
         updateBuildNo.setBuildNo(buildNo);
-        updateBuildNo.setEndRev(endRev);
+        updateBuildNo.setEndRev(verInfo.getString("endRev"));
         updateBuildNo.setStatus(verInfo.getString("status"));
         deployVersionMapper.updateDeployVersionBuildNoByVersionIdAndBuildNo(updateBuildNo);
         return null;
