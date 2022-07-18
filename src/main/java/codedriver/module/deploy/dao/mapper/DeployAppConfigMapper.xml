@@ -696,6 +696,7 @@
             <result column="accountAlias" property="accountAlias"/>
             <result column="accountId" property="accountId"/>
             <result column="account" property="account"/>
+            <result column="passwordCipher" property="passwordCipher"/>
         </collection>
     </resultMap>
 
@@ -729,7 +730,8 @@
                b.id             as DBConfigAccountId,
                b.account_alias  as accountAlias,
                b.account_id     as accountId,
-               c.account        as account
+               c.account        as account,
+               c.password        as passwordCipher
         FROM deploy_app_config_env_db a
                  LEFT JOIN cmdb_cientity cc ON cc.id = a.db_resource_id
                  LEFT JOIN deploy_app_config_env_db_account b ON a.id = b.db_config_id
