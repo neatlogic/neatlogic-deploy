@@ -23,7 +23,7 @@
                app_system_name as appSystemName,
                app_module_id   as appModuleId,
                app_module_name as appModuleName,
-               is_locked       as isLocked,
+               is_freeze       as isFreeze,
                fcu,
                fcd,
                lcu,
@@ -81,7 +81,7 @@
         <result column="appSystemName" property="appSystemName"/>
         <result column="appModuleId" property="appModuleId"/>
         <result column="appModuleName" property="appModuleName"/>
-        <result column="isLocked" property="isLocked"/>
+        <result column="isFreeze" property="isFreeze"/>
         <result column="fcu" property="fcu"/>
         <result column="fcd" property="fcd"/>
         <result column="lcu" property="lcu"/>
@@ -105,7 +105,7 @@
         dv.app_system_name as appSystemName,
         dv.app_module_id as appModuleId,
         dv.app_module_name as appModuleName,
-        dv.is_locked as isLocked,
+        dv.is_freeze as isFreeze,
         dvb.build_no as buildNo,
         dvb.status as buildNoStatus,
         dve.env_id as envId,
@@ -148,7 +148,7 @@
                app_system_name as appSystemName,
                app_module_id   as appModuleId,
                app_module_name as appModuleName,
-               is_locked       as isLocked,
+               is_freeze       as isFreeze,
                fcu,
                fcd,
                lcu,
@@ -163,7 +163,7 @@
         select max(build_no) from deploy_version_buildno where version_id = #{value} for update
     </select>
 
-    <select id="getDeployVersionBySystemIdAndModuleIdAndVersion" parameterType="codedriver.framework.deploy.dto.version.DeployVersionVo"
+    <select id="getDeployVersionBySystemIdAndModuleIdAndVersionLock" parameterType="codedriver.framework.deploy.dto.version.DeployVersionVo"
             resultType="codedriver.framework.deploy.dto.version.DeployVersionVo">
         select id,
                version,
@@ -171,7 +171,15 @@
                app_system_name as appSystemName,
                app_module_id   as appModuleId,
                app_module_name as appModuleName,
-               is_locked       as isLocked,
+               is_freeze       as isFreeze,
+               repo_type       as repoType,
+               repo            as repo,
+               trunk           as trunk,
+               branch          as branch,
+               tag             as tag,
+               tags_dir        as tagsDir,
+               start_rev       as startRev,
+               end_rev         as endRev,
                config,
                fcu,
                fcd,
@@ -179,6 +187,7 @@
                lcd
         from deploy_version
         where version = #{version} and app_system_id = #{appSystemId} and app_module_id = #{appModuleId}
+        for update
     </select>
 
     <select id="getDeployVersionBuildNoListCount" resultType="java.lang.Integer">
@@ -219,16 +228,72 @@
         </where>
     </sql>
 
+    <select id="getDeployVersionBuildNoByVersionIdAndBuildNo" resultType="codedriver.framework.deploy.dto.version.DeployVersionBuildNoVo">
+        select
+        version_id as versionId,
+        build_no   as buildNo,
+        job_id     as jobId,
+        status,
+        data,
+        compile_start_time as compileStartTime,
+        compile_end_time as compileEndTime,
+        compile_end_time as compileEndTime,
+        end_rev as endRev
+        from deploy_version_buildno
+        where version_id = #{versionId} and build_no = #{buildNo}
+    </select>
+
     <update id="unLockDeployVersionById">
         update deploy_version
         set is_locked = #{isLocked}
         where id = #{id}
     </update>
 
-    <update id="updateDeployVersionConfigById">
-        update deploy_version
-        set config = #{config}
+    <update id="updateDeployVersionInfoById" parameterType="codedriver.framework.deploy.dto.version.DeployVersionVo">
+        update deploy_version set
+        <if test="repoType != null and repoType != ''">
+            repo_type = #{repoType},
+        </if>
+        <if test="repo != null and repo != ''">
+            repo = #{repo},
+        </if>
+        <if test="trunk != null and trunk != ''">
+            trunk = #{trunk},
+        </if>
+        <if test="branch != null and branch != ''">
+            branch = #{branch},
+        </if>
+        <if test="tag != null and tag != ''">
+            tag = #{tag},
+        </if>
+        <if test="tagsDir != null and tagsDir != ''">
+            tags_dir = #{tagsDir},
+        </if>
+        <if test="isFreeze != null">
+            is_freeze = #{isFreeze},
+        </if>
+        <if test="startRev != null and startRev != ''">
+            start_rev = #{startRev},
+        </if>
+        <if test="endRev != null and endRev != ''">
+            end_rev = #{endRev},
+        </if>
+        lcu = #{lcu},
+        lcd = now(3)
         where id = #{id}
+    </update>
+
+    <update id="updateDeployVersionBuildNoByVersionIdAndBuildNo" parameterType="codedriver.framework.deploy.dto.version.DeployVersionBuildNoVo">
+        update deploy_version_buildno set
+        <if test="endRev != null and endRev != ''">
+            end_rev = #{endRev},
+        </if>
+        <if test="status != null and status != ''">
+            status = #{status},
+        </if>
+        lcu = #{lcu},
+        lcd = now(3)
+        where version_id = #{versionId} and build_no = #{buildNo}
     </update>
 
     <insert id="insertDeployVersion">

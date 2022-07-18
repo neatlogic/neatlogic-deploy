@@ -14,6 +14,7 @@ import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.deploy.dao.mapper.DeployVersionMapper;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
@@ -25,6 +26,7 @@ import java.util.List;
  * @date 2022/6/14 9:59 上午
  */
 @Service
+@Transactional
 @AuthAction(action = DEPLOY_MODIFY.class)
 @OperationType(type = OperationTypeEnum.DELETE)
 public class DeleteDeployVersionApi extends PrivateApiComponentBase {
@@ -68,7 +70,7 @@ public class DeleteDeployVersionApi extends PrivateApiComponentBase {
             throw new ParamNotExistsException(Collections.singletonList("id"), paramList);
         }
         if (versionId == null) {
-            DeployVersionVo versionVo = deployVersionMapper.getDeployVersionBySystemIdAndModuleIdAndVersion(new DeployVersionVo(version, sysId, moduleId));
+            DeployVersionVo versionVo = deployVersionMapper.getDeployVersionBySystemIdAndModuleIdAndVersionLock(new DeployVersionVo(version, sysId, moduleId));
             if (versionVo != null) {
                 versionId = versionVo.getId();
             }

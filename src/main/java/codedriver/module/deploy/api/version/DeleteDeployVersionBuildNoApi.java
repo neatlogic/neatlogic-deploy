@@ -52,7 +52,7 @@ public class DeleteDeployVersionBuildNoApi extends PrivateApiComponentBase {
         Long moduleId = paramObj.getLong("moduleId");
         String version = paramObj.getString("version");
         Integer buildNo = paramObj.getInteger("buildNo");
-        DeployVersionVo versionVo = deployVersionMapper.getDeployVersionBySystemIdAndModuleIdAndVersion(new DeployVersionVo(version, sysId, moduleId));
+        DeployVersionVo versionVo = deployVersionMapper.getDeployVersionBySystemIdAndModuleIdAndVersionLock(new DeployVersionVo(version, sysId, moduleId));
         if (versionVo != null) {
             deployVersionMapper.deleteDeployVersionBuildNoByVersionIdAndBuildNo(versionVo.getId(), buildNo);
         }
