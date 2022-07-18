@@ -71,7 +71,8 @@ public class GetDirectoryContentApi extends PrivateApiComponentBase {
             @Param(name = "size", type = ApiParamType.LONG, desc = "文件大小"),
             @Param(name = "fcd", type = ApiParamType.LONG, desc = "最后修改时间"),
             @Param(name = "fcdText", type = ApiParamType.STRING, desc = "最后修改时间(格式化为yyyy-MM-dd HH:mm:ss)"),
-            @Param(name = "permission", type = ApiParamType.STRING, desc = "文件权限")
+            @Param(name = "permission", type = ApiParamType.STRING, desc = "文件权限"),
+            @Param(name = "hasItems", type = ApiParamType.INTEGER, desc = "目录是否有内容")
     })
     @Description(desc = "获取目录内容")
     @Override

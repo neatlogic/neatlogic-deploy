@@ -47,7 +47,7 @@ public class MoveFileApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "文件复制或重命名";
+        return "文件移动或重命名";
     }
 
     @Override
@@ -72,7 +72,7 @@ public class MoveFileApi extends PrivateApiComponentBase {
             @Param(name = "dest", desc = "目标文件路径(路径一律以'/'开头，HOME本身的路径为'/')", type = ApiParamType.STRING),
             @Param(name = "operation", desc = "操作(move:移动;rename:重命名)", rule = "move,rename", isRequired = true, type = ApiParamType.ENUM)
     })
-    @Description(desc = "文件复制或重命名")
+    @Description(desc = "文件移动或重命名")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         Long id = paramObj.getLong("id");
