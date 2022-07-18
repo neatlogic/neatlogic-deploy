@@ -194,7 +194,7 @@
         dvb.compile_end_time AS compileEndTime,
         dv.id as versionId,
         dv.version,
-        dv.is_freeze AS versionIsLocked
+        dv.is_freeze AS versionIsFreeze
         <include refid="searchDeployVersionBuildNo"></include>
         ORDER BY dvb.compile_start_time DESC
         <if test="needPage == true">
