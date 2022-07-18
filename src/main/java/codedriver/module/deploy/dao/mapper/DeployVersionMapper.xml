@@ -216,6 +216,18 @@
                 dvb.compile_start_time &lt;= FROM_UNIXTIME(#{startTimeRange[1]})
                 )
             </if>
+            <if test="appSystemIdList != null and appSystemIdList.size() > 0">
+                AND dv.app_system_id IN
+                <foreach collection="appSystemIdList" item="systemId" open="(" separator="," close=")">
+                    #{systemId}
+                </foreach>
+            </if>
+            <if test="appModuleIdList != null and appModuleIdList.size() > 0">
+                AND dv.app_module_id IN
+                <foreach collection="appModuleIdList" item="moduleId" open="(" separator="," close=")">
+                    #{moduleId}
+                </foreach>
+            </if>
         </where>
     </sql>
 
