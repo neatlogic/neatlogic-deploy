@@ -2,7 +2,7 @@ package codedriver.module.deploy.api.version;
 
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.common.constvalue.ApiParamType;
-import codedriver.framework.deploy.auth.DEPLOY_BASE;
+import codedriver.framework.deploy.auth.DEPLOY_MODIFY;
 import codedriver.framework.deploy.dto.version.DeployVersionBuildNoVo;
 import codedriver.framework.deploy.dto.version.DeployVersionVo;
 import codedriver.framework.deploy.exception.DeployVersionBuildNoNotFoundException;
@@ -16,25 +16,27 @@ import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.deploy.dao.mapper.DeployVersionMapper;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 
 @Service
-@AuthAction(action = DEPLOY_BASE.class)
-@OperationType(type = OperationTypeEnum.SEARCH)
-public class GetDeployVersionInfoApi extends PrivateApiComponentBase {
+@Transactional
+@AuthAction(action = DEPLOY_MODIFY.class)
+@OperationType(type = OperationTypeEnum.UPDATE)
+public class UpdateDeployVersionInfoForAutoexecApi extends PrivateApiComponentBase {
 
     @Resource
     DeployVersionMapper deployVersionMapper;
 
     @Override
     public String getName() {
-        return "获取发布版本配置";
+        return "更新发布版本配置";
     }
 
     @Override
     public String getToken() {
-        return "deploy/version/info/get";
+        return "deploy/version/info/update/forautoexec";
     }
 
     @Override
@@ -44,38 +46,37 @@ public class GetDeployVersionInfoApi extends PrivateApiComponentBase {
 
     @Input({
             @Param(name = "sysId", desc = "应用ID", isRequired = true, type = ApiParamType.LONG),
-            @Param(name = "moduleId", desc = "应用模块id", isRequired = true, type = ApiParamType.LONG),
+            @Param(name = "moduleId", desc = "应用系统id", isRequired = true, type = ApiParamType.LONG),
             @Param(name = "version", desc = "版本号", isRequired = true, type = ApiParamType.STRING),
-            @Param(name = "buildNo", desc = "builNo", isRequired = true, type = ApiParamType.INTEGER),
+            @Param(name = "buildNo", desc = "buildNo", isRequired = true, type = ApiParamType.STRING),
+            @Param(name = "verInfo", desc = "版本信息", isRequired = true, type = ApiParamType.JSONOBJECT),
     })
-    @Description(desc = "获取发布版本配置")
+    @Description(desc = "更新发布版本配置")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         Long sysId = paramObj.getLong("sysId");
         Long moduleId = paramObj.getLong("moduleId");
         String version = paramObj.getString("version");
         Integer buildNo = paramObj.getInteger("buildNo");
+        JSONObject verInfo = paramObj.getJSONObject("verInfo");
         DeployVersionVo versionVo = deployVersionMapper.getDeployVersionBySystemIdAndModuleIdAndVersionLock(new DeployVersionVo(version, sysId, moduleId));
         if (versionVo == null) {
             throw new DeployVersionNotFoundException(version);
         }
+        DeployVersionVo updateVo = verInfo.toJavaObject(DeployVersionVo.class);
+        updateVo.setId(versionVo.getId());
+        deployVersionMapper.updateDeployVersionInfoById(updateVo);
         DeployVersionBuildNoVo buildNoVo = deployVersionMapper.getDeployVersionBuildNoByVersionIdAndBuildNo(versionVo.getId(), buildNo);
         if (buildNoVo == null) {
             throw new DeployVersionBuildNoNotFoundException(versionVo.getVersion(), buildNo);
         }
-        JSONObject result = new JSONObject();
-        result.put("version", version);
-        result.put("buildNo", buildNo);
-        result.put("repoType", versionVo.getRepoType());
-        result.put("repo", versionVo.getRepo());
-        result.put("trunk", versionVo.getTrunk());
-        result.put("branch", versionVo.getBranch());
-        result.put("tag", versionVo.getTag());
-        result.put("tagsDir", versionVo.getTagsDir());
-        result.put("isFreeze", versionVo.getIsFreeze());
-        result.put("startRev", versionVo.getStartRev());
-        result.put("endRev", buildNoVo.getEndRev());
-        return result;
+        DeployVersionBuildNoVo updateBuildNo = new DeployVersionBuildNoVo();
+        updateBuildNo.setVersionId(versionVo.getId());
+        updateBuildNo.setBuildNo(buildNo);
+        updateBuildNo.setEndRev(verInfo.getString("endRev"));
+        updateBuildNo.setStatus(verInfo.getString("status"));
+        deployVersionMapper.updateDeployVersionBuildNoByVersionIdAndBuildNo(updateBuildNo);
+        return null;
     }
 
 }
