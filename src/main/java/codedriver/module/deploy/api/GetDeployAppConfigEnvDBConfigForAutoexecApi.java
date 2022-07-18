@@ -28,7 +28,7 @@ import java.util.stream.Collectors;
  */
 @Service
 @OperationType(type = OperationTypeEnum.SEARCH)
-public class GetDeployAppConfigEnvDBConfigPublicApi extends PrivateApiComponentBase {
+public class GetDeployAppConfigEnvDBConfigForAutoexecApi extends PrivateApiComponentBase {
 
     @Resource
     DeployAppConfigMapper deployAppConfigMapper;
