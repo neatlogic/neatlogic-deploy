@@ -7,10 +7,7 @@ import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.crossover.CrossoverServiceFactory;
 import codedriver.framework.deploy.dto.app.DeployAppConfigEnvDBConfigAccountVo;
 import codedriver.framework.deploy.dto.app.DeployAppConfigEnvDBConfigVo;
-import codedriver.framework.restful.annotation.Input;
-import codedriver.framework.restful.annotation.OperationType;
-import codedriver.framework.restful.annotation.Output;
-import codedriver.framework.restful.annotation.Param;
+import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.deploy.dao.mapper.DeployAppConfigMapper;
@@ -48,7 +45,7 @@ public class GetDeployAppConfigEnvDBConfigPublicApi extends PrivateApiComponentB
 
     @Override
     public String getToken() {
-        return "deploy/app/config/env/db/config/get/public";
+        return "deploy/app/config/env/db/config/get/forautoexec";
     }
 
     @Input({
@@ -66,6 +63,7 @@ public class GetDeployAppConfigEnvDBConfigPublicApi extends PrivateApiComponentB
     @Output({
             @Param(name = "tbodyList", explode = DeployAppConfigEnvDBConfigVo[].class, desc = "DB配置")
     })
+    @Description(desc = "发布作业专用-获取某个环境的DBConfig配置")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         JSONObject returnDBUserObject = new JSONObject();
