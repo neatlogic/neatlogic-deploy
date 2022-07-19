@@ -32,12 +32,12 @@
     <select id="getDeployJobListByAppSystemIdAndAppModuleId"
             resultType="codedriver.framework.deploy.dto.DeployJobVo">
         select id,
-               app_system_id as appSystemId,
-               app_module_id as appModuleId,
-               env_id        as envId,
-               version,
-               job_id        as jobId,
-               runner_map_id as runnerMapId
+        app_system_id as appSystemId,
+        app_module_id as appModuleId,
+        env_id as envId,
+        version,
+        job_id as jobId,
+        runner_map_id as runnerMapId
         from deploy_job
         <where>
             <if test="appSystemId != null">
@@ -86,6 +86,11 @@
             parameterType="codedriver.framework.deploy.dto.DeployJobContentVo">
         INSERT IGNORE INTO `deploy_job_content` (`hash`, `content`)
         VALUES (#{hash}, #{content});
+    </insert>
+
+    <insert id="insertDeployVersionBuildNo">
+        INSERT INTO `deploy_version_buildno` (`version_id`, `build_no`, `job_id`, `status`)
+        values (#{versionId}, #{buildNo}, #{jobId}, #{status})
     </insert>
 
     <update id="updateDeployJobRunnerMapId">
