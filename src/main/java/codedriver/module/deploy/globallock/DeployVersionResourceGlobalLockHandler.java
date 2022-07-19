@@ -22,7 +22,7 @@ import java.util.Optional;
  * 如果同一个runner的同一个资源正在执行打包下载，那么除了读文件外，所有文件操作都不允许
  */
 @Service
-public class DeployFilePackGlobalLockHandler extends GlobalLockHandlerBase {
+public class DeployVersionResourceGlobalLockHandler extends GlobalLockHandlerBase {
     @Override
     public String getHandler() {
         return JobSourceType.DEPLOY_VERSION_RESOURCE.getValue();
@@ -81,4 +81,8 @@ public class DeployFilePackGlobalLockHandler extends GlobalLockHandlerBase {
         return true;
     }
 
+    @Override
+    public boolean hasLocked(JSONObject paramJson) {
+        return GlobalLockManager.hasLocked(new GlobalLockVo(JobSourceType.DEPLOY_VERSION_RESOURCE.getValue(), paramJson.getString("runnerUrl") + "/" + paramJson.getString("path"), paramJson.toJSONString(), null));
+    }
 }
