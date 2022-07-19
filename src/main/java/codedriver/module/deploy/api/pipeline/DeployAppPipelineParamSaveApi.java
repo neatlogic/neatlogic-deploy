@@ -11,7 +11,6 @@ import codedriver.framework.autoexec.constvalue.ParamType;
 import codedriver.framework.autoexec.crossover.IAutoexecServiceCrossoverService;
 import codedriver.framework.autoexec.dto.AutoexecParamVo;
 import codedriver.framework.common.constvalue.ApiParamType;
-import codedriver.framework.common.constvalue.CiphertextPrefix;
 import codedriver.framework.common.util.RC4Util;
 import codedriver.framework.crossover.CrossoverServiceFactory;
 import codedriver.framework.dependency.core.DependencyManager;
@@ -95,8 +94,8 @@ public class DeployAppPipelineParamSaveApi extends PrivateApiComponentBase {
                 ParamType paramType = ParamType.getParamType(type);
                 Object value = autoexecParamVo.getDefaultValue();
                 // 如果默认值不以"RC4:"开头，说明修改了密码，则重新加密
-                if (paramType == ParamType.PASSWORD && value != null && !value.toString().startsWith(CiphertextPrefix.RC4.getValue())) {
-                    autoexecParamVo.setDefaultValue(CiphertextPrefix.RC4.getValue() + RC4Util.encrypt((String) value));
+                if (paramType == ParamType.PASSWORD && value != null) {
+                    autoexecParamVo.setDefaultValue(RC4Util.encrypt((String) value));
                 } else if (paramType == ParamType.SELECT || paramType == ParamType.MULTISELECT || paramType == ParamType.CHECKBOX || paramType == ParamType.RADIO) {
                     JSONObject config = autoexecParamVo.getConfig();
                     if (MapUtils.isNotEmpty(config)) {
