@@ -56,13 +56,14 @@ public class GetDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
 
-        //校验应用系统id是否存在
+        //获取应用系统ciEntityVo
         ICiEntityCrossoverMapper iCiEntityCrossoverMapper = CrossoverServiceFactory.getApi(ICiEntityCrossoverMapper.class);
         CiEntityVo ciEntityVo = iCiEntityCrossoverMapper.getCiEntityBaseInfoById(paramObj.getLong("id"));
         DeployAppSystemVo appSystemVo = new DeployAppSystemVo();
         if (ciEntityVo == null) {
             return appSystemVo;
         }
+        //获取属性
         ICiEntityCrossoverService ciEntityService = CrossoverServiceFactory.getApi(ICiEntityCrossoverService.class);
         CiEntityVo appSystemInfo = ciEntityService.getCiEntityById(ciEntityVo.getCiId(), paramObj.getLong("id"));
         appSystemVo.setId(appSystemInfo.getId());
@@ -73,13 +74,13 @@ public class GetDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
                 //名称
                 if (StringUtils.equals(attrEntityVo.getAttrName(), "name")) {
                     appSystemVo.setName(String.valueOf(attrEntityVo.getValueList().get(0)));
+                    continue;
                 }
-
                 //简称
                 if (StringUtils.equals(attrEntityVo.getAttrName(), "abbrName")) {
                     appSystemVo.setAbbrName(String.valueOf(attrEntityVo.getValueList().get(0)));
+                    continue;
                 }
-
                 //状态
                 if (StringUtils.equals(attrEntityVo.getAttrName(), "state")) {
                     JSONArray statusIdList = attrEntityVo.getValueList();
@@ -95,8 +96,8 @@ public class GetDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
                         }
                         appSystemVo.setStatusList(statusVoList);
                     }
+                    continue;
                 }
-
                 //负责人
                 if (StringUtils.equals(attrEntityVo.getAttrName(), "owner")) {
                     JSONArray stateIdList = attrEntityVo.getValueList();
@@ -112,13 +113,13 @@ public class GetDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
                         }
                         appSystemVo.setOwnerList(ownerVoList);
                     }
+                    continue;
                 }
-
                 //维窗口
                 if (StringUtils.equals(attrEntityVo.getAttrName(), "maintenance_window")) {
                     appSystemVo.setMaintenanceWindow(String.valueOf(attrEntityVo.getValueList().get(0)));
+                    continue;
                 }
-
                 //备注
                 if (StringUtils.equals(attrEntityVo.getAttrName(), "description")) {
                     appSystemVo.setDescription(String.valueOf(attrEntityVo.getValueList().get(0)));

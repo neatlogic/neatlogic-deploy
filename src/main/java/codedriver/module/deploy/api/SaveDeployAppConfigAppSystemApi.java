@@ -57,7 +57,15 @@ public class SaveDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
         return null;
     }
 
-    @Input({@Param(name = "id", type = ApiParamType.LONG, desc = "id"), @Param(name = "abbrName", type = ApiParamType.STRING, isRequired = true, desc = "简称"), @Param(name = "name", type = ApiParamType.STRING, desc = "名称"), @Param(name = "stateList", type = ApiParamType.JSONARRAY, desc = "状态"), @Param(name = "ownerList", type = ApiParamType.JSONARRAY, desc = "负责人"), @Param(name = "maintenanceWindow", type = ApiParamType.STRING, desc = "维护窗口"), @Param(name = "description", type = ApiParamType.STRING, desc = "备注")})
+    @Input({
+            @Param(name = "id", type = ApiParamType.LONG, desc = "id"),
+            @Param(name = "abbrName", type = ApiParamType.STRING, isRequired = true, desc = "简称"),
+            @Param(name = "name", type = ApiParamType.STRING, desc = "名称"),
+            @Param(name = "stateList", type = ApiParamType.JSONARRAY, desc = "状态"),
+            @Param(name = "ownerList", type = ApiParamType.JSONARRAY, desc = "负责人"),
+            @Param(name = "maintenanceWindow", type = ApiParamType.STRING, desc = "维护窗口"),
+            @Param(name = "description", type = ApiParamType.STRING, desc = "备注")
+    })
     @Output({})
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
