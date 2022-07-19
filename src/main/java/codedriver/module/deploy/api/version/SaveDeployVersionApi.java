@@ -75,7 +75,7 @@ public class SaveDeployVersionApi extends PrivateApiComponentBase {
         return null;
     }
 
-    public IValid name() {
+    public IValid version() {
         return value -> {
             DeployVersionVo vo = JSON.toJavaObject(value, DeployVersionVo.class);
             if (deployVersionMapper.checkDeployVersionIsRepeat(vo) > 0) {
