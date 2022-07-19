@@ -112,7 +112,7 @@ public class GetDirectoryContentApi extends PrivateApiComponentBase {
             homePath = deployVersionService.getVersionResourceHomePath(version, resourceType, buildNo, envName);
         } else {
             url = deployVersionService.getWorkspaceRunnerUrl(appSystemId, appModuleId);
-            homePath = resourceType.getDirectoryName() + "/";
+            homePath = deployVersionService.getWorkspaceResourceHomePath(appSystemId, appModuleId);
         }
         url += "api/rest/file/directory/content/get";
         JSONObject paramJson = new JSONObject();
