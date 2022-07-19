@@ -75,6 +75,7 @@ public class GetDeployVersionInfoForAutoexecApi extends PrivateApiComponentBase 
         result.put("isFreeze", versionVo.getIsFreeze());
         result.put("startRev", versionVo.getStartRev());
         result.put("endRev", buildNoVo.getEndRev());
+        result.put("status", buildNoVo.getStatus());
         return result;
     }
 

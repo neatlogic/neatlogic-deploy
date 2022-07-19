@@ -84,11 +84,17 @@ public class SearchDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
             returnAppSystemList = deployAppConfigMapper.getAppSystemListByIdList(appSystemIdList, TenantContext.get().getDataDbName(), UserContext.get().getUserUuid());
             Map<Long, DeployAppSystemVo> returnAppSystemMap = returnAppSystemList.stream().collect(Collectors.toMap(DeployAppSystemVo::getId, e -> e));
 
-            //补充系统是否有模块
-            List<Long> hasModuleAppSystemIdList = resourceCenterMapper.getHasModuleAppSystemIdListByAppSystemIdList(returnAppSystemList.stream().map(DeployAppSystemVo::getId).collect(Collectors.toList()), TenantContext.get().getDataDbName());
+            //补充系统是否有模块、有环境
+            TenantContext.get().switchDataDatabase();
+            List<Long> hasModuleAppSystemIdList = resourceCenterMapper.getHasModuleAppSystemIdListByAppSystemIdList(returnAppSystemList.stream().map(DeployAppSystemVo::getId).collect(Collectors.toList()));
+            List<Long> hasEnvAppSystemIdList = resourceCenterMapper.getHasEnvAppSystemIdListByAppSystemIdList(returnAppSystemList.stream().map(DeployAppSystemVo::getId).collect(Collectors.toList()));
+            TenantContext.get().switchDefaultDatabase();
             for (DeployAppSystemVo appResourceVo : returnAppSystemList) {
                 if (hasModuleAppSystemIdList.contains(appResourceVo.getId())) {
                     appResourceVo.setIsHasModule(1);
+                }
+                if (hasEnvAppSystemIdList.contains(appResourceVo.getId())) {
+                    appResourceVo.setIsHasEnv(1);
                 }
             }
 
