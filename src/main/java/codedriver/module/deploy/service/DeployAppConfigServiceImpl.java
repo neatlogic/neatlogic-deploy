@@ -12,8 +12,10 @@ import codedriver.framework.deploy.dto.app.DeployAppConfigEnvDBConfigVo;
 import codedriver.framework.deploy.dto.app.DeployAppConfigVo;
 import codedriver.framework.deploy.dto.app.DeployAppEnvAutoConfigVo;
 import codedriver.module.deploy.dao.mapper.DeployAppConfigMapper;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -104,7 +106,16 @@ public class DeployAppConfigServiceImpl implements DeployAppConfigService {
         for (AttrVo attrVo : attrVoList) {
             if (CollectionUtils.isNotEmpty(paramObj.getJSONArray("needUpdateAttrList"))) {
                 if (getAttrMap().containsKey(attrVo.getName()) && paramObj.getJSONArray("needUpdateAttrList").contains(attrVo.getName())) {
-                    ciEntityTransactionVo.addAttrEntityData(attrVo, paramObj.getString(getAttrMap().get(attrVo.getName())));
+                    if (StringUtils.equals(attrVo.getName(), "state") || StringUtils.equals(attrVo.getName(), "owner")) {
+                        JSONArray jsonArray = paramObj.getJSONArray(getAttrMap().get(attrVo.getName()));
+                        if (CollectionUtils.isNotEmpty(jsonArray)) {
+                            ciEntityTransactionVo.addAttrEntityData(attrVo, jsonArray);
+                        } else {
+                            ciEntityTransactionVo.addAttrEntityData(attrVo, new JSONArray());
+                        }
+                    } else {
+                        ciEntityTransactionVo.addAttrEntityData(attrVo, paramObj.getString(getAttrMap().get(attrVo.getName())));
+                    }
                 }
             } else {
                 if (getAttrMap().containsKey(attrVo.getName())) {
@@ -124,8 +135,8 @@ public class DeployAppConfigServiceImpl implements DeployAppConfigService {
         map.put("app_environment", "envId");
 
         //系统
-        map.put("state", "stateId");
-        map.put("owner", "ownerId");
+        map.put("state", "stateIdList");
+        map.put("owner", "ownerIdList");
         map.put("abbrName", "abbrName");
         map.put("description", "description");
         return map;

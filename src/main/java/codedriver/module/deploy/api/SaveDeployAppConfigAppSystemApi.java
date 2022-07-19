@@ -9,6 +9,8 @@ import codedriver.framework.cmdb.enums.EditModeType;
 import codedriver.framework.cmdb.enums.TransactionActionType;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.crossover.CrossoverServiceFactory;
+import codedriver.framework.deploy.dto.app.DeployAppSystemOwnerVo;
+import codedriver.framework.deploy.dto.app.DeployAppSystemStateVo;
 import codedriver.framework.restful.annotation.Input;
 import codedriver.framework.restful.annotation.OperationType;
 import codedriver.framework.restful.annotation.Output;
@@ -18,6 +20,7 @@ import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.deploy.service.DeployAppConfigService;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,6 +28,7 @@ import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author longrf
@@ -53,26 +57,38 @@ public class SaveDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
         return null;
     }
 
-    @Input({
-            @Param(name = "abbrName", type = ApiParamType.STRING, isRequired = true, desc = "简称"),
-            @Param(name = "name", type = ApiParamType.STRING, desc = "名称"),
-            @Param(name = "state", type = ApiParamType.JSONARRAY, desc = "状态"),
-            @Param(name = "owner", type = ApiParamType.JSONARRAY, desc = "负责人"),
-            @Param(name = "maintenanceWindow", type = ApiParamType.STRING, desc = "维护窗口"),
-            @Param(name = "description", type = ApiParamType.STRING, desc = "备注")
-    })
-    @Output({
-    })
+    @Input({@Param(name = "id", type = ApiParamType.LONG, desc = "id"), @Param(name = "abbrName", type = ApiParamType.STRING, isRequired = true, desc = "简称"), @Param(name = "name", type = ApiParamType.STRING, desc = "名称"), @Param(name = "stateList", type = ApiParamType.JSONARRAY, desc = "状态"), @Param(name = "ownerList", type = ApiParamType.JSONARRAY, desc = "负责人"), @Param(name = "maintenanceWindow", type = ApiParamType.STRING, desc = "维护窗口"), @Param(name = "description", type = ApiParamType.STRING, desc = "备注")})
+    @Output({})
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
 
         Long appSystemId = paramObj.getLong("id");
+
+        //构建数据结构
+        JSONArray stateArray = paramObj.getJSONArray("stateList");
+        if (CollectionUtils.isNotEmpty(stateArray)) {
+            List<DeployAppSystemStateVo> stateList = stateArray.toJavaList(DeployAppSystemStateVo.class);
+            paramObj.put("stateIdList", stateList.stream().map(DeployAppSystemStateVo::getId).collect(Collectors.toList()));
+        } else {
+            paramObj.put("stateIdList", new ArrayList<>());
+        }
+        JSONArray ownerArray = paramObj.getJSONArray("ownerList");
+        if (CollectionUtils.isNotEmpty(ownerArray)) {
+            List<DeployAppSystemOwnerVo> stateList = ownerArray.toJavaList(DeployAppSystemOwnerVo.class);
+            paramObj.put("ownerIdList", stateList.stream().map(DeployAppSystemOwnerVo::getId).collect(Collectors.toList()));
+        } else {
+            paramObj.put("ownerIdList", new ArrayList<>());
+        }
+
+        //定义需要插入的字段
+        paramObj.put("needUpdateAttrList", new JSONArray(Arrays.asList("state", "name", "owner", "abbrName", "maintenanceWindow", "description")));
         //获取应用系统的模型id
         ICiCrossoverMapper ciCrossoverMapper = CrossoverServiceFactory.getApi(ICiCrossoverMapper.class);
         CiVo appCiVo = ciCrossoverMapper.getCiByName("APP");
         paramObj.put("ciId", appCiVo.getId());
-        ICiEntityCrossoverService ciEntityService = CrossoverServiceFactory.getApi(ICiEntityCrossoverService.class);
 
+        //保存
+        ICiEntityCrossoverService ciEntityService = CrossoverServiceFactory.getApi(ICiEntityCrossoverService.class);
         CiEntityTransactionVo ciEntityTransactionVo = null;
         if (appSystemId == null) {
 
@@ -88,10 +104,9 @@ public class SaveDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
 
             /*编辑应用系统（配置项）*/
             //1、构建事务vo，并添加属性值
-            CiEntityVo instanceCiEntityInfo = ciEntityService.getCiEntityById( appCiVo.getId(), appSystemId);
-             ciEntityTransactionVo = new CiEntityTransactionVo(instanceCiEntityInfo);
+            CiEntityVo instanceCiEntityInfo = ciEntityService.getCiEntityById(appCiVo.getId(), appSystemId);
+            ciEntityTransactionVo = new CiEntityTransactionVo(instanceCiEntityInfo);
             ciEntityTransactionVo.setAttrEntityData(instanceCiEntityInfo.getAttrEntityData());
-            paramObj.put("needUpdateAttrList",new JSONArray(Arrays.asList("stateId","ownerId","abbrName","maintenanceWindow","description")));
             deployAppConfigService.addAttrEntityDataAndRelEntityData(ciEntityTransactionVo, paramObj);
 
             //2、设置事务vo信息
