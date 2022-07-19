@@ -129,7 +129,6 @@ public class ListDeployJobModuleApi extends PrivateApiComponentBase {
                         }
                     }
                 }
-
             }
         }
 
