@@ -28,6 +28,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.Objects;
 
 /**
  * @author laiwt
@@ -91,8 +92,13 @@ public class MoveFileApi extends PrivateApiComponentBase {
         if (resourceType == null) {
             throw new DeployVersionResourceTypeNotFoundException(paramObj.getString("resourceType"));
         }
-        if ("move".equals(operation) && StringUtils.isBlank(dest)) {
-            throw new ParamNotExistsException("dest");
+        if ("move".equals(operation)) {
+            if (StringUtils.isBlank(dest)) {
+                throw new ParamNotExistsException("dest");
+            }
+            if (Objects.equals(src, dest)) {
+                return null;
+            }
         }
         if ("rename".equals(operation) && StringUtils.isBlank(name)) {
             throw new ParamNotExistsException("name");
