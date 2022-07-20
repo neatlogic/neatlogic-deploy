@@ -116,10 +116,15 @@ public class DownloadFileApi extends PrivateBinaryStreamApiComponentBase {
             runnerUrl = deployVersionService.getWorkspaceRunnerUrl(appSystemId, appModuleId);
             fullPath = deployVersionService.getWorkspaceResourceFullPath(appSystemId, appModuleId, path);
         }
-        // 对HOME目录上锁
+        url = runnerUrl + "api/binary/file/download";
+        JSONObject paramJson = new JSONObject();
+        paramJson.put("path", fullPath);
+        paramJson.put("isPack", isPack);
+
         Long lockId = null;
         IGlobalLockHandler handler = null;
         if (Objects.equals(isPack, 1)) {
+            // 对HOME目录上锁
             handler = GlobalLockHandlerFactory.getHandler(JobSourceType.DEPLOY_VERSION_RESOURCE.getValue());
             JSONObject lockJson = new JSONObject();
             lockJson.put("runnerUrl", runnerUrl);
@@ -130,24 +135,26 @@ public class DownloadFileApi extends PrivateBinaryStreamApiComponentBase {
                 throw new DeployVersionResourceHasBeenLockedException();
             }
         }
-
-        url = runnerUrl + "api/binary/file/download";
-        JSONObject paramJson = new JSONObject();
-        paramJson.put("path", fullPath);
-        paramJson.put("isPack", isPack);
-        HttpRequestUtil httpRequestUtil = HttpRequestUtil.download(url, "POST", response.getOutputStream()).setPayload(paramJson.toJSONString()).setAuthType(AuthenticateType.BUILDIN).sendRequest();
-        // 释放锁
-        if (lockId != null) {
-            handler.cancelLock(lockId, null);
+        HttpRequestUtil httpRequestUtil = null;
+        try {
+            httpRequestUtil = HttpRequestUtil.download(url, "POST", response.getOutputStream()).setPayload(paramJson.toJSONString()).setAuthType(AuthenticateType.BUILDIN).sendRequest();
+        } catch (Exception ex) {
+            logger.error(ex.getMessage(), ex);
+        } finally {
+            // 释放锁
+            if (lockId != null) {
+                handler.cancelLock(lockId, null);
+            }
         }
-
-        int responseCode = httpRequestUtil.getResponseCode();
-        String error = httpRequestUtil.getError();
-        if (StringUtils.isNotBlank(error)) {
-            if (responseCode == 520) {
-                throw new DownloadFileFailedException(JSONObject.parseObject(error).getString("Message"));
-            } else {
-                throw new DownloadFileFailedException(error);
+        if (httpRequestUtil != null) {
+            int responseCode = httpRequestUtil.getResponseCode();
+            String error = httpRequestUtil.getError();
+            if (StringUtils.isNotBlank(error)) {
+                if (responseCode == 520) {
+                    throw new DownloadFileFailedException(JSONObject.parseObject(error).getString("Message"));
+                } else {
+                    throw new DownloadFileFailedException(error);
+                }
             }
         }
         return null;
