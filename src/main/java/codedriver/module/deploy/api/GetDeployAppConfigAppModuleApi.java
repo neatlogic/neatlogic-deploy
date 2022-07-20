@@ -50,13 +50,13 @@ public class GetDeployAppConfigAppModuleApi extends PrivateApiComponentBase {
     })
     @Output({
             @Param(explode = BasePageVo.class),
-            @Param(name = "tbodyList", explode = CiEntityVo[].class, desc = "应用系统详细配置信息")
+            @Param(name = "tbodyList", explode = CiEntityVo[].class, desc = "应用模块（配置项）信息")
     })
     @Description(desc = "查询应用模块（配置项）信息")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
 
-        //获取应用系统ciEntityVo
+        //获取应用模块ciEntityVo
         ICiEntityCrossoverMapper iCiEntityCrossoverMapper = CrossoverServiceFactory.getApi(ICiEntityCrossoverMapper.class);
         CiEntityVo ciEntityVo = iCiEntityCrossoverMapper.getCiEntityBaseInfoById(paramObj.getLong("id"));
         DeployAppModuleVo appModuleVo = new DeployAppModuleVo();

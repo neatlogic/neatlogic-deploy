@@ -37,11 +37,11 @@ public interface DeployAppConfigService {
     JSONArray getStateList(CiVo ciVo, JSONObject paramObj);
 
     /**
-     * 获取状态列表
+     * 获取负责人列表
      *
      * @param ciVo     模型vo
      * @param paramObj 入参
-     * @return 状态列表
+     * @return 负责人列表
      */
     JSONArray getOwnerList(CiVo ciVo, JSONObject paramObj);
 }
