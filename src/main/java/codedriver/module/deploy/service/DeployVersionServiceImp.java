@@ -133,6 +133,7 @@ public class DeployVersionServiceImp implements DeployVersionService {
         return path;
     }
 
+    @Override
     public void checkHomeHasBeenLocked(String runnerUrl, String path) {
         IGlobalLockHandler handler = GlobalLockHandlerFactory.getHandler(JobSourceType.DEPLOY_VERSION_RESOURCE.getValue());
         JSONObject lockJson = new JSONObject();
