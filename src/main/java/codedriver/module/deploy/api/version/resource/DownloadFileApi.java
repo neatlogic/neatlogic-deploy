@@ -130,7 +130,6 @@ public class DownloadFileApi extends PrivateBinaryStreamApiComponentBase {
             }
             lockId = lock.getLong("lockId");
         }
-        Thread.sleep(7000);
 
         url = runnerUrl + "api/binary/file/download";
         JSONObject paramJson = new JSONObject();
