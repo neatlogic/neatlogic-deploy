@@ -100,13 +100,13 @@ public class GetDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
                 }
                 //负责人
                 if (StringUtils.equals(attrEntityVo.getAttrName(), "owner")) {
-                    JSONArray stateIdList = attrEntityVo.getValueList();
-                    JSONArray statusValueList = attrEntityVo.getActualValueList();
-                    if (CollectionUtils.isNotEmpty(stateIdList)) {
+                    JSONArray ownerIdList = attrEntityVo.getValueList();
+                    JSONArray ownerValueList = attrEntityVo.getActualValueList();
+                    if (CollectionUtils.isNotEmpty(ownerIdList)) {
                         List<DeployAppOwnerVo> ownerVoList = new ArrayList<>();
-                        for (int i = 0; i < stateIdList.size(); i++) {
-                            Object id = stateIdList.get(i);
-                            Object name = statusValueList.get(i);
+                        for (int i = 0; i < ownerIdList.size(); i++) {
+                            Object id = ownerIdList.get(i);
+                            Object name = ownerValueList.get(i);
                             if (id != null && name != null) {
                                 ownerVoList.add(new DeployAppOwnerVo(Long.valueOf(String.valueOf(id)), String.valueOf(name)));
                             }
