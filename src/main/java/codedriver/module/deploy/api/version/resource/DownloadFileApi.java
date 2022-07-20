@@ -8,12 +8,12 @@ import codedriver.framework.cmdb.crossover.ICiEntityCrossoverService;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.crossover.CrossoverServiceFactory;
 import codedriver.framework.deploy.constvalue.DeployResourceType;
+import codedriver.framework.deploy.constvalue.JobSourceType;
 import codedriver.framework.deploy.dto.version.DeployVersionVo;
-import codedriver.framework.deploy.exception.DeployVersionEnvNotFoundException;
-import codedriver.framework.deploy.exception.DeployVersionNotFoundException;
-import codedriver.framework.deploy.exception.DeployVersionResourceTypeNotFoundException;
-import codedriver.framework.deploy.exception.DownloadFileFailedException;
+import codedriver.framework.deploy.exception.*;
 import codedriver.framework.exception.type.ParamNotExistsException;
+import codedriver.framework.globallock.core.GlobalLockHandlerFactory;
+import codedriver.framework.globallock.core.IGlobalLockHandler;
 import codedriver.framework.integration.authentication.enums.AuthenticateType;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
@@ -30,6 +30,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.Objects;
 
 /**
  * @author laiwt
@@ -90,6 +91,7 @@ public class DownloadFileApi extends PrivateBinaryStreamApiComponentBase {
         if (resourceType == null) {
             throw new DeployVersionResourceTypeNotFoundException(paramObj.getString("resourceType"));
         }
+        String runnerUrl;
         String url;
         String fullPath;
         if (!DeployResourceType.WORKSPACE.equals(resourceType)) {
@@ -108,24 +110,51 @@ public class DownloadFileApi extends PrivateBinaryStreamApiComponentBase {
                     throw new DeployVersionEnvNotFoundException(version.getVersion(), envId);
                 }
             }
-            url = deployVersionService.getVersionRunnerUrl(paramObj, version, envName);
+            runnerUrl = deployVersionService.getVersionRunnerUrl(paramObj, version, envName);
             fullPath = deployVersionService.getVersionResourceFullPath(version, resourceType, buildNo, envName, path);
         } else {
-            url = deployVersionService.getWorkspaceRunnerUrl(appSystemId, appModuleId);
+            runnerUrl = deployVersionService.getWorkspaceRunnerUrl(appSystemId, appModuleId);
             fullPath = deployVersionService.getWorkspaceResourceFullPath(appSystemId, appModuleId, path);
         }
-        url += "api/binary/file/download";
+        url = runnerUrl + "api/binary/file/download";
         JSONObject paramJson = new JSONObject();
         paramJson.put("path", fullPath);
         paramJson.put("isPack", isPack);
-        HttpRequestUtil httpRequestUtil = HttpRequestUtil.download(url, "POST", response.getOutputStream()).setPayload(paramJson.toJSONString()).setAuthType(AuthenticateType.BUILDIN).sendRequest();
-        int responseCode = httpRequestUtil.getResponseCode();
-        String error = httpRequestUtil.getError();
-        if (StringUtils.isNotBlank(error)) {
-            if (responseCode == 520) {
-                throw new DownloadFileFailedException(JSONObject.parseObject(error).getString("Message"));
-            } else {
-                throw new DownloadFileFailedException(error);
+
+        Long lockId = null;
+        IGlobalLockHandler handler = null;
+        if (Objects.equals(isPack, 1)) {
+            // 对HOME目录上锁
+            handler = GlobalLockHandlerFactory.getHandler(JobSourceType.DEPLOY_VERSION_RESOURCE.getValue());
+            JSONObject lockJson = new JSONObject();
+            lockJson.put("runnerUrl", runnerUrl);
+            lockJson.put("path", "/".equals(path) ? fullPath.substring(0, fullPath.length() - 1) : fullPath.replace(path, ""));
+            JSONObject lock = handler.getLock(lockJson);
+            lockId = lock.getLong("lockId");
+            if (lockId == null) {
+                throw new DeployVersionResourceHasBeenLockedException();
+            }
+        }
+        HttpRequestUtil httpRequestUtil = null;
+        try {
+            httpRequestUtil = HttpRequestUtil.download(url, "POST", response.getOutputStream()).setPayload(paramJson.toJSONString()).setAuthType(AuthenticateType.BUILDIN).sendRequest();
+        } catch (Exception ex) {
+            logger.error(ex.getMessage(), ex);
+        } finally {
+            // 释放锁
+            if (lockId != null) {
+                handler.cancelLock(lockId, null);
+            }
+        }
+        if (httpRequestUtil != null) {
+            int responseCode = httpRequestUtil.getResponseCode();
+            String error = httpRequestUtil.getError();
+            if (StringUtils.isNotBlank(error)) {
+                if (responseCode == 520) {
+                    throw new DownloadFileFailedException(JSONObject.parseObject(error).getString("Message"));
+                } else {
+                    throw new DownloadFileFailedException(error);
+                }
             }
         }
         return null;

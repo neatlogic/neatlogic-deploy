@@ -4,12 +4,12 @@ import codedriver.framework.cmdb.crossover.ICiEntityCrossoverService;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.crossover.CrossoverServiceFactory;
 import codedriver.framework.deploy.constvalue.DeployResourceType;
+import codedriver.framework.deploy.constvalue.JobSourceType;
 import codedriver.framework.deploy.dto.version.DeployVersionVo;
-import codedriver.framework.deploy.exception.ChangeFilePermissionFailedException;
-import codedriver.framework.deploy.exception.DeployVersionEnvNotFoundException;
-import codedriver.framework.deploy.exception.DeployVersionNotFoundException;
-import codedriver.framework.deploy.exception.DeployVersionResourceTypeNotFoundException;
+import codedriver.framework.deploy.exception.*;
 import codedriver.framework.exception.type.ParamNotExistsException;
+import codedriver.framework.globallock.core.GlobalLockHandlerFactory;
+import codedriver.framework.globallock.core.IGlobalLockHandler;
 import codedriver.framework.integration.authentication.enums.AuthenticateType;
 import codedriver.framework.restful.annotation.Description;
 import codedriver.framework.restful.annotation.Input;
@@ -27,6 +27,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.Objects;
 
 /**
  * @author laiwt
@@ -86,6 +87,7 @@ public class ChangeFilePermissionApi extends PrivateApiComponentBase {
         if (resourceType == null) {
             throw new DeployVersionResourceTypeNotFoundException(paramObj.getString("resourceType"));
         }
+        String runnerUrl;
         String url;
         String fullPath;
         if (!DeployResourceType.WORKSPACE.equals(resourceType)) {
@@ -104,13 +106,15 @@ public class ChangeFilePermissionApi extends PrivateApiComponentBase {
                     throw new DeployVersionEnvNotFoundException(version.getVersion(), envId);
                 }
             }
-            url = deployVersionService.getVersionRunnerUrl(paramObj, version, envName);
+            runnerUrl = deployVersionService.getVersionRunnerUrl(paramObj, version, envName);
             fullPath = deployVersionService.getVersionResourceFullPath(version, resourceType, buildNo, envName, path);
         } else {
-            url = deployVersionService.getWorkspaceRunnerUrl(appSystemId, appModuleId);
+            runnerUrl = deployVersionService.getWorkspaceRunnerUrl(appSystemId, appModuleId);
             fullPath = deployVersionService.getWorkspaceResourceFullPath(appSystemId, appModuleId, path);
         }
-        url += "api/rest/file/chmod";
+        deployVersionService.checkHomeHasBeenLocked(runnerUrl, fullPath.replace(path, ""));
+
+        url = runnerUrl + "api/rest/file/chmod";
         JSONObject paramJson = new JSONObject();
         paramJson.put("path", fullPath);
         paramJson.put("mode", mode);
@@ -126,4 +130,6 @@ public class ChangeFilePermissionApi extends PrivateApiComponentBase {
         }
         return null;
     }
+
+
 }
