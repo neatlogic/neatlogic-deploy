@@ -115,7 +115,7 @@ public class GetDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
                     }
                     continue;
                 }
-                //维窗口
+                //维护窗口
                 if (StringUtils.equals(attrEntityVo.getAttrName(), "maintenance_window")) {
                     appSystemVo.setMaintenanceWindow(String.valueOf(attrEntityVo.getValueList().get(0)));
                     continue;
