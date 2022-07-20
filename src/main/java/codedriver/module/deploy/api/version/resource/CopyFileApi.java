@@ -27,6 +27,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.Objects;
 
 /**
  * @author laiwt
@@ -81,6 +82,9 @@ public class CopyFileApi extends PrivateApiComponentBase {
         String dest = paramObj.getString("dest");
         if (id == null && appSystemId == null && appModuleId == null) {
             throw new ParamNotExistsException("id", "appSystemId", "appModuleId");
+        }
+        if (Objects.equals(src, dest)) {
+            return null;
         }
         DeployResourceType resourceType = DeployResourceType.getDeployResourceType(paramObj.getString("resourceType"));
         if (resourceType == null) {

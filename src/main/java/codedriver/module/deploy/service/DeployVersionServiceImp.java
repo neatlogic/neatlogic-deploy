@@ -14,6 +14,7 @@ import codedriver.framework.exception.type.ParamNotExistsException;
 import codedriver.module.deploy.dao.mapper.DeployJobMapper;
 import codedriver.module.deploy.dao.mapper.DeployVersionMapper;
 import com.alibaba.fastjson.JSONObject;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -116,7 +117,16 @@ public class DeployVersionServiceImp implements DeployVersionService {
     }
 
     @Override
+    public String getWorkspaceResourceHomePath(Long appSystemId, Long appModuleId) {
+        return getWorkspaceResourceFullPath(appSystemId, appModuleId, null);
+    }
+
+    @Override
     public String getWorkspaceResourceFullPath(Long appSystemId, Long appModuleId, String customPath) {
-        return appSystemId + "/" + appModuleId + "/" + DeployResourceType.WORKSPACE.getDirectoryName() + "/" + customPath;
+        String path = appSystemId + "/" + appModuleId + "/" + DeployResourceType.WORKSPACE.getDirectoryName() + "/";
+        if (StringUtils.isNotBlank(customPath)) {
+            path += customPath;
+        }
+        return path;
     }
 }

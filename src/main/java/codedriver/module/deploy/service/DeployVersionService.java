@@ -43,6 +43,15 @@ public interface DeployVersionService {
     String getWorkspaceRunnerUrl(Long appSystemId, Long appModuleId);
 
     /**
+     * 获取工程目录根路径
+     *
+     * @param appSystemId 应用ID
+     * @param appModuleId 模块ID
+     * @return
+     */
+    String getWorkspaceResourceHomePath(Long appSystemId, Long appModuleId);
+
+    /**
      * 获取工程目录下文件完整路径
      *
      * @param appSystemId 应用ID

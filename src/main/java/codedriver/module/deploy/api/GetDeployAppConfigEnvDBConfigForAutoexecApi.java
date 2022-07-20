@@ -1,11 +1,9 @@
 package codedriver.module.deploy.api;
 
-import codedriver.framework.autoexec.dto.job.AutoexecJobVo;
 import codedriver.framework.cmdb.crossover.ICiEntityCrossoverService;
 import codedriver.framework.cmdb.dto.cientity.AttrEntityVo;
 import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
 import codedriver.framework.common.constvalue.ApiParamType;
-import codedriver.framework.common.util.RC4Util;
 import codedriver.framework.crossover.CrossoverServiceFactory;
 import codedriver.framework.deploy.dto.app.DeployAppConfigEnvDBConfigAccountVo;
 import codedriver.framework.deploy.dto.app.DeployAppConfigEnvDBConfigVo;
@@ -99,7 +97,7 @@ public class GetDeployAppConfigEnvDBConfigForAutoexecApi extends PrivateApiCompo
                 nodeObj.put("nodeName", ciEntityVo.getName());
                 nodeObj.put("nodeType", ciEntityVo.getCiName());
                 nodeObj.put("username", accountVo.getAccount());
-                nodeObj.put("password", "{ENCRYPTED}" + RC4Util.encrypt(AutoexecJobVo.AUTOEXEC_RC4_KEY, RC4Util.decrypt(accountVo.getPasswordCipher().replace("RC4:", StringUtils.EMPTY))));
+                nodeObj.put("password", accountVo.getPasswordCipher());
                 List<AttrEntityVo> attrEntityList = ciEntityVo.getAttrEntityList();
                 for (AttrEntityVo attrEntityVo : attrEntityList) {
                     if (StringUtils.equals("ip", attrEntityVo.getAttrName())) {
