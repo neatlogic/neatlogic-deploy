@@ -84,6 +84,7 @@ public class CreateDirectoryApi extends PrivateApiComponentBase {
         if (resourceType == null) {
             throw new DeployVersionResourceTypeNotFoundException(paramObj.getString("resourceType"));
         }
+        String runnerUrl;
         String url;
         String fullPath;
         if (!DeployResourceType.WORKSPACE.equals(resourceType)) {
@@ -102,13 +103,15 @@ public class CreateDirectoryApi extends PrivateApiComponentBase {
                     throw new DeployVersionEnvNotFoundException(version.getVersion(), envId);
                 }
             }
-            url = deployVersionService.getVersionRunnerUrl(paramObj, version, envName);
+            runnerUrl = deployVersionService.getVersionRunnerUrl(paramObj, version, envName);
             fullPath = deployVersionService.getVersionResourceFullPath(version, resourceType, buildNo, envName, path);
         } else {
-            url = deployVersionService.getWorkspaceRunnerUrl(appSystemId, appModuleId);
+            runnerUrl = deployVersionService.getWorkspaceRunnerUrl(appSystemId, appModuleId);
             fullPath = deployVersionService.getWorkspaceResourceFullPath(appSystemId, appModuleId, path);
         }
-        url += "api/rest/file/directory/create";
+        deployVersionService.checkHomeHasBeenLocked(runnerUrl, fullPath.replace(path, ""));
+
+        url = runnerUrl + "api/rest/file/directory/create";
         JSONObject paramJson = new JSONObject();
         paramJson.put("path", fullPath);
         HttpRequestUtil request = HttpRequestUtil.post(url).setPayload(paramJson.toJSONString()).setAuthType(AuthenticateType.BUILDIN).sendRequest();
