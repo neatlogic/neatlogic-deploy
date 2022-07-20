@@ -1,12 +1,14 @@
 package codedriver.module.deploy.api;
 
 import codedriver.framework.cmdb.crossover.ICiCrossoverMapper;
+import codedriver.framework.cmdb.crossover.ICiEntityCrossoverMapper;
 import codedriver.framework.cmdb.crossover.ICiEntityCrossoverService;
 import codedriver.framework.cmdb.dto.ci.CiVo;
 import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
 import codedriver.framework.cmdb.dto.transaction.CiEntityTransactionVo;
 import codedriver.framework.cmdb.enums.EditModeType;
 import codedriver.framework.cmdb.enums.TransactionActionType;
+import codedriver.framework.cmdb.exception.cientity.CiEntityNotFoundException;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.crossover.CrossoverServiceFactory;
 import codedriver.framework.deploy.dto.app.DeployAppOwnerVo;
@@ -34,19 +36,19 @@ import java.util.stream.Collectors;
 @Service
 @Transactional
 @OperationType(type = OperationTypeEnum.UPDATE)
-public class SaveDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
+public class SaveDeployAppConfigAppModuleApi extends PrivateApiComponentBase {
 
     @Resource
     DeployAppConfigService deployAppConfigService;
 
     @Override
     public String getName() {
-        return "保存发布应用配置的应用系统";
+        return "保存发布应用配置的应用模块";
     }
 
     @Override
     public String getToken() {
-        return "deploy/app/config/appsystem/save";
+        return "deploy/app/config/appmodule/save";
     }
 
     @Override
@@ -61,14 +63,22 @@ public class SaveDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
             @Param(name = "stateList", type = ApiParamType.JSONARRAY, desc = "状态"),
             @Param(name = "ownerList", type = ApiParamType.JSONARRAY, desc = "负责人"),
             @Param(name = "maintenanceWindow", type = ApiParamType.STRING, desc = "维护窗口"),
-            @Param(name = "description", type = ApiParamType.STRING, desc = "备注")
+            @Param(name = "description", type = ApiParamType.STRING, desc = "备注"),
+            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "应用系统id")
     })
     @Output({})
-    @Description(desc = "保存发布应用配置的应用系统")
+    @Description(desc = "保存发布应用配置的应用模块")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
 
-        Long appSystemId = paramObj.getLong("id");
+        //校验应用系统id是否存在
+        ICiEntityCrossoverMapper iCiEntityCrossoverMapper = CrossoverServiceFactory.getApi(ICiEntityCrossoverMapper.class);
+        CiEntityVo appSystemCiEntity = iCiEntityCrossoverMapper.getCiEntityBaseInfoById(paramObj.getLong("appSystemId"));
+        if (appSystemCiEntity == null) {
+            throw new CiEntityNotFoundException(paramObj.getLong("appSystemId"));
+        }
+
+        Long appModuleId = paramObj.getLong("id");
 
         //构建数据结构
         JSONArray stateArray = paramObj.getJSONArray("stateList");
@@ -90,16 +100,17 @@ public class SaveDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
         paramObj.put("needUpdateAttrList", new JSONArray(Arrays.asList("state", "name", "owner", "abbrName", "maintenanceWindow", "description")));
         //获取应用系统的模型id
         ICiCrossoverMapper ciCrossoverMapper = CrossoverServiceFactory.getApi(ICiCrossoverMapper.class);
-        CiVo appCiVo = ciCrossoverMapper.getCiByName("APP");
-        paramObj.put("ciId", appCiVo.getId());
+        CiVo moduleCiVo = ciCrossoverMapper.getCiByName("APPComponent");
+        paramObj.put("ciId", moduleCiVo.getId());
 
         //保存
         ICiEntityCrossoverService ciEntityService = CrossoverServiceFactory.getApi(ICiEntityCrossoverService.class);
         CiEntityTransactionVo ciEntityTransactionVo = null;
-        if (appSystemId == null) {
+        if (appModuleId == null) {
 
             /*新增应用系统（配置项）*/
             //1、构建事务vo，并添加属性值
+            paramObj.put("isNeedUpdateAPPComponentRel", 1);
             ciEntityTransactionVo = new CiEntityTransactionVo();
             deployAppConfigService.addAttrEntityDataAndRelEntityData(ciEntityTransactionVo, paramObj);
 
@@ -110,7 +121,7 @@ public class SaveDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
 
             /*编辑应用系统（配置项）*/
             //1、构建事务vo，并添加属性值
-            CiEntityVo instanceCiEntityInfo = ciEntityService.getCiEntityById(appCiVo.getId(), appSystemId);
+            CiEntityVo instanceCiEntityInfo = ciEntityService.getCiEntityById(moduleCiVo.getId(), appModuleId);
             ciEntityTransactionVo = new CiEntityTransactionVo(instanceCiEntityInfo);
             ciEntityTransactionVo.setAttrEntityData(instanceCiEntityInfo.getAttrEntityData());
             deployAppConfigService.addAttrEntityDataAndRelEntityData(ciEntityTransactionVo, paramObj);

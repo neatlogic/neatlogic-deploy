@@ -7,9 +7,9 @@ import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.dto.BasePageVo;
 import codedriver.framework.crossover.CrossoverServiceFactory;
+import codedriver.framework.deploy.dto.app.DeployAppModuleVo;
 import codedriver.framework.deploy.dto.app.DeployAppOwnerVo;
 import codedriver.framework.deploy.dto.app.DeployAppUsedStateVo;
-import codedriver.framework.deploy.dto.app.DeployAppSystemVo;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
@@ -28,11 +28,11 @@ import java.util.List;
  */
 @Service
 @OperationType(type = OperationTypeEnum.SEARCH)
-public class GetDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
+public class GetDeployAppConfigAppModuleApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "查询应用系统（配置项）信息";
+        return "查询应用模块（配置项）信息";
     }
 
     @Override
@@ -42,7 +42,7 @@ public class GetDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
 
     @Override
     public String getToken() {
-        return "deploy/app/config/appsystem/get";
+        return "deploy/app/config/appmodule/get";
     }
 
     @Input({
@@ -52,33 +52,33 @@ public class GetDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
             @Param(explode = BasePageVo.class),
             @Param(name = "tbodyList", explode = CiEntityVo[].class, desc = "应用系统详细配置信息")
     })
-    @Description(desc = "查询应用系统（配置项）信息")
+    @Description(desc = "查询应用模块（配置项）信息")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
 
         //获取应用系统ciEntityVo
         ICiEntityCrossoverMapper iCiEntityCrossoverMapper = CrossoverServiceFactory.getApi(ICiEntityCrossoverMapper.class);
         CiEntityVo ciEntityVo = iCiEntityCrossoverMapper.getCiEntityBaseInfoById(paramObj.getLong("id"));
-        DeployAppSystemVo appSystemVo = new DeployAppSystemVo();
+        DeployAppModuleVo appModuleVo = new DeployAppModuleVo();
         if (ciEntityVo == null) {
-            return appSystemVo;
+            return appModuleVo;
         }
         //获取属性
         ICiEntityCrossoverService ciEntityService = CrossoverServiceFactory.getApi(ICiEntityCrossoverService.class);
         CiEntityVo appSystemInfo = ciEntityService.getCiEntityById(ciEntityVo.getCiId(), paramObj.getLong("id"));
-        appSystemVo.setId(appSystemInfo.getId());
+        appModuleVo.setId(appSystemInfo.getId());
         List<AttrEntityVo> attrEntityList = appSystemInfo.getAttrEntityList();
         if (CollectionUtils.isNotEmpty(attrEntityList)) {
             for (AttrEntityVo attrEntityVo : attrEntityList) {
 
                 //名称
                 if (StringUtils.equals(attrEntityVo.getAttrName(), "name")) {
-                    appSystemVo.setName(String.valueOf(attrEntityVo.getValueList().get(0)));
+                    appModuleVo.setName(String.valueOf(attrEntityVo.getValueList().get(0)));
                     continue;
                 }
                 //简称
                 if (StringUtils.equals(attrEntityVo.getAttrName(), "abbrName")) {
-                    appSystemVo.setAbbrName(String.valueOf(attrEntityVo.getValueList().get(0)));
+                    appModuleVo.setAbbrName(String.valueOf(attrEntityVo.getValueList().get(0)));
                     continue;
                 }
                 //状态
@@ -94,7 +94,7 @@ public class GetDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
                                 statusVoList.add(new DeployAppUsedStateVo(Long.valueOf(String.valueOf(id)), String.valueOf(name)));
                             }
                         }
-                        appSystemVo.setStateList(statusVoList);
+                        appModuleVo.setStateList(statusVoList);
                     }
                     continue;
                 }
@@ -111,21 +111,21 @@ public class GetDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
                                 ownerVoList.add(new DeployAppOwnerVo(Long.valueOf(String.valueOf(id)), String.valueOf(name)));
                             }
                         }
-                        appSystemVo.setOwnerList(ownerVoList);
+                        appModuleVo.setOwnerList(ownerVoList);
                     }
                     continue;
                 }
                 //维窗口
                 if (StringUtils.equals(attrEntityVo.getAttrName(), "maintenance_window")) {
-                    appSystemVo.setMaintenanceWindow(String.valueOf(attrEntityVo.getValueList().get(0)));
+                    appModuleVo.setMaintenanceWindow(String.valueOf(attrEntityVo.getValueList().get(0)));
                     continue;
                 }
                 //备注
                 if (StringUtils.equals(attrEntityVo.getAttrName(), "description")) {
-                    appSystemVo.setDescription(String.valueOf(attrEntityVo.getValueList().get(0)));
+                    appModuleVo.setDescription(String.valueOf(attrEntityVo.getValueList().get(0)));
                 }
             }
         }
-        return appSystemVo;
+        return appModuleVo;
     }
 }

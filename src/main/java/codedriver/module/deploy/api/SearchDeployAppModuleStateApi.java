@@ -16,18 +16,18 @@ import javax.annotation.Resource;
 
 /**
  * @author longrf
- * @date 2022/7/14 4:57 下午
+ * @date 2022/7/19 18:12
  */
 @Service
 @OperationType(type = OperationTypeEnum.SEARCH)
-public class SearchDeployAppSystemStateApi extends PrivateApiComponentBase {
+public class SearchDeployAppModuleStateApi extends PrivateApiComponentBase {
 
     @Resource
     DeployAppConfigService deployAppConfigService;
 
     @Override
     public String getName() {
-        return "查询发布添加应用时的状态列表";
+        return "查询发布添加模块时的状态列表";
     }
 
     @Override
@@ -37,7 +37,7 @@ public class SearchDeployAppSystemStateApi extends PrivateApiComponentBase {
 
     @Override
     public String getToken() {
-        return "deploy/app/config/appsystem/state/search";
+        return "deploy/app/config/appmodule/state/search";
     }
 
     @Input({
@@ -47,13 +47,13 @@ public class SearchDeployAppSystemStateApi extends PrivateApiComponentBase {
     @Output({
             @Param(name = "tbodyList", type = ApiParamType.JSONARRAY, explode = CiEntityVo[].class),
     })
-    @Description(desc = "查询发布添加应用时的状态列表")
+    @Description(desc = "查询发布添加模块时的状态列表")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
 
         //获取应用系统的模型id
         ICiCrossoverMapper ciCrossoverMapper = CrossoverServiceFactory.getApi(ICiCrossoverMapper.class);
-        CiVo appCiVo = ciCrossoverMapper.getCiByName("APP");
-        return deployAppConfigService.getStateList(appCiVo, paramObj);
+        CiVo moduleCiVo = ciCrossoverMapper.getCiByName("APP");
+        return deployAppConfigService.getStateList(moduleCiVo, paramObj);
     }
 }

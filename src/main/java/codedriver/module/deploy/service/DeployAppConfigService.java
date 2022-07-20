@@ -1,7 +1,9 @@
 package codedriver.module.deploy.service;
 
+import codedriver.framework.cmdb.dto.ci.CiVo;
 import codedriver.framework.cmdb.dto.transaction.CiEntityTransactionVo;
 import codedriver.framework.deploy.dto.app.DeployAppConfigVo;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
 /**
@@ -25,4 +27,21 @@ public interface DeployAppConfigService {
      */
     void addAttrEntityDataAndRelEntityData(CiEntityTransactionVo ciEntityTransactionVo, JSONObject paramObj);
 
+    /**
+     * 获取状态列表
+     *
+     * @param ciVo     模型vo
+     * @param paramObj 入参
+     * @return 状态列表
+     */
+    JSONArray getStateList(CiVo ciVo, JSONObject paramObj);
+
+    /**
+     * 获取状态列表
+     *
+     * @param ciVo     模型vo
+     * @param paramObj 入参
+     * @return 状态列表
+     */
+    JSONArray getOwnerList(CiVo ciVo, JSONObject paramObj);
 }

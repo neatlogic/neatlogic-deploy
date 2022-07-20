@@ -2,8 +2,10 @@ package codedriver.module.deploy.service;
 
 import codedriver.framework.cmdb.crossover.IAttrCrossoverMapper;
 import codedriver.framework.cmdb.crossover.ICiEntityCrossoverMapper;
+import codedriver.framework.cmdb.crossover.ICiEntityCrossoverService;
 import codedriver.framework.cmdb.crossover.IRelCrossoverMapper;
 import codedriver.framework.cmdb.dto.ci.AttrVo;
+import codedriver.framework.cmdb.dto.ci.CiVo;
 import codedriver.framework.cmdb.dto.ci.RelVo;
 import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
 import codedriver.framework.cmdb.dto.transaction.CiEntityTransactionVo;
@@ -19,10 +21,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * @author longrf
@@ -72,6 +71,93 @@ public class DeployAppConfigServiceImpl implements DeployAppConfigService {
         ciEntityTransactionVo.setDescription(null);
     }
 
+    @Override
+    public JSONArray getStateList(CiVo ciVo, JSONObject paramObj) {
+        JSONArray defaultValue = paramObj.getJSONArray("defaultValue");
+        IAttrCrossoverMapper attrCrossoverMapper = CrossoverServiceFactory.getApi(IAttrCrossoverMapper.class);
+        AttrVo stateAttrVo = attrCrossoverMapper.getAttrByCiIdAndName(ciVo.getId(),"state");
+
+        CiEntityVo ciEntityVo = new CiEntityVo();
+        ciEntityVo.setCiId(stateAttrVo.getTargetCiId());
+
+        if (CollectionUtils.isNotEmpty(defaultValue)) {
+            List<Long> idList = new ArrayList<>();
+            for (int i = 0; i < defaultValue.size(); i++) {
+                try {
+                    idList.add(defaultValue.getLong(i));
+                } catch (Exception ignored) {
+
+                }
+            }
+            if (CollectionUtils.isNotEmpty(idList)) {
+                ciEntityVo.setIdList(idList);
+            }
+        }
+        if (StringUtils.isNotBlank(paramObj.getString("keyword"))) {
+            ciEntityVo.setName(paramObj.getString("keyword"));
+        }
+        //不需要多余的属性和关系
+        ciEntityVo.setAttrIdList(new ArrayList<Long>() {{
+            this.add(0L);
+        }});
+        ciEntityVo.setRelIdList(new ArrayList<Long>() {{
+            this.add(0L);
+        }});
+        ICiEntityCrossoverService ciEntityCrossoverService = CrossoverServiceFactory.getApi(ICiEntityCrossoverService.class);
+        List<CiEntityVo> ciEntityList = ciEntityCrossoverService.searchCiEntity(ciEntityVo);
+        JSONArray jsonList = new JSONArray();
+        for (CiEntityVo ciEntity : ciEntityList) {
+            JSONObject obj = new JSONObject();
+            obj.put("id", ciEntity.getId());
+            obj.put("name", StringUtils.isNotBlank(ciEntity.getName()) ? ciEntity.getName() : "-");
+            jsonList.add(obj);
+        }
+        return jsonList;
+    }
+
+    @Override
+    public JSONArray getOwnerList(CiVo ciVo, JSONObject paramObj) {
+        JSONArray defaultValue = paramObj.getJSONArray("defaultValue");
+        IAttrCrossoverMapper attrCrossoverMapper = CrossoverServiceFactory.getApi(IAttrCrossoverMapper.class);
+        AttrVo ownerAttrVo = attrCrossoverMapper.getAttrByCiIdAndName(ciVo.getId(),"owner");
+
+        CiEntityVo ciEntityVo = new CiEntityVo();
+        ciEntityVo.setCiId(ownerAttrVo.getTargetCiId());
+
+        if (CollectionUtils.isNotEmpty(defaultValue)) {
+            List<Long> idList = new ArrayList<>();
+            for (int i = 0; i < defaultValue.size(); i++) {
+                try {
+                    idList.add(defaultValue.getLong(i));
+                } catch (Exception ignored) {
+
+                }
+            }
+            if (CollectionUtils.isNotEmpty(idList)) {
+                ciEntityVo.setIdList(idList);
+            }
+        }
+        if (StringUtils.isNotBlank(paramObj.getString("keyword"))) {
+            ciEntityVo.setName(paramObj.getString("keyword"));
+        }
+        //不需要多余的属性和关系
+        ciEntityVo.setAttrIdList(new ArrayList<Long>() {{
+            this.add(0L);
+        }});
+        ciEntityVo.setRelIdList(new ArrayList<Long>() {{
+            this.add(0L);
+        }});
+        ICiEntityCrossoverService ciEntityCrossoverService = CrossoverServiceFactory.getApi(ICiEntityCrossoverService.class);
+        List<CiEntityVo> ciEntityList = ciEntityCrossoverService.searchCiEntity(ciEntityVo);
+        JSONArray jsonList = new JSONArray();
+        for (CiEntityVo ciEntity : ciEntityList) {
+            JSONObject obj = new JSONObject();
+            obj.put("id", ciEntity.getId());
+            obj.put("name", StringUtils.isNotBlank(ciEntity.getName()) ? ciEntity.getName() : "-");
+            jsonList.add(obj);
+        }
+        return jsonList;
+    }
 
     /**
      * 添加关系

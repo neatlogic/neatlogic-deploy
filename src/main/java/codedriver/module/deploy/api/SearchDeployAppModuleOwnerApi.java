@@ -16,18 +16,23 @@ import javax.annotation.Resource;
 
 /**
  * @author longrf
- * @date 2022/7/14 4:57 下午
+ * @date 2022/7/14 6:00 下午
  */
 @Service
 @OperationType(type = OperationTypeEnum.SEARCH)
-public class SearchDeployAppSystemStateApi extends PrivateApiComponentBase {
+public class SearchDeployAppModuleOwnerApi extends PrivateApiComponentBase {
 
     @Resource
     DeployAppConfigService deployAppConfigService;
 
     @Override
     public String getName() {
-        return "查询发布添加应用时的状态列表";
+        return "查询发布添加模块时的负责人列表";
+    }
+
+    @Override
+    public String getToken() {
+        return "deploy/app/config/appmodule/owner/search";
     }
 
     @Override
@@ -35,25 +40,20 @@ public class SearchDeployAppSystemStateApi extends PrivateApiComponentBase {
         return null;
     }
 
-    @Override
-    public String getToken() {
-        return "deploy/app/config/appsystem/state/search";
-    }
-
     @Input({
             @Param(name = "keyword", type = ApiParamType.STRING, desc = "关键字", xss = true),
-            @Param(name = "defaultValue", type = ApiParamType.JSONARRAY, desc = "用于回显状态列表")
+            @Param(name = "defaultValue", type = ApiParamType.JSONARRAY, desc = "用于回显负责人列表")
     })
     @Output({
-            @Param(name = "tbodyList", type = ApiParamType.JSONARRAY, explode = CiEntityVo[].class),
+            @Param(name = "tbodyList", type = ApiParamType.JSONARRAY, explode = CiEntityVo[].class)
     })
-    @Description(desc = "查询发布添加应用时的状态列表")
+    @Description(desc = "查询发布添加模块时的负责人列表")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
 
         //获取应用系统的模型id
         ICiCrossoverMapper ciCrossoverMapper = CrossoverServiceFactory.getApi(ICiCrossoverMapper.class);
         CiVo appCiVo = ciCrossoverMapper.getCiByName("APP");
-        return deployAppConfigService.getStateList(appCiVo, paramObj);
+        return  deployAppConfigService.getOwnerList(appCiVo, paramObj);
     }
 }
