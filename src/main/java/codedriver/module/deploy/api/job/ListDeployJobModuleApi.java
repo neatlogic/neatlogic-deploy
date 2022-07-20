@@ -5,13 +5,13 @@ import codedriver.framework.autoexec.constvalue.ToolType;
 import codedriver.framework.autoexec.crossover.IAutoexecServiceCrossoverService;
 import codedriver.framework.autoexec.dto.AutoexecOperationBaseVo;
 import codedriver.framework.autoexec.dto.combop.AutoexecCombopPhaseOperationVo;
+import codedriver.framework.autoexec.dto.combop.AutoexecCombopPhaseVo;
 import codedriver.framework.autoexec.dto.combop.AutoexecCombopScenarioVo;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.crossover.CrossoverServiceFactory;
 import codedriver.framework.deploy.dto.app.DeployAppConfigVo;
 import codedriver.framework.deploy.dto.app.DeployAppModuleVo;
 import codedriver.framework.deploy.dto.app.DeployPipelineConfigVo;
-import codedriver.framework.deploy.dto.app.DeployPipelinePhaseVo;
 import codedriver.framework.deploy.exception.DeployAppConfigNotFoundException;
 import codedriver.framework.deploy.exception.DeployAppConfigScenarioNotFoundException;
 import codedriver.framework.deploy.exception.DeployAppConfigScenarioPhaseNameListNotFoundException;
@@ -118,7 +118,7 @@ public class ListDeployJobModuleApi extends PrivateApiComponentBase {
                 }
 
                 //3、判断场景的阶段列表是否有BUILD分类的工具
-                for (DeployPipelinePhaseVo pipelinePhaseVo : pipelineConfigVo.getCombopPhaseList()) {
+                for (AutoexecCombopPhaseVo pipelinePhaseVo : pipelineConfigVo.getCombopPhaseList()) {
                     if (scenarioVo.getCombopPhaseNameList().contains(pipelinePhaseVo.getName())) {
                         List<AutoexecCombopPhaseOperationVo> phaseOperationList = pipelinePhaseVo.getConfig().getPhaseOperationList();
                         for (AutoexecCombopPhaseOperationVo operationVo : phaseOperationList) {

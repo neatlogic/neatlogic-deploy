@@ -8,10 +8,7 @@ package codedriver.module.deploy.dependency.handler;
 import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.autoexec.constvalue.AutoexecFromType;
 import codedriver.framework.autoexec.constvalue.ParamMappingMode;
-import codedriver.framework.autoexec.dto.combop.AutoexecCombopPhaseConfigVo;
-import codedriver.framework.autoexec.dto.combop.AutoexecCombopPhaseOperationConfigVo;
-import codedriver.framework.autoexec.dto.combop.AutoexecCombopPhaseOperationVo;
-import codedriver.framework.autoexec.dto.combop.ParamMappingVo;
+import codedriver.framework.autoexec.dto.combop.*;
 import codedriver.framework.cmdb.crossover.ICiEntityCrossoverMapper;
 import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
 import codedriver.framework.crossover.CrossoverServiceFactory;
@@ -21,7 +18,6 @@ import codedriver.framework.dependency.dto.DependencyInfoVo;
 import codedriver.framework.dependency.dto.DependencyVo;
 import codedriver.framework.deploy.dto.app.DeployAppConfigVo;
 import codedriver.framework.deploy.dto.app.DeployPipelineConfigVo;
-import codedriver.framework.deploy.dto.app.DeployPipelinePhaseVo;
 import codedriver.module.deploy.dao.mapper.DeployAppConfigMapper;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
@@ -61,12 +57,12 @@ public class AutoexecGlobalParam2DeployAppPipelinePhaseOperationInputParamDepend
         if (pipelineConfigVo == null) {
             return null;
         }
-        List<DeployPipelinePhaseVo> combopPhaseList = pipelineConfigVo.getCombopPhaseList();
+        List<AutoexecCombopPhaseVo> combopPhaseList = pipelineConfigVo.getCombopPhaseList();
         if (CollectionUtils.isEmpty(combopPhaseList)) {
             return null;
         }
         Long phaseId = config.getLong("phaseId");
-        for (DeployPipelinePhaseVo combopPhaseVo : combopPhaseList) {
+        for (AutoexecCombopPhaseVo combopPhaseVo : combopPhaseList) {
             if (combopPhaseVo == null) {
                 continue;
             }
