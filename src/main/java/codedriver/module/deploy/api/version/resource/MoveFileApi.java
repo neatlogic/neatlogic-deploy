@@ -103,6 +103,7 @@ public class MoveFileApi extends PrivateApiComponentBase {
         if ("rename".equals(operation) && StringUtils.isBlank(name)) {
             throw new ParamNotExistsException("name");
         }
+        String runnerUrl;
         String url;
         String fullSrcPath;
         String fullDestPath;
@@ -122,7 +123,7 @@ public class MoveFileApi extends PrivateApiComponentBase {
                     throw new DeployVersionEnvNotFoundException(version.getVersion(), envId);
                 }
             }
-            url = deployVersionService.getVersionRunnerUrl(paramObj, version, envName);
+            runnerUrl = deployVersionService.getVersionRunnerUrl(paramObj, version, envName);
             fullSrcPath = deployVersionService.getVersionResourceFullPath(version, resourceType, buildNo, envName, src);
             if ("move".equals(operation)) {
                 fullDestPath = deployVersionService.getVersionResourceFullPath(version, resourceType, buildNo, envName, dest + src.substring(src.lastIndexOf("/")));
@@ -130,7 +131,7 @@ public class MoveFileApi extends PrivateApiComponentBase {
                 fullDestPath = deployVersionService.getVersionResourceFullPath(version, resourceType, buildNo, envName, src.substring(0, src.lastIndexOf("/")) + "/" + name);
             }
         } else {
-            url = deployVersionService.getWorkspaceRunnerUrl(appSystemId, appModuleId);
+            runnerUrl = deployVersionService.getWorkspaceRunnerUrl(appSystemId, appModuleId);
             fullSrcPath = deployVersionService.getWorkspaceResourceFullPath(appSystemId, appModuleId, src);
             if ("move".equals(operation)) {
                 fullDestPath = deployVersionService.getWorkspaceResourceFullPath(appSystemId, appModuleId, dest + src.substring(src.lastIndexOf("/")));
@@ -138,7 +139,9 @@ public class MoveFileApi extends PrivateApiComponentBase {
                 fullDestPath = deployVersionService.getWorkspaceResourceFullPath(appSystemId, appModuleId, src.substring(0, src.lastIndexOf("/")) + "/" + name);
             }
         }
-        url += "api/rest/file/move";
+        deployVersionService.checkHomeHasBeenLocked(runnerUrl, fullSrcPath.replace(src, ""));
+
+        url = runnerUrl + "api/rest/file/move";
         JSONObject paramJson = new JSONObject();
         paramJson.put("src", fullSrcPath);
         paramJson.put("dest", fullDestPath);
