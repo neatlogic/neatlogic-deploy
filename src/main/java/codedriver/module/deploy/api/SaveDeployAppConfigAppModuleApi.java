@@ -97,7 +97,7 @@ public class SaveDeployAppConfigAppModuleApi extends PrivateApiComponentBase {
         }
 
         //定义需要插入的字段
-        paramObj.put("needUpdateAttrList", new JSONArray(Arrays.asList("state", "name", "owner", "abbrName", "maintenanceWindow", "description")));
+        paramObj.put("needUpdateAttrList", new JSONArray(Arrays.asList("state", "name", "owner", "abbrName", "maintenance_window", "description")));
         //获取应用系统的模型id
         ICiCrossoverMapper ciCrossoverMapper = CrossoverServiceFactory.getApi(ICiCrossoverMapper.class);
         CiVo moduleCiVo = ciCrossoverMapper.getCiByName("APPComponent");
@@ -110,7 +110,7 @@ public class SaveDeployAppConfigAppModuleApi extends PrivateApiComponentBase {
 
             /*新增应用系统（配置项）*/
             //1、构建事务vo，并添加属性值
-            paramObj.put("isNeedUpdateAPPComponentRel", 1);
+            paramObj.put("needUpdateRelList", new JSONArray(Arrays.asList("APP")));
             ciEntityTransactionVo = new CiEntityTransactionVo();
             deployAppConfigService.addAttrEntityDataAndRelEntityData(ciEntityTransactionVo, paramObj);
 
@@ -119,11 +119,15 @@ public class SaveDeployAppConfigAppModuleApi extends PrivateApiComponentBase {
             ciEntityTransactionVo.setAction(TransactionActionType.INSERT.getValue());
         } else {
 
+            CiEntityVo moduleCiEntityInfo = ciEntityService.getCiEntityById(moduleCiVo.getId(), appModuleId);
+            if (moduleCiEntityInfo == null) {
+                throw new CiEntityNotFoundException(appModuleId);
+            }
+
             /*编辑应用系统（配置项）*/
             //1、构建事务vo，并添加属性值
-            CiEntityVo instanceCiEntityInfo = ciEntityService.getCiEntityById(moduleCiVo.getId(), appModuleId);
-            ciEntityTransactionVo = new CiEntityTransactionVo(instanceCiEntityInfo);
-            ciEntityTransactionVo.setAttrEntityData(instanceCiEntityInfo.getAttrEntityData());
+            ciEntityTransactionVo = new CiEntityTransactionVo(moduleCiEntityInfo);
+            ciEntityTransactionVo.setAttrEntityData(moduleCiEntityInfo.getAttrEntityData());
             deployAppConfigService.addAttrEntityDataAndRelEntityData(ciEntityTransactionVo, paramObj);
 
             //2、设置事务vo信息

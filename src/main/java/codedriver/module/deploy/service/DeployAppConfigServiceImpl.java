@@ -75,7 +75,7 @@ public class DeployAppConfigServiceImpl implements DeployAppConfigService {
     public JSONArray getStateList(CiVo ciVo, JSONObject paramObj) {
         JSONArray defaultValue = paramObj.getJSONArray("defaultValue");
         IAttrCrossoverMapper attrCrossoverMapper = CrossoverServiceFactory.getApi(IAttrCrossoverMapper.class);
-        AttrVo stateAttrVo = attrCrossoverMapper.getAttrByCiIdAndName(ciVo.getId(),"state");
+        AttrVo stateAttrVo = attrCrossoverMapper.getAttrByCiIdAndName(ciVo.getId(), "state");
 
         CiEntityVo ciEntityVo = new CiEntityVo();
         ciEntityVo.setCiId(stateAttrVo.getTargetCiId());
@@ -119,7 +119,7 @@ public class DeployAppConfigServiceImpl implements DeployAppConfigService {
     public JSONArray getOwnerList(CiVo ciVo, JSONObject paramObj) {
         JSONArray defaultValue = paramObj.getJSONArray("defaultValue");
         IAttrCrossoverMapper attrCrossoverMapper = CrossoverServiceFactory.getApi(IAttrCrossoverMapper.class);
-        AttrVo ownerAttrVo = attrCrossoverMapper.getAttrByCiIdAndName(ciVo.getId(),"owner");
+        AttrVo ownerAttrVo = attrCrossoverMapper.getAttrByCiIdAndName(ciVo.getId(), "owner");
 
         CiEntityVo ciEntityVo = new CiEntityVo();
         ciEntityVo.setCiId(ownerAttrVo.getTargetCiId());
@@ -166,16 +166,27 @@ public class DeployAppConfigServiceImpl implements DeployAppConfigService {
      * @param paramObj              入参
      */
     private void addRelEntityData(CiEntityTransactionVo ciEntityTransactionVo, JSONObject paramObj) {
-        if (Objects.equals(paramObj.getInteger("isNeedUpdateAPPComponentRel"), 1)) {
-            ICiEntityCrossoverMapper iCiEntityCrossoverMapper = CrossoverServiceFactory.getApi(ICiEntityCrossoverMapper.class);
-            IRelCrossoverMapper relCrossoverMapper = CrossoverServiceFactory.getApi(IRelCrossoverMapper.class);
 
-            RelVo APPComponentRel = relCrossoverMapper.getRelByCiIdAndRelName(paramObj.getLong("ciId"), "APPComponent");
-            if (APPComponentRel == null) {
-                return;
+        if (CollectionUtils.isEmpty(paramObj.getJSONArray("needUpdateRelList"))) {
+            return;
+        }
+
+        IRelCrossoverMapper relCrossoverMapper = CrossoverServiceFactory.getApi(IRelCrossoverMapper.class);
+        List<RelVo> relVoList = relCrossoverMapper.getRelByCiId(paramObj.getLong("ciId"));
+        ICiEntityCrossoverMapper iCiEntityCrossoverMapper = CrossoverServiceFactory.getApi(ICiEntityCrossoverMapper.class);
+
+        for (RelVo relVo : relVoList) {
+            if (!paramObj.getJSONArray("needUpdateRelList").contains(relVo.getFromCiName())) {
+                continue;
             }
-            CiEntityVo appModuleCiEntity = iCiEntityCrossoverMapper.getCiEntityBaseInfoById(paramObj.getLong("appModuleId"));
-            ciEntityTransactionVo.addRelEntityData(APPComponentRel, APPComponentRel.getDirection(), appModuleCiEntity.getCiId(), appModuleCiEntity.getId());
+            if (StringUtils.isBlank(getRelMap().get(relVo.getFromCiName()))) {
+                continue;
+            }
+            CiEntityVo relCiEntity = iCiEntityCrossoverMapper.getCiEntityBaseInfoById(paramObj.getLong(getRelMap().get(relVo.getFromCiName())));
+            if (relCiEntity == null) {
+                continue;
+            }
+            ciEntityTransactionVo.addRelEntityData(relVo, relVo.getDirection(), relCiEntity.getCiId(), relCiEntity.getId());
         }
     }
 
@@ -186,27 +197,26 @@ public class DeployAppConfigServiceImpl implements DeployAppConfigService {
      * @param paramObj              入参
      */
     void addAttrEntityData(CiEntityTransactionVo ciEntityTransactionVo, JSONObject paramObj) {
+
+        if (CollectionUtils.isEmpty(paramObj.getJSONArray("needUpdateAttrList"))) {
+            return;
+        }
+
         IAttrCrossoverMapper attrCrossoverMapper = CrossoverServiceFactory.getApi(IAttrCrossoverMapper.class);
         List<AttrVo> attrVoList = attrCrossoverMapper.getAttrByCiId(paramObj.getLong("ciId"));
 
         for (AttrVo attrVo : attrVoList) {
-            if (CollectionUtils.isNotEmpty(paramObj.getJSONArray("needUpdateAttrList"))) {
-                if (getAttrMap().containsKey(attrVo.getName()) && paramObj.getJSONArray("needUpdateAttrList").contains(attrVo.getName())) {
-                    if (StringUtils.equals(attrVo.getName(), "state") || StringUtils.equals(attrVo.getName(), "owner")) {
-                        JSONArray jsonArray = paramObj.getJSONArray(getAttrMap().get(attrVo.getName()));
-                        if (CollectionUtils.isNotEmpty(jsonArray)) {
-                            ciEntityTransactionVo.addAttrEntityData(attrVo, jsonArray);
-                        } else {
-                            ciEntityTransactionVo.addAttrEntityData(attrVo, new JSONArray());
-                        }
-                    } else {
-                        ciEntityTransactionVo.addAttrEntityData(attrVo, paramObj.getString(getAttrMap().get(attrVo.getName())));
-                    }
-                }
+            if (!paramObj.getJSONArray("needUpdateAttrList").contains(attrVo.getName())) {
+                continue;
+            }
+            String attrParam = getAttrMap().get(attrVo.getName());
+            if (StringUtils.isBlank(attrParam)) {
+                continue;
+            }
+            if (StringUtils.equals(attrVo.getName(), "state") || StringUtils.equals(attrVo.getName(), "owner")) {
+                ciEntityTransactionVo.addAttrEntityData(attrVo, CollectionUtils.isNotEmpty(paramObj.getJSONArray(attrParam)) ? paramObj.getJSONArray(attrParam) : new JSONArray());
             } else {
-                if (getAttrMap().containsKey(attrVo.getName())) {
-                    ciEntityTransactionVo.addAttrEntityData(attrVo, paramObj.getString(getAttrMap().get(attrVo.getName())));
-                }
+                ciEntityTransactionVo.addAttrEntityData(attrVo, paramObj.getString(attrParam) != null ? paramObj.getString(attrParam) : "");
             }
         }
     }
@@ -225,6 +235,13 @@ public class DeployAppConfigServiceImpl implements DeployAppConfigService {
         map.put("owner", "ownerIdList");
         map.put("abbrName", "abbrName");
         map.put("description", "description");
+        return map;
+    }
+
+    public static Map<String, String> getRelMap() {
+        Map<String, String> map = new HashMap<>();
+        map.put("APP", "appSystemId");
+        map.put("APPComponent", "appModuleId");
         return map;
     }
 }

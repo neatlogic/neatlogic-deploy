@@ -86,6 +86,8 @@ public class SaveDeployAppConfigInstanceApi extends PrivateApiComponentBase {
             throw new CiEntityNotFoundException(paramObj.getLong("envId"));
         }
 
+        paramObj.put("needUpdateRelList", new JSONArray(Arrays.asList("APPComponent")));
+
         //实例挂环境
         Long instanceId = paramObj.getLong("instanceId");
         if (instanceId != null) {
@@ -126,6 +128,7 @@ public class SaveDeployAppConfigInstanceApi extends PrivateApiComponentBase {
             CiEntityTransactionVo ciEntityTransactionVo = new CiEntityTransactionVo();
 
             //添加环境属性、模块关系
+            paramObj.put("needUpdateAttrList", new JSONArray(Arrays.asList("name", "ip", "port", "maintenance_window", "app_environment")));
             deployAppConfigService.addAttrEntityDataAndRelEntityData(ciEntityTransactionVo, paramObj);
 
             ciEntityTransactionVo.setEditMode(EditModeType.PARTIAL.getValue());

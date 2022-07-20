@@ -7,6 +7,7 @@ import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
 import codedriver.framework.cmdb.dto.transaction.CiEntityTransactionVo;
 import codedriver.framework.cmdb.enums.EditModeType;
 import codedriver.framework.cmdb.enums.TransactionActionType;
+import codedriver.framework.cmdb.exception.cientity.CiEntityNotFoundException;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.crossover.CrossoverServiceFactory;
 import codedriver.framework.deploy.dto.app.DeployAppOwnerVo;
@@ -87,7 +88,7 @@ public class SaveDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
         }
 
         //定义需要插入的字段
-        paramObj.put("needUpdateAttrList", new JSONArray(Arrays.asList("state", "name", "owner", "abbrName", "maintenanceWindow", "description")));
+        paramObj.put("needUpdateAttrList", new JSONArray(Arrays.asList("state", "name", "owner", "abbrName", "maintenance_window", "description")));
         //获取应用系统的模型id
         ICiCrossoverMapper ciCrossoverMapper = CrossoverServiceFactory.getApi(ICiCrossoverMapper.class);
         CiVo appCiVo = ciCrossoverMapper.getCiByName("APP");
@@ -110,9 +111,13 @@ public class SaveDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
 
             /*编辑应用系统（配置项）*/
             //1、构建事务vo，并添加属性值
-            CiEntityVo instanceCiEntityInfo = ciEntityService.getCiEntityById(appCiVo.getId(), appSystemId);
-            ciEntityTransactionVo = new CiEntityTransactionVo(instanceCiEntityInfo);
-            ciEntityTransactionVo.setAttrEntityData(instanceCiEntityInfo.getAttrEntityData());
+            CiEntityVo systemCiEntityInfo = ciEntityService.getCiEntityById(appCiVo.getId(), appSystemId);
+            if (systemCiEntityInfo == null) {
+                throw new CiEntityNotFoundException(appSystemId);
+            }
+
+            ciEntityTransactionVo = new CiEntityTransactionVo(systemCiEntityInfo);
+            ciEntityTransactionVo.setAttrEntityData(systemCiEntityInfo.getAttrEntityData());
             deployAppConfigService.addAttrEntityDataAndRelEntityData(ciEntityTransactionVo, paramObj);
 
             //2、设置事务vo信息
