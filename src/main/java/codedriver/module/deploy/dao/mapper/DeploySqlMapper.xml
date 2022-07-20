@@ -20,6 +20,8 @@
         `port`,
         `resource_id`,
         `node_name`,
+        `node_type`,
+        `user_name`,
         `runner_id`,
         `is_delete`
         <choose>
@@ -45,6 +47,8 @@
         #{sqlVo.port},
         #{sqlVo.resourceId},
         #{sqlVo.nodeName},
+        #{sqlVo.nodeType},
+        #{sqlVo.username},
         #{runnerId},
         #{sqlVo.isDelete}
         <choose>
@@ -64,6 +68,8 @@
         `host` = #{sqlVo.host},
         `port` = #{sqlVo.port},
         `node_name` = #{sqlVo.nodeName},
+        `node_type` = #{sqlVo.nodeType},
+        `user_name` = #{sqlVo.username},
         `is_delete` = #{sqlVo.isDelete},
         `runner_id` = #{runnerId}
     </insert>
