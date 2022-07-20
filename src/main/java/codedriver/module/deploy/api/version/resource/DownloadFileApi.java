@@ -94,6 +94,7 @@ public class DownloadFileApi extends PrivateBinaryStreamApiComponentBase {
         String runnerUrl;
         String url;
         String fullPath;
+        ICiEntityCrossoverService ciEntityCrossoverService = CrossoverServiceFactory.getApi(ICiEntityCrossoverService.class);
         if (!DeployResourceType.WORKSPACE.equals(resourceType)) {
             if (id == null) {
                 throw new ParamNotExistsException("id");
@@ -104,12 +105,13 @@ public class DownloadFileApi extends PrivateBinaryStreamApiComponentBase {
             }
             String envName = null;
             if (envId != null) {
-                ICiEntityCrossoverService ciEntityCrossoverService = CrossoverServiceFactory.getApi(ICiEntityCrossoverService.class);
                 envName = ciEntityCrossoverService.getCiEntityNameByCiEntityId(envId);
                 if (StringUtils.isBlank(envName)) {
                     throw new DeployVersionEnvNotFoundException(version.getVersion(), envId);
                 }
             }
+            appSystemId = version.getAppSystemId();
+            appModuleId = version.getAppModuleId();
             runnerUrl = deployVersionService.getVersionRunnerUrl(paramObj, version, envName);
             fullPath = deployVersionService.getVersionResourceFullPath(version, resourceType, buildNo, envName, path);
         } else {
@@ -133,6 +135,13 @@ public class DownloadFileApi extends PrivateBinaryStreamApiComponentBase {
             lockId = lock.getLong("lockId");
             if (lockId == null) {
                 throw new DeployVersionResourceHasBeenLockedException();
+            }
+            if (appSystemId != null && appModuleId != null) {
+                String appSystemName = ciEntityCrossoverService.getCiEntityNameByCiEntityId(appSystemId);
+                String appModuleName = ciEntityCrossoverService.getCiEntityNameByCiEntityId(appModuleId);
+                if (StringUtils.isNotBlank(appSystemName) && StringUtils.isNotBlank(appModuleName)) {
+                    paramJson.put("fileName", appSystemName + "-" + appModuleName);
+                }
             }
         }
         HttpRequestUtil httpRequestUtil = null;
