@@ -13,6 +13,7 @@ import codedriver.framework.autoexec.dto.combop.AutoexecCombopVo;
 import codedriver.framework.autoexec.dto.job.AutoexecJobPhaseNodeVo;
 import codedriver.framework.autoexec.dto.job.AutoexecJobPhaseVo;
 import codedriver.framework.autoexec.dto.job.AutoexecJobVo;
+import codedriver.framework.autoexec.dto.job.AutoexecSqlDetailVo;
 import codedriver.framework.autoexec.exception.AutoexecJobRunnerGroupRunnerNotFoundException;
 import codedriver.framework.autoexec.exception.AutoexecJobRunnerHttpRequestException;
 import codedriver.framework.autoexec.job.source.action.AutoexecJobSourceActionHandlerBase;
@@ -34,6 +35,7 @@ import codedriver.framework.deploy.dto.version.DeployVersionBuildNoVo;
 import codedriver.framework.deploy.dto.version.DeployVersionVo;
 import codedriver.framework.deploy.exception.DeployAppConfigModuleRunnerGroupNotFoundException;
 import codedriver.framework.deploy.exception.DeployPipelineConfigNotFoundException;
+import codedriver.framework.deploy.exception.DeploySqlJobPhaseNotFoundException;
 import codedriver.framework.dto.runner.RunnerGroupVo;
 import codedriver.framework.dto.runner.RunnerMapVo;
 import codedriver.framework.exception.runner.RunnerNotFoundByRunnerMapIdException;
@@ -96,7 +98,7 @@ public class DeployJobSourceHandler extends AutoexecJobSourceActionHandlerBase {
     @Override
     public JSONObject getJobSqlContent(AutoexecJobVo jobVo) {
         JSONObject paramObj = jobVo.getActionParam();
-        DeploySqlDetailVo sqlDetailVo = deploySqlMapper.getJobSqlDetailById(paramObj.getLong("sqlId"));
+        DeploySqlDetailVo sqlDetailVo = deploySqlMapper.getDeployJobSqlDetailById(paramObj.getLong("sqlId"));
         paramObj.put("sysId", sqlDetailVo.getSysId());
         paramObj.put("moduleId", sqlDetailVo.getModuleId());
         paramObj.put("envId", sqlDetailVo.getEnvId());
@@ -111,7 +113,7 @@ public class DeployJobSourceHandler extends AutoexecJobSourceActionHandlerBase {
     @Override
     public void downloadJobSqlFile(AutoexecJobVo jobVo) throws Exception {
         JSONObject paramObj = jobVo.getActionParam();
-        DeploySqlDetailVo sqlDetailVo = deploySqlMapper.getJobSqlDetailById(paramObj.getLong("sqlId"));
+        DeploySqlDetailVo sqlDetailVo = deploySqlMapper.getDeployJobSqlDetailById(paramObj.getLong("sqlId"));
         paramObj.put("sysId", sqlDetailVo.getSysId());
         paramObj.put("moduleId", sqlDetailVo.getModuleId());
         paramObj.put("envId", sqlDetailVo.getEnvId());
@@ -135,7 +137,7 @@ public class DeployJobSourceHandler extends AutoexecJobSourceActionHandlerBase {
         JSONArray sqlIdArray = paramObj.getJSONArray("sqlIdList");
         if (!Objects.isNull(paramObj.getInteger("isAll")) && paramObj.getInteger("isAll") == 1) {
             //重置phase的所有sql文件状态
-            List<Long> resetSqlIdList = deploySqlMapper.getJobSqlIdListByJobIdAndJobPhaseName(paramObj.getLong("jobId"), paramObj.getString("phaseName"));
+            List<Long> resetSqlIdList = deploySqlMapper.getDeployJobSqlIdListByJobIdAndJobPhaseName(paramObj.getLong("jobId"), paramObj.getString("phaseName"));
             if (CollectionUtils.isNotEmpty(resetSqlIdList)) {
                 deploySqlMapper.resetDeploySqlStatusBySqlIdList(resetSqlIdList);
             }
@@ -218,13 +220,34 @@ public class DeployJobSourceHandler extends AutoexecJobSourceActionHandlerBase {
     @Override
     public void updateSqlStatus(JSONObject paramObj) {
         DeploySqlDetailVo paramDeploySqlVo = new DeploySqlDetailVo(paramObj.getJSONObject("sqlStatus"));
-        DeploySqlDetailVo oldDeploySqlVo = deploySqlMapper.getDeploySqlDetail(new DeploySqlDetailVo(paramObj.getLong("sysId"), paramObj.getLong("envId"), paramObj.getLong("moduleId"), paramObj.getString("version"), paramDeploySqlVo.getSqlFile(),paramObj.getLong("jobId"),paramObj.getString("phaseName")));
+        DeploySqlDetailVo oldDeploySqlVo = deploySqlMapper.getDeploySqlDetail(new DeploySqlDetailVo(paramObj.getLong("sysId"), paramObj.getLong("envId"), paramObj.getLong("moduleId"), paramObj.getString("version"), paramDeploySqlVo.getSqlFile(), paramObj.getLong("jobId"), paramObj.getString("phaseName")));
         if (oldDeploySqlVo != null) {
             deploySqlMapper.updateDeploySqlDetailIsDeleteAndStatusAndMd5ById(paramDeploySqlVo.getStatus(), paramDeploySqlVo.getMd5(), oldDeploySqlVo.getId());
         } else {
             deploySqlMapper.insertDeploySql(new DeploySqlJobPhaseVo(paramObj.getLong("jobId"), paramObj.getString("phaseName"), paramDeploySqlVo.getId()));
             deploySqlMapper.insertDeploySqlDetail(paramDeploySqlVo, paramObj.getLong("sysId"), paramObj.getLong("envId"), paramObj.getLong("moduleId"), paramObj.getString("version"), paramObj.getLong("runnerId"));
         }
+    }
+
+    @Override
+    public AutoexecSqlDetailVo getSqlDetail(AutoexecJobVo jobVo) {
+        AutoexecJobPhaseVo jobPhaseVo = jobVo.getCurrentPhase();
+        List<Long> sqlIdList = deploySqlMapper.getDeployJobSqlIdListByJobIdAndJobPhaseNameList(jobVo.getId(), Collections.singletonList(jobPhaseVo.getName()));
+        if (CollectionUtils.isEmpty(sqlIdList)) {
+            throw new DeploySqlJobPhaseNotFoundException(jobPhaseVo.getName());
+        }
+        DeploySqlDetailVo deploySqlDetailVo = deploySqlMapper.getDeployJobSqlDetailById(sqlIdList.get(0));
+        AutoexecSqlDetailVo autoexecSqlDetailVo = null;
+        if (deploySqlDetailVo != null) {
+            autoexecSqlDetailVo = new AutoexecSqlDetailVo();
+            autoexecSqlDetailVo.setJobId(jobVo.getId());
+            autoexecSqlDetailVo.setRunnerId(deploySqlDetailVo.getRunnerId());
+            autoexecSqlDetailVo.setPhaseName(deploySqlDetailVo.getPhaseName());
+            autoexecSqlDetailVo.setHost(deploySqlDetailVo.getHost());
+            autoexecSqlDetailVo.setPort(deploySqlDetailVo.getPort());
+            autoexecSqlDetailVo.setResourceId(deploySqlDetailVo.getResourceId());
+        }
+        return autoexecSqlDetailVo;
     }
 
     @Override
@@ -293,7 +316,7 @@ public class DeployJobSourceHandler extends AutoexecJobSourceActionHandlerBase {
         deployJobVo.setJobId(jobVo.getId());
         deployJobVo.setConfigHash(jobVo.getConfigHash());
         deployJobMapper.insertIgnoreDeployJobContent(new DeployJobContentVo(deployJobVo.getConfigHash(), jobVo.getConfigStr()));
-        if (paramJson.getInteger("buildNo") != null ) {
+        if (paramJson.getInteger("buildNo") != null) {
             deployJobVo.setBuildNo(paramJson.getInteger("buildNo"));
         } else {
             //获取最新buildNo
@@ -304,7 +327,7 @@ public class DeployJobSourceHandler extends AutoexecJobSourceActionHandlerBase {
             } else {
                 deployJobVo.setBuildNo(maxBuildNo + 1);
             }
-            deployJobMapper.insertDeployVersionBuildNo(new DeployVersionBuildNoVo(deployVersionVo.getId(),deployJobVo.getBuildNo(),deployJobVo.getJobId(), BuildNoStatus.PENDING.getValue()));
+            deployJobMapper.insertDeployVersionBuildNo(new DeployVersionBuildNoVo(deployVersionVo.getId(), deployJobVo.getBuildNo(), deployJobVo.getJobId(), BuildNoStatus.PENDING.getValue()));
         }
         deployJobMapper.insertDeployJob(deployJobVo);
     }

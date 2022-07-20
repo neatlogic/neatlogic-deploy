@@ -179,7 +179,7 @@
         </if>
     </select>
 
-    <select id="getJobSqlIdListByJobIdAndJobPhaseNameList" resultType="java.lang.Long">
+    <select id="getDeployJobSqlIdListByJobIdAndJobPhaseNameList" resultType="java.lang.Long">
         SELECT sql_id
         FROM deploy_sql_job_phase
         WHERE job_id = #{jobId}
@@ -189,14 +189,14 @@
         </foreach>
     </select>
 
-    <select id="getJobSqlIdListByJobIdAndJobPhaseName" resultType="java.lang.Long">
+    <select id="getDeployJobSqlIdListByJobIdAndJobPhaseName" resultType="java.lang.Long">
         SELECT sql_id
         FROM deploy_sql_job_phase
         WHERE job_id = #{jobId}
           AND job_phase_name = #{phaseName}
     </select>
 
-    <select id="getJobSqlDetailById" resultType="codedriver.framework.deploy.dto.sql.DeploySqlDetailVo">
+    <select id="getDeployJobSqlDetailById" resultType="codedriver.framework.deploy.dto.sql.DeploySqlDetailVo">
         SELECT dsd.`id`,
                dsd.`md5`,
                dsd.`status`,
