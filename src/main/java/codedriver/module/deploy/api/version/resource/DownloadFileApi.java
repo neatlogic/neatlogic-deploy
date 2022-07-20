@@ -116,29 +116,31 @@ public class DownloadFileApi extends PrivateBinaryStreamApiComponentBase {
             runnerUrl = deployVersionService.getWorkspaceRunnerUrl(appSystemId, appModuleId);
             fullPath = deployVersionService.getWorkspaceResourceFullPath(appSystemId, appModuleId, path);
         }
-        url = runnerUrl + "api/binary/file/download";
-        JSONObject paramJson = new JSONObject();
-        paramJson.put("path", fullPath);
-        paramJson.put("isPack", isPack);
+        // 对HOME目录上锁
         Long lockId = null;
         IGlobalLockHandler handler = null;
         if (Objects.equals(isPack, 1)) {
             handler = GlobalLockHandlerFactory.getHandler(JobSourceType.DEPLOY_VERSION_RESOURCE.getValue());
-            if (handler != null) {
-                JSONObject lockJson = new JSONObject();
-                lockJson.put("runnerUrl", runnerUrl);
-                lockJson.put("path", fullPath);
-                JSONObject lock = handler.getLock(lockJson);
-                if (Objects.equals(lock.getInteger("wait"), 1)) {
-                    throw new DeployVersionResourceHasBeenLockedException();
-                }
-                lockId = lock.getLong("lockId");
+            JSONObject lockJson = new JSONObject();
+            lockJson.put("runnerUrl", runnerUrl);
+            lockJson.put("path", fullPath.endsWith("/") ? fullPath.substring(0, fullPath.length() - 1) : fullPath);
+            JSONObject lock = handler.getLock(lockJson);
+            if (Objects.equals(lock.getInteger("wait"), 1)) {
+                throw new DeployVersionResourceHasBeenLockedException();
             }
+            lockId = lock.getLong("lockId");
         }
+
+        url = runnerUrl + "api/binary/file/download";
+        JSONObject paramJson = new JSONObject();
+        paramJson.put("path", fullPath);
+        paramJson.put("isPack", isPack);
         HttpRequestUtil httpRequestUtil = HttpRequestUtil.download(url, "POST", response.getOutputStream()).setPayload(paramJson.toJSONString()).setAuthType(AuthenticateType.BUILDIN).sendRequest();
+        // 释放锁
         if (lockId != null) {
             handler.cancelLock(lockId, null);
         }
+
         int responseCode = httpRequestUtil.getResponseCode();
         String error = httpRequestUtil.getError();
         if (StringUtils.isNotBlank(error)) {

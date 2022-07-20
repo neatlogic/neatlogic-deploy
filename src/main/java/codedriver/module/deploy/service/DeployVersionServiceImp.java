@@ -4,13 +4,17 @@ import codedriver.framework.cmdb.crossover.ICiEntityCrossoverService;
 import codedriver.framework.crossover.CrossoverServiceFactory;
 import codedriver.framework.dao.mapper.runner.RunnerMapper;
 import codedriver.framework.deploy.constvalue.DeployResourceType;
+import codedriver.framework.deploy.constvalue.JobSourceType;
 import codedriver.framework.deploy.dto.DeployJobVo;
 import codedriver.framework.deploy.dto.version.DeployVersionVo;
 import codedriver.framework.deploy.exception.DeployJobNotFoundException;
 import codedriver.framework.deploy.exception.DeployVersionJobNotFoundException;
+import codedriver.framework.deploy.exception.DeployVersionResourceHasBeenLockedException;
 import codedriver.framework.dto.runner.RunnerMapVo;
 import codedriver.framework.exception.runner.RunnerNotFoundByRunnerMapIdException;
 import codedriver.framework.exception.type.ParamNotExistsException;
+import codedriver.framework.globallock.core.GlobalLockHandlerFactory;
+import codedriver.framework.globallock.core.IGlobalLockHandler;
 import codedriver.module.deploy.dao.mapper.DeployJobMapper;
 import codedriver.module.deploy.dao.mapper.DeployVersionMapper;
 import com.alibaba.fastjson.JSONObject;
@@ -18,6 +22,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.Objects;
 
 @Service
 public class DeployVersionServiceImp implements DeployVersionService {
@@ -68,7 +73,7 @@ public class DeployVersionServiceImp implements DeployVersionService {
 
     @Override
     public String getVersionResourceFullPath(DeployVersionVo version, DeployResourceType resourceType, Integer buildNo, String envName, String customPath) {
-        return getVersionResourceHomePath(version, resourceType, buildNo, envName) + customPath;
+        return getVersionResourceHomePath(version, resourceType, buildNo, envName) + (customPath.startsWith("/") ? customPath : "/" + customPath);
     }
 
     @Override
@@ -86,7 +91,6 @@ public class DeployVersionServiceImp implements DeployVersionService {
         } else if (resourceType.getValue().startsWith("mirror")) {
             path.append("mirror/").append(envName).append("/").append(resourceType.getDirectoryName());
         }
-        path.append("/");
         return path.toString();
     }
 
@@ -128,5 +132,16 @@ public class DeployVersionServiceImp implements DeployVersionService {
             path += customPath;
         }
         return path;
+    }
+
+    public void checkHomeHasBeenLocked(String runnerUrl, String path) {
+        IGlobalLockHandler handler = GlobalLockHandlerFactory.getHandler(JobSourceType.DEPLOY_VERSION_RESOURCE.getValue());
+        JSONObject lockJson = new JSONObject();
+        lockJson.put("runnerUrl", runnerUrl);
+        lockJson.put("path", path);
+        JSONObject lock = handler.getLock(lockJson);
+        if (Objects.equals(lock.getInteger("wait"), 1)) {
+            throw new DeployVersionResourceHasBeenLockedException();
+        }
     }
 }
