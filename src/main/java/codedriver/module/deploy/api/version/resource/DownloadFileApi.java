@@ -123,6 +123,7 @@ public class DownloadFileApi extends PrivateBinaryStreamApiComponentBase {
             handler = GlobalLockHandlerFactory.getHandler(JobSourceType.DEPLOY_VERSION_RESOURCE.getValue());
             JSONObject lockJson = new JSONObject();
             lockJson.put("runnerUrl", runnerUrl);
+            // todo path截取优化
             lockJson.put("path", fullPath.endsWith("/") ? fullPath.substring(0, fullPath.length() - 1) : fullPath);
             JSONObject lock = handler.getLock(lockJson);
             if (Objects.equals(lock.getInteger("wait"), 1)) {

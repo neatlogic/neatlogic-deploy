@@ -22,7 +22,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.Objects;
 
 @Service
 public class DeployVersionServiceImp implements DeployVersionService {
@@ -127,9 +126,9 @@ public class DeployVersionServiceImp implements DeployVersionService {
 
     @Override
     public String getWorkspaceResourceFullPath(Long appSystemId, Long appModuleId, String customPath) {
-        String path = appSystemId + "/" + appModuleId + "/" + DeployResourceType.WORKSPACE.getDirectoryName() + "/";
+        String path = appSystemId + "/" + appModuleId + "/" + DeployResourceType.WORKSPACE.getDirectoryName();
         if (StringUtils.isNotBlank(customPath)) {
-            path += customPath;
+            path += (customPath.startsWith("/") ? customPath : "/" + customPath);
         }
         return path;
     }
@@ -139,8 +138,7 @@ public class DeployVersionServiceImp implements DeployVersionService {
         JSONObject lockJson = new JSONObject();
         lockJson.put("runnerUrl", runnerUrl);
         lockJson.put("path", path);
-        JSONObject lock = handler.getLock(lockJson);
-        if (Objects.equals(lock.getInteger("wait"), 1)) {
+        if (handler.getIsBeenLocked(lockJson)) {
             throw new DeployVersionResourceHasBeenLockedException();
         }
     }

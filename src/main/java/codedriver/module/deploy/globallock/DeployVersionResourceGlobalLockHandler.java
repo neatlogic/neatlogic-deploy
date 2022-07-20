@@ -81,4 +81,8 @@ public class DeployVersionResourceGlobalLockHandler extends GlobalLockHandlerBas
         return true;
     }
 
+    @Override
+    public boolean getIsBeenLocked(JSONObject paramJson) {
+        return GlobalLockManager.getIsBeenLocked(new GlobalLockVo(JobSourceType.DEPLOY_VERSION_RESOURCE.getValue(), paramJson.getString("runnerUrl") + "/" + paramJson.getString("path"), paramJson.toJSONString(), null));
+    }
 }
