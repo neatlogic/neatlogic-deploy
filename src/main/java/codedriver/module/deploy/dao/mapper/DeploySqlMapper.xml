@@ -201,6 +201,8 @@
                dsd.`md5`,
                dsd.`status`,
                dsd.`runner_id` as runnerId,
+               dsd.`host`,
+               dsd.`port`,
                dsd.`sql_file` as sqlFile,
                dsd.system_id as sysId,
                dsd.module_id as moduleId,

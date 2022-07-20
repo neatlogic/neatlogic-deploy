@@ -232,7 +232,7 @@ public class DeployJobSourceHandler extends AutoexecJobSourceActionHandlerBase {
     @Override
     public AutoexecSqlDetailVo getSqlDetail(AutoexecJobVo jobVo) {
         AutoexecJobPhaseVo jobPhaseVo = jobVo.getCurrentPhase();
-        List<Long> sqlIdList = deploySqlMapper.getDeployJobSqlIdListByJobIdAndJobPhaseNameList(jobVo.getId(), Collections.singletonList(jobPhaseVo.getName()));
+        List<Long> sqlIdList = deploySqlMapper.getDeployJobSqlIdListByJobIdAndJobPhaseNameList(jobPhaseVo.getJobId(), Collections.singletonList(jobPhaseVo.getName()));
         if (CollectionUtils.isEmpty(sqlIdList)) {
             throw new DeploySqlJobPhaseNotFoundException(jobPhaseVo.getName());
         }
@@ -242,7 +242,7 @@ public class DeployJobSourceHandler extends AutoexecJobSourceActionHandlerBase {
             autoexecSqlDetailVo = new AutoexecSqlDetailVo();
             autoexecSqlDetailVo.setJobId(jobVo.getId());
             autoexecSqlDetailVo.setRunnerId(deploySqlDetailVo.getRunnerId());
-            autoexecSqlDetailVo.setPhaseName(deploySqlDetailVo.getPhaseName());
+            autoexecSqlDetailVo.setPhaseName(jobPhaseVo.getName());
             autoexecSqlDetailVo.setHost(deploySqlDetailVo.getHost());
             autoexecSqlDetailVo.setPort(deploySqlDetailVo.getPort());
             autoexecSqlDetailVo.setResourceId(deploySqlDetailVo.getResourceId());
