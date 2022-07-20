@@ -125,10 +125,10 @@ public class DownloadFileApi extends PrivateBinaryStreamApiComponentBase {
             lockJson.put("runnerUrl", runnerUrl);
             lockJson.put("path", "/".equals(path) ? fullPath.substring(0, fullPath.length() - 1) : fullPath.replace(path, ""));
             JSONObject lock = handler.getLock(lockJson);
-            if (Objects.equals(lock.getInteger("wait"), 1)) {
+            lockId = lock.getLong("lockId");
+            if (lockId == null) {
                 throw new DeployVersionResourceHasBeenLockedException();
             }
-            lockId = lock.getLong("lockId");
         }
 
         url = runnerUrl + "api/binary/file/download";
