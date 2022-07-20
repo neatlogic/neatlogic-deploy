@@ -90,6 +90,7 @@ public class CopyFileApi extends PrivateApiComponentBase {
         if (resourceType == null) {
             throw new DeployVersionResourceTypeNotFoundException(paramObj.getString("resourceType"));
         }
+        String runnerUrl;
         String url;
         String fullSrcPath;
         String fullDestPath;
@@ -109,15 +110,17 @@ public class CopyFileApi extends PrivateApiComponentBase {
                     throw new DeployVersionEnvNotFoundException(version.getVersion(), envId);
                 }
             }
-            url = deployVersionService.getVersionRunnerUrl(paramObj, version, envName);
+            runnerUrl = deployVersionService.getVersionRunnerUrl(paramObj, version, envName);
             fullSrcPath = deployVersionService.getVersionResourceFullPath(version, resourceType, buildNo, envName, src);
             fullDestPath = deployVersionService.getVersionResourceFullPath(version, resourceType, buildNo, envName, dest + src.substring(src.lastIndexOf("/")));
         } else {
-            url = deployVersionService.getWorkspaceRunnerUrl(appSystemId, appModuleId);
+            runnerUrl = deployVersionService.getWorkspaceRunnerUrl(appSystemId, appModuleId);
             fullSrcPath = deployVersionService.getWorkspaceResourceFullPath(appSystemId, appModuleId, src);
             fullDestPath = deployVersionService.getWorkspaceResourceFullPath(appSystemId, appModuleId, dest + src.substring(src.lastIndexOf("/")));
         }
-        url += "api/rest/file/copy";
+        deployVersionService.checkHomeHasBeenLocked(runnerUrl, fullSrcPath.replace(src, ""));
+
+        url = runnerUrl + "api/rest/file/copy";
         JSONObject paramJson = new JSONObject();
         paramJson.put("src", fullSrcPath);
         paramJson.put("dest", fullDestPath);
