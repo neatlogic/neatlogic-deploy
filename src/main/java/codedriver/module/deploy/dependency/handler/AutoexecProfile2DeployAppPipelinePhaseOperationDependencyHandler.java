@@ -85,12 +85,12 @@ public class AutoexecProfile2DeployAppPipelinePhaseOperationDependencyHandler ex
             if (CollectionUtils.isEmpty(phaseOperationList)) {
                 return null;
             }
-            Long operationId = Long.valueOf(dependencyVo.getTo());
+            Long id = Long.valueOf(dependencyVo.getTo());
             for (AutoexecCombopPhaseOperationVo phaseOperationVo : phaseOperationList) {
                 if (phaseOperationVo == null) {
                     continue;
                 }
-                if (!Objects.equals(phaseOperationVo.getOperationId(), operationId)) {
+                if (!Objects.equals(phaseOperationVo.getId(), id)) {
                     continue;
                 }
                 AutoexecCombopPhaseOperationConfigVo operationConfigVo = phaseOperationVo.getConfig();
@@ -100,7 +100,7 @@ public class AutoexecProfile2DeployAppPipelinePhaseOperationDependencyHandler ex
                 if (!Objects.equals(operationConfigVo.getProfileId().toString(), dependencyVo.getFrom())) {
                     return null;
                 }
-                String operationName = phaseOperationVo.getName();
+                String operationName = phaseOperationVo.getOperationName();
                 String phaseName = combopPhaseVo.getName();
                 List<String> pathList = new ArrayList<>();
                 pathList.add("应用配置");
@@ -140,7 +140,7 @@ public class AutoexecProfile2DeployAppPipelinePhaseOperationDependencyHandler ex
                 }
 
                 String urlFormat = stringBuilder.toString();
-                return new DependencyInfoVo(operationId, dependencyInfoConfig, operationName, pathList, urlFormat, this.getGroupName());
+                return new DependencyInfoVo(id, dependencyInfoConfig, operationName, pathList, urlFormat, this.getGroupName());
             }
         }
         return null;

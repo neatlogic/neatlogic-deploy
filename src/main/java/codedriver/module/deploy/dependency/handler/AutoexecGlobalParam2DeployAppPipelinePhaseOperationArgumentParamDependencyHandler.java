@@ -87,12 +87,12 @@ public class AutoexecGlobalParam2DeployAppPipelinePhaseOperationArgumentParamDep
             if (CollectionUtils.isEmpty(phaseOperationList)) {
                 return null;
             }
-            Long operationId = Long.valueOf(dependencyVo.getTo());
+            Long id = Long.valueOf(dependencyVo.getTo());
             for (AutoexecCombopPhaseOperationVo phaseOperationVo : phaseOperationList) {
                 if (phaseOperationVo == null) {
                     continue;
                 }
-                if (!Objects.equals(phaseOperationVo.getOperationId(), operationId)) {
+                if (!Objects.equals(phaseOperationVo.getId(), id)) {
                     continue;
                 }
                 AutoexecCombopPhaseOperationConfigVo operationConfigVo = phaseOperationVo.getConfig();
@@ -111,7 +111,7 @@ public class AutoexecGlobalParam2DeployAppPipelinePhaseOperationArgumentParamDep
                         continue;
                     }
                     if (Objects.equals(paramMappingVo.getValue(), dependencyVo.getFrom())) {
-                        String operationName = phaseOperationVo.getName();
+                        String operationName = phaseOperationVo.getOperationName();
                         String phaseName = combopPhaseVo.getName();
                         List<String> pathList = new ArrayList<>();
                         pathList.add("应用配置");
@@ -152,7 +152,7 @@ public class AutoexecGlobalParam2DeployAppPipelinePhaseOperationArgumentParamDep
                         }
 
                         String urlFormat = stringBuilder.toString();
-                        String value = operationId + "_" + System.currentTimeMillis();
+                        String value = id + "_" + System.currentTimeMillis();
                         return new DependencyInfoVo(value, dependencyInfoConfig, "自由参数", pathList, urlFormat, this.getGroupName());
                     }
                 }

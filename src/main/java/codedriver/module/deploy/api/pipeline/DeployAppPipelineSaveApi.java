@@ -8,6 +8,7 @@ package codedriver.module.deploy.api.pipeline;
 import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.autoexec.constvalue.ParamMappingMode;
 import codedriver.framework.autoexec.dto.combop.*;
+import codedriver.framework.autoexec.exception.AutoexecCombopPhaseNameRepeatException;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.dependency.core.DependencyManager;
 import codedriver.framework.deploy.dto.app.DeployAppConfigVo;
@@ -29,6 +30,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -67,6 +69,12 @@ public class DeployAppPipelineSaveApi extends PrivateApiComponentBase {
         DeployAppConfigVo deployAppConfigVo = paramObj.toJavaObject(DeployAppConfigVo.class);
         String newConfigStr = deployAppConfigVo.getConfigStr();
         DeployAppConfigVo oldDeployAppConfigVo = deployAppConfigMapper.getAppConfigVo(deployAppConfigVo);
+        if (oldDeployAppConfigVo != null) {
+            if (Objects.equals(oldDeployAppConfigVo.getConfigStr(), newConfigStr)) {
+                //如果没有改动，不用更新数据库数据
+                return null;
+            }
+        }
         Long moduleId = deployAppConfigVo.getAppModuleId();
         Long envId = deployAppConfigVo.getEnvId();
         if (envId != null && envId != 0) {
@@ -83,10 +91,10 @@ public class DeployAppPipelineSaveApi extends PrivateApiComponentBase {
         }
         deployAppConfigVo.setConfigStr(null);
         if (oldDeployAppConfigVo != null) {
-            if (Objects.equals(oldDeployAppConfigVo.getConfigStr(), newConfigStr)) {
-                //如果没有改动，不用更新数据库数据
-                return null;
-            }
+//            if (Objects.equals(oldDeployAppConfigVo.getConfigStr(), newConfigStr)) {
+//                //如果没有改动，不用更新数据库数据
+//                return null;
+//            }
             deleteDependency(oldDeployAppConfigVo);
             deployAppConfigVo.setLcu(UserContext.get().getUserUuid());
             deployAppConfigMapper.updateAppConfig(deployAppConfigVo);
@@ -110,10 +118,16 @@ public class DeployAppPipelineSaveApi extends PrivateApiComponentBase {
         if (CollectionUtils.isEmpty(combopPhaseList)) {
             return;
         }
+        List<String> nameList = new ArrayList<>();
         for (DeployPipelinePhaseVo combopPhaseVo : combopPhaseList) {
             if (combopPhaseVo == null) {
                 continue;
             }
+            String name = combopPhaseVo.getName();
+            if (nameList.contains(name)) {
+                throw new AutoexecCombopPhaseNameRepeatException(name);
+            }
+            nameList.add(name);
             combopPhaseVo.setId(null);
             AutoexecCombopPhaseConfigVo phaseConfig = combopPhaseVo.getConfig();
             if (phaseConfig == null) {
@@ -127,8 +141,8 @@ public class DeployAppPipelineSaveApi extends PrivateApiComponentBase {
                 if(operationVo == null) {
                     continue;
                 }
-                operationVo.setOperationId(null);
-                operationVo.setCombopPhaseId(combopPhaseVo.getId());
+                operationVo.setId(null);
+//                operationVo.setCombopPhaseId(combopPhaseVo.getId());
             }
         }
     }
@@ -161,8 +175,8 @@ public class DeployAppPipelineSaveApi extends PrivateApiComponentBase {
                 if(operationVo == null) {
                     continue;
                 }
-                operationVo.setOperationId(null);
-                operationVo.setCombopPhaseId(combopPhaseVo.getId());
+                operationVo.setId(null);
+//                operationVo.setCombopPhaseId(combopPhaseVo.getId());
             }
         }
     }
@@ -230,7 +244,7 @@ public class DeployAppPipelineSaveApi extends PrivateApiComponentBase {
             dependencyConfig.put("envId", envId);
             dependencyConfig.put("phaseId", combopPhaseVo.getId());
             dependencyConfig.put("phaseName", combopPhaseVo.getName());
-            DependencyManager.insert(AutoexecProfile2DeployAppPipelinePhaseOperationDependencyHandler.class, profileId, phaseOperationVo.getOperationId(), dependencyConfig);
+            DependencyManager.insert(AutoexecProfile2DeployAppPipelinePhaseOperationDependencyHandler.class, profileId, phaseOperationVo.getId(), dependencyConfig);
         }
         List<ParamMappingVo> paramMappingList = operationConfigVo.getParamMappingList();
         if (CollectionUtils.isNotEmpty(paramMappingList)) {
@@ -244,7 +258,7 @@ public class DeployAppPipelineSaveApi extends PrivateApiComponentBase {
                     dependencyConfig.put("phaseName", combopPhaseVo.getName());
                     dependencyConfig.put("key", paramMappingVo.getKey());
                     dependencyConfig.put("name", paramMappingVo.getName());
-                    DependencyManager.insert(AutoexecGlobalParam2DeployAppPipelinePhaseOperationInputParamDependencyHandler.class, paramMappingVo.getValue(), phaseOperationVo.getOperationId(), dependencyConfig);
+                    DependencyManager.insert(AutoexecGlobalParam2DeployAppPipelinePhaseOperationInputParamDependencyHandler.class, paramMappingVo.getValue(), phaseOperationVo.getId(), dependencyConfig);
                 }
             }
         }
@@ -258,7 +272,7 @@ public class DeployAppPipelineSaveApi extends PrivateApiComponentBase {
                     dependencyConfig.put("envId", envId);
                     dependencyConfig.put("phaseId", combopPhaseVo.getId());
                     dependencyConfig.put("phaseName", combopPhaseVo.getName());
-                    DependencyManager.insert(AutoexecGlobalParam2DeployAppPipelinePhaseOperationArgumentParamDependencyHandler.class, paramMappingVo.getValue(), phaseOperationVo.getOperationId(), dependencyConfig);
+                    DependencyManager.insert(AutoexecGlobalParam2DeployAppPipelinePhaseOperationArgumentParamDependencyHandler.class, paramMappingVo.getValue(), phaseOperationVo.getId(), dependencyConfig);
                 }
             }
         }
@@ -299,9 +313,9 @@ public class DeployAppPipelineSaveApi extends PrivateApiComponentBase {
             }
             for (AutoexecCombopPhaseOperationVo phaseOperationVo : phaseOperationList) {
                 if (phaseOperationVo != null) {
-                    DependencyManager.delete(AutoexecProfile2DeployAppPipelinePhaseOperationDependencyHandler.class, phaseOperationVo.getOperationId());
-                    DependencyManager.delete(AutoexecGlobalParam2DeployAppPipelinePhaseOperationInputParamDependencyHandler.class, phaseOperationVo.getOperationId());
-                    DependencyManager.delete(AutoexecGlobalParam2DeployAppPipelinePhaseOperationArgumentParamDependencyHandler.class, phaseOperationVo.getOperationId());
+                    DependencyManager.delete(AutoexecProfile2DeployAppPipelinePhaseOperationDependencyHandler.class, phaseOperationVo.getId());
+                    DependencyManager.delete(AutoexecGlobalParam2DeployAppPipelinePhaseOperationInputParamDependencyHandler.class, phaseOperationVo.getId());
+                    DependencyManager.delete(AutoexecGlobalParam2DeployAppPipelinePhaseOperationArgumentParamDependencyHandler.class, phaseOperationVo.getId());
                 }
             }
         }

@@ -88,12 +88,12 @@ public class AutoexecGlobalParam2DeployAppPipelinePhaseOperationInputParamDepend
             if (CollectionUtils.isEmpty(phaseOperationList)) {
                 return null;
             }
-            Long operationId = Long.valueOf(dependencyVo.getTo());
+            Long id = Long.valueOf(dependencyVo.getTo());
             for (AutoexecCombopPhaseOperationVo phaseOperationVo : phaseOperationList) {
                 if (phaseOperationVo == null) {
                     continue;
                 }
-                if (!Objects.equals(phaseOperationVo.getOperationId(), operationId)) {
+                if (!Objects.equals(phaseOperationVo.getId(), id)) {
                     continue;
                 }
                 AutoexecCombopPhaseOperationConfigVo operationConfigVo = phaseOperationVo.getConfig();
@@ -112,7 +112,7 @@ public class AutoexecGlobalParam2DeployAppPipelinePhaseOperationInputParamDepend
                         continue;
                     }
                     if (Objects.equals(paramMappingVo.getValue(), dependencyVo.getFrom())) {
-                        String operationName = phaseOperationVo.getName();
+                        String operationName = phaseOperationVo.getOperationName();
                         String phaseName = combopPhaseVo.getName();
                         String key = config.getString("key");
                         String name = paramMappingVo.getName();
@@ -161,7 +161,7 @@ public class AutoexecGlobalParam2DeployAppPipelinePhaseOperationInputParamDepend
                             }
                         }
                         String urlFormat = stringBuilder.toString();
-                        String value = operationId + "_" + key;
+                        String value = id + "_" + key;
                         return new DependencyInfoVo(value, dependencyInfoConfig, name, pathList, urlFormat, this.getGroupName());
                     }
                 }

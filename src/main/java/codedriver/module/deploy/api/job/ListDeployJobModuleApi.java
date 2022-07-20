@@ -2,9 +2,12 @@ package codedriver.module.deploy.api.job;
 
 import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.autoexec.constvalue.ToolType;
+import codedriver.framework.autoexec.crossover.IAutoexecServiceCrossoverService;
+import codedriver.framework.autoexec.dto.AutoexecOperationBaseVo;
 import codedriver.framework.autoexec.dto.combop.AutoexecCombopPhaseOperationVo;
 import codedriver.framework.autoexec.dto.combop.AutoexecCombopScenarioVo;
 import codedriver.framework.common.constvalue.ApiParamType;
+import codedriver.framework.crossover.CrossoverServiceFactory;
 import codedriver.framework.deploy.dto.app.DeployAppConfigVo;
 import codedriver.framework.deploy.dto.app.DeployAppModuleVo;
 import codedriver.framework.deploy.dto.app.DeployPipelineConfigVo;
@@ -81,7 +84,7 @@ public class ListDeployJobModuleApi extends PrivateApiComponentBase {
             if (CollectionUtils.isEmpty(appConfigVoList)) {
                 throw new DeployAppConfigNotFoundException(appSystemId);
             }
-
+            IAutoexecServiceCrossoverService autoexecServiceCrossoverService = CrossoverServiceFactory.getApi(IAutoexecServiceCrossoverService.class);
             /*补充当前模块是否有BUILD分类的工具，前端需要根据此标识(isHasBuildTypeTool) 调用不同的选择版本下拉接口*/
             //1、获取流水线
             Map<String, DeployAppConfigVo> appConfigVoMap = appConfigVoList.stream().collect(Collectors.toMap(o -> o.getAppSystemId().toString() + "-" + o.getAppModuleId().toString() + "-" + o.getEnvId().toString(), e -> e));
@@ -119,9 +122,12 @@ public class ListDeployJobModuleApi extends PrivateApiComponentBase {
                     if (scenarioVo.getCombopPhaseNameList().contains(pipelinePhaseVo.getName())) {
                         List<AutoexecCombopPhaseOperationVo> phaseOperationList = pipelinePhaseVo.getConfig().getPhaseOperationList();
                         for (AutoexecCombopPhaseOperationVo operationVo : phaseOperationList) {
-                            if (StringUtils.equals(ToolType.TOOL.getValue(), operationVo.getOperationType()) && StringUtils.equals(operationVo.getTypeName(), "BUILD")) {
-                                appModuleVo.setIsHasBuildTypeTool(1);
-                                break;
+                            if (StringUtils.equals(ToolType.TOOL.getValue(), operationVo.getOperationType())) {
+                                AutoexecOperationBaseVo autoexecOperationBaseVo = autoexecServiceCrossoverService.getAutoexecOperationBaseVoByIdAndType(operationVo.getOperationId(), operationVo.getOperationName(), ToolType.TOOL.getValue());
+                                if (autoexecOperationBaseVo != null && StringUtils.equals(autoexecOperationBaseVo.getTypeName(), "BUILD")) {
+                                    appModuleVo.setIsHasBuildTypeTool(1);
+                                    break;
+                                }
                             }
                         }
                         if (appModuleVo.getIsHasBuildTypeTool() == 1) {
