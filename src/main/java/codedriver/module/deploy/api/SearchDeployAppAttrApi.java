@@ -57,7 +57,7 @@ public class SearchDeployAppAttrApi extends PrivateApiComponentBase {
     @Output({
             @Param(name = "tbodyList", type = ApiParamType.JSONARRAY, explode = CiEntityVo[].class)
     })
-    @Description(desc = "查询发布添加模块时的负责人列表")
+    @Description(desc = "查询发布应用属性下拉列表")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
 
