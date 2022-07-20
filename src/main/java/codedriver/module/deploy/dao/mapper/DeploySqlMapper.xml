@@ -222,6 +222,30 @@
             dsd.`id` = #{id}
     </select>
 
+    <select id="getDeployJobPhaseNodeListBySqlIdList"
+            resultType="codedriver.framework.autoexec.dto.job.AutoexecJobPhaseNodeVo">
+        SELECT
+        ajsd.`host`,
+        ajsd.`port`,
+        ajsd.`node_name`as nodeName,
+        ajsd.`start_time` AS startTime,
+        ajsd.`end_time` AS endTime,
+        ajsd.`resource_id` as resourceId,
+        ajsd.`status`,
+        ajsd.`node_type` as nodeType,
+        ajsd.runner_id as runnerMapId,
+        ajsd.sql_file as sqlFile,
+        ajsd.user_name as userName,
+        r.url as runnerUrl
+        from deploy_sql_detail ajsd
+        left join runner_map rm on rm.id = ajsd.runner_id
+        left join runner r on r.id = rm.runner_id
+        where ajsd.id in
+        <foreach collection="sqlIdList" item="sqlId" close=")" open="(" separator=",">
+            #{sqlId}
+        </foreach>
+    </select>
+
     <sql id="searchDeploySql">
         FROM
         deploy_sql_detail dsd
