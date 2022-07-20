@@ -97,17 +97,11 @@ public class DeployJobSourceHandler extends AutoexecJobSourceActionHandlerBase {
 
     @Override
     public JSONObject getJobSqlContent(AutoexecJobVo jobVo) {
-        JSONObject paramObj = jobVo.getActionParam();
-        DeploySqlDetailVo sqlDetailVo = deploySqlMapper.getDeployJobSqlDetailById(paramObj.getLong("sqlId"));
-        paramObj.put("sysId", sqlDetailVo.getSysId());
-        paramObj.put("moduleId", sqlDetailVo.getModuleId());
-        paramObj.put("envId", sqlDetailVo.getEnvId());
-        paramObj.put("version", sqlDetailVo.getVersion());
-        ICiEntityCrossoverMapper ciEntityCrossoverMapper = CrossoverServiceFactory.getApi(ICiEntityCrossoverMapper.class);
-        CiEntityVo envCiEntity = ciEntityCrossoverMapper.getCiEntityBaseInfoById(sqlDetailVo.getEnvId());
-        paramObj.put("envName", envCiEntity.getName());
         AutoexecJobPhaseNodeVo nodeVo = jobVo.getCurrentNode();
-        return JSONObject.parseObject(AutoexecUtil.requestRunner(nodeVo.getRunnerUrl() + "/api/rest/deploy/sql/content/get", paramObj));
+        JSONObject paramObj = jobVo.getActionParam();
+        paramObj.put("jobId", nodeVo.getJobId());
+        paramObj.put("phase", nodeVo.getJobPhaseName());
+        return JSONObject.parseObject(AutoexecUtil.requestRunner(nodeVo.getRunnerUrl() + "/api/rest/job/phase/node/sql/content/get", paramObj));
     }
 
     @Override
@@ -236,7 +230,8 @@ public class DeployJobSourceHandler extends AutoexecJobSourceActionHandlerBase {
         if (CollectionUtils.isEmpty(sqlIdList)) {
             throw new DeploySqlJobPhaseNotFoundException(jobPhaseVo.getName());
         }
-        DeploySqlDetailVo deploySqlDetailVo = deploySqlMapper.getDeployJobSqlDetailById(sqlIdList.get(0));
+        Long sqlId = sqlIdList.get(0);
+        DeploySqlDetailVo deploySqlDetailVo = deploySqlMapper.getDeployJobSqlDetailById(sqlId);
         AutoexecSqlDetailVo autoexecSqlDetailVo = null;
         if (deploySqlDetailVo != null) {
             autoexecSqlDetailVo = new AutoexecSqlDetailVo();
@@ -247,6 +242,7 @@ public class DeployJobSourceHandler extends AutoexecJobSourceActionHandlerBase {
             autoexecSqlDetailVo.setPort(deploySqlDetailVo.getPort());
             autoexecSqlDetailVo.setResourceId(deploySqlDetailVo.getResourceId());
         }
+        jobVo.getActionParam().put("sqlId",sqlId);
         return autoexecSqlDetailVo;
     }
 
