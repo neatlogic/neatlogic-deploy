@@ -97,6 +97,7 @@ public class UploadloadFileApi extends PrivateBinaryStreamApiComponentBase {
         if (resourceType == null) {
             throw new DeployVersionResourceTypeNotFoundException(paramObj.getString("resourceType"));
         }
+        String runnerUrl;
         String url;
         String fullPath;
         if (!DeployResourceType.WORKSPACE.equals(resourceType)) {
@@ -115,13 +116,15 @@ public class UploadloadFileApi extends PrivateBinaryStreamApiComponentBase {
                     throw new DeployVersionEnvNotFoundException(version.getVersion(), envId);
                 }
             }
-            url = deployVersionService.getVersionRunnerUrl(paramObj, version, envName);
+            runnerUrl = deployVersionService.getVersionRunnerUrl(paramObj, version, envName);
             fullPath = deployVersionService.getVersionResourceFullPath(version, resourceType, buildNo, envName, path);
         } else {
-            url = deployVersionService.getWorkspaceRunnerUrl(appSystemId, appModuleId);
+            runnerUrl = deployVersionService.getWorkspaceRunnerUrl(appSystemId, appModuleId);
             fullPath = deployVersionService.getWorkspaceResourceFullPath(appSystemId, appModuleId, path);
         }
-        url += "api/binary/file/upload";
+        deployVersionService.checkHomeHasBeenLocked(runnerUrl, fullPath.replace(path, ""));
+
+        url = runnerUrl + "api/binary/file/upload";
         MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) request;
         MultipartFile multipartFile = multipartRequest.getFile(fileParamName);
         if (multipartFile != null && multipartFile.getName() != null) {
