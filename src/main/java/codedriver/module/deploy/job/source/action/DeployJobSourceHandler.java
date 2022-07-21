@@ -7,6 +7,7 @@ package codedriver.module.deploy.job.source.action;
 
 import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.autoexec.constvalue.ExecMode;
+import codedriver.framework.autoexec.constvalue.JobNodeStatus;
 import codedriver.framework.autoexec.dao.mapper.AutoexecJobMapper;
 import codedriver.framework.autoexec.dto.combop.AutoexecCombopPhaseVo;
 import codedriver.framework.autoexec.dto.combop.AutoexecCombopVo;
@@ -312,8 +313,8 @@ public class DeployJobSourceHandler extends AutoexecJobSourceActionHandlerBase {
         } else {
             //获取最新buildNo
             DeployVersionVo deployVersionVo = deployVersionMapper.getVersionByAppSystemIdAndAppModuleIdAndVersion(deployJobVo.getAppSystemId(), deployJobVo.getAppModuleId(), deployJobVo.getVersion());
-            if(deployVersionVo == null){
-                throw  new DeployVersionNotFoundException(deployJobVo.getVersion());
+            if (deployVersionVo == null) {
+                throw new DeployVersionNotFoundException(deployJobVo.getVersion());
             }
             Integer maxBuildNo = deployVersionMapper.getDeployVersionMaxBuildNoByVersionIdLock(deployVersionVo.getId());
             if (maxBuildNo == null) {
@@ -334,10 +335,16 @@ public class DeployJobSourceHandler extends AutoexecJobSourceActionHandlerBase {
     }
 
     @Override
+    public boolean getIsCanUpdatePhaseRunner(AutoexecJobPhaseVo jobPhaseVo,Long runnerMapId) {
+        List<DeploySqlDetailVo> deploySqlDetailVos = deploySqlMapper.getDeployJobSqlDetailByExceptStatusListAndRunnerMapId(jobPhaseVo.getJobId(), jobPhaseVo.getName(), Arrays.asList(JobNodeStatus.SUCCEED.getValue(), JobNodeStatus.IGNORED.getValue()),runnerMapId);
+        return deploySqlDetailVos.size() == 0;
+    }
+
+    @Override
     public void getMyFireParamJson(JSONObject jsonObject, AutoexecJobVo jobVo) {
         JSONObject environment = new JSONObject();
         jsonObject.put("environment", environment);
-        //_DEPLOY_RUNNERGROUP
+        //_DEPLOY_RUNNER GROUP
         JSONObject runnerMap = new JSONObject();
         DeployJobVo deployJobVo = deployJobMapper.getDeployJobByJobId(jobVo.getId());
         ICiEntityCrossoverMapper iCiEntityCrossoverMapper = CrossoverServiceFactory.getApi(ICiEntityCrossoverMapper.class);

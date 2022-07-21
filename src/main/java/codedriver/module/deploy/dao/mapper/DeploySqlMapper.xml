@@ -79,11 +79,11 @@
         values (#{id},
                 #{jobId},
                 #{phaseName},
-                #{sqlId}) ON DUPLICATE KEY
-        UPDATE
-            `job_id` = #{jobId},
-            `job_phase_name` = #{phaseName},
-            `sql_id` = #{sqlId}
+                #{sqlId})
+        ON DUPLICATE KEY
+            UPDATE `job_id`         = #{jobId},
+                   `job_phase_name` = #{phaseName},
+                   `sql_id`         = #{sqlId}
     </insert>
 
     <select id="getDeploySqlDetail" resultType="codedriver.framework.deploy.dto.sql.DeploySqlDetailVo">
@@ -91,7 +91,7 @@
                dsd.`md5`,
                dsd.`status`,
                dsd.`sql_file` as sqlFile,
-               dsjp.job_id     as jobId
+               dsjp.job_id    as jobId
         FROM deploy_sql_detail dsd
                  JOIN deploy_sql_job_phase dsjp ON dsjp.sql_id = dsd.id
         WHERE dsd.system_id = #{sysId}
@@ -209,17 +209,15 @@
                dsd.`runner_id` as runnerId,
                dsd.`host`,
                dsd.`port`,
-               dsd.`sql_file` as sqlFile,
-               dsd.system_id as sysId,
-               dsd.module_id as moduleId,
-               dsd.env_id as envId,
-               dsd.version as version,
+               dsd.`sql_file`  as sqlFile,
+               dsd.system_id   as sysId,
+               dsd.module_id   as moduleId,
+               dsd.env_id      as envId,
+               dsd.version     as version,
                dsd.resource_id as resourceId,
-               dsd.node_name as nodeName
-        from
-            deploy_sql_detail dsd
-        WHERE
-            dsd.`id` = #{id}
+               dsd.node_name   as nodeName
+        from deploy_sql_detail dsd
+        WHERE dsd.`id` = #{id}
     </select>
 
     <select id="getDeployJobPhaseNodeListBySqlIdList"
@@ -243,6 +241,31 @@
         where ajsd.id in
         <foreach collection="sqlIdList" item="sqlId" close=")" open="(" separator=",">
             #{sqlId}
+        </foreach>
+    </select>
+    <select id="getDeployJobSqlDetailByExceptStatusListAndRunnerMapId"
+            resultType="codedriver.framework.deploy.dto.sql.DeploySqlDetailVo">
+        SELECT
+        dsd.`host`,
+        dsd.`port`,
+        dsd.`node_name` AS nodeName,
+        dsd.`start_time` AS startTime,
+        dsd.`end_time` AS endTime,
+        dsd.`resource_id` AS resourceId,
+        dsd.`status`,
+        dsd.`node_type` AS nodeType,
+        dsd.runner_id AS runnerMapId,
+        dsd.sql_file AS sqlFile,
+        dsd.user_name AS userName
+        FROM
+        deploy_sql_job_phase dsjp
+        LEFT JOIN deploy_sql_detail dsd ON dsjp.sql_id = dsd.id
+        WHERE dsjp.job_id = #{jobId}
+        and dsjp.job_phase_name = #{jobPhaseName}
+        and dsd.runner_id = #{runnerMapId}
+        and dsd.`status` not in
+        <foreach collection="statusList" item="status" separator="," close=")" open="(">
+            #{status}
         </foreach>
     </select>
 
