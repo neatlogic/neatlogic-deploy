@@ -295,6 +295,9 @@
 
     <update id="updateDeployVersionBuildNoByVersionIdAndBuildNo" parameterType="codedriver.framework.deploy.dto.version.DeployVersionBuildNoVo">
         update deploy_version_buildno set
+        <if test="runnerMapId != null">
+            runner_map_id = #{runnerMapId},
+        </if>
         <if test="endRev != null and endRev != ''">
             end_rev = #{endRev},
         </if>

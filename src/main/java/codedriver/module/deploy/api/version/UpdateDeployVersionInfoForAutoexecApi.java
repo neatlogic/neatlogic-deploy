@@ -45,6 +45,7 @@ public class UpdateDeployVersionInfoForAutoexecApi extends PrivateApiComponentBa
     }
 
     @Input({
+            @Param(name = "runnerId", desc = "runnerId", type = ApiParamType.LONG),
             @Param(name = "sysId", desc = "应用ID", isRequired = true, type = ApiParamType.LONG),
             @Param(name = "moduleId", desc = "应用系统id", isRequired = true, type = ApiParamType.LONG),
             @Param(name = "version", desc = "版本号", isRequired = true, type = ApiParamType.STRING),
@@ -54,6 +55,7 @@ public class UpdateDeployVersionInfoForAutoexecApi extends PrivateApiComponentBa
     @Description(desc = "更新发布版本配置")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
+        Long runnerId = paramObj.getLong("runnerId");
         Long sysId = paramObj.getLong("sysId");
         Long moduleId = paramObj.getLong("moduleId");
         String version = paramObj.getString("version");
@@ -72,6 +74,7 @@ public class UpdateDeployVersionInfoForAutoexecApi extends PrivateApiComponentBa
         }
         DeployVersionBuildNoVo updateBuildNo = new DeployVersionBuildNoVo();
         updateBuildNo.setVersionId(versionVo.getId());
+        updateBuildNo.setRunnerMapId(runnerId);
         updateBuildNo.setBuildNo(buildNo);
         updateBuildNo.setEndRev(verInfo.getString("endRev"));
         updateBuildNo.setStatus(verInfo.getString("status"));
