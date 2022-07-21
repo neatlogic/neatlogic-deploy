@@ -86,10 +86,10 @@ public class DeployAppPipelineSaveApi extends PrivateApiComponentBase {
         Long moduleId = deployAppConfigVo.getAppModuleId();
         Long envId = deployAppConfigVo.getEnvId();
         if (envId != null && envId != 0) {
-            //环境层，需要对重新生成重载过的阶段的操作id
+            //环境层，需要对重载过的阶段的操作重新生成id
             regenerateOperationId(deployAppConfigVo);
         } else if (moduleId != null && moduleId != 0) {
-            //模块层，需要对重新生成重载过的阶段的操作id
+            //模块层，需要对重载过的阶段的操作重新生成id
             regenerateOperationId(deployAppConfigVo);
         } else {
             //应用层，在首次保存时需要重新生成阶段id和操作id
@@ -101,10 +101,6 @@ public class DeployAppPipelineSaveApi extends PrivateApiComponentBase {
         IAutoexecCombopCrossoverService autoexecCombopCrossoverService = CrossoverServiceFactory.getApi(IAutoexecCombopCrossoverService.class);
         autoexecCombopCrossoverService.verifyAutoexecCombopConfig(deployAppConfigVo.getConfig(), false);
         if (oldDeployAppConfigVo != null) {
-//            if (Objects.equals(oldDeployAppConfigVo.getConfigStr(), newConfigStr)) {
-//                //如果没有改动，不用更新数据库数据
-//                return null;
-//            }
             deleteDependency(oldDeployAppConfigVo);
             deployAppConfigVo.setLcu(UserContext.get().getUserUuid());
             deployAppConfigMapper.updateAppConfig(deployAppConfigVo);
@@ -162,7 +158,10 @@ public class DeployAppPipelineSaveApi extends PrivateApiComponentBase {
             regenerateOperationId(combopPhaseVo);
         }
     }
-
+    /**
+     * 重新生成操作id
+     * @param combopPhaseVo
+     */
     private void regenerateOperationId(AutoexecCombopPhaseVo combopPhaseVo) {
         AutoexecCombopPhaseConfigVo phaseConfig = combopPhaseVo.getConfig();
         if (phaseConfig == null) {
@@ -177,7 +176,6 @@ public class DeployAppPipelineSaveApi extends PrivateApiComponentBase {
                 continue;
             }
             phaseOperationVo.setId(null);
-//                operationVo.setCombopPhaseId(combopPhaseVo.getId());
             AutoexecCombopPhaseOperationConfigVo operationConfig = phaseOperationVo.getConfig();
             List<AutoexecCombopPhaseOperationVo> ifList = operationConfig.getIfList();
             if (CollectionUtils.isNotEmpty(ifList)) {
