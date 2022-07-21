@@ -25,7 +25,7 @@ import javax.annotation.Resource;
 @Transactional
 @AuthAction(action = DEPLOY_MODIFY.class)
 @OperationType(type = OperationTypeEnum.UPDATE)
-public class UpdateDeployVersionEnvInfoForAutoexecApi extends PrivateApiComponentBase {
+public class UpdateDeployVersionEnvForAutoexecApi extends PrivateApiComponentBase {
 
     @Resource
     DeployVersionMapper deployVersionMapper;
