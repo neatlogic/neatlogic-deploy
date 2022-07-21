@@ -66,10 +66,10 @@ public class SearchDeployAppAttrApi extends PrivateApiComponentBase {
         CiVo ciVo = ciCrossoverMapper.getCiByName(paramObj.getString("ciName"));
         JSONArray defaultValue = paramObj.getJSONArray("defaultValue");
         IAttrCrossoverMapper attrCrossoverMapper = CrossoverServiceFactory.getApi(IAttrCrossoverMapper.class);
-        AttrVo ownerAttrVo = attrCrossoverMapper.getAttrByCiIdAndName(ciVo.getId(), paramObj.getString("attrName"));
+        AttrVo attrVo = attrCrossoverMapper.getAttrByCiIdAndName(ciVo.getId(), paramObj.getString("attrName"));
 
         CiEntityVo ciEntityVo = new CiEntityVo();
-        ciEntityVo.setCiId(ownerAttrVo.getTargetCiId());
+        ciEntityVo.setCiId(attrVo.getTargetCiId());
 
         if (CollectionUtils.isNotEmpty(defaultValue)) {
             List<Long> idList = new ArrayList<>();

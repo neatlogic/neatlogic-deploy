@@ -65,9 +65,9 @@ public class GetDeployAppConfigAppModuleApi extends PrivateApiComponentBase {
         }
         //获取属性
         ICiEntityCrossoverService ciEntityService = CrossoverServiceFactory.getApi(ICiEntityCrossoverService.class);
-        CiEntityVo appSystemInfo = ciEntityService.getCiEntityById(ciEntityVo.getCiId(), paramObj.getLong("id"));
-        appModuleVo.setId(appSystemInfo.getId());
-        List<AttrEntityVo> attrEntityList = appSystemInfo.getAttrEntityList();
+        CiEntityVo appModuleInfo = ciEntityService.getCiEntityById(ciEntityVo.getCiId(), paramObj.getLong("id"));
+        appModuleVo.setId(appModuleInfo.getId());
+        List<AttrEntityVo> attrEntityList = appModuleInfo.getAttrEntityList();
         if (CollectionUtils.isNotEmpty(attrEntityList)) {
             for (AttrEntityVo attrEntityVo : attrEntityList) {
 
