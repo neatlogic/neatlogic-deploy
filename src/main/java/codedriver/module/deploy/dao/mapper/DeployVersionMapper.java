@@ -49,6 +49,8 @@ public interface DeployVersionMapper {
 
     int insertDeployVersion(DeployVersionVo versionVo);
 
+    int insertDeployVersionEnv(DeployVersionEnvVo vo);
+
     int deleteDeployVersionById(Long id);
 
     int deleteDeployVersionBuildNoByVersionId(Long versionId);

@@ -351,6 +351,30 @@
                 #{fcu}, now(3), #{lcu}, now(3))
     </insert>
 
+    <insert id="insertDeployVersionEnv" parameterType="codedriver.framework.deploy.dto.version.DeployVersionEnvVo">
+        insert into deploy_version_env(
+            version_id,
+            env_id,
+            job_id,
+            status,
+            runner_map_id,
+            build_no,
+            is_mirror,
+            lcu,
+            lcd
+        )values(
+            #{versionId},
+            #{envId},
+            #{jobId},
+            #{status},
+            #{runnerMapId},
+            #{buildNo},
+            #{isMirror},
+            #{lcu},
+            now(3)
+        )
+    </insert>
+
     <delete id="deleteDeployVersionById">
         delete
         from deploy_version

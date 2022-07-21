@@ -6,8 +6,8 @@ import codedriver.framework.deploy.auth.DEPLOY_MODIFY;
 import codedriver.framework.deploy.constvalue.VersionEnvStatus;
 import codedriver.framework.deploy.dto.version.DeployVersionEnvVo;
 import codedriver.framework.deploy.dto.version.DeployVersionVo;
-import codedriver.framework.deploy.exception.DeployVersionEnvNotFoundException;
 import codedriver.framework.deploy.exception.DeployVersionNotFoundException;
+import codedriver.framework.exception.type.ParamNotExistsException;
 import codedriver.framework.restful.annotation.Description;
 import codedriver.framework.restful.annotation.Input;
 import codedriver.framework.restful.annotation.OperationType;
@@ -16,6 +16,7 @@ import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.deploy.dao.mapper.DeployVersionMapper;
 import com.alibaba.fastjson.JSONObject;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -47,6 +48,7 @@ public class UpdateDeployVersionEnvForAutoexecApi extends PrivateApiComponentBas
 
     @Input({
             @Param(name = "runnerId", desc = "runnerId", type = ApiParamType.LONG),
+            @Param(name = "jobId", desc = "作业ID", type = ApiParamType.LONG),
             @Param(name = "sysId", desc = "应用ID", isRequired = true, type = ApiParamType.LONG),
             @Param(name = "moduleId", desc = "应用系统id", isRequired = true, type = ApiParamType.LONG),
             @Param(name = "envId", desc = "环境id", isRequired = true, type = ApiParamType.LONG),
@@ -67,14 +69,23 @@ public class UpdateDeployVersionEnvForAutoexecApi extends PrivateApiComponentBas
         if (versionVo == null) {
             throw new DeployVersionNotFoundException(version);
         }
-        DeployVersionEnvVo envVo = deployVersionMapper.getDeployVersionEnvByVersionIdAndEnvId(versionVo.getId(), envId);
-        if (envVo == null) {
-            throw new DeployVersionEnvNotFoundException(versionVo.getVersion(), envId);
+        DeployVersionEnvVo envVo = paramObj.toJavaObject(DeployVersionEnvVo.class);
+        envVo.setVersionId(versionVo.getId());
+        envVo.setRunnerMapId(runnerId);
+        if (deployVersionMapper.getDeployVersionEnvByVersionIdAndEnvId(versionVo.getId(), envId) == null) {
+            if (runnerId == null) {
+                throw new ParamNotExistsException("runnerId");
+            }
+            if (envVo.getJobId() == null) {
+                throw new ParamNotExistsException("jobId");
+            }
+            if (StringUtils.isBlank(envVo.getStatus())) {
+                throw new ParamNotExistsException("status");
+            }
+            deployVersionMapper.insertDeployVersionEnv(envVo);
+        } else {
+            deployVersionMapper.updateDeployVersionEnvInfo(envVo);
         }
-        DeployVersionEnvVo updateEnvVo = paramObj.toJavaObject(DeployVersionEnvVo.class);
-        updateEnvVo.setVersionId(versionVo.getId());
-        updateEnvVo.setRunnerMapId(runnerId);
-        deployVersionMapper.updateDeployVersionEnvInfo(updateEnvVo);
         return null;
     }
 
