@@ -35,6 +35,7 @@ import codedriver.framework.deploy.dto.version.DeployVersionBuildNoVo;
 import codedriver.framework.deploy.dto.version.DeployVersionVo;
 import codedriver.framework.deploy.exception.DeployAppConfigModuleRunnerGroupNotFoundException;
 import codedriver.framework.deploy.exception.DeployPipelineConfigNotFoundException;
+import codedriver.framework.deploy.exception.DeployVersionNotFoundException;
 import codedriver.framework.dto.runner.RunnerGroupVo;
 import codedriver.framework.dto.runner.RunnerMapVo;
 import codedriver.framework.exception.runner.RunnerNotFoundByRunnerMapIdException;
@@ -311,6 +312,9 @@ public class DeployJobSourceHandler extends AutoexecJobSourceActionHandlerBase {
         } else {
             //获取最新buildNo
             DeployVersionVo deployVersionVo = deployVersionMapper.getVersionByAppSystemIdAndAppModuleIdAndVersion(deployJobVo.getAppSystemId(), deployJobVo.getAppModuleId(), deployJobVo.getVersion());
+            if(deployVersionVo == null){
+                throw  new DeployVersionNotFoundException(deployJobVo.getVersion());
+            }
             Integer maxBuildNo = deployVersionMapper.getDeployVersionMaxBuildNoByVersionIdLock(deployVersionVo.getId());
             if (maxBuildNo == null) {
                 deployJobVo.setBuildNo(1);
