@@ -298,7 +298,7 @@ public class DeployJobSourceHandler extends AutoexecJobSourceActionHandlerBase {
             throw new DeployPipelineConfigNotFoundException();
         }
         AutoexecCombopVo combopVo = new AutoexecCombopVo();
-        combopVo.setConfig(JSONObject.toJSONString(deployPipelineConfigVo));
+        combopVo.setConfig(deployPipelineConfigVo);
         return combopVo;
     }
 
