@@ -247,6 +247,7 @@
         compile_start_time as compileStartTime,
         compile_end_time as compileEndTime,
         compile_end_time as compileEndTime,
+        runner_map_id as runnerMapId,
         end_rev as endRev
         from deploy_version_buildno
         where version_id = #{versionId} and build_no = #{buildNo}
@@ -348,6 +349,30 @@
         values (#{id}, #{version}, #{appSystemId}, #{appSystemName}, #{appModuleId}, #{appModuleName},
                 #{isFreeze},
                 #{fcu}, now(3), #{lcu}, now(3))
+    </insert>
+
+    <insert id="insertDeployVersionEnv" parameterType="codedriver.framework.deploy.dto.version.DeployVersionEnvVo">
+        insert into deploy_version_env(
+            version_id,
+            env_id,
+            job_id,
+            status,
+            runner_map_id,
+            build_no,
+            is_mirror,
+            lcu,
+            lcd
+        )values(
+            #{versionId},
+            #{envId},
+            #{jobId},
+            #{status},
+            #{runnerMapId},
+            #{buildNo},
+            #{isMirror},
+            #{lcu},
+            now(3)
+        )
     </insert>
 
     <delete id="deleteDeployVersionById">
