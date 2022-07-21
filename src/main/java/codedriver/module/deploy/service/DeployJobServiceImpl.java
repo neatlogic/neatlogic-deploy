@@ -94,9 +94,11 @@ public class DeployJobServiceImpl implements DeployJobService {
             }
             jsonObj.put("scenarioId", scenarioVo.getId());
         } else if (scenarioId != null) {
-            if (autoexecScenarioCrossoverMapper.getScenarioById(scenarioId) == null) {
+            AutoexecScenarioVo scenarioVo = autoexecScenarioCrossoverMapper.getScenarioById(scenarioId);
+            if (scenarioVo == null) {
                 throw new AutoexecScenarioIsNotFoundException(jsonObj.getLong("scenarioId"));
             }
+            jsonObj.put("scenarioName", scenarioVo.getName());
         } else {
             throw new ParamIrregularException("scenarioId");
         }
@@ -135,9 +137,7 @@ public class DeployJobServiceImpl implements DeployJobService {
         executeConfig.put("executeNodeConfig", new JSONObject() {{
             put("selectNodeList", moduleJson.getJSONArray("selectNodeList"));
         }});
-        Long invokeId = getOperationId(jsonObj);
-        jsonObj.put("operationId", invokeId);
-        jsonObj.put("invokeId", invokeId);
+        jsonObj.put("name", jsonObj.getString("appSystemName") + "/" + jsonObj.getString("appModuleName") + "/" + jsonObj.getString("envName") + "/" + jsonObj.getString("scenarioName"));
     }
 
     @Override
@@ -187,6 +187,7 @@ public class DeployJobServiceImpl implements DeployJobService {
 
 
     @Override
+    @Deprecated
     public Long getOperationId(JSONObject jsonObj) {
         Long appSystemId = jsonObj.getLong("appSystemId");
         Long appModuleId = jsonObj.getLong("appModuleId");

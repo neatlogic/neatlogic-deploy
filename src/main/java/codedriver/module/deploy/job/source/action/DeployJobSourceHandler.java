@@ -324,6 +324,8 @@ public class DeployJobSourceHandler extends AutoexecJobSourceActionHandlerBase {
             deployJobMapper.insertDeployVersionBuildNo(new DeployVersionBuildNoVo(deployVersionVo.getId(), deployJobVo.getBuildNo(), deployJobVo.getJobId(), BuildNoStatus.PENDING.getValue()));
         }
         deployJobMapper.insertDeployJob(deployJobVo);
+        jobVo.setInvokeId(deployJobVo.getId());
+        jobVo.setOperationId(deployJobVo.getId());
     }
 
     @Override
