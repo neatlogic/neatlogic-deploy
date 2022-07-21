@@ -146,7 +146,9 @@ public class DownloadFileApi extends PrivateBinaryStreamApiComponentBase {
         }
         HttpRequestUtil httpRequestUtil = null;
         try {
-            httpRequestUtil = HttpRequestUtil.download(url, "POST", response.getOutputStream()).setPayload(paramJson.toJSONString()).setAuthType(AuthenticateType.BUILDIN).sendRequest();
+            httpRequestUtil = HttpRequestUtil.download(url, "POST", response.getOutputStream())
+                    .setPayload(paramJson.toJSONString()).setAuthType(AuthenticateType.BUILDIN)
+                    .addHeader("User-Agent", request.getHeader("User-Agent")).sendRequest();
         } catch (Exception ex) {
             logger.error(ex.getMessage(), ex);
         } finally {
