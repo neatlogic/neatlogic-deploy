@@ -244,13 +244,26 @@
         build_no   as buildNo,
         job_id     as jobId,
         status,
-        data,
         compile_start_time as compileStartTime,
         compile_end_time as compileEndTime,
         compile_end_time as compileEndTime,
         end_rev as endRev
         from deploy_version_buildno
         where version_id = #{versionId} and build_no = #{buildNo}
+    </select>
+
+    <select id="getDeployVersionEnvByVersionIdAndEnvId"
+            resultType="codedriver.framework.deploy.dto.version.DeployVersionEnvVo">
+        select
+        version_id as versionId,
+        env_id as envId,
+        job_id as jobId,
+        status as status,
+        runner_map_id as runnerMapId,
+        build_no as buildNo,
+        is_mirror as isMirror
+        from deploy_version_env
+        where version_id = #{versionId} and env_id = #{envId}
     </select>
 
     <update id="unFreezeDeployVersionById">
@@ -307,6 +320,25 @@
         lcu = #{lcu},
         lcd = now(3)
         where version_id = #{versionId} and build_no = #{buildNo}
+    </update>
+
+    <update id="updateDeployVersionEnvInfo" parameterType="codedriver.framework.deploy.dto.version.DeployVersionEnvVo">
+        update deploy_version_env set
+        <if test="status != null and status != ''">
+            status = #{status},
+        </if>
+        <if test="runnerMapId != null">
+            runner_map_id = #{runnerMapId},
+        </if>
+        <if test="buildNo != null">
+            build_no = #{buildNo},
+        </if>
+        <if test="isMirror != null">
+            is_mirror = #{isMirror},
+        </if>
+        lcu = #{lcu},
+        lcd = now(3)
+        where version_id = #{versionId} and env_id = #{envId}
     </update>
 
     <insert id="insertDeployVersion">
