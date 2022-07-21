@@ -75,15 +75,31 @@
     </insert>
 
     <insert id="insertDeploySql">
-        insert into deploy_sql_job_phase(`id`, `job_id`, `job_phase_name`, `sql_id`)
+        insert into deploy_sql_job_phase(`id`, `job_id`, `job_phase_name`, `job_phase_name`, `sql_id`, `sort`)
         values (#{id},
                 #{jobId},
                 #{phaseName},
-                #{sqlId}) ON DUPLICATE KEY
+                #{phaseId},
+                #{sqlId},
+                #{sort}) ON DUPLICATE KEY
         UPDATE
-            `job_id` = #{jobId},
-            `job_phase_name` = #{phaseName},
-            `sql_id` = #{sqlId}
+            `sort` = #{sort}
+    </insert>
+
+    <insert id="insertDeploySqlList">
+        insert into deploy_sql_job_phase(`id`, `job_id`, `job_phase_name`, `job_phase_id`, `sql_id`,`sort`)
+        values
+        <foreach collection="list" item="vo" separator=",">
+            (#{vo.id},
+            #{vo.jobId},
+            #{vo.phaseName},
+            #{vo.phaseId},
+            #{vo.sqlId},
+            #{vo.sort})
+        </foreach>
+        ON DUPLICATE KEY
+        UPDATE
+        `sort` = VALUES(sort)
     </insert>
 
     <select id="getDeploySqlDetail" resultType="codedriver.framework.deploy.dto.sql.DeploySqlDetailVo">
@@ -128,6 +144,12 @@
             <if test="vo.sqlFile != null and vo.sqlFile != ''">
                 AND dsd.sql_file = #{vo.sqlFile}
             </if>
+            <if test="vo.sqlFiles != null and vo.sqlFiles.size() > 0">
+                AND dsd.`sql_file` IN
+                <foreach collection="vo.sqlFiles" item="sqlFile" open="(" separator="," close=")">
+                    #{sqlFile}
+                </foreach>
+            </if>
             )
             AND dsd.is_delete = 0
         </foreach>
@@ -146,6 +168,7 @@
                dsd.resource_id     as resourceId,
                dsd.`is_delete`     as isDelete,
                asjp.job_id         as jobId,
+               asjp.job_phase_id as phaseId,
                asjp.job_phase_name as phaseName
         FROM deploy_sql_job_phase asjp
                  join deploy_sql_detail dsd ON dsd.id = asjp.sql_id
@@ -179,7 +202,7 @@
         r.`port` AS runnerPort,
         dsd.`node_name` AS nodeName
         <include refid="searchDeploySql"></include>
-        ORDER BY dsd.`start_time` DESC
+        ORDER BY dsjp.`sort` ASC
         <if test="needPage">
             LIMIT #{startNum}, #{pageSize}
         </if>
@@ -294,6 +317,18 @@
         WHERE id in
         <foreach collection="idList" item="id" separator="," open="(" close=")">
             #{id}
+        </foreach>
+    </update>
+
+    <update id="updateDeploySqlSortList">
+        <foreach collection="needDeleteSqlIdList" item="sqlId" separator=";">
+            UPDATE deploy_sql_job_phase
+            SET
+            sort = 999999
+            where
+            job_id = #{jobId}
+            and sql_id = #{sqlId}
+            and job_phase_id = #{phaseId}
         </foreach>
     </update>
 
