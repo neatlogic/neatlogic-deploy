@@ -20,6 +20,8 @@
         `port`,
         `resource_id`,
         `node_name`,
+        `node_type`,
+        `user_name`,
         `runner_id`,
         `is_delete`
         <choose>
@@ -45,6 +47,8 @@
         #{sqlVo.port},
         #{sqlVo.resourceId},
         #{sqlVo.nodeName},
+        #{sqlVo.nodeType},
+        #{sqlVo.username},
         #{runnerId},
         #{sqlVo.isDelete}
         <choose>
@@ -64,6 +68,8 @@
         `host` = #{sqlVo.host},
         `port` = #{sqlVo.port},
         `node_name` = #{sqlVo.nodeName},
+        `node_type` = #{sqlVo.nodeType},
+        `user_name` = #{sqlVo.username},
         `is_delete` = #{sqlVo.isDelete},
         `runner_id` = #{runnerId}
     </insert>
@@ -214,6 +220,30 @@
             deploy_sql_detail dsd
         WHERE
             dsd.`id` = #{id}
+    </select>
+
+    <select id="getDeployJobPhaseNodeListBySqlIdList"
+            resultType="codedriver.framework.autoexec.dto.job.AutoexecJobPhaseNodeVo">
+        SELECT
+        ajsd.`host`,
+        ajsd.`port`,
+        ajsd.`node_name`as nodeName,
+        ajsd.`start_time` AS startTime,
+        ajsd.`end_time` AS endTime,
+        ajsd.`resource_id` as resourceId,
+        ajsd.`status`,
+        ajsd.`node_type` as nodeType,
+        ajsd.runner_id as runnerMapId,
+        ajsd.sql_file as sqlFile,
+        ajsd.user_name as userName,
+        r.url as runnerUrl
+        from deploy_sql_detail ajsd
+        left join runner_map rm on rm.id = ajsd.runner_id
+        left join runner r on r.id = rm.runner_id
+        where ajsd.id in
+        <foreach collection="sqlIdList" item="sqlId" close=")" open="(" separator=",">
+            #{sqlId}
+        </foreach>
     </select>
 
     <sql id="searchDeploySql">

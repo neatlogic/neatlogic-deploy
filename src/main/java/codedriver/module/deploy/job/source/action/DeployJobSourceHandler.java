@@ -35,7 +35,6 @@ import codedriver.framework.deploy.dto.version.DeployVersionBuildNoVo;
 import codedriver.framework.deploy.dto.version.DeployVersionVo;
 import codedriver.framework.deploy.exception.DeployAppConfigModuleRunnerGroupNotFoundException;
 import codedriver.framework.deploy.exception.DeployPipelineConfigNotFoundException;
-import codedriver.framework.deploy.exception.DeploySqlJobPhaseNotFoundException;
 import codedriver.framework.dto.runner.RunnerGroupVo;
 import codedriver.framework.dto.runner.RunnerMapVo;
 import codedriver.framework.exception.runner.RunnerNotFoundByRunnerMapIdException;
@@ -129,16 +128,17 @@ public class DeployJobSourceHandler extends AutoexecJobSourceActionHandlerBase {
     @Override
     public void resetSqlStatus(JSONObject paramObj, AutoexecJobVo jobVo) {
         JSONArray sqlIdArray = paramObj.getJSONArray("sqlIdList");
+        List<Long> resetSqlIdList = null;
         if (!Objects.isNull(paramObj.getInteger("isAll")) && paramObj.getInteger("isAll") == 1) {
+            List<AutoexecJobPhaseNodeVo> jobPhaseNodeVos = new ArrayList<>();
             //重置phase的所有sql文件状态
-            List<Long> resetSqlIdList = deploySqlMapper.getDeployJobSqlIdListByJobIdAndJobPhaseName(paramObj.getLong("jobId"), paramObj.getString("phaseName"));
-            if (CollectionUtils.isNotEmpty(resetSqlIdList)) {
-                deploySqlMapper.resetDeploySqlStatusBySqlIdList(resetSqlIdList);
-            }
+            resetSqlIdList = deploySqlMapper.getDeployJobSqlIdListByJobIdAndJobPhaseName(paramObj.getLong("jobId"), paramObj.getString("phaseName"));
         } else if (CollectionUtils.isNotEmpty(sqlIdArray)) {
             //批量重置sql文件状态
-            deploySqlMapper.resetDeploySqlStatusBySqlIdList(sqlIdArray.toJavaList(Long.class));
+            resetSqlIdList = sqlIdArray.toJavaList(Long.class);
         }
+        jobVo.setExecuteJobNodeVoList(deploySqlMapper.getDeployJobPhaseNodeListBySqlIdList(resetSqlIdList));
+        deploySqlMapper.resetDeploySqlStatusBySqlIdList(resetSqlIdList);
     }
 
     @Override
@@ -225,24 +225,18 @@ public class DeployJobSourceHandler extends AutoexecJobSourceActionHandlerBase {
 
     @Override
     public AutoexecSqlDetailVo getSqlDetail(AutoexecJobVo jobVo) {
-        AutoexecJobPhaseVo jobPhaseVo = jobVo.getCurrentPhase();
-        List<Long> sqlIdList = deploySqlMapper.getDeployJobSqlIdListByJobIdAndJobPhaseNameList(jobPhaseVo.getJobId(), Collections.singletonList(jobPhaseVo.getName()));
-        if (CollectionUtils.isEmpty(sqlIdList)) {
-            throw new DeploySqlJobPhaseNotFoundException(jobPhaseVo.getName());
-        }
-        Long sqlId = sqlIdList.get(0);
+        Long sqlId = jobVo.getActionParam().getLong("nodeId");
         DeploySqlDetailVo deploySqlDetailVo = deploySqlMapper.getDeployJobSqlDetailById(sqlId);
         AutoexecSqlDetailVo autoexecSqlDetailVo = null;
         if (deploySqlDetailVo != null) {
             autoexecSqlDetailVo = new AutoexecSqlDetailVo();
             autoexecSqlDetailVo.setJobId(jobVo.getId());
             autoexecSqlDetailVo.setRunnerId(deploySqlDetailVo.getRunnerId());
-            autoexecSqlDetailVo.setPhaseName(jobPhaseVo.getName());
+            autoexecSqlDetailVo.setPhaseName(jobVo.getCurrentPhase().getName());
             autoexecSqlDetailVo.setHost(deploySqlDetailVo.getHost());
             autoexecSqlDetailVo.setPort(deploySqlDetailVo.getPort());
             autoexecSqlDetailVo.setResourceId(deploySqlDetailVo.getResourceId());
         }
-        jobVo.getActionParam().put("sqlId",sqlId);
         return autoexecSqlDetailVo;
     }
 
@@ -326,6 +320,11 @@ public class DeployJobSourceHandler extends AutoexecJobSourceActionHandlerBase {
             deployJobMapper.insertDeployVersionBuildNo(new DeployVersionBuildNoVo(deployVersionVo.getId(), deployJobVo.getBuildNo(), deployJobVo.getJobId(), BuildNoStatus.PENDING.getValue()));
         }
         deployJobMapper.insertDeployJob(deployJobVo);
+    }
+
+    @Override
+    public List<AutoexecJobPhaseNodeVo> getJobNodeListBySqlIdList(List<Long> sqlIdList) {
+        return deploySqlMapper.getDeployJobPhaseNodeListBySqlIdList(sqlIdList);
     }
 
     @Override
