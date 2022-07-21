@@ -3,9 +3,9 @@ package codedriver.module.deploy.api.version;
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.deploy.auth.DEPLOY_MODIFY;
-import codedriver.framework.deploy.dto.version.DeployVersionBuildNoVo;
+import codedriver.framework.deploy.dto.version.DeployVersionEnvVo;
 import codedriver.framework.deploy.dto.version.DeployVersionVo;
-import codedriver.framework.deploy.exception.DeployVersionBuildNoNotFoundException;
+import codedriver.framework.deploy.exception.DeployVersionEnvNotFoundException;
 import codedriver.framework.deploy.exception.DeployVersionNotFoundException;
 import codedriver.framework.restful.annotation.Description;
 import codedriver.framework.restful.annotation.Input;
@@ -24,19 +24,19 @@ import javax.annotation.Resource;
 @Transactional
 @AuthAction(action = DEPLOY_MODIFY.class)
 @OperationType(type = OperationTypeEnum.UPDATE)
-public class UpdateDeployVersionInfoForAutoexecApi extends PrivateApiComponentBase {
+public class GetDeployVersionEnvForAutoexecApi extends PrivateApiComponentBase {
 
     @Resource
     DeployVersionMapper deployVersionMapper;
 
     @Override
     public String getName() {
-        return "更新发布版本配置";
+        return "获取发布版本环境信息";
     }
 
     @Override
     public String getToken() {
-        return "deploy/version/info/update/forautoexec";
+        return "deploy/version/env/get/forautoexec";
     }
 
     @Override
@@ -45,41 +45,32 @@ public class UpdateDeployVersionInfoForAutoexecApi extends PrivateApiComponentBa
     }
 
     @Input({
-            @Param(name = "runnerId", desc = "runnerId", type = ApiParamType.LONG),
             @Param(name = "sysId", desc = "应用ID", isRequired = true, type = ApiParamType.LONG),
             @Param(name = "moduleId", desc = "应用系统id", isRequired = true, type = ApiParamType.LONG),
+            @Param(name = "envId", desc = "环境id", isRequired = true, type = ApiParamType.LONG),
             @Param(name = "version", desc = "版本号", isRequired = true, type = ApiParamType.STRING),
-            @Param(name = "buildNo", desc = "buildNo", isRequired = true, type = ApiParamType.STRING),
-            @Param(name = "verInfo", desc = "版本信息", isRequired = true, type = ApiParamType.JSONOBJECT),
     })
-    @Description(desc = "更新发布版本配置")
+    @Description(desc = "获取发布版本环境信息")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
-        Long runnerId = paramObj.getLong("runnerId");
         Long sysId = paramObj.getLong("sysId");
         Long moduleId = paramObj.getLong("moduleId");
+        Long envId = paramObj.getLong("envId");
         String version = paramObj.getString("version");
-        Integer buildNo = paramObj.getInteger("buildNo");
-        JSONObject verInfo = paramObj.getJSONObject("verInfo");
         DeployVersionVo versionVo = deployVersionMapper.getDeployVersionBySystemIdAndModuleIdAndVersionLock(new DeployVersionVo(version, sysId, moduleId));
         if (versionVo == null) {
             throw new DeployVersionNotFoundException(version);
         }
-        DeployVersionVo updateVo = verInfo.toJavaObject(DeployVersionVo.class);
-        updateVo.setId(versionVo.getId());
-        deployVersionMapper.updateDeployVersionInfoById(updateVo);
-        DeployVersionBuildNoVo buildNoVo = deployVersionMapper.getDeployVersionBuildNoByVersionIdAndBuildNo(versionVo.getId(), buildNo);
-        if (buildNoVo == null) {
-            throw new DeployVersionBuildNoNotFoundException(versionVo.getVersion(), buildNo);
+        DeployVersionEnvVo envVo = deployVersionMapper.getDeployVersionEnvByVersionIdAndEnvId(versionVo.getId(), envId);
+        if (envVo == null) {
+            throw new DeployVersionEnvNotFoundException(versionVo.getVersion(), envId);
         }
-        DeployVersionBuildNoVo updateBuildNo = new DeployVersionBuildNoVo();
-        updateBuildNo.setVersionId(versionVo.getId());
-        updateBuildNo.setRunnerMapId(runnerId);
-        updateBuildNo.setBuildNo(buildNo);
-        updateBuildNo.setEndRev(verInfo.getString("endRev"));
-        updateBuildNo.setStatus(verInfo.getString("status"));
-        deployVersionMapper.updateDeployVersionBuildNoByVersionIdAndBuildNo(updateBuildNo);
-        return null;
+        JSONObject result = new JSONObject();
+        result.put("version",versionVo.getVersion());
+        result.put("buildNo",envVo.getBuildNo());
+        result.put("isMirror",envVo.getIsMirror());
+        result.put("status",envVo.getStatus());
+        return result;
     }
 
 }

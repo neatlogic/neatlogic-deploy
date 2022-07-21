@@ -35,6 +35,7 @@ import java.util.stream.Collectors;
 public class SearchDeployJobApi extends PrivateApiComponentBase {
     @Resource
     DeployJobMapper deployJobMapper;
+
     @Override
     public String getName() {
         return "查询发布作业";
@@ -55,8 +56,6 @@ public class SearchDeployJobApi extends PrivateApiComponentBase {
             @Param(name = "appModuleId", type = ApiParamType.LONG, desc = "应用模块id"),
             @Param(name = "statusList", type = ApiParamType.JSONARRAY, desc = "作业状态"),
             @Param(name = "typeIdList", type = ApiParamType.JSONARRAY, desc = "组合工具类型"),
-            @Param(name = "combopName", type = ApiParamType.STRING, desc = "组合工具"),
-            @Param(name = "combopId", type = ApiParamType.LONG, desc = "组合工具Id"),
             @Param(name = "idList", type = ApiParamType.JSONARRAY, desc = "id列表，用于精确查找作业刷新状态"),
             @Param(name = "confId", type = ApiParamType.LONG, desc = "自动发现配置id"),
             @Param(name = "startTime", type = ApiParamType.JSONOBJECT, desc = "时间过滤"),
@@ -75,9 +74,11 @@ public class SearchDeployJobApi extends PrivateApiComponentBase {
         Long appSystemId = jsonObj.getLong("appSystemId");
         Long appModuleId = jsonObj.getLong("appModuleId");
         //根据appSystemId和appModuleId 获取invokeIdList
-        List<DeployJobVo> deployJobVos = deployJobMapper.getDeployJobListByAppSystemIdAndAppModuleId(appSystemId,appModuleId);
-        if(CollectionUtils.isNotEmpty(deployJobVos)){
-            jsonObj.put("invokeIdList", deployJobVos.stream().map(DeployJobVo::getId).collect(Collectors.toList()));
+        if (appSystemId != null || appModuleId != null) {
+            List<DeployJobVo> deployJobVos = deployJobMapper.getDeployJobListByAppSystemIdAndAppModuleId(appSystemId, appModuleId);
+            if (CollectionUtils.isNotEmpty(deployJobVos)) {
+                jsonObj.put("invokeIdList", deployJobVos.stream().map(DeployJobVo::getId).collect(Collectors.toList()));
+            }
         }
 
         JSONObject startTimeJson = jsonObj.getJSONObject("startTime");
@@ -86,10 +87,9 @@ public class SearchDeployJobApi extends PrivateApiComponentBase {
             jsonObj.put("startTime", timeJson.getDate("startTime"));
             jsonObj.put("endTime", timeJson.getDate("endTime"));
         }
-        jsonObj.put("operationId", jsonObj.getLong("combopId"));
         AutoexecJobVo jobVo = JSONObject.toJavaObject(jsonObj, AutoexecJobVo.class);
         List<String> sourceList = new ArrayList<>();
-        sourceList.add("discovery");
+        sourceList.add("deploy");
         jobVo.setSourceList(sourceList);
         IAutoexecJobCrossoverService iAutoexecJobCrossoverService = CrossoverServiceFactory.getApi(IAutoexecJobCrossoverService.class);
         return TableResultUtil.getResult(iAutoexecJobCrossoverService.getJobList(jobVo), jobVo);

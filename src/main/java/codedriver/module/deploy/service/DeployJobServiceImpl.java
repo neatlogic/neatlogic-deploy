@@ -64,9 +64,11 @@ public class DeployJobServiceImpl implements DeployJobService {
             }
             appSystemId = appSystem.getId();
         } else if (appSystemId != null) {
+            CiEntityVo appSystem = iCiEntityCrossoverMapper.getCiEntityBaseInfoById(appSystemId);
             if (iCiEntityCrossoverMapper.getCiEntityBaseInfoById(appSystemId) == null) {
                 throw new CiEntityNotFoundException(jsonObj.getLong("appSystemId"));
             }
+            jsonObj.put("appSystemName", appSystem.getName());
         } else {
             throw new ParamIrregularException("appSystemId | appSystemName");
         }
@@ -92,9 +94,11 @@ public class DeployJobServiceImpl implements DeployJobService {
             }
             jsonObj.put("scenarioId", scenarioVo.getId());
         } else if (scenarioId != null) {
-            if (autoexecScenarioCrossoverMapper.getScenarioById(scenarioId) == null) {
+            AutoexecScenarioVo scenarioVo = autoexecScenarioCrossoverMapper.getScenarioById(scenarioId);
+            if (scenarioVo == null) {
                 throw new AutoexecScenarioIsNotFoundException(jsonObj.getLong("scenarioId"));
             }
+            jsonObj.put("scenarioName", scenarioVo.getName());
         } else {
             throw new ParamIrregularException("scenarioId");
         }
@@ -133,25 +137,25 @@ public class DeployJobServiceImpl implements DeployJobService {
         executeConfig.put("executeNodeConfig", new JSONObject() {{
             put("selectNodeList", moduleJson.getJSONArray("selectNodeList"));
         }});
-        Long invokeId = getOperationId(jsonObj);
-        jsonObj.put("operationId", invokeId);
-        jsonObj.put("invokeId", invokeId);
+        jsonObj.put("name", jsonObj.getString("appSystemName") + "/" + jsonObj.getString("appModuleName") + "/" + jsonObj.getString("envName") + "/" + jsonObj.getString("scenarioName"));
     }
 
     @Override
     public JSONObject createJob(JSONObject jsonObj) {
         JSONObject resultJson = new JSONObject();
-        IAutoexecJobActionCrossoverService autoexecJobActionCrossoverService = CrossoverServiceFactory.getApi(IAutoexecJobActionCrossoverService.class);
-        AutoexecJobVo jobVo = autoexecJobActionCrossoverService.validateAndCreateJobFromCombop(jsonObj, false);
-        IAutoexecJobActionHandler fireAction = AutoexecJobActionHandlerFactory.getAction(JobAction.FIRE.getValue());
-        jobVo.setAction(JobAction.FIRE.getValue());
-        jobVo.setIsFirstFire(1);
         try {
+            IAutoexecJobActionCrossoverService autoexecJobActionCrossoverService = CrossoverServiceFactory.getApi(IAutoexecJobActionCrossoverService.class);
+            AutoexecJobVo jobVo = autoexecJobActionCrossoverService.validateAndCreateJobFromCombop(jsonObj, false);
+            IAutoexecJobActionHandler fireAction = AutoexecJobActionHandlerFactory.getAction(JobAction.FIRE.getValue());
+            jobVo.setAction(JobAction.FIRE.getValue());
+            jobVo.setIsFirstFire(1);
             fireAction.doService(jobVo);
             resultJson.put("jobId", jobVo.getId());
             resultJson.put("appModuleName", jsonObj.getString("appModuleName"));
         } catch (Exception ex) {
             logger.error(ex.getMessage(), ex);
+            resultJson.put("appSystemName", jsonObj.getString("appSystemName"));
+            resultJson.put("appModuleName", jsonObj.getString("appModuleName"));
             resultJson.put("errorMsg", ex.getMessage());
         }
         return resultJson;
@@ -183,6 +187,7 @@ public class DeployJobServiceImpl implements DeployJobService {
 
 
     @Override
+    @Deprecated
     public Long getOperationId(JSONObject jsonObj) {
         Long appSystemId = jsonObj.getLong("appSystemId");
         Long appModuleId = jsonObj.getLong("appModuleId");
