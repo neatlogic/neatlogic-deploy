@@ -5,10 +5,12 @@ import codedriver.framework.crossover.CrossoverServiceFactory;
 import codedriver.framework.dao.mapper.runner.RunnerMapper;
 import codedriver.framework.deploy.constvalue.DeployResourceType;
 import codedriver.framework.deploy.constvalue.JobSourceType;
-import codedriver.framework.deploy.dto.DeployJobVo;
+import codedriver.framework.deploy.dto.version.DeployVersionBuildNoVo;
+import codedriver.framework.deploy.dto.version.DeployVersionEnvVo;
 import codedriver.framework.deploy.dto.version.DeployVersionVo;
 import codedriver.framework.deploy.exception.DeployJobNotFoundException;
-import codedriver.framework.deploy.exception.DeployVersionJobNotFoundException;
+import codedriver.framework.deploy.exception.DeployVersionBuildNoNotFoundException;
+import codedriver.framework.deploy.exception.DeployVersionEnvNotFoundException;
 import codedriver.framework.deploy.exception.DeployVersionResourceHasBeenLockedException;
 import codedriver.framework.dto.runner.RunnerMapVo;
 import codedriver.framework.exception.runner.RunnerNotFoundByRunnerMapIdException;
@@ -45,19 +47,17 @@ public class DeployVersionServiceImp implements DeployVersionService {
         }
         Long runnerMapId;
         if (buildNo != null) {
-            Long jobId = deployVersionMapper.getJobIdByDeployVersionIdAndBuildNo(id, buildNo);
-            DeployJobVo job = deployJobMapper.getDeployJobByJobId(jobId);
-            if (job == null) {
-                throw new DeployVersionJobNotFoundException(version.getVersion(), buildNo);
+            DeployVersionBuildNoVo buildNoVo = deployVersionMapper.getDeployVersionBuildNoByVersionIdAndBuildNo(id, buildNo);
+            if (buildNoVo == null) {
+                throw new DeployVersionBuildNoNotFoundException(buildNo);
             }
-            runnerMapId = job.getRunnerMapId();
+            runnerMapId = buildNoVo.getRunnerMapId();
         } else {
-            Long jobId = deployVersionMapper.getJobIdByDeployVersionIdAndEnvId(id, envId);
-            DeployJobVo job = deployJobMapper.getDeployJobByJobId(jobId);
-            if (job == null) {
-                throw new DeployVersionJobNotFoundException(version.getVersion(), envName);
+            DeployVersionEnvVo envVo = deployVersionMapper.getDeployVersionEnvByVersionIdAndEnvId(id, envId);
+            if (envVo == null) {
+                throw new DeployVersionEnvNotFoundException(envId);
             }
-            runnerMapId = job.getRunnerMapId();
+            runnerMapId = envVo.getRunnerMapId();
         }
         RunnerMapVo runner = runnerMapper.getRunnerMapByRunnerMapId(runnerMapId);
         if (runner == null) {

@@ -247,6 +247,7 @@
         compile_start_time as compileStartTime,
         compile_end_time as compileEndTime,
         compile_end_time as compileEndTime,
+        runner_map_id as runnerMapId,
         end_rev as endRev
         from deploy_version_buildno
         where version_id = #{versionId} and build_no = #{buildNo}
