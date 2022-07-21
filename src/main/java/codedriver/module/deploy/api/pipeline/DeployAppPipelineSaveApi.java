@@ -7,9 +7,12 @@ package codedriver.module.deploy.api.pipeline;
 
 import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.autoexec.constvalue.ParamMappingMode;
+import codedriver.framework.autoexec.crossover.IAutoexecCombopCrossoverService;
+import codedriver.framework.autoexec.dto.AutoexecParamVo;
 import codedriver.framework.autoexec.dto.combop.*;
 import codedriver.framework.autoexec.exception.AutoexecCombopPhaseNameRepeatException;
 import codedriver.framework.common.constvalue.ApiParamType;
+import codedriver.framework.crossover.CrossoverServiceFactory;
 import codedriver.framework.dependency.core.DependencyManager;
 import codedriver.framework.deploy.dto.app.DeployAppConfigVo;
 import codedriver.framework.deploy.dto.app.DeployPipelineConfigVo;
@@ -66,10 +69,16 @@ public class DeployAppPipelineSaveApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         DeployAppConfigVo deployAppConfigVo = paramObj.toJavaObject(DeployAppConfigVo.class);
-        String newConfigStr = deployAppConfigVo.getConfigStr();
         DeployAppConfigVo oldDeployAppConfigVo = deployAppConfigMapper.getAppConfigVo(deployAppConfigVo);
         if (oldDeployAppConfigVo != null) {
-            if (Objects.equals(oldDeployAppConfigVo.getConfigStr(), newConfigStr)) {
+            DeployPipelineConfigVo oldConfigVo = oldDeployAppConfigVo.getConfig();
+            List<AutoexecParamVo> autoexecParamList = oldConfigVo.getRuntimeParamList();
+            if (CollectionUtils.isNotEmpty(autoexecParamList)) {
+                DeployPipelineConfigVo newConfigVo = deployAppConfigVo.getConfig();
+                newConfigVo.setRuntimeParamList(autoexecParamList);
+                deployAppConfigVo.setConfig(newConfigVo);
+            }
+            if (Objects.equals(oldDeployAppConfigVo.getConfigStr(), deployAppConfigVo.getConfigStr())) {
                 //如果没有改动，不用更新数据库数据
                 return null;
             }
@@ -89,6 +98,8 @@ public class DeployAppPipelineSaveApi extends PrivateApiComponentBase {
             }
         }
         deployAppConfigVo.setConfigStr(null);
+        IAutoexecCombopCrossoverService autoexecCombopCrossoverService = CrossoverServiceFactory.getApi(IAutoexecCombopCrossoverService.class);
+        autoexecCombopCrossoverService.verifyAutoexecCombopConfig(deployAppConfigVo.getConfig(), false);
         if (oldDeployAppConfigVo != null) {
 //            if (Objects.equals(oldDeployAppConfigVo.getConfigStr(), newConfigStr)) {
 //                //如果没有改动，不用更新数据库数据
