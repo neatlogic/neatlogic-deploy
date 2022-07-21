@@ -50,7 +50,7 @@ public class GetDeployAppConfigAppModuleApi extends PrivateApiComponentBase {
     })
     @Output({
             @Param(explode = BasePageVo.class),
-            @Param(name = "tbodyList", explode = CiEntityVo[].class, desc = "应用模块（配置项）信息")
+            @Param( explode = CiEntityVo[].class, desc = "应用模块（配置项）信息")
     })
     @Description(desc = "查询应用模块（配置项）信息")
     @Override

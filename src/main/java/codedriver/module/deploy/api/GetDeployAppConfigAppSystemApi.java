@@ -5,11 +5,10 @@ import codedriver.framework.cmdb.crossover.ICiEntityCrossoverService;
 import codedriver.framework.cmdb.dto.cientity.AttrEntityVo;
 import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
 import codedriver.framework.common.constvalue.ApiParamType;
-import codedriver.framework.common.dto.BasePageVo;
 import codedriver.framework.crossover.CrossoverServiceFactory;
 import codedriver.framework.deploy.dto.app.DeployAppOwnerVo;
-import codedriver.framework.deploy.dto.app.DeployAppUsedStateVo;
 import codedriver.framework.deploy.dto.app.DeployAppSystemVo;
+import codedriver.framework.deploy.dto.app.DeployAppUsedStateVo;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
@@ -49,8 +48,7 @@ public class GetDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
             @Param(name = "id", type = ApiParamType.LONG, isRequired = true, desc = "应用系统id")
     })
     @Output({
-            @Param(explode = BasePageVo.class),
-            @Param(name = "tbodyList", explode = CiEntityVo[].class, desc = "应用系统（配置项）信息")
+            @Param(explode = CiEntityVo[].class, desc = "应用系统（配置项）信息")
     })
     @Description(desc = "查询应用系统（配置项）信息")
     @Override
