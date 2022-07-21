@@ -44,10 +44,6 @@ public interface DeployAppConfigMapper {
 
     List<DeployAppConfigVo> getAppConfigListByAppSystemId(Long appSystemId);
 
-    String getAppConfigOverrideConfig(DeployAppConfigOverrideVo deployAppConfigOverrideVo);
-
-    List<DeployAppConfigOverrideVo> getAppConfigOverrideListByAppSystemId(Long appSystemId);
-
     DeployAppConfigVo getAppConfigDraft(DeployAppConfigVo deployAppConfigDraftVo);
 
     List<DeployAppConfigInstanceVo> searchAppConfigEnvInstanceList( DeployAppConfigInstanceVo searchVo);
@@ -83,8 +79,6 @@ public interface DeployAppConfigMapper {
     Integer insertAppEnvAutoConfig(DeployAppEnvAutoConfigVo appEnvAutoConfigVo);
 
     Integer insertAppConfig(DeployAppConfigVo deployAppConfigVo);
-
-    Integer insertAppConfigOverride(DeployAppConfigOverrideVo deployAppOverrideOverrideVo);
 
     Integer insertAppConfigDraft(DeployAppConfigVo deployAppConfigDraftVo);
 
@@ -124,12 +118,6 @@ public interface DeployAppConfigMapper {
     int checkDeployAppConfigEnvDBExistsById(Long id);
 
     int getAppModuleCountBySystemIdAndEnvId(@Param("appSystemId") Long appSystemId, @Param("envId") Long envId, @Param("schemaName") String schemaName);
-
-    int getAppSystemCountNew(String sql);
-
-    List<Long> getAppSystemIdListNew(String sql);
-
-    List<DeployAppSystemVo> getAppSystemListByIdListNew(String sql);
 
     /**
      * 查询发布应用配置DB库下的无模块无环境、无模块同环境、同模块无环境、同模块同环境且发布没配置的数据库的数量

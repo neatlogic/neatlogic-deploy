@@ -226,25 +226,6 @@
           and `env_id` = #{envId}
     </select>
 
-    <select id="getAppConfigOverrideConfig"
-            parameterType="codedriver.framework.deploy.dto.app.DeployAppConfigOverrideVo" resultType="java.lang.String">
-        SELECT `config`
-        FROM `deploy_app_config_override`
-        WHERE `app_system_id` = #{appSystemId}
-          and `app_module_id` = #{appModuleId}
-          and `env_id` = #{envId}
-    </select>
-
-    <select id="getAppConfigOverrideListByAppSystemId" parameterType="java.lang.Long"
-            resultType="codedriver.framework.deploy.dto.app.DeployAppConfigOverrideVo">
-        SELECT `app_system_id` AS appSystemId,
-               `app_module_id` AS appModuleId,
-               `env_id`        AS envId,
-               `config`        AS configStr
-        FROM `deploy_app_config_override`
-        WHERE `app_system_id` = #{value}
-    </select>
-
     <select id="getAppConfigDraft" parameterType="codedriver.framework.deploy.dto.app.DeployAppConfigVo"
             resultType="codedriver.framework.deploy.dto.app.DeployAppConfigVo">
         SELECT `app_system_id` as appSystemId,
@@ -754,29 +735,6 @@
         </collection>
     </resultMap>
 
-    <resultMap id="AppSystemMap" type="codedriver.framework.deploy.dto.app.DeployAppSystemVo">
-        <id column="id" property="id"/>
-        <result column="name" property="name"/>
-        <result column="abbr_name" property="abbrName"/>
-        <result column="moduleCount" property="moduleCount"/>
-        <collection property="appModuleList" ofType="codedriver.framework.deploy.dto.app.DeployAppModuleVo">
-            <id column="app_module_id" property="id"/>
-            <result column="app_module_name" property="name"/>
-            <result column="app_module_abbr_name" property="abbrName"/>
-        </collection>
-    </resultMap>
-    <select id="getAppSystemCountNew" parameterType="java.lang.String" resultType="int">
-        ${sql}
-    </select>
-
-    <select id="getAppSystemIdListNew" parameterType="java.lang.String" resultType="java.lang.Long">
-        ${sql}
-    </select>
-
-    <select id="getAppSystemListByIdListNew" parameterType="java.lang.String" resultMap="AppSystemMap">
-        ${sql}
-    </select>
-
     <resultMap id="DatabaseResourceMap" type="codedriver.framework.cmdb.dto.resourcecenter.ResourceVo">
         <id column="id" property="id"/>
         <result column="name" property="name"/>
@@ -975,18 +933,6 @@
                 #{fcu},
                 NOW(3),
                 #{fcu})
-    </insert>
-
-    <insert id="insertAppConfigOverride" parameterType="codedriver.framework.deploy.dto.app.DeployAppConfigOverrideVo">
-        INSERT INTO `deploy_app_config_override` (`app_system_id`,
-                                                  `app_module_id`,
-                                                  `env_id`,
-                                                  `config`)
-        VALUES (#{appSystemId},
-                #{appModuleId},
-                #{envId},
-                #{configStr})
-        ON DUPLICATE KEY UPDATE `config` = #{configStr}
     </insert>
 
     <insert id="insertAppConfigDraft" parameterType="codedriver.framework.deploy.dto.app.DeployAppConfigVo">

@@ -121,10 +121,10 @@ public class DeployAppPipelineProfileParamOverrideListApi extends PrivateApiComp
         tbodyList.add(valueTextVo);
 
         //查询应用层下游的配置信息
-        List<DeployAppConfigOverrideVo> deployAppConfigOverrideList = deployAppConfigMapper.getAppConfigOverrideListByAppSystemId(appSystemId);
-        if (CollectionUtils.isNotEmpty(deployAppConfigOverrideList)) {
-            for (DeployAppConfigOverrideVo deployAppConfigOverrideVo : deployAppConfigOverrideList) {
-                DeployPipelineConfigVo config = deployAppConfigOverrideVo.getConfig();
+        List<DeployAppConfigVo> deployAppConfigList = deployAppConfigMapper.getAppConfigListByAppSystemId(appSystemId);
+        if (CollectionUtils.isNotEmpty(deployAppConfigList)) {
+            for (DeployAppConfigVo deployAppConfigVo : deployAppConfigList) {
+                DeployPipelineConfigVo config = deployAppConfigVo.getConfig();
                 if (config == null) {
                     continue;
                 }
@@ -135,11 +135,11 @@ public class DeployAppPipelineProfileParamOverrideListApi extends PrivateApiComp
                     paramVo = deployProfileParamVo;
                     List<String> idList = new ArrayList<>();
                     idList.add(appSystemId.toString());
-                    Long moduleId = deployAppConfigOverrideVo.getAppModuleId();
+                    Long moduleId = deployAppConfigVo.getAppModuleId();
                     if (moduleId != null && moduleId != 0L) {
                         idList.add(moduleId.toString());
                     }
-                    Long envId = deployAppConfigOverrideVo.getEnvId();
+                    Long envId = deployAppConfigVo.getEnvId();
                     if (envId != null && envId != 0L) {
                         idList.add(envId.toString());
                     }
@@ -149,7 +149,7 @@ public class DeployAppPipelineProfileParamOverrideListApi extends PrivateApiComp
         }
         // 查询出当前应用下游节点
         Map<Long, String> nameMap = new HashMap();
-        List<DeployAppConfigOverrideVo> allDeployAppConfigOverrideList = new ArrayList<>();
+        List<DeployAppConfigVo> allDeployAppConfigList = new ArrayList<>();
         List<Long> appSystemIdList = new ArrayList<>();
         appSystemIdList.add(appSystemId);
         ResourceSearchVo searchVo = new ResourceSearchVo();
@@ -158,24 +158,24 @@ public class DeployAppPipelineProfileParamOverrideListApi extends PrivateApiComp
         if (CollectionUtils.isNotEmpty(appModuleList)) {
             IAppSystemMapper appSystemMapper = CrossoverServiceFactory.getApi(IAppSystemMapper.class);
             for (ModuleVo appModule : appModuleList) {
-                allDeployAppConfigOverrideList.add(new DeployAppConfigOverrideVo(appSystemId, appModule.getAppModuleId()));
+                allDeployAppConfigList.add(new DeployAppConfigVo(appSystemId, appModule.getAppModuleId()));
                 nameMap.put(appModule.getAppModuleId(), appModule.getAppModuleName());
                 List<AppEnvironmentVo> envList = appSystemMapper.getAppEnvListByAppSystemIdAndModuleIdList(appSystemId, Arrays.asList(appModule.getAppModuleId()), TenantContext.get().getDataDbName());
                 if (CollectionUtils.isNotEmpty(envList)) {
                     for (AppEnvironmentVo appEnvironmentVo : envList) {
                         nameMap.put(appEnvironmentVo.getEnvId(), appEnvironmentVo.getEnvName());
-                        allDeployAppConfigOverrideList.add(new DeployAppConfigOverrideVo(appSystemId, appModule.getAppModuleId(), appEnvironmentVo.getEnvId()));
+                        allDeployAppConfigList.add(new DeployAppConfigVo(appSystemId, appModule.getAppModuleId(), appEnvironmentVo.getEnvId()));
                     }
                 }
             }
         }
 
-        for (DeployAppConfigOverrideVo deployAppConfigOverrideVo : allDeployAppConfigOverrideList) {
+        for (DeployAppConfigVo deployAppConfigVo : allDeployAppConfigList) {
             List<String> idList = new ArrayList<>();
             idList.add(appSystemId.toString());
             List<String> nameList = new ArrayList<>();
             nameList.add(appSystemName);
-            Long moduleId = deployAppConfigOverrideVo.getAppModuleId();
+            Long moduleId = deployAppConfigVo.getAppModuleId();
             if (moduleId != null && moduleId != 0L) {
                 idList.add(moduleId.toString());
                 String name = nameMap.get(moduleId);
@@ -185,7 +185,7 @@ public class DeployAppPipelineProfileParamOverrideListApi extends PrivateApiComp
                     nameList.add("undefined");
                 }
             }
-            Long envId = deployAppConfigOverrideVo.getEnvId();
+            Long envId = deployAppConfigVo.getEnvId();
             if (envId != null && envId != 0L) {
                 idList.add(envId.toString());
                 String name = nameMap.get(envId);
