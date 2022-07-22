@@ -17,7 +17,9 @@ import codedriver.framework.autoexec.job.action.core.AutoexecJobActionHandlerFac
 import codedriver.framework.autoexec.job.action.core.IAutoexecJobActionHandler;
 import codedriver.framework.cmdb.crossover.IAppSystemMapper;
 import codedriver.framework.cmdb.crossover.ICiEntityCrossoverMapper;
+import codedriver.framework.cmdb.dao.mapper.resourcecenter.ResourceCenterMapper;
 import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
+import codedriver.framework.cmdb.dto.resourcecenter.ResourceVo;
 import codedriver.framework.cmdb.dto.resourcecenter.entity.AppModuleVo;
 import codedriver.framework.cmdb.dto.resourcecenter.entity.AppSystemVo;
 import codedriver.framework.cmdb.exception.cientity.CiEntityNotFoundException;
@@ -42,7 +44,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -52,6 +53,8 @@ public class DeployJobServiceImpl implements DeployJobService {
     private final static Logger logger = LoggerFactory.getLogger(DeployJobServiceImpl.class);
     @Resource
     DeployAppConfigMapper deployAppConfigMapper;
+    @Resource
+    private ResourceCenterMapper resourceCenterMapper;
 
     @Override
     public void initDeployParam(JSONObject jsonObj) {
@@ -141,14 +144,22 @@ public class DeployJobServiceImpl implements DeployJobService {
         JSONObject executeConfig = jsonObj.getJSONObject("executeConfig");
         executeConfig.put("executeNodeConfig", new JSONObject() {{
             JSONArray selectNodeArray = moduleJson.getJSONArray("selectNodeList");
-            if(CollectionUtils.isNotEmpty(selectNodeArray)){
-                put("selectNodeList", selectNodeArray);
-            }else{//如果selectNodeList 是empty，则发布全部实例
-               put("filter",new JSONObject(){{
-                   put("appSystemIdList", Collections.singletonList(jsonObj.getLong("appSystemId")));
-                   put("appModuleIdList", Collections.singletonList(jsonObj.getLong("appModuleId")));
-               }});
+            if (CollectionUtils.isEmpty(selectNodeArray)) {
+                //如果selectNodeList 是empty，则发布全部实例
+                List<Long> instanceIdList = resourceCenterMapper.getAppInstanceResourceIdListByAppSystemIdAndModuleIdAndEnvId(jsonObj.toJavaObject(ResourceVo.class), TenantContext.get().getDataDbName());
+                if (CollectionUtils.isNotEmpty(instanceIdList)) {
+                    List<ResourceVo> instanceList = resourceCenterMapper.getAppInstanceResourceListByIdList(instanceIdList, TenantContext.get().getDataDbName());
+                    for (ResourceVo instance : instanceList) {
+                        JSONObject instanceJson = new JSONObject();
+                        instanceJson.put("id",instance.getId());
+                        instanceJson.put("ip",instance.getIp());
+                        instanceJson.put("port",instance.getPort());
+                        instanceJson.put("name",instance.getName());
+                        selectNodeArray.add(instanceJson);
+                    }
+                }
             }
+            put("selectNodeList", selectNodeArray);
         }});
         jsonObj.put("name", jsonObj.getString("appSystemName") + "/" + jsonObj.getString("appModuleName") + "/" + jsonObj.getString("envName") + "/" + jsonObj.getString("scenarioName"));
     }

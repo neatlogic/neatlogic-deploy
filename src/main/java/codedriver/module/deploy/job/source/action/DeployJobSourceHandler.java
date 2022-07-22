@@ -334,8 +334,10 @@ public class DeployJobSourceHandler extends AutoexecJobSourceActionHandlerBase {
         deployJobVo.setJobId(jobVo.getId());
         deployJobVo.setConfigHash(jobVo.getConfigHash());
         deployJobMapper.insertIgnoreDeployJobContent(new DeployJobContentVo(deployJobVo.getConfigHash(), jobVo.getConfigStr()));
-        if (paramJson.getInteger("buildNo") != null) {
-            deployJobVo.setBuildNo(paramJson.getInteger("buildNo"));
+        Integer buildNo = paramJson.getInteger("buildNo");
+        //如果buildNo是-1，表示新建buildNo
+        if (buildNo != null && buildNo != -1) {
+            deployJobVo.setBuildNo(buildNo);
         } else {
             //获取最新buildNo
             DeployVersionVo deployVersionVo = deployVersionMapper.getVersionByAppSystemIdAndAppModuleIdAndVersion(deployJobVo.getAppSystemId(), deployJobVo.getAppModuleId(), deployJobVo.getVersion());
