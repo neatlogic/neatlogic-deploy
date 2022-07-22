@@ -36,7 +36,9 @@
         </where>
         order by if(dacu.user_uuid = #{userUuid},1,0) desc,
         CONVERT(ce.name USING gbk) COLLATE gbk_chinese_ci ASC
-        limit #{searchVo.startNum}, #{searchVo.pageSize}
+        <if test="searchVo.needPage">
+            limit #{searchVo.startNum}, #{searchVo.pageSize}
+        </if>
     </select>
 
     <resultMap id="appConfigSystemMap" type="codedriver.framework.deploy.dto.app.DeployAppSystemVo">
