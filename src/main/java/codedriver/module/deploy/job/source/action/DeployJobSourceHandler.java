@@ -161,7 +161,9 @@ public class DeployJobSourceHandler extends AutoexecJobSourceActionHandlerBase {
         //TODO 逻辑还需要优化
         AutoexecJobPhaseVo targetPhaseVo = autoexecJobMapper.getJobPhaseByJobIdAndPhaseName(paramObj.getLong("jobId"), paramObj.getString("targetPhaseName"));
         if (targetPhaseVo == null) {
-            throw new AutoexecJobPhaseNotFoundException(paramObj.getString("targetPhaseName"));
+            return;
+            //防止作业不包含"回退SQL"阶段，跳过
+//            throw new AutoexecJobPhaseNotFoundException(paramObj.getString("targetPhaseName"));
         }
 
         Long jobId = paramObj.getLong("jobId");
@@ -179,8 +181,9 @@ public class DeployJobSourceHandler extends AutoexecJobSourceActionHandlerBase {
             }
             needDeleteSqlIdList = oldDeploySqlList.stream().map(DeploySqlDetailVo::getId).collect(Collectors.toList());
         }
-        List<DeploySqlDetailVo> insertSqlList = new ArrayList<>();
+        List<DeploySqlDetailVo> insertSqlDetailList = new ArrayList<>();
         List<DeploySqlDetailVo> updateSqlList = new ArrayList<>();
+        List<Long> insertSqlIdList = new ArrayList<>();
 
         if (CollectionUtils.isNotEmpty(paramSqlVoArray)) {
             List<DeploySqlDetailVo> sqlDetailVoList = paramSqlVoArray.toJavaList(DeploySqlDetailVo.class);
@@ -194,10 +197,14 @@ public class DeployJobSourceHandler extends AutoexecJobSourceActionHandlerBase {
                     DeploySqlDetailVo deploySqlDetailVo = sqlDetailMap.get(newSqlVo.getResourceId().toString() + newSqlVo.getSqlFile());
                     if (deploySqlDetailVo != null) {
                         newSqlVo.setId(deploySqlDetailVo.getId());
+                        updateSqlList.add(newSqlVo);
+                        insertSqlIdList.add(newSqlVo.getId());
+                        continue;
+                    } else {
+                        insertSqlDetailList.add(newSqlVo);
                     }
-                    insertSqlList.add(newSqlVo);
-                    continue;
                 }
+
                 if (CollectionUtils.isNotEmpty(needDeleteSqlIdList)) {
                     //旧数据 - 需要更新的数据 = 需要删除的数据
                     needDeleteSqlIdList.remove(oldSqlVo.getId());
@@ -210,10 +217,15 @@ public class DeployJobSourceHandler extends AutoexecJobSourceActionHandlerBase {
         if (CollectionUtils.isNotEmpty(needDeleteSqlIdList)) {
             deploySqlMapper.updateDeploySqlIsDeleteByIdList(needDeleteSqlIdList);
         }
-        if (CollectionUtils.isNotEmpty(insertSqlList)) {
-            for (DeploySqlDetailVo insertSqlVo : insertSqlList) {
+        if (CollectionUtils.isNotEmpty(insertSqlDetailList)) {
+            for (DeploySqlDetailVo insertSqlVo : insertSqlDetailList) {
                 deploySqlMapper.insertDeploySql(new DeploySqlJobPhaseVo(paramObj.getLong("jobId"), paramObj.getString("targetPhaseName"), targetPhaseVo.getId(), insertSqlVo.getId()));
                 deploySqlMapper.insertDeploySqlDetail(insertSqlVo, paramObj.getLong("sysId"), paramObj.getLong("envId"), paramObj.getLong("moduleId"), paramObj.getString("version"), paramObj.getLong("runnerId"));
+            }
+        }
+        if (CollectionUtils.isNotEmpty(insertSqlIdList)) {
+            for (Long sqlId : insertSqlIdList) {
+                deploySqlMapper.insertDeploySql(new DeploySqlJobPhaseVo(paramObj.getLong("jobId"), paramObj.getString("targetPhaseName"), targetPhaseVo.getId(), sqlId));
             }
         }
         if (CollectionUtils.isNotEmpty(updateSqlList)) {
@@ -235,7 +247,7 @@ public class DeployJobSourceHandler extends AutoexecJobSourceActionHandlerBase {
                 throw new AutoexecJobPhaseNotFoundException(paramObj.getString("phaseName"));
             }
             deploySqlMapper.insertDeploySql(new DeploySqlJobPhaseVo(paramObj.getLong("jobId"), paramObj.getString("phaseName"), phaseVo.getId(), paramDeploySqlVo.getId()));
-                deploySqlMapper.insertDeploySqlDetail(paramDeploySqlVo, paramObj.getLong("sysId"), paramObj.getLong("envId"), paramObj.getLong("moduleId"), paramObj.getString("version"), paramObj.getLong("runnerId"));
+            deploySqlMapper.insertDeploySqlDetail(paramDeploySqlVo, paramObj.getLong("sysId"), paramObj.getLong("envId"), paramObj.getLong("moduleId"), paramObj.getString("version"), paramObj.getLong("runnerId"));
         }
     }
 
@@ -349,8 +361,8 @@ public class DeployJobSourceHandler extends AutoexecJobSourceActionHandlerBase {
     }
 
     @Override
-    public boolean getIsCanUpdatePhaseRunner(AutoexecJobPhaseVo jobPhaseVo,Long runnerMapId) {
-        List<DeploySqlDetailVo> deploySqlDetailVos = deploySqlMapper.getDeployJobSqlDetailByExceptStatusListAndRunnerMapId(jobPhaseVo.getJobId(), jobPhaseVo.getName(), Arrays.asList(JobNodeStatus.SUCCEED.getValue(), JobNodeStatus.IGNORED.getValue()),runnerMapId);
+    public boolean getIsCanUpdatePhaseRunner(AutoexecJobPhaseVo jobPhaseVo, Long runnerMapId) {
+        List<DeploySqlDetailVo> deploySqlDetailVos = deploySqlMapper.getDeployJobSqlDetailByExceptStatusListAndRunnerMapId(jobPhaseVo.getJobId(), jobPhaseVo.getName(), Arrays.asList(JobNodeStatus.SUCCEED.getValue(), JobNodeStatus.IGNORED.getValue()), runnerMapId);
         return deploySqlDetailVos.size() == 0;
     }
 
