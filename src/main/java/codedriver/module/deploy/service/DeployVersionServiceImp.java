@@ -6,7 +6,6 @@ import codedriver.framework.cmdb.crossover.ICiEntityCrossoverService;
 import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
 import codedriver.framework.cmdb.exception.cientity.CiEntityNotFoundException;
 import codedriver.framework.crossover.CrossoverServiceFactory;
-import codedriver.framework.dao.mapper.runner.RunnerMapper;
 import codedriver.framework.deploy.constvalue.DeployResourceType;
 import codedriver.framework.deploy.constvalue.JobSourceType;
 import codedriver.framework.deploy.dto.version.DeployVersionBuildNoVo;
@@ -19,7 +18,6 @@ import codedriver.framework.exception.type.ParamNotExistsException;
 import codedriver.framework.globallock.core.GlobalLockHandlerFactory;
 import codedriver.framework.globallock.core.IGlobalLockHandler;
 import codedriver.module.deploy.dao.mapper.DeployAppConfigMapper;
-import codedriver.module.deploy.dao.mapper.DeployJobMapper;
 import codedriver.module.deploy.dao.mapper.DeployVersionMapper;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.nacos.common.utils.CollectionUtils;
@@ -40,12 +38,6 @@ public class DeployVersionServiceImp implements DeployVersionService {
     DeployVersionMapper deployVersionMapper;
 
     @Resource
-    DeployJobMapper deployJobMapper;
-
-    @Resource
-    RunnerMapper runnerMapper;
-
-    @Resource
     DeployAppConfigMapper deployAppConfigMapper;
 
     @Override
@@ -63,7 +55,7 @@ public class DeployVersionServiceImp implements DeployVersionService {
             if (buildNoVo == null) {
                 throw new DeployVersionBuildNoNotFoundException(buildNo);
             }
-            url = getRunnerUrl(runnerMapList, buildNoVo.getRunnerMapId(), buildNoVo.getRunnerGroup(), version.getVersion(), buildNo, null);
+            url = getRunnerUrl(runnerMapList, buildNoVo.getRunnerMapId(), buildNoVo.getRunnerGroup());
             if (StringUtils.isBlank(url)) {
                 throw new DeployVersionRunnerNotFoundException(version.getVersion(), buildNo);
             }
@@ -72,7 +64,7 @@ public class DeployVersionServiceImp implements DeployVersionService {
             if (envVo == null) {
                 throw new DeployVersionEnvNotFoundException(envId);
             }
-            url = getRunnerUrl(runnerMapList, envVo.getRunnerMapId(), envVo.getRunnerGroup(), version.getVersion(), null, envName);
+            url = getRunnerUrl(runnerMapList, envVo.getRunnerMapId(), envVo.getRunnerGroup());
             if (StringUtils.isBlank(url)) {
                 throw new DeployVersionRunnerNotFoundException(version.getVersion(), envName);
             }
@@ -108,25 +100,14 @@ public class DeployVersionServiceImp implements DeployVersionService {
 
     @Override
     public String getWorkspaceRunnerUrl(DeployVersionVo versionVo) {
-        String url = null;
+        String url;
         Long versionRunnerMapId = versionVo.getRunnerMapId();
         JSONObject versionRunnerGroup = versionVo.getRunnerGroup();
         if (versionRunnerMapId == null && MapUtils.isEmpty(versionRunnerGroup)) {
             throw new DeployVersionRunnerNotFoundException(versionVo.getVersion());
         }
         List<RunnerMapVo> runnerMapList = getAppModuleRunnerGroupByAppSystemIdAndModuleId(versionVo.getAppSystemId(), versionVo.getAppModuleId());
-        Optional<RunnerMapVo> first = runnerMapList.stream().filter(o -> Objects.equals(o.getRunnerMapId(), versionRunnerMapId)).findFirst();
-        if (first.isPresent()) {
-            url = first.get().getUrl();
-        } else if (MapUtils.isNotEmpty(versionRunnerGroup)) {
-            List<Long> buildNoRunnerMapIdList = versionRunnerGroup.keySet().stream().map(Long::valueOf).collect(Collectors.toList());
-            for (RunnerMapVo mapVo : runnerMapList) {
-                if (buildNoRunnerMapIdList.contains(mapVo.getRunnerMapId())) {
-                    url = mapVo.getUrl();
-                    break;
-                }
-            }
-        }
+        url = getRunnerUrl(runnerMapList, versionRunnerMapId, versionRunnerGroup);
         if (StringUtils.isBlank(url)) {
             throw new DeployVersionRunnerNotFoundException(versionVo.getVersion());
         }
@@ -175,31 +156,21 @@ public class DeployVersionServiceImp implements DeployVersionService {
     }
 
     /**
-     * 查询builNo或env的runner
-     * 如果在应用模块配置的{runnerMapList}中找到buildNo或env记录的{runnerMapId}，则获取此runner url
+     * 查询builNo|env|工程目录的runner
+     * 如果在应用模块配置的{runnerMapList}中找到buildNo|env|版本记录的{runnerMapId}，则获取此runner url
      * 否则尝试取{runnerMapList}与{runnerGroup}交集中的任一runner
      *
      * @param runnerMapList 应用模块配置runner
      * @param runnerMapId   buildNo或env记录的runner
      * @param runnerGroup   buildNo或env记录的runnerGroup
-     * @param version       版本号
-     * @param buildNo       buildNo
-     * @param envName       环境名
      * @return
      */
-    private String getRunnerUrl(List<RunnerMapVo> runnerMapList, Long runnerMapId, JSONObject runnerGroup, String version, Integer buildNo, String envName) {
+    private String getRunnerUrl(List<RunnerMapVo> runnerMapList, Long runnerMapId, JSONObject runnerGroup) {
         String url = null;
         Optional<RunnerMapVo> first = runnerMapList.stream().filter(o -> Objects.equals(o.getRunnerMapId(), runnerMapId)).findFirst();
         if (first.isPresent()) {
             url = first.get().getUrl();
-        } else {
-            if (MapUtils.isEmpty(runnerGroup)) {
-                if (buildNo != null) {
-                    throw new DeployVersionRunnerNotFoundException(version, buildNo);
-                } else {
-                    throw new DeployVersionRunnerNotFoundException(version, envName);
-                }
-            }
+        } else if (MapUtils.isNotEmpty(runnerGroup)) {
             List<Long> buildNoRunnerMapIdList = runnerGroup.keySet().stream().map(Long::valueOf).collect(Collectors.toList());
             for (RunnerMapVo mapVo : runnerMapList) {
                 if (buildNoRunnerMapIdList.contains(mapVo.getRunnerMapId())) {
