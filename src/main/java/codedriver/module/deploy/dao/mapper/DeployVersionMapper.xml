@@ -24,6 +24,8 @@
                app_module_id   as appModuleId,
                app_module_name as appModuleName,
                is_freeze       as isFreeze,
+               runner_map_id   as runnerMapId,
+               runner_group    as runnerGroupStr,
                fcu,
                fcd,
                lcu,

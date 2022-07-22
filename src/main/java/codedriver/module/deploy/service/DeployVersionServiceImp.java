@@ -15,7 +15,6 @@ import codedriver.framework.deploy.dto.version.DeployVersionVo;
 import codedriver.framework.deploy.exception.*;
 import codedriver.framework.dto.runner.RunnerGroupVo;
 import codedriver.framework.dto.runner.RunnerMapVo;
-import codedriver.framework.exception.runner.RunnerNotFoundByRunnerMapIdException;
 import codedriver.framework.exception.type.ParamNotExistsException;
 import codedriver.framework.globallock.core.GlobalLockHandlerFactory;
 import codedriver.framework.globallock.core.IGlobalLockHandler;
@@ -57,23 +56,7 @@ public class DeployVersionServiceImp implements DeployVersionService {
         if (buildNo == null && envId == null) {
             throw new ParamNotExistsException("buildNo", "envId");
         }
-        ICiEntityCrossoverMapper iCiEntityCrossoverMapper = CrossoverServiceFactory.getApi(ICiEntityCrossoverMapper.class);
-        CiEntityVo appSystemEntity = iCiEntityCrossoverMapper.getCiEntityBaseInfoById(version.getAppSystemId());
-        if (appSystemEntity == null) {
-            throw new CiEntityNotFoundException(version.getAppSystemId());
-        }
-        CiEntityVo appModuleEntity = iCiEntityCrossoverMapper.getCiEntityBaseInfoById(version.getAppModuleId());
-        if (appModuleEntity == null) {
-            throw new CiEntityNotFoundException(version.getAppModuleId());
-        }
-        RunnerGroupVo runnerGroupVo = deployAppConfigMapper.getAppModuleRunnerGroupByAppSystemIdAndModuleId(version.getAppSystemId(), version.getAppModuleId());
-        if (runnerGroupVo == null) {
-            throw new DeployAppConfigModuleRunnerGroupNotFoundException(appSystemEntity.getName() + "(" + version.getAppSystemId() + ")", appModuleEntity.getName() + "(" + version.getAppModuleId() + ")");
-        }
-        List<RunnerMapVo> runnerMapList = runnerGroupVo.getRunnerMapList();
-        if (CollectionUtils.isEmpty(runnerMapList)) {
-            throw new AutoexecJobRunnerGroupRunnerNotFoundException(runnerGroupVo.getName() + ":" + runnerGroupVo.getId());
-        }
+        List<RunnerMapVo> runnerMapList = getAppModuleRunnerGroupByAppSystemIdAndModuleId(version.getAppSystemId(), version.getAppModuleId());
         String url;
         if (buildNo != null) {
             DeployVersionBuildNoVo buildNoVo = deployVersionMapper.getDeployVersionBuildNoByVersionIdAndBuildNo(id, buildNo);
@@ -81,7 +64,7 @@ public class DeployVersionServiceImp implements DeployVersionService {
                 throw new DeployVersionBuildNoNotFoundException(buildNo);
             }
             url = getRunnerUrl(runnerMapList, buildNoVo.getRunnerMapId(), buildNoVo.getRunnerGroup(), version.getVersion(), buildNo, null);
-            if (url == null) {
+            if (StringUtils.isBlank(url)) {
                 throw new DeployVersionRunnerNotFoundException(version.getVersion(), buildNo);
             }
         } else {
@@ -90,7 +73,7 @@ public class DeployVersionServiceImp implements DeployVersionService {
                 throw new DeployVersionEnvNotFoundException(envId);
             }
             url = getRunnerUrl(runnerMapList, envVo.getRunnerMapId(), envVo.getRunnerGroup(), version.getVersion(), null, envName);
-            if (url == null) {
+            if (StringUtils.isBlank(url)) {
                 throw new DeployVersionRunnerNotFoundException(version.getVersion(), envName);
             }
         }
@@ -124,25 +107,29 @@ public class DeployVersionServiceImp implements DeployVersionService {
     }
 
     @Override
-    public String getWorkspaceRunnerUrl(Long appSystemId, Long appModuleId) {
-        if (appSystemId == null) {
-            throw new ParamNotExistsException("appSystemId");
+    public String getWorkspaceRunnerUrl(DeployVersionVo versionVo) {
+        String url = null;
+        Long versionRunnerMapId = versionVo.getRunnerMapId();
+        JSONObject versionRunnerGroup = versionVo.getRunnerGroup();
+        if (versionRunnerMapId == null && MapUtils.isEmpty(versionRunnerGroup)) {
+            throw new DeployVersionRunnerNotFoundException(versionVo.getVersion());
         }
-        if (appModuleId == null) {
-            throw new ParamNotExistsException("appModuleId");
+        List<RunnerMapVo> runnerMapList = getAppModuleRunnerGroupByAppSystemIdAndModuleId(versionVo.getAppSystemId(), versionVo.getAppModuleId());
+        Optional<RunnerMapVo> first = runnerMapList.stream().filter(o -> Objects.equals(o.getRunnerMapId(), versionRunnerMapId)).findFirst();
+        if (first.isPresent()) {
+            url = first.get().getUrl();
+        } else if (MapUtils.isNotEmpty(versionRunnerGroup)) {
+            List<Long> buildNoRunnerMapIdList = versionRunnerGroup.keySet().stream().map(Long::valueOf).collect(Collectors.toList());
+            for (RunnerMapVo mapVo : runnerMapList) {
+                if (buildNoRunnerMapIdList.contains(mapVo.getRunnerMapId())) {
+                    url = mapVo.getUrl();
+                    break;
+                }
+            }
         }
-        Long runnerMapId = deployJobMapper.getRecentlyJobRunnerMapIdByAppSystemIdAndAppModuleId(appSystemId, appModuleId);
-        if (runnerMapId == null) {
-            ICiEntityCrossoverService ciEntityCrossoverService = CrossoverServiceFactory.getApi(ICiEntityCrossoverService.class);
-            String appName = ciEntityCrossoverService.getCiEntityNameByCiEntityId(appSystemId);
-            String moduleName = ciEntityCrossoverService.getCiEntityNameByCiEntityId(appModuleId);
-            throw new DeployJobNotFoundException(appName != null ? appName : appSystemId.toString(), moduleName != null ? moduleName : appModuleId.toString());
+        if (StringUtils.isBlank(url)) {
+            throw new DeployVersionRunnerNotFoundException(versionVo.getVersion());
         }
-        RunnerMapVo runner = runnerMapper.getRunnerMapByRunnerMapId(runnerMapId);
-        if (runner == null) {
-            throw new RunnerNotFoundByRunnerMapIdException(runnerMapId);
-        }
-        String url = runner.getUrl();
         if (!url.endsWith("/")) {
             url += "/";
         }
@@ -172,6 +159,19 @@ public class DeployVersionServiceImp implements DeployVersionService {
         if (handler.getIsBeenLocked(lockJson)) {
             throw new DeployVersionResourceHasBeenLockedException();
         }
+    }
+
+    @Override
+    public String getEnvName(String version, Long envId) {
+        String envName = null;
+        if (envId != null) {
+            ICiEntityCrossoverService ciEntityCrossoverService = CrossoverServiceFactory.getApi(ICiEntityCrossoverService.class);
+            envName = ciEntityCrossoverService.getCiEntityNameByCiEntityId(envId);
+            if (StringUtils.isBlank(envName)) {
+                throw new DeployVersionEnvNotFoundException(version, envId);
+            }
+        }
+        return envName;
     }
 
     /**
@@ -209,5 +209,33 @@ public class DeployVersionServiceImp implements DeployVersionService {
             }
         }
         return url;
+    }
+
+    /**
+     * 根据应用模块ID获取runner组
+     *
+     * @param appSystemId 应用ID
+     * @param appModuleId 模块ID
+     * @return
+     */
+    private List<RunnerMapVo> getAppModuleRunnerGroupByAppSystemIdAndModuleId(Long appSystemId, Long appModuleId) {
+        ICiEntityCrossoverMapper iCiEntityCrossoverMapper = CrossoverServiceFactory.getApi(ICiEntityCrossoverMapper.class);
+        CiEntityVo appSystemEntity = iCiEntityCrossoverMapper.getCiEntityBaseInfoById(appSystemId);
+        if (appSystemEntity == null) {
+            throw new CiEntityNotFoundException(appSystemId);
+        }
+        CiEntityVo appModuleEntity = iCiEntityCrossoverMapper.getCiEntityBaseInfoById(appModuleId);
+        if (appModuleEntity == null) {
+            throw new CiEntityNotFoundException(appModuleId);
+        }
+        RunnerGroupVo runnerGroupVo = deployAppConfigMapper.getAppModuleRunnerGroupByAppSystemIdAndModuleId(appSystemId, appModuleId);
+        if (runnerGroupVo == null) {
+            throw new DeployAppConfigModuleRunnerGroupNotFoundException(appSystemEntity.getName() + "(" + appSystemId + ")", appModuleEntity.getName() + "(" + appModuleId + ")");
+        }
+        List<RunnerMapVo> runnerMapList = runnerGroupVo.getRunnerMapList();
+        if (CollectionUtils.isEmpty(runnerMapList)) {
+            throw new AutoexecJobRunnerGroupRunnerNotFoundException(runnerGroupVo.getName() + ":" + runnerGroupVo.getId());
+        }
+        return runnerMapList;
     }
 }

@@ -1,15 +1,11 @@
 package codedriver.module.deploy.api.version.resource;
 
-import codedriver.framework.cmdb.crossover.ICiEntityCrossoverService;
 import codedriver.framework.common.constvalue.ApiParamType;
-import codedriver.framework.crossover.CrossoverServiceFactory;
 import codedriver.framework.deploy.constvalue.DeployResourceType;
 import codedriver.framework.deploy.dto.version.DeployVersionVo;
-import codedriver.framework.deploy.exception.DeployVersionEnvNotFoundException;
 import codedriver.framework.deploy.exception.DeployVersionNotFoundException;
 import codedriver.framework.deploy.exception.DeployVersionResourceTypeNotFoundException;
 import codedriver.framework.deploy.exception.GetDirectoryFailedException;
-import codedriver.framework.exception.type.ParamNotExistsException;
 import codedriver.framework.integration.authentication.enums.AuthenticateType;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
@@ -57,11 +53,9 @@ public class GetDirectoryContentApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "id", desc = "版本id(当resourceType为workspace时不需要)", type = ApiParamType.LONG),
+            @Param(name = "id", desc = "版本id", isRequired = true, type = ApiParamType.LONG),
             @Param(name = "buildNo", desc = "buildNo(当resourceType为[mirror*|workspace]时不需要)", type = ApiParamType.INTEGER),
             @Param(name = "envId", desc = "环境ID(当resourceType为[build*|workspace]时不需要)", type = ApiParamType.LONG),
-            @Param(name = "appSystemId", desc = "应用ID(仅当resourceType为workspace时需要)", type = ApiParamType.LONG),
-            @Param(name = "appModuleId", desc = "模块ID(仅当resourceType为workspace时需要)", type = ApiParamType.LONG),
             @Param(name = "resourceType", member = DeployResourceType.class, desc = "制品类型", isRequired = true, type = ApiParamType.ENUM),
             @Param(name = "path", desc = "目标路径(路径一律以'/'开头，HOME本身的路径为'/')", isRequired = true, type = ApiParamType.STRING)
     })
@@ -80,39 +74,24 @@ public class GetDirectoryContentApi extends PrivateApiComponentBase {
         Long id = paramObj.getLong("id");
         Integer buildNo = paramObj.getInteger("buildNo");
         Long envId = paramObj.getLong("envId");
-        Long appSystemId = paramObj.getLong("appSystemId");
-        Long appModuleId = paramObj.getLong("appModuleId");
         String path = paramObj.getString("path");
-        if (id == null && appSystemId == null && appModuleId == null) {
-            throw new ParamNotExistsException("id", "appSystemId", "appModuleId");
-        }
         DeployResourceType resourceType = DeployResourceType.getDeployResourceType(paramObj.getString("resourceType"));
         if (resourceType == null) {
             throw new DeployVersionResourceTypeNotFoundException(paramObj.getString("resourceType"));
         }
+        DeployVersionVo version = deployVersionMapper.getDeployVersionById(id);
+        if (version == null) {
+            throw new DeployVersionNotFoundException(id);
+        }
         String url;
         String homePath;
         if (!DeployResourceType.WORKSPACE.equals(resourceType)) {
-            if (id == null) {
-                throw new ParamNotExistsException("id");
-            }
-            DeployVersionVo version = deployVersionMapper.getDeployVersionById(id);
-            if (version == null) {
-                throw new DeployVersionNotFoundException(id);
-            }
-            String envName = null;
-            if (envId != null) {
-                ICiEntityCrossoverService ciEntityCrossoverService = CrossoverServiceFactory.getApi(ICiEntityCrossoverService.class);
-                envName = ciEntityCrossoverService.getCiEntityNameByCiEntityId(envId);
-                if (StringUtils.isBlank(envName)) {
-                    throw new DeployVersionEnvNotFoundException(version.getVersion(), envId);
-                }
-            }
+            String envName = deployVersionService.getEnvName(version.getVersion(), envId);
             url = deployVersionService.getVersionRunnerUrl(paramObj, version, envName);
             homePath = deployVersionService.getVersionResourceHomePath(version, resourceType, buildNo, envName);
         } else {
-            url = deployVersionService.getWorkspaceRunnerUrl(appSystemId, appModuleId);
-            homePath = deployVersionService.getWorkspaceResourceHomePath(appSystemId, appModuleId);
+            url = deployVersionService.getWorkspaceRunnerUrl(version);
+            homePath = deployVersionService.getWorkspaceResourceHomePath(version.getAppSystemId(), version.getAppModuleId());
         }
         url += "api/rest/file/directory/content/get";
         JSONObject paramJson = new JSONObject();
