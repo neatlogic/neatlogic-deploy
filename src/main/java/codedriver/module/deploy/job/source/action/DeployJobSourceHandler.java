@@ -179,14 +179,14 @@ public class DeployJobSourceHandler extends AutoexecJobSourceActionHandlerBase {
             needDeleteSqlIdList = oldDeploySqlList.stream().map(DeploySqlDetailVo::getId).collect(Collectors.toList());
         }
         List<DeploySqlDetailVo> insertSqlList = new ArrayList<>();
-        List<Long> reEnabledSqlList = new ArrayList<>();
-        List<DeploySqlJobPhaseVo> insertSqlJobPhaseVoList = new ArrayList<>();
+        List<DeploySqlDetailVo> updateSqlList = new ArrayList<>();
 
         if (CollectionUtils.isNotEmpty(paramSqlVoArray)) {
             List<DeploySqlDetailVo> sqlDetailVoList = paramSqlVoArray.toJavaList(DeploySqlDetailVo.class);
             for (int i = 0; i < sqlDetailVoList.size(); i++) {
 
                 DeploySqlDetailVo newSqlVo = sqlDetailVoList.get(i);
+                newSqlVo.setSort(i);
                 DeploySqlDetailVo oldSqlVo = jobPhaseAndSqlDetailMap.get(jobId.toString() + targetPhaseVo.getName() + newSqlVo.getResourceId().toString() + newSqlVo.getSqlFile());
                 //不存在则新增
                 if (oldSqlVo == null) {
@@ -195,35 +195,30 @@ public class DeployJobSourceHandler extends AutoexecJobSourceActionHandlerBase {
                         newSqlVo.setId(deploySqlDetailVo.getId());
                     }
                     insertSqlList.add(newSqlVo);
-                    insertSqlJobPhaseVoList.add(new DeploySqlJobPhaseVo(jobId, targetPhaseVo.getName(), targetPhaseVo.getId(), newSqlVo.getId(), i));
                     continue;
                 }
                 if (CollectionUtils.isNotEmpty(needDeleteSqlIdList)) {
                     //旧数据 - 需要更新的数据 = 需要删除的数据
                     needDeleteSqlIdList.remove(oldSqlVo.getId());
                 }
-                if (oldSqlVo.getIsDelete() == 1) {
-                    //需要重新启用的数据
-                    reEnabledSqlList.add(oldSqlVo.getId());
-                    insertSqlJobPhaseVoList.add(new DeploySqlJobPhaseVo(jobId, targetPhaseVo.getName(), targetPhaseVo.getId(), oldSqlVo.getId(), i));
-                }
+                newSqlVo.setId(oldSqlVo.getId());
+                updateSqlList.add(newSqlVo);
             }
 
         }
         if (CollectionUtils.isNotEmpty(needDeleteSqlIdList)) {
-            deploySqlMapper.updateDeploySqlIsDeleteByIdList(needDeleteSqlIdList, 1);
-            deploySqlMapper.updateDeploySqlSortList(needDeleteSqlIdList,jobId, targetPhaseVo.getId());
+            deploySqlMapper.deleteDeploySqlIsDeleteByIdList(needDeleteSqlIdList);
         }
         if (CollectionUtils.isNotEmpty(insertSqlList)) {
             for (DeploySqlDetailVo insertSqlVo : insertSqlList) {
+                deploySqlMapper.insertDeploySql(new DeploySqlJobPhaseVo(paramObj.getLong("jobId"), paramObj.getString("targetPhaseName"), targetPhaseVo.getId(), insertSqlVo.getId()));
                 deploySqlMapper.insertDeploySqlDetail(insertSqlVo, paramObj.getLong("sysId"), paramObj.getLong("envId"), paramObj.getLong("moduleId"), paramObj.getString("version"), paramObj.getLong("runnerId"));
             }
         }
-        if (CollectionUtils.isNotEmpty(reEnabledSqlList)) {
-            deploySqlMapper.updateDeploySqlIsDeleteByIdList(reEnabledSqlList, 0);
-        }
-        if (CollectionUtils.isNotEmpty(insertSqlJobPhaseVoList)) {
-            deploySqlMapper.insertDeploySqlList(insertSqlJobPhaseVoList);
+        if (CollectionUtils.isNotEmpty(updateSqlList)) {
+            for (DeploySqlDetailVo sqlDetailVo : updateSqlList) {
+                deploySqlMapper.updateDeploySqlDetail(sqlDetailVo);
+            }
         }
     }
 
@@ -331,8 +326,8 @@ public class DeployJobSourceHandler extends AutoexecJobSourceActionHandlerBase {
         } else {
             //获取最新buildNo
             DeployVersionVo deployVersionVo = deployVersionMapper.getVersionByAppSystemIdAndAppModuleIdAndVersion(deployJobVo.getAppSystemId(), deployJobVo.getAppModuleId(), deployJobVo.getVersion());
-            if(deployVersionVo == null){
-                throw  new DeployVersionNotFoundException(deployJobVo.getVersion());
+            if (deployVersionVo == null) {
+                throw new DeployVersionNotFoundException(deployJobVo.getVersion());
             }
             Integer maxBuildNo = deployVersionMapper.getDeployVersionMaxBuildNoByVersionIdLock(deployVersionVo.getId());
             if (maxBuildNo == null) {

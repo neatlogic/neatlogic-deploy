@@ -23,7 +23,8 @@
         `node_type`,
         `user_name`,
         `runner_id`,
-        `is_delete`
+        `is_delete`,
+        `sort`
         <choose>
             <when test="sqlVo.status == 'pending'">
             </when>
@@ -50,7 +51,8 @@
         #{sqlVo.nodeType},
         #{sqlVo.username},
         #{runnerId},
-        #{sqlVo.isDelete}
+        #{sqlVo.isDelete},
+        #{sqlVo.sort}
         <choose>
             <when test="sqlVo.status == 'pending'">
             </when>
@@ -62,28 +64,15 @@
             </otherwise>
         </choose>
         )
-        ON DUPLICATE KEY UPDATE
-        `status` = #{sqlVo.status},
-        `md5` = #{sqlVo.md5},
-        `host` = #{sqlVo.host},
-        `port` = #{sqlVo.port},
-        `node_name` = #{sqlVo.nodeName},
-        `node_type` = #{sqlVo.nodeType},
-        `user_name` = #{sqlVo.username},
-        `is_delete` = #{sqlVo.isDelete},
-        `runner_id` = #{runnerId}
     </insert>
 
     <insert id="insertDeploySql">
-        insert into deploy_sql_job_phase(`id`, `job_id`, `job_phase_name`, `job_phase_name`, `sql_id`, `sort`)
+        insert into deploy_sql_job_phase(`id`, `job_id`, `job_phase_name`, `job_phase_id`, `sql_id`)
         values (#{id},
                 #{jobId},
                 #{phaseName},
                 #{phaseId},
-                #{sqlId},
-                #{sort}) ON DUPLICATE KEY
-        UPDATE
-            `sort` = #{sort}
+                #{sqlId})
     </insert>
 
     <insert id="insertDeploySqlList">
@@ -202,7 +191,7 @@
         r.`port` AS runnerPort,
         dsd.`node_name` AS nodeName
         <include refid="searchDeploySql"></include>
-        ORDER BY dsjp.`sort` ASC
+        ORDER BY dsd.`sort` ASC
         <if test="needPage">
             LIMIT #{startNum}, #{pageSize}
         </if>
@@ -310,10 +299,11 @@
         WHERE id = #{id}
     </update>
 
-    <update id="updateDeploySqlIsDeleteByIdList">
+    <update id="deleteDeploySqlIsDeleteByIdList">
         UPDATE deploy_sql_detail
         SET
-        `is_delete` = #{isDelete}
+        is_delete = 1,
+        sort = 999999
         WHERE id in
         <foreach collection="idList" item="id" separator="," open="(" close=")">
             #{id}
@@ -341,6 +331,15 @@
         <foreach collection="idList" item="id" separator="," open="(" close=")">
             #{id}
         </foreach>
+    </update>
+
+    <update id="updateDeploySqlDetail">
+        update deploy_sql_detail
+        set `status`    = #{status},
+            `md5`       = #{md5},
+            `is_delete` = #{isDelete},
+            sort        = #{sort}
+        where id = #{id}
     </update>
 
 </mapper>
