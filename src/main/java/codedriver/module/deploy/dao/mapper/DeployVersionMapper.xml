@@ -302,6 +302,12 @@
         <if test="endRev != null and endRev != ''">
             end_rev = #{endRev},
         </if>
+        <if test="runnerMapId != null">
+            runner_map_id = #{runnerMapId},
+        </if>
+        <if test="runnerGroupStr != null and runnerGroupStr != ''">
+            runner_group = #{runnerGroupStr},
+        </if>
         lcu = #{lcu},
         lcd = now(3)
         where id = #{id}
@@ -311,6 +317,9 @@
         update deploy_version_buildno set
         <if test="runnerMapId != null">
             runner_map_id = #{runnerMapId},
+        </if>
+        <if test="runnerGroupStr != null and runnerGroupStr != ''">
+            runner_group = #{runnerGroupStr},
         </if>
         <if test="endRev != null and endRev != ''">
             end_rev = #{endRev},
@@ -330,6 +339,9 @@
         </if>
         <if test="runnerMapId != null">
             runner_map_id = #{runnerMapId},
+        </if>
+        <if test="runnerGroupStr != null and runnerGroupStr != ''">
+            runner_group = #{runnerGroupStr},
         </if>
         <if test="buildNo != null">
             build_no = #{buildNo},
@@ -358,6 +370,7 @@
             job_id,
             status,
             runner_map_id,
+            runner_group,
             build_no,
             is_mirror,
             lcu,
@@ -368,6 +381,7 @@
             #{jobId},
             #{status},
             #{runnerMapId},
+            #{runnerGroupStr},
             #{buildNo},
             #{isMirror},
             #{lcu},

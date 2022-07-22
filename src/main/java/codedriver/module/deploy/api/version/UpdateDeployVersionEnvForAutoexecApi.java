@@ -48,6 +48,7 @@ public class UpdateDeployVersionEnvForAutoexecApi extends PrivateApiComponentBas
 
     @Input({
             @Param(name = "runnerId", desc = "runnerId", type = ApiParamType.LONG),
+            @Param(name = "runnerGroup", desc = "runnerGroup", type = ApiParamType.JSONOBJECT),
             @Param(name = "jobId", desc = "作业ID", type = ApiParamType.LONG),
             @Param(name = "sysId", desc = "应用ID", isRequired = true, type = ApiParamType.LONG),
             @Param(name = "moduleId", desc = "应用系统id", isRequired = true, type = ApiParamType.LONG),
