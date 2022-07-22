@@ -3,10 +3,8 @@ package codedriver.module.deploy.service;
 import codedriver.framework.autoexec.exception.AutoexecJobRunnerGroupRunnerNotFoundException;
 import codedriver.framework.cmdb.crossover.IAttrCrossoverMapper;
 import codedriver.framework.cmdb.crossover.ICiEntityCrossoverMapper;
-import codedriver.framework.cmdb.crossover.ICiEntityCrossoverService;
 import codedriver.framework.cmdb.crossover.IRelCrossoverMapper;
 import codedriver.framework.cmdb.dto.ci.AttrVo;
-import codedriver.framework.cmdb.dto.ci.CiVo;
 import codedriver.framework.cmdb.dto.ci.RelVo;
 import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
 import codedriver.framework.cmdb.dto.transaction.CiEntityTransactionVo;
@@ -26,7 +24,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author longrf
