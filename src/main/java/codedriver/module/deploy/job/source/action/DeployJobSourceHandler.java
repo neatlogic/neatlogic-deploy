@@ -202,6 +202,7 @@ public class DeployJobSourceHandler extends AutoexecJobSourceActionHandlerBase {
                         continue;
                     } else {
                         insertSqlDetailList.add(newSqlVo);
+                        continue;
                     }
                 }
 
