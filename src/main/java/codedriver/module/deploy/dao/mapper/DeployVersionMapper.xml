@@ -248,6 +248,7 @@
         compile_end_time as compileEndTime,
         compile_end_time as compileEndTime,
         runner_map_id as runnerMapId,
+        runner_group as runnerGroupStr,
         end_rev as endRev
         from deploy_version_buildno
         where version_id = #{versionId} and build_no = #{buildNo}
@@ -261,6 +262,7 @@
         job_id as jobId,
         status as status,
         runner_map_id as runnerMapId,
+        runner_group as runnerGroupStr,
         build_no as buildNo,
         is_mirror as isMirror
         from deploy_version_env
