@@ -3,8 +3,10 @@ package codedriver.module.deploy.service;
 import codedriver.framework.autoexec.exception.AutoexecJobRunnerGroupRunnerNotFoundException;
 import codedriver.framework.cmdb.crossover.IAttrCrossoverMapper;
 import codedriver.framework.cmdb.crossover.ICiEntityCrossoverMapper;
+import codedriver.framework.cmdb.crossover.ICiEntityCrossoverService;
 import codedriver.framework.cmdb.crossover.IRelCrossoverMapper;
 import codedriver.framework.cmdb.dto.ci.AttrVo;
+import codedriver.framework.cmdb.dto.ci.CiVo;
 import codedriver.framework.cmdb.dto.ci.RelVo;
 import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
 import codedriver.framework.cmdb.dto.transaction.CiEntityTransactionVo;
@@ -17,14 +19,14 @@ import codedriver.framework.deploy.exception.DeployAppConfigModuleRunnerGroupNot
 import codedriver.framework.dto.runner.RunnerGroupVo;
 import codedriver.framework.dto.runner.RunnerMapVo;
 import codedriver.module.deploy.dao.mapper.DeployAppConfigMapper;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author longrf
@@ -103,15 +105,28 @@ public class DeployAppConfigServiceImpl implements DeployAppConfigService {
      * @param paramObj              入参
      */
     private void addRelEntityData(CiEntityTransactionVo ciEntityTransactionVo, JSONObject paramObj) {
-        ICiEntityCrossoverMapper iCiEntityCrossoverMapper = CrossoverServiceFactory.getApi(ICiEntityCrossoverMapper.class);
-        IRelCrossoverMapper relCrossoverMapper = CrossoverServiceFactory.getApi(IRelCrossoverMapper.class);
 
-        RelVo APPComponentRel = relCrossoverMapper.getRelByCiIdAndRelName(paramObj.getLong("ciId"), "APPComponent");
-        if (APPComponentRel == null) {
+        if (CollectionUtils.isEmpty(paramObj.getJSONArray("needUpdateRelList"))) {
             return;
         }
-        CiEntityVo appModuleCiEntity = iCiEntityCrossoverMapper.getCiEntityBaseInfoById(paramObj.getLong("appModuleId"));
-        ciEntityTransactionVo.addRelEntityData(APPComponentRel, APPComponentRel.getDirection(), appModuleCiEntity.getCiId(), appModuleCiEntity.getId());
+
+        IRelCrossoverMapper relCrossoverMapper = CrossoverServiceFactory.getApi(IRelCrossoverMapper.class);
+        List<RelVo> relVoList = relCrossoverMapper.getRelByCiId(paramObj.getLong("ciId"));
+        ICiEntityCrossoverMapper iCiEntityCrossoverMapper = CrossoverServiceFactory.getApi(ICiEntityCrossoverMapper.class);
+
+        for (RelVo relVo : relVoList) {
+            if (!paramObj.getJSONArray("needUpdateRelList").contains(relVo.getFromCiName())) {
+                continue;
+            }
+            if (StringUtils.isBlank(getRelMap().get(relVo.getFromCiName()))) {
+                continue;
+            }
+            CiEntityVo relCiEntity = iCiEntityCrossoverMapper.getCiEntityBaseInfoById(paramObj.getLong(getRelMap().get(relVo.getFromCiName())));
+            if (relCiEntity == null) {
+                continue;
+            }
+            ciEntityTransactionVo.addRelEntityData(relVo, relVo.getDirection(), relCiEntity.getCiId(), relCiEntity.getId());
+        }
     }
 
     /**
@@ -121,29 +136,51 @@ public class DeployAppConfigServiceImpl implements DeployAppConfigService {
      * @param paramObj              入参
      */
     void addAttrEntityData(CiEntityTransactionVo ciEntityTransactionVo, JSONObject paramObj) {
+
+        if (CollectionUtils.isEmpty(paramObj.getJSONArray("needUpdateAttrList"))) {
+            return;
+        }
+
         IAttrCrossoverMapper attrCrossoverMapper = CrossoverServiceFactory.getApi(IAttrCrossoverMapper.class);
         List<AttrVo> attrVoList = attrCrossoverMapper.getAttrByCiId(paramObj.getLong("ciId"));
 
         for (AttrVo attrVo : attrVoList) {
-            if (CollectionUtils.isNotEmpty(paramObj.getJSONArray("needUpdateAttrList"))) {
-                if (getAttrMap().containsKey(attrVo.getName()) && paramObj.getJSONArray("needUpdateAttrList").contains(attrVo.getName())) {
-                    ciEntityTransactionVo.addAttrEntityData(attrVo, paramObj.getString(getAttrMap().get(attrVo.getName())));
-                }
+            if (!paramObj.getJSONArray("needUpdateAttrList").contains(attrVo.getName())) {
+                continue;
+            }
+            String attrParam = getAttrMap().get(attrVo.getName());
+            if (StringUtils.isBlank(attrParam)) {
+                continue;
+            }
+            if (StringUtils.equals(attrVo.getName(), "state") || StringUtils.equals(attrVo.getName(), "owner")) {
+                ciEntityTransactionVo.addAttrEntityData(attrVo, CollectionUtils.isNotEmpty(paramObj.getJSONArray(attrParam)) ? paramObj.getJSONArray(attrParam) : new JSONArray());
             } else {
-                if (getAttrMap().containsKey(attrVo.getName())) {
-                    ciEntityTransactionVo.addAttrEntityData(attrVo, paramObj.getString(getAttrMap().get(attrVo.getName())));
-                }
+                ciEntityTransactionVo.addAttrEntityData(attrVo, paramObj.getString(attrParam) != null ? paramObj.getString(attrParam) : "");
             }
         }
     }
 
     public static Map<String, String> getAttrMap() {
         Map<String, String> map = new HashMap<>();
+        //实例
         map.put("name", "name");
         map.put("ip", "ip");
         map.put("maintenance_window", "maintenanceWindow");
         map.put("port", "port");
         map.put("app_environment", "envId");
+
+        //系统
+        map.put("state", "stateIdList");
+        map.put("owner", "ownerIdList");
+        map.put("abbrName", "abbrName");
+        map.put("description", "description");
+        return map;
+    }
+
+    public static Map<String, String> getRelMap() {
+        Map<String, String> map = new HashMap<>();
+        map.put("APP", "appSystemId");
+        map.put("APPComponent", "appModuleId");
         return map;
     }
 }

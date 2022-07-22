@@ -17,7 +17,9 @@ import codedriver.framework.autoexec.job.action.core.AutoexecJobActionHandlerFac
 import codedriver.framework.autoexec.job.action.core.IAutoexecJobActionHandler;
 import codedriver.framework.cmdb.crossover.IAppSystemMapper;
 import codedriver.framework.cmdb.crossover.ICiEntityCrossoverMapper;
+import codedriver.framework.cmdb.dao.mapper.resourcecenter.ResourceCenterMapper;
 import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
+import codedriver.framework.cmdb.dto.resourcecenter.ResourceVo;
 import codedriver.framework.cmdb.dto.resourcecenter.entity.AppModuleVo;
 import codedriver.framework.cmdb.dto.resourcecenter.entity.AppSystemVo;
 import codedriver.framework.cmdb.exception.cientity.CiEntityNotFoundException;
@@ -34,7 +36,9 @@ import codedriver.framework.scheduler.dto.JobObject;
 import codedriver.framework.scheduler.exception.ScheduleHandlerNotFoundException;
 import codedriver.module.deploy.dao.mapper.DeployAppConfigMapper;
 import codedriver.module.deploy.schedule.plugin.DeployJobAutoFireJob;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -49,6 +53,8 @@ public class DeployJobServiceImpl implements DeployJobService {
     private final static Logger logger = LoggerFactory.getLogger(DeployJobServiceImpl.class);
     @Resource
     DeployAppConfigMapper deployAppConfigMapper;
+    @Resource
+    private ResourceCenterMapper resourceCenterMapper;
 
     @Override
     public void initDeployParam(JSONObject jsonObj) {
@@ -79,9 +85,11 @@ public class DeployJobServiceImpl implements DeployJobService {
                 throw new CiEntityNotFoundException(jsonObj.getString("envName"));
             }
         } else if (envId != null) {
-            if (iCiEntityCrossoverMapper.getCiEntityBaseInfoById(envId) == null) {
+            CiEntityVo envEntity = iCiEntityCrossoverMapper.getCiEntityBaseInfoById(envId);
+            if (envEntity == null) {
                 throw new CiEntityNotFoundException(jsonObj.getLong("envId"));
             }
+            jsonObj.put("envName", envEntity.getName());
         } else {
             throw new ParamIrregularException("envId | envName");
         }
@@ -135,7 +143,23 @@ public class DeployJobServiceImpl implements DeployJobService {
         jsonObj.put("version", moduleJson.getString("version"));
         JSONObject executeConfig = jsonObj.getJSONObject("executeConfig");
         executeConfig.put("executeNodeConfig", new JSONObject() {{
-            put("selectNodeList", moduleJson.getJSONArray("selectNodeList"));
+            JSONArray selectNodeArray = moduleJson.getJSONArray("selectNodeList");
+            if (CollectionUtils.isEmpty(selectNodeArray)) {
+                //如果selectNodeList 是empty，则发布全部实例
+                List<Long> instanceIdList = resourceCenterMapper.getAppInstanceResourceIdListByAppSystemIdAndModuleIdAndEnvId(jsonObj.toJavaObject(ResourceVo.class), TenantContext.get().getDataDbName());
+                if (CollectionUtils.isNotEmpty(instanceIdList)) {
+                    List<ResourceVo> instanceList = resourceCenterMapper.getAppInstanceResourceListByIdList(instanceIdList, TenantContext.get().getDataDbName());
+                    for (ResourceVo instance : instanceList) {
+                        JSONObject instanceJson = new JSONObject();
+                        instanceJson.put("id",instance.getId());
+                        instanceJson.put("ip",instance.getIp());
+                        instanceJson.put("port",instance.getPort());
+                        instanceJson.put("name",instance.getName());
+                        selectNodeArray.add(instanceJson);
+                    }
+                }
+            }
+            put("selectNodeList", selectNodeArray);
         }});
         jsonObj.put("name", jsonObj.getString("appSystemName") + "/" + jsonObj.getString("appModuleName") + "/" + jsonObj.getString("envName") + "/" + jsonObj.getString("scenarioName"));
     }
