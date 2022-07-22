@@ -82,9 +82,11 @@ public class DeployJobServiceImpl implements DeployJobService {
                 throw new CiEntityNotFoundException(jsonObj.getString("envName"));
             }
         } else if (envId != null) {
-            if (iCiEntityCrossoverMapper.getCiEntityBaseInfoById(envId) == null) {
+            CiEntityVo envEntity = iCiEntityCrossoverMapper.getCiEntityBaseInfoById(envId);
+            if (envEntity == null) {
                 throw new CiEntityNotFoundException(jsonObj.getLong("envId"));
             }
+            jsonObj.put("envName", envEntity.getName());
         } else {
             throw new ParamIrregularException("envId | envName");
         }
