@@ -208,7 +208,7 @@ public class DeployJobSourceHandler extends AutoexecJobSourceActionHandlerBase {
 
         }
         if (CollectionUtils.isNotEmpty(needDeleteSqlIdList)) {
-            deploySqlMapper.deleteDeploySqlIsDeleteByIdList(needDeleteSqlIdList);
+            deploySqlMapper.updateDeploySqlIsDeleteByIdList(needDeleteSqlIdList);
         }
         if (CollectionUtils.isNotEmpty(insertSqlList)) {
             for (DeploySqlDetailVo insertSqlVo : insertSqlList) {
@@ -235,7 +235,7 @@ public class DeployJobSourceHandler extends AutoexecJobSourceActionHandlerBase {
                 throw new AutoexecJobPhaseNotFoundException(paramObj.getString("phaseName"));
             }
             deploySqlMapper.insertDeploySql(new DeploySqlJobPhaseVo(paramObj.getLong("jobId"), paramObj.getString("phaseName"), phaseVo.getId(), paramDeploySqlVo.getId()));
-            deploySqlMapper.insertDeploySqlDetail(paramDeploySqlVo, paramObj.getLong("sysId"), paramObj.getLong("envId"), paramObj.getLong("moduleId"), paramObj.getString("version"), paramObj.getLong("runnerId"));
+                deploySqlMapper.insertDeploySqlDetail(paramDeploySqlVo, paramObj.getLong("sysId"), paramObj.getLong("envId"), paramObj.getLong("moduleId"), paramObj.getString("version"), paramObj.getLong("runnerId"));
         }
     }
 

@@ -175,7 +175,7 @@
         r.`port` AS runnerPort,
         dsd.`node_name` AS nodeName
         <include refid="searchDeploySql"></include>
-        ORDER BY dsd.`sort` ASC
+        ORDER BY dsd.`sort` ASC, CONVERT( dsd.sql_file USING gbk) COLLATE gbk_chinese_ci ASC
         <if test="needPage">
             LIMIT #{startNum}, #{pageSize}
         </if>
@@ -306,7 +306,7 @@
         WHERE id = #{id}
     </update>
 
-    <update id="deleteDeploySqlIsDeleteByIdList">
+    <update id="updateDeploySqlIsDeleteByIdList">
         UPDATE deploy_sql_detail
         SET
         is_delete = 1,
