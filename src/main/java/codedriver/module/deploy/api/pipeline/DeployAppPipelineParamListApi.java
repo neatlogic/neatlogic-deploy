@@ -22,6 +22,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -60,15 +61,15 @@ public class DeployAppPipelineParamListApi extends PrivateApiComponentBase {
         DeployAppConfigVo searchVo = new DeployAppConfigVo(appSystemId);
         DeployAppConfigVo deployAppConfigVo = deployAppConfigMapper.getAppConfigVo(searchVo);
         if (deployAppConfigVo == null) {
-            return null;
+            return new ArrayList<>();
         }
         DeployPipelineConfigVo config = deployAppConfigVo.getConfig();
         if (config == null) {
-            return null;
+            return new ArrayList<>();
         }
         List<AutoexecParamVo> runtimeParamList = config.getRuntimeParamList();
         if (CollectionUtils.isEmpty(runtimeParamList)) {
-            return null;
+            return new ArrayList<>();
         }
         IAutoexecServiceCrossoverService autoexecServiceCrossoverService = CrossoverServiceFactory.getApi(IAutoexecServiceCrossoverService.class);
         for (AutoexecParamVo autoexecParamVo : runtimeParamList) {

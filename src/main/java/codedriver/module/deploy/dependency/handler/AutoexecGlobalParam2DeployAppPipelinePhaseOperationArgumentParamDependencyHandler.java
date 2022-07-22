@@ -8,10 +8,7 @@ package codedriver.module.deploy.dependency.handler;
 import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.autoexec.constvalue.AutoexecFromType;
 import codedriver.framework.autoexec.constvalue.ParamMappingMode;
-import codedriver.framework.autoexec.dto.combop.AutoexecCombopPhaseConfigVo;
-import codedriver.framework.autoexec.dto.combop.AutoexecCombopPhaseOperationConfigVo;
-import codedriver.framework.autoexec.dto.combop.AutoexecCombopPhaseOperationVo;
-import codedriver.framework.autoexec.dto.combop.ParamMappingVo;
+import codedriver.framework.autoexec.dto.combop.*;
 import codedriver.framework.cmdb.crossover.ICiEntityCrossoverMapper;
 import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
 import codedriver.framework.crossover.CrossoverServiceFactory;
@@ -21,7 +18,6 @@ import codedriver.framework.dependency.dto.DependencyInfoVo;
 import codedriver.framework.dependency.dto.DependencyVo;
 import codedriver.framework.deploy.dto.app.DeployAppConfigVo;
 import codedriver.framework.deploy.dto.app.DeployPipelineConfigVo;
-import codedriver.framework.deploy.dto.app.DeployPipelinePhaseVo;
 import codedriver.module.deploy.dao.mapper.DeployAppConfigMapper;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
@@ -60,12 +56,12 @@ public class AutoexecGlobalParam2DeployAppPipelinePhaseOperationArgumentParamDep
         if (pipelineConfigVo == null) {
             return null;
         }
-        List<DeployPipelinePhaseVo> combopPhaseList = pipelineConfigVo.getCombopPhaseList();
+        List<AutoexecCombopPhaseVo> combopPhaseList = pipelineConfigVo.getCombopPhaseList();
         if (CollectionUtils.isEmpty(combopPhaseList)) {
             return null;
         }
         Long phaseId = config.getLong("phaseId");
-        for (DeployPipelinePhaseVo combopPhaseVo : combopPhaseList) {
+        for (AutoexecCombopPhaseVo combopPhaseVo : combopPhaseList) {
             if (combopPhaseVo == null) {
                 continue;
             }
@@ -87,12 +83,12 @@ public class AutoexecGlobalParam2DeployAppPipelinePhaseOperationArgumentParamDep
             if (CollectionUtils.isEmpty(phaseOperationList)) {
                 return null;
             }
-            Long operationId = Long.valueOf(dependencyVo.getTo());
+            Long id = Long.valueOf(dependencyVo.getTo());
             for (AutoexecCombopPhaseOperationVo phaseOperationVo : phaseOperationList) {
                 if (phaseOperationVo == null) {
                     continue;
                 }
-                if (!Objects.equals(phaseOperationVo.getOperationId(), operationId)) {
+                if (!Objects.equals(phaseOperationVo.getId(), id)) {
                     continue;
                 }
                 AutoexecCombopPhaseOperationConfigVo operationConfigVo = phaseOperationVo.getConfig();
@@ -111,7 +107,7 @@ public class AutoexecGlobalParam2DeployAppPipelinePhaseOperationArgumentParamDep
                         continue;
                     }
                     if (Objects.equals(paramMappingVo.getValue(), dependencyVo.getFrom())) {
-                        String operationName = phaseOperationVo.getName();
+                        String operationName = phaseOperationVo.getOperationName();
                         String phaseName = combopPhaseVo.getName();
                         List<String> pathList = new ArrayList<>();
                         pathList.add("应用配置");
@@ -152,7 +148,7 @@ public class AutoexecGlobalParam2DeployAppPipelinePhaseOperationArgumentParamDep
                         }
 
                         String urlFormat = stringBuilder.toString();
-                        String value = operationId + "_" + System.currentTimeMillis();
+                        String value = id + "_" + System.currentTimeMillis();
                         return new DependencyInfoVo(value, dependencyInfoConfig, "自由参数", pathList, urlFormat, this.getGroupName());
                     }
                 }
