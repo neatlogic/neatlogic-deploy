@@ -46,8 +46,6 @@ public interface DeploySqlMapper extends IDeploySqlCrossoverMapper {
 
     void insertDeploySql(DeploySqlJobPhaseVo deploySqlVo);
 
-    void insertDeploySqlList(List<DeploySqlJobPhaseVo> sqlJobPhaseVoList);
-
     void resetDeploySqlStatusBySqlIdList(@Param("idList") List<Long> idList);
 
 }

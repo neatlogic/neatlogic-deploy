@@ -67,28 +67,12 @@
     </insert>
 
     <insert id="insertDeploySql">
-        insert into deploy_sql_job_phase(`id`, `job_id`, `job_phase_name`, `sql_id`)
+        insert into deploy_sql_job_phase(`id`, `job_id`, `job_phase_name`, `job_phase_id`, `sql_id`)
         values (#{id},
                 #{jobId},
                 #{phaseName},
                 #{phaseId},
                 #{sqlId})
-    </insert>
-
-    <insert id="insertDeploySqlList">
-        insert into deploy_sql_job_phase(`id`, `job_id`, `job_phase_name`, `job_phase_id`, `sql_id`,`sort`)
-        values
-        <foreach collection="list" item="vo" separator=",">
-            (#{vo.id},
-            #{vo.jobId},
-            #{vo.phaseName},
-            #{vo.phaseId},
-            #{vo.sqlId},
-            #{vo.sort})
-        </foreach>
-        ON DUPLICATE KEY
-        UPDATE
-        `sort` = VALUES(sort)
     </insert>
 
     <select id="getDeploySqlDetail" resultType="codedriver.framework.deploy.dto.sql.DeploySqlDetailVo">
@@ -157,7 +141,7 @@
                dsd.resource_id     as resourceId,
                dsd.`is_delete`     as isDelete,
                asjp.job_id         as jobId,
-               asjp.job_phase_id as phaseId,
+               asjp.job_phase_id   as phaseId,
                asjp.job_phase_name as phaseName
         FROM deploy_sql_job_phase asjp
                  join deploy_sql_detail dsd ON dsd.id = asjp.sql_id
