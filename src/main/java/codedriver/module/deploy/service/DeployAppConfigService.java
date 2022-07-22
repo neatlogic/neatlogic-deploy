@@ -2,7 +2,10 @@ package codedriver.module.deploy.service;
 
 import codedriver.framework.cmdb.dto.transaction.CiEntityTransactionVo;
 import codedriver.framework.deploy.dto.app.DeployAppConfigVo;
+import codedriver.framework.dto.runner.RunnerMapVo;
 import com.alibaba.fastjson.JSONObject;
+
+import java.util.List;
 
 /**
  * @author longrf
@@ -24,5 +27,14 @@ public interface DeployAppConfigService {
      * @param paramObj              入参
      */
     void addAttrEntityDataAndRelEntityData(CiEntityTransactionVo ciEntityTransactionVo, JSONObject paramObj);
+
+    /**
+     * 根据应用模块ID获取runner组
+     *
+     * @param appSystemId 应用ID
+     * @param appModuleId 模块ID
+     * @return
+     */
+    List<RunnerMapVo> getAppModuleRunnerGroupByAppSystemIdAndModuleId(Long appSystemId, Long appModuleId);
 
 }

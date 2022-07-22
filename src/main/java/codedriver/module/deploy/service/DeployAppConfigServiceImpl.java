@@ -1,5 +1,6 @@
 package codedriver.module.deploy.service;
 
+import codedriver.framework.autoexec.exception.AutoexecJobRunnerGroupRunnerNotFoundException;
 import codedriver.framework.cmdb.crossover.IAttrCrossoverMapper;
 import codedriver.framework.cmdb.crossover.ICiEntityCrossoverMapper;
 import codedriver.framework.cmdb.crossover.IRelCrossoverMapper;
@@ -7,10 +8,14 @@ import codedriver.framework.cmdb.dto.ci.AttrVo;
 import codedriver.framework.cmdb.dto.ci.RelVo;
 import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
 import codedriver.framework.cmdb.dto.transaction.CiEntityTransactionVo;
+import codedriver.framework.cmdb.exception.cientity.CiEntityNotFoundException;
 import codedriver.framework.crossover.CrossoverServiceFactory;
 import codedriver.framework.deploy.dto.app.DeployAppConfigEnvDBConfigVo;
 import codedriver.framework.deploy.dto.app.DeployAppConfigVo;
 import codedriver.framework.deploy.dto.app.DeployAppEnvAutoConfigVo;
+import codedriver.framework.deploy.exception.DeployAppConfigModuleRunnerGroupNotFoundException;
+import codedriver.framework.dto.runner.RunnerGroupVo;
+import codedriver.framework.dto.runner.RunnerMapVo;
 import codedriver.module.deploy.dao.mapper.DeployAppConfigMapper;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
@@ -69,6 +74,27 @@ public class DeployAppConfigServiceImpl implements DeployAppConfigService {
         ciEntityTransactionVo.setDescription(null);
     }
 
+    @Override
+    public List<RunnerMapVo> getAppModuleRunnerGroupByAppSystemIdAndModuleId(Long appSystemId, Long appModuleId) {
+        ICiEntityCrossoverMapper iCiEntityCrossoverMapper = CrossoverServiceFactory.getApi(ICiEntityCrossoverMapper.class);
+        CiEntityVo appSystemEntity = iCiEntityCrossoverMapper.getCiEntityBaseInfoById(appSystemId);
+        if (appSystemEntity == null) {
+            throw new CiEntityNotFoundException(appSystemId);
+        }
+        CiEntityVo appModuleEntity = iCiEntityCrossoverMapper.getCiEntityBaseInfoById(appModuleId);
+        if (appModuleEntity == null) {
+            throw new CiEntityNotFoundException(appModuleId);
+        }
+        RunnerGroupVo runnerGroupVo = deployAppConfigMapper.getAppModuleRunnerGroupByAppSystemIdAndModuleId(appSystemId, appModuleId);
+        if (runnerGroupVo == null) {
+            throw new DeployAppConfigModuleRunnerGroupNotFoundException(appSystemEntity.getName() + "(" + appSystemId + ")", appModuleEntity.getName() + "(" + appModuleId + ")");
+        }
+        List<RunnerMapVo> runnerMapList = runnerGroupVo.getRunnerMapList();
+        if (com.alibaba.nacos.common.utils.CollectionUtils.isEmpty(runnerMapList)) {
+            throw new AutoexecJobRunnerGroupRunnerNotFoundException(runnerGroupVo.getName() + ":" + runnerGroupVo.getId());
+        }
+        return runnerMapList;
+    }
 
     /**
      * 添加关系
