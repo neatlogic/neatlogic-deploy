@@ -34,12 +34,15 @@ import codedriver.framework.scheduler.dto.JobObject;
 import codedriver.framework.scheduler.exception.ScheduleHandlerNotFoundException;
 import codedriver.module.deploy.dao.mapper.DeployAppConfigMapper;
 import codedriver.module.deploy.schedule.plugin.DeployJobAutoFireJob;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -135,7 +138,15 @@ public class DeployJobServiceImpl implements DeployJobService {
         jsonObj.put("version", moduleJson.getString("version"));
         JSONObject executeConfig = jsonObj.getJSONObject("executeConfig");
         executeConfig.put("executeNodeConfig", new JSONObject() {{
-            put("selectNodeList", moduleJson.getJSONArray("selectNodeList"));
+            JSONArray selectNodeArray = moduleJson.getJSONArray("selectNodeList");
+            if(CollectionUtils.isNotEmpty(selectNodeArray)){
+                put("selectNodeList", selectNodeArray);
+            }else{//如果selectNodeList 是empty，则发布全部实例
+               put("filter",new JSONObject(){{
+                   put("appSystemIdList", Collections.singletonList(jsonObj.getLong("appSystemId")));
+                   put("appModuleIdList", Collections.singletonList(jsonObj.getLong("appModuleId")));
+               }});
+            }
         }});
         jsonObj.put("name", jsonObj.getString("appSystemName") + "/" + jsonObj.getString("appModuleName") + "/" + jsonObj.getString("envName") + "/" + jsonObj.getString("scenarioName"));
     }
