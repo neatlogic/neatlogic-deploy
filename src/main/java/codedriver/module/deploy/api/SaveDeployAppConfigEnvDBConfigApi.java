@@ -110,6 +110,7 @@ public class SaveDeployAppConfigEnvDBConfigApi extends PrivateApiComponentBase {
         CiEntityTransactionVo ciEntityTransactionVo = new CiEntityTransactionVo(DBCiEntityInfo);
         paramObj.put("ciId", DBCiEntityInfo.getCiId());
         paramObj.put("needUpdateAttrList", new JSONArray(Arrays.asList("app_environment")));
+        paramObj.put("needUpdateRelList", new JSONArray(Arrays.asList("APPComponent")));
         ciEntityTransactionVo.setAttrEntityData(DBCiEntityInfo.getAttrEntityData());
         deployAppConfigService.addAttrEntityDataAndRelEntityData(ciEntityTransactionVo, paramObj);
 
