@@ -34,7 +34,7 @@ import java.util.*;
 
 @Service
 @OperationType(type = OperationTypeEnum.SEARCH)
-public class DeployAppPipelineProfileParamOverrideListApi extends PrivateApiComponentBase {
+public class ListDeployAppPipelineProfileParamOverrideApi extends PrivateApiComponentBase {
 
     @Resource
     private DeployAppConfigMapper deployAppConfigMapper;

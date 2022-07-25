@@ -23,7 +23,7 @@ import javax.annotation.Resource;
 @Service
 @OperationType(type = OperationTypeEnum.DELETE)
 @Transactional
-public class DeployAppPipelineDraftDeleteApi extends PrivateApiComponentBase {
+public class DeleteDeployAppPipelineDraftApi extends PrivateApiComponentBase {
 
     @Resource
     private DeployAppConfigMapper deployAppConfigMapper;

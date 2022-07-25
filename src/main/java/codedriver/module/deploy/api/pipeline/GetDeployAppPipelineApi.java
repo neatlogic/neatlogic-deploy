@@ -25,7 +25,7 @@ import javax.annotation.Resource;
 
 @Service
 @OperationType(type = OperationTypeEnum.SEARCH)
-public class DeployAppPipelineGetApi extends PrivateApiComponentBase {
+public class GetDeployAppPipelineApi extends PrivateApiComponentBase {
 
     @Resource
     private DeployAppPipelineService deployAppPipelineService;
