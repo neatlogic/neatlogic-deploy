@@ -6,6 +6,7 @@
 package codedriver.module.deploy.api.pipeline;
 
 import codedriver.framework.asynchronization.threadlocal.UserContext;
+import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.autoexec.constvalue.ParamMappingMode;
 import codedriver.framework.autoexec.crossover.IAutoexecCombopCrossoverService;
 import codedriver.framework.autoexec.dto.AutoexecParamVo;
@@ -14,6 +15,7 @@ import codedriver.framework.autoexec.exception.AutoexecCombopPhaseNameRepeatExce
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.crossover.CrossoverServiceFactory;
 import codedriver.framework.dependency.core.DependencyManager;
+import codedriver.framework.deploy.auth.DEPLOY_BASE;
 import codedriver.framework.deploy.dto.app.DeployAppConfigVo;
 import codedriver.framework.deploy.dto.app.DeployPipelineConfigVo;
 import codedriver.framework.deploy.dto.app.DeployPipelinePhaseVo;
@@ -38,6 +40,7 @@ import java.util.List;
 import java.util.Objects;
 
 @Service
+@AuthAction(action = DEPLOY_BASE.class)
 @OperationType(type = OperationTypeEnum.OPERATE)
 @Transactional
 public class SaveDeployAppPipelineApi extends PrivateApiComponentBase {

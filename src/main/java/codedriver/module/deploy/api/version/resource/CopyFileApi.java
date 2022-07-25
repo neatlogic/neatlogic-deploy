@@ -1,6 +1,8 @@
 package codedriver.module.deploy.api.version.resource;
 
+import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.common.constvalue.ApiParamType;
+import codedriver.framework.deploy.auth.DEPLOY_BASE;
 import codedriver.framework.deploy.constvalue.DeployResourceType;
 import codedriver.framework.deploy.dto.version.DeployVersionVo;
 import codedriver.framework.deploy.exception.CopyFileFailedException;
@@ -30,6 +32,7 @@ import java.util.Objects;
  * @date 2022/6/17 9:59 上午
  */
 @Service
+@AuthAction(action = DEPLOY_BASE.class)
 @OperationType(type = OperationTypeEnum.CREATE)
 public class CopyFileApi extends PrivateApiComponentBase {
 

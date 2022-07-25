@@ -1,6 +1,8 @@
 package codedriver.module.deploy.api.version;
 
+import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.common.constvalue.ApiParamType;
+import codedriver.framework.deploy.auth.DEPLOY_BASE;
 import codedriver.framework.deploy.dto.app.DeployAppModuleVo;
 import codedriver.framework.deploy.dto.version.DeployVersionBuildNoVo;
 import codedriver.framework.restful.annotation.Input;
@@ -22,6 +24,7 @@ import java.util.List;
  * @date 2022/7/12 2:29 下午
  */
 @Service
+@AuthAction(action = DEPLOY_BASE.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
 public class SearchDeployVersionBuildNoApi extends PrivateApiComponentBase {
 

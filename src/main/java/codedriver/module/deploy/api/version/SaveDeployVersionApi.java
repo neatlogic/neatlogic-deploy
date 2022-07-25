@@ -1,9 +1,11 @@
 package codedriver.module.deploy.api.version;
 
+import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.cmdb.crossover.ICiEntityCrossoverMapper;
 import codedriver.framework.cmdb.exception.cientity.CiEntityNotFoundException;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.crossover.CrossoverServiceFactory;
+import codedriver.framework.deploy.auth.DEPLOY_BASE;
 import codedriver.framework.deploy.dto.version.DeployVersionVo;
 import codedriver.framework.deploy.exception.DeployVersionIsRepeatException;
 import codedriver.framework.dto.FieldValidResultVo;
@@ -26,7 +28,7 @@ import javax.annotation.Resource;
  * @date 2022/5/26 2:33 下午
  */
 @Service
-//@AuthAction(action = PROCESS_BASE.class)
+@AuthAction(action = DEPLOY_BASE.class)
 @OperationType(type = OperationTypeEnum.UPDATE)
 public class SaveDeployVersionApi extends PrivateApiComponentBase {
 

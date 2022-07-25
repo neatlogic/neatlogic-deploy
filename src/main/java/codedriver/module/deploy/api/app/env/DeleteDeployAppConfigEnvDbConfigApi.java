@@ -1,14 +1,8 @@
-/*
- * Copyright(c) 2021 TechSureCo.,Ltd.AllRightsReserved.
- * 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
- */
-
-package codedriver.module.deploy.api.pipeline;
+package codedriver.module.deploy.api.app.env;
 
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.deploy.auth.DEPLOY_BASE;
-import codedriver.framework.deploy.dto.app.DeployAppConfigVo;
 import codedriver.framework.restful.annotation.Description;
 import codedriver.framework.restful.annotation.Input;
 import codedriver.framework.restful.annotation.OperationType;
@@ -22,23 +16,27 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 
+/**
+ * @author longrf
+ * @date 2022/7/7 10:49 上午
+ */
 @Service
+@Transactional
 @AuthAction(action = DEPLOY_BASE.class)
 @OperationType(type = OperationTypeEnum.DELETE)
-@Transactional
-public class DeleteDeployAppPipelineDraftApi extends PrivateApiComponentBase {
+public class DeleteDeployAppConfigEnvDbConfigApi extends PrivateApiComponentBase {
 
     @Resource
-    private DeployAppConfigMapper deployAppConfigMapper;
+    DeployAppConfigMapper deployAppConfigMapper;
 
     @Override
     public String getName() {
-        return "删除流水线草稿";
+        return "删除发布应用配置的DB配置";
     }
 
     @Override
     public String getToken() {
-        return "deploy/app/pipeline/draft/delete";
+        return "deploy/app/config/env/db/config/delete";
     }
 
     @Override
@@ -47,15 +45,15 @@ public class DeleteDeployAppPipelineDraftApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "应用系统ID"),
-            @Param(name = "appModuleId", type = ApiParamType.LONG, desc = "模块ID"),
-            @Param(name = "envId", type = ApiParamType.LONG, desc = "环境ID")
+            @Param(name = "id", type = ApiParamType.LONG, isRequired = true, desc = "id")
     })
-    @Description(desc = "删除流水线草稿")
+    @Description(desc = "删除发布应用配置的DB配置")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
-        DeployAppConfigVo deployAppConfigDraftVo = paramObj.toJavaObject(DeployAppConfigVo.class);
-        deployAppConfigMapper.deleteAppConfigDraft(deployAppConfigDraftVo);
+        Long id = paramObj.getLong("id");
+
+        deployAppConfigMapper.deleteAppConfigDBConfigById(id);
+        deployAppConfigMapper.deleteAppConfigDBConfigAccountByDBConfigId(id);
         return null;
     }
 }

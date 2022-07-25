@@ -6,6 +6,7 @@
 package codedriver.module.deploy.api.pipeline;
 
 import codedriver.framework.asynchronization.threadlocal.TenantContext;
+import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.autoexec.crossover.IAutoexecProfileCrossoverService;
 import codedriver.framework.autoexec.dto.AutoexecParamVo;
 import codedriver.framework.autoexec.dto.profile.AutoexecProfileParamVo;
@@ -19,6 +20,7 @@ import codedriver.framework.cmdb.exception.resourcecenter.AppSystemNotFoundExcep
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.dto.ValueTextVo;
 import codedriver.framework.crossover.CrossoverServiceFactory;
+import codedriver.framework.deploy.auth.DEPLOY_BASE;
 import codedriver.framework.deploy.dto.app.*;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
@@ -33,6 +35,7 @@ import javax.annotation.Resource;
 import java.util.*;
 
 @Service
+@AuthAction(action = DEPLOY_BASE.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
 public class ListDeployAppPipelineProfileParamOverrideApi extends PrivateApiComponentBase {
 
