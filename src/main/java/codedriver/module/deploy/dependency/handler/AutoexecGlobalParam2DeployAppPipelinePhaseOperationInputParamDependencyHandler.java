@@ -18,6 +18,7 @@ import codedriver.framework.dependency.dto.DependencyInfoVo;
 import codedriver.framework.dependency.dto.DependencyVo;
 import codedriver.framework.deploy.dto.app.DeployAppConfigVo;
 import codedriver.framework.deploy.dto.app.DeployPipelineConfigVo;
+import codedriver.framework.deploy.dto.app.DeployPipelinePhaseVo;
 import codedriver.module.deploy.dao.mapper.DeployAppConfigMapper;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
@@ -57,12 +58,12 @@ public class AutoexecGlobalParam2DeployAppPipelinePhaseOperationInputParamDepend
         if (pipelineConfigVo == null) {
             return null;
         }
-        List<AutoexecCombopPhaseVo> combopPhaseList = pipelineConfigVo.getCombopPhaseList();
+        List<DeployPipelinePhaseVo> combopPhaseList = pipelineConfigVo.getCombopPhaseList();
         if (CollectionUtils.isEmpty(combopPhaseList)) {
             return null;
         }
         Long phaseId = config.getLong("phaseId");
-        for (AutoexecCombopPhaseVo combopPhaseVo : combopPhaseList) {
+        for (DeployPipelinePhaseVo combopPhaseVo : combopPhaseList) {
             if (combopPhaseVo == null) {
                 continue;
             }

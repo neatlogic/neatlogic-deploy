@@ -20,6 +20,7 @@ import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.deploy.dao.mapper.DeployAppConfigMapper;
+import codedriver.module.deploy.service.DeployAppPipelineService;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
@@ -42,6 +43,9 @@ public class GetDeployJobCreateInfoApi extends PrivateApiComponentBase {
 
     @Resource
     private ResourceCenterMapper resourceCenterMapper;
+
+    @Resource
+    private DeployAppPipelineService deployAppPipelineService;
 
     @Override
     public String getName() {
@@ -81,11 +85,14 @@ public class GetDeployJobCreateInfoApi extends PrivateApiComponentBase {
         //判断是否有配流水线
         List<DeployAppConfigVo> appConfigVoList = deployAppConfigMapper.getAppConfigListByAppSystemId(appSystemId);
         if (CollectionUtils.isEmpty(appConfigVoList)) {
-            throw new DeployAppConfigNotFoundException(appSystemId);
+            throw new DeployAppConfigNotFoundException(appSystemCiEntityVo);
         }
         //场景
-        DeployAppConfigVo appConfigVo = deployAppConfigMapper.getAppConfigVo(new DeployAppConfigVo(appSystemId, appModuleId, 0L));
-        DeployPipelineConfigVo pipelineConfigVo = appConfigVo.getConfig();
+
+        DeployPipelineConfigVo pipelineConfigVo = deployAppPipelineService.getDeployPipelineConfigVo(jsonObj.toJavaObject(DeployAppConfigVo.class));
+        if (pipelineConfigVo == null) {
+            throw new DeployAppConfigNotFoundException(appSystemCiEntityVo);
+        }
         result.put("scenarioList", pipelineConfigVo.getScenarioList());
 
         //环境 根据appSystemId、appModuleId 获取 envList
