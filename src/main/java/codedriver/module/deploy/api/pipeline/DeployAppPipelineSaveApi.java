@@ -16,6 +16,7 @@ import codedriver.framework.crossover.CrossoverServiceFactory;
 import codedriver.framework.dependency.core.DependencyManager;
 import codedriver.framework.deploy.dto.app.DeployAppConfigVo;
 import codedriver.framework.deploy.dto.app.DeployPipelineConfigVo;
+import codedriver.framework.deploy.dto.app.DeployPipelinePhaseVo;
 import codedriver.framework.restful.annotation.Description;
 import codedriver.framework.restful.annotation.Input;
 import codedriver.framework.restful.annotation.OperationType;
@@ -99,7 +100,7 @@ public class DeployAppPipelineSaveApi extends PrivateApiComponentBase {
         }
         deployAppConfigVo.setConfigStr(null);
         IAutoexecCombopCrossoverService autoexecCombopCrossoverService = CrossoverServiceFactory.getApi(IAutoexecCombopCrossoverService.class);
-        autoexecCombopCrossoverService.verifyAutoexecCombopConfig(deployAppConfigVo.getConfig(), false);
+        autoexecCombopCrossoverService.verifyAutoexecCombopConfig(deployAppConfigVo.getConfig().getAutoexecCombopConfigVo(), false);
         if (oldDeployAppConfigVo != null) {
             deleteDependency(oldDeployAppConfigVo);
             deployAppConfigVo.setLcu(UserContext.get().getUserUuid());
@@ -120,12 +121,12 @@ public class DeployAppPipelineSaveApi extends PrivateApiComponentBase {
      */
     private void regeneratePhaseIdAndOperationId(DeployAppConfigVo deployAppConfigVo) {
         DeployPipelineConfigVo config = deployAppConfigVo.getConfig();
-        List<AutoexecCombopPhaseVo> combopPhaseList = config.getCombopPhaseList();
+        List<DeployPipelinePhaseVo> combopPhaseList = config.getCombopPhaseList();
         if (CollectionUtils.isEmpty(combopPhaseList)) {
             return;
         }
         List<String> nameList = new ArrayList<>();
-        for (AutoexecCombopPhaseVo combopPhaseVo : combopPhaseList) {
+        for (DeployPipelinePhaseVo combopPhaseVo : combopPhaseList) {
             if (combopPhaseVo == null) {
                 continue;
             }
@@ -144,11 +145,11 @@ public class DeployAppPipelineSaveApi extends PrivateApiComponentBase {
      */
     private void regenerateOperationId(DeployAppConfigVo deployAppConfigVo) {
         DeployPipelineConfigVo config = deployAppConfigVo.getConfig();
-        List<AutoexecCombopPhaseVo> combopPhaseList = config.getCombopPhaseList();
+        List<DeployPipelinePhaseVo> combopPhaseList = config.getCombopPhaseList();
         if (CollectionUtils.isEmpty(combopPhaseList)) {
             return;
         }
-        for (AutoexecCombopPhaseVo combopPhaseVo : combopPhaseList) {
+        for (DeployPipelinePhaseVo combopPhaseVo : combopPhaseList) {
             if (combopPhaseVo == null) {
                 continue;
             }
@@ -206,14 +207,14 @@ public class DeployAppPipelineSaveApi extends PrivateApiComponentBase {
         if (config == null) {
             return;
         }
-        List<AutoexecCombopPhaseVo> combopPhaseList = config.getCombopPhaseList();
+        List<DeployPipelinePhaseVo> combopPhaseList = config.getCombopPhaseList();
         if (CollectionUtils.isEmpty(combopPhaseList)) {
             return;
         }
         Long appSystemId = deployAppConfigVo.getAppSystemId();
         Long moduleId = deployAppConfigVo.getAppModuleId();
         Long envId = deployAppConfigVo.getEnvId();
-        for (AutoexecCombopPhaseVo combopPhaseVo : combopPhaseList) {
+        for (DeployPipelinePhaseVo combopPhaseVo : combopPhaseList) {
             if (combopPhaseVo == null) {
                 continue;
             }
@@ -323,12 +324,12 @@ public class DeployAppPipelineSaveApi extends PrivateApiComponentBase {
         if (config == null) {
             return;
         }
-        List<AutoexecCombopPhaseVo> combopPhaseList = config.getCombopPhaseList();
+        List<DeployPipelinePhaseVo> combopPhaseList = config.getCombopPhaseList();
         if (CollectionUtils.isEmpty(combopPhaseList)) {
             return;
         }
         Long moduleId = deployAppConfigVo.getAppModuleId();
-        for (AutoexecCombopPhaseVo combopPhaseVo : combopPhaseList) {
+        for (DeployPipelinePhaseVo combopPhaseVo : combopPhaseList) {
             if (combopPhaseVo == null) {
                 continue;
             }

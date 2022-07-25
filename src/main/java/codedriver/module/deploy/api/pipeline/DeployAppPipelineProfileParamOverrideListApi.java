@@ -10,13 +10,12 @@ import codedriver.framework.autoexec.crossover.IAutoexecProfileCrossoverService;
 import codedriver.framework.autoexec.dto.AutoexecParamVo;
 import codedriver.framework.autoexec.dto.profile.AutoexecProfileParamVo;
 import codedriver.framework.cmdb.crossover.IAppSystemMapper;
-import codedriver.framework.cmdb.crossover.ICiEntityCrossoverMapper;
 import codedriver.framework.cmdb.dao.mapper.resourcecenter.ResourceCenterMapper;
-import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
 import codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo;
+import codedriver.framework.cmdb.dto.resourcecenter.ResourceVo;
 import codedriver.framework.cmdb.dto.resourcecenter.entity.AppEnvironmentVo;
 import codedriver.framework.cmdb.dto.resourcecenter.entity.ModuleVo;
-import codedriver.framework.cmdb.exception.cientity.CiEntityNotFoundException;
+import codedriver.framework.cmdb.exception.resourcecenter.AppSystemNotFoundException;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.dto.ValueTextVo;
 import codedriver.framework.crossover.CrossoverServiceFactory;
@@ -92,17 +91,16 @@ public class DeployAppPipelineProfileParamOverrideListApi extends PrivateApiComp
         }
 
         //查询应用层配置信息
+        String schameName = TenantContext.get().getDataDbName();
         Long appSystemId = paramObj.getLong("appSystemId");
-
-        String configStr = deployAppConfigMapper.getAppConfig(new DeployAppConfigVo(appSystemId));
-        ICiEntityCrossoverMapper ciEntityCrossoverMapper = CrossoverServiceFactory.getApi(ICiEntityCrossoverMapper.class);
-        CiEntityVo ciEntityVo = ciEntityCrossoverMapper.getCiEntityBaseInfoById(appSystemId);
-        if (ciEntityVo == null) {
-            throw new CiEntityNotFoundException(appSystemId);
+        ResourceVo appSystem = resourceCenterMapper.getAppSystemById(appSystemId, schameName);
+        if (appSystem == null) {
+            throw new AppSystemNotFoundException(appSystemId);
         }
+        String configStr = deployAppConfigMapper.getAppConfig(new DeployAppConfigVo(appSystemId));
         AutoexecParamVo paramVo = null;
         Map<String, AutoexecParamVo> paramMap = new HashMap<>();
-        String appSystemName = ciEntityVo.getName();
+        String appSystemName = appSystem.getName();
         if (StringUtils.isNotBlank(configStr)) {
             DeployPipelineConfigVo config = JSONObject.parseObject(configStr, DeployPipelineConfigVo.class);
             paramVo = findDeployProfileParamByProfileIdAndKey(config, profileId, key);
