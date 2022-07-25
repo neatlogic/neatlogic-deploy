@@ -111,9 +111,6 @@ public class DeployAppPipelineProfileParamOverrideListApi extends PrivateApiComp
             }
 
         }
-//        if (paramVo == null) {
-//            paramVo = originalProfileParamVo;
-//        }
         paramMap.put(appSystemId.toString(), paramVo);
         ValueTextVo valueTextVo = new ValueTextVo(paramVo, appSystemName);
         tbodyList.add(valueTextVo);
@@ -201,9 +198,6 @@ public class DeployAppPipelineProfileParamOverrideListApi extends PrivateApiComp
                 }
                 idList.remove(idList.size() - 1);
             }
-//            if (paramVo == null) {
-//                paramVo = originalProfileParamVo;
-//            }
             valueTextVo = new ValueTextVo(paramVo, String.join(" / ", nameList));
             tbodyList.add(valueTextVo);
         }
