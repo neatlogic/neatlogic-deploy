@@ -42,7 +42,7 @@ public class SaveDeployVersionBuildQualityApi extends PrivateApiComponentBase {
 
     @Input({
             @Param(name = "sysId", desc = "应用ID", isRequired = true, type = ApiParamType.LONG),
-            @Param(name = "moduleId", desc = "应用系统id", isRequired = true, type = ApiParamType.LONG),
+            @Param(name = "moduleId", desc = "应用模块id", isRequired = true, type = ApiParamType.LONG),
             @Param(name = "version", desc = "版本号", isRequired = true, type = ApiParamType.STRING),
     })
     @Output({
