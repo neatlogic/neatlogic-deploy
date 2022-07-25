@@ -26,9 +26,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
-@AuthAction(action = AUTOEXEC_BASE.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
-public class DeployAppPipelineParamListApi extends PrivateApiComponentBase {
+public class ListDeployAppPipelineParamApi extends PrivateApiComponentBase {
 
     @Resource
     private DeployAppConfigMapper deployAppConfigMapper;

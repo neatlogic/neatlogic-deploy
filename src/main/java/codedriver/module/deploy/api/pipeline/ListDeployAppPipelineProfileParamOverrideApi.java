@@ -34,7 +34,7 @@ import java.util.*;
 
 @Service
 @OperationType(type = OperationTypeEnum.SEARCH)
-public class DeployAppPipelineProfileParamOverrideListApi extends PrivateApiComponentBase {
+public class ListDeployAppPipelineProfileParamOverrideApi extends PrivateApiComponentBase {
 
     @Resource
     private DeployAppConfigMapper deployAppConfigMapper;
@@ -110,9 +110,6 @@ public class DeployAppPipelineProfileParamOverrideListApi extends PrivateApiComp
                 paramVo = deployProfileParamVo;
             }
 
-        }
-        if (paramVo == null) {
-            paramVo = originalProfileParamVo;
         }
         paramMap.put(appSystemId.toString(), paramVo);
         ValueTextVo valueTextVo = new ValueTextVo(paramVo, appSystemName);
@@ -200,9 +197,6 @@ public class DeployAppPipelineProfileParamOverrideListApi extends PrivateApiComp
                     break;
                 }
                 idList.remove(idList.size() - 1);
-            }
-            if (paramVo == null) {
-                paramVo = originalProfileParamVo;
             }
             valueTextVo = new ValueTextVo(paramVo, String.join(" / ", nameList));
             tbodyList.add(valueTextVo);

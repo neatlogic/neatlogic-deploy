@@ -342,8 +342,13 @@ public class DeployAppPipelineServiceImpl implements DeployAppPipelineService {
                         appSystemPhaseConfigVo.setExecuteConfig(executeConfigVo);
                     }
                 }
-                appSystemCombopPhaseVo.setParentIsActive(appSystemCombopPhaseVo.getIsActive());
-                appSystemCombopPhaseVo.setIsActive(overrideCombopPhaseVo.getIsActive());
+                Integer parentIsActive = appSystemCombopPhaseVo.getIsActive();
+                appSystemCombopPhaseVo.setParentIsActive(parentIsActive);
+                if (parentIsActive == 0) {
+                    appSystemCombopPhaseVo.setIsActive(0);
+                } else {
+                    appSystemCombopPhaseVo.setIsActive(overrideCombopPhaseVo.getIsActive());
+                }
                 break;
             }
         }

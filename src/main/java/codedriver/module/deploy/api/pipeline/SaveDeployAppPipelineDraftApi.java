@@ -25,7 +25,7 @@ import java.util.Objects;
 @Service
 @OperationType(type = OperationTypeEnum.OPERATE)
 @Transactional
-public class DeployAppPipelineDraftSaveApi extends PrivateApiComponentBase {
+public class SaveDeployAppPipelineDraftApi extends PrivateApiComponentBase {
 
     @Resource
     private DeployAppConfigMapper deployAppConfigMapper;
