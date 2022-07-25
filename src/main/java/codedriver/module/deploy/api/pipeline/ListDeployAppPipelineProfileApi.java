@@ -5,7 +5,9 @@
 
 package codedriver.module.deploy.api.pipeline;
 
+import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.common.constvalue.ApiParamType;
+import codedriver.framework.deploy.auth.DEPLOY_BASE;
 import codedriver.framework.deploy.dto.app.*;
 import codedriver.framework.exception.type.ParamNotExistsException;
 import codedriver.framework.restful.annotation.*;
@@ -23,6 +25,7 @@ import javax.annotation.Resource;
 import java.util.*;
 
 @Service
+@AuthAction(action = DEPLOY_BASE.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
 public class ListDeployAppPipelineProfileApi extends PrivateApiComponentBase {
 
