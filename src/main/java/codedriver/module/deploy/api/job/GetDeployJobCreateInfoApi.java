@@ -85,13 +85,13 @@ public class GetDeployJobCreateInfoApi extends PrivateApiComponentBase {
         //判断是否有配流水线
         List<DeployAppConfigVo> appConfigVoList = deployAppConfigMapper.getAppConfigListByAppSystemId(appSystemId);
         if (CollectionUtils.isEmpty(appConfigVoList)) {
-            throw new DeployAppConfigNotFoundException(appSystemId);
+            throw new DeployAppConfigNotFoundException(appSystemCiEntityVo);
         }
         //场景
 
         DeployPipelineConfigVo pipelineConfigVo = deployAppPipelineService.getDeployPipelineConfigVo(jsonObj.toJavaObject(DeployAppConfigVo.class));
         if (pipelineConfigVo == null) {
-            throw new DeployAppConfigNotFoundException(appSystemId);
+            throw new DeployAppConfigNotFoundException(appSystemCiEntityVo);
         }
         result.put("scenarioList", pipelineConfigVo.getScenarioList());
 
