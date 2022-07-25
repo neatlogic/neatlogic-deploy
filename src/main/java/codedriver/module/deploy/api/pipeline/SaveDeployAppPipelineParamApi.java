@@ -37,7 +37,6 @@ import java.util.List;
 
 @Service
 @Transactional
-@AuthAction(action = AUTOEXEC_BASE.class)
 @OperationType(type = OperationTypeEnum.UPDATE)
 public class SaveDeployAppPipelineParamApi extends PrivateApiComponentBase {
 
