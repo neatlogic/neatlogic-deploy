@@ -46,7 +46,7 @@ public class GetDeployAppConfigAppModuleApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "id", type = ApiParamType.LONG, isRequired = true, desc = "应用系统id")
+            @Param(name = "id", type = ApiParamType.LONG, isRequired = true, desc = "应用模块id")
     })
     @Output({
             @Param(explode = BasePageVo.class),
