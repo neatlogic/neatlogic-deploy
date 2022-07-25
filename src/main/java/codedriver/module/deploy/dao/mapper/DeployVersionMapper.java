@@ -1,6 +1,7 @@
 package codedriver.module.deploy.dao.mapper;
 
 import codedriver.framework.deploy.dto.version.DeployVersionBuildNoVo;
+import codedriver.framework.deploy.dto.version.DeployVersionBuildQualityVo;
 import codedriver.framework.deploy.dto.version.DeployVersionEnvVo;
 import codedriver.framework.deploy.dto.version.DeployVersionVo;
 import org.apache.ibatis.annotations.Param;
@@ -50,6 +51,10 @@ public interface DeployVersionMapper {
     int insertDeployVersion(DeployVersionVo versionVo);
 
     int insertDeployVersionEnv(DeployVersionEnvVo vo);
+
+    int insertDeployVersionBuildQuality(DeployVersionBuildQualityVo vo);
+
+    int insertDeployVersionBuildQualityLog(DeployVersionBuildQualityVo vo);
 
     int deleteDeployVersionById(Long id);
 
