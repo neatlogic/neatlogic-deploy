@@ -192,7 +192,7 @@ public class DeployAppPipelineServiceImpl implements DeployAppPipelineService {
             overrideProfileParamSetSource(envOverrideConfig.getOverrideProfileList(), "环境");
             overrideProfile(appConfig.getOverrideProfileList(), envOverrideConfig.getOverrideProfileList());
         } else if (moduleOverrideConfig != null && envOverrideConfig != null) {
-            List<AutoexecCombopPhaseVo> appSystemCombopPhaseList = appConfig.getCombopPhaseList();
+            List<DeployPipelinePhaseVo> appSystemCombopPhaseList = appConfig.getCombopPhaseList();
             overridePhase(appSystemCombopPhaseList, moduleOverrideConfig.getCombopPhaseList(), "模块");
             overridePhaseGroup(appConfig.getCombopGroupList(), moduleOverrideConfig.getCombopGroupList());
             overrideProfileParamSetSource(moduleOverrideConfig.getOverrideProfileList(), "模块");
@@ -279,7 +279,7 @@ public class DeployAppPipelineServiceImpl implements DeployAppPipelineService {
         }
         DeployPipelineConfigVo deployPipelineConfigVo = mergeDeployPipelineConfigVo(appConfig, moduleOverrideConfig, envOverrideConfig, targetLevel);
         IAutoexecServiceCrossoverService autoexecServiceCrossoverService = CrossoverServiceFactory.getApi(IAutoexecServiceCrossoverService.class);
-        autoexecServiceCrossoverService.updateAutoexecCombopConfig(deployPipelineConfigVo);
+        autoexecServiceCrossoverService.updateAutoexecCombopConfig(deployPipelineConfigVo.getAutoexecCombopConfigVo());
         return deployPipelineConfigVo;
     }
 
@@ -287,7 +287,7 @@ public class DeployAppPipelineServiceImpl implements DeployAppPipelineService {
      * 覆盖阶段列表配置信息
      * @param appSystemCombopPhaseList 应用层阶段列表数据
      */
-    private void overridePhase(List<AutoexecCombopPhaseVo> appSystemCombopPhaseList) {
+    private void overridePhase(List<DeployPipelinePhaseVo> appSystemCombopPhaseList) {
         overridePhase(appSystemCombopPhaseList, null);
     }
 
@@ -296,7 +296,7 @@ public class DeployAppPipelineServiceImpl implements DeployAppPipelineService {
      * @param appSystemCombopPhaseList 应用层阶段列表数据
      * @param overrideCombopPhaseList 模块层或环境层阶段列表数据
      */
-    private void overridePhase(List<AutoexecCombopPhaseVo> appSystemCombopPhaseList, List<AutoexecCombopPhaseVo> overrideCombopPhaseList) {
+    private void overridePhase(List<DeployPipelinePhaseVo> appSystemCombopPhaseList, List<DeployPipelinePhaseVo> overrideCombopPhaseList) {
         overridePhase(appSystemCombopPhaseList, overrideCombopPhaseList, null);
     }
     /**
@@ -305,11 +305,11 @@ public class DeployAppPipelineServiceImpl implements DeployAppPipelineService {
      * @param overrideCombopPhaseList 模块层或环境层阶段列表数据
      * @param inheritName
      */
-    private void overridePhase(List<AutoexecCombopPhaseVo> appSystemCombopPhaseList, List<AutoexecCombopPhaseVo> overrideCombopPhaseList, String inheritName) {
+    private void overridePhase(List<DeployPipelinePhaseVo> appSystemCombopPhaseList, List<DeployPipelinePhaseVo> overrideCombopPhaseList, String inheritName) {
         if (CollectionUtils.isEmpty(appSystemCombopPhaseList)) {
             return;
         }
-        for (AutoexecCombopPhaseVo appSystemCombopPhaseVo : appSystemCombopPhaseList) {
+        for (DeployPipelinePhaseVo appSystemCombopPhaseVo : appSystemCombopPhaseList) {
             if (StringUtils.isBlank(appSystemCombopPhaseVo.getInherit())) {
                 appSystemCombopPhaseVo.setInherit("应用");
             }
@@ -322,7 +322,7 @@ public class DeployAppPipelineServiceImpl implements DeployAppPipelineService {
             if (CollectionUtils.isEmpty(overrideCombopPhaseList)) {
                 continue;
             }
-            for (AutoexecCombopPhaseVo overrideCombopPhaseVo : overrideCombopPhaseList) {
+            for (DeployPipelinePhaseVo overrideCombopPhaseVo : overrideCombopPhaseList) {
                 if (!Objects.equals(appSystemCombopPhaseVo.getName(), overrideCombopPhaseVo.getName())) {
                     continue;
                 }
@@ -482,11 +482,11 @@ public class DeployAppPipelineServiceImpl implements DeployAppPipelineService {
      */
     private Set<Long> getProfileIdSet(DeployPipelineConfigVo config) {
         Set<Long> profileIdSet = new HashSet<>();
-        List<AutoexecCombopPhaseVo> combopPhaseList = config.getCombopPhaseList();
+        List<DeployPipelinePhaseVo> combopPhaseList = config.getCombopPhaseList();
         if (CollectionUtils.isEmpty(combopPhaseList)) {
             return profileIdSet;
         }
-        for (AutoexecCombopPhaseVo combopPhaseVo : combopPhaseList) {
+        for (DeployPipelinePhaseVo combopPhaseVo : combopPhaseList) {
             AutoexecCombopPhaseConfigVo phaseConfigVo = combopPhaseVo.getConfig();
             if (phaseConfigVo == null) {
                 continue;
