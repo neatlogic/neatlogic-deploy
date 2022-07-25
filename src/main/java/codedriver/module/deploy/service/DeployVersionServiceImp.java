@@ -2,28 +2,30 @@ package codedriver.module.deploy.service;
 
 import codedriver.framework.cmdb.crossover.ICiEntityCrossoverService;
 import codedriver.framework.crossover.CrossoverServiceFactory;
-import codedriver.framework.dao.mapper.runner.RunnerMapper;
 import codedriver.framework.deploy.constvalue.DeployResourceType;
 import codedriver.framework.deploy.constvalue.JobSourceType;
 import codedriver.framework.deploy.dto.version.DeployVersionBuildNoVo;
 import codedriver.framework.deploy.dto.version.DeployVersionEnvVo;
 import codedriver.framework.deploy.dto.version.DeployVersionVo;
-import codedriver.framework.deploy.exception.DeployJobNotFoundException;
 import codedriver.framework.deploy.exception.DeployVersionBuildNoNotFoundException;
 import codedriver.framework.deploy.exception.DeployVersionEnvNotFoundException;
 import codedriver.framework.deploy.exception.DeployVersionResourceHasBeenLockedException;
+import codedriver.framework.deploy.exception.DeployVersionRunnerNotFoundException;
 import codedriver.framework.dto.runner.RunnerMapVo;
-import codedriver.framework.exception.runner.RunnerNotFoundByRunnerMapIdException;
 import codedriver.framework.exception.type.ParamNotExistsException;
 import codedriver.framework.globallock.core.GlobalLockHandlerFactory;
 import codedriver.framework.globallock.core.IGlobalLockHandler;
-import codedriver.module.deploy.dao.mapper.DeployJobMapper;
 import codedriver.module.deploy.dao.mapper.DeployVersionMapper;
 import com.alibaba.fastjson.JSONObject;
+import com.alibaba.nacos.common.utils.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class DeployVersionServiceImp implements DeployVersionService {
@@ -32,10 +34,7 @@ public class DeployVersionServiceImp implements DeployVersionService {
     DeployVersionMapper deployVersionMapper;
 
     @Resource
-    DeployJobMapper deployJobMapper;
-
-    @Resource
-    RunnerMapper runnerMapper;
+    DeployAppConfigService deployAppConfigService;
 
     @Override
     public String getVersionRunnerUrl(JSONObject paramObj, DeployVersionVo version, String envName) {
@@ -45,25 +44,27 @@ public class DeployVersionServiceImp implements DeployVersionService {
         if (buildNo == null && envId == null) {
             throw new ParamNotExistsException("buildNo", "envId");
         }
-        Long runnerMapId;
+        List<RunnerMapVo> runnerMapList = deployAppConfigService.getAppModuleRunnerGroupByAppSystemIdAndModuleId(version.getAppSystemId(), version.getAppModuleId());
+        String url;
         if (buildNo != null) {
             DeployVersionBuildNoVo buildNoVo = deployVersionMapper.getDeployVersionBuildNoByVersionIdAndBuildNo(id, buildNo);
             if (buildNoVo == null) {
                 throw new DeployVersionBuildNoNotFoundException(buildNo);
             }
-            runnerMapId = buildNoVo.getRunnerMapId();
+            url = getRunnerUrl(runnerMapList, buildNoVo.getRunnerMapId(), buildNoVo.getRunnerGroup());
+            if (StringUtils.isBlank(url)) {
+                throw new DeployVersionRunnerNotFoundException(version.getVersion(), buildNo);
+            }
         } else {
             DeployVersionEnvVo envVo = deployVersionMapper.getDeployVersionEnvByVersionIdAndEnvId(id, envId);
             if (envVo == null) {
                 throw new DeployVersionEnvNotFoundException(envId);
             }
-            runnerMapId = envVo.getRunnerMapId();
+            url = getRunnerUrl(runnerMapList, envVo.getRunnerMapId(), envVo.getRunnerGroup());
+            if (StringUtils.isBlank(url)) {
+                throw new DeployVersionRunnerNotFoundException(version.getVersion(), envName);
+            }
         }
-        RunnerMapVo runner = runnerMapper.getRunnerMapByRunnerMapId(runnerMapId);
-        if (runner == null) {
-            throw new RunnerNotFoundByRunnerMapIdException(runnerMapId);
-        }
-        String url = runner.getUrl();
         if (!url.endsWith("/")) {
             url += "/";
         }
@@ -94,25 +95,18 @@ public class DeployVersionServiceImp implements DeployVersionService {
     }
 
     @Override
-    public String getWorkspaceRunnerUrl(Long appSystemId, Long appModuleId) {
-        if (appSystemId == null) {
-            throw new ParamNotExistsException("appSystemId");
+    public String getWorkspaceRunnerUrl(DeployVersionVo versionVo) {
+        String url;
+        Long versionRunnerMapId = versionVo.getRunnerMapId();
+        JSONObject versionRunnerGroup = versionVo.getRunnerGroup();
+        if (versionRunnerMapId == null && MapUtils.isEmpty(versionRunnerGroup)) {
+            throw new DeployVersionRunnerNotFoundException(versionVo.getVersion());
         }
-        if (appModuleId == null) {
-            throw new ParamNotExistsException("appModuleId");
+        List<RunnerMapVo> runnerMapList = deployAppConfigService.getAppModuleRunnerGroupByAppSystemIdAndModuleId(versionVo.getAppSystemId(), versionVo.getAppModuleId());
+        url = getRunnerUrl(runnerMapList, versionRunnerMapId, versionRunnerGroup);
+        if (StringUtils.isBlank(url)) {
+            throw new DeployVersionRunnerNotFoundException(versionVo.getVersion());
         }
-        Long runnerMapId = deployJobMapper.getRecentlyJobRunnerMapIdByAppSystemIdAndAppModuleId(appSystemId, appModuleId);
-        if (runnerMapId == null) {
-            ICiEntityCrossoverService ciEntityCrossoverService = CrossoverServiceFactory.getApi(ICiEntityCrossoverService.class);
-            String appName = ciEntityCrossoverService.getCiEntityNameByCiEntityId(appSystemId);
-            String moduleName = ciEntityCrossoverService.getCiEntityNameByCiEntityId(appModuleId);
-            throw new DeployJobNotFoundException(appName != null ? appName : appSystemId.toString(), moduleName != null ? moduleName : appModuleId.toString());
-        }
-        RunnerMapVo runner = runnerMapper.getRunnerMapByRunnerMapId(runnerMapId);
-        if (runner == null) {
-            throw new RunnerNotFoundByRunnerMapIdException(runnerMapId);
-        }
-        String url = runner.getUrl();
         if (!url.endsWith("/")) {
             url += "/";
         }
@@ -143,4 +137,45 @@ public class DeployVersionServiceImp implements DeployVersionService {
             throw new DeployVersionResourceHasBeenLockedException();
         }
     }
+
+    @Override
+    public String getEnvName(String version, Long envId) {
+        String envName = null;
+        if (envId != null) {
+            ICiEntityCrossoverService ciEntityCrossoverService = CrossoverServiceFactory.getApi(ICiEntityCrossoverService.class);
+            envName = ciEntityCrossoverService.getCiEntityNameByCiEntityId(envId);
+            if (StringUtils.isBlank(envName)) {
+                throw new DeployVersionEnvNotFoundException(version, envId);
+            }
+        }
+        return envName;
+    }
+
+    /**
+     * 查询builNo|env|工程目录的runner
+     * 如果在应用模块配置的{runnerMapList}中找到buildNo|env|版本记录的{runnerMapId}，则获取此runner url
+     * 否则尝试取{runnerMapList}与{runnerGroup}交集中的任一runner
+     *
+     * @param runnerMapList 应用模块配置runner
+     * @param runnerMapId   buildNo或env记录的runner
+     * @param runnerGroup   buildNo或env记录的runnerGroup
+     * @return
+     */
+    private String getRunnerUrl(List<RunnerMapVo> runnerMapList, Long runnerMapId, JSONObject runnerGroup) {
+        String url = null;
+        Optional<RunnerMapVo> first = runnerMapList.stream().filter(o -> Objects.equals(o.getRunnerMapId(), runnerMapId)).findFirst();
+        if (first.isPresent()) {
+            url = first.get().getUrl();
+        } else if (MapUtils.isNotEmpty(runnerGroup)) {
+            List<Long> buildNoRunnerMapIdList = runnerGroup.keySet().stream().map(Long::valueOf).collect(Collectors.toList());
+            for (RunnerMapVo mapVo : runnerMapList) {
+                if (buildNoRunnerMapIdList.contains(mapVo.getRunnerMapId())) {
+                    url = mapVo.getUrl();
+                    break;
+                }
+            }
+        }
+        return url;
+    }
+
 }

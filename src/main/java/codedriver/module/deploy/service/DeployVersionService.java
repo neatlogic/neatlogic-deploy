@@ -37,10 +37,9 @@ public interface DeployVersionService {
     /**
      * 获取工程目录runner地址
      *
-     * @param appSystemId 应用ID
-     * @param appModuleId 模块ID
+     * @param versionVo 版本
      */
-    String getWorkspaceRunnerUrl(Long appSystemId, Long appModuleId);
+    String getWorkspaceRunnerUrl(DeployVersionVo versionVo);
 
     /**
      * 获取工程目录根路径
@@ -68,5 +67,14 @@ public interface DeployVersionService {
      * @param path      HOME目录路径
      */
     void checkHomeHasBeenLocked(String runnerUrl, String path);
+
+    /**
+     * 获取环境名称
+     *
+     * @param version
+     * @param envId
+     * @return
+     */
+    String getEnvName(String version, Long envId);
 
 }

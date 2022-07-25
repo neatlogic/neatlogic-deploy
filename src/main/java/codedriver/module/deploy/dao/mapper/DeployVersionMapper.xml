@@ -24,6 +24,8 @@
                app_module_id   as appModuleId,
                app_module_name as appModuleName,
                is_freeze       as isFreeze,
+               runner_map_id   as runnerMapId,
+               runner_group    as runnerGroupStr,
                fcu,
                fcd,
                lcu,
@@ -248,6 +250,7 @@
         compile_end_time as compileEndTime,
         compile_end_time as compileEndTime,
         runner_map_id as runnerMapId,
+        runner_group as runnerGroupStr,
         end_rev as endRev
         from deploy_version_buildno
         where version_id = #{versionId} and build_no = #{buildNo}
@@ -261,6 +264,7 @@
         job_id as jobId,
         status as status,
         runner_map_id as runnerMapId,
+        runner_group as runnerGroupStr,
         build_no as buildNo,
         is_mirror as isMirror
         from deploy_version_env
@@ -302,6 +306,12 @@
         <if test="endRev != null and endRev != ''">
             end_rev = #{endRev},
         </if>
+        <if test="runnerMapId != null">
+            runner_map_id = #{runnerMapId},
+        </if>
+        <if test="runnerGroupStr != null and runnerGroupStr != ''">
+            runner_group = #{runnerGroupStr},
+        </if>
         lcu = #{lcu},
         lcd = now(3)
         where id = #{id}
@@ -311,6 +321,9 @@
         update deploy_version_buildno set
         <if test="runnerMapId != null">
             runner_map_id = #{runnerMapId},
+        </if>
+        <if test="runnerGroupStr != null and runnerGroupStr != ''">
+            runner_group = #{runnerGroupStr},
         </if>
         <if test="endRev != null and endRev != ''">
             end_rev = #{endRev},
@@ -330,6 +343,9 @@
         </if>
         <if test="runnerMapId != null">
             runner_map_id = #{runnerMapId},
+        </if>
+        <if test="runnerGroupStr != null and runnerGroupStr != ''">
+            runner_group = #{runnerGroupStr},
         </if>
         <if test="buildNo != null">
             build_no = #{buildNo},
@@ -358,6 +374,7 @@
             job_id,
             status,
             runner_map_id,
+            runner_group,
             build_no,
             is_mirror,
             lcu,
@@ -368,6 +385,7 @@
             #{jobId},
             #{status},
             #{runnerMapId},
+            #{runnerGroupStr},
             #{buildNo},
             #{isMirror},
             #{lcu},
