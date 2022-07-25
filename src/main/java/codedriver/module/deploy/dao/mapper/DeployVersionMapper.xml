@@ -400,7 +400,7 @@
             build_time,
             files,
             classes,
-            lines,
+            `lines`,
             ncloc,
             functions,
             statements,
@@ -495,7 +495,7 @@
             build_time = NOW(3),
             files = #{files},
             classes = #{classes},
-            lines = #{lines},
+            `lines` = #{lines},
             ncloc = #{ncloc},
             functions = #{functions},
             statements = #{statements},
@@ -539,13 +539,13 @@
     </insert>
 
     <insert id="insertDeployVersionBuildQualityLog" parameterType="codedriver.framework.deploy.dto.version.DeployVersionBuildQualityVo">
-        INSERT INTO deploy_build_quality (
+        INSERT INTO deploy_build_quality_log (
             app_module_id,
             version_id,
             build_time,
             files,
             classes,
-            lines,
+            `lines`,
             ncloc,
             functions,
             statements,
