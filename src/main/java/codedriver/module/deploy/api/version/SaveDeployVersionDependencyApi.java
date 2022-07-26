@@ -8,7 +8,7 @@ import codedriver.framework.deploy.dto.version.DeployVersionDependencyVo;
 import codedriver.framework.deploy.dto.version.DeployVersionVo;
 import codedriver.framework.deploy.exception.DeployPackageNotFoundException;
 import codedriver.framework.deploy.exception.DeployPackageRequiredAttributeLostException;
-import codedriver.framework.deploy.exception.DeployVersionDependencyNotFoundException;
+import codedriver.framework.deploy.exception.DeployVersionParentDependencyNotFoundException;
 import codedriver.framework.deploy.exception.DeployVersionNotFoundException;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
@@ -80,19 +80,24 @@ public class SaveDeployVersionDependencyApi extends PrivateApiComponentBase {
         if (versionVo == null) {
             throw new DeployVersionNotFoundException(version);
         }
+        // 以当前请求的dependenceList为准，新增数据库中不存在的依赖、删除dependenceList中不存在的依赖，更新两者均存在的依赖的build_time
         List<DeployVersionDependencyVo> versionDependencyList = deployVersionMapper.getDeployVersionDependencyListByVersionId(versionVo.getId());
         for (int i = 0; i < dependenceList.size(); i++) {
             JSONObject object = dependenceList.getJSONObject(i);
             String groupId = object.getString("groupId");
             String artifactId = object.getString("artifactId");
             String pkgVersion = object.getString("version");
+            String license = object.getString("license");
+            String url = object.getString("url");
+            String type = object.getString("type");
+            String scope = object.getString("scope");
             if (StringUtils.isBlank(groupId) || StringUtils.isBlank(artifactId) || StringUtils.isBlank(pkgVersion)) {
                 throw new DeployPackageRequiredAttributeLostException(i);
             }
             JSONObject parent = object.getJSONObject("parent");
             DeployPackageVo pkg = deployPackageMapper.getPackageByGroupIdAndArtifactIdAndVersion(groupId, artifactId, pkgVersion);
             if (pkg == null) {
-                pkg = new DeployPackageVo(groupId, artifactId, pkgVersion, object.getString("license"), object.getString("url"), object.getString("type"));
+                pkg = new DeployPackageVo(groupId, artifactId, pkgVersion, license, url, type);
                 deployPackageMapper.insertPackage(pkg);
             }
             Long parentDependencyId = null;
@@ -106,11 +111,11 @@ public class SaveDeployVersionDependencyApi extends PrivateApiComponentBase {
                 }
                 DeployVersionDependencyVo parentDependency = deployVersionMapper.getDeployVersionDependencyByVersionIdAndPackageId(versionVo.getId(), parentPkg.getId());
                 if (parentDependency == null) {
-                    throw new DeployVersionDependencyNotFoundException(versionVo.getVersion(), parentPkg);
+                    throw new DeployVersionParentDependencyNotFoundException(parentPkg);
                 }
                 parentDependencyId = parentDependency.getId();
             }
-            DeployVersionDependencyVo dependencyVo = new DeployVersionDependencyVo(versionVo.getId(), pkg.getId(), object.getString("scope"), parentDependencyId);
+            DeployVersionDependencyVo dependencyVo = new DeployVersionDependencyVo(versionVo.getId(), pkg.getId(), scope, parentDependencyId);
             versionDependencyList.remove(dependencyVo);
             DeployVersionDependencyVo oldDependencyVo = deployVersionMapper.getDeployVersionDependencyByVersionIdAndPackageId(dependencyVo.getVersionId(), dependencyVo.getPackageId());
             if (oldDependencyVo != null) {
