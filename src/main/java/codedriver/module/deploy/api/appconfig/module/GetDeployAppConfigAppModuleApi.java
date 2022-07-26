@@ -10,8 +10,6 @@ import codedriver.framework.common.dto.BasePageVo;
 import codedriver.framework.crossover.CrossoverServiceFactory;
 import codedriver.framework.deploy.auth.DEPLOY_BASE;
 import codedriver.framework.deploy.dto.app.DeployAppModuleVo;
-import codedriver.framework.deploy.dto.app.DeployAppOwnerVo;
-import codedriver.framework.deploy.dto.app.DeployAppUsedStateVo;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
@@ -21,7 +19,6 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -86,37 +83,19 @@ public class GetDeployAppConfigAppModuleApi extends PrivateApiComponentBase {
                 }
                 //状态
                 if (StringUtils.equals(attrEntityVo.getAttrName(), "state")) {
-                    JSONArray statusIdList = attrEntityVo.getValueList();
-                    JSONArray statusValueList = attrEntityVo.getActualValueList();
-                    if (CollectionUtils.isNotEmpty(statusIdList)) {
-                        List<DeployAppUsedStateVo> statusVoList = new ArrayList<>();
-                        for (int i = 0; i < statusIdList.size(); i++) {
-                            Object id = statusIdList.get(i);
-                            Object name = statusValueList.get(i);
-                            if (id != null && name != null) {
-                                statusVoList.add(new DeployAppUsedStateVo(Long.valueOf(String.valueOf(id)), String.valueOf(name)));
-                            }
-                        }
-                        appModuleVo.setStateList(statusVoList);
+                    JSONArray stateIdArray = attrEntityVo.getValueList();
+                    if (CollectionUtils.isNotEmpty(stateIdArray)) {
+                        List<Long> stateIdList = stateIdArray.toJavaList(Long.class);
+                        appModuleVo.setStateIdList(stateIdList);
                     }
-                    continue;
                 }
                 //负责人
                 if (StringUtils.equals(attrEntityVo.getAttrName(), "owner")) {
-                    JSONArray ownerIdList = attrEntityVo.getValueList();
-                    JSONArray ownerValueList = attrEntityVo.getActualValueList();
-                    if (CollectionUtils.isNotEmpty(ownerIdList)) {
-                        List<DeployAppOwnerVo> ownerVoList = new ArrayList<>();
-                        for (int i = 0; i < ownerIdList.size(); i++) {
-                            Object id = ownerIdList.get(i);
-                            Object name = ownerValueList.get(i);
-                            if (id != null && name != null) {
-                                ownerVoList.add(new DeployAppOwnerVo(Long.valueOf(String.valueOf(id)), String.valueOf(name)));
-                            }
-                        }
-                        appModuleVo.setOwnerList(ownerVoList);
+                    JSONArray ownerIdArray = attrEntityVo.getValueList();
+                    if (CollectionUtils.isNotEmpty(ownerIdArray)) {
+                        List<Long> ownerIdList = ownerIdArray.toJavaList(Long.class);
+                        appModuleVo.setOwnerIdList(ownerIdList);
                     }
-                    continue;
                 }
                 //维护窗口
                 if (StringUtils.equals(attrEntityVo.getAttrName(), "maintenance_window")) {

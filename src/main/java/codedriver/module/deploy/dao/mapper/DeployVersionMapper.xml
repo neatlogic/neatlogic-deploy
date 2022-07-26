@@ -110,6 +110,7 @@
         <collection property="envList" ofType="codedriver.framework.deploy.dto.version.DeployVersionEnvVo">
             <id column="envId" property="envId"/>
             <result column="envName" property="envName"/>
+            <result column="isMirror" property="isMirror"/>
             <result column="envStatus" property="status"/>
         </collection>
     </resultMap>
@@ -128,6 +129,7 @@
         dve.env_id as envId,
         cc.name as envName,
         dve.status as envStatus,
+        dve.is_mirror as isMirror,
         dv.fcu,
         dv.fcd,
         dv.lcu,
@@ -227,9 +229,7 @@
         select dv.id,
                dv.version,
                dv.app_system_id as appSystemId,
-               cc.name          as appSystemName,
                dv.app_module_id as appModuleId,
-               cce.name         as appModuleName,
                dv.is_freeze     as isFreeze,
                dv.repo_type     as repoType,
                dv.repo          as repo,
@@ -244,8 +244,6 @@
                dv.lcu,
                dv.lcd
         from deploy_version dv
-                 left join cmdb_cientity cc on cc.id = dv.app_system_id
-                 left join cmdb_cientity cce on cce.id = dv.app_module_id
         where dv.version = #{version}
           and dv.app_system_id = #{appSystemId}
           and dv.app_module_id = #{appModuleId}

@@ -13,8 +13,6 @@ import codedriver.framework.cmdb.exception.cientity.CiEntityNotFoundException;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.crossover.CrossoverServiceFactory;
 import codedriver.framework.deploy.auth.DEPLOY_BASE;
-import codedriver.framework.deploy.dto.app.DeployAppOwnerVo;
-import codedriver.framework.deploy.dto.app.DeployAppUsedStateVo;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
@@ -29,7 +27,6 @@ import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * @author longrf
@@ -63,8 +60,8 @@ public class SaveDeployAppConfigAppModuleApi extends PrivateApiComponentBase {
             @Param(name = "id", type = ApiParamType.LONG, desc = "id"),
             @Param(name = "abbrName", type = ApiParamType.STRING, isRequired = true, desc = "简称"),
             @Param(name = "name", type = ApiParamType.STRING, desc = "名称"),
-            @Param(name = "stateList", type = ApiParamType.JSONARRAY, desc = "状态"),
-            @Param(name = "ownerList", type = ApiParamType.JSONARRAY, desc = "负责人"),
+            @Param(name = "stateIdList", type = ApiParamType.JSONARRAY, desc = "状态"),
+            @Param(name = "ownerIdList", type = ApiParamType.JSONARRAY, desc = "负责人"),
             @Param(name = "maintenanceWindow", type = ApiParamType.STRING, desc = "维护窗口"),
             @Param(name = "description", type = ApiParamType.STRING, desc = "备注"),
             @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "应用系统id")
@@ -83,21 +80,19 @@ public class SaveDeployAppConfigAppModuleApi extends PrivateApiComponentBase {
 
         Long appModuleId = paramObj.getLong("id");
 
+        List<Long> stateIdList = new ArrayList<>();
+        List<Long> ownerIdList = new ArrayList<>();
         //构建数据结构
-        JSONArray stateArray = paramObj.getJSONArray("stateList");
-        if (CollectionUtils.isNotEmpty(stateArray)) {
-            List<DeployAppUsedStateVo> stateList = stateArray.toJavaList(DeployAppUsedStateVo.class);
-            paramObj.put("stateIdList", stateList.stream().map(DeployAppUsedStateVo::getId).collect(Collectors.toList()));
-        } else {
-            paramObj.put("stateIdList", new ArrayList<>());
+        JSONArray stateIdArray = paramObj.getJSONArray("stateIdList");
+        if (CollectionUtils.isNotEmpty(stateIdArray)) {
+            stateIdList = stateIdArray.toJavaList(Long.class);
         }
-        JSONArray ownerArray = paramObj.getJSONArray("ownerList");
-        if (CollectionUtils.isNotEmpty(ownerArray)) {
-            List<DeployAppOwnerVo> stateList = ownerArray.toJavaList(DeployAppOwnerVo.class);
-            paramObj.put("ownerIdList", stateList.stream().map(DeployAppOwnerVo::getId).collect(Collectors.toList()));
-        } else {
-            paramObj.put("ownerIdList", new ArrayList<>());
+        JSONArray ownerIdArray = paramObj.getJSONArray("ownerIdList");
+        if (CollectionUtils.isNotEmpty(ownerIdArray)) {
+            ownerIdList = ownerIdArray.toJavaList(Long.class);
         }
+        paramObj.put("stateIdList", stateIdList);
+        paramObj.put("ownerIdList", ownerIdList);
 
         //定义需要插入的字段
         paramObj.put("needUpdateAttrList", new JSONArray(Arrays.asList("state", "name", "owner", "abbrName", "maintenance_window", "description")));

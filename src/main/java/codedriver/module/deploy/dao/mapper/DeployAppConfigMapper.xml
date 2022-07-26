@@ -494,12 +494,10 @@
         daeac.`app_module_id` AS appModuleId,
         daeac.`env_id` AS envId,
         daeac.`instance_id` AS instanceId,
-        cc.`name` AS instanceName,
         daeac.`key`,
         daeac.`value`
         FROM
         deploy_app_env_auto_config daeac
-        JOIN cmdb_cientity cc ON cc.id = daeac.instance_id
         WHERE daeac.`app_system_id` = #{appSystemId}
         and daeac.`app_module_id` = #{appModuleId}
         and daeac.`env_id` = #{envId}
@@ -731,7 +729,6 @@
         <result column="appModuleId" property="appModuleId"/>
         <result column="envId" property="envId"/>
         <result column="instanceId" property="instanceId"/>
-        <result column="instanceName" property="instanceName"/>
         <collection property="keyValueList"
                     ofType="codedriver.framework.deploy.dto.app.DeployAppEnvAutoConfigKeyValueVo">
             <id column="key" property="key"/>
