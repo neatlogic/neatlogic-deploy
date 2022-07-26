@@ -31,6 +31,8 @@ public interface DeployVersionMapper {
 
     DeployVersionVo getDeployVersionBaseInfoBySystemIdAndModuleIdAndVersion(DeployVersionVo versionVo);
 
+    DeployVersionVo getDeployVersionBaseInfoBySystemIdAndModuleIdAndVersionLock(DeployVersionVo versionVo);
+
     DeployVersionVo getDeployVersionBySystemIdAndModuleIdAndVersionLock(DeployVersionVo versionVo);
 
     DeployVersionBuildNoVo getDeployVersionBuildNoByVersionIdAndBuildNo(@Param("versionId") Long versionId, @Param("buildNo") Integer buildNo);

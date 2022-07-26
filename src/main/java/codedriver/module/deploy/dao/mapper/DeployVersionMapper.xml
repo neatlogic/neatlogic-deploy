@@ -186,8 +186,7 @@
         where version_id = #{value} for update
     </select>
 
-    <select id="getDeployVersionBaseInfoBySystemIdAndModuleIdAndVersion" parameterType="codedriver.framework.deploy.dto.version.DeployVersionVo"
-            resultType="codedriver.framework.deploy.dto.version.DeployVersionVo">
+    <sql id="getDeployVersionBaseInfoBySystemIdAndModuleIdAndVersion">
         select id,
                version,
                app_system_id   as appSystemId,
@@ -209,6 +208,17 @@
                lcd
         from deploy_version
         where version = #{version} and app_system_id = #{appSystemId} and app_module_id = #{appModuleId}
+    </sql>
+
+    <select id="getDeployVersionBaseInfoBySystemIdAndModuleIdAndVersion" parameterType="codedriver.framework.deploy.dto.version.DeployVersionVo"
+            resultType="codedriver.framework.deploy.dto.version.DeployVersionVo">
+        <include refid="getDeployVersionBaseInfoBySystemIdAndModuleIdAndVersion"/>
+    </select>
+
+    <select id="getDeployVersionBaseInfoBySystemIdAndModuleIdAndVersionLock" parameterType="codedriver.framework.deploy.dto.version.DeployVersionVo"
+            resultType="codedriver.framework.deploy.dto.version.DeployVersionVo">
+        <include refid="getDeployVersionBaseInfoBySystemIdAndModuleIdAndVersion"/>
+        for update
     </select>
 
     <select id="getDeployVersionBySystemIdAndModuleIdAndVersionLock"

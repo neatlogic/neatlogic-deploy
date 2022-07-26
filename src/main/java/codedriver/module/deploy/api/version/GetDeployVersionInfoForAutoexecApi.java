@@ -55,7 +55,7 @@ public class GetDeployVersionInfoForAutoexecApi extends PrivateApiComponentBase 
         Long moduleId = paramObj.getLong("moduleId");
         String version = paramObj.getString("version");
         Integer buildNo = paramObj.getInteger("buildNo");
-        DeployVersionVo versionVo = deployVersionMapper.getDeployVersionBySystemIdAndModuleIdAndVersionLock(new DeployVersionVo(version, sysId, moduleId));
+        DeployVersionVo versionVo = deployVersionMapper.getDeployVersionBaseInfoBySystemIdAndModuleIdAndVersion(new DeployVersionVo(version, sysId, moduleId));
         if (versionVo == null) {
             throw new DeployVersionNotFoundException(version);
         }
