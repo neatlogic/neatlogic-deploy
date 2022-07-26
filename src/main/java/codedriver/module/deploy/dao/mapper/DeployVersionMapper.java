@@ -1,9 +1,6 @@
 package codedriver.module.deploy.dao.mapper;
 
-import codedriver.framework.deploy.dto.version.DeployVersionBuildNoVo;
-import codedriver.framework.deploy.dto.version.DeployVersionBuildQualityVo;
-import codedriver.framework.deploy.dto.version.DeployVersionEnvVo;
-import codedriver.framework.deploy.dto.version.DeployVersionVo;
+import codedriver.framework.deploy.dto.version.*;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
@@ -32,13 +29,21 @@ public interface DeployVersionMapper {
 
     Long getJobIdByDeployVersionIdAndEnvId(@Param("versionId") Long versionId, @Param("envId") Long envId);
 
+    DeployVersionVo getDeployVersionBySystemIdAndModuleIdAndVersion(DeployVersionVo versionVo);
+
     DeployVersionVo getDeployVersionBySystemIdAndModuleIdAndVersionLock(DeployVersionVo versionVo);
 
     DeployVersionBuildNoVo getDeployVersionBuildNoByVersionIdAndBuildNo(@Param("versionId") Long versionId, @Param("buildNo") Integer buildNo);
 
     DeployVersionEnvVo getDeployVersionEnvByVersionIdAndEnvId(@Param("versionId") Long versionId, @Param("envId") Long envId);
 
+    List<DeployVersionDependencyVo> getDeployVersionDependencyListByVersionId(Long versionId);
+
+    DeployVersionDependencyVo getDeployVersionDependencyByVersionIdAndPackageId(@Param("versionId") Long versionId, @Param("packageId") Long packageId);
+
     int unFreezeDeployVersionById(@Param("id") Long id, @Param("isFreeze") Long isFreeze);
+
+    int updateDeployVersionDependencyBuildTimeById(Long id);
 
     Integer getDeployVersionMaxBuildNoByVersionIdLock(Long id);
 
@@ -56,6 +61,8 @@ public interface DeployVersionMapper {
 
     int insertDeployVersionBuildQualityLog(DeployVersionBuildQualityVo vo);
 
+    int insertDeployVersionDependency(DeployVersionDependencyVo vo);
+
     int deleteDeployVersionById(Long id);
 
     int deleteDeployVersionBuildNoByVersionId(Long versionId);
@@ -63,5 +70,7 @@ public interface DeployVersionMapper {
     int deleteDeployVersionEnvByVersionId(Long versionId);
 
     int deleteDeployVersionBuildNoByVersionIdAndBuildNo(@Param("versionId") Long versionId, @Param("buildNo") Integer buildNo);
+
+    int deleteDeployVersionDependencyByVersionIdAndPackageIdList(@Param("versionId") Long versionId, @Param("packageIdList") List<Long> packageIdList);
 
 }

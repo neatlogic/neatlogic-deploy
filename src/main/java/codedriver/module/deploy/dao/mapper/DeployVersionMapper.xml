@@ -163,9 +163,8 @@
     <select id="getDeployVersionMaxBuildNoByVersionIdLock" resultType="java.lang.Integer">
         select max(build_no) from deploy_version_buildno where version_id = #{value} for update
     </select>
-
-    <select id="getDeployVersionBySystemIdAndModuleIdAndVersionLock" parameterType="codedriver.framework.deploy.dto.version.DeployVersionVo"
-            resultType="codedriver.framework.deploy.dto.version.DeployVersionVo">
+    
+    <sql id="getDeployVersionBySystemIdAndModuleIdAndVersionSql">
         select id,
                version,
                app_system_id   as appSystemId,
@@ -187,6 +186,16 @@
                lcd
         from deploy_version
         where version = #{version} and app_system_id = #{appSystemId} and app_module_id = #{appModuleId}
+    </sql>
+
+    <select id="getDeployVersionBySystemIdAndModuleIdAndVersion" parameterType="codedriver.framework.deploy.dto.version.DeployVersionVo"
+            resultType="codedriver.framework.deploy.dto.version.DeployVersionVo">
+         <include refid="getDeployVersionBySystemIdAndModuleIdAndVersionSql"></include>
+    </select>
+
+    <select id="getDeployVersionBySystemIdAndModuleIdAndVersionLock" parameterType="codedriver.framework.deploy.dto.version.DeployVersionVo"
+            resultType="codedriver.framework.deploy.dto.version.DeployVersionVo">
+        <include refid="getDeployVersionBySystemIdAndModuleIdAndVersionSql"></include>
         for update
     </select>
 
@@ -269,6 +278,58 @@
         is_mirror as isMirror
         from deploy_version_env
         where version_id = #{versionId} and env_id = #{envId}
+    </select>
+
+    <resultMap id="DeployVersionDependencyMap" type="codedriver.framework.deploy.dto.version.DeployVersionDependencyVo">
+        <result column="id" property="id"/>
+        <result column="version_id" property="versionId"/>
+        <result column="package_id" property="packageId"/>
+        <result column="scope" property="scope"/>
+        <result column="parent_id" property="parentId"/>
+        <result column="build_time" property="buildTime"/>
+        <association property="packageVo" javaType="codedriver.framework.deploy.dto.DeployPackageVo">
+            <result property="id" column="package_id"/>
+            <result property="groupId" column="group_id"/>
+            <result property="artifactId" column="artifact_id"/>
+            <result property="version" column="version"/>
+            <result property="type" column="type"/>
+            <result property="license" column="license"/>
+            <result property="url" column="url"/>
+        </association>
+    </resultMap>
+
+    <select id="getDeployVersionDependencyListByVersionId" parameterType="java.lang.Long"
+            resultMap="DeployVersionDependencyMap">
+        SELECT
+            a.id,
+            a.version_id,
+            a.`scope`,
+            a.parent_id,
+            a.build_time,
+            b.id AS package_id,
+            b.group_id,
+            b.artifact_id,
+            b.version,
+            b.type,
+            b.license,
+            b.url
+        FROM
+            deploy_version_dependency a JOIN deploy_package b ON a.package_id = b.id
+        WHERE a.version_id = #{versionId}
+    </select>
+
+    <select id="getDeployVersionDependencyByVersionIdAndPackageId"
+            resultType="codedriver.framework.deploy.dto.version.DeployVersionDependencyVo">
+        SELECT
+            id,
+            version_id as versionId,
+            package_id as packageId,
+            `scope`,
+            parent_id as parentId,
+            build_time as buildTime
+        FROM
+            deploy_version_dependency
+        WHERE version_id = #{versionId} and package_id = #{packageId}
     </select>
 
     <update id="unFreezeDeployVersionById">
@@ -356,6 +417,10 @@
         lcu = #{lcu},
         lcd = now(3)
         where version_id = #{versionId} and env_id = #{envId}
+    </update>
+
+    <update id="updateDeployVersionDependencyBuildTimeById" parameterType="java.lang.Long">
+        update deploy_version_dependency set build_time = now(3) where id = #{value}
     </update>
 
     <insert id="insertDeployVersion">
@@ -638,6 +703,28 @@
         )
     </insert>
 
+    <insert id="insertDeployVersionDependency" parameterType="codedriver.framework.deploy.dto.version.DeployVersionDependencyVo">
+         insert into deploy_version_dependency(
+             id,
+             version_id,
+             package_id,
+             `scope`,
+             <if test="parentId != null">
+                 parent_id,
+             </if>
+             build_time
+         ) values (
+             #{id},
+             #{versionId},
+             #{packageId},
+             #{scope},
+             <if test="parentId != null">
+                #{parentId},
+             </if>
+             now(3)
+        )
+    </insert>
+
     <delete id="deleteDeployVersionById">
         delete
         from deploy_version
@@ -660,5 +747,15 @@
         delete
         from deploy_version_buildno
         where version_id = #{versionId} and build_no = #{buildNo}
+    </delete>
+
+    <delete id="deleteDeployVersionDependencyByVersionIdAndPackageIdList">
+        delete
+        from deploy_version_dependency
+        where version_id = #{versionId}
+        and package_id in
+        <foreach collection="packageIdList" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
     </delete>
 </mapper>
