@@ -32,6 +32,7 @@ import java.util.stream.Collectors;
  * @since 2022/5/26 15:04
  **/
 @Service
+@Deprecated
 @AuthAction(action = DEPLOY_BASE.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
 public class ListDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
@@ -78,8 +79,8 @@ public class ListDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
                 //补充系统是否有模块、有环境
                 TenantContext.get().switchDataDatabase();
                 List<Long> hasModuleAppSystemIdList = resourceCenterMapper.getHasModuleAppSystemIdListByAppSystemIdList(resourceVoList.stream().map(DeployAppSystemVo::getId).collect(Collectors.toList()));
-                List<Long> hasEnvAppSystemIdList = resourceCenterMapper.getHasEnvAppSystemIdListByAppSystemIdList(resourceVoList.stream().map(DeployAppSystemVo::getId).collect(Collectors.toList()));
                 TenantContext.get().switchDefaultDatabase();
+                List<Long> hasEnvAppSystemIdList = deployAppConfigMapper.getHasEnvAppSystemIdListByAppSystemIdList(resourceVoList.stream().map(DeployAppSystemVo::getId).collect(Collectors.toList()), TenantContext.get().getDataDbName());
                 for (DeployAppSystemVo appResourceVo : resourceVoList) {
                     if (hasModuleAppSystemIdList.contains(appResourceVo.getId())) {
                         appResourceVo.setIsHasModule(1);

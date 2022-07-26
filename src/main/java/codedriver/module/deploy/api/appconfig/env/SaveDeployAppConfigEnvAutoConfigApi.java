@@ -16,18 +16,21 @@ import codedriver.module.deploy.dao.mapper.DeployAppConfigMapper;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.Date;
+import java.util.Objects;
 
 /**
  * @author lvzk
  * @since 2022/5/26 15:04
  **/
 @Service
+@Transactional
 @AuthAction(action = DEPLOY_BASE.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
-public class DeployAppConfigEnvAutoConfigSaveApi extends PrivateApiComponentBase {
+public class SaveDeployAppConfigEnvAutoConfigApi extends PrivateApiComponentBase {
 
     @Resource
     private DeployAppConfigMapper deployAppConfigMapper;
@@ -51,6 +54,7 @@ public class DeployAppConfigEnvAutoConfigSaveApi extends PrivateApiComponentBase
             @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "应用 id"),
             @Param(name = "appModuleId", type = ApiParamType.LONG, isRequired = true, desc = "模块 id"),
             @Param(name = "envId", type = ApiParamType.LONG, isRequired = true, desc = "环境 id"),
+            @Param(name = "deleteInstanceId", type = ApiParamType.LONG, desc = "删除的应用实例 id"),
             @Param(name = "instanceId", type = ApiParamType.LONG, desc = "应用实例 id"),
             @Param(name = "keyValueList", type = ApiParamType.JSONARRAY, desc = "[{\"id\": xxx,\"key\": xxx,\"value\":xxx}]"),
     })
@@ -62,10 +66,15 @@ public class DeployAppConfigEnvAutoConfigSaveApi extends PrivateApiComponentBase
         DeployAppEnvAutoConfigVo appEnvAutoConfigVo = JSONObject.toJavaObject(paramObj, DeployAppEnvAutoConfigVo.class);
         Date nowDate = new Date(System.currentTimeMillis());
         appEnvAutoConfigVo.setLcd(nowDate);
-        if(CollectionUtils.isNotEmpty(appEnvAutoConfigVo.getKeyValueList())) {
+        if (CollectionUtils.isNotEmpty(appEnvAutoConfigVo.getKeyValueList())) {
             deployAppConfigMapper.insertAppEnvAutoConfig(appEnvAutoConfigVo);
         }
         deployAppConfigMapper.deleteAppEnvAutoConfig(appEnvAutoConfigVo);
+        Long deleteInstanceId = paramObj.getLong("deleteInstanceId");
+        if (!Objects.isNull(deleteInstanceId)) {
+            DeployAppEnvAutoConfigVo deleteAppEnvAutoConfigVo = new DeployAppEnvAutoConfigVo(paramObj.getLong("appSystemId"), paramObj.getLong("appModuleId"), paramObj.getLong("envId"), deleteInstanceId);
+            deployAppConfigMapper.deleteAppEnvAutoConfig(deleteAppEnvAutoConfigVo);
+        }
         return null;
     }
 }
