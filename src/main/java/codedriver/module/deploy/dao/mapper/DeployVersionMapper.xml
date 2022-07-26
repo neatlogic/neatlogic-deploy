@@ -753,9 +753,11 @@
         delete
         from deploy_version_dependency
         where version_id = #{versionId}
-        and package_id in
-        <foreach collection="packageIdList" item="item" open="(" separator="," close=")">
-            #{item}
-        </foreach>
+        <if test="packageIdList != null and packageIdList.size() > 0">
+            and package_id in
+            <foreach collection="packageIdList" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
     </delete>
 </mapper>

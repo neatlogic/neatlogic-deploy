@@ -1,4 +1,4 @@
-package codedriver.module.deploy.api.version;
+package codedriver.module.deploy.api.version.dependency;
 
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.common.constvalue.ApiParamType;
@@ -29,8 +29,8 @@ import java.util.stream.Collectors;
 @Service
 @Transactional
 @AuthAction(action = DEPLOY_MODIFY.class)
-@OperationType(type = OperationTypeEnum.UPDATE)
-public class SaveDeployVersionDependencyApi extends PrivateApiComponentBase {
+@OperationType(type = OperationTypeEnum.OPERATE)
+public class SaveDeployVersionDependencyForAutoexecApi extends PrivateApiComponentBase {
 
     @Resource
     DeployVersionMapper deployVersionMapper;
@@ -45,7 +45,7 @@ public class SaveDeployVersionDependencyApi extends PrivateApiComponentBase {
 
     @Override
     public String getToken() {
-        return "deploy/versoin/dependency/save";
+        return "deploy/versoin/dependency/save/forautoexec";
     }
 
     @Override
