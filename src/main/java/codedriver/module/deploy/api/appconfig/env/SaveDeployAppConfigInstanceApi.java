@@ -23,6 +23,7 @@ import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.deploy.service.DeployAppConfigService;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -63,7 +64,7 @@ public class SaveDeployAppConfigInstanceApi extends PrivateApiComponentBase {
             @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "应用系统id"),
             @Param(name = "appModuleId", type = ApiParamType.LONG, isRequired = true, desc = "应用模块id"),
             @Param(name = "envId", type = ApiParamType.LONG, isRequired = true, desc = "环境id"),
-            @Param(name = "instanceId", type = ApiParamType.LONG, desc = "实例id"),
+            @Param(name = "instanceIdList", type = ApiParamType.JSONARRAY, desc = "实例id"),
             @Param(name = "ciId", type = ApiParamType.LONG, desc = "模型id"),
             @Param(name = "ip", type = ApiParamType.STRING, desc = "ip"),
             @Param(name = "port", type = ApiParamType.INTEGER, desc = "端口"),
@@ -92,34 +93,36 @@ public class SaveDeployAppConfigInstanceApi extends PrivateApiComponentBase {
         paramObj.put("needUpdateRelList", new JSONArray(Arrays.asList("APPComponent")));
 
         //实例挂环境
-        Long instanceId = paramObj.getLong("instanceId");
-        if (instanceId != null) {
+        JSONArray instanceIdArray = paramObj.getJSONArray("instanceIdList");
+        if (CollectionUtils.isNotEmpty(instanceIdArray)) {
+            List<Long> instanceIdList = instanceIdArray.toJavaList(Long.class);
+            for (Long instanceId : instanceIdList) {
+                //获取实例的具体信息
+                ICiEntityCrossoverMapper ciEntityCrossoverMapper = CrossoverServiceFactory.getApi(ICiEntityCrossoverMapper.class);
+                CiEntityVo instanceCiEntity = ciEntityCrossoverMapper.getCiEntityBaseInfoById(instanceId);
+                if (instanceCiEntity == null) {
+                    throw new CiEntityNotFoundException(instanceId);
+                }
+                ICiEntityCrossoverService ciEntityService = CrossoverServiceFactory.getApi(ICiEntityCrossoverService.class);
+                CiEntityVo instanceCiEntityInfo = ciEntityService.getCiEntityById(instanceCiEntity.getCiId(), instanceId);
 
-            //获取实例的具体信息
-            ICiEntityCrossoverMapper ciEntityCrossoverMapper = CrossoverServiceFactory.getApi(ICiEntityCrossoverMapper.class);
-            CiEntityVo instanceCiEntity = ciEntityCrossoverMapper.getCiEntityBaseInfoById(instanceId);
-            if (instanceCiEntity == null) {
-                throw new CiEntityNotFoundException(instanceId);
+                CiEntityTransactionVo ciEntityTransactionVo = new CiEntityTransactionVo(instanceCiEntityInfo);
+                JSONObject attrEntityData = instanceCiEntityInfo.getAttrEntityData();
+                ciEntityTransactionVo.setAttrEntityData(attrEntityData);
+
+                //添加环境属性、模块关系
+                paramObj.put("ciId", instanceCiEntity.getCiId());
+                paramObj.put("needUpdateAttrList", new JSONArray(Arrays.asList("app_environment")));
+                deployAppConfigService.addAttrEntityDataAndRelEntityData(ciEntityTransactionVo, paramObj);
+
+                //设置基础信息
+                ciEntityTransactionVo.setAction(TransactionActionType.UPDATE.getValue());
+                ciEntityTransactionVo.setEditMode(EditModeType.GLOBAL.getValue());
+
+                List<CiEntityTransactionVo> ciEntityTransactionList = new ArrayList<>();
+                ciEntityTransactionList.add(ciEntityTransactionVo);
+                ciEntityService.saveCiEntity(ciEntityTransactionList);
             }
-            ICiEntityCrossoverService ciEntityService = CrossoverServiceFactory.getApi(ICiEntityCrossoverService.class);
-            CiEntityVo instanceCiEntityInfo = ciEntityService.getCiEntityById(instanceCiEntity.getCiId(), instanceId);
-
-            CiEntityTransactionVo ciEntityTransactionVo = new CiEntityTransactionVo(instanceCiEntityInfo);
-            JSONObject attrEntityData = instanceCiEntityInfo.getAttrEntityData();
-            ciEntityTransactionVo.setAttrEntityData(attrEntityData);
-
-            //添加环境属性、模块关系
-            paramObj.put("ciId", instanceCiEntity.getCiId());
-            paramObj.put("needUpdateAttrList", new JSONArray(Arrays.asList("app_environment")));
-            deployAppConfigService.addAttrEntityDataAndRelEntityData(ciEntityTransactionVo, paramObj);
-
-            //设置基础信息
-            ciEntityTransactionVo.setAction(TransactionActionType.UPDATE.getValue());
-            ciEntityTransactionVo.setEditMode(EditModeType.GLOBAL.getValue());
-
-            List<CiEntityTransactionVo> ciEntityTransactionList = new ArrayList<>();
-            ciEntityTransactionList.add(ciEntityTransactionVo);
-            ciEntityService.saveCiEntity(ciEntityTransactionList);
         } else {
 
             //新增实例到cmdb

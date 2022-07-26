@@ -137,6 +137,8 @@ public interface DeployAppConfigMapper {
      */
     List<Long> getAppConfigEnvDatabaseResourceIdList(@Param("searchVo") DeployResourceSearchVo searchVo, @Param("schemaName") String schemaName);
 
+    List<Long> getHasEnvAppSystemIdListByAppSystemIdList(@Param("idList") List<Long> idList, @Param("schemaName") String schemaName);
+
     List<ResourceVo> getAppConfigEnvDatabaseResourceListByIdList(String sql);
 
     List<DeployAppModuleVo> getAppModuleListByIdList(String sql);
