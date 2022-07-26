@@ -48,7 +48,7 @@ public class UpdateDeployVersionInfoForAutoexecApi extends PrivateApiComponentBa
             @Param(name = "runnerId", desc = "runnerId", type = ApiParamType.LONG),
             @Param(name = "runnerGroup", desc = "runnerGroup", type = ApiParamType.JSONOBJECT),
             @Param(name = "sysId", desc = "应用ID", isRequired = true, type = ApiParamType.LONG),
-            @Param(name = "moduleId", desc = "应用系统id", isRequired = true, type = ApiParamType.LONG),
+            @Param(name = "moduleId", desc = "应用模块id", isRequired = true, type = ApiParamType.LONG),
             @Param(name = "version", desc = "版本号", isRequired = true, type = ApiParamType.STRING),
             @Param(name = "buildNo", desc = "buildNo", isRequired = true, type = ApiParamType.STRING),
             @Param(name = "verInfo", desc = "版本信息", isRequired = true, type = ApiParamType.JSONOBJECT),
@@ -63,7 +63,7 @@ public class UpdateDeployVersionInfoForAutoexecApi extends PrivateApiComponentBa
         String version = paramObj.getString("version");
         Integer buildNo = paramObj.getInteger("buildNo");
         JSONObject verInfo = paramObj.getJSONObject("verInfo");
-        DeployVersionVo versionVo = deployVersionMapper.getDeployVersionBySystemIdAndModuleIdAndVersionLock(new DeployVersionVo(version, sysId, moduleId));
+        DeployVersionVo versionVo = deployVersionMapper.getDeployVersionBaseInfoBySystemIdAndModuleIdAndVersionLock(new DeployVersionVo(version, sysId, moduleId));
         if (versionVo == null) {
             throw new DeployVersionNotFoundException(version);
         }

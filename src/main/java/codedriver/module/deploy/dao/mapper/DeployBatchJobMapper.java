@@ -5,8 +5,8 @@
 
 package codedriver.module.deploy.dao.mapper;
 
-import codedriver.framework.deploy.dto.batchjob.BatchJobVo;
+import codedriver.framework.deploy.dto.job.DeployJobVo;
 
 public interface DeployBatchJobMapper {
-    BatchJobVo getDeployBatchJobById(Long id);
+    DeployJobVo getDeployBatchJobById(Long id);
 }

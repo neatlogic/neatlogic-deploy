@@ -6,7 +6,7 @@
 
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="codedriver.module.deploy.dao.mapper.DeployBatchJobMapper">
-    <resultMap id="deployBatchJobResultMap" type="codedriver.framework.deploy.dto.batchjob.BatchJobVo">
+    <resultMap id="deployBatchJobResultMap" type="codedriver.framework.deploy.dto.job.DeployJobVo">
         <id column="batchJobId" property="id"/>
         <result column="batchJobName" property="name"/>
         <result column="batchJobStatus" property="status"/>
@@ -15,10 +15,10 @@
         <result column="batchJobStartTime" property="startTime"/>
         <result column="batchJobEndTime" property="endTime"/>
         <result column="batchJobSource" property="source"/>
-        <collection property="laneList" ofType="codedriver.framework.deploy.dto.batchjob.LaneVo">
+        <collection property="laneList" ofType="codedriver.framework.deploy.dto.job.LaneVo">
             <id column="laneId" property="id"/>
             <result column="sort" property="sort"/>
-            <collection property="groupList" ofType="codedriver.framework.deploy.dto.batchjob.LaneGroupVo">
+            <collection property="groupList" ofType="codedriver.framework.deploy.dto.job.LaneGroupVo">
                 <id column="groupId" property="id"/>
                 <result column="groupSort" property="sort"/>
                 <result column="groupStatus" property="status"/>

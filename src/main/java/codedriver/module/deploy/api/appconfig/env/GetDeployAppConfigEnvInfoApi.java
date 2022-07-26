@@ -26,6 +26,8 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * @author lvzk
@@ -83,6 +85,18 @@ public class GetDeployAppConfigEnvInfoApi extends PrivateApiComponentBase {
             envInfo.put("instanceList", instanceList);
             List<DeployAppEnvAutoConfigVo> instanceAutoConfigList = deployAppConfigMapper.getAppEnvAutoConfigListBySystemIdAndModuleIdAndEnvIdAndInstanceIdList(paramObj.getLong("appSystemId"), paramObj.getLong("appModuleId"), paramObj.getLong("envId"), instanceIdList);
             envInfo.put("instanceAutoConfigList", instanceAutoConfigList);
+
+            //补充实例name、ip、port
+            Map<Long, ResourceVo> instanceMap = instanceList.stream().collect(Collectors.toMap(ResourceVo::getId, e -> e));
+            for (DeployAppEnvAutoConfigVo autoConfigVo : instanceAutoConfigList) {
+                ResourceVo instanceResourceVo = instanceMap.get(autoConfigVo.getInstanceId());
+                if (instanceResourceVo == null) {
+                    continue;
+                }
+                autoConfigVo.setInstanceName(instanceResourceVo.getName());
+                autoConfigVo.setInstanceIp(instanceResourceVo.getIp());
+                autoConfigVo.setInstancePort(instanceResourceVo.getPort());
+            }
         }
         //DB配置
         List<DeployAppConfigEnvDBConfigVo> appConfigEnvDBConfigList = deployAppConfigMapper.getAppConfigEnvDBConfigListByAppSystemIdAndAppModuleIdAndEnvId(paramObj.getLong("appSystemId"), paramObj.getLong("appModuleId"), paramObj.getLong("envId"));

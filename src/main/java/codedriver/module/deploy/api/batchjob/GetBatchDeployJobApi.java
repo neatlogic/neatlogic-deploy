@@ -8,7 +8,7 @@ package codedriver.module.deploy.api.batchjob;
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.deploy.auth.DEPLOY_BASE;
-import codedriver.framework.deploy.dto.batchjob.BatchJobVo;
+import codedriver.framework.deploy.dto.job.DeployJobVo;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
@@ -44,7 +44,7 @@ public class GetBatchDeployJobApi extends PrivateApiComponentBase {
     @Input({
             @Param(name = "id", type = ApiParamType.LONG, isRequired = true, desc = "作业id"),
     })
-    @Output({@Param(explode = BatchJobVo.class)
+    @Output({@Param(explode = DeployJobVo.class)
     })
     @Description(desc = "获取单个批量作业信息接口")
     @Override

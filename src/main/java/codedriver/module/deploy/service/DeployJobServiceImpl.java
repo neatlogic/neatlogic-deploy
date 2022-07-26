@@ -1,5 +1,5 @@
 /*
- * Copyright (c)  2022 TechSure Co.,Ltd.  All Rights Reserved.
+ * Copyright(c) 2022 TechSure Co., Ltd. All Rights Reserved.
  * 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
  */
 
@@ -28,6 +28,7 @@ import codedriver.framework.crossover.CrossoverServiceFactory;
 import codedriver.framework.deploy.constvalue.CombopOperationType;
 import codedriver.framework.deploy.constvalue.JobSource;
 import codedriver.framework.deploy.dto.app.DeployAppConfigVo;
+import codedriver.framework.deploy.dto.job.DeployJobVo;
 import codedriver.framework.deploy.exception.DeployAppConfigNotFoundException;
 import codedriver.framework.exception.type.ParamIrregularException;
 import codedriver.framework.scheduler.core.IJob;
@@ -35,6 +36,7 @@ import codedriver.framework.scheduler.core.SchedulerManager;
 import codedriver.framework.scheduler.dto.JobObject;
 import codedriver.framework.scheduler.exception.ScheduleHandlerNotFoundException;
 import codedriver.module.deploy.dao.mapper.DeployAppConfigMapper;
+import codedriver.module.deploy.dao.mapper.DeployJobMapper;
 import codedriver.module.deploy.schedule.plugin.DeployJobAutoFireJob;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
@@ -53,6 +55,23 @@ public class DeployJobServiceImpl implements DeployJobService {
     private final static Logger logger = LoggerFactory.getLogger(DeployJobServiceImpl.class);
     @Resource
     DeployAppConfigMapper deployAppConfigMapper;
+
+    @Resource
+    private DeployJobMapper deployJobMapper;
+
+    @Override
+    public List<DeployJobVo> searchDeployJob(DeployJobVo deployJobVo) {
+        if (CollectionUtils.isEmpty(deployJobVo.getIdList())) {
+            int rowNum = deployJobMapper.searchDeployJobCount(deployJobVo);
+            deployJobVo.setRowNum(rowNum);
+            List<Long> idList = deployJobMapper.searchDeployJobId(deployJobVo);
+            deployJobVo.setIdList(idList);
+        }
+        if (CollectionUtils.isNotEmpty(deployJobVo.getIdList())) {
+            return deployJobMapper.searchDeployJob(deployJobVo);
+        }
+        return null;
+    }
 
     @Override
     public void initDeployParam(JSONObject jsonObj) {
@@ -150,10 +169,10 @@ public class DeployJobServiceImpl implements DeployJobService {
                     List<ResourceVo> instanceList = resourceCrossoverMapper.getAppInstanceResourceListByIdList(instanceIdList, TenantContext.get().getDataDbName());
                     for (ResourceVo instance : instanceList) {
                         JSONObject instanceJson = new JSONObject();
-                        instanceJson.put("id",instance.getId());
-                        instanceJson.put("ip",instance.getIp());
-                        instanceJson.put("port",instance.getPort());
-                        instanceJson.put("name",instance.getName());
+                        instanceJson.put("id", instance.getId());
+                        instanceJson.put("ip", instance.getIp());
+                        instanceJson.put("port", instance.getPort());
+                        instanceJson.put("name", instance.getName());
                         selectNodeArray.add(instanceJson);
                     }
                 }
