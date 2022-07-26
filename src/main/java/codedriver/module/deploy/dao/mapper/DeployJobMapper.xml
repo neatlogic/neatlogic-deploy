@@ -1,24 +1,170 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  ~ Copyright (c)  2022 TechSure Co.,Ltd.  All Rights Reserved.
+  ~ Copyright(c) 2022 TechSure Co., Ltd. All Rights Reserved.
   ~ 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
   -->
 
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="codedriver.module.deploy.dao.mapper.DeployJobMapper">
 
-    <select id="getDeployJobByJobId" resultType="codedriver.framework.deploy.dto.DeployJobVo">
-        select id,
+    <select id="getDeployJobByJobId" resultType="codedriver.framework.deploy.dto.job.DeployJobVo">
+        select a.id,
                app_system_id as appSystemId,
+               b.name        as appSystemName,
                app_module_id as appModuleId,
+               c.name        as appModuleName,
                env_id        as envId,
+               d.name        as envName,
                version,
                job_id        as jobId,
                build_no      as buildNo,
                runner_map_id as runnerMapId
-        from deploy_job
+        from deploy_job a
+                 left join cmdb_cientity b ON a.app_system_id = b.id
+                 left join cmdb_cientity c ON a.app_module_id = c.id
+                 left join cmdb_cientity d ON a.env_id = d.id
         where job_id = #{value}
     </select>
+
+    <sql id="searchJobSql">
+        <if test="(typeIdList != null and typeIdList.size() > 0) or (combopName != null and combopName != '' )">
+            LEFT JOIN `autoexec_combop` ac ON aj.`operation_id` = ac.`id`
+        </if>
+        <if test="invokeIdList != null and invokeIdList.size() > 0">
+            JOIN `autoexec_job_invoke` aji ON aj.`id` = aji.`job_id` AND
+            aji.`invoke_id` in
+            <foreach collection="invokeIdList" open="(" item="invokeId" close=")" separator=",">
+                #{invokeId}
+            </foreach>
+        </if>
+        <where>
+            <if test="combopName != null and combopName != ''">
+                ac.name like concat('%', #{combopName}, '%')
+            </if>
+            <if test="excludeIdList != null and excludeIdList.size() > 0">
+                AND aj.id not in
+                <foreach collection="excludeIdList" item="item" open="(" close=")" separator=",">#{item}</foreach>
+            </if>
+            <if test="keyword != null and keyword != ''">
+                and (aj.name like concat('%', #{keyword}, '%') OR aj.id like concat('%', #{keyword}, '%'))
+            </if>
+            <if test="operationId != null">
+                and aj.operation_id = #{operationId}
+            </if>
+            <if test="statusList != null and statusList.size() > 0 ">
+                and aj.`status` in
+                <foreach collection="statusList" item="status" open="(" close=")" separator=",">
+                    #{status}
+                </foreach>
+            </if>
+            <if test="sourceList != null and sourceList.size() > 0 ">
+                and aj.`source` in
+                <foreach collection="sourceList" item="source" open="(" close=")" separator=",">
+                    #{source}
+                </foreach>
+            </if>
+            <if test="typeIdList != null and typeIdList.size() > 0 ">
+                and ac.`type_id` in
+                <foreach collection="typeIdList" item="typeId" open="(" close=")"
+                         separator=",">
+                    #{typeId}
+                </foreach>
+            </if>
+            <if test="execUserList != null and execUserList.size() > 0 ">
+                and aj.`exec_user` in
+                <foreach collection="execUserList" item="execUser" open="(" close=")" separator=",">
+                    #{execUser}
+                </foreach>
+            </if>
+            <if test="idList != null and idList.size() > 0">
+                and aj.`id` in
+                <foreach collection="idList" item="item" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="startTimeRange != null">
+                <if test="startTimeRange.size() > 0">
+                    and aj.start_time &gt;= STR_TO_DATE(#{startTimeRange[0]},'%Y-%m-%d')
+                </if>
+                <if test="startTimeRange.size() > 1">
+                    and aj.start_time &lt;= STR_TO_DATE(#{startTimeRange[1]},'%Y-%m-%d')
+                </if>
+            </if>
+            <if test="endTimeRange != null">
+                <if test="endTimeRange.size() > 0">
+                    and aj.end_time &gt;= STR_TO_DATE(#{endTimeRange[0]},'%Y-%m-%d')
+                </if>
+                <if test="endTimeRange.size() > 1">
+                    and aj.end_time &lt;= STR_TO_DATE(#{endTimeRange[1]},'%Y-%m-%d')
+                </if>
+            </if>
+            <if test="planStartTimeRange != null">
+                <if test="planStartTimeRange.size() > 0">
+                    and aj.plan_start_time &gt;= STR_TO_DATE(#{planStartTimeRange[0]},'%Y-%m-%d')
+                </if>
+                <if test="planStartTimeRange.size() > 1">
+                    and aj.plan_start_time &lt;= STR_TO_DATE(#{planStartTimeRange[1]},'%Y-%m-%d')
+                </if>
+            </if>
+        </where>
+    </sql>
+
+    <select id="searchDeployJobCount" resultType="int"
+            parameterType="codedriver.framework.deploy.dto.job.DeployJobVo">
+        SELECT
+        count(distinct aj.`id`)
+        FROM
+        `autoexec_job` aj
+        <include refid="searchJobSql"/>
+    </select>
+
+    <select id="searchDeployJobId" parameterType="codedriver.framework.deploy.dto.job.DeployJobVo"
+            resultType="java.lang.Long">
+        SELECT
+        distinct aj.`id`
+        FROM
+        `autoexec_job` aj
+        <include refid="searchJobSql"/>
+        order by aj.`id` desc
+        limit #{startNum}, #{pageSize}
+    </select>
+
+    <select id="searchDeployJob" parameterType="codedriver.framework.deploy.dto.job.DeployJobVo"
+            resultType="codedriver.framework.deploy.dto.job.DeployJobVo">
+        SELECT
+        aj.`id` as id,
+        aj.`name` as name,
+        aj.`status` as status,
+        aj.`error_msg` as errorMsg,
+        aj.`plan_start_time` as planStartTime,
+        aj.`start_time` as startTime,
+        aj.`end_time` as endTime,
+        aj.`operation_id` as operationId,
+        aj.`operation_type` as operationType,
+        aj.`exec_user` as execUser,
+        aj.`exec_user_type` as execUserType,
+        aj.`source` as source,
+        aj.`round_count` as roundCount,
+        aj.`trigger_type` as triggerType,
+        a.`app_system_id` as appSystemId,
+        b.`name` as appSystemName,
+        a.`app_module_id` as appModuleId,
+        c.`name` as appModuleName,
+        a.`env_id` as endId,
+        d.`name` as envName
+        FROM
+        `autoexec_job` aj
+        left join deploy_job a on aj.id = a.job_id
+        left join cmdb_cientity b ON a.app_system_id = b.id
+        left join cmdb_cientity c ON a.app_module_id = c.id
+        left join cmdb_cientity d ON a.env_id = d.id
+        WHERE aj.`id` in
+        <foreach collection="idList" item="jobId" open="(" close=")" separator=",">
+            #{jobId}
+        </foreach>
+        order by aj.`id` desc
+    </select>
+
 
     <select id="getRecentlyJobRunnerMapIdByAppSystemIdAndAppModuleId" resultType="java.lang.Long">
         select runner_map_id
@@ -30,7 +176,7 @@
     </select>
 
     <select id="getDeployJobListByAppSystemIdAndAppModuleId"
-            resultType="codedriver.framework.deploy.dto.DeployJobVo">
+            resultType="codedriver.framework.deploy.dto.job.DeployJobVo">
         select id,
         app_system_id as appSystemId,
         app_module_id as appModuleId,
@@ -51,7 +197,7 @@
     </select>
 
     <select id="getDeployJobContentLock"
-            resultType="codedriver.framework.deploy.dto.DeployJobContentVo">
+            resultType="codedriver.framework.deploy.dto.job.DeployJobContentVo">
         SELECT `hash`,
                `content`
         FROM `autoexec_job_content`
@@ -60,7 +206,7 @@
     </select>
 
     <select id="getDeployJobContent"
-            resultType="codedriver.framework.deploy.dto.DeployJobContentVo">
+            resultType="codedriver.framework.deploy.dto.job.DeployJobContentVo">
         SELECT `hash`,
                `content`
         FROM `autoexec_job_content`
@@ -83,7 +229,7 @@
     </insert>
 
     <insert id="insertIgnoreDeployJobContent"
-            parameterType="codedriver.framework.deploy.dto.DeployJobContentVo">
+            parameterType="codedriver.framework.deploy.dto.job.DeployJobContentVo">
         INSERT IGNORE INTO `deploy_job_content` (`hash`, `content`)
         VALUES (#{hash}, #{content});
     </insert>
