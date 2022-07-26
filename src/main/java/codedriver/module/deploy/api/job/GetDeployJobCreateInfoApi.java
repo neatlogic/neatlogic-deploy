@@ -97,6 +97,7 @@ public class GetDeployJobCreateInfoApi extends PrivateApiComponentBase {
         result.put("scenarioList", pipelineConfigVo.getScenarioList());
         result.put("defaultScenarioId", pipelineConfigVo.getDefaultScenarioId());
 
+        IResourceCrossoverMapper resourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
         //环境 根据appSystemId、appModuleId 获取 envList
         //模块 根据appSystemId、appModuleId 获取 appModuleList
         List<Long> appModuleIdList = new ArrayList<>();
@@ -106,14 +107,13 @@ public class GetDeployJobCreateInfoApi extends PrivateApiComponentBase {
             appModuleIdList.add(appModuleId);
         } else {
             TenantContext.get().switchDataDatabase();
-            IResourceCrossoverMapper resourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
             appModuleIdList.addAll(resourceCrossoverMapper.getAppSystemModuleIdListByAppSystemId(appSystemId));
             TenantContext.get().switchDefaultDatabase();
         }
         if (CollectionUtils.isNotEmpty(appModuleIdList)) {
             envList = deployAppConfigMapper.getDeployAppEnvListByAppSystemIdAndModuleIdList(appSystemId, appModuleIdList, TenantContext.get().getDataDbName());
             TenantContext.get().switchDataDatabase();
-            appModuleList = resourceCenterMapper.getAppModuleListByIdListSimple(appModuleIdList);
+            appModuleList = resourceCrossoverMapper.getAppModuleListByIdListSimple(appModuleIdList);
             TenantContext.get().switchDefaultDatabase();
         }
         result.put("envList", envList);
