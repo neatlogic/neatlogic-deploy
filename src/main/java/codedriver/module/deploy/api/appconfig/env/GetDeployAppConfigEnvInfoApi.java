@@ -83,7 +83,7 @@ public class GetDeployAppConfigEnvInfoApi extends PrivateApiComponentBase {
 
             List<ResourceVo> instanceList = resourceCenterMapper.getAppInstanceResourceListByIdList(instanceIdList, TenantContext.get().getDataDbName());
             envInfo.put("instanceList", instanceList);
-            List<DeployAppEnvAutoConfigVo> instanceAutoConfigList = deployAppConfigMapper.getAppEnvAutoConfigListBySystemIdAndModuleIdAndEnvIdAndInstanceIdList(paramObj.getLong("appSystemId"), paramObj.getLong("appModuleId"), paramObj.getLong("envId"), instanceIdList);
+            List<DeployAppEnvAutoConfigVo> instanceAutoConfigList = deployAppConfigMapper.getAppEnvAutoConfigListBySystemIdAndModuleIdAndEnvIdAndInstanceIdList(paramObj.getLong("appSystemId"), paramObj.getLong("appModuleId"), paramObj.getLong("envId"), instanceIdList, TenantContext.get().getDataDbName());
             envInfo.put("instanceAutoConfigList", instanceAutoConfigList);
         }
         //DB配置

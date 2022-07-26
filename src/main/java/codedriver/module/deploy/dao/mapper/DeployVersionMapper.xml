@@ -110,6 +110,7 @@
         <collection property="envList" ofType="codedriver.framework.deploy.dto.version.DeployVersionEnvVo">
             <id column="envId" property="envId"/>
             <result column="envName" property="envName"/>
+            <result column="isMirror" property="isMirror"/>
             <result column="envStatus" property="status"/>
         </collection>
     </resultMap>
@@ -128,6 +129,7 @@
         dve.env_id as envId,
         cc.name as envName,
         dve.status as envStatus,
+        dve.is_mirror as isMirror,
         dv.fcu,
         dv.fcd,
         dv.lcu,
