@@ -8,7 +8,7 @@ package codedriver.module.deploy.api.job;
 import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.cmdb.crossover.ICiEntityCrossoverMapper;
-import codedriver.framework.cmdb.dao.mapper.resourcecenter.ResourceCenterMapper;
+import codedriver.framework.cmdb.crossover.IResourceCrossoverMapper;
 import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
 import codedriver.framework.cmdb.exception.cientity.CiEntityNotFoundException;
 import codedriver.framework.common.constvalue.ApiParamType;
@@ -43,9 +43,6 @@ public class GetDeployJobCreateInfoApi extends PrivateApiComponentBase {
 
     @Resource
     DeployAppConfigMapper deployAppConfigMapper;
-
-    @Resource
-    private ResourceCenterMapper resourceCenterMapper;
 
     @Resource
     private DeployAppPipelineService deployAppPipelineService;
@@ -107,7 +104,8 @@ public class GetDeployJobCreateInfoApi extends PrivateApiComponentBase {
             appModuleIdList.add(appModuleId);
         } else {
             TenantContext.get().switchDataDatabase();
-            appModuleIdList.addAll(resourceCenterMapper.getAppSystemModuleIdListByAppSystemId(appSystemId));
+            IResourceCrossoverMapper resourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
+            appModuleIdList.addAll(resourceCrossoverMapper.getAppSystemModuleIdListByAppSystemId(appSystemId));
             TenantContext.get().switchDefaultDatabase();
         }
         if (CollectionUtils.isNotEmpty(appModuleIdList)) {

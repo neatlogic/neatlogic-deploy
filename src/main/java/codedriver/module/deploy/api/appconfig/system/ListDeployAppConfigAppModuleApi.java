@@ -2,9 +2,10 @@ package codedriver.module.deploy.api.appconfig.system;
 
 import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.auth.core.AuthAction;
-import codedriver.framework.cmdb.dao.mapper.resourcecenter.ResourceCenterMapper;
+import codedriver.framework.cmdb.crossover.IResourceCrossoverMapper;
 import codedriver.framework.cmdb.dto.resourcecenter.ResourceVo;
 import codedriver.framework.common.constvalue.ApiParamType;
+import codedriver.framework.crossover.CrossoverServiceFactory;
 import codedriver.framework.deploy.auth.DEPLOY_BASE;
 import codedriver.framework.deploy.dto.app.DeployAppModuleVo;
 import codedriver.framework.restful.annotation.*;
@@ -28,9 +29,6 @@ import java.util.stream.Collectors;
 @AuthAction(action = DEPLOY_BASE.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
 public class ListDeployAppConfigAppModuleApi extends PrivateApiComponentBase {
-
-    @Resource
-    private ResourceCenterMapper resourceCenterMapper;
 
     @Resource
     private DeployAppConfigMapper deployAppConfigMapper;
@@ -65,9 +63,10 @@ public class ListDeployAppConfigAppModuleApi extends PrivateApiComponentBase {
         //查询系统下模块列表
         //TODO 考虑权限问题
         TenantContext.get().switchDataDatabase();
-        List<Long> idList = resourceCenterMapper.getAppSystemModuleIdListByAppSystemId(paramObj.getLong("appSystemId"));
+        IResourceCrossoverMapper resourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
+        List<Long> idList = resourceCrossoverMapper.getAppSystemModuleIdListByAppSystemId(paramObj.getLong("appSystemId"));
         if (CollectionUtils.isNotEmpty(idList)) {
-            moduleResourceList = resourceCenterMapper.getAppModuleListByIdListSimple(idList);
+            moduleResourceList = resourceCrossoverMapper.getAppModuleListByIdListSimple(idList);
         }
         TenantContext.get().switchDefaultDatabase();
 

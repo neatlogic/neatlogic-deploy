@@ -2,10 +2,11 @@ package codedriver.module.deploy.api.appconfig.env;
 
 import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.auth.core.AuthAction;
-import codedriver.framework.cmdb.dao.mapper.resourcecenter.ResourceCenterMapper;
+import codedriver.framework.cmdb.crossover.IResourceCrossoverMapper;
 import codedriver.framework.cmdb.dto.resourcecenter.ResourceVo;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.dto.BasePageVo;
+import codedriver.framework.crossover.CrossoverServiceFactory;
 import codedriver.framework.deploy.auth.DEPLOY_BASE;
 import codedriver.framework.deploy.dto.app.DeployAppEnvAutoConfigVo;
 import codedriver.framework.restful.annotation.Input;
@@ -36,9 +37,6 @@ public class SearchDeployAppModuleEnvAutoConfigInstanceApi extends PrivateApiCom
 
     @Resource
     private DeployAppConfigMapper deployAppConfigMapper;
-
-    @Resource
-    private ResourceCenterMapper resourceCenterMapper;
 
     @Override
     public String getName() {
@@ -73,15 +71,16 @@ public class SearchDeployAppModuleEnvAutoConfigInstanceApi extends PrivateApiCom
         DeployAppEnvAutoConfigVo searchVo = paramObj.toJavaObject(DeployAppEnvAutoConfigVo.class);
         List<ResourceVo> instanceList = new ArrayList<>();
         JSONArray defaultValue = searchVo.getDefaultValue();
+        IResourceCrossoverMapper resourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
         if (CollectionUtils.isNotEmpty(defaultValue)) {
-            instanceList = resourceCenterMapper.getAppInstanceResourceListByIdListSimple(defaultValue.toJavaList(Long.class), TenantContext.get().getDataDbName());
+            instanceList = resourceCrossoverMapper.getAppInstanceResourceListByIdListSimple(defaultValue.toJavaList(Long.class), TenantContext.get().getDataDbName());
         } else {
             int count = deployAppConfigMapper.getAppModuleEnvAutoConfigInstanceIdCount(searchVo, TenantContext.get().getDataDbName());
             if (count > 0) {
                 searchVo.setRowNum(count);
                 List<Long> instanceIdList = deployAppConfigMapper.getAppModuleEnvAutoConfigInstanceIdList(searchVo, TenantContext.get().getDataDbName());
                 if (CollectionUtils.isNotEmpty(instanceIdList)) {
-                    instanceList = resourceCenterMapper.getAppInstanceResourceListByIdListSimple(instanceIdList, TenantContext.get().getDataDbName());
+                    instanceList = resourceCrossoverMapper.getAppInstanceResourceListByIdListSimple(instanceIdList, TenantContext.get().getDataDbName());
                 }
             }
         }

@@ -7,12 +7,13 @@ package codedriver.module.deploy.api.pipeline;
 
 import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.auth.core.AuthAction;
-import codedriver.framework.cmdb.dao.mapper.resourcecenter.ResourceCenterMapper;
+import codedriver.framework.cmdb.crossover.IResourceCrossoverMapper;
 import codedriver.framework.cmdb.dto.resourcecenter.ResourceVo;
 import codedriver.framework.cmdb.exception.resourcecenter.AppEnvNotFoundException;
 import codedriver.framework.cmdb.exception.resourcecenter.AppModuleNotFoundException;
 import codedriver.framework.cmdb.exception.resourcecenter.AppSystemNotFoundException;
 import codedriver.framework.common.constvalue.ApiParamType;
+import codedriver.framework.crossover.CrossoverServiceFactory;
 import codedriver.framework.deploy.auth.DEPLOY_BASE;
 import codedriver.framework.deploy.dto.app.DeployAppConfigVo;
 import codedriver.framework.deploy.dto.app.DeployPipelineConfigVo;
@@ -32,8 +33,6 @@ public class GetDeployAppPipelineApi extends PrivateApiComponentBase {
 
     @Resource
     private DeployAppPipelineService deployAppPipelineService;
-    @Resource
-    private ResourceCenterMapper resourceCenterMapper;
 
     @Override
     public String getName() {
@@ -63,14 +62,15 @@ public class GetDeployAppPipelineApi extends PrivateApiComponentBase {
     public Object myDoService(JSONObject paramObj) throws Exception {
         DeployAppConfigVo searchVo = paramObj.toJavaObject(DeployAppConfigVo.class);
         String schemaName = TenantContext.get().getDataDbName();
-        ResourceVo appSystem = resourceCenterMapper.getAppSystemById(searchVo.getAppSystemId(), schemaName);
+        IResourceCrossoverMapper resourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
+        ResourceVo appSystem = resourceCrossoverMapper.getAppSystemById(searchVo.getAppSystemId(), schemaName);
         if (appSystem == null) {
             throw new AppSystemNotFoundException(searchVo.getAppSystemId());
         }
         searchVo.setAppSystemName(appSystem.getName());
         Long appModuleId = searchVo.getAppModuleId();
         if (appModuleId != null && appModuleId != 0) {
-            ResourceVo appModule = resourceCenterMapper.getAppModuleById(appModuleId, schemaName);
+            ResourceVo appModule = resourceCrossoverMapper.getAppModuleById(appModuleId, schemaName);
             if (appModule == null) {
                 throw new AppModuleNotFoundException(appModuleId);
             }
@@ -78,7 +78,7 @@ public class GetDeployAppPipelineApi extends PrivateApiComponentBase {
         }
         Long envId = searchVo.getEnvId();
         if (envId != null && envId != 0) {
-            ResourceVo env = resourceCenterMapper.getAppEnvById(envId, schemaName);
+            ResourceVo env = resourceCrossoverMapper.getAppEnvById(envId, schemaName);
             if (env == null) {
                 throw new AppEnvNotFoundException(envId);
             }

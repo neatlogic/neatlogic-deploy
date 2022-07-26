@@ -17,7 +17,7 @@ import codedriver.framework.autoexec.job.action.core.AutoexecJobActionHandlerFac
 import codedriver.framework.autoexec.job.action.core.IAutoexecJobActionHandler;
 import codedriver.framework.cmdb.crossover.IAppSystemMapper;
 import codedriver.framework.cmdb.crossover.ICiEntityCrossoverMapper;
-import codedriver.framework.cmdb.dao.mapper.resourcecenter.ResourceCenterMapper;
+import codedriver.framework.cmdb.crossover.IResourceCrossoverMapper;
 import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
 import codedriver.framework.cmdb.dto.resourcecenter.ResourceVo;
 import codedriver.framework.cmdb.dto.resourcecenter.entity.AppModuleVo;
@@ -53,8 +53,6 @@ public class DeployJobServiceImpl implements DeployJobService {
     private final static Logger logger = LoggerFactory.getLogger(DeployJobServiceImpl.class);
     @Resource
     DeployAppConfigMapper deployAppConfigMapper;
-    @Resource
-    private ResourceCenterMapper resourceCenterMapper;
 
     @Override
     public void initDeployParam(JSONObject jsonObj) {
@@ -145,10 +143,11 @@ public class DeployJobServiceImpl implements DeployJobService {
         executeConfig.put("executeNodeConfig", new JSONObject() {{
             JSONArray selectNodeArray = moduleJson.getJSONArray("selectNodeList");
             if (CollectionUtils.isEmpty(selectNodeArray)) {
+                IResourceCrossoverMapper resourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
                 //如果selectNodeList 是empty，则发布全部实例
-                List<Long> instanceIdList = resourceCenterMapper.getAppInstanceResourceIdListByAppSystemIdAndModuleIdAndEnvId(jsonObj.toJavaObject(ResourceVo.class), TenantContext.get().getDataDbName());
+                List<Long> instanceIdList = resourceCrossoverMapper.getAppInstanceResourceIdListByAppSystemIdAndModuleIdAndEnvId(jsonObj.toJavaObject(ResourceVo.class), TenantContext.get().getDataDbName());
                 if (CollectionUtils.isNotEmpty(instanceIdList)) {
-                    List<ResourceVo> instanceList = resourceCenterMapper.getAppInstanceResourceListByIdList(instanceIdList, TenantContext.get().getDataDbName());
+                    List<ResourceVo> instanceList = resourceCrossoverMapper.getAppInstanceResourceListByIdList(instanceIdList, TenantContext.get().getDataDbName());
                     for (ResourceVo instance : instanceList) {
                         JSONObject instanceJson = new JSONObject();
                         instanceJson.put("id",instance.getId());

@@ -8,8 +8,9 @@ package codedriver.module.deploy.api.appconfig.system;
 import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.auth.core.AuthAction;
-import codedriver.framework.cmdb.dao.mapper.resourcecenter.ResourceCenterMapper;
+import codedriver.framework.cmdb.crossover.IResourceCrossoverMapper;
 import codedriver.framework.common.dto.BasePageVo;
+import codedriver.framework.crossover.CrossoverServiceFactory;
 import codedriver.framework.deploy.auth.DEPLOY_BASE;
 import codedriver.framework.deploy.dto.app.DeployAppSystemVo;
 import codedriver.framework.deploy.dto.app.DeployResourceSearchVo;
@@ -38,9 +39,6 @@ public class ListDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
 
     @Resource
     private DeployAppConfigMapper deployAppConfigMapper;
-
-    @Resource
-    private ResourceCenterMapper resourceCenterMapper;
 
     @Override
     public String getToken() {
@@ -77,8 +75,9 @@ public class ListDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
 
                 //补充系统是否有模块、有环境
                 TenantContext.get().switchDataDatabase();
-                List<Long> hasModuleAppSystemIdList = resourceCenterMapper.getHasModuleAppSystemIdListByAppSystemIdList(resourceVoList.stream().map(DeployAppSystemVo::getId).collect(Collectors.toList()));
-                List<Long> hasEnvAppSystemIdList = resourceCenterMapper.getHasEnvAppSystemIdListByAppSystemIdList(resourceVoList.stream().map(DeployAppSystemVo::getId).collect(Collectors.toList()));
+                IResourceCrossoverMapper resourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
+                List<Long> hasModuleAppSystemIdList = resourceCrossoverMapper.getHasModuleAppSystemIdListByAppSystemIdList(resourceVoList.stream().map(DeployAppSystemVo::getId).collect(Collectors.toList()));
+                List<Long> hasEnvAppSystemIdList = resourceCrossoverMapper.getHasEnvAppSystemIdListByAppSystemIdList(resourceVoList.stream().map(DeployAppSystemVo::getId).collect(Collectors.toList()));
                 TenantContext.get().switchDefaultDatabase();
                 for (DeployAppSystemVo appResourceVo : resourceVoList) {
                     if (hasModuleAppSystemIdList.contains(appResourceVo.getId())) {
