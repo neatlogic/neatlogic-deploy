@@ -2,10 +2,11 @@ package codedriver.module.deploy.api.appconfig.env;
 
 import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.auth.core.AuthAction;
-import codedriver.framework.cmdb.dao.mapper.resourcecenter.ResourceCenterMapper;
+import codedriver.framework.cmdb.crossover.IResourceCrossoverMapper;
 import codedriver.framework.cmdb.dto.resourcecenter.ResourceVo;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.dto.BasePageVo;
+import codedriver.framework.crossover.CrossoverServiceFactory;
 import codedriver.framework.deploy.auth.DEPLOY_BASE;
 import codedriver.framework.deploy.dto.app.DeployResourceSearchVo;
 import codedriver.framework.restful.annotation.*;
@@ -31,9 +32,6 @@ public class SearchDeployAppConfigEnvDatabaseApi extends PrivateApiComponentBase
 
     @Resource
     private DeployAppConfigMapper deployAppConfigMapper;
-
-    @Resource
-    private ResourceCenterMapper resourceCenterMapper;
 
     @Override
     public String getName() {
@@ -81,7 +79,8 @@ public class SearchDeployAppConfigEnvDatabaseApi extends PrivateApiComponentBase
         if (count > 0) {
             searchVo.setRowNum(count);
             List<Long> databaseIdList = deployAppConfigMapper.getAppConfigEnvDatabaseResourceIdList(searchVo, TenantContext.get().getDataDbName());
-            deployDBResourceVoList=resourceCenterMapper.getResourceListByIdList(databaseIdList, TenantContext.get().getDataDbName());
+            IResourceCrossoverMapper resourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
+            deployDBResourceVoList=resourceCrossoverMapper.getResourceListByIdList(databaseIdList, TenantContext.get().getDataDbName());
         }
         return TableResultUtil.getResult(deployDBResourceVoList, searchVo);
     }

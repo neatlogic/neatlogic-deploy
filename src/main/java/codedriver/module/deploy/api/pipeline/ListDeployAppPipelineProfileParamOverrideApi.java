@@ -11,7 +11,7 @@ import codedriver.framework.autoexec.crossover.IAutoexecProfileCrossoverService;
 import codedriver.framework.autoexec.dto.AutoexecParamVo;
 import codedriver.framework.autoexec.dto.profile.AutoexecProfileParamVo;
 import codedriver.framework.cmdb.crossover.IAppSystemMapper;
-import codedriver.framework.cmdb.dao.mapper.resourcecenter.ResourceCenterMapper;
+import codedriver.framework.cmdb.crossover.IResourceCrossoverMapper;
 import codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo;
 import codedriver.framework.cmdb.dto.resourcecenter.ResourceVo;
 import codedriver.framework.cmdb.dto.resourcecenter.entity.AppEnvironmentVo;
@@ -41,9 +41,6 @@ public class ListDeployAppPipelineProfileParamOverrideApi extends PrivateApiComp
 
     @Resource
     private DeployAppConfigMapper deployAppConfigMapper;
-
-    @Resource
-    private ResourceCenterMapper resourceCenterMapper;
 
     @Override
     public String getToken() {
@@ -93,10 +90,11 @@ public class ListDeployAppPipelineProfileParamOverrideApi extends PrivateApiComp
             }
         }
 
+        IResourceCrossoverMapper resourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
         //查询应用层配置信息
         String schameName = TenantContext.get().getDataDbName();
         Long appSystemId = paramObj.getLong("appSystemId");
-        ResourceVo appSystem = resourceCenterMapper.getAppSystemById(appSystemId, schameName);
+        ResourceVo appSystem = resourceCrossoverMapper.getAppSystemById(appSystemId, schameName);
         if (appSystem == null) {
             throw new AppSystemNotFoundException(appSystemId);
         }
@@ -152,7 +150,7 @@ public class ListDeployAppPipelineProfileParamOverrideApi extends PrivateApiComp
         appSystemIdList.add(appSystemId);
         ResourceSearchVo searchVo = new ResourceSearchVo();
         searchVo.setAppSystemIdList(appSystemIdList);
-        List<ModuleVo> appModuleList = resourceCenterMapper.getAppModuleListByAppSystemIdList(searchVo);
+        List<ModuleVo> appModuleList = resourceCrossoverMapper.getAppModuleListByAppSystemIdList(searchVo);
         if (CollectionUtils.isNotEmpty(appModuleList)) {
             IAppSystemMapper appSystemMapper = CrossoverServiceFactory.getApi(IAppSystemMapper.class);
             for (ModuleVo appModule : appModuleList) {
