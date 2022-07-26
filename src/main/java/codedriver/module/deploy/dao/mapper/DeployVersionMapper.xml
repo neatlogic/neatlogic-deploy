@@ -186,6 +186,31 @@
         where version_id = #{value} for update
     </select>
 
+    <select id="getDeployVersionBaseInfoBySystemIdAndModuleIdAndVersion" parameterType="codedriver.framework.deploy.dto.version.DeployVersionVo"
+            resultType="codedriver.framework.deploy.dto.version.DeployVersionVo">
+        select id,
+               version,
+               app_system_id   as appSystemId,
+               app_system_name as appSystemName,
+               app_module_id   as appModuleId,
+               app_module_name as appModuleName,
+               is_freeze       as isFreeze,
+               repo_type       as repoType,
+               repo            as repo,
+               trunk           as trunk,
+               branch          as branch,
+               tag             as tag,
+               tags_dir        as tagsDir,
+               start_rev       as startRev,
+               end_rev         as endRev,
+               fcu,
+               fcd,
+               lcu,
+               lcd
+        from deploy_version
+        where version = #{version} and app_system_id = #{appSystemId} and app_module_id = #{appModuleId}
+    </select>
+
     <select id="getDeployVersionBySystemIdAndModuleIdAndVersionLock"
             parameterType="codedriver.framework.deploy.dto.version.DeployVersionVo"
             resultType="codedriver.framework.deploy.dto.version.DeployVersionVo">

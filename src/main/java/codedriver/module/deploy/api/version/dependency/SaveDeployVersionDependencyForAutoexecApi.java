@@ -76,7 +76,7 @@ public class SaveDeployVersionDependencyForAutoexecApi extends PrivateApiCompone
         Long moduleId = paramObj.getLong("moduleId");
         String version = paramObj.getString("version");
         JSONArray dependenceList = paramObj.getJSONArray("dependenceList");
-        DeployVersionVo versionVo = deployVersionMapper.getDeployVersionBySystemIdAndModuleIdAndVersion(new DeployVersionVo(version, sysId, moduleId));
+        DeployVersionVo versionVo = deployVersionMapper.getDeployVersionBaseInfoBySystemIdAndModuleIdAndVersion(new DeployVersionVo(version, sysId, moduleId));
         if (versionVo == null) {
             throw new DeployVersionNotFoundException(version);
         }

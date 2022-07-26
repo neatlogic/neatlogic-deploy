@@ -29,7 +29,7 @@ public interface DeployVersionMapper {
 
     Long getJobIdByDeployVersionIdAndEnvId(@Param("versionId") Long versionId, @Param("envId") Long envId);
 
-    DeployVersionVo getDeployVersionBySystemIdAndModuleIdAndVersion(DeployVersionVo versionVo);
+    DeployVersionVo getDeployVersionBaseInfoBySystemIdAndModuleIdAndVersion(DeployVersionVo versionVo);
 
     DeployVersionVo getDeployVersionBySystemIdAndModuleIdAndVersionLock(DeployVersionVo versionVo);
 
