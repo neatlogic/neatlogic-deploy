@@ -1,5 +1,5 @@
 /*
- * Copyright (c)  2022 TechSure Co.,Ltd.  All Rights Reserved.
+ * Copyright(c) 2022 TechSure Co., Ltd. All Rights Reserved.
  * 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
  */
 
@@ -27,8 +27,8 @@ import codedriver.framework.crossover.CrossoverServiceFactory;
 import codedriver.framework.dao.mapper.runner.RunnerMapper;
 import codedriver.framework.deploy.constvalue.BuildNoStatus;
 import codedriver.framework.deploy.constvalue.JobSourceType;
-import codedriver.framework.deploy.dto.DeployJobContentVo;
-import codedriver.framework.deploy.dto.DeployJobVo;
+import codedriver.framework.deploy.dto.job.DeployJobContentVo;
+import codedriver.framework.deploy.dto.job.DeployJobVo;
 import codedriver.framework.deploy.dto.app.DeployAppConfigVo;
 import codedriver.framework.deploy.dto.app.DeployPipelineConfigVo;
 import codedriver.framework.deploy.dto.sql.DeploySqlDetailVo;
@@ -241,7 +241,8 @@ public class DeployJobSourceHandler extends AutoexecJobSourceActionHandlerBase {
         DeploySqlDetailVo paramDeploySqlVo = new DeploySqlDetailVo(paramObj.getJSONObject("sqlStatus"));
         DeploySqlDetailVo oldDeploySqlVo = deploySqlMapper.getDeploySqlDetail(new DeploySqlDetailVo(paramObj.getLong("sysId"), paramObj.getLong("envId"), paramObj.getLong("moduleId"), paramObj.getString("version"), paramDeploySqlVo.getSqlFile(), paramObj.getLong("jobId"), paramObj.getString("phaseName")));
         if (oldDeploySqlVo != null) {
-            deploySqlMapper.updateDeploySqlDetailIsDeleteAndStatusAndMd5ById(paramDeploySqlVo.getStatus(), paramDeploySqlVo.getMd5(), oldDeploySqlVo.getId());
+            paramDeploySqlVo.setId(oldDeploySqlVo.getId());
+            deploySqlMapper.updateDeploySqlDetail(paramDeploySqlVo);
         } else {
             AutoexecJobPhaseVo phaseVo = autoexecJobMapper.getJobPhaseByJobIdAndPhaseName(paramObj.getLong("jobId"), paramObj.getString("phaseName"));
             if (phaseVo == null) {
@@ -334,7 +335,7 @@ public class DeployJobSourceHandler extends AutoexecJobSourceActionHandlerBase {
         DeployJobVo deployJobVo = new DeployJobVo(paramJson);
         deployJobVo.setJobId(jobVo.getId());
         deployJobVo.setConfigHash(jobVo.getConfigHash());
-        deployJobMapper.insertIgnoreDeployJobContent(new DeployJobContentVo(deployJobVo.getConfigHash(), jobVo.getConfigStr()));
+        deployJobMapper.insertIgnoreDeployJobContent(new DeployJobContentVo(deployJobVo.getPipeLineConfigStr()));
         Integer buildNo = paramJson.getInteger("buildNo");
         //如果buildNo是-1，表示新建buildNo
         if (buildNo != null && buildNo != -1) {

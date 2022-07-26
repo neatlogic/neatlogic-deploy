@@ -24,7 +24,9 @@
         `user_name`,
         `runner_id`,
         `is_delete`,
-        `sort`
+        `sort`,
+        `is_modified`,
+        `warn_count`
         <choose>
             <when test="sqlVo.status == 'pending'">
             </when>
@@ -52,7 +54,9 @@
         #{sqlVo.username},
         #{runnerId},
         #{sqlVo.isDelete},
-        #{sqlVo.sort}
+        #{sqlVo.sort},
+        #{sqlVo.isModified},
+        #{sqlVo.warnCount}
         <choose>
             <when test="sqlVo.status == 'pending'">
             </when>
@@ -168,6 +172,8 @@
         dsd.`port`,
         dsd.runner_id AS runnerId,
         dsd.is_delete AS isDelete,
+        dsd.is_modified AS isModified,
+        dsd.warn_count AS warnCount,
         dsd.start_time AS startTime,
         dsd.end_time AS endTime,
         dsd.resource_id AS resourceId,
@@ -342,10 +348,24 @@
 
     <update id="updateDeploySqlDetail">
         update deploy_sql_detail
-        set `status`    = #{status},
-            `md5`       = #{md5},
-            `is_delete` = #{isDelete},
-            sort        = #{sort}
+        set `status` = #{status},
+        `md5` = #{md5},
+        `is_delete` = #{isDelete},
+        <if test="sort != null">
+            sort = #{sort},
+        </if>
+        <choose>
+            <when test="status == 'pending'">
+            </when>
+            <when test="status == 'running'">
+                `start_time`=now(3),
+            </when>
+            <otherwise>
+                `end_time`=now(3),
+            </otherwise>
+        </choose>
+        is_modified = #{isModified},
+        warn_count = #{warnCount}
         where id = #{id}
     </update>
 

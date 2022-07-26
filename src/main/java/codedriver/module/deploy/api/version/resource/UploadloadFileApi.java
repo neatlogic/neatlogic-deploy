@@ -4,7 +4,9 @@
  */
 package codedriver.module.deploy.api.version.resource;
 
+import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.common.constvalue.ApiParamType;
+import codedriver.framework.deploy.auth.DEPLOY_BASE;
 import codedriver.framework.deploy.constvalue.DeployResourceType;
 import codedriver.framework.deploy.dto.version.DeployVersionVo;
 import codedriver.framework.deploy.exception.DeployVersionNotFoundException;
@@ -37,6 +39,7 @@ import java.util.Map;
  * @since 2022/5/27 10:54 上午
  **/
 @Service
+@AuthAction(action = DEPLOY_BASE.class)
 @OperationType(type = OperationTypeEnum.CREATE)
 public class UploadloadFileApi extends PrivateBinaryStreamApiComponentBase {
 

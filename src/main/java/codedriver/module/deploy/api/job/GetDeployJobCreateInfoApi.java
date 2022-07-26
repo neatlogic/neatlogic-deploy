@@ -6,12 +6,15 @@
 package codedriver.module.deploy.api.job;
 
 import codedriver.framework.asynchronization.threadlocal.TenantContext;
+import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.cmdb.crossover.ICiEntityCrossoverMapper;
 import codedriver.framework.cmdb.dao.mapper.resourcecenter.ResourceCenterMapper;
 import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
+import codedriver.framework.cmdb.dto.resourcecenter.ResourceVo;
 import codedriver.framework.cmdb.exception.cientity.CiEntityNotFoundException;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.crossover.CrossoverServiceFactory;
+import codedriver.framework.deploy.auth.DEPLOY_BASE;
 import codedriver.framework.deploy.dto.app.DeployAppConfigVo;
 import codedriver.framework.deploy.dto.app.DeployAppEnvironmentVo;
 import codedriver.framework.deploy.dto.app.DeployPipelineConfigVo;
@@ -35,6 +38,7 @@ import java.util.List;
  **/
 
 @Service
+@AuthAction(action = DEPLOY_BASE.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
 public class GetDeployJobCreateInfoApi extends PrivateApiComponentBase {
 
@@ -94,12 +98,13 @@ public class GetDeployJobCreateInfoApi extends PrivateApiComponentBase {
             throw new DeployAppConfigNotFoundException(appSystemCiEntityVo);
         }
         result.put("scenarioList", pipelineConfigVo.getScenarioList());
+        result.put("defaultScenarioId", pipelineConfigVo.getDefaultScenarioId());
 
         //环境 根据appSystemId、appModuleId 获取 envList
         //模块 根据appSystemId、appModuleId 获取 appModuleList
         List<Long> appModuleIdList = new ArrayList<>();
         List<DeployAppEnvironmentVo> envList = new ArrayList<>();
-        List<CiEntityVo> appModuleList = new ArrayList<>();
+        List<ResourceVo> appModuleList = new ArrayList<>();
         if (appModuleId != 0L) {
             appModuleIdList.add(appModuleId);
         } else {
@@ -109,7 +114,9 @@ public class GetDeployJobCreateInfoApi extends PrivateApiComponentBase {
         }
         if (CollectionUtils.isNotEmpty(appModuleIdList)) {
             envList = deployAppConfigMapper.getDeployAppEnvListByAppSystemIdAndModuleIdList(appSystemId, appModuleIdList, TenantContext.get().getDataDbName());
-            appModuleList = ciEntityCrossoverMapper.getCiEntityBaseInfoByIdList(appModuleIdList);
+            TenantContext.get().switchDataDatabase();
+            appModuleList = resourceCenterMapper.getAppModuleListByIdListSimple(appModuleIdList);
+            TenantContext.get().switchDefaultDatabase();
         }
         result.put("envList", envList);
         result.put("appModuleList", appModuleList);

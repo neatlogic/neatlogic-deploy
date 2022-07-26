@@ -17,27 +17,37 @@
     </select>
 
     <select id="getDeployVersionById" resultType="codedriver.framework.deploy.dto.version.DeployVersionVo">
-        select id,
-               version,
-               app_system_id   as appSystemId,
-               app_system_name as appSystemName,
-               app_module_id   as appModuleId,
-               app_module_name as appModuleName,
-               is_freeze       as isFreeze,
-               runner_map_id   as runnerMapId,
-               runner_group    as runnerGroupStr,
-               fcu,
-               fcd,
-               lcu,
-               lcd
-        from deploy_version
-        where id = #{id}
+        select dv.id,
+               dv.version,
+               dv.app_system_id as appSystemId,
+               cc.name          as appSystemName,
+               dv.app_module_id as appModuleId,
+               cce.name         as appModuleName,
+               dv.is_freeze     as isFreeze,
+               dv.fcu,
+               dv.fcd,
+               dv.lcu,
+               dv.lcd
+        from deploy_version dv
+                 left join cmdb_cientity cc on cc.id = dv.app_system_id
+                 left join cmdb_cientity cce on cce.id = dv.app_module_id
+        where dv.id = #{id}
+
     </select>
 
     <select id="searchDeployVersionCount" resultType="java.lang.Integer">
         select count(dv.id)
         from deploy_version dv
         <include refid="searchVersionWhere"></include>
+    </select>
+
+    <select id="getDeployVersionIdList" resultType="java.lang.Long">
+        select dv.id
+        from deploy_version dv
+        <include refid="searchVersionWhere"></include>
+        <if test="needPage == true">
+            LIMIT #{startNum}, #{pageSize}
+        </if>
     </select>
 
     <sql id="searchVersionWhere">
@@ -61,10 +71,15 @@
                 </foreach>
             </if>
             <if test="defaultValue != null and defaultValue.size() > 0">
-                AND dv.id IN
-                <foreach collection="defaultValue" item="id" open="(" separator="," close=")">
-                    #{id}
+                AND (dv.id IN
+                <foreach collection="defaultValue" item="item" open="(" separator="," close=")">
+                    #{item}
                 </foreach>
+                OR dv.version IN
+                <foreach collection="defaultValue" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+                )
             </if>
             <if test="startTimeRange != null and startTimeRange.size() == 2">
                 and (
@@ -99,14 +114,14 @@
         </collection>
     </resultMap>
 
-    <select id="searchDeployVersion" resultMap="deployVersionMap">
+    <select id="getDeployVersionByIdList" resultMap="deployVersionMap">
         select
         dv.id,
         dv.version,
         dv.app_system_id as appSystemId,
-        dv.app_system_name as appSystemName,
+        cci.name as appSystemName,
         dv.app_module_id as appModuleId,
-        dv.app_module_name as appModuleName,
+        cce.name as appModuleName,
         dv.is_freeze as isFreeze,
         dvb.build_no as buildNo,
         dvb.status as buildNoStatus,
@@ -120,12 +135,13 @@
         from deploy_version dv
         left join deploy_version_buildno dvb on dvb.version_id = dv.id
         left join deploy_version_env dve on dve.version_id = dv.id
-        left join cmdb_cientity cc on cc.id = dve.env_id
-        <include refid="searchVersionWhere"></include>
-        ORDER BY dv.fcd DESC, dvb.compile_start_time DESC
-        <if test="needPage == true">
-            LIMIT #{startNum}, #{pageSize}
-        </if>
+        left join cmdb_cientity cc on cc.id = dve.env_id left join cmdb_cientity cci on cci.id = dv.app_system_id
+        left join cmdb_cientity cce on cce.id = dv.app_module_id
+        where dv.id IN
+        <foreach collection="list" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+        ORDER BY dv.fcd DESC, dvb.compile_start_time DESC,dvb.build_no DESC
     </select>
 
     <select id="getJobIdByDeployVersionIdAndBuildNo" resultType="java.lang.Long">
@@ -141,62 +157,64 @@
         WHERE `version_id` = #{versionId}
           AND `env_id` = #{envId}
     </select>
+
     <select id="getVersionByAppSystemIdAndAppModuleIdAndVersion"
             resultType="codedriver.framework.deploy.dto.version.DeployVersionVo">
-        select id,
-               version,
-               app_system_id   as appSystemId,
-               app_system_name as appSystemName,
-               app_module_id   as appModuleId,
-               app_module_name as appModuleName,
-               is_freeze       as isFreeze,
-               fcu,
-               fcd,
-               lcu,
-               lcd
-        from deploy_version
-        where app_system_id = #{appSystemId}
-          and app_module_id = #{appModuleId}
-          and version = #{version}
+        select dv.id,
+               dv.version,
+               dv.app_system_id as appSystemId,
+               cc.name          as appSystemName,
+               dv.app_module_id as appModuleId,
+               cce.name         as appModuleName,
+               dv.is_freeze     as isFreeze,
+               dv.fcu,
+               dv.fcd,
+               dv.lcu,
+               dv.lcd
+        from deploy_version dv
+                 left join cmdb_cientity cc on cc.id = dv.app_system_id
+                 left join cmdb_cientity cce on cce.id = dv.app_module_id
+        where dv.app_system_id = #{appSystemId}
+          and dv.app_module_id = #{appModuleId}
+          and dv.version = #{version}
+
     </select>
 
     <select id="getDeployVersionMaxBuildNoByVersionIdLock" resultType="java.lang.Integer">
-        select max(build_no) from deploy_version_buildno where version_id = #{value} for update
-    </select>
-    
-    <sql id="getDeployVersionBySystemIdAndModuleIdAndVersionSql">
-        select id,
-               version,
-               app_system_id   as appSystemId,
-               app_system_name as appSystemName,
-               app_module_id   as appModuleId,
-               app_module_name as appModuleName,
-               is_freeze       as isFreeze,
-               repo_type       as repoType,
-               repo            as repo,
-               trunk           as trunk,
-               branch          as branch,
-               tag             as tag,
-               tags_dir        as tagsDir,
-               start_rev       as startRev,
-               end_rev         as endRev,
-               fcu,
-               fcd,
-               lcu,
-               lcd
-        from deploy_version
-        where version = #{version} and app_system_id = #{appSystemId} and app_module_id = #{appModuleId}
-    </sql>
-
-    <select id="getDeployVersionBySystemIdAndModuleIdAndVersion" parameterType="codedriver.framework.deploy.dto.version.DeployVersionVo"
-            resultType="codedriver.framework.deploy.dto.version.DeployVersionVo">
-         <include refid="getDeployVersionBySystemIdAndModuleIdAndVersionSql"></include>
+        select max(build_no)
+        from deploy_version_buildno
+        where version_id = #{value} for update
     </select>
 
-    <select id="getDeployVersionBySystemIdAndModuleIdAndVersionLock" parameterType="codedriver.framework.deploy.dto.version.DeployVersionVo"
+    <select id="getDeployVersionBySystemIdAndModuleIdAndVersionLock"
+            parameterType="codedriver.framework.deploy.dto.version.DeployVersionVo"
             resultType="codedriver.framework.deploy.dto.version.DeployVersionVo">
-        <include refid="getDeployVersionBySystemIdAndModuleIdAndVersionSql"></include>
-        for update
+        select dv.id,
+               dv.version,
+               dv.app_system_id as appSystemId,
+               cc.name          as appSystemName,
+               dv.app_module_id as appModuleId,
+               cce.name         as appModuleName,
+               dv.is_freeze     as isFreeze,
+               dv.repo_type     as repoType,
+               dv.repo          as repo,
+               dv.trunk         as trunk,
+               dv.branch        as branch,
+               dv.tag           as tag,
+               dv.tags_dir      as tagsDir,
+               dv.start_rev     as startRev,
+               dv.end_rev       as endRev,
+               dv.fcu,
+               dv.fcd,
+               dv.lcu,
+               dv.lcd
+        from deploy_version dv
+                 left join cmdb_cientity cc on cc.id = dv.app_system_id
+                 left join cmdb_cientity cce on cce.id = dv.app_module_id
+        where dv.version = #{version}
+          and dv.app_system_id = #{appSystemId}
+          and dv.app_module_id = #{appModuleId}
+            for update
     </select>
 
     <select id="getDeployVersionBuildNoListCount" resultType="java.lang.Integer">
@@ -249,35 +267,36 @@
         </where>
     </sql>
 
-    <select id="getDeployVersionBuildNoByVersionIdAndBuildNo" resultType="codedriver.framework.deploy.dto.version.DeployVersionBuildNoVo">
-        select
-        version_id as versionId,
-        build_no   as buildNo,
-        job_id     as jobId,
-        status,
-        compile_start_time as compileStartTime,
-        compile_end_time as compileEndTime,
-        compile_end_time as compileEndTime,
-        runner_map_id as runnerMapId,
-        runner_group as runnerGroupStr,
-        end_rev as endRev
+    <select id="getDeployVersionBuildNoByVersionIdAndBuildNo"
+            resultType="codedriver.framework.deploy.dto.version.DeployVersionBuildNoVo">
+        select version_id         as versionId,
+               build_no           as buildNo,
+               job_id             as jobId,
+               status,
+               compile_start_time as compileStartTime,
+               compile_end_time   as compileEndTime,
+               compile_end_time   as compileEndTime,
+               runner_map_id      as runnerMapId,
+               runner_group       as runnerGroupStr,
+               end_rev            as endRev
         from deploy_version_buildno
-        where version_id = #{versionId} and build_no = #{buildNo}
+        where version_id = #{versionId}
+          and build_no = #{buildNo}
     </select>
 
     <select id="getDeployVersionEnvByVersionIdAndEnvId"
             resultType="codedriver.framework.deploy.dto.version.DeployVersionEnvVo">
-        select
-        version_id as versionId,
-        env_id as envId,
-        job_id as jobId,
-        status as status,
-        runner_map_id as runnerMapId,
-        runner_group as runnerGroupStr,
-        build_no as buildNo,
-        is_mirror as isMirror
+        select version_id    as versionId,
+               env_id        as envId,
+               job_id        as jobId,
+               status        as status,
+               runner_map_id as runnerMapId,
+               runner_group  as runnerGroupStr,
+               build_no      as buildNo,
+               is_mirror     as isMirror
         from deploy_version_env
-        where version_id = #{versionId} and env_id = #{envId}
+        where version_id = #{versionId}
+          and env_id = #{envId}
     </select>
 
     <resultMap id="DeployVersionDependencyMap" type="codedriver.framework.deploy.dto.version.DeployVersionDependencyVo">
@@ -378,7 +397,8 @@
         where id = #{id}
     </update>
 
-    <update id="updateDeployVersionBuildNoByVersionIdAndBuildNo" parameterType="codedriver.framework.deploy.dto.version.DeployVersionBuildNoVo">
+    <update id="updateDeployVersionBuildNoByVersionIdAndBuildNo"
+            parameterType="codedriver.framework.deploy.dto.version.DeployVersionBuildNoVo">
         update deploy_version_buildno set
         <if test="runnerMapId != null">
             runner_map_id = #{runnerMapId},
@@ -425,37 +445,34 @@
 
     <insert id="insertDeployVersion">
         insert into deploy_version
-        (id, version, app_system_id, app_system_name, app_module_id, app_module_name, is_freeze, fcu, fcd, lcu,
+        (id, version, app_system_id, app_module_id, is_freeze, fcu, fcd, lcu,
          lcd)
-        values (#{id}, #{version}, #{appSystemId}, #{appSystemName}, #{appModuleId}, #{appModuleName},
+        values (#{id}, #{version}, #{appSystemId}, #{appModuleId},
                 #{isFreeze},
                 #{fcu}, now(3), #{lcu}, now(3))
     </insert>
 
     <insert id="insertDeployVersionEnv" parameterType="codedriver.framework.deploy.dto.version.DeployVersionEnvVo">
-        insert into deploy_version_env(
-            version_id,
-            env_id,
-            job_id,
-            status,
-            runner_map_id,
-            runner_group,
-            build_no,
-            is_mirror,
-            lcu,
-            lcd
-        )values(
-            #{versionId},
-            #{envId},
-            #{jobId},
-            #{status},
-            #{runnerMapId},
-            #{runnerGroupStr},
-            #{buildNo},
-            #{isMirror},
-            #{lcu},
-            now(3)
-        )
+        insert into deploy_version_env(version_id,
+                                       env_id,
+                                       job_id,
+                                       status,
+                                       runner_map_id,
+                                       runner_group,
+                                       build_no,
+                                       is_mirror,
+                                       lcu,
+                                       lcd)
+        values (#{versionId},
+                #{envId},
+                #{jobId},
+                #{status},
+                #{runnerMapId},
+                #{runnerGroupStr},
+                #{buildNo},
+                #{isMirror},
+                #{lcu},
+                now(3))
     </insert>
 
     <insert id="insertDeployVersionBuildQuality" parameterType="codedriver.framework.deploy.dto.version.DeployVersionBuildQualityVo">
@@ -746,7 +763,8 @@
     <delete id="deleteDeployVersionBuildNoByVersionIdAndBuildNo">
         delete
         from deploy_version_buildno
-        where version_id = #{versionId} and build_no = #{buildNo}
+        where version_id = #{versionId}
+          and build_no = #{buildNo}
     </delete>
 
     <delete id="deleteDeployVersionDependencyByVersionIdAndPackageIdList">

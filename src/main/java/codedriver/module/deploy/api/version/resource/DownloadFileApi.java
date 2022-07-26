@@ -4,9 +4,11 @@
  */
 package codedriver.module.deploy.api.version.resource;
 
+import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.cmdb.crossover.ICiEntityCrossoverService;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.crossover.CrossoverServiceFactory;
+import codedriver.framework.deploy.auth.DEPLOY_BASE;
 import codedriver.framework.deploy.constvalue.DeployResourceType;
 import codedriver.framework.deploy.constvalue.JobSourceType;
 import codedriver.framework.deploy.dto.version.DeployVersionVo;
@@ -39,6 +41,7 @@ import java.util.Objects;
  * @since 2022/5/27 10:54 上午
  **/
 @Service
+@AuthAction(action = DEPLOY_BASE.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
 public class DownloadFileApi extends PrivateBinaryStreamApiComponentBase {
 

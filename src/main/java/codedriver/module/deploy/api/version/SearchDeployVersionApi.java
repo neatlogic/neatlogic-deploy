@@ -1,7 +1,9 @@
 package codedriver.module.deploy.api.version;
 
+import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.dto.BasePageVo;
+import codedriver.framework.deploy.auth.DEPLOY_BASE;
 import codedriver.framework.deploy.dto.version.DeployVersionVo;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
@@ -9,6 +11,7 @@ import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.framework.util.TableResultUtil;
 import codedriver.module.deploy.dao.mapper.DeployVersionMapper;
 import com.alibaba.fastjson.JSONObject;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -20,6 +23,7 @@ import java.util.List;
  * @date 2022/5/26 2:33 下午
  */
 @Service
+@AuthAction(action = DEPLOY_BASE.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
 public class SearchDeployVersionApi extends PrivateApiComponentBase {
 
@@ -64,7 +68,10 @@ public class SearchDeployVersionApi extends PrivateApiComponentBase {
         int count = deployVersionMapper.searchDeployVersionCount(versionVo);
         if (count > 0) {
             versionVo.setRowNum(count);
-            returnList = deployVersionMapper.searchDeployVersion(versionVo);
+            List<Long> idList = deployVersionMapper.getDeployVersionIdList(versionVo);
+            if (CollectionUtils.isNotEmpty(idList)) {
+                returnList = deployVersionMapper.getDeployVersionByIdList(idList);
+            }
         }
         return TableResultUtil.getResult(returnList, versionVo);
     }

@@ -21,7 +21,7 @@ public interface DeployVersionMapper {
 
     DeployVersionVo getVersionByAppSystemIdAndAppModuleIdAndVersion(@Param("appSystemId") Long appSystemId, @Param("appModuleId") Long appModuleId, @Param("version") String version);
 
-    List<DeployVersionVo> searchDeployVersion(DeployVersionVo versionVo);
+    List<DeployVersionVo> getDeployVersionByIdList(List<Long> idList);
 
     List<DeployVersionBuildNoVo> searchDeployVersionBuildNoList(DeployVersionBuildNoVo versionBuildNoVo);
 
@@ -36,6 +36,8 @@ public interface DeployVersionMapper {
     DeployVersionBuildNoVo getDeployVersionBuildNoByVersionIdAndBuildNo(@Param("versionId") Long versionId, @Param("buildNo") Integer buildNo);
 
     DeployVersionEnvVo getDeployVersionEnvByVersionIdAndEnvId(@Param("versionId") Long versionId, @Param("envId") Long envId);
+
+    List<Long> getDeployVersionIdList(DeployVersionVo versionVo);
 
     List<DeployVersionDependencyVo> getDeployVersionDependencyListByVersionId(Long versionId);
 
