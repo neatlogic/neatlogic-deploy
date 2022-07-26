@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright(c) 2022 TechSure Co., Ltd. All Rights Reserved.
+  ~ 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
+  -->
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="codedriver.module.deploy.dao.mapper.DeployBatchJobMapper">
+    <resultMap id="deployBatchJobResultMap" type="codedriver.framework.deploy.dto.batchjob.BatchJobVo">
+        <id column="batchJobId" property="id"/>
+        <result column="batchJobName" property="name"/>
+        <result column="batchJobStatus" property="status"/>
+        <result column="batchJobErrorMsg" property="errorMsg"/>
+        <result column="batchJobPlanStartTime" property="planStartTime"/>
+        <result column="batchJobStartTime" property="startTime"/>
+        <result column="batchJobEndTime" property="endTime"/>
+        <result column="batchJobSource" property="source"/>
+        <collection property="laneList" ofType="codedriver.framework.deploy.dto.batchjob.LaneVo">
+            <id column="laneId" property="id"/>
+            <result column="sort" property="sort"/>
+            <collection property="groupList" ofType="codedriver.framework.deploy.dto.batchjob.LaneGroupVo">
+                <id column="groupId" property="id"/>
+                <result column="groupSort" property="sort"/>
+                <result column="groupStatus" property="status"/>
+                <result column="groupNeedWait" property="needWait"/>
+                <collection property="jobList" ofType="codedriver.framework.autoexec.dto.job.AutoexecJobVo">
+                    <id column="jobId" property="id"/>
+                    <result column="jobName" property="name"/>
+                    <result column="jobStatus" property="status"/>
+                    <result column="jobTriggerType" property="triggerType"/>
+                    <result column="jobErrorMsg" property="errorMsg"/>
+                    <result column="jobPlanStartTime" property="planStartTime"/>
+                    <result column="jobStartTime" property="startTime"/>
+                    <result column="jobEndTime" property="endTime"/>
+                    <result column="jobSource" property="source"/>
+                </collection>
+            </collection>
+        </collection>
+    </resultMap>
+
+    <select id="getDeployBatchJobById" parameterType="java.lang.Long"
+            resultMap="deployBatchJobResultMap">
+        SELECT a.id              as batchJobId,
+               a.`name`          as batchJobName,
+               a.`status`        as batchJobStatus,
+               a.error_msg       as batchJobErrorMsg,
+               a.plan_start_time as batchJobPlanStartTime,
+               a.start_time      as batchJobStartTime,
+               a.end_time        as batchJobEndTime,
+               a.source          as batchJobSource,
+               b.id              as laneId,
+               b.sort            as laneSort,
+               b.`status`        as laneStatus,
+               c.id              as groupId,
+               c.need_wait       as groupNeedWait,
+               c.sort            as groupSort,
+               c.`status`        as groupStatus,
+               e.id              as jobId,
+               e.`name`          as jobName,
+               e.`status`        as jobStatus,
+               e.error_msg       as jobErrorMsg,
+               a.trigger_type    as jobTriggerType,
+               d.sort            as jobSort,
+               e.plan_start_time as jobPlanStartTime,
+               e.start_time      as jobStartTime,
+               e.end_time        as jobEndTime,
+               e.source          as jobSource
+        FROM autoexec_job AS a
+                 LEFT JOIN
+             deploy_job_lane AS b
+             ON
+                 a.id = b.batch_job_id
+                 LEFT JOIN
+             deploy_job_lane_group AS c
+             ON
+                 b.id = c.lane_id
+                 LEFT JOIN
+             deploy_job_lane_group_job AS d
+             ON
+                 c.id = d.group_id
+                 LEFT JOIN
+             autoexec_job AS e
+             ON
+                 d.job_id = e.id
+        where a.id = #{value}
+    </select>
+
+</mapper>

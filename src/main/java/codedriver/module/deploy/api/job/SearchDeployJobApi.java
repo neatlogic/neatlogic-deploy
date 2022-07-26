@@ -1,5 +1,5 @@
 /*
- * Copyright (c)  2022 TechSure Co.,Ltd.  All Rights Reserved.
+ * Copyright(c) 2022 TechSure Co., Ltd. All Rights Reserved.
  * 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
  */
 
@@ -92,7 +92,7 @@ public class SearchDeployJobApi extends PrivateApiComponentBase {
         sourceList.add("deploy");
         jobVo.setSourceList(sourceList);
         IAutoexecJobCrossoverService iAutoexecJobCrossoverService = CrossoverServiceFactory.getApi(IAutoexecJobCrossoverService.class);
-        return TableResultUtil.getResult(iAutoexecJobCrossoverService.getJobList(jobVo), jobVo);
+        return TableResultUtil.getResult(iAutoexecJobCrossoverService.searchJob(jobVo), jobVo);
     }
 
 }
