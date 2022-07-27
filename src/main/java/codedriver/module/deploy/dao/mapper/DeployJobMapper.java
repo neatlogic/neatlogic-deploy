@@ -7,6 +7,8 @@ package codedriver.module.deploy.dao.mapper;
 
 import codedriver.framework.deploy.dto.job.DeployJobContentVo;
 import codedriver.framework.deploy.dto.job.DeployJobVo;
+import codedriver.framework.deploy.dto.job.LaneGroupVo;
+import codedriver.framework.deploy.dto.job.LaneVo;
 import codedriver.framework.deploy.dto.version.DeployVersionBuildNoVo;
 import org.apache.ibatis.annotations.Param;
 
@@ -40,14 +42,35 @@ public interface DeployJobMapper {
 
     DeployJobContentVo getDeployJobContent(String contentHash);
 
-    Integer insertDeployJob(DeployJobVo deployJobVo);
+    void insertDeployJob(DeployJobVo deployJobVo);
 
-    Integer insertIgnoreDeployJobContent(DeployJobContentVo deployJobContentVo);
+    void insertAutoExecJob(DeployJobVo deployJobVo);
 
-    Integer insertDeployVersionBuildNo(DeployVersionBuildNoVo deployVersionBuildNoVo);
 
-    Integer updateDeployJobRunnerMapId(DeployJobVo deployJobVo);
+    void insertIgnoreDeployJobContent(DeployJobContentVo deployJobContentVo);
 
-    Integer deleteDeployJobContentByHash(String contentHash);
+    void insertLane(LaneVo laneVo);
+
+    void insertLaneGroup(LaneGroupVo laneGroupVo);
+
+    void insertGroupJob(@Param("groupId") Long groupId, @Param("jobId") Long jobId, @Param("sort") Integer sort);
+
+    void insertJobInvoke(@Param("jobId") Long jobId, @Param("invokeId") Long invokeId, @Param("source") String source, @Param("type") String type);
+
+    void insertDeployVersionBuildNo(DeployVersionBuildNoVo deployVersionBuildNoVo);
+
+    void updateAutoExecJob(DeployJobVo deployJobVo);
+
+    void resetAutoexecJobParentId(Long jobId);
+
+    void updateDeployJobRunnerMapId(@Param("jobId") Long jobId, @Param("runnerMapId") Long runnerMapId);
+
+    void updateAutoExecJobParentIdById(DeployJobVo deployJobVo);
+
+    void deleteDeployJobContentByHash(String contentHash);
+
+    void deleteLaneGroupJobByJobId(Long jobId);
+
+    void deleteJobInvokeByJobId(Long jobId);
 
 }

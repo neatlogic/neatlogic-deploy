@@ -16,14 +16,13 @@
                env_id        as envId,
                d.name        as envName,
                version,
-               job_id        as jobId,
                build_no      as buildNo,
                runner_map_id as runnerMapId
         from deploy_job a
                  left join cmdb_cientity b ON a.app_system_id = b.id
                  left join cmdb_cientity c ON a.app_module_id = c.id
                  left join cmdb_cientity d ON a.env_id = d.id
-        where job_id = #{value}
+        where a.id = #{value}
     </select>
 
     <sql id="searchJobSql">
@@ -154,7 +153,7 @@
         d.`name` as envName
         FROM
         `autoexec_job` aj
-        left join deploy_job a on aj.id = a.job_id
+        left join deploy_job a on aj.id = a.id
         left join cmdb_cientity b ON a.app_system_id = b.id
         left join cmdb_cientity c ON a.app_module_id = c.id
         left join cmdb_cientity d ON a.env_id = d.id
@@ -171,18 +170,18 @@
         from deploy_job
         where app_system_id = #{appSystemId}
           and app_module_id = #{appModuleId}
-        order by job_id desc
+        order by id desc
         limit 1
     </select>
 
     <select id="getDeployJobListByAppSystemIdAndAppModuleId"
             resultType="codedriver.framework.deploy.dto.job.DeployJobVo">
-        select id,
+        select
+        id,
         app_system_id as appSystemId,
         app_module_id as appModuleId,
         env_id as envId,
         version,
-        job_id as jobId,
         runner_map_id as runnerMapId
         from deploy_job
         <where>
@@ -193,7 +192,6 @@
                 and app_module_id = #{appModuleId}
             </if>
         </where>
-
     </select>
 
     <select id="getDeployJobContentLock"
@@ -214,7 +212,7 @@
     </select>
 
     <insert id="insertDeployJob">
-        insert into deploy_job (`id`, `app_system_id`, `app_module_id`, `env_id`, `version`, `job_id`, `runner_map_id`,
+        insert into deploy_job (`id`, `app_system_id`, `app_module_id`, `env_id`, `version`, `runner_map_id`,
                                 `config_hash`,
                                 `build_no`)
         values (#{id},
@@ -222,10 +220,20 @@
                 #{appModuleId},
                 #{envId},
                 #{version},
-                #{jobId},
                 #{runnerMapId},
                 #{configHash},
                 #{buildNo})
+    </insert>
+
+    <insert id="insertAutoExecJob" parameterType="codedriver.framework.deploy.dto.job.DeployJobVo">
+        INSERT INTO `autoexec_job` (`id`,
+                                    `name`,
+                                    `status`,
+                                    `source`)
+        VALUES (#{id},
+                #{name},
+                #{status},
+                #{source})
     </insert>
 
     <insert id="insertIgnoreDeployJobContent"
@@ -239,16 +247,68 @@
         values (#{versionId}, #{buildNo}, #{jobId}, #{status})
     </insert>
 
+    <insert id="insertLane" parameterType="codedriver.framework.deploy.dto.job.LaneVo">
+        INSERT INTO `deploy_job_lane` (`id`, `batch_job_id`, `sort`, `status`)
+        VALUES (#{id}, #{batchJobId}, #{sort}, #{status})
+    </insert>
+
+    <insert id="insertLaneGroup" parameterType="codedriver.framework.deploy.dto.job.LaneGroupVo">
+        INSERT INTO `deploy_job_lane_group` (`id`, `lane_id`, `need_wait`, `sort`, `status`)
+        VALUES (#{id}, #{laneId}, #{needWait}, #{sort}, #{status})
+    </insert>
+
+    <insert id="insertGroupJob">
+        INSERT INTO `deploy_job_lane_group_job` (`group_id`, `job_id`, `sort`)
+        VALUES (#{groupId}, #{jobId}, #{sort})
+    </insert>
+
+    <insert id="insertJobInvoke">
+        INSERT INTO `autoexec_job_invoke` (`job_id`, `invoke_id`, `source`, `type`)
+        VALUES (#{jobId}, #{invokeId}, #{source}, #{type})
+    </insert>
+
+    <update id="resetAutoexecJobParentId" parameterType="java.lang.Long">
+        update `autoexec_job`
+        set `parent_id` = null
+        where `parent_id` = #{value}
+    </update>
+
+    <update id="updateAutoExecJob" parameterType="codedriver.framework.deploy.dto.job.DeployJobVo">
+        UPDATE `autoexec_job`
+        SET name = #{name}
+        WHERE id = #{id}
+    </update>
+
     <update id="updateDeployJobRunnerMapId">
         update deploy_job
         set `runner_map_id` = #{runnerMapId}
-        where `job_id` = #{jobId}
+        where `id` = #{jobId}
     </update>
+
+    <update id="updateAutoExecJobParentIdById" parameterType="codedriver.framework.deploy.dto.job.DeployJobVo">
+        update `autoexec_job`
+        set `parent_id` = #{parentId}
+        where `id` = #{id}
+    </update>
+
+    <delete id="deleteJobInvokeByJobId" parameterType="java.lang.Long">
+        DELETE
+        FROM `autoexec_job_invoke`
+        WHERE job_id = #{value}
+    </delete>
 
     <delete id="deleteDeployJobContentByHash" parameterType="java.lang.String">
         DELETE
         FROM `deploy_job_content`
         WHERE `hash` = #{value};
+    </delete>
+
+    <delete id="deleteLaneGroupJobByJobId" parameterType="java.lang.Long">
+        DELETE a,b,c
+        FROM `deploy_job_lane` a
+                 LEFT JOIN deploy_job_lane_group b ON a.id = b.lane_id
+                 LEFT JOIN deploy_job_lane_group_job c ON b.id = c.group_id
+        WHERE a.batch_job_id = #{value}
     </delete>
 
 </mapper>

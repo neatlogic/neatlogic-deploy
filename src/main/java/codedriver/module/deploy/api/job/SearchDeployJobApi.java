@@ -84,6 +84,7 @@ public class SearchDeployJobApi extends PrivateApiComponentBase {
                 jsonObj.put("invokeIdList", deployJobVos.stream().map(DeployJobVo::getId).collect(Collectors.toList()));
             }
         }
+
         DeployJobVo deployJobVo = JSONObject.toJavaObject(jsonObj, DeployJobVo.class);
         return TableResultUtil.getResult(deployJobService.searchDeployJob(deployJobVo), deployJobVo);
     }
