@@ -50,6 +50,7 @@ public class CreateDeployJobApi extends PrivateApiComponentBase {
             @Param(name = "scenarioName", type = ApiParamType.STRING, desc = "场景名, 如果入参也有scenarioId，则会以scenarioName为准"),
             @Param(name = "appSystemId", type = ApiParamType.LONG, desc = "应用系统id"),
             @Param(name = "appSystemName", type = ApiParamType.STRING, desc = "应用系统名，如果入参也有appSystemId，则会以appSystemName为准"),
+            @Param(name = "sysName", type = ApiParamType.STRING, desc = "应用系统名，如果入参也有appSystemId，则会以sysName为准"),
             @Param(name = "moduleList", type = ApiParamType.JSONARRAY, isRequired = true, desc = "模块列表"),
             @Param(name = "envId", type = ApiParamType.LONG, desc = "环境id"),
             @Param(name = "envName", type = ApiParamType.STRING, desc = "环境id，如果入参也有envId，则会以envName为准"),
@@ -63,6 +64,9 @@ public class CreateDeployJobApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         JSONArray result = new JSONArray();
+        if(jsonObj.containsKey("sysName")) {
+            jsonObj.put("appSystemName",jsonObj.getString("sysName"));
+        }
         deployJobService.initDeployParam(jsonObj);
         JSONArray moduleArray = jsonObj.getJSONArray("moduleList");
         BatchRunner<Object> runner = new BatchRunner<>();
