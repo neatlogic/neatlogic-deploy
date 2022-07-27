@@ -311,8 +311,7 @@ public class DeployJobSourceHandler extends AutoexecJobSourceActionHandlerBase {
 
     @Override
     public void updateJobRunnerMap(Long jobId, Long runnerMapId) {
-        DeployJobVo deployJobVo = new DeployJobVo(jobId, runnerMapId);
-        deployJobMapper.updateDeployJobRunnerMapId(deployJobVo);
+        deployJobMapper.updateDeployJobRunnerMapId(jobId, runnerMapId);
     }
 
     @Override
@@ -333,7 +332,7 @@ public class DeployJobSourceHandler extends AutoexecJobSourceActionHandlerBase {
     @Override
     public void updateInvokeJob(JSONObject paramJson, AutoexecJobVo jobVo) {
         DeployJobVo deployJobVo = new DeployJobVo(paramJson);
-        deployJobVo.setJobId(jobVo.getId());
+        deployJobVo.setId(jobVo.getId());
         deployJobVo.setConfigHash(jobVo.getConfigHash());
         deployJobMapper.insertIgnoreDeployJobContent(new DeployJobContentVo(deployJobVo.getPipeLineConfigStr()));
         Integer buildNo = paramJson.getInteger("buildNo");
@@ -352,7 +351,7 @@ public class DeployJobSourceHandler extends AutoexecJobSourceActionHandlerBase {
             } else {
                 deployJobVo.setBuildNo(maxBuildNo + 1);
             }
-            deployJobMapper.insertDeployVersionBuildNo(new DeployVersionBuildNoVo(deployVersionVo.getId(), deployJobVo.getBuildNo(), deployJobVo.getJobId(), BuildNoStatus.PENDING.getValue()));
+            deployJobMapper.insertDeployVersionBuildNo(new DeployVersionBuildNoVo(deployVersionVo.getId(), deployJobVo.getBuildNo(), deployJobVo.getId(), BuildNoStatus.PENDING.getValue()));
         }
         deployJobMapper.insertDeployJob(deployJobVo);
         jobVo.setInvokeId(deployJobVo.getId());
