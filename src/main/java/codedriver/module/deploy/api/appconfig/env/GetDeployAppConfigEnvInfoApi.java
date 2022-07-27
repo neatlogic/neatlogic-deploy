@@ -106,25 +106,25 @@ public class GetDeployAppConfigEnvInfoApi extends PrivateApiComponentBase {
 
         /*获取DB配置，核实dbResourceId是否存在，不存在则删除关系*/
         List<DeployAppConfigEnvDBConfigVo> appConfigEnvDBConfigList = deployAppConfigMapper.getAppConfigEnvDBConfigListByAppSystemIdAndAppModuleIdAndEnvId(paramObj.getLong("appSystemId"), paramObj.getLong("appModuleId"), paramObj.getLong("envId"));
-        Map<Long, DeployAppConfigEnvDBConfigVo> dbConfigMap = appConfigEnvDBConfigList.stream().collect(Collectors.toMap(DeployAppConfigEnvDBConfigVo::getDbResourceId, e->e));
-        envInfo.put("DBConfigList", dbConfigMap.values());
         if (CollectionUtils.isEmpty(appConfigEnvDBConfigList)) {
             return envInfo;
         }
+        Map<Long, DeployAppConfigEnvDBConfigVo> dbConfigMap = appConfigEnvDBConfigList.stream().collect(Collectors.toMap(DeployAppConfigEnvDBConfigVo::getDbResourceId, e->e));
+        envInfo.put("DBConfigList", dbConfigMap.values());
 
         //1、根据resourceId 查询现在仍存在的 配置项
-        List<Long> oldDbIdList = appConfigEnvDBConfigList.stream().map(DeployAppConfigEnvDBConfigVo::getDbResourceId).collect(Collectors.toList());
+        List<Long> deleteDbIdList = appConfigEnvDBConfigList.stream().map(DeployAppConfigEnvDBConfigVo::getDbResourceId).collect(Collectors.toList());
         ICiEntityCrossoverMapper ciEntityCrossoverMapper = CrossoverServiceFactory.getApi(ICiEntityCrossoverMapper.class);
-        List<CiEntityVo> nowCiEntityVoList = ciEntityCrossoverMapper.getCiEntityBaseInfoByIdList(oldDbIdList);
-        List<Long> nowDbIdList = nowCiEntityVoList.stream().map(CiEntityVo::getId).collect(Collectors.toList());
+        List<CiEntityVo> nowCiEntityVoList = ciEntityCrossoverMapper.getCiEntityBaseInfoByIdList(deleteDbIdList);
+        List<Long> exitDbIdList = nowCiEntityVoList.stream().map(CiEntityVo::getId).collect(Collectors.toList());
 
         //2、取差集
-        oldDbIdList.removeAll(nowDbIdList);
+        deleteDbIdList.removeAll(exitDbIdList);
 
-        //3、删除配置项
-        if (CollectionUtils.isNotEmpty(oldDbIdList)) {
+        //3、删除发布残留的DBResourceId
+        if (CollectionUtils.isNotEmpty(deleteDbIdList)) {
             List<Long> needDeleteDbConfigIdList = new ArrayList<>();
-            for (Long oldDbId : oldDbIdList) {
+            for (Long oldDbId : deleteDbIdList) {
                 needDeleteDbConfigIdList.add(dbConfigMap.get(oldDbId).getId());
                 dbConfigMap.remove(oldDbId);
             }
