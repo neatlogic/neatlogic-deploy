@@ -5,16 +5,23 @@
 
 package codedriver.module.deploy.api.file.transfer;
 
+import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.auth.core.AuthAction;
+import codedriver.framework.cmdb.crossover.IResourceCrossoverMapper;
+import codedriver.framework.cmdb.dto.resourcecenter.ResourceVo;
+import codedriver.framework.cmdb.exception.resourcecenter.AppModuleNotFoundException;
+import codedriver.framework.cmdb.exception.resourcecenter.AppSystemNotFoundException;
 import codedriver.framework.common.constvalue.ApiParamType;
+import codedriver.framework.crossover.CrossoverServiceFactory;
 import codedriver.framework.dao.mapper.UserMapper;
 import codedriver.framework.dao.mapper.runner.RunnerMapper;
 import codedriver.framework.deploy.auth.DEPLOY_BASE;
+import codedriver.framework.deploy.constvalue.BuildNoStatus;
 import codedriver.framework.deploy.constvalue.JobSourceType;
-import codedriver.framework.deploy.exception.DeployAppConfigModuleRunnerGroupNotFoundException;
-import codedriver.framework.deploy.exception.DeployVersionRedirectUrlCredentialUserNotFoundException;
-import codedriver.framework.deploy.exception.DownloadFileFailedException;
+import codedriver.framework.deploy.dto.version.DeployVersionBuildNoVo;
+import codedriver.framework.deploy.dto.version.DeployVersionVo;
+import codedriver.framework.deploy.exception.*;
 import codedriver.framework.dto.UserVo;
 import codedriver.framework.dto.runner.RunnerGroupVo;
 import codedriver.framework.dto.runner.RunnerMapVo;
@@ -60,6 +67,7 @@ public class DownloadDeployAppBuildApi extends PrivateBinaryStreamApiComponentBa
     @Resource
     UserMapper userMapper;
 
+
     @Override
     public String getName() {
         return "下载 appbuild";
@@ -76,17 +84,14 @@ public class DownloadDeployAppBuildApi extends PrivateBinaryStreamApiComponentBa
     }
 
     @Input({
-            @Param(name = "sysId", type = ApiParamType.LONG, isRequired = true, desc = "系统id"),
-            @Param(name = "moduleId", type = ApiParamType.LONG, isRequired = true, desc = "模块id"),
             @Param(name = "buildNo", type = ApiParamType.INTEGER, isRequired = true, desc = "build no"),
             @Param(name = "version", type = ApiParamType.STRING, isRequired = true, desc = "版本名称"),
-            @Param(name = "sysName", type = ApiParamType.STRING, desc = "系统名称"),
-            @Param(name = "moduleName", type = ApiParamType.STRING, desc = "模块名称"),
-            @Param(name = "envId", type = ApiParamType.LONG, desc = "模块id"),
-            @Param(name = "subDirs", type = ApiParamType.STRING, desc = "subDirs"),
+            @Param(name = "sysName", type = ApiParamType.STRING, isRequired = true, desc = "系统简称"),
+            @Param(name = "moduleName", type = ApiParamType.STRING, isRequired = true, desc = "模块简称"),
+            @Param(name = "subDirs", type = ApiParamType.JSONARRAY, desc = "subDirs 子目录"),
             @Param(name = "runnerId", type = ApiParamType.LONG, desc = "执行器id,-1则根据应用和模块对应的group随意选择一个runner"),
             @Param(name = "isCurrentEnvRunner", type = ApiParamType.ENUM, rule = "0,1", desc = "是否从当前环境runner下载,1：是，0：否。默认否"),
-            @Param(name = "redirectUrl", type = ApiParamType.STRING, desc = "不从当前环境runner下载,则需要传跳转url，即协议+IP地址（域名）+端口号")
+            @Param(name = "proxyToUrl", type = ApiParamType.STRING, desc = "不从当前环境runner下载,则需要传跳转url，即协议+IP地址（域名）+端口号")
     })
     @Output({
     })
@@ -104,13 +109,41 @@ public class DownloadDeployAppBuildApi extends PrivateBinaryStreamApiComponentBa
 
 
     private void downloadFromOtherEnv(JSONObject jsonObj, HttpServletRequest request, HttpServletResponse response) throws Exception {
-        String redirectUrl = jsonObj.getString("redirectUrl");
-        if (StringUtils.isBlank(redirectUrl)) {
-            throw new ParamIrregularException("redirectUrl");
+        String proxyToUrl = jsonObj.getString("proxyToUrl");
+        if (StringUtils.isBlank(proxyToUrl)) {
+            throw new ParamIrregularException("proxyToUrl");
         }
-        String credentialUserUuid = deployVersionMapper.getDeployVersionAppbuildCredentialByRedirectUrl(redirectUrl);
+        String version = jsonObj.getString("version");
+        Integer buildNo = jsonObj.getInteger("buildNo");
+        IResourceCrossoverMapper resourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
+        ResourceVo appSystem = resourceCrossoverMapper.getAppSystemByName(jsonObj.getString("sysName"), TenantContext.get().getDataDbName());
+        if (appSystem == null) {
+            throw new AppSystemNotFoundException(jsonObj.getString("sysName"));
+        }
+        ResourceVo appModule = resourceCrossoverMapper.getAppModuleByName(jsonObj.getString("moduleName"), TenantContext.get().getDataDbName());
+        if (appModule == null) {
+            throw new AppModuleNotFoundException(jsonObj.getString("moduleName"));
+        }
+        Long sysId = appSystem.getId();
+        Long moduleId = appModule.getId();
+        jsonObj.put("sysId",sysId);
+        jsonObj.put("moduleId",moduleId);
+        //判断buildNo状态，如果是released 则返回下载流，否则返回错误json信息
+        DeployVersionVo versionVo = deployVersionMapper.getDeployVersionBaseInfoBySystemIdAndModuleIdAndVersion(new DeployVersionVo(version, sysId, moduleId));
+        if (versionVo == null) {
+            throw new DeployVersionNotFoundException(version);
+        }
+        DeployVersionBuildNoVo buildNoVo = deployVersionMapper.getDeployVersionBuildNoByVersionIdAndBuildNo(versionVo.getId(), buildNo);
+        if (buildNoVo == null) {
+            throw new DeployVersionBuildNoNotFoundException(versionVo.getVersion(), buildNo);
+        }
+        response.setHeader("Build-Status", buildNoVo.getStatus());
+        if (!Objects.equals(buildNoVo.getStatus(), BuildNoStatus.RELEASED.getValue())) {
+            throw new DeployVersionBuildNoStatusIsNotReleasedException(jsonObj.getString("sysName"), jsonObj.getString("moduleName"), jsonObj.getString("envName"), version, buildNo, buildNoVo.getStatus());
+        }
+        String credentialUserUuid = deployVersionMapper.getDeployVersionAppbuildCredentialByProxyToUrl(proxyToUrl);
         UserVo credentialUser = userMapper.getUserByUuid(credentialUserUuid);
-        if(credentialUser == null){
+        if (credentialUser == null) {
             throw new DeployVersionRedirectUrlCredentialUserNotFoundException(credentialUserUuid);
         }
         UserContext.init(credentialUser, "+8:00", request, response);
@@ -118,7 +151,7 @@ public class DownloadDeployAppBuildApi extends PrivateBinaryStreamApiComponentBa
         String requestURI = request.getRequestURI();
         jsonObj.put("isCurrentEnvRunner", 1);
         jsonObj.put("runnerId", -1);
-        String url = redirectUrl + requestURI;
+        String url = proxyToUrl + requestURI;
         HttpRequestUtil httpRequestUtil = null;
         try {
             httpRequestUtil = HttpRequestUtil.download(url, "POST", response.getOutputStream())
@@ -149,12 +182,24 @@ public class DownloadDeployAppBuildApi extends PrivateBinaryStreamApiComponentBa
      * @param response 相应
      */
     private void downloadFromCurrentEnvRunner(JSONObject jsonObj, HttpServletRequest request, HttpServletResponse response) {
+        //获取对应的sysId、moduleId
+        IResourceCrossoverMapper resourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
+        ResourceVo appSystem = resourceCrossoverMapper.getAppSystemByName(jsonObj.getString("sysName"), TenantContext.get().getDataDbName());
+        if (appSystem == null) {
+            throw new AppSystemNotFoundException(jsonObj.getString("sysName"));
+        }
+        ResourceVo appModule = resourceCrossoverMapper.getAppModuleByName(jsonObj.getString("moduleName"), TenantContext.get().getDataDbName());
+        if (appModule == null) {
+            throw new AppModuleNotFoundException(jsonObj.getString("moduleName"));
+        }
         String runnerUrl;
         Long runnerId = jsonObj.getLong("runnerId");
         //兼容跳转web需要根据app｜module 获取 对应runner组的任意runner
         if (runnerId == -1) {
-            Long sysId = jsonObj.getLong("sysId");
-            Long moduleId = jsonObj.getLong("moduleId");
+            Long sysId = appSystem.getId();
+            Long moduleId = appModule.getId();
+            jsonObj.put("sysId",sysId);
+            jsonObj.put("moduleId",moduleId);
             RunnerGroupVo runnerGroupVo = deployAppConfigMapper.getAppModuleRunnerGroupByAppSystemIdAndModuleId(sysId, moduleId);
             if (runnerGroupVo == null) {
                 throw new DeployAppConfigModuleRunnerGroupNotFoundException(sysId.toString(), moduleId.toString());

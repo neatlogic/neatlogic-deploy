@@ -387,10 +387,10 @@
         WHERE version_id = #{versionId}
           and package_id = #{packageId}
     </select>
-    <select id="getDeployVersionAppbuildCredentialByRedirectUrl" resultType="java.lang.String">
+    <select id="getDeployVersionAppbuildCredentialByProxyToUrl" resultType="java.lang.String">
         select user_uuid
         from deploy_version_appbuild_credential
-        where redirect_url = #{value}
+        where proxy_to_url = #{value}
     </select>
 
     <update id="unFreezeDeployVersionById">
