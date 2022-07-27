@@ -185,7 +185,8 @@
     <select id="getDeployVersionMaxBuildNoByVersionIdLock" resultType="java.lang.Integer">
         select max(build_no)
         from deploy_version_buildno
-        where version_id = #{value} for update
+        where version_id = #{value} for
+        update
     </select>
 
     <sql id="getDeployVersionBaseInfoBySystemIdAndModuleIdAndVersion">
@@ -209,15 +210,19 @@
                lcu,
                lcd
         from deploy_version
-        where version = #{version} and app_system_id = #{appSystemId} and app_module_id = #{appModuleId}
+        where version = #{version}
+          and app_system_id = #{appSystemId}
+          and app_module_id = #{appModuleId}
     </sql>
 
-    <select id="getDeployVersionBaseInfoBySystemIdAndModuleIdAndVersion" parameterType="codedriver.framework.deploy.dto.version.DeployVersionVo"
+    <select id="getDeployVersionBaseInfoBySystemIdAndModuleIdAndVersion"
+            parameterType="codedriver.framework.deploy.dto.version.DeployVersionVo"
             resultType="codedriver.framework.deploy.dto.version.DeployVersionVo">
         <include refid="getDeployVersionBaseInfoBySystemIdAndModuleIdAndVersion"/>
     </select>
 
-    <select id="getDeployVersionBaseInfoBySystemIdAndModuleIdAndVersionLock" parameterType="codedriver.framework.deploy.dto.version.DeployVersionVo"
+    <select id="getDeployVersionBaseInfoBySystemIdAndModuleIdAndVersionLock"
+            parameterType="codedriver.framework.deploy.dto.version.DeployVersionVo"
             resultType="codedriver.framework.deploy.dto.version.DeployVersionVo">
         <include refid="getDeployVersionBaseInfoBySystemIdAndModuleIdAndVersion"/>
         for update
@@ -247,7 +252,8 @@
         where dv.version = #{version}
           and dv.app_system_id = #{appSystemId}
           and dv.app_module_id = #{appModuleId}
-            for update
+            for
+        update
     </select>
 
     <select id="getDeployVersionBuildNoListCount" resultType="java.lang.Integer">
@@ -352,36 +358,39 @@
 
     <select id="getDeployVersionDependencyListByVersionId" parameterType="java.lang.Long"
             resultMap="DeployVersionDependencyMap">
-        SELECT
-            a.id,
-            a.version_id,
-            a.`scope`,
-            a.parent_id,
-            a.build_time,
-            b.id AS package_id,
-            b.group_id,
-            b.artifact_id,
-            b.version,
-            b.type,
-            b.license,
-            b.url
-        FROM
-            deploy_version_dependency a JOIN deploy_package b ON a.package_id = b.id
+        SELECT a.id,
+               a.version_id,
+               a.`scope`,
+               a.parent_id,
+               a.build_time,
+               b.id AS package_id,
+               b.group_id,
+               b.artifact_id,
+               b.version,
+               b.type,
+               b.license,
+               b.url
+        FROM deploy_version_dependency a
+                 JOIN deploy_package b ON a.package_id = b.id
         WHERE a.version_id = #{versionId}
     </select>
 
     <select id="getDeployVersionDependencyByVersionIdAndPackageId"
             resultType="codedriver.framework.deploy.dto.version.DeployVersionDependencyVo">
-        SELECT
-            id,
-            version_id as versionId,
-            package_id as packageId,
-            `scope`,
-            parent_id as parentId,
-            build_time as buildTime
-        FROM
-            deploy_version_dependency
-        WHERE version_id = #{versionId} and package_id = #{packageId}
+        SELECT id,
+               version_id as versionId,
+               package_id as packageId,
+               `scope`,
+               parent_id  as parentId,
+               build_time as buildTime
+        FROM deploy_version_dependency
+        WHERE version_id = #{versionId}
+          and package_id = #{packageId}
+    </select>
+    <select id="getDeployVersionAppbuildCredentialByProxyToUrl" resultType="java.lang.String">
+        select user_uuid
+        from deploy_version_appbuild_credential
+        where proxy_to_url = #{value}
     </select>
 
     <update id="unFreezeDeployVersionById">
@@ -473,7 +482,9 @@
     </update>
 
     <update id="updateDeployVersionDependencyBuildTimeById" parameterType="java.lang.Long">
-        update deploy_version_dependency set build_time = now(3) where id = #{value}
+        update deploy_version_dependency
+        set build_time = now(3)
+        where id = #{value}
     </update>
 
     <insert id="insertDeployVersion">
@@ -508,270 +519,263 @@
                 now(3))
     </insert>
 
-    <insert id="insertDeployVersionBuildQuality" parameterType="codedriver.framework.deploy.dto.version.DeployVersionBuildQualityVo">
-        INSERT INTO deploy_build_quality (
-            app_module_id,
-            version_id,
-            build_time,
-            files,
-            classes,
-            `lines`,
-            ncloc,
-            functions,
-            statements,
-            complexity,
-            file_complexity,
-            class_complexity,
-            function_complexity,
-            violations,
-            blocker_violations,
-            critical_violations,
-            major_violations,
-            minor_violations,
-            executable_lines_data,
-            it_conditions_to_cover,
-            it_branch_coverage,
-            it_conditions_by_line,
-            it_coverage,
-            it_coverage_line_hits_data,
-            it_covered_conditions_by_line,
-            it_line_coverage,
-            it_lines_to_cover,
-            comment_lines_density,
-            public_documented_api_density,
-            duplicated_files,
-            duplicated_lines,
-            duplicated_lines_density,
-            new_duplicated_lines,
-            new_duplicated_lines_density,
-            duplicated_blocks,
-            new_duplicated_blocks,
-            tests,
-            test_success_density,
-            test_errors,
-            branch_coverage,
-            new_branch_coverage,
-            line_coverage,
-            new_line_coverage,
-            bugs,
-            vulnerabilities,
-            code_smells
-        )
-        VALUES
-        (
-            #{appModuleId},
-            #{versionId},
-            NOW(3),
-            #{files},
-            #{classes},
-            #{lines},
-            #{ncloc},
-            #{functions},
-            #{statements},
-            #{complexity},
-            #{fileComplexity},
-            #{classComplexity},
-            #{functionComplexity},
-            #{violations},
-            #{blockerViolations},
-            #{criticalViolations},
-            #{majorViolations},
-            #{minorViolations},
-            #{executableLinesData},
-            #{itConditionsToCover},
-            #{itBranchCoverage},
-            #{itConditionsByLine},
-            #{itCoverage},
-            #{itCoverageLineHitsData},
-            #{itCoveredConditionsByLine},
-            #{itLineCoverage},
-            #{itLinesToCover},
-            #{commentLinesDensity},
-            #{publicDocumentedApiDensity},
-            #{duplicatedFiles},
-            #{duplicatedLines},
-            #{duplicatedLinesDensity},
-            #{newDuplicatedLines},
-            #{newDuplicatedLinesDensity},
-            #{duplicatedBlocks},
-            #{newDuplicatedBlocks},
-            #{tests},
-            #{testSuccessDensity},
-            #{testErrors},
-            #{branchCoverage},
-            #{newBranchCoverage},
-            #{lineCoverage},
-            #{newLineCoverage},
-            #{bugs},
-            #{vulnerabilities},
-            #{codeSmells}
-        ) ON DUPLICATE KEY UPDATE
-            app_module_id = #{appModuleId},
-            build_time = NOW(3),
-            files = #{files},
-            classes = #{classes},
-            `lines` = #{lines},
-            ncloc = #{ncloc},
-            functions = #{functions},
-            statements = #{statements},
-            complexity = #{complexity},
-            file_complexity = #{fileComplexity},
-            class_complexity = #{classComplexity},
-            function_complexity = #{functionComplexity},
-            violations = #{violations},
-            blocker_violations = #{blockerViolations},
-            critical_violations = #{criticalViolations},
-            major_violations = #{majorViolations},
-            minor_violations = #{minorViolations},
-            executable_lines_data = #{executableLinesData},
-            it_conditions_to_cover = #{itConditionsToCover},
-            it_branch_coverage = #{itBranchCoverage},
-            it_conditions_by_line = #{itConditionsByLine},
-            it_coverage = #{itCoverage},
-            it_coverage_line_hits_data = #{itCoverageLineHitsData},
-            it_covered_conditions_by_line = #{itCoveredConditionsByLine},
-            it_line_coverage = #{itLineCoverage},
-            it_lines_to_cover = #{itLinesToCover},
-            comment_lines_density = #{commentLinesDensity},
-            public_documented_api_density = #{publicDocumentedApiDensity},
-            duplicated_files = #{duplicatedFiles},
-            duplicated_lines = #{duplicatedLines},
-            duplicated_lines_density = #{duplicatedLinesDensity},
-            new_duplicated_lines = #{newDuplicatedLines},
-            new_duplicated_lines_density = #{newDuplicatedLinesDensity},
-            duplicated_blocks = #{duplicatedBlocks},
-            new_duplicated_blocks = #{newDuplicatedBlocks},
-            tests = #{tests},
-            test_success_density = #{testSuccessDensity},
-            test_errors = #{testErrors},
-            branch_coverage = #{branchCoverage},
-            new_branch_coverage = #{newBranchCoverage},
-            line_coverage = #{lineCoverage},
-            new_line_coverage = #{newLineCoverage},
-            bugs = #{bugs},
-            vulnerabilities = #{vulnerabilities},
-            code_smells = #{codeSmells}
+    <insert id="insertDeployVersionBuildQuality"
+            parameterType="codedriver.framework.deploy.dto.version.DeployVersionBuildQualityVo">
+        INSERT INTO deploy_build_quality (app_module_id,
+                                          version_id,
+                                          build_time,
+                                          files,
+                                          classes,
+                                          `lines`,
+                                          ncloc,
+                                          functions,
+                                          statements,
+                                          complexity,
+                                          file_complexity,
+                                          class_complexity,
+                                          function_complexity,
+                                          violations,
+                                          blocker_violations,
+                                          critical_violations,
+                                          major_violations,
+                                          minor_violations,
+                                          executable_lines_data,
+                                          it_conditions_to_cover,
+                                          it_branch_coverage,
+                                          it_conditions_by_line,
+                                          it_coverage,
+                                          it_coverage_line_hits_data,
+                                          it_covered_conditions_by_line,
+                                          it_line_coverage,
+                                          it_lines_to_cover,
+                                          comment_lines_density,
+                                          public_documented_api_density,
+                                          duplicated_files,
+                                          duplicated_lines,
+                                          duplicated_lines_density,
+                                          new_duplicated_lines,
+                                          new_duplicated_lines_density,
+                                          duplicated_blocks,
+                                          new_duplicated_blocks,
+                                          tests,
+                                          test_success_density,
+                                          test_errors,
+                                          branch_coverage,
+                                          new_branch_coverage,
+                                          line_coverage,
+                                          new_line_coverage,
+                                          bugs,
+                                          vulnerabilities,
+                                          code_smells)
+        VALUES (#{appModuleId},
+                #{versionId},
+                NOW(3),
+                #{files},
+                #{classes},
+                #{lines},
+                #{ncloc},
+                #{functions},
+                #{statements},
+                #{complexity},
+                #{fileComplexity},
+                #{classComplexity},
+                #{functionComplexity},
+                #{violations},
+                #{blockerViolations},
+                #{criticalViolations},
+                #{majorViolations},
+                #{minorViolations},
+                #{executableLinesData},
+                #{itConditionsToCover},
+                #{itBranchCoverage},
+                #{itConditionsByLine},
+                #{itCoverage},
+                #{itCoverageLineHitsData},
+                #{itCoveredConditionsByLine},
+                #{itLineCoverage},
+                #{itLinesToCover},
+                #{commentLinesDensity},
+                #{publicDocumentedApiDensity},
+                #{duplicatedFiles},
+                #{duplicatedLines},
+                #{duplicatedLinesDensity},
+                #{newDuplicatedLines},
+                #{newDuplicatedLinesDensity},
+                #{duplicatedBlocks},
+                #{newDuplicatedBlocks},
+                #{tests},
+                #{testSuccessDensity},
+                #{testErrors},
+                #{branchCoverage},
+                #{newBranchCoverage},
+                #{lineCoverage},
+                #{newLineCoverage},
+                #{bugs},
+                #{vulnerabilities},
+                #{codeSmells})
+        ON DUPLICATE KEY UPDATE app_module_id                 = #{appModuleId},
+                                build_time                    = NOW(3),
+                                files                         = #{files},
+                                classes                       = #{classes},
+                                `lines`                       = #{lines},
+                                ncloc                         = #{ncloc},
+                                functions                     = #{functions},
+                                statements                    = #{statements},
+                                complexity                    = #{complexity},
+                                file_complexity               = #{fileComplexity},
+                                class_complexity              = #{classComplexity},
+                                function_complexity           = #{functionComplexity},
+                                violations                    = #{violations},
+                                blocker_violations            = #{blockerViolations},
+                                critical_violations           = #{criticalViolations},
+                                major_violations              = #{majorViolations},
+                                minor_violations              = #{minorViolations},
+                                executable_lines_data         = #{executableLinesData},
+                                it_conditions_to_cover        = #{itConditionsToCover},
+                                it_branch_coverage            = #{itBranchCoverage},
+                                it_conditions_by_line         = #{itConditionsByLine},
+                                it_coverage                   = #{itCoverage},
+                                it_coverage_line_hits_data    = #{itCoverageLineHitsData},
+                                it_covered_conditions_by_line = #{itCoveredConditionsByLine},
+                                it_line_coverage              = #{itLineCoverage},
+                                it_lines_to_cover             = #{itLinesToCover},
+                                comment_lines_density         = #{commentLinesDensity},
+                                public_documented_api_density = #{publicDocumentedApiDensity},
+                                duplicated_files              = #{duplicatedFiles},
+                                duplicated_lines              = #{duplicatedLines},
+                                duplicated_lines_density      = #{duplicatedLinesDensity},
+                                new_duplicated_lines          = #{newDuplicatedLines},
+                                new_duplicated_lines_density  = #{newDuplicatedLinesDensity},
+                                duplicated_blocks             = #{duplicatedBlocks},
+                                new_duplicated_blocks         = #{newDuplicatedBlocks},
+                                tests                         = #{tests},
+                                test_success_density          = #{testSuccessDensity},
+                                test_errors                   = #{testErrors},
+                                branch_coverage               = #{branchCoverage},
+                                new_branch_coverage           = #{newBranchCoverage},
+                                line_coverage                 = #{lineCoverage},
+                                new_line_coverage             = #{newLineCoverage},
+                                bugs                          = #{bugs},
+                                vulnerabilities               = #{vulnerabilities},
+                                code_smells                   = #{codeSmells}
     </insert>
 
-    <insert id="insertDeployVersionBuildQualityLog" parameterType="codedriver.framework.deploy.dto.version.DeployVersionBuildQualityVo">
-        INSERT INTO deploy_build_quality_log (
-            app_module_id,
-            version_id,
-            build_time,
-            files,
-            classes,
-            `lines`,
-            ncloc,
-            functions,
-            statements,
-            complexity,
-            file_complexity,
-            class_complexity,
-            function_complexity,
-            violations,
-            blocker_violations,
-            critical_violations,
-            major_violations,
-            minor_violations,
-            executable_lines_data,
-            it_conditions_to_cover,
-            it_branch_coverage,
-            it_conditions_by_line,
-            it_coverage,
-            it_coverage_line_hits_data,
-            it_covered_conditions_by_line,
-            it_line_coverage,
-            it_lines_to_cover,
-            comment_lines_density,
-            public_documented_api_density,
-            duplicated_files,
-            duplicated_lines,
-            duplicated_lines_density,
-            new_duplicated_lines,
-            new_duplicated_lines_density,
-            duplicated_blocks,
-            new_duplicated_blocks,
-            tests,
-            test_success_density,
-            test_errors,
-            branch_coverage,
-            new_branch_coverage,
-            line_coverage,
-            new_line_coverage,
-            bugs,
-            vulnerabilities,
-            code_smells
-        )
-        VALUES
-        (
-            #{appModuleId},
-            #{versionId},
-            NOW(3),
-            #{files},
-            #{classes},
-            #{lines},
-            #{ncloc},
-            #{functions},
-            #{statements},
-            #{complexity},
-            #{fileComplexity},
-            #{classComplexity},
-            #{functionComplexity},
-            #{violations},
-            #{blockerViolations},
-            #{criticalViolations},
-            #{majorViolations},
-            #{minorViolations},
-            #{executableLinesData},
-            #{itConditionsToCover},
-            #{itBranchCoverage},
-            #{itConditionsByLine},
-            #{itCoverage},
-            #{itCoverageLineHitsData},
-            #{itCoveredConditionsByLine},
-            #{itLineCoverage},
-            #{itLinesToCover},
-            #{commentLinesDensity},
-            #{publicDocumentedApiDensity},
-            #{duplicatedFiles},
-            #{duplicatedLines},
-            #{duplicatedLinesDensity},
-            #{newDuplicatedLines},
-            #{newDuplicatedLinesDensity},
-            #{duplicatedBlocks},
-            #{newDuplicatedBlocks},
-            #{tests},
-            #{testSuccessDensity},
-            #{testErrors},
-            #{branchCoverage},
-            #{newBranchCoverage},
-            #{lineCoverage},
-            #{newLineCoverage},
-            #{bugs},
-            #{vulnerabilities},
-            #{codeSmells}
-        )
+    <insert id="insertDeployVersionBuildQualityLog"
+            parameterType="codedriver.framework.deploy.dto.version.DeployVersionBuildQualityVo">
+        INSERT INTO deploy_build_quality_log (app_module_id,
+                                              version_id,
+                                              build_time,
+                                              files,
+                                              classes,
+                                              `lines`,
+                                              ncloc,
+                                              functions,
+                                              statements,
+                                              complexity,
+                                              file_complexity,
+                                              class_complexity,
+                                              function_complexity,
+                                              violations,
+                                              blocker_violations,
+                                              critical_violations,
+                                              major_violations,
+                                              minor_violations,
+                                              executable_lines_data,
+                                              it_conditions_to_cover,
+                                              it_branch_coverage,
+                                              it_conditions_by_line,
+                                              it_coverage,
+                                              it_coverage_line_hits_data,
+                                              it_covered_conditions_by_line,
+                                              it_line_coverage,
+                                              it_lines_to_cover,
+                                              comment_lines_density,
+                                              public_documented_api_density,
+                                              duplicated_files,
+                                              duplicated_lines,
+                                              duplicated_lines_density,
+                                              new_duplicated_lines,
+                                              new_duplicated_lines_density,
+                                              duplicated_blocks,
+                                              new_duplicated_blocks,
+                                              tests,
+                                              test_success_density,
+                                              test_errors,
+                                              branch_coverage,
+                                              new_branch_coverage,
+                                              line_coverage,
+                                              new_line_coverage,
+                                              bugs,
+                                              vulnerabilities,
+                                              code_smells)
+        VALUES (#{appModuleId},
+                #{versionId},
+                NOW(3),
+                #{files},
+                #{classes},
+                #{lines},
+                #{ncloc},
+                #{functions},
+                #{statements},
+                #{complexity},
+                #{fileComplexity},
+                #{classComplexity},
+                #{functionComplexity},
+                #{violations},
+                #{blockerViolations},
+                #{criticalViolations},
+                #{majorViolations},
+                #{minorViolations},
+                #{executableLinesData},
+                #{itConditionsToCover},
+                #{itBranchCoverage},
+                #{itConditionsByLine},
+                #{itCoverage},
+                #{itCoverageLineHitsData},
+                #{itCoveredConditionsByLine},
+                #{itLineCoverage},
+                #{itLinesToCover},
+                #{commentLinesDensity},
+                #{publicDocumentedApiDensity},
+                #{duplicatedFiles},
+                #{duplicatedLines},
+                #{duplicatedLinesDensity},
+                #{newDuplicatedLines},
+                #{newDuplicatedLinesDensity},
+                #{duplicatedBlocks},
+                #{newDuplicatedBlocks},
+                #{tests},
+                #{testSuccessDensity},
+                #{testErrors},
+                #{branchCoverage},
+                #{newBranchCoverage},
+                #{lineCoverage},
+                #{newLineCoverage},
+                #{bugs},
+                #{vulnerabilities},
+                #{codeSmells})
     </insert>
 
-    <insert id="insertDeployVersionDependency" parameterType="codedriver.framework.deploy.dto.version.DeployVersionDependencyVo">
-         insert into deploy_version_dependency(
-             id,
-             version_id,
-             package_id,
-             `scope`,
-             <if test="parentId != null">
-                 parent_id,
-             </if>
-             build_time
-         ) values (
-             #{id},
-             #{versionId},
-             #{packageId},
-             #{scope},
-             <if test="parentId != null">
-                #{parentId},
-             </if>
-             now(3)
+    <insert id="insertDeployVersionDependency"
+            parameterType="codedriver.framework.deploy.dto.version.DeployVersionDependencyVo">
+        insert into deploy_version_dependency(
+        id,
+        version_id,
+        package_id,
+        `scope`,
+        <if test="parentId != null">
+            parent_id,
+        </if>
+        build_time
+        ) values (
+        #{id},
+        #{versionId},
+        #{packageId},
+        #{scope},
+        <if test="parentId != null">
+            #{parentId},
+        </if>
+        now(3)
         )
     </insert>
 

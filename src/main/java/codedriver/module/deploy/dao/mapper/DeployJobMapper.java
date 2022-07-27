@@ -25,6 +25,8 @@ public interface DeployJobMapper {
 
     List<DeployJobVo> searchDeployJob(DeployJobVo deployJobVo);
 
+    List<Long> getJobIdListByParentId(Long parentId);
+
     List<Long> searchDeployJobId(DeployJobVo deployJobVo);
 
     /**

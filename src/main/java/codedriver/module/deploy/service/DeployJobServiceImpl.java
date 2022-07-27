@@ -160,7 +160,12 @@ public class DeployJobServiceImpl implements DeployJobService {
         jsonObj.put("version", moduleJson.getString("version"));
         JSONObject executeConfig = jsonObj.getJSONObject("executeConfig");
         executeConfig.put("executeNodeConfig", new JSONObject() {{
-            JSONArray selectNodeArray = moduleJson.getJSONArray("selectNodeList");
+            JSONArray selectNodeArray;
+            if (moduleJson.containsKey("nodeList")) {
+                selectNodeArray = moduleJson.getJSONArray("nodeList");
+            } else {
+                selectNodeArray = moduleJson.getJSONArray("selectNodeList");
+            }
             if (CollectionUtils.isEmpty(selectNodeArray)) {
                 IResourceCrossoverMapper resourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
                 //如果selectNodeList 是empty，则发布全部实例
