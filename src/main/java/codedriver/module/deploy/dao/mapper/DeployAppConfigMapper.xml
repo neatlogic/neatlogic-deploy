@@ -254,7 +254,6 @@
         </collection>
     </resultMap>
 
-
     <select id="getDeployAppEnvListByAppSystemIdAndModuleIdList"
             resultMap="appEnvMap">
         (
@@ -310,7 +309,6 @@
             </if>
         </where>
         )
-
     </select>
 
     <select id="getDeployAppHasNotEnvListByAppSystemIdAndModuleIdList"
