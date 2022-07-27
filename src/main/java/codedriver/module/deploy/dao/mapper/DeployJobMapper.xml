@@ -61,6 +61,9 @@
                 <foreach collection="sourceList" item="source" open="(" close=")" separator=",">
                     #{source}
                 </foreach>
+                <if test="sourceList.contains('batchdeploy')"><!--如果需要查询父作业，则默认排除有父作业的子作业-->
+                    AND aj.parent_id is null
+                </if>
             </if>
             <if test="typeIdList != null and typeIdList.size() > 0 ">
                 and ac.`type_id` in
@@ -128,6 +131,12 @@
         limit #{startNum}, #{pageSize}
     </select>
 
+    <select id="getJobIdListByParentId" parameterType="java.lang.Long" resultType="java.lang.Long">
+        SELECT id
+        FROM autoexec_job
+        WHERE parent_id = #{value}
+    </select>
+
     <select id="searchDeployJob" parameterType="codedriver.framework.deploy.dto.job.DeployJobVo"
             resultType="codedriver.framework.deploy.dto.job.DeployJobVo">
         SELECT
@@ -145,6 +154,7 @@
         aj.`source` as source,
         aj.`round_count` as roundCount,
         aj.`trigger_type` as triggerType,
+        aj.`parent_id` as parentId,
         a.`app_system_id` as appSystemId,
         b.`name` as appSystemName,
         a.`app_module_id` as appModuleId,
