@@ -7,7 +7,6 @@ import codedriver.framework.deploy.dto.app.DeployAppConfigVo;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
-import codedriver.module.deploy.dao.mapper.DeployAppConfigMapper;
 import codedriver.module.deploy.service.DeployAppConfigService;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.stereotype.Service;
@@ -23,22 +22,19 @@ import javax.annotation.Resource;
 @Transactional
 @AuthAction(action = DEPLOY_BASE.class)
 @OperationType(type = OperationTypeEnum.DELETE)
-public class DeleteDeployAppConfigEnvApi extends PrivateApiComponentBase {
+public class DeleteDeployAppConfigEnvConfigApi extends PrivateApiComponentBase {
 
     @Resource
     DeployAppConfigService deployAppConfigService;
 
-    @Resource
-    DeployAppConfigMapper deployAppConfigMapper;
-
     @Override
     public String getName() {
-        return "删除发布应用配置的应用系统环境";
+        return "删除发布应用配置的应用系统环境配置";
     }
 
     @Override
     public String getToken() {
-        return "deploy/app/config/env/delete";
+        return "deploy/app/config/env/config/delete";
     }
 
     @Override
@@ -56,14 +52,7 @@ public class DeleteDeployAppConfigEnvApi extends PrivateApiComponentBase {
     @Description(desc = "删除发布应用配置的应用系统环境")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
-
-        //删除配置
-        DeployAppConfigVo deployAppConfigVo = paramObj.toJavaObject(DeployAppConfigVo.class);
-        deployAppConfigService.deleteAppConfig(deployAppConfigVo);
-        //删除发布存的环境
-        if (deployAppConfigMapper.getAppConfigEnv(deployAppConfigVo) > 0) {
-            deployAppConfigMapper.deleteAppConfigEnv(deployAppConfigVo);
-        }
+        deployAppConfigService.deleteAppConfig(paramObj.toJavaObject(DeployAppConfigVo.class));
         return null;
     }
 }
