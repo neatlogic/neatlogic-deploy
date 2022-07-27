@@ -16,14 +16,14 @@ import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.deploy.dao.mapper.DeployAppConfigMapper;
 import com.alibaba.fastjson.JSONObject;
-import com.google.common.collect.HashMultiset;
-import com.google.common.collect.Multiset;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -71,26 +71,35 @@ public class ListDeployAppConfigAppEnvApi extends PrivateApiComponentBase {
         if (Objects.nonNull(paramObj.getInteger("isHasEnv")) && paramObj.getInteger("isHasEnv") == 0) {
             returnEnvList = deployAppConfigMapper.getDeployAppHasNotEnvListByAppSystemIdAndModuleIdList(appSystemId, appModuleId, TenantContext.get().getDataDbName());
         } else {
-            returnEnvList = deployAppConfigMapper.getDeployAppEnvListByAppSystemIdAndModuleIdList(appSystemId, Collections.singletonList(appModuleId), TenantContext.get().getDataDbName());
-            if (CollectionUtils.isEmpty(returnEnvList)) {
-                return new ArrayList<>();
-            }
-            /*如果发现发布存的环境在cmdb已经有挂实例了，则删除发布多余的环境*/
-            List<Long> envIdList = returnEnvList.stream().map(DeployAppEnvironmentVo::getId).collect(Collectors.toList());
 
-            //查询发布多余的环境idList
-            List<Long> sameEnvIdList = HashMultiset.create(envIdList).entrySet().stream().filter(w -> w.getCount() > 1).map(Multiset.Entry::getElement).collect(Collectors.toList());
-            if (CollectionUtils.isEmpty(sameEnvIdList)) {
-                return returnEnvList;
-            }
+            //查找发布的环境
+            List<DeployAppEnvironmentVo> deployEnvList = deployAppConfigMapper.getDeployAppEnvListByAppSystemIdAndModuleId(appSystemId, appModuleId);
 
-            //删除发布多余的环境idList
-            deployAppConfigMapper.deleteAppConfigEnvByAppSystemIdAndAppModuleIdAndEnvIdList(paramObj.getLong("appSystemId"), paramObj.getLong("appModuleId"), sameEnvIdList);
-            Map<Long, DeployAppEnvironmentVo> returnEnvMap = returnEnvList.stream().collect(Collectors.toMap(e -> e.getId() + e.getIsDeletable(), e -> e));
-            for (Long envId : sameEnvIdList) {
-                returnEnvMap.remove(envId + 1);
+            //查找cmdb的环境
+            List<DeployAppEnvironmentVo> cmdbEnvList = deployAppConfigMapper.getCmdbEnvListByAppSystemIdAndModuleId(appSystemId, appModuleId, TenantContext.get().getDataDbName());
+
+            //如果有交集，则删除发布多余的环境idList
+            if (CollectionUtils.isNotEmpty(cmdbEnvList) && CollectionUtils.isNotEmpty(deployEnvList)) {
+                List<Long> cmdbEnvIdList = cmdbEnvList.stream().map(DeployAppEnvironmentVo::getId).collect(Collectors.toList());
+                List<Long> deployEnvIdList = deployEnvList.stream().map(DeployAppEnvironmentVo::getId).collect(Collectors.toList());
+
+                List<Long> sameEnvIdList = new ArrayList<>(cmdbEnvIdList);
+                sameEnvIdList.retainAll(deployEnvIdList);
+                if (sameEnvIdList.size() > 0) {
+                    deployAppConfigMapper.deleteAppConfigEnvByAppSystemIdAndAppModuleIdAndEnvIdList(paramObj.getLong("appSystemId"), paramObj.getLong("appModuleId"), sameEnvIdList);
+                    for (int i = 0; i < deployEnvList.size(); i++) {
+                        DeployAppEnvironmentVo deployAppEnvironmentVo = deployEnvList.get(i);
+                        if (sameEnvIdList.contains(deployAppEnvironmentVo.getId())) {
+                            deployEnvList.remove(i);
+                        }
+                    }
+                }
+                cmdbEnvList.addAll(deployEnvList);
+                return cmdbEnvList;
+
+            } else {
+                return CollectionUtils.isNotEmpty(cmdbEnvList) ? cmdbEnvList : deployEnvList;
             }
-            return returnEnvMap.values();
         }
         return returnEnvList;
     }
