@@ -10,6 +10,7 @@ import codedriver.framework.autoexec.dto.job.AutoexecJobVo;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.dto.BasePageVo;
 import codedriver.framework.deploy.auth.DEPLOY_BASE;
+import codedriver.framework.deploy.constvalue.JobSource;
 import codedriver.framework.deploy.dto.job.DeployJobVo;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
@@ -22,6 +23,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -51,8 +53,7 @@ public class SearchDeployJobApi extends PrivateApiComponentBase {
         return "/deploy/job/search";
     }
 
-    @Input({
-            @Param(name = "appSystemId", type = ApiParamType.LONG, desc = "应用系统id"),
+    @Input({@Param(name = "appSystemId", type = ApiParamType.LONG, desc = "应用系统id"),
             @Param(name = "appModuleId", type = ApiParamType.LONG, desc = "应用模块id"),
             @Param(name = "statusList", type = ApiParamType.JSONARRAY, desc = "作业状态"),
             @Param(name = "typeIdList", type = ApiParamType.JSONARRAY, desc = "组合工具类型"),
@@ -66,17 +67,14 @@ public class SearchDeployJobApi extends PrivateApiComponentBase {
             @Param(name = "keyword", type = ApiParamType.STRING, desc = "关键词", xss = true),
             @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "当前页"),
             @Param(name = "sourceList", type = ApiParamType.JSONARRAY, desc = "来源，默认是deploy，batchdeploy"),
-            @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "每页数据条目"),
-    })
-    @Output({
-            @Param(name = "tbodyList", type = ApiParamType.JSONARRAY, explode = AutoexecJobVo[].class, desc = "列表"),
-            @Param(explode = BasePageVo.class)
-    })
+            @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "每页数据条目"), @Param(name = "parentId", type = ApiParamType.LONG, desc = "父作业id")})
+    @Output({@Param(name = "tbodyList", type = ApiParamType.JSONARRAY, explode = AutoexecJobVo[].class, desc = "列表"), @Param(explode = BasePageVo.class)})
     @Description(desc = "查询发布作业接口")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         Long appSystemId = jsonObj.getLong("appSystemId");
         Long appModuleId = jsonObj.getLong("appModuleId");
+        Long parentId = jsonObj.getLong("parentId");
         //根据appSystemId和appModuleId 获取invokeIdList
         if (appSystemId != null || appModuleId != null) {
             List<DeployJobVo> deployJobVos = deployJobMapper.getDeployJobListByAppSystemIdAndAppModuleId(appSystemId, appModuleId);
@@ -86,7 +84,15 @@ public class SearchDeployJobApi extends PrivateApiComponentBase {
         }
 
         DeployJobVo deployJobVo = JSONObject.toJavaObject(jsonObj, DeployJobVo.class);
-        return TableResultUtil.getResult(deployJobService.searchDeployJob(deployJobVo), deployJobVo);
+        if (parentId != null) {
+            List<Long> idList = deployJobMapper.getJobIdListByParentId(parentId);
+            deployJobVo.setIdList(idList);
+            deployJobVo.setSourceList(new ArrayList<String>() {{
+                this.add(JobSource.DEPLOY.getValue());
+            }});
+        }
+        List<DeployJobVo> deployJobList = deployJobService.searchDeployJob(deployJobVo);
+        return TableResultUtil.getResult(deployJobList, deployJobVo);
     }
 
 }
