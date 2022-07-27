@@ -5,6 +5,7 @@ import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.deploy.auth.DEPLOY_BASE;
 import codedriver.framework.deploy.constvalue.DeployResourceType;
 import codedriver.framework.deploy.dto.version.DeployVersionVo;
+import codedriver.framework.deploy.exception.CopyOrMoveFileToSubDirectoryException;
 import codedriver.framework.deploy.exception.DeployVersionNotFoundException;
 import codedriver.framework.deploy.exception.DeployVersionResourceTypeNotFoundException;
 import codedriver.framework.deploy.exception.MoveFileFailedException;
@@ -91,6 +92,9 @@ public class MoveFileApi extends PrivateApiComponentBase {
             }
             if (Objects.equals(src, dest)) {
                 return null;
+            }
+            if (dest.startsWith(src)) {
+                throw new CopyOrMoveFileToSubDirectoryException();
             }
         }
         if ("rename".equals(operation) && StringUtils.isBlank(name)) {
