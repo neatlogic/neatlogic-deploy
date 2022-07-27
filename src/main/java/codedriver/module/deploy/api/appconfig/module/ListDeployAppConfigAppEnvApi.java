@@ -71,7 +71,7 @@ public class ListDeployAppConfigAppEnvApi extends PrivateApiComponentBase {
         if (Objects.nonNull(paramObj.getInteger("isHasEnv")) && paramObj.getInteger("isHasEnv") == 0) {
             returnEnvList = deployAppConfigMapper.getDeployAppHasNotEnvListByAppSystemIdAndModuleIdList(appSystemId, appModuleId, TenantContext.get().getDataDbName());
         } else {
-            returnEnvList = deployAppConfigMapper.getDeployAppEnvListByAppSystemIdAndModuleIdList(appSystemId, Arrays.asList(appModuleId), TenantContext.get().getDataDbName());
+            returnEnvList = deployAppConfigMapper.getDeployAppEnvListByAppSystemIdAndModuleIdList(appSystemId, Collections.singletonList(appModuleId), TenantContext.get().getDataDbName());
             if (CollectionUtils.isEmpty(returnEnvList)) {
                 return new ArrayList<>();
             }
