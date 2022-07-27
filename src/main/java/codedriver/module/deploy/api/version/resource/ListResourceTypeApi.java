@@ -45,7 +45,7 @@ public class ListResourceTypeApi extends PrivateApiComponentBase {
 
     @Input({
             @Param(name = "type", rule = "build,env", desc = "查看制品的来源(build:从buildNo查看;env:从环境查看)", isRequired = true, type = ApiParamType.ENUM),
-            @Param(name = "hasMirror", desc = "是否有镜像制品(环境才可能有镜像制品，type=env时才需要此参数)", rule = "0,1", type = ApiParamType.ENUM),
+            @Param(name = "isMirror", desc = "是否有镜像制品(环境才可能有镜像制品，type=env时才需要此参数)", rule = "0,1", type = ApiParamType.ENUM),
     })
     @Output({
             @Param(explode = ValueTextVo[].class)
