@@ -7,7 +7,9 @@ package codedriver.module.deploy.api.appconfig.env;
 
 import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.auth.core.AuthAction;
+import codedriver.framework.cmdb.crossover.ICiEntityCrossoverMapper;
 import codedriver.framework.cmdb.crossover.IResourceCrossoverMapper;
+import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
 import codedriver.framework.cmdb.dto.resourcecenter.ResourceVo;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.dto.BasePageVo;
@@ -23,8 +25,10 @@ import codedriver.module.deploy.dao.mapper.DeployAppConfigMapper;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.nacos.common.utils.CollectionUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -34,6 +38,7 @@ import java.util.stream.Collectors;
  * @since 2022/6/22 11:04
  **/
 @Service
+@Transactional
 @AuthAction(action = DEPLOY_BASE.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
 public class GetDeployAppConfigEnvInfoApi extends PrivateApiComponentBase {
@@ -98,10 +103,36 @@ public class GetDeployAppConfigEnvInfoApi extends PrivateApiComponentBase {
                 autoConfigVo.setInstancePort(instanceResourceVo.getPort());
             }
         }
-        //DB配置
-        List<DeployAppConfigEnvDBConfigVo> appConfigEnvDBConfigList = deployAppConfigMapper.getAppConfigEnvDBConfigListByAppSystemIdAndAppModuleIdAndEnvId(paramObj.getLong("appSystemId"), paramObj.getLong("appModuleId"), paramObj.getLong("envId"));
-        envInfo.put("DBConfigList", appConfigEnvDBConfigList);
 
+        /*获取DB配置，核实dbResourceId是否存在，不存在则删除关系*/
+        List<DeployAppConfigEnvDBConfigVo> appConfigEnvDBConfigList = deployAppConfigMapper.getAppConfigEnvDBConfigListByAppSystemIdAndAppModuleIdAndEnvId(paramObj.getLong("appSystemId"), paramObj.getLong("appModuleId"), paramObj.getLong("envId"));
+        Map<Long, DeployAppConfigEnvDBConfigVo> dbConfigMap = appConfigEnvDBConfigList.stream().collect(Collectors.toMap(DeployAppConfigEnvDBConfigVo::getDbResourceId, e->e));
+        envInfo.put("DBConfigList", dbConfigMap.values());
+        if (CollectionUtils.isEmpty(appConfigEnvDBConfigList)) {
+            return envInfo;
+        }
+
+        //1、根据resourceId 查询现在仍存在的 配置项
+        List<Long> oldDbIdList = appConfigEnvDBConfigList.stream().map(DeployAppConfigEnvDBConfigVo::getDbResourceId).collect(Collectors.toList());
+        ICiEntityCrossoverMapper ciEntityCrossoverMapper = CrossoverServiceFactory.getApi(ICiEntityCrossoverMapper.class);
+        List<CiEntityVo> nowCiEntityVoList = ciEntityCrossoverMapper.getCiEntityBaseInfoByIdList(oldDbIdList);
+        List<Long> nowDbIdList = nowCiEntityVoList.stream().map(CiEntityVo::getId).collect(Collectors.toList());
+
+        //2、取差集
+        oldDbIdList.removeAll(nowDbIdList);
+
+        //3、删除配置项
+        if (CollectionUtils.isNotEmpty(oldDbIdList)) {
+            List<Long> needDeleteDbConfigIdList = new ArrayList<>();
+            for (Long oldDbId : oldDbIdList) {
+                needDeleteDbConfigIdList.add(dbConfigMap.get(oldDbId).getId());
+                dbConfigMap.remove(oldDbId);
+            }
+            if (CollectionUtils.isNotEmpty(needDeleteDbConfigIdList)) {
+                deployAppConfigMapper.deleteAppConfigDBConfigByIdList(needDeleteDbConfigIdList);
+                deployAppConfigMapper.deleteAppConfigDBConfigAccountByDBConfigIdList(needDeleteDbConfigIdList);
+            }
+        }
         return envInfo;
     }
 }

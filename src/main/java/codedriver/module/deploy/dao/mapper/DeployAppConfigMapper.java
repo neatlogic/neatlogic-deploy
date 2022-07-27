@@ -157,9 +157,13 @@ public interface DeployAppConfigMapper {
 
     void deleteAppConfigDBConfigAccountByDBConfigId(Long id);
 
+    void deleteAppConfigDBConfigAccountByDBConfigIdList(List<Long> idList);
+
     void deleteAppConfigDBConfigAccount(DeployAppConfigEnvDBConfigVo appConfigEnvDBConfigVo);
 
     void deleteAppConfigDBConfig(DeployAppConfigEnvDBConfigVo appConfigEnvDBConfigVo);
 
     void deleteAppConfigDBConfigById(Long id);
+
+    void deleteAppConfigDBConfigByIdList(List<Long> idList);
 }
