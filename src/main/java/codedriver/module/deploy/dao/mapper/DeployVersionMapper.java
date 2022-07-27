@@ -45,6 +45,8 @@ public interface DeployVersionMapper {
 
     DeployVersionDependencyVo getDeployVersionDependencyByVersionIdAndPackageId(@Param("versionId") Long versionId, @Param("packageId") Long packageId);
 
+    String getDeployVersionAppbuildCredentialByRedirectUrl(String redirectUrl);
+
     int unFreezeDeployVersionById(@Param("id") Long id, @Param("isFreeze") Long isFreeze);
 
     int updateDeployVersionDependencyBuildTimeById(Long id);
