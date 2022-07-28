@@ -255,6 +255,9 @@
     <insert id="insertDeployVersionBuildNo">
         INSERT INTO `deploy_version_buildno` (`version_id`, `build_no`, `job_id`, `status`)
         values (#{versionId}, #{buildNo}, #{jobId}, #{status})
+        ON DUPLICATE KEY UPDATE
+        `job_id` = #{jobId},
+        `status` = #{status}
     </insert>
 
     <insert id="insertLane" parameterType="codedriver.framework.deploy.dto.job.LaneVo">

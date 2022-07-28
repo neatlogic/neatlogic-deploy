@@ -5,14 +5,23 @@
 
 package codedriver.module.deploy.job.callback;
 
+import codedriver.framework.autoexec.constvalue.JobStatus;
+import codedriver.framework.autoexec.dao.mapper.AutoexecJobMapper;
 import codedriver.framework.autoexec.dto.job.AutoexecJobVo;
 import codedriver.framework.autoexec.job.callback.core.AutoexecJobCallbackBase;
+import codedriver.framework.deploy.constvalue.JobSource;
+
+import javax.annotation.Resource;
+import java.util.Objects;
 
 /**
  * @author lvzk
  * @since 2022/7/27 17:40
  **/
 public class BatchJobCallbackHandler extends AutoexecJobCallbackBase {
+    @Resource
+    private AutoexecJobMapper autoexecJobMapper;
+
     @Override
     public String getHandler() {
         return null;
@@ -20,7 +29,15 @@ public class BatchJobCallbackHandler extends AutoexecJobCallbackBase {
 
     @Override
     public Boolean getIsNeedCallback(AutoexecJobVo jobVo) {
-        return null;
+        if (jobVo != null) {
+            AutoexecJobVo autoexecJob = autoexecJobMapper.getJobInfo(jobVo.getId());
+            if (Objects.equals(JobSource.DEPLOY.getValue(),autoexecJob.getSource())) {
+                if (!JobStatus.PENDING.getValue().equals(jobVo.getStatus()) && !JobStatus.RUNNING.getValue().equals(jobVo.getStatus())) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     @Override

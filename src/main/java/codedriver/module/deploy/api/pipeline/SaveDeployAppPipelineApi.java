@@ -20,7 +20,6 @@ import codedriver.framework.deploy.dto.app.DeployAppConfigVo;
 import codedriver.framework.deploy.dto.app.DeployPipelineConfigVo;
 import codedriver.framework.deploy.dto.app.DeployPipelineExecuteConfigVo;
 import codedriver.framework.deploy.dto.app.DeployPipelinePhaseVo;
-import codedriver.framework.exception.type.ParamNotExistsException;
 import codedriver.framework.restful.annotation.Description;
 import codedriver.framework.restful.annotation.Input;
 import codedriver.framework.restful.annotation.OperationType;
@@ -33,7 +32,6 @@ import codedriver.module.deploy.dependency.handler.AutoexecGlobalParam2DeployApp
 import codedriver.module.deploy.dependency.handler.AutoexecProfile2DeployAppPipelinePhaseOperationDependencyHandler;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -89,12 +87,12 @@ public class SaveDeployAppPipelineApi extends PrivateApiComponentBase {
             }
         }
         DeployPipelineExecuteConfigVo executeConfigVo = newConfigVo.getExecuteConfig();
-        if (StringUtils.isBlank(executeConfigVo.getExecuteUser())) {
-            throw new ParamNotExistsException("执行用户(config.executeUser)");
-        }
-        if (executeConfigVo.getProtocolId() == null) {
-            throw new ParamNotExistsException("连接协议(config.protocolId)");
-        }
+//        if (StringUtils.isBlank(executeConfigVo.getExecuteUser())) {
+//            throw new ParamNotExistsException("执行用户(config.executeUser)");
+//        }
+//        if (executeConfigVo.getProtocolId() == null) {
+//            throw new ParamNotExistsException("连接协议(config.protocolId)");
+//        }
         Long moduleId = deployAppConfigVo.getAppModuleId();
         Long envId = deployAppConfigVo.getEnvId();
         if (envId != null && envId != 0) {
