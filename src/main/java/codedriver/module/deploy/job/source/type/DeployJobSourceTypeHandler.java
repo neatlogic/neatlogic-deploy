@@ -27,10 +27,10 @@ import codedriver.framework.crossover.CrossoverServiceFactory;
 import codedriver.framework.dao.mapper.runner.RunnerMapper;
 import codedriver.framework.deploy.constvalue.BuildNoStatus;
 import codedriver.framework.deploy.constvalue.JobSourceType;
-import codedriver.framework.deploy.dto.job.DeployJobContentVo;
-import codedriver.framework.deploy.dto.job.DeployJobVo;
 import codedriver.framework.deploy.dto.app.DeployAppConfigVo;
 import codedriver.framework.deploy.dto.app.DeployPipelineConfigVo;
+import codedriver.framework.deploy.dto.job.DeployJobContentVo;
+import codedriver.framework.deploy.dto.job.DeployJobVo;
 import codedriver.framework.deploy.dto.sql.DeploySqlDetailVo;
 import codedriver.framework.deploy.dto.sql.DeploySqlJobPhaseVo;
 import codedriver.framework.deploy.dto.version.DeployVersionBuildNoVo;
@@ -334,22 +334,25 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
         DeployJobVo deployJobVo = new DeployJobVo(paramJson);
         deployJobVo.setId(jobVo.getId());
         deployJobVo.setConfigHash(jobVo.getConfigHash());
-        deployJobMapper.insertIgnoreDeployJobContent(new DeployJobContentVo(deployJobVo.getPipeLineConfigStr()));
+        deployJobMapper.insertIgnoreDeployJobContent(new DeployJobContentVo(jobVo.getConfigStr()));
         Integer buildNo = paramJson.getInteger("buildNo");
         //如果buildNo是-1，表示新建buildNo
-        if (buildNo != null && buildNo != -1) {
-            deployJobVo.setBuildNo(buildNo);
-        } else {
-            //获取最新buildNo
+        if (buildNo != null ) {
             DeployVersionVo deployVersionVo = deployVersionMapper.getVersionByAppSystemIdAndAppModuleIdAndVersion(deployJobVo.getAppSystemId(), deployJobVo.getAppModuleId(), deployJobVo.getVersion());
             if (deployVersionVo == null) {
                 throw new DeployVersionNotFoundException(deployJobVo.getVersion());
             }
-            Integer maxBuildNo = deployVersionMapper.getDeployVersionMaxBuildNoByVersionIdLock(deployVersionVo.getId());
-            if (maxBuildNo == null) {
-                deployJobVo.setBuildNo(1);
-            } else {
-                deployJobVo.setBuildNo(maxBuildNo + 1);
+            //获取最新buildNo
+            if (buildNo == -1) {
+                Integer maxBuildNo = deployVersionMapper.getDeployVersionMaxBuildNoByVersionIdLock(deployVersionVo.getId());
+                if (maxBuildNo == null) {
+                    deployJobVo.setBuildNo(1);
+                } else {
+                    deployJobVo.setBuildNo(maxBuildNo + 1);
+                }
+                deployJobMapper.insertDeployVersionBuildNo(new DeployVersionBuildNoVo(deployVersionVo.getId(), deployJobVo.getBuildNo(), deployJobVo.getId(), BuildNoStatus.PENDING.getValue()));
+            } else if (buildNo > 0) {
+                deployJobVo.setBuildNo(buildNo);
             }
             deployJobMapper.insertDeployVersionBuildNo(new DeployVersionBuildNoVo(deployVersionVo.getId(), deployJobVo.getBuildNo(), deployJobVo.getId(), BuildNoStatus.PENDING.getValue()));
         }

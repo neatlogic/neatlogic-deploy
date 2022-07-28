@@ -16,7 +16,6 @@ import codedriver.module.deploy.service.DeployJobService;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.MapUtils;
-import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
@@ -27,7 +26,7 @@ import javax.annotation.Resource;
  **/
 
 @Transactional
-@Service
+@Deprecated
 @AuthAction(action = DEPLOY_BASE.class)
 @OperationType(type = OperationTypeEnum.CREATE)
 public class SaveDeployJobApi extends PrivateApiComponentBase {

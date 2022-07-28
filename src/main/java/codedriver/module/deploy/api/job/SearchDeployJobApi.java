@@ -66,6 +66,7 @@ public class SearchDeployJobApi extends PrivateApiComponentBase {
             @Param(name = "execUserList", type = ApiParamType.JSONARRAY, desc = "操作人"),
             @Param(name = "keyword", type = ApiParamType.STRING, desc = "关键词", xss = true),
             @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "当前页"),
+            @Param(name = "hasParent", type = ApiParamType.BOOLEAN, desc = "是否拥有父作业"),
             @Param(name = "sourceList", type = ApiParamType.JSONARRAY, desc = "来源，默认是deploy，batchdeploy"),
             @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "每页数据条目"), @Param(name = "parentId", type = ApiParamType.LONG, desc = "父作业id")})
     @Output({@Param(name = "tbodyList", type = ApiParamType.JSONARRAY, explode = AutoexecJobVo[].class, desc = "列表"), @Param(explode = BasePageVo.class)})

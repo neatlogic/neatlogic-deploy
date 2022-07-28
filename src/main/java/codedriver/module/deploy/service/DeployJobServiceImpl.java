@@ -85,7 +85,7 @@ public class DeployJobServiceImpl implements DeployJobService {
             if (appSystem == null) {
                 throw new CiEntityNotFoundException(jsonObj.getString("appSystemName"));
             }
-            appSystemId = appSystem.getId();
+            jsonObj.put("appSystemId", appSystem.getId());
         } else if (appSystemId != null) {
             CiEntityVo appSystem = iCiEntityCrossoverMapper.getCiEntityBaseInfoById(appSystemId);
             if (iCiEntityCrossoverMapper.getCiEntityBaseInfoById(appSystemId) == null) {
@@ -101,6 +101,7 @@ public class DeployJobServiceImpl implements DeployJobService {
             if (envId == null) {
                 throw new CiEntityNotFoundException(jsonObj.getString("envName"));
             }
+            jsonObj.put("envId", envId);
         } else if (envId != null) {
             CiEntityVo envEntity = iCiEntityCrossoverMapper.getCiEntityBaseInfoById(envId);
             if (envEntity == null) {
@@ -144,6 +145,7 @@ public class DeployJobServiceImpl implements DeployJobService {
             if (appModuleVo == null) {
                 throw new CiEntityNotFoundException(moduleJson.getString("name"));
             }
+            moduleJson.put("id", appModuleVo.getId());
             jsonObj.put("appModuleId", appModuleVo.getId());
             jsonObj.put("appModuleName", moduleJson.getString("name"));
         } else if (appModuleId != null) {
@@ -159,6 +161,7 @@ public class DeployJobServiceImpl implements DeployJobService {
         jsonObj.put("buildNo", moduleJson.getInteger("buildNo"));
         jsonObj.put("version", moduleJson.getString("version"));
         JSONObject executeConfig = jsonObj.getJSONObject("executeConfig");
+        IResourceCrossoverMapper resourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
         executeConfig.put("executeNodeConfig", new JSONObject() {{
             JSONArray selectNodeArray;
             if (moduleJson.containsKey("nodeList")) {
@@ -167,7 +170,6 @@ public class DeployJobServiceImpl implements DeployJobService {
                 selectNodeArray = moduleJson.getJSONArray("selectNodeList");
             }
             if (CollectionUtils.isEmpty(selectNodeArray)) {
-                IResourceCrossoverMapper resourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
                 //如果selectNodeList 是empty，则发布全部实例
                 List<Long> instanceIdList = resourceCrossoverMapper.getAppInstanceResourceIdListByAppSystemIdAndModuleIdAndEnvId(jsonObj.toJavaObject(ResourceVo.class), TenantContext.get().getDataDbName());
                 if (CollectionUtils.isNotEmpty(instanceIdList)) {
@@ -179,6 +181,18 @@ public class DeployJobServiceImpl implements DeployJobService {
                         instanceJson.put("port", instance.getPort());
                         instanceJson.put("name", instance.getName());
                         selectNodeArray.add(instanceJson);
+                    }
+                }
+            } else {
+                //如果不存在resourceId则需要补充 resourceId
+                for (int i = 0; i < selectNodeArray.size(); i++) {
+                    JSONObject nodeJson = selectNodeArray.getJSONObject(i);
+                    if (!nodeJson.containsKey("id")) {
+                        ResourceVo resourceVo = resourceCrossoverMapper.getResourceByIpAndPort(TenantContext.get().getDataDbName(), nodeJson.getString("ip"), nodeJson.getInteger("port"));
+                        if(resourceVo != null){
+                            nodeJson.put("id",resourceVo.getId());
+                            nodeJson.put("name",resourceVo.getName());
+                        }
                     }
                 }
             }
@@ -216,6 +230,9 @@ public class DeployJobServiceImpl implements DeployJobService {
         try {
             // 保存之后，如果设置的人工触发，那只有点执行按钮才能触发；如果是自动触发，则启动一个定时作业；如果没到点就人工触发了，则取消定时作业，立即执行
             if (JobTriggerType.AUTO.getValue().equals(jobVo.getTriggerType())) {
+                if (!jsonObj.containsKey("planStartTime")) {
+                    throw new ParamIrregularException("planStartTime");
+                }
                 IJob jobHandler = SchedulerManager.getHandler(DeployJobAutoFireJob.class.getName());
                 if (jobHandler == null) {
                     throw new ScheduleHandlerNotFoundException(DeployJobAutoFireJob.class.getName());

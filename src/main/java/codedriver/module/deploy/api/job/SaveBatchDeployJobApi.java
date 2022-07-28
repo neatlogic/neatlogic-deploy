@@ -6,17 +6,17 @@
 package codedriver.module.deploy.api.job;
 
 import codedriver.framework.auth.core.AuthAction;
+import codedriver.framework.auth.core.AuthActionChecker;
 import codedriver.framework.autoexec.constvalue.JobStatus;
+import codedriver.framework.autoexec.constvalue.ReviewStatus;
 import codedriver.framework.common.constvalue.ApiParamType;
-import codedriver.framework.deploy.auth.DEPLOY_BASE;
+import codedriver.framework.deploy.auth.BATCHDEPLOY_MODIFY;
+import codedriver.framework.deploy.auth.BATCHDEPLOY_VERIFY;
 import codedriver.framework.deploy.constvalue.JobSource;
 import codedriver.framework.deploy.dto.job.DeployJobVo;
 import codedriver.framework.deploy.dto.job.LaneGroupVo;
 import codedriver.framework.deploy.dto.job.LaneVo;
-import codedriver.framework.restful.annotation.Description;
-import codedriver.framework.restful.annotation.Input;
-import codedriver.framework.restful.annotation.OperationType;
-import codedriver.framework.restful.annotation.Param;
+import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.deploy.dao.mapper.DeployJobMapper;
@@ -29,7 +29,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 
 @Service
-@AuthAction(action = DEPLOY_BASE.class)
+@AuthAction(action = BATCHDEPLOY_MODIFY.class)
 @OperationType(type = OperationTypeEnum.UPDATE)
 @Transactional
 public class SaveBatchDeployJobApi extends PrivateApiComponentBase {
@@ -55,14 +55,28 @@ public class SaveBatchDeployJobApi extends PrivateApiComponentBase {
         return "/deploy/batchjob/save";
     }
 
-    @Input({@Param(name = "id", type = ApiParamType.LONG, desc = "作业id，不提供代表添加作业"), @Param(name = "name", type = ApiParamType.STRING, isRequired = true, desc = "作业名称"), @Param(name = "laneList", type = ApiParamType.JSONARRAY, desc = "通道列表")})
+    @Input({@Param(name = "id", type = ApiParamType.LONG, desc = "作业id，不提供代表添加作业"),
+            @Param(name = "name", type = ApiParamType.STRING, isRequired = true, desc = "作业名称"),
+            @Param(name = "saveMode", type = ApiParamType.ENUM, rule = "save,commit", isRequired = true, desc = "暂存或提交"),
+            @Param(name = "laneList", type = ApiParamType.JSONARRAY, desc = "通道列表")})
+    @Output({@Param(explode = DeployJobVo.class)})
     @Description(desc = "保存批量发布作业接口")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         Long id = jsonObj.getLong("id");
         DeployJobVo deployJobVo = JSONObject.toJavaObject(jsonObj, DeployJobVo.class);
+        String saveMode = jsonObj.getString("saveMode");
+        if (saveMode.equals("save")) {
+            deployJobVo.setStatus(JobStatus.SAVED.getValue());
+        } else {
+            deployJobVo.setStatus(JobStatus.PENDING.getValue());
+            if (!AuthActionChecker.check(BATCHDEPLOY_VERIFY.class)) {
+                deployJobVo.setReviewStatus(ReviewStatus.WAITING.getValue());
+            } else {
+                deployJobVo.setReviewStatus(ReviewStatus.PASSED.getValue());
+            }
+        }
         deployJobVo.setSource(JobSource.BATCHDEPLOY.getValue());
-        deployJobVo.setStatus(JobStatus.PENDING.getValue());
         if (id == null) {
             deployJobMapper.insertAutoExecJob(deployJobVo);
         } else {
@@ -106,7 +120,7 @@ public class SaveBatchDeployJobApi extends PrivateApiComponentBase {
                 }
             }
         }
-        return null;
+        return deployJobMapper.getBatchDeployJobById(deployJobVo.getId());
     }
 
 }
