@@ -9,14 +9,12 @@ import codedriver.framework.deploy.auth.DEPLOY_MODIFY;
 import codedriver.framework.deploy.constvalue.VersionDirection;
 import codedriver.framework.deploy.dto.env.DeployEnvVersionAuditVo;
 import codedriver.framework.deploy.dto.env.DeployEnvVersionVo;
-import codedriver.framework.deploy.dto.version.DeployVersionVo;
-import codedriver.framework.deploy.exception.DeployVersionBuildNoNotFoundException;
-import codedriver.framework.deploy.exception.DeployVersionNotFoundException;
+import codedriver.framework.deploy.exception.DeployEnvVersionNotFoundException;
+import codedriver.framework.deploy.exception.DeployEnvVersionWhichCanRollbackNotFoundException;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.deploy.dao.mapper.DeployEnvVersionMapper;
-import codedriver.module.deploy.dao.mapper.DeployVersionMapper;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,21 +25,19 @@ import javax.annotation.Resource;
 @Transactional
 @AuthAction(action = DEPLOY_MODIFY.class)
 @OperationType(type = OperationTypeEnum.UPDATE)
-public class SaveDeployEnvVersionApi extends PrivateApiComponentBase {
-    @Resource
-    DeployVersionMapper deployVersionMapper;
+public class RollbackDeployEnvVersionApi extends PrivateApiComponentBase {
 
     @Resource
     DeployEnvVersionMapper deployEnvVersionMapper;
 
     @Override
     public String getName() {
-        return "设置环境的版本号";
+        return "回退环境的版本";
     }
 
     @Override
     public String getToken() {
-        return "deploy/env/version/save";
+        return "deploy/env/version/rollback";
     }
 
     @Override
@@ -53,39 +49,31 @@ public class SaveDeployEnvVersionApi extends PrivateApiComponentBase {
             @Param(name = "sysId", desc = "应用ID", isRequired = true, type = ApiParamType.LONG),
             @Param(name = "moduleId", desc = "应用模块id", isRequired = true, type = ApiParamType.LONG),
             @Param(name = "envId", desc = "环境id", isRequired = true, type = ApiParamType.LONG),
-            @Param(name = "version", desc = "版本号", isRequired = true, type = ApiParamType.STRING),
-            @Param(name = "buildNo", desc = "编译号", isRequired = true, type = ApiParamType.INTEGER),
     })
     @Output({
     })
-    @Description(desc = "设置环境的版本号")
+    @Description(desc = "回退环境的版本")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         Long sysId = paramObj.getLong("sysId");
         Long moduleId = paramObj.getLong("moduleId");
         Long envId = paramObj.getLong("envId");
-        String version = paramObj.getString("version");
-        Integer buildNo = paramObj.getInteger("buildNo");
         ICiEntityCrossoverService ciEntityCrossoverService = CrossoverServiceFactory.getApi(ICiEntityCrossoverService.class);
-        if (ciEntityCrossoverService.getCiEntityNameByCiEntityId(envId) == null) {
+        String envName = ciEntityCrossoverService.getCiEntityNameByCiEntityId(envId);
+        if (envName == null) {
             throw new AppEnvNotFoundException(envId);
         }
-        DeployVersionVo versionVo = deployVersionMapper.getDeployVersionBaseInfoBySystemIdAndModuleIdAndVersion(new DeployVersionVo(version, sysId, moduleId));
-        if (versionVo == null) {
-            throw new DeployVersionNotFoundException(version);
-        }
-        if (deployVersionMapper.getDeployVersionBuildNoByVersionIdAndBuildNo(versionVo.getId(), buildNo) == null) {
-            throw new DeployVersionBuildNoNotFoundException(versionVo.getVersion(), buildNo);
-        }
+        // 找到环境的当前版本，回退到当前版本第一次出现在audit表时记录的old_version
         DeployEnvVersionVo currentVersion = deployEnvVersionMapper.getDeployEnvVersionByEnvIdLock(sysId, moduleId, envId);
-        deployEnvVersionMapper.insertDeployEnvVersion(new DeployEnvVersionVo(sysId, moduleId, envId, versionVo.getId(), buildNo));
-        Long oldVersionId = null;
-        Integer oldBuildNo = null;
-        if (currentVersion != null) {
-            oldVersionId = currentVersion.getVersionId();
-            oldBuildNo = currentVersion.getBuildNo();
+        if (currentVersion == null) {
+            throw new DeployEnvVersionNotFoundException(envName);
         }
-        deployEnvVersionMapper.insertDeployEnvVersionAudit(new DeployEnvVersionAuditVo(sysId, moduleId, envId, versionVo.getId(), oldVersionId, buildNo, oldBuildNo, VersionDirection.FORWARD.getValue()));
+        DeployEnvVersionAuditVo oldestVersion = deployEnvVersionMapper.getDeployEnvOldestVersionByEnvIdAndNewVersionId(sysId, moduleId, envId, currentVersion.getVersionId());
+        if (oldestVersion == null || oldestVersion.getOldVersionId() == null) {
+            throw new DeployEnvVersionWhichCanRollbackNotFoundException(envName);
+        }
+        deployEnvVersionMapper.insertDeployEnvVersion(new DeployEnvVersionVo(sysId, moduleId, envId, oldestVersion.getOldVersionId(), oldestVersion.getOldBuildNo()));
+        deployEnvVersionMapper.insertDeployEnvVersionAudit(new DeployEnvVersionAuditVo(sysId, moduleId, envId, oldestVersion.getOldVersionId(), currentVersion.getVersionId(), oldestVersion.getOldBuildNo(), currentVersion.getBuildNo(), VersionDirection.ROLLBACK.getValue()));
         return null;
     }
 }
