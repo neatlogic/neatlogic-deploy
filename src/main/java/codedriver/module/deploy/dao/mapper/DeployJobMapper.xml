@@ -38,7 +38,7 @@
         </if>
         <where>
             <if test="combopName != null and combopName != ''">
-                ac.name like concat('%', #{combopName}, '%')
+            ac.name like concat('%', #{combopName}, '%')
             </if>
             <if test="excludeIdList != null and excludeIdList.size() > 0">
                 AND aj.id not in
@@ -61,9 +61,16 @@
                 <foreach collection="sourceList" item="source" open="(" close=")" separator=",">
                     #{source}
                 </foreach>
-                <if test="sourceList.contains('batchdeploy')"><!--如果需要查询父作业，则默认排除有父作业的子作业-->
-                    AND aj.parent_id is null
-                </if>
+            </if>
+            <if test="hasParent != null">
+                <choose>
+                    <when test="hasParent == true">
+                        AND aj.parent_id is not null
+                    </when>
+                    <otherwise>
+                        AND aj.parent_id is null
+                    </otherwise>
+                </choose>
             </if>
             <if test="typeIdList != null and typeIdList.size() > 0 ">
                 and ac.`type_id` in
@@ -155,11 +162,14 @@
         aj.`round_count` as roundCount,
         aj.`trigger_type` as triggerType,
         aj.`parent_id` as parentId,
+        aj.`reviewer` as reviewer,
+        aj.`review_status` as reviewStatus,
+        aj.`review_time` as reviewTime,
         a.`app_system_id` as appSystemId,
         b.`name` as appSystemName,
         a.`app_module_id` as appModuleId,
         c.`name` as appModuleName,
-        a.`env_id` as endId,
+        a.`env_id` as envId,
         d.`name` as envName
         FROM
         `autoexec_job` aj
@@ -213,6 +223,96 @@
         update
     </select>
 
+    <resultMap id="deployBatchJobResultMap" type="codedriver.framework.deploy.dto.job.DeployJobVo">
+        <id column="batchJobId" property="id"/>
+        <result column="batchJobName" property="name"/>
+        <result column="batchJobStatus" property="status"/>
+        <result column="batchJobErrorMsg" property="errorMsg"/>
+        <result column="batchJobPlanStartTime" property="planStartTime"/>
+        <result column="batchJobStartTime" property="startTime"/>
+        <result column="batchJobEndTime" property="endTime"/>
+        <result column="batchJobSource" property="source"/>
+        <result column="batchJobReviewer" property="reviewer"/>
+        <result column="batchJobReviewStatus" property="reviewStatus"/>
+        <result column="batchJobReviewTime" property="reviewTime"/>
+        <collection property="laneList" ofType="codedriver.framework.deploy.dto.job.LaneVo">
+            <id column="laneId" property="id"/>
+            <result column="sort" property="sort"/>
+            <collection property="groupList" ofType="codedriver.framework.deploy.dto.job.LaneGroupVo">
+                <id column="groupId" property="id"/>
+                <result column="groupSort" property="sort"/>
+                <result column="groupStatus" property="status"/>
+                <result column="groupNeedWait" property="needWait"/>
+                <collection property="jobList" ofType="codedriver.framework.deploy.dto.job.DeployJobVo">
+                    <id column="jobId" property="id"/>
+                    <result column="jobName" property="name"/>
+                    <result column="jobStatus" property="status"/>
+                    <result column="jobTriggerType" property="triggerType"/>
+                    <result column="jobErrorMsg" property="errorMsg"/>
+                    <result column="jobPlanStartTime" property="planStartTime"/>
+                    <result column="jobStartTime" property="startTime"/>
+                    <result column="jobEndTime" property="endTime"/>
+                    <result column="jobSource" property="source"/>
+                    <result column="jobAppSystemId" property="appSystemId"/>
+                    <result column="jobAppSystemName" property="appSystemName"/>
+                    <result column="jobAppModuleId" property="appModuleId"/>
+                    <result column="jobAppModuleName" property="appModuleName"/>
+                    <result column="jobEnvId" property="envId"/>
+                    <result column="jobEnvName" property="envName"/>
+                </collection>
+            </collection>
+        </collection>
+    </resultMap>
+
+    <select id="getBatchDeployJobById" parameterType="java.lang.Long"
+            resultMap="deployBatchJobResultMap">
+        SELECT a.id              as batchJobId,
+               a.`name`          as batchJobName,
+               a.`status`        as batchJobStatus,
+               a.error_msg       as batchJobErrorMsg,
+               a.plan_start_time as batchJobPlanStartTime,
+               a.start_time      as batchJobStartTime,
+               a.end_time        as batchJobEndTime,
+               a.source          as batchJobSource,
+               a.reviewer        as batchJobReviewer,
+               a.review_status   as batchJobReviewStatus,
+               a.review_time     as batchJobReviewTime,
+               b.id              as laneId,
+               b.sort            as laneSort,
+               b.`status`        as laneStatus,
+               c.id              as groupId,
+               c.need_wait       as groupNeedWait,
+               c.sort            as groupSort,
+               c.`status`        as groupStatus,
+               e.id              as jobId,
+               e.`name`          as jobName,
+               e.`status`        as jobStatus,
+               e.error_msg       as jobErrorMsg,
+               a.trigger_type    as jobTriggerType,
+               d.sort            as jobSort,
+               e.plan_start_time as jobPlanStartTime,
+               e.start_time      as jobStartTime,
+               e.end_time        as jobEndTime,
+               e.source          as jobSource,
+               f.`app_system_id` as jobAppSystemId,
+               g.`name`          as jobAppSystemName,
+               f.`app_module_id` as jobAppModuleId,
+               h.`name`          as jobAppModuleName,
+               f.`env_id`        as jobEnvId,
+               i.`name`          as jobEnvName
+        FROM autoexec_job AS a
+                 LEFT JOIN deploy_job_lane AS b ON a.id = b.batch_job_id
+                 LEFT JOIN deploy_job_lane_group AS c ON b.id = c.lane_id
+                 LEFT JOIN deploy_job_lane_group_job AS d ON c.id = d.group_id
+                 LEFT JOIN autoexec_job AS e ON d.job_id = e.id
+                 LEFT JOIN deploy_job f ON e.id = f.id
+                 LEFT JOIN cmdb_cientity g ON f.app_system_id = g.id
+                 LEFT JOIN cmdb_cientity h ON f.app_module_id = h.id
+                 LEFT JOIN cmdb_cientity i ON f.env_id = i.id
+        where a.id = #{value}
+        order by laneSort, groupSort, jobSort
+    </select>
+
     <select id="getDeployJobContent"
             resultType="codedriver.framework.deploy.dto.job.DeployJobContentVo">
         SELECT `hash`,
@@ -239,11 +339,13 @@
         INSERT INTO `autoexec_job` (`id`,
                                     `name`,
                                     `status`,
-                                    `source`)
+                                    `source`,
+                                    `review_status`)
         VALUES (#{id},
                 #{name},
                 #{status},
-                #{source})
+                #{source},
+                #{reviewStatus})
     </insert>
 
     <insert id="insertIgnoreDeployJobContent"
@@ -280,6 +382,23 @@
         VALUES (#{jobId}, #{invokeId}, #{source}, #{type})
     </insert>
 
+    <update id="updateDeployJobReviewStatusById" parameterType="codedriver.framework.deploy.dto.job.DeployJobVo">
+        UPDATE `autoexec_job`
+        SET
+        <choose>
+            <when test="reviewStatus == 'waiting'">
+                reviewer = null,
+                review_time = null,
+            </when>
+            <otherwise>
+                reviewer = #{reviewer},
+                review_time = NOW(3),
+            </otherwise>
+        </choose>
+        review_status = #{reviewStatus}
+        WHERE id = #{id}
+    </update>
+
     <update id="resetAutoexecJobParentId" parameterType="java.lang.Long">
         update `autoexec_job`
         set `parent_id` = null
@@ -288,7 +407,9 @@
 
     <update id="updateAutoExecJob" parameterType="codedriver.framework.deploy.dto.job.DeployJobVo">
         UPDATE `autoexec_job`
-        SET name = #{name}
+        SET name          = #{name},
+            status        = #{status},
+            review_status = #{reviewStatus}
         WHERE id = #{id}
     </update>
 

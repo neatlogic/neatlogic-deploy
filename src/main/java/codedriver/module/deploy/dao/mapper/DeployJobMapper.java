@@ -42,6 +42,8 @@ public interface DeployJobMapper {
 
     DeployJobContentVo getDeployJobContentLock(String contentHash);
 
+    DeployJobVo getBatchDeployJobById(Long id);
+
     DeployJobContentVo getDeployJobContent(String contentHash);
 
     void insertDeployJob(DeployJobVo deployJobVo);
@@ -64,6 +66,8 @@ public interface DeployJobMapper {
     void updateAutoExecJob(DeployJobVo deployJobVo);
 
     void resetAutoexecJobParentId(Long jobId);
+
+    void updateDeployJobReviewStatusById(DeployJobVo deployJobVo);
 
     void updateDeployJobRunnerMapId(@Param("jobId") Long jobId, @Param("runnerMapId") Long runnerMapId);
 
