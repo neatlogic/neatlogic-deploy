@@ -1220,6 +1220,15 @@
         where db_config_id = #{id}
     </delete>
 
+    <delete id="deleteAppConfigDBConfigAccountByDBConfigIdList">
+        delete
+        from deploy_app_config_env_db_account
+        where db_config_id in
+        <foreach collection="list" open="(" close=")" item="id" separator=",">
+            #{id}
+        </foreach>
+    </delete>
+
     <delete id="deleteAppConfigDBConfigAccount">
         DELETE
         FROM
@@ -1282,6 +1291,15 @@
                 </foreach>
             </if>
         </where>
+    </delete>
+
+    <delete id="deleteAppConfigDBConfigByIdList">
+        delete
+        from deploy_app_config_env_db
+        where id in
+        <foreach collection="list" open="(" close=")" item="id" separator=",">
+            #{id}
+        </foreach>
     </delete>
 
 </mapper>

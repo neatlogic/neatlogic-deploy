@@ -161,6 +161,8 @@ public interface DeployAppConfigMapper {
 
     void deleteAppConfigDBConfigAccountByDBConfigId(Long id);
 
+    void deleteAppConfigDBConfigAccountByDBConfigIdList(List<Long> idList);
+
     void deleteAppConfigDBConfigAccount(DeployAppConfigEnvDBConfigVo appConfigEnvDBConfigVo);
 
     void deleteAppConfigDBConfig(DeployAppConfigEnvDBConfigVo appConfigEnvDBConfigVo);
@@ -168,4 +170,6 @@ public interface DeployAppConfigMapper {
     void deleteAppConfigDBConfigById(Long id);
 
     void deleteAppConfigEnvByAppSystemIdAndAppModuleIdAndEnvIdList(@Param("appSystemId") Long appSystemId, @Param("appModuleId") Long appModuleId, @Param("envIdList") List<Long> envIdList);
+
+    void deleteAppConfigDBConfigByIdList(List<Long> idList);
 }
