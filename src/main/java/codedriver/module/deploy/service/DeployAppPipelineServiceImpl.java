@@ -316,8 +316,8 @@ public class DeployAppPipelineServiceImpl implements DeployAppPipelineService {
             return;
         }
         for (DeployPipelinePhaseVo appSystemCombopPhaseVo : appSystemCombopPhaseList) {
-            if (StringUtils.isBlank(appSystemCombopPhaseVo.getInherit())) {
-                appSystemCombopPhaseVo.setInherit("应用");
+            if (StringUtils.isBlank(appSystemCombopPhaseVo.getSource())) {
+                appSystemCombopPhaseVo.setSource("应用");
             }
             if (appSystemCombopPhaseVo.getOverride() == null) {
                 appSystemCombopPhaseVo.setOverride(0);
@@ -334,7 +334,7 @@ public class DeployAppPipelineServiceImpl implements DeployAppPipelineService {
                 }
                 if (Objects.equals(overrideCombopPhaseVo.getOverride(), 1)) {
                     if (StringUtils.isNotBlank(inheritName)) {
-                        appSystemCombopPhaseVo.setInherit(inheritName);
+                        appSystemCombopPhaseVo.setSource(inheritName);
                         appSystemCombopPhaseVo.setOverride(0);
                     } else {
                         appSystemCombopPhaseVo.setOverride(1);
