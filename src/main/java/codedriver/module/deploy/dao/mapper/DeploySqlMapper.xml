@@ -44,7 +44,14 @@
         #{envId},
         #{version},
         #{sqlVo.sqlFile},
-        #{sqlVo.status},
+        <choose>
+            <when test="sqlVo.status != null">
+                #{sqlVo.status},
+            </when>
+            <otherwise>
+                'pending',
+            </otherwise>
+        </choose>
         #{sqlVo.md5},
         #{sqlVo.host},
         #{sqlVo.port},
@@ -55,8 +62,22 @@
         #{runnerId},
         #{sqlVo.isDelete},
         #{sqlVo.sort},
-        #{sqlVo.isModified},
-        #{sqlVo.warnCount}
+        <choose>
+            <when test="sqlVo.isModified != null">
+                #{sqlVo.isModified},
+            </when>
+            <otherwise>
+                0,
+            </otherwise>
+        </choose>
+        <choose>
+            <when test="sqlVo.warnCount != null">
+                #{sqlVo.warnCount}
+            </when>
+            <otherwise>
+                0
+            </otherwise>
+        </choose>
         <choose>
             <when test="sqlVo.status == 'pending'">
             </when>
@@ -348,24 +369,31 @@
 
     <update id="updateDeploySqlDetail">
         update deploy_sql_detail
-        set `status` = #{status},
+        set
+        <if test="status != null">
+            `status` = #{status},
+        </if>
         `md5` = #{md5},
-        `is_delete` = #{isDelete},
+        `is_delete` = #{isDelete}
         <if test="sort != null">
-            sort = #{sort},
+            ,sort = #{sort}
         </if>
         <choose>
             <when test="status == 'pending'">
             </when>
             <when test="status == 'running'">
-                `start_time`=now(3),
+                ,`start_time`=now(3)
             </when>
             <otherwise>
-                `end_time`=now(3),
+                ,`end_time`=now(3)
             </otherwise>
         </choose>
-        is_modified = #{isModified},
-        warn_count = #{warnCount}
+        <if test="isModified != null">
+            ,is_modified = #{isModified}
+        </if>
+        <if test="warnCount != null">
+            ,warn_count = #{warnCount}
+        </if>
         where id = #{id}
     </update>
 
