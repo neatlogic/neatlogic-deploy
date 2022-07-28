@@ -53,7 +53,7 @@ public class SaveDeployEnvVersionApi extends PrivateApiComponentBase {
             @Param(name = "moduleId", desc = "应用模块id", isRequired = true, type = ApiParamType.LONG),
             @Param(name = "envId", desc = "环境id", isRequired = true, type = ApiParamType.LONG),
             @Param(name = "version", desc = "版本号", isRequired = true, type = ApiParamType.STRING),
-            @Param(name = "buildNFo", desc = "编译号", isRequired = true, type = ApiParamType.INTEGER),
+            @Param(name = "buildNo", desc = "编译号", isRequired = true, type = ApiParamType.INTEGER),
     })
     @Output({
     })
