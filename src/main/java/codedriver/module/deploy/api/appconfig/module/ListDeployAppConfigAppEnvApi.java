@@ -15,20 +15,23 @@ import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.deploy.dao.mapper.DeployAppConfigMapper;
-import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * @author longrf
  * @since 2022/6/17 11:00
  **/
 @Service
+@Transactional
 @AuthAction(action = DEPLOY_BASE.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
 public class ListDeployAppConfigAppEnvApi extends PrivateApiComponentBase {
@@ -53,7 +56,7 @@ public class ListDeployAppConfigAppEnvApi extends PrivateApiComponentBase {
 
     @Input({
             @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "应用系统id"),
-            @Param(name = "appModuleIdList", type = ApiParamType.JSONARRAY, isRequired = true, desc = "应用模块id列表"),
+            @Param(name = "appModuleId", type = ApiParamType.LONG, isRequired = true, desc = "应用模块id"),
             @Param(name = "isHasEnv", type = ApiParamType.INTEGER, desc = "是否拥有环境 (0:查找现没有的环境，1：查找现有的环境)"),
     })
     @Output({
@@ -62,17 +65,41 @@ public class ListDeployAppConfigAppEnvApi extends PrivateApiComponentBase {
     @Description(desc = "查询发布应用配置的应用系统环境列表(用于应用树的环境下拉、发布作业时通过模块列表查询环境列表)")
     @Override
     public Object myDoService(JSONObject paramObj) {
-        JSONArray appModuleIdArray = paramObj.getJSONArray("appModuleIdList");
-        List<Long> appModuleIdList = null;
-        if (CollectionUtils.isNotEmpty(appModuleIdArray)) {
-            appModuleIdList = appModuleIdArray.toJavaList(Long.class);
-        }
         Long appSystemId = paramObj.getLong("appSystemId");
+        Long appModuleId = paramObj.getLong("appModuleId");
         List<DeployAppEnvironmentVo> returnEnvList = null;
         if (Objects.nonNull(paramObj.getInteger("isHasEnv")) && paramObj.getInteger("isHasEnv") == 0) {
-            returnEnvList = deployAppConfigMapper.getDeployAppHasNotEnvListByAppSystemIdAndModuleIdList(appSystemId, appModuleIdList, TenantContext.get().getDataDbName());
+            returnEnvList = deployAppConfigMapper.getDeployAppHasNotEnvListByAppSystemIdAndModuleIdList(appSystemId, appModuleId, TenantContext.get().getDataDbName());
         } else {
-            returnEnvList = deployAppConfigMapper.getDeployAppEnvListByAppSystemIdAndModuleIdList(appSystemId, appModuleIdList, TenantContext.get().getDataDbName());
+
+            //查找发布的环境
+            List<DeployAppEnvironmentVo> deployEnvList = deployAppConfigMapper.getDeployAppEnvListByAppSystemIdAndModuleId(appSystemId, appModuleId);
+
+            //查找cmdb的环境
+            List<DeployAppEnvironmentVo> cmdbEnvList = deployAppConfigMapper.getCmdbEnvListByAppSystemIdAndModuleId(appSystemId, appModuleId, TenantContext.get().getDataDbName());
+
+            //如果有交集，则删除发布多余的环境idList
+            if (CollectionUtils.isNotEmpty(cmdbEnvList) && CollectionUtils.isNotEmpty(deployEnvList)) {
+                List<Long> cmdbEnvIdList = cmdbEnvList.stream().map(DeployAppEnvironmentVo::getId).collect(Collectors.toList());
+                List<Long> deployEnvIdList = deployEnvList.stream().map(DeployAppEnvironmentVo::getId).collect(Collectors.toList());
+
+                List<Long> sameEnvIdList = new ArrayList<>(cmdbEnvIdList);
+                sameEnvIdList.retainAll(deployEnvIdList);
+                if (sameEnvIdList.size() > 0) {
+                    deployAppConfigMapper.deleteAppConfigEnvByAppSystemIdAndAppModuleIdAndEnvIdList(paramObj.getLong("appSystemId"), paramObj.getLong("appModuleId"), sameEnvIdList);
+                    for (int i = 0; i < deployEnvList.size(); i++) {
+                        DeployAppEnvironmentVo deployAppEnvironmentVo = deployEnvList.get(i);
+                        if (sameEnvIdList.contains(deployAppEnvironmentVo.getId())) {
+                            deployEnvList.remove(i);
+                        }
+                    }
+                }
+                cmdbEnvList.addAll(deployEnvList);
+                return cmdbEnvList;
+
+            } else {
+                return CollectionUtils.isNotEmpty(cmdbEnvList) ? cmdbEnvList : deployEnvList;
+            }
         }
         return returnEnvList;
     }

@@ -41,11 +41,6 @@ public class DeployAppConfigServiceImpl implements DeployAppConfigService {
     @Override
     public void deleteAppConfig(DeployAppConfigVo configVo) {
 
-        //删除系统、环境需要删除发布存的环境
-        if (deployAppConfigMapper.getAppConfigEnv(configVo) > 0) {
-            deployAppConfigMapper.deleteAppConfigEnv(configVo);
-        }
-
         //删除系统才需要删除权限
         if (configVo.getAppModuleId() == 0L && configVo.getEnvId() == 0L) {
             deployAppConfigMapper.deleteAppConfigAuthorityByAppSystemId(configVo.getAppSystemId());

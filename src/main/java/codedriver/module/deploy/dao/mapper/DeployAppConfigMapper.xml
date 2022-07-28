@@ -339,11 +339,8 @@
             <if test="appSystemId != null">
                 AND raa.resource_id = #{appSystemId}
             </if>
-            <if test="appModuleIdList != null and appModuleIdList.size() > 0">
-                and ria.app_module_id in
-                <foreach collection="appModuleIdList" item="id" separator="," open="(" close=")">
-                    #{id}
-                </foreach>
+            <if test="appModuleId != null">
+                and ria.app_module_id = #{appModuleId}
             </if>
         </where>
         ) UNION
@@ -358,15 +355,61 @@
             <if test="appSystemId != null">
                 dace.app_system_id = #{appSystemId}
             </if>
-            <if test="appModuleIdList != null and appModuleIdList.size() > 0">
-                and dace.app_module_id in
-                <foreach collection="appModuleIdList" item="id" separator="," open="(" close=")">
-                    #{id}
-                </foreach>
+            <if test="appModuleId != null">
+                and dace.app_module_id = #{appModuleId}
             </if>
         </where>
         )
         )
+    </select>
+
+    <select id="getCmdbEnvListByAppSystemIdAndModuleId"
+            resultType="codedriver.framework.deploy.dto.app.DeployAppEnvironmentVo">
+        SELECT distinct
+        rse.env_id AS id,
+        rse.env_name AS name,
+        0 AS isDeletable
+        FROM
+        ${schemaName}.resource_appsystem_appmodule raa
+        JOIN ${schemaName}.resource_ipobject_appmodule ria ON raa.app_module_id = ria.app_module_id
+        JOIN cmdb_cientity cc ON cc.id = ria.resource_id
+        JOIN ${schemaName}.resource_softwareservice_env rse ON ria.resource_id = rse.resource_id
+        <where>
+        cc.ci_id IN (
+        SELECT
+        a.`id`
+        FROM
+        `cmdb_ci` a
+        WHERE
+        a.lft &gt;= ( SELECT a.lft FROM `cmdb_ci` a WHERE a.name = 'APPIns' )
+        AND a.rht &lt;= ( SELECT a.rht FROM `cmdb_ci` a WHERE a.name = 'APPIns' ))
+        <if test="appSystemId != null">
+            AND raa.resource_id = #{appSystemId}
+        </if>
+        <if test="appModuleId != null">
+            and ria.app_module_id = #{appModuleId}
+        </if>
+        </where>
+    </select>
+
+    <select id="getDeployAppEnvListByAppSystemIdAndModuleId"
+            resultType="codedriver.framework.deploy.dto.app.DeployAppEnvironmentVo">
+        SELECT
+        cc.id AS id,
+        cc.name AS name,
+        1 AS isDeletable
+        FROM
+        deploy_app_config_env dace
+        JOIN cmdb_cientity cc ON cc.id = dace.env_id
+        JOIN cmdb_cientity cce ON cce.id = dace.app_module_id
+        <where>
+            <if test="appSystemId != null">
+                and dace.app_system_id = #{appSystemId}
+            </if>
+            <if test="appModuleId != null">
+                and dace.app_module_id = #{appModuleId}
+            </if>
+        </where>
     </select>
 
     <select id="getHasEnvAppModuleIdListByAppSystemIdAndModuleIdList"
@@ -1230,6 +1273,24 @@
         delete
         from deploy_app_config_env_db
         where id = #{id}
+    </delete>
+
+    <delete id="deleteAppConfigEnvByAppSystemIdAndAppModuleIdAndEnvIdList">
+        DELETE FROM `deploy_app_config_env`
+        <where>
+            <if test="appSystemId != null">
+                AND `app_system_id` = #{appSystemId}
+            </if>
+            <if test="appModuleId != 0L">
+                AND `app_module_id` = #{appModuleId}
+            </if>
+            <if test="envIdList != null and envIdList.size() > 0">
+                AND `env_id` IN
+                <foreach collection="envIdList" item="envId" open="(" separator="," close=")">
+                    #{envId}
+                </foreach>
+            </if>
+        </where>
     </delete>
 
     <delete id="deleteAppConfigDBConfigByIdList">
