@@ -6,6 +6,7 @@ import codedriver.framework.cmdb.exception.resourcecenter.AppEnvNotFoundExceptio
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.crossover.CrossoverServiceFactory;
 import codedriver.framework.deploy.auth.DEPLOY_MODIFY;
+import codedriver.framework.deploy.constvalue.VersionDirection;
 import codedriver.framework.deploy.dto.env.DeployEnvVersionAuditVo;
 import codedriver.framework.deploy.dto.env.DeployEnvVersionVo;
 import codedriver.framework.deploy.dto.version.DeployVersionVo;
@@ -26,7 +27,6 @@ import javax.annotation.Resource;
 @AuthAction(action = DEPLOY_MODIFY.class)
 @OperationType(type = OperationTypeEnum.UPDATE)
 public class SaveDeployEnvVersionApi extends PrivateApiComponentBase {
-
     @Resource
     DeployVersionMapper deployVersionMapper;
 
@@ -53,7 +53,7 @@ public class SaveDeployEnvVersionApi extends PrivateApiComponentBase {
             @Param(name = "moduleId", desc = "应用模块id", isRequired = true, type = ApiParamType.LONG),
             @Param(name = "envId", desc = "环境id", isRequired = true, type = ApiParamType.LONG),
             @Param(name = "version", desc = "版本号", isRequired = true, type = ApiParamType.STRING),
-            @Param(name = "buildNo", desc = "编译号", isRequired = true, type = ApiParamType.INTEGER),
+            @Param(name = "buildNFo", desc = "编译号", isRequired = true, type = ApiParamType.INTEGER),
     })
     @Output({
     })
@@ -74,7 +74,7 @@ public class SaveDeployEnvVersionApi extends PrivateApiComponentBase {
             throw new DeployVersionNotFoundException(version);
         }
         deployEnvVersionMapper.insertDeployEnvVersion(new DeployEnvVersionVo(envId, versionVo.getId(), buildNo));
-        deployEnvVersionMapper.insertDeployEnvVersionAudit(new DeployEnvVersionAuditVo(envId, versionVo.getId(), buildNo, "forward"));
+        deployEnvVersionMapper.insertDeployEnvVersionAudit(new DeployEnvVersionAuditVo(envId, versionVo.getId(), buildNo, VersionDirection.FORWARD.getValue()));
         return null;
     }
 }
