@@ -3,7 +3,7 @@
  * 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
  */
 
-package codedriver.module.deploy.job.source.action;
+package codedriver.module.deploy.job.source.type;
 
 import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.autoexec.constvalue.ExecMode;
@@ -18,7 +18,7 @@ import codedriver.framework.autoexec.dto.job.AutoexecSqlDetailVo;
 import codedriver.framework.autoexec.exception.AutoexecJobPhaseNotFoundException;
 import codedriver.framework.autoexec.exception.AutoexecJobRunnerGroupRunnerNotFoundException;
 import codedriver.framework.autoexec.exception.AutoexecJobRunnerHttpRequestException;
-import codedriver.framework.autoexec.job.source.action.AutoexecJobSourceActionHandlerBase;
+import codedriver.framework.autoexec.job.source.type.AutoexecJobSourceTypeHandlerBase;
 import codedriver.framework.autoexec.util.AutoexecUtil;
 import codedriver.framework.cmdb.crossover.ICiEntityCrossoverMapper;
 import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
@@ -64,7 +64,7 @@ import java.util.stream.Collectors;
  * @date 2022/5/31 5:22 下午
  */
 @Service
-public class DeployJobSourceHandler extends AutoexecJobSourceActionHandlerBase {
+public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase {
 
     @Resource
     DeploySqlMapper deploySqlMapper;
