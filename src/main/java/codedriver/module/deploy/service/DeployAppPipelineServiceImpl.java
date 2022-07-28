@@ -598,9 +598,9 @@ public class DeployAppPipelineServiceImpl implements DeployAppPipelineService {
      * @param overrideExecuteConfigVo 模块层或环境层执行信息数据
      */
     private void overrideExecuteConfig(DeployPipelineExecuteConfigVo appSystemExecuteConfigVo, DeployPipelineExecuteConfigVo overrideExecuteConfigVo) {
-        Integer override = overrideExecuteConfigVo.getInherit();
-        if (Objects.equals(override, 0)) {
-            appSystemExecuteConfigVo.setInherit(override);
+        Integer inherit = overrideExecuteConfigVo.getInherit();
+        if (Objects.equals(inherit, 0)) {
+            appSystemExecuteConfigVo.setInherit(inherit);
             appSystemExecuteConfigVo.setProtocolId(overrideExecuteConfigVo.getProtocolId());
             appSystemExecuteConfigVo.setExecuteUser(overrideExecuteConfigVo.getExecuteUser());
         }
