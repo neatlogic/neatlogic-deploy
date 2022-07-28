@@ -176,13 +176,13 @@ public class DeployAppPipelineServiceImpl implements DeployAppPipelineService {
         if (moduleOverrideConfig == null && envOverrideConfig == null) {
             if (!Objects.equals(targetLevel, "应用")) {
                 overridePhase(appConfig.getCombopPhaseList());
-                appConfig.getExecuteConfigVo().setOverride(0);
+                appConfig.getExecuteConfig().setOverride(0);
             }
         } else if (moduleOverrideConfig != null && envOverrideConfig == null) {
-            overrideExecuteConfig(appConfig.getExecuteConfigVo(), moduleOverrideConfig.getExecuteConfigVo());
+            overrideExecuteConfig(appConfig.getExecuteConfig(), moduleOverrideConfig.getExecuteConfig());
             if (Objects.equals(targetLevel, "环境")) {
                 overridePhase(appConfig.getCombopPhaseList(), moduleOverrideConfig.getCombopPhaseList(), "模块");
-                appConfig.getExecuteConfigVo().setOverride(0);
+                appConfig.getExecuteConfig().setOverride(0);
             } else {
                 overridePhase(appConfig.getCombopPhaseList(), moduleOverrideConfig.getCombopPhaseList());
             }
@@ -190,20 +190,20 @@ public class DeployAppPipelineServiceImpl implements DeployAppPipelineService {
             overrideProfileParamSetSource(moduleOverrideConfig.getOverrideProfileList(), "模块");
             overrideProfile(appConfig.getOverrideProfileList(), moduleOverrideConfig.getOverrideProfileList());
         } else if (moduleOverrideConfig == null && envOverrideConfig != null) {
-            overrideExecuteConfig(appConfig.getExecuteConfigVo(), envOverrideConfig.getExecuteConfigVo());
+            overrideExecuteConfig(appConfig.getExecuteConfig(), envOverrideConfig.getExecuteConfig());
             overridePhase(appConfig.getCombopPhaseList(), envOverrideConfig.getCombopPhaseList());
             overridePhaseGroup(appConfig.getCombopGroupList(), envOverrideConfig.getCombopGroupList());
             overrideProfileParamSetSource(envOverrideConfig.getOverrideProfileList(), "环境");
             overrideProfile(appConfig.getOverrideProfileList(), envOverrideConfig.getOverrideProfileList());
         } else if (moduleOverrideConfig != null && envOverrideConfig != null) {
-            overrideExecuteConfig(appConfig.getExecuteConfigVo(), moduleOverrideConfig.getExecuteConfigVo());
+            overrideExecuteConfig(appConfig.getExecuteConfig(), moduleOverrideConfig.getExecuteConfig());
             List<DeployPipelinePhaseVo> appSystemCombopPhaseList = appConfig.getCombopPhaseList();
             overridePhase(appSystemCombopPhaseList, moduleOverrideConfig.getCombopPhaseList(), "模块");
             overridePhaseGroup(appConfig.getCombopGroupList(), moduleOverrideConfig.getCombopGroupList());
             overrideProfileParamSetSource(moduleOverrideConfig.getOverrideProfileList(), "模块");
             overrideProfile(appConfig.getOverrideProfileList(), moduleOverrideConfig.getOverrideProfileList());
 
-            overrideExecuteConfig(appConfig.getExecuteConfigVo(), envOverrideConfig.getExecuteConfigVo());
+            overrideExecuteConfig(appConfig.getExecuteConfig(), envOverrideConfig.getExecuteConfig());
             overridePhase(appSystemCombopPhaseList, envOverrideConfig.getCombopPhaseList());
             overridePhaseGroup(appConfig.getCombopGroupList(), envOverrideConfig.getCombopGroupList());
             overrideProfileParamSetSource(envOverrideConfig.getOverrideProfileList(), "环境");
