@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright(c) 2022 TechSureCo.,Ltd.AllRightsReserved.
+  ~ 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
+  -->
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="codedriver.module.deploy.dao.mapper.DeployEnvVersionMapper">
+
+    <insert id="insertDeployEnvVersion" parameterType="codedriver.framework.deploy.dto.env.DeployEnvVersionVo">
+        insert into deploy_env_version (
+            env_id,
+            version_id,
+            build_no,
+            lcu,
+            lcd
+        ) values (
+            #{envId},
+            #{versionId},
+            #{buildNo},
+            #{lcu},
+            now(3)
+        ) ON DUPLICATE KEY UPDATE
+            version_id = #{versionId},
+            build_no = #{buildNo},
+            lcu = #{lcu},
+            lcd = now(3)
+    </insert>
+
+    <insert id="insertDeployEnvVersionAudit">
+        insert into deploy_env_version_audit (
+            id,
+            env_id,
+            version_id,
+            build_no,
+            operate,
+            fcu,
+            fcd
+        ) values (
+            #{id},
+            #{envId},
+            #{versionId},
+            #{buildNo},
+            #{operate},
+            #{fcu},
+            now(3)
+        )
+    </insert>
+</mapper>
