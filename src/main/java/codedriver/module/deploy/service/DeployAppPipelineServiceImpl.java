@@ -176,6 +176,7 @@ public class DeployAppPipelineServiceImpl implements DeployAppPipelineService {
         if (moduleOverrideConfig == null && envOverrideConfig == null) {
             if (!Objects.equals(targetLevel, "应用")) {
                 overridePhase(appConfig.getCombopPhaseList());
+                appConfig.getExecuteConfigVo().setOverride(0);
             }
         } else if (moduleOverrideConfig != null && envOverrideConfig == null) {
             overrideExecuteConfig(appConfig.getExecuteConfigVo(), moduleOverrideConfig.getExecuteConfigVo());
