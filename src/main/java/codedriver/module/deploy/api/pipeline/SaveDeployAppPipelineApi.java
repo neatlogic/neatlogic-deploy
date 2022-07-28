@@ -38,9 +38,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 @Service
 @AuthAction(action = DEPLOY_BASE.class)
@@ -111,6 +109,7 @@ public class SaveDeployAppPipelineApi extends PrivateApiComponentBase {
                 regeneratePhaseIdAndOperationId(deployAppConfigVo);
             }
         }
+        setPhaseGroupId(deployAppConfigVo);
         deployAppConfigVo.setConfigStr(null);
         IAutoexecCombopCrossoverService autoexecCombopCrossoverService = CrossoverServiceFactory.getApi(IAutoexecCombopCrossoverService.class);
         autoexecCombopCrossoverService.verifyAutoexecCombopConfig(deployAppConfigVo.getConfig().getAutoexecCombopConfigVo(), false);
@@ -128,6 +127,33 @@ public class SaveDeployAppPipelineApi extends PrivateApiComponentBase {
         return null;
     }
 
+    /**
+     * 设置阶段的组id
+     * @param deployAppConfigVo
+     */
+    private void setPhaseGroupId(DeployAppConfigVo deployAppConfigVo) {
+        DeployPipelineConfigVo config = deployAppConfigVo.getConfig();
+        List<DeployPipelinePhaseVo> combopPhaseList = config.getCombopPhaseList();
+        if (CollectionUtils.isEmpty(combopPhaseList)) {
+            return;
+        }
+        Map<String, AutoexecCombopGroupVo> groupMap = new HashMap<>();
+        List<AutoexecCombopGroupVo> combopGroupList = config.getCombopGroupList();
+        if (CollectionUtils.isNotEmpty(combopGroupList)) {
+            for (AutoexecCombopGroupVo autoexecCombopGroupVo : combopGroupList) {
+                groupMap.put(autoexecCombopGroupVo.getUuid(), autoexecCombopGroupVo);
+            }
+        }
+        for (DeployPipelinePhaseVo combopPhaseVo : combopPhaseList) {
+            if (combopPhaseVo == null) {
+                continue;
+            }
+            AutoexecCombopGroupVo autoexecCombopGroupVo = groupMap.get(combopPhaseVo.getGroupUuid());
+            if (autoexecCombopGroupVo != null) {
+                combopPhaseVo.setGroupId(autoexecCombopGroupVo.getId());
+            }
+        }
+    }
     /**
      * 重新生成阶段id和操作id
      * @param deployAppConfigVo
