@@ -176,13 +176,13 @@ public class DeployAppPipelineServiceImpl implements DeployAppPipelineService {
         if (moduleOverrideConfig == null && envOverrideConfig == null) {
             if (!Objects.equals(targetLevel, "应用")) {
                 overridePhase(appConfig.getCombopPhaseList());
-                appConfig.getExecuteConfig().setOverride(0);
+                appConfig.getExecuteConfig().setInherit(1);
             }
         } else if (moduleOverrideConfig != null && envOverrideConfig == null) {
             overrideExecuteConfig(appConfig.getExecuteConfig(), moduleOverrideConfig.getExecuteConfig());
             if (Objects.equals(targetLevel, "环境")) {
                 overridePhase(appConfig.getCombopPhaseList(), moduleOverrideConfig.getCombopPhaseList(), "模块");
-                appConfig.getExecuteConfig().setOverride(0);
+                appConfig.getExecuteConfig().setInherit(1);
             } else {
                 overridePhase(appConfig.getCombopPhaseList(), moduleOverrideConfig.getCombopPhaseList());
             }
@@ -598,9 +598,9 @@ public class DeployAppPipelineServiceImpl implements DeployAppPipelineService {
      * @param overrideExecuteConfigVo 模块层或环境层执行信息数据
      */
     private void overrideExecuteConfig(DeployPipelineExecuteConfigVo appSystemExecuteConfigVo, DeployPipelineExecuteConfigVo overrideExecuteConfigVo) {
-        Integer override = overrideExecuteConfigVo.getOverride();
-        if (Objects.equals(override, 1)) {
-            appSystemExecuteConfigVo.setOverride(override);
+        Integer inherit = overrideExecuteConfigVo.getInherit();
+        if (Objects.equals(inherit, 0)) {
+            appSystemExecuteConfigVo.setInherit(inherit);
             appSystemExecuteConfigVo.setProtocolId(overrideExecuteConfigVo.getProtocolId());
             appSystemExecuteConfigVo.setExecuteUser(overrideExecuteConfigVo.getExecuteUser());
         }
