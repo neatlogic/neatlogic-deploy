@@ -129,11 +129,13 @@ public class ListDeployJobModuleApi extends PrivateApiComponentBase {
                                 AutoexecOperationBaseVo autoexecOperationBaseVo = autoexecServiceCrossoverService.getAutoexecOperationBaseVoByIdAndType(operationVo);
                                 if (autoexecOperationBaseVo != null && StringUtils.equals(autoexecOperationBaseVo.getTypeName(), "BUILD")) {
                                     appModuleVo.setIsHasBuildTypeTool(1);
-                                    break;
+                                }
+                                if (autoexecOperationBaseVo != null && StringUtils.equals(autoexecOperationBaseVo.getTypeName(), "DEPLOY")) {
+                                    appModuleVo.setIsHasDeployTypeTool(1);
                                 }
                             }
                         }
-                        if (appModuleVo.getIsHasBuildTypeTool() == 1) {
+                        if (appModuleVo.getIsHasBuildTypeTool() == 1 && appModuleVo.getIsHasDeployTypeTool() == 1) {
                             break;
                         }
                     }
