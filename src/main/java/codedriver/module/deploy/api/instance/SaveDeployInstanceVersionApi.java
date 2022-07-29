@@ -14,6 +14,7 @@ import codedriver.framework.deploy.constvalue.VersionDirection;
 import codedriver.framework.deploy.dto.instance.DeployInstanceVersionAuditVo;
 import codedriver.framework.deploy.dto.instance.DeployInstanceVersionVo;
 import codedriver.framework.deploy.dto.version.DeployVersionVo;
+import codedriver.framework.deploy.dto.version.DeployVersionDeployedInstanceVo;
 import codedriver.framework.deploy.exception.DeployInstanceInEnvNotFoundException;
 import codedriver.framework.deploy.exception.DeployVersionBuildNoNotFoundException;
 import codedriver.framework.deploy.exception.DeployVersionNotFoundException;
@@ -83,6 +84,7 @@ public class SaveDeployInstanceVersionApi extends PrivateApiComponentBase {
         Integer buildNo = paramObj.getInteger("buildNo");
         String execUser = paramObj.getString("execUser");
         Long deployTime = paramObj.getLong("deployTime");
+        Date lcd = new Date(deployTime * 1000);
         if (userMapper.checkUserIsExists(execUser) == 0) {
             throw new UserNotFoundException(execUser);
         }
@@ -104,7 +106,7 @@ public class SaveDeployInstanceVersionApi extends PrivateApiComponentBase {
             throw new DeployVersionBuildNoNotFoundException(versionVo.getVersion(), buildNo);
         }
         DeployInstanceVersionVo currentVersion = deployInstanceVersionMapper.getDeployInstanceVersionByEnvIdAndInstanceIdLock(sysId, moduleId, envId, resourceId);
-        deployInstanceVersionMapper.insertDeployInstanceVersion(new DeployInstanceVersionVo(sysId, moduleId, envId, resourceId, versionVo.getId(), buildNo, execUser, new Date(deployTime * 1000)));
+        deployInstanceVersionMapper.insertDeployInstanceVersion(new DeployInstanceVersionVo(sysId, moduleId, envId, resourceId, versionVo.getId(), buildNo, execUser, lcd));
         Long oldVersionId = null;
         Integer oldBuildNo = null;
         if (currentVersion != null) {
@@ -112,6 +114,7 @@ public class SaveDeployInstanceVersionApi extends PrivateApiComponentBase {
             oldBuildNo = currentVersion.getBuildNo();
         }
         deployInstanceVersionMapper.insertDeployInstanceVersionAudit(new DeployInstanceVersionAuditVo(sysId, moduleId, envId, resourceId, versionVo.getId(), oldVersionId, buildNo, oldBuildNo, VersionDirection.FORWARD.getValue()));
+        deployVersionMapper.insertDeployedInstance(new DeployVersionDeployedInstanceVo(resourceId, versionVo.getId(), execUser, lcd));
         return null;
     }
 }
