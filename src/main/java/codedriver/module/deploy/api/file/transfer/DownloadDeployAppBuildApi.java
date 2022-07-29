@@ -8,7 +8,6 @@ package codedriver.module.deploy.api.file.transfer;
 import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.auth.core.AuthAction;
-import codedriver.framework.cmdb.crossover.IResourceAccountCrossoverMapper;
 import codedriver.framework.cmdb.crossover.IResourceCrossoverMapper;
 import codedriver.framework.cmdb.dto.resourcecenter.ResourceVo;
 import codedriver.framework.cmdb.exception.resourcecenter.AppEnvNotFoundException;
@@ -141,7 +140,6 @@ public class DownloadDeployAppBuildApi extends PrivateBinaryStreamApiComponentBa
         String version = jsonObj.getString("version");
         String envName = jsonObj.getString("envName");
         IResourceCrossoverMapper resourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
-        IResourceAccountCrossoverMapper resourceAccountCrossoverMapper = CrossoverServiceFactory.getApi(IResourceAccountCrossoverMapper.class);
         ResourceVo appSystem = resourceCrossoverMapper.getAppSystemByName(sysName, TenantContext.get().getDataDbName());
         if (appSystem == null) {
             throw new AppSystemNotFoundException(sysName);
@@ -159,7 +157,7 @@ public class DownloadDeployAppBuildApi extends PrivateBinaryStreamApiComponentBa
             throw new DeployVersionNotFoundException(version);
         }
         //env status
-        ResourceVo env = resourceAccountCrossoverMapper.getAppEnvByName(envName, TenantContext.get().getDataDbName());
+        ResourceVo env = resourceCrossoverMapper.getAppEnvByName(envName, TenantContext.get().getDataDbName());
         if (env == null) {
             throw new AppEnvNotFoundException(envName);
         }

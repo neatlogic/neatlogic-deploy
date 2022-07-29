@@ -41,6 +41,7 @@ import codedriver.module.deploy.schedule.plugin.DeployJobAutoFireJob;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -161,6 +162,10 @@ public class DeployJobServiceImpl implements DeployJobService {
         jsonObj.put("buildNo", moduleJson.getInteger("buildNo"));
         jsonObj.put("version", moduleJson.getString("version"));
         JSONObject executeConfig = jsonObj.getJSONObject("executeConfig");
+        if(MapUtils.isEmpty(executeConfig)){
+            executeConfig = new JSONObject();
+            jsonObj.put("executeConfig",executeConfig);
+        }
         IResourceCrossoverMapper resourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
         executeConfig.put("executeNodeConfig", new JSONObject() {{
             JSONArray selectNodeArray;
