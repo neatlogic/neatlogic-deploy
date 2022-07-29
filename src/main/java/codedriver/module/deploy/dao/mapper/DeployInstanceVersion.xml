@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright(c) 2022 TechSureCo.,Ltd.AllRightsReserved.
+  ~ 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
+  -->
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="codedriver.module.deploy.dao.mapper.DeployInstanceVersionMapper">
+
+    <select id="getDeployInstanceVersionByEnvIdAndInstanceIdLock" parameterType="java.lang.Long"
+            resultType="codedriver.framework.deploy.dto.instance.DeployInstanceVersionVo">
+        select
+            app_system_id as appSystemId,
+            app_module_id as appModuleId,
+            env_id as envId,
+            resource_id as resourceId,
+            version_id as versionId,
+            build_no as buildNo,
+            lcu,
+            lcd
+        from deploy_instance_version
+        where app_system_id = #{appSystemId} and app_module_id = #{appModuleId}
+        and env_id = #{envId} and resource_id = #{instanceId}
+        for update
+    </select>
+
+    <select id="getDeployInstanceOldestVersionByInstanceIdAndNewVersionId"
+            resultType="codedriver.framework.deploy.dto.instance.DeployInstanceVersionAuditVo">
+        select
+            id,
+            app_system_id as appSystemId,
+            app_module_id as appModuleId,
+            env_id as envId,
+            resource_id as resourceId,
+            new_version_id as newVersionId,
+            old_version_id as oldVersionId,
+            new_build_no as newBuildNo,
+            old_build_no as oldBuildNo,
+            direction,
+            fcu,
+            fcd
+        from deploy_instance_version_audit
+        where app_system_id = #{appSystemId} and app_module_id = #{appModuleId}
+        and env_id = #{envId} and resource_id = #{instanceId} and new_version_id = #{newVersionId}
+        order by id asc
+        limit 1
+    </select>
+
+    <insert id="insertDeployInstanceVersion" parameterType="codedriver.framework.deploy.dto.instance.DeployInstanceVersionVo">
+        insert into deploy_instance_version (
+            app_system_id,
+            app_module_id,
+            env_id,
+            resource_id,
+            version_id,
+            build_no,
+            lcu,
+            lcd
+        ) values (
+            #{appSystemId},
+            #{appModuleId},
+            #{envId},
+            #{resourceId},
+            #{versionId},
+            #{buildNo},
+            #{lcu},
+            now(3)
+        ) ON DUPLICATE KEY UPDATE
+            version_id = #{versionId},
+            build_no = #{buildNo},
+            lcu = #{lcu},
+            lcd = now(3)
+    </insert>
+
+    <insert id="insertDeployInstanceVersionAudit">
+        insert into deploy_instance_version_audit (
+            id,
+            app_system_id,
+            app_module_id,
+            env_id,
+            resource_id,
+            new_version_id,
+            old_version_id,
+            new_build_no,
+            old_build_no,
+            direction,
+            fcu,
+            fcd
+        ) values (
+            #{id},
+            #{appSystemId},
+            #{appModuleId},
+            #{envId},
+            #{resourceId},
+            #{newVersionId},
+            #{oldVersionId},
+            #{newBuildNo},
+            #{oldBuildNo},
+            #{direction},
+            #{fcu},
+            now(3)
+        )
+    </insert>
+</mapper>
