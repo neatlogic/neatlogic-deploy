@@ -8,6 +8,7 @@ import codedriver.framework.cmdb.dto.resourcecenter.ResourceVo;
 import codedriver.framework.cmdb.exception.resourcecenter.AppEnvNotFoundException;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.crossover.CrossoverServiceFactory;
+import codedriver.framework.dao.mapper.UserMapper;
 import codedriver.framework.deploy.auth.DEPLOY_MODIFY;
 import codedriver.framework.deploy.constvalue.VersionDirection;
 import codedriver.framework.deploy.dto.instance.DeployInstanceVersionAuditVo;
@@ -16,6 +17,7 @@ import codedriver.framework.deploy.dto.version.DeployVersionVo;
 import codedriver.framework.deploy.exception.DeployInstanceInEnvNotFoundException;
 import codedriver.framework.deploy.exception.DeployVersionBuildNoNotFoundException;
 import codedriver.framework.deploy.exception.DeployVersionNotFoundException;
+import codedriver.framework.exception.user.UserNotFoundException;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
@@ -26,6 +28,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.Date;
 import java.util.List;
 
 @Service
@@ -38,6 +41,9 @@ public class SaveDeployInstanceVersionApi extends PrivateApiComponentBase {
 
     @Resource
     DeployInstanceVersionMapper deployInstanceVersionMapper;
+
+    @Resource
+    UserMapper userMapper;
 
     @Override
     public String getName() {
@@ -61,6 +67,8 @@ public class SaveDeployInstanceVersionApi extends PrivateApiComponentBase {
             @Param(name = "resourceId", desc = "实例id", isRequired = true, type = ApiParamType.LONG),
             @Param(name = "version", desc = "版本号", isRequired = true, type = ApiParamType.STRING),
             @Param(name = "buildNo", desc = "编译号", isRequired = true, type = ApiParamType.INTEGER),
+            @Param(name = "execUser", desc = "发布用户", isRequired = true, type = ApiParamType.STRING),
+            @Param(name = "deployTime", desc = "发布时间（时间戳为秒数）", isRequired = true, type = ApiParamType.LONG),
     })
     @Output({
     })
@@ -73,6 +81,11 @@ public class SaveDeployInstanceVersionApi extends PrivateApiComponentBase {
         Long resourceId = paramObj.getLong("resourceId");
         String version = paramObj.getString("version");
         Integer buildNo = paramObj.getInteger("buildNo");
+        String execUser = paramObj.getString("execUser");
+        Long deployTime = paramObj.getLong("deployTime");
+        if (userMapper.checkUserIsExists(execUser) == 0) {
+            throw new UserNotFoundException(execUser);
+        }
         ICiEntityCrossoverService ciEntityCrossoverService = CrossoverServiceFactory.getApi(ICiEntityCrossoverService.class);
         String envName = ciEntityCrossoverService.getCiEntityNameByCiEntityId(envId);
         if (envName == null) {
@@ -91,7 +104,7 @@ public class SaveDeployInstanceVersionApi extends PrivateApiComponentBase {
             throw new DeployVersionBuildNoNotFoundException(versionVo.getVersion(), buildNo);
         }
         DeployInstanceVersionVo currentVersion = deployInstanceVersionMapper.getDeployInstanceVersionByEnvIdAndInstanceIdLock(sysId, moduleId, envId, resourceId);
-        deployInstanceVersionMapper.insertDeployInstanceVersion(new DeployInstanceVersionVo(sysId, moduleId, envId, resourceId, versionVo.getId(), buildNo));
+        deployInstanceVersionMapper.insertDeployInstanceVersion(new DeployInstanceVersionVo(sysId, moduleId, envId, resourceId, versionVo.getId(), buildNo, execUser, new Date(deployTime * 1000)));
         Long oldVersionId = null;
         Integer oldBuildNo = null;
         if (currentVersion != null) {
