@@ -603,6 +603,8 @@ public class DeployAppPipelineServiceImpl implements DeployAppPipelineService {
             appSystemExecuteConfigVo.setInherit(inherit);
             appSystemExecuteConfigVo.setProtocolId(overrideExecuteConfigVo.getProtocolId());
             appSystemExecuteConfigVo.setExecuteUser(overrideExecuteConfigVo.getExecuteUser());
+        } else {
+            appSystemExecuteConfigVo.setInherit(1);
         }
     }
 }
