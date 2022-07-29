@@ -64,12 +64,26 @@
             #{versionId},
             #{buildNo},
             #{lcu},
-            now(3)
+            <choose>
+                  <when test="lcd != null">
+                      #{lcd}
+                  </when>
+                  <otherwise>
+                      now(3)
+                  </otherwise>
+            </choose>
         ) ON DUPLICATE KEY UPDATE
             version_id = #{versionId},
             build_no = #{buildNo},
             lcu = #{lcu},
-            lcd = now(3)
+            <choose>
+                <when test="lcd != null">
+                    lcd = #{lcd}
+                </when>
+                <otherwise>
+                    lcd = now(3)
+                </otherwise>
+            </choose>
     </insert>
 
     <insert id="insertDeployInstanceVersionAudit">
