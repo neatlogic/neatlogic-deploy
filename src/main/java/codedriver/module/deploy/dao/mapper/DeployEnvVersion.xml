@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright(c) 2022 TechSureCo.,Ltd.AllRightsReserved.
+  ~ 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
+  -->
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="codedriver.module.deploy.dao.mapper.DeployEnvVersionMapper">
+
+    <select id="getDeployEnvVersionByEnvIdLock" parameterType="java.lang.Long"
+            resultType="codedriver.framework.deploy.dto.env.DeployEnvVersionVo">
+        select
+            app_system_id as appSystemId,
+            app_module_id as appModuleId,
+            env_id as envId,
+            version_id as versionId,
+            build_no as buildNo,
+            lcu,
+            lcd
+        from deploy_env_version where app_system_id = #{appSystemId} and app_module_id = #{appModuleId} and env_id = #{envId}
+        for update
+    </select>
+
+    <select id="getDeployEnvOldestVersionByEnvIdAndNewVersionId"
+            resultType="codedriver.framework.deploy.dto.env.DeployEnvVersionAuditVo">
+        select
+            id,
+            app_system_id as appSystemId,
+            app_module_id as appModuleId,
+            env_id as envId,
+            new_version_id as newVersionId,
+            old_version_id as oldVersionId,
+            new_build_no as newBuildNo,
+            old_build_no as oldBuildNo,
+            direction,
+            fcu,
+            fcd
+        from deploy_env_version_audit where app_system_id = #{appSystemId} and app_module_id = #{appModuleId} and env_id = #{envId} and new_version_id = #{newVersionId}
+        order by id asc
+        limit 1
+    </select>
+
+    <insert id="insertDeployEnvVersion" parameterType="codedriver.framework.deploy.dto.env.DeployEnvVersionVo">
+        insert into deploy_env_version (
+            app_system_id,
+            app_module_id,
+            env_id,
+            version_id,
+            build_no,
+            lcu,
+            lcd
+        ) values (
+            #{appSystemId},
+            #{appModuleId},
+            #{envId},
+            #{versionId},
+            #{buildNo},
+            #{lcu},
+            now(3)
+        ) ON DUPLICATE KEY UPDATE
+            version_id = #{versionId},
+            build_no = #{buildNo},
+            lcu = #{lcu},
+            lcd = now(3)
+    </insert>
+
+    <insert id="insertDeployEnvVersionAudit">
+        insert into deploy_env_version_audit (
+            id,
+            app_system_id,
+            app_module_id,
+            env_id,
+            new_version_id,
+            old_version_id,
+            new_build_no,
+            old_build_no,
+            direction,
+            fcu,
+            fcd
+        ) values (
+            #{id},
+            #{appSystemId},
+            #{appModuleId},
+            #{envId},
+            #{newVersionId},
+            #{oldVersionId},
+            #{newBuildNo},
+            #{oldBuildNo},
+            #{direction},
+            #{fcu},
+            now(3)
+        )
+    </insert>
+</mapper>

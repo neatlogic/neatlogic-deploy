@@ -24,6 +24,8 @@
                dv.app_module_id as appModuleId,
                cce.name         as appModuleName,
                dv.is_freeze     as isFreeze,
+               dv.runner_map_id   as runnerMapId,
+               dv.runner_group    as runnerGroupStr,
                dv.fcu,
                dv.fcd,
                dv.lcu,
@@ -110,6 +112,7 @@
         <collection property="envList" ofType="codedriver.framework.deploy.dto.version.DeployVersionEnvVo">
             <id column="envId" property="envId"/>
             <result column="envName" property="envName"/>
+            <result column="envBuildNo" property="buildNo"/>
             <result column="isMirror" property="isMirror"/>
             <result column="envStatus" property="status"/>
         </collection>
@@ -130,6 +133,7 @@
         cc.name as envName,
         dve.status as envStatus,
         dve.is_mirror as isMirror,
+        dve.build_no as envBuildNo,
         dv.fcu,
         dv.fcd,
         dv.lcu,
