@@ -800,6 +800,24 @@
         )
     </insert>
 
+    <insert id="insertDeployedInstance">
+        insert into deploy_version_deployed_instance(
+            id,
+            resource_id,
+            version_id,
+            lcu,
+            lcd
+        ) values (
+            #{id},
+            #{resourceId},
+            #{versionId},
+            #{lcu},
+            #{lcd}
+        ) ON DUPLICATE KEY UPDATE
+            lcu = #{lcu},
+            lcd = #{lcd}
+    </insert>
+
     <delete id="deleteDeployVersionById">
         delete
         from deploy_version
