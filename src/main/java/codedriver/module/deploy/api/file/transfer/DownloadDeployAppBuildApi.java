@@ -228,7 +228,7 @@ public class DownloadDeployAppBuildApi extends PrivateBinaryStreamApiComponentBa
             httpRequestUtil = HttpRequestUtil.download(url, "POST", response.getOutputStream())
                     .setPayload(jsonObj.toJSONString()).setAuthType(AuthenticateType.BUILDIN)
                     .addHeader("User-Agent", request.getHeader("User-Agent"))
-                    .setResponseHeaders(Arrays.asList("Build-No","Build-Status","Build-Env-Status","isMirror"))
+                    .setResponseHeaders(Arrays.asList("Build-No","Build-Status","Build-Env-Status","isMirror","Test"))
                     .sendRequest();
         } catch (Exception ex) {
             logger.error(ex.getMessage(), ex);
