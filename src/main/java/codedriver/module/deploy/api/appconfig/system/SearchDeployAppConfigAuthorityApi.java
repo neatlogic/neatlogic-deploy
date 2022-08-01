@@ -106,7 +106,7 @@ public class SearchDeployAppConfigAuthorityApi extends PrivateApiComponentBase {
         //根据appSystemId获取对应的场景theadList
         DeployPipelineConfigVo pipelineConfigVo = deployAppPipelineService.getDeployPipelineConfigVo(new DeployAppConfigVo(paramObj.getLong("appSystemId")));
         JSONArray finalTheadList = JSONArray.parseArray(theadList.toString());
-        if(CollectionUtils.isNotEmpty(pipelineConfigVo.getScenarioList())) {
+        if (CollectionUtils.isNotEmpty(pipelineConfigVo.getScenarioList())) {
             for (AutoexecCombopScenarioVo scenarioVo : pipelineConfigVo.getScenarioList()) {
                 JSONObject scenarioKeyValue = new JSONObject();
                 scenarioKeyValue.put("name", scenarioVo.getScenarioName());
@@ -126,18 +126,18 @@ public class SearchDeployAppConfigAuthorityApi extends PrivateApiComponentBase {
                 ICiEntityCrossoverMapper ciEntityCrossoverMapper = CrossoverServiceFactory.getApi(ICiEntityCrossoverMapper.class);
                 List<CiEntityVo> envCiEntityList = ciEntityCrossoverMapper.getCiEntityBaseInfoByIdList(appConfigAuthorityVos.stream().map(DeployAppConfigAuthorityVo::getEnvId).collect(Collectors.toList()));
                 Map<Long, String> envIdNameMap = envCiEntityList.stream().collect(Collectors.toMap(CiEntityVo::getId, CiEntityVo::getName));
-                for (DeployAppConfigAuthorityVo appConfigAuthorityVo : appConfigAuthorityVos){
+                for (DeployAppConfigAuthorityVo appConfigAuthorityVo : appConfigAuthorityVos) {
                     JSONObject actionAuth = new JSONObject();
-                    actionAuth.put("envId",appConfigAuthorityVo.getEnvId());
-                    actionAuth.put("envName",envIdNameMap.get(appConfigAuthorityVo.getEnvId()));
-                    actionAuth.put("authUuid",appConfigAuthorityVo.getAuthUuid());
-                    actionAuth.put("authType",appConfigAuthorityVo.getAuthType());
+                    actionAuth.put("envId", appConfigAuthorityVo.getEnvId());
+                    actionAuth.put("envName", envIdNameMap.get(appConfigAuthorityVo.getEnvId()));
+                    actionAuth.put("authUuid", appConfigAuthorityVo.getAuthUuid());
+                    actionAuth.put("authType", appConfigAuthorityVo.getAuthType());
                     for (Object object : authorityList) {
                         JSONObject jsonObject = JSONObject.parseObject(object.toString());
-                        if(appConfigAuthorityVo.getActionList().contains(jsonObject.getString("value"))){
-                            actionAuth.put(jsonObject.getString("value"),1);
-                        }else{
-                            actionAuth.put(jsonObject.getString("value"),0);
+                        if (appConfigAuthorityVo.getActionList().contains(jsonObject.getString("value"))) {
+                            actionAuth.put(jsonObject.getString("value"), 1);
+                        } else {
+                            actionAuth.put(jsonObject.getString("value"), 0);
                         }
                     }
                     bodyList.add(actionAuth);
