@@ -1,3 +1,8 @@
+/*
+ * Copyright(c) 2022 TechSure Co., Ltd. All Rights Reserved.
+ * 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
+ */
+
 package codedriver.module.deploy.api.appconfig.system;
 
 import codedriver.framework.asynchronization.threadlocal.TenantContext;
@@ -60,7 +65,8 @@ public class SearchDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
             @Param(name = "isConfig", type = ApiParamType.ENUM, rule = "0,1", desc = "是否只显示已配置的"),
             @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "当前页"),
             @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "每页数据条目"),
-            @Param(name = "needPage", type = ApiParamType.BOOLEAN, desc = "是否需要分页，默认true")
+            @Param(name = "needPage", type = ApiParamType.BOOLEAN, desc = "是否需要分页，默认true"),
+            @Param(name = "pageRange", type = ApiParamType.JSONARRAY, desc = "分页范围")
     })
     @Output({
             @Param(explode = BasePageVo.class),
