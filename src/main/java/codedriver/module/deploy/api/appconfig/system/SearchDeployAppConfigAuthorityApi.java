@@ -27,6 +27,7 @@ import codedriver.module.deploy.service.DeployAppPipelineService;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -120,27 +121,43 @@ public class SearchDeployAppConfigAuthorityApi extends PrivateApiComponentBase {
         if (count > 0) {
             List<DeployAppConfigAuthorityVo> appConfigAuthList = deployAppConfigMapper.getAppConfigAuthorityList(searchVo);
             searchVo.setRowNum(count);
+            //查询已有权限
             List<DeployAppConfigAuthorityVo> appConfigAuthorityVos = deployAppConfigMapper.getAppConfigAuthorityDetailList(appConfigAuthList);
             if (CollectionUtils.isNotEmpty(appConfigAuthorityVos)) {
+
+                //获取所有权限
                 JSONArray authorityList = deployAppConfigAuthorityService.getAuthorityListBySystemId(paramObj.getLong("appSystemId"));
+                //获取所有环境
                 ICiEntityCrossoverMapper ciEntityCrossoverMapper = CrossoverServiceFactory.getApi(ICiEntityCrossoverMapper.class);
                 List<CiEntityVo> envCiEntityList = ciEntityCrossoverMapper.getCiEntityBaseInfoByIdList(appConfigAuthorityVos.stream().map(DeployAppConfigAuthorityVo::getEnvId).collect(Collectors.toList()));
                 Map<Long, String> envIdNameMap = envCiEntityList.stream().collect(Collectors.toMap(CiEntityVo::getId, CiEntityVo::getName));
+
+                //循环已有权限，构造数据结构
                 for (DeployAppConfigAuthorityVo appConfigAuthorityVo : appConfigAuthorityVos) {
                     JSONObject actionAuth = new JSONObject();
                     actionAuth.put("envId", appConfigAuthorityVo.getEnvId());
                     actionAuth.put("envName", envIdNameMap.get(appConfigAuthorityVo.getEnvId()));
                     actionAuth.put("authUuid", appConfigAuthorityVo.getAuthUuid());
                     actionAuth.put("authType", appConfigAuthorityVo.getAuthType());
-                    for (Object object : authorityList) {
-                        JSONObject jsonObject = JSONObject.parseObject(object.toString());
-                        if (appConfigAuthorityVo.getActionList().contains(jsonObject.getString("value"))) {
+
+                    List<String> actionList = appConfigAuthorityVo.getActionList();
+                    if (actionList.size() == 1 && StringUtils.equals(actionList.get(0), "0")) {
+                        for (Object object : authorityList) {
+                            JSONObject jsonObject = JSONObject.parseObject(object.toString());
                             actionAuth.put(jsonObject.getString("value"), 1);
-                        } else {
-                            actionAuth.put(jsonObject.getString("value"), 0);
                         }
+                        bodyList.add(actionAuth);
+                    } else {
+                        for (Object object : authorityList) {
+                            JSONObject jsonObject = JSONObject.parseObject(object.toString());
+                            if (appConfigAuthorityVo.getActionList().contains(jsonObject.getString("value"))) {
+                                actionAuth.put(jsonObject.getString("value"), 1);
+                            } else {
+                                actionAuth.put(jsonObject.getString("value"), 0);
+                            }
+                        }
+                        bodyList.add(actionAuth);
                     }
-                    bodyList.add(actionAuth);
                 }
             }
         }
