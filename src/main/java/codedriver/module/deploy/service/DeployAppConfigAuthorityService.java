@@ -7,7 +7,7 @@ public interface DeployAppConfigAuthorityService {
     /**
      * 根据系统id获取权限列表
      * @param appSystemId 系统id
-     * @return 权限离诶包
+     * @return 权限列表
      */
     JSONArray getAuthorityListBySystemId(Long appSystemId);
 }
