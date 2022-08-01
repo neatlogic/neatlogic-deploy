@@ -5,17 +5,16 @@
 
 package codedriver.module.deploy.api.appconfig.system;
 
+import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.autoexec.dto.combop.AutoexecCombopScenarioVo;
-import codedriver.framework.cmdb.crossover.ICiEntityCrossoverMapper;
-import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.dto.BasePageVo;
-import codedriver.framework.crossover.CrossoverServiceFactory;
 import codedriver.framework.deploy.auth.DEPLOY_BASE;
 import codedriver.framework.deploy.constvalue.DeployAppConfigAction;
 import codedriver.framework.deploy.dto.app.DeployAppConfigAuthorityVo;
 import codedriver.framework.deploy.dto.app.DeployAppConfigVo;
+import codedriver.framework.deploy.dto.app.DeployAppEnvironmentVo;
 import codedriver.framework.deploy.dto.app.DeployPipelineConfigVo;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
@@ -127,40 +126,60 @@ public class SearchDeployAppConfigAuthorityApi extends PrivateApiComponentBase {
 
                 //获取所有权限
                 JSONArray authorityList = deployAppConfigAuthorityService.getAuthorityListBySystemId(paramObj.getLong("appSystemId"));
-                //获取所有环境
-                ICiEntityCrossoverMapper ciEntityCrossoverMapper = CrossoverServiceFactory.getApi(ICiEntityCrossoverMapper.class);
-                List<CiEntityVo> envCiEntityList = ciEntityCrossoverMapper.getCiEntityBaseInfoByIdList(appConfigAuthorityVos.stream().map(DeployAppConfigAuthorityVo::getEnvId).collect(Collectors.toList()));
-                Map<Long, String> envIdNameMap = envCiEntityList.stream().collect(Collectors.toMap(CiEntityVo::getId, CiEntityVo::getName));
+                //获取当前应用下的所有环境
+                List<DeployAppEnvironmentVo> envList = deployAppConfigMapper.getDeployAppEnvListByAppSystemIdAndModuleIdList(paramObj.getLong("appSystemId"), new ArrayList<>(), TenantContext.get().getDataDbName());
+                Map<Long, String> envIdNameMap = envList.stream().collect(Collectors.toMap(DeployAppEnvironmentVo::getId, DeployAppEnvironmentVo::getName));
 
                 //循环已有权限，构造数据结构
                 for (DeployAppConfigAuthorityVo appConfigAuthorityVo : appConfigAuthorityVos) {
-                    JSONObject actionAuth = new JSONObject();
-                    actionAuth.put("envId", appConfigAuthorityVo.getEnvId());
-                    actionAuth.put("envName", envIdNameMap.get(appConfigAuthorityVo.getEnvId()));
-                    actionAuth.put("authUuid", appConfigAuthorityVo.getAuthUuid());
-                    actionAuth.put("authType", appConfigAuthorityVo.getAuthType());
+                    Long envId = appConfigAuthorityVo.getEnvId();
 
-                    List<String> actionList = appConfigAuthorityVo.getActionList();
-                    if (actionList.size() == 1 && StringUtils.equals(actionList.get(0), "0")) {
-                        for (Object object : authorityList) {
-                            JSONObject jsonObject = JSONObject.parseObject(object.toString());
-                            actionAuth.put(jsonObject.getString("value"), 1);
+                    //如果环境是所有环境，需要循环现有环境构造数据结构
+                    if (envId == 0) {
+                        for (DeployAppEnvironmentVo environmentVo : envList) {
+                            bodyList.add(getActionAuth(environmentVo, appConfigAuthorityVo, authorityList));
                         }
-                        bodyList.add(actionAuth);
                     } else {
-                        for (Object object : authorityList) {
-                            JSONObject jsonObject = JSONObject.parseObject(object.toString());
-                            if (appConfigAuthorityVo.getActionList().contains(jsonObject.getString("value"))) {
-                                actionAuth.put(jsonObject.getString("value"), 1);
-                            } else {
-                                actionAuth.put(jsonObject.getString("value"), 0);
-                            }
-                        }
-                        bodyList.add(actionAuth);
+                        bodyList.add(getActionAuth(new DeployAppEnvironmentVo(envId, envIdNameMap.get(envId)), appConfigAuthorityVo, authorityList));
                     }
                 }
             }
         }
         return TableResultUtil.getResult(finalTheadList, bodyList, searchVo);
+    }
+
+    /**
+     * 构造权限数据结构
+     *
+     * @param deployAppEnvironmentVo 环境
+     * @param appConfigAuthorityVo   权限
+     * @param authorityList          现有权限列表
+     * @return 权限列表
+     */
+    JSONObject getActionAuth(DeployAppEnvironmentVo deployAppEnvironmentVo, DeployAppConfigAuthorityVo appConfigAuthorityVo, JSONArray authorityList) {
+        JSONObject actionAuth = new JSONObject();
+        actionAuth.put("envId", deployAppEnvironmentVo.getId());
+        actionAuth.put("envName", deployAppEnvironmentVo.getName());
+        actionAuth.put("authUuid", appConfigAuthorityVo.getAuthUuid());
+        actionAuth.put("authType", appConfigAuthorityVo.getAuthType());
+
+        List<String> actionList = appConfigAuthorityVo.getActionList();
+        //如果是所有权限，需要现有的所有权限
+        if (actionList.size() == 1 && StringUtils.equals(actionList.get(0), "0")) {
+            for (Object object : authorityList) {
+                JSONObject jsonObject = JSONObject.parseObject(object.toString());
+                actionAuth.put(jsonObject.getString("value"), 1);
+            }
+        } else {
+            for (Object object : authorityList) {
+                JSONObject jsonObject = JSONObject.parseObject(object.toString());
+                if (appConfigAuthorityVo.getActionList().contains(jsonObject.getString("value"))) {
+                    actionAuth.put(jsonObject.getString("value"), 1);
+                } else {
+                    actionAuth.put(jsonObject.getString("value"), 0);
+                }
+            }
+        }
+        return actionAuth;
     }
 }
