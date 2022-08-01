@@ -1278,9 +1278,7 @@
     <delete id="deleteAppConfigEnvByAppSystemIdAndAppModuleIdAndEnvIdList">
         DELETE FROM `deploy_app_config_env`
         <where>
-            <if test="appSystemId != null">
-                AND `app_system_id` = #{appSystemId}
-            </if>
+            `app_system_id` = #{appSystemId}
             <if test="appModuleId != 0L">
                 AND `app_module_id` = #{appModuleId}
             </if>

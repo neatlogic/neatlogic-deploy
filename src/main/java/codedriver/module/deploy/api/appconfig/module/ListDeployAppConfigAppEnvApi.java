@@ -56,7 +56,7 @@ public class ListDeployAppConfigAppEnvApi extends PrivateApiComponentBase {
 
     @Input({
             @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "应用系统id"),
-            @Param(name = "appModuleId", type = ApiParamType.LONG, isRequired = true, desc = "应用模块id"),
+            @Param(name = "appModuleId", type = ApiParamType.LONG, desc = "应用模块id"),
             @Param(name = "isHasEnv", type = ApiParamType.INTEGER, desc = "是否拥有环境 (0:查找现没有的环境，1：查找现有的环境)"),
     })
     @Output({
@@ -86,7 +86,7 @@ public class ListDeployAppConfigAppEnvApi extends PrivateApiComponentBase {
                 List<Long> sameEnvIdList = new ArrayList<>(cmdbEnvIdList);
                 sameEnvIdList.retainAll(deployEnvIdList);
                 if (sameEnvIdList.size() > 0) {
-                    deployAppConfigMapper.deleteAppConfigEnvByAppSystemIdAndAppModuleIdAndEnvIdList(paramObj.getLong("appSystemId"), paramObj.getLong("appModuleId"), sameEnvIdList);
+                    deployAppConfigMapper.deleteAppConfigEnvByAppSystemIdAndAppModuleIdAndEnvIdList(paramObj.getLong("appSystemId"), appModuleId, sameEnvIdList);
                     for (int i = 0; i < deployEnvList.size(); i++) {
                         DeployAppEnvironmentVo deployAppEnvironmentVo = deployEnvList.get(i);
                         if (sameEnvIdList.contains(deployAppEnvironmentVo.getId())) {

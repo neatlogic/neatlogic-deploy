@@ -5,11 +5,10 @@
 
 package codedriver.module.deploy.api.appconfig.system;
 
-import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.autoexec.dto.combop.AutoexecCombopScenarioVo;
-import codedriver.framework.cmdb.crossover.IAppSystemMapper;
-import codedriver.framework.cmdb.dto.resourcecenter.entity.AppEnvironmentVo;
+import codedriver.framework.cmdb.crossover.ICiEntityCrossoverMapper;
+import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.dto.BasePageVo;
 import codedriver.framework.crossover.CrossoverServiceFactory;
@@ -23,6 +22,7 @@ import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.framework.util.TableResultUtil;
 import codedriver.module.deploy.dao.mapper.DeployAppConfigMapper;
+import codedriver.module.deploy.service.DeployAppConfigAuthorityService;
 import codedriver.module.deploy.service.DeployAppPipelineService;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
@@ -49,6 +49,9 @@ public class SearchDeployAppConfigAuthorityApi extends PrivateApiComponentBase {
 
     @Resource
     DeployAppPipelineService deployAppPipelineService;
+
+    @Resource
+    DeployAppConfigAuthorityService deployAppConfigAuthorityService;
 
     @Override
     public String getToken() {
@@ -115,26 +118,30 @@ public class SearchDeployAppConfigAuthorityApi extends PrivateApiComponentBase {
         List<JSONObject> bodyList = new ArrayList<>();
         Integer count = deployAppConfigMapper.getAppConfigAuthorityCount(searchVo);
         if (count > 0) {
-            IAppSystemMapper appSystemMapper = CrossoverServiceFactory.getApi(IAppSystemMapper.class);
-            List<AppEnvironmentVo> envList = appSystemMapper.getAppEnvListByAppSystemIdAndModuleIdList(searchVo.getAppSystemId(), null,TenantContext.get().getDataDbName());
-            Map<Long,String> envIdNameMap = envList.stream().collect(Collectors.toMap(AppEnvironmentVo::getEnvId,AppEnvironmentVo::getEnvName));
             List<DeployAppConfigAuthorityVo> appConfigAuthList = deployAppConfigMapper.getAppConfigAuthorityList(searchVo);
             searchVo.setRowNum(count);
             List<DeployAppConfigAuthorityVo> appConfigAuthorityVos = deployAppConfigMapper.getAppConfigAuthorityDetailList(appConfigAuthList);
-            for (DeployAppConfigAuthorityVo appConfigAuthorityVo : appConfigAuthorityVos){
-                JSONObject actionAuth = new JSONObject();
-                actionAuth.put("envId",appConfigAuthorityVo.getEnvId());
-                actionAuth.put("envName",envIdNameMap.get(appConfigAuthorityVo.getEnvId()));
-                actionAuth.put("authUuid",appConfigAuthorityVo.getAuthUuid());
-                actionAuth.put("authType",appConfigAuthorityVo.getAuthType());
-                for (DeployAppConfigAction action : DeployAppConfigAction.values()) {
-                    if(appConfigAuthorityVo.getActionList().contains(action.getValue())){
-                        actionAuth.put(action.getValue(),1);
-                    }else{
-                        actionAuth.put(action.getValue(),0);
+            if (CollectionUtils.isNotEmpty(appConfigAuthorityVos)) {
+                JSONArray authorityList = deployAppConfigAuthorityService.getAuthorityListBySystemId(paramObj.getLong("appSystemId"));
+                ICiEntityCrossoverMapper ciEntityCrossoverMapper = CrossoverServiceFactory.getApi(ICiEntityCrossoverMapper.class);
+                List<CiEntityVo> envCiEntityList = ciEntityCrossoverMapper.getCiEntityBaseInfoByIdList(appConfigAuthorityVos.stream().map(DeployAppConfigAuthorityVo::getEnvId).collect(Collectors.toList()));
+                Map<Long, String> envIdNameMap = envCiEntityList.stream().collect(Collectors.toMap(CiEntityVo::getId, CiEntityVo::getName));
+                for (DeployAppConfigAuthorityVo appConfigAuthorityVo : appConfigAuthorityVos){
+                    JSONObject actionAuth = new JSONObject();
+                    actionAuth.put("envId",appConfigAuthorityVo.getEnvId());
+                    actionAuth.put("envName",envIdNameMap.get(appConfigAuthorityVo.getEnvId()));
+                    actionAuth.put("authUuid",appConfigAuthorityVo.getAuthUuid());
+                    actionAuth.put("authType",appConfigAuthorityVo.getAuthType());
+                    for (Object object : authorityList) {
+                        JSONObject jsonObject = JSONObject.parseObject(object.toString());
+                        if(appConfigAuthorityVo.getActionList().contains(jsonObject.getString("value"))){
+                            actionAuth.put(jsonObject.getString("value"),1);
+                        }else{
+                            actionAuth.put(jsonObject.getString("value"),0);
+                        }
                     }
+                    bodyList.add(actionAuth);
                 }
-                bodyList.add(actionAuth);
             }
         }
         return TableResultUtil.getResult(finalTheadList, bodyList, searchVo);
