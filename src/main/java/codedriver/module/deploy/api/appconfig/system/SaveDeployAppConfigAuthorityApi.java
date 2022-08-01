@@ -29,7 +29,7 @@ import java.util.Date;
 @Transactional
 @AuthAction(action = DEPLOY_BASE.class)
 @OperationType(type = OperationTypeEnum.UPDATE)
-public class DeployAppConfigAuthoritySaveApi extends PrivateApiComponentBase {
+public class SaveDeployAppConfigAuthorityApi extends PrivateApiComponentBase {
     @Resource
     private DeployAppConfigMapper deployAppConfigMapper;
 

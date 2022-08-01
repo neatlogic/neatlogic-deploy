@@ -23,6 +23,7 @@ import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.framework.util.TableResultUtil;
 import codedriver.module.deploy.dao.mapper.DeployAppConfigMapper;
+import codedriver.module.deploy.service.DeployAppPipelineService;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
@@ -45,6 +46,9 @@ public class SearchDeployAppConfigAuthorityApi extends PrivateApiComponentBase {
     List<JSONObject> theadList = new ArrayList<>();
     @Resource
     private DeployAppConfigMapper deployAppConfigMapper;
+
+    @Resource
+    DeployAppPipelineService deployAppPipelineService;
 
     @Override
     public String getToken() {
@@ -97,8 +101,7 @@ public class SearchDeployAppConfigAuthorityApi extends PrivateApiComponentBase {
     public Object myDoService(JSONObject paramObj) {
         DeployAppConfigAuthorityVo searchVo = paramObj.toJavaObject(DeployAppConfigAuthorityVo.class);
         //根据appSystemId获取对应的场景theadList
-        DeployAppConfigVo appConfigVo = deployAppConfigMapper.getAppConfigByAppSystemIdAndAppModuleIdAndEnvId(searchVo.getAppSystemId(),0L,0L);
-        DeployPipelineConfigVo pipelineConfigVo = appConfigVo.getConfig();
+        DeployPipelineConfigVo pipelineConfigVo = deployAppPipelineService.getDeployPipelineConfigVo(new DeployAppConfigVo(paramObj.getLong("appSystemId")));
         JSONArray finalTheadList = JSONArray.parseArray(theadList.toString());
         if(CollectionUtils.isNotEmpty(pipelineConfigVo.getScenarioList())) {
             for (AutoexecCombopScenarioVo scenarioVo : pipelineConfigVo.getScenarioList()) {

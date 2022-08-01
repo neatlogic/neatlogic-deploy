@@ -25,7 +25,7 @@ import javax.annotation.Resource;
 @Service
 @AuthAction(action = DEPLOY_BASE.class)
 @OperationType(type = OperationTypeEnum.UPDATE)
-public class DeployAppConfigAuthorityDeleteApi extends PrivateApiComponentBase {
+public class DeleteDeployAppConfigAuthorityApi extends PrivateApiComponentBase {
     @Resource
     private DeployAppConfigMapper deployAppConfigMapper;
 

@@ -15,7 +15,7 @@ import codedriver.framework.deploy.dto.app.DeployPipelineConfigVo;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
-import codedriver.module.deploy.dao.mapper.DeployAppConfigMapper;
+import codedriver.module.deploy.service.DeployAppPipelineService;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
@@ -32,7 +32,7 @@ import javax.annotation.Resource;
 @OperationType(type = OperationTypeEnum.SEARCH)
 public class ListDeployAppConfigAuthorityApi extends PrivateApiComponentBase {
     @Resource
-    DeployAppConfigMapper deployAppConfigMapper;
+    DeployAppPipelineService deployAppPipelineService;
 
     @Override
     public String getToken() {
@@ -59,8 +59,8 @@ public class ListDeployAppConfigAuthorityApi extends PrivateApiComponentBase {
     public Object myDoService(JSONObject paramObj) {
         JSONArray resultArray = DeployAppConfigAction.getValueTextList();
         Long appSystemId = paramObj.getLong("appSystemId");
-        DeployAppConfigVo appConfigVo = deployAppConfigMapper.getAppConfigByAppSystemIdAndAppModuleIdAndEnvId(appSystemId,0L,0L);
-        DeployPipelineConfigVo pipelineConfigVo = appConfigVo.getConfig();
+        DeployPipelineConfigVo pipelineConfigVo = deployAppPipelineService.getDeployPipelineConfigVo(new DeployAppConfigVo(appSystemId));
+
         if(CollectionUtils.isNotEmpty(pipelineConfigVo.getScenarioList())){
             for (AutoexecCombopScenarioVo scenarioVo : pipelineConfigVo.getScenarioList()) {
                 JSONObject scenarioKeyValue = new JSONObject();
