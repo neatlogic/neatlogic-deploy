@@ -114,7 +114,7 @@ public class SaveDeployInstanceVersionApi extends PrivateApiComponentBase {
             oldBuildNo = currentVersion.getBuildNo();
         }
         deployInstanceVersionMapper.insertDeployInstanceVersionAudit(new DeployInstanceVersionAuditVo(sysId, moduleId, envId, resourceId, versionVo.getId(), oldVersionId, buildNo, oldBuildNo, VersionDirection.FORWARD.getValue()));
-        deployVersionMapper.insertDeployedInstance(new DeployVersionDeployedInstanceVo(resourceId, versionVo.getId(), execUser, lcd));
+        deployVersionMapper.insertDeployedInstance(new DeployVersionDeployedInstanceVo(resourceId, versionVo.getId(), envId, execUser, lcd));
         return null;
     }
 }

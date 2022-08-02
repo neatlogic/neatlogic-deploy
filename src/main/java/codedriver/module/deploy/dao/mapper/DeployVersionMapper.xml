@@ -37,6 +37,30 @@
 
     </select>
 
+    <select id="getDeployVersionBaseInfoById" resultType="codedriver.framework.deploy.dto.version.DeployVersionVo">
+        select id,
+               version,
+               app_system_id   as appSystemId,
+               app_system_name as appSystemName,
+               app_module_id   as appModuleId,
+               app_module_name as appModuleName,
+               is_freeze       as isFreeze,
+               repo_type       as repoType,
+               repo            as repo,
+               trunk           as trunk,
+               branch          as branch,
+               tag             as tag,
+               tags_dir        as tagsDir,
+               start_rev       as startRev,
+               end_rev         as endRev,
+               fcu,
+               fcd,
+               lcu,
+               lcd
+        from deploy_version
+        where id = #{value}
+    </select>
+
     <select id="searchDeployVersionCount" resultType="java.lang.Integer">
         select count(dv.id)
         from deploy_version dv
@@ -412,6 +436,19 @@
         select user_uuid
         from deploy_version_appbuild_credential
         where proxy_to_url = #{value}
+    </select>
+
+    <select id="getDeployedInstanceByVersionIdAndEnvId"
+            resultType="codedriver.framework.deploy.dto.version.DeployVersionDeployedInstanceVo">
+        select
+            id,
+            resource_id as resourceId,
+            version_id as versionId,
+            env_id as envId,
+            deploy_user as deployUser,
+            deploy_time as deployTime
+        from deploy_version_deployed_instance
+        where version_id = #{versionId} and env_id = #{envId}
     </select>
 
     <update id="unFreezeDeployVersionById">
@@ -805,12 +842,14 @@
             id,
             resource_id,
             version_id,
-            lcu,
-            lcd
+            env_id,
+            deploy_user,
+            deploy_time
         ) values (
             #{id},
             #{resourceId},
             #{versionId},
+            #{envId},
             #{lcu},
             #{lcd}
         ) ON DUPLICATE KEY UPDATE
