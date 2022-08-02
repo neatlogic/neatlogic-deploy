@@ -439,7 +439,7 @@
         where proxy_to_url = #{value}
     </select>
 
-    <resultMap id="DeployVersionDeployedInstanceVoMap" type="codedriver.framework.deploy.dto.version.DeployVersionDeployedInstanceVo">
+    <resultMap id="DeployVersionEnvInstanceVoMap" type="codedriver.framework.deploy.dto.version.DeployVersionEnvInstanceVo">
         <result column="id" property="id"/>
         <result column="resourceId" property="resourceId"/>
         <result column="versionId" property="versionId"/>
@@ -453,7 +453,7 @@
     </resultMap>
 
     <select id="getDeployedInstanceByVersionIdAndEnvId"
-            resultMap="DeployVersionDeployedInstanceVoMap">
+            resultMap="DeployVersionEnvInstanceVoMap">
         select
             a.id,
             a.resource_id as resourceId,

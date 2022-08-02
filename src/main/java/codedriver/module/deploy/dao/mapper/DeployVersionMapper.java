@@ -51,7 +51,7 @@ public interface DeployVersionMapper {
 
     String getDeployVersionAppbuildCredentialByProxyToUrl(String redirectUrl);
 
-    List<DeployVersionDeployedInstanceVo> getDeployedInstanceByVersionIdAndEnvId(@Param("versionId") Long versionId, @Param("envId") Long envId);
+    List<DeployVersionEnvInstanceVo> getDeployedInstanceByVersionIdAndEnvId(@Param("versionId") Long versionId, @Param("envId") Long envId);
 
     int unFreezeDeployVersionById(@Param("id") Long id, @Param("isFreeze") Long isFreeze);
 
@@ -75,7 +75,7 @@ public interface DeployVersionMapper {
 
     int insertDeployVersionDependency(DeployVersionDependencyVo vo);
 
-    int insertDeployedInstance(DeployVersionDeployedInstanceVo vo);
+    int insertDeployedInstance(DeployVersionEnvInstanceVo vo);
 
     int deleteDeployVersionById(Long id);
 
