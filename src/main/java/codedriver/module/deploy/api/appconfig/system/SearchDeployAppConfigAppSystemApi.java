@@ -24,6 +24,7 @@ import codedriver.framework.util.TableResultUtil;
 import codedriver.module.deploy.dao.mapper.DeployAppConfigMapper;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -105,24 +106,26 @@ public class SearchDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
                 }
             }
 
-            //查询包含关键字的 appSystemModuleList，再将信息模块信息补回 returnAppSystemList
-            List<Long> appSystemIdListByAppModuleName = appSystemMapper.getAppSystemIdListByAppModuleName(searchVo.getKeyword(), TenantContext.get().getDataDbName());
-            if (CollectionUtils.isNotEmpty(appSystemIdListByAppModuleName)) {
-                List<DeployAppSystemVo> appSystemModuleList = deployAppConfigMapper.getAppSystemModuleListBySystemIdList(appSystemIdListByAppModuleName, paramObj.getInteger("isConfig"), TenantContext.get().getDataDbName(), UserContext.get().getUserUuid());
-                if (CollectionUtils.isNotEmpty(appSystemModuleList)) {
-                    for (DeployAppSystemVo appSystemInfoVo : appSystemModuleList) {
-                        DeployAppSystemVo returnAppSystemVo = returnAppSystemMap.get(appSystemInfoVo.getId());
-                        if (returnAppSystemVo != null) {
+            if (StringUtils.isNotEmpty(searchVo.getKeyword())) {
+                //查询包含关键字的 appSystemModuleList，再将信息模块信息补回 returnAppSystemList
+                List<Long> appSystemIdListByAppModuleName = appSystemMapper.getAppSystemIdListByAppModuleName(searchVo.getKeyword(), TenantContext.get().getDataDbName());
+                if (CollectionUtils.isNotEmpty(appSystemIdListByAppModuleName)) {
+                    List<DeployAppSystemVo> appSystemModuleList = deployAppConfigMapper.getAppSystemModuleListBySystemIdList(appSystemIdListByAppModuleName, paramObj.getInteger("isConfig"), TenantContext.get().getDataDbName(), UserContext.get().getUserUuid());
+                    if (CollectionUtils.isNotEmpty(appSystemModuleList)) {
+                        for (DeployAppSystemVo appSystemInfoVo : appSystemModuleList) {
+                            DeployAppSystemVo returnAppSystemVo = returnAppSystemMap.get(appSystemInfoVo.getId());
+                            if (returnAppSystemVo != null) {
 
-                            //补充模块是否有环境（有实例的环境）
-                            List<Long> appModuleIdList = deployAppConfigMapper.getHasEnvAppModuleIdListByAppSystemIdAndModuleIdList(returnAppSystemVo.getId(), appSystemInfoVo.getAppModuleList().stream().map(DeployAppModuleVo::getId).collect(Collectors.toList()), TenantContext.get().getDataDbName());
-                            for (DeployAppModuleVo appModuleVo : appSystemInfoVo.getAppModuleList()) {
-                                if (appModuleIdList.contains(appModuleVo.getId())) {
-                                    appModuleVo.setIsHasEnv(1);
+                                //补充模块是否有环境（有实例的环境）
+                                List<Long> appModuleIdList = deployAppConfigMapper.getHasEnvAppModuleIdListByAppSystemIdAndModuleIdList(returnAppSystemVo.getId(), appSystemInfoVo.getAppModuleList().stream().map(DeployAppModuleVo::getId).collect(Collectors.toList()), TenantContext.get().getDataDbName());
+                                for (DeployAppModuleVo appModuleVo : appSystemInfoVo.getAppModuleList()) {
+                                    if (appModuleIdList.contains(appModuleVo.getId())) {
+                                        appModuleVo.setIsHasEnv(1);
+                                    }
                                 }
+                                //补充系统下的模块列表
+                                returnAppSystemVo.setAppModuleList(appSystemInfoVo.getAppModuleList());
                             }
-                            //补充系统下的模块列表
-                            returnAppSystemVo.setAppModuleList(appSystemInfoVo.getAppModuleList());
                         }
                     }
                 }
