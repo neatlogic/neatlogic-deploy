@@ -20,6 +20,7 @@ import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.framework.util.HttpRequestUtil;
+import codedriver.framework.util.TimeUtil;
 import codedriver.module.deploy.dao.mapper.DeployVersionMapper;
 import codedriver.module.deploy.service.DeployJobService;
 import com.alibaba.fastjson.JSONArray;
@@ -123,8 +124,8 @@ public class CreateDeployJobApi extends PrivateApiComponentBase {
         if (jsonObj.containsKey("sysName")) {
             jsonObj.put("appSystemName", jsonObj.getString("sysName"));
         }
-        if (jsonObj.containsKey("parentJobId")) {
-            jsonObj.put("parentId", jsonObj.getLong("parentJobId"));
+        if (jsonObj.containsKey("plantime")) {
+            jsonObj.put("planStartTime", TimeUtil.convertStringToDate(jsonObj.getString("plantime"), TimeUtil.YYYY_MM_DD_HH_MM_SS));
         }
     }
 
