@@ -60,14 +60,14 @@ public class GetDeployVersionEnvForAutoexecApi extends PrivateApiComponentBase {
             @Param(name = "moduleId", desc = "应用系统id", isRequired = true, type = ApiParamType.LONG),
             @Param(name = "envId", desc = "环境id", isRequired = true, type = ApiParamType.LONG),
             @Param(name = "version", desc = "版本号", isRequired = true, type = ApiParamType.STRING),
-            @Param(name = "baseUrl", desc = "地址（可选，如果有则表示去其他环境获取）", rule = RegexUtils.CONNECT_URL, type = ApiParamType.REGEX),
+            @Param(name = "proxyToUrl", desc = "地址（可选，如果有则表示去其他环境获取）", rule = RegexUtils.CONNECT_URL, type = ApiParamType.REGEX),
     })
     @Description(desc = "获取发布版本环境信息")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         JSONObject result = new JSONObject();
-        String baseUrl = paramObj.getString("baseUrl");
-        if (StringUtils.isBlank(baseUrl)) {
+        String proxyToUrl = paramObj.getString("proxyToUrl");
+        if (StringUtils.isBlank(proxyToUrl)) {
             Long sysId = paramObj.getLong("sysId");
             Long moduleId = paramObj.getLong("moduleId");
             Long envId = paramObj.getLong("envId");
@@ -85,14 +85,14 @@ public class GetDeployVersionEnvForAutoexecApi extends PrivateApiComponentBase {
             result.put("isMirror", envVo.getIsMirror());
             result.put("status", envVo.getStatus());
         } else {
-            String credentialUserUuid = deployVersionMapper.getDeployVersionAppbuildCredentialByProxyToUrl(baseUrl);
+            String credentialUserUuid = deployVersionMapper.getDeployVersionAppbuildCredentialByProxyToUrl(proxyToUrl);
             UserVo credentialUser = userMapper.getUserByUuid(credentialUserUuid);
             if (credentialUser == null) {
                 throw new DeployVersionRedirectUrlCredentialUserNotFoundException(credentialUserUuid);
             }
+            String url = proxyToUrl + UserContext.get().getRequest().getRequestURI();
             UserContext.init(credentialUser, "+8:00");
             UserContext.get().setToken("GZIP_" + LoginAuthHandlerBase.buildJwt(credentialUser).getCc());
-            String url = baseUrl + "/codedriver/api/rest/" + this.getToken();
             HttpRequestUtil httpRequestUtil = HttpRequestUtil.post(url)
                     .setPayload(paramObj.toJSONString()).setAuthType(AuthenticateType.BUILDIN)
                     .sendRequest();
