@@ -71,7 +71,8 @@
             #{id}
         </foreach>
         order by if(dacu.user_uuid = #{userUuid},1,0) desc,
-        CONVERT(saa.abbr_name USING gbk) COLLATE gbk_chinese_ci ASC
+        CONVERT(saa.abbr_name USING gbk) COLLATE gbk_chinese_ci ASC,
+        CONVERT(saa.app_module_abbr_name USING gbk) COLLATE gbk_chinese_ci ASC
     </select>
 
     <select id="getAppSystemListByIdListSimple" resultMap="appConfigSystemMap">
@@ -89,7 +90,8 @@
             #{id}
         </foreach>
         order by if(dacu.user_uuid = #{userUuid},1,0) desc,
-        CONVERT(saa.abbr_name USING gbk) COLLATE gbk_chinese_ci ASC
+        CONVERT(saa.abbr_name USING gbk) COLLATE gbk_chinese_ci ASC,
+        CONVERT(saa.app_module_abbr_name USING gbk) COLLATE gbk_chinese_ci ASC
     </select>
 
     <select id="getAppSystemModuleListBySystemIdList" resultMap="appConfigSystemMap">
