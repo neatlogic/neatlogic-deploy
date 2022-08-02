@@ -5,6 +5,7 @@
 
 package codedriver.module.deploy.job.source.type;
 
+import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.autoexec.constvalue.ExecMode;
 import codedriver.framework.autoexec.constvalue.JobNodeStatus;
@@ -21,7 +22,9 @@ import codedriver.framework.autoexec.exception.AutoexecJobRunnerHttpRequestExcep
 import codedriver.framework.autoexec.job.source.type.AutoexecJobSourceTypeHandlerBase;
 import codedriver.framework.autoexec.util.AutoexecUtil;
 import codedriver.framework.cmdb.crossover.ICiEntityCrossoverMapper;
+import codedriver.framework.cmdb.crossover.IResourceCrossoverMapper;
 import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
+import codedriver.framework.cmdb.dto.resourcecenter.ResourceVo;
 import codedriver.framework.cmdb.exception.cientity.CiEntityNotFoundException;
 import codedriver.framework.crossover.CrossoverServiceFactory;
 import codedriver.framework.dao.mapper.runner.RunnerMapper;
@@ -379,18 +382,18 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
         //_DEPLOY_RUNNER GROUP
         JSONObject runnerMap = new JSONObject();
         DeployJobVo deployJobVo = deployJobMapper.getDeployJobByJobId(jobVo.getId());
-        ICiEntityCrossoverMapper iCiEntityCrossoverMapper = CrossoverServiceFactory.getApi(ICiEntityCrossoverMapper.class);
-        CiEntityVo appSystemEntity = iCiEntityCrossoverMapper.getCiEntityBaseInfoById(deployJobVo.getAppSystemId());
-        if (appSystemEntity == null) {
+        IResourceCrossoverMapper iResourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
+        ResourceVo appSystem = iResourceCrossoverMapper.getAppSystemById(deployJobVo.getAppSystemId(), TenantContext.get().getDataDbName());
+        if (appSystem == null) {
             throw new CiEntityNotFoundException(deployJobVo.getAppSystemId());
         }
-        CiEntityVo appModuleEntity = iCiEntityCrossoverMapper.getCiEntityBaseInfoById(deployJobVo.getAppModuleId());
-        if (appModuleEntity == null) {
+        ResourceVo appModule = iResourceCrossoverMapper.getAppModuleById(deployJobVo.getAppModuleId(),TenantContext.get().getDataDbName());
+        if (appModule == null) {
             throw new CiEntityNotFoundException(deployJobVo.getAppModuleId());
         }
         RunnerGroupVo runnerGroupVo = deployAppConfigMapper.getAppModuleRunnerGroupByAppSystemIdAndModuleId(deployJobVo.getAppSystemId(), deployJobVo.getAppModuleId());
         if (runnerGroupVo == null) {
-            throw new DeployAppConfigModuleRunnerGroupNotFoundException(appSystemEntity.getName() + "(" + deployJobVo.getAppSystemId() + ")", appModuleEntity.getName() + "(" + deployJobVo.getAppModuleId() + ")");
+            throw new DeployAppConfigModuleRunnerGroupNotFoundException(appSystem.getName() + "(" + deployJobVo.getAppSystemId() + ")", appModule.getName() + "(" + deployJobVo.getAppModuleId() + ")");
         }
         if (CollectionUtils.isEmpty(runnerGroupVo.getRunnerMapList())) {
             throw new AutoexecJobRunnerGroupRunnerNotFoundException(runnerGroupVo.getName() + ":" + runnerGroupVo.getId());
@@ -400,11 +403,12 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
         }
         environment.put("DEPLOY_RUNNERGROUP", runnerMap);
         //_DEPLOY_PATH
+        ICiEntityCrossoverMapper iCiEntityCrossoverMapper = CrossoverServiceFactory.getApi(ICiEntityCrossoverMapper.class);
         CiEntityVo envEntity = iCiEntityCrossoverMapper.getCiEntityBaseInfoById(deployJobVo.getEnvId());
         if (envEntity == null) {
             throw new CiEntityNotFoundException(deployJobVo.getEnvId());
         }
-        environment.put("DEPLOY_PATH", appSystemEntity.getName() + "/" + appModuleEntity.getName() + "/" + envEntity.getName());
+        environment.put("DEPLOY_PATH", appSystem.getAbbrName() + "/" + appModule.getAbbrName() + "/" + envEntity.getName());
         environment.put("DEPLOY_ID_PATH", deployJobVo.getAppSystemId() + "/" + deployJobVo.getAppModuleId() + "/" + deployJobVo.getEnvId());
         environment.put("VERSION", deployJobVo.getVersion());
         environment.put("BUILD_NO", deployJobVo.getBuildNo());
