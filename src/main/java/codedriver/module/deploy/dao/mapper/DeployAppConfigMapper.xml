@@ -931,38 +931,23 @@
 
     <select id="getAppModuleListBySystemIdAndEnvId"
             resultType="codedriver.framework.deploy.dto.app.DeployAppModuleVo">
-        (SELECT sieaa.app_module_id        as id,
-                sieaa.app_module_name      as name,
-                sieaa.app_module_abbr_name as abbrName
-         FROM ${schemaName}.scence_ipobject_env_appmodule_appsystem sieaa
-         WHERE sieaa.app_system_id = #{appSystemId}
-           AND sieaa.env_id = #{envId})
-        union
-        (
-            SELECT dace.app_module_id as id,
-                   ra.name,
-                   ra.abbr_name   as abbrName
-            FROM deploy_app_config_env dace
-                     LEFT JOIN ${schemaName}.resource_appmodule ra ON ra.id = dace.app_module_id
-            WHERE dace.app_system_id = #{appSystemId}
-              AND dace.env_id = #{envId}
-        )
+        SELECT distinct raa.app_module_id        as id,
+                        raa.app_module_name      as name,
+                        raa.app_module_abbr_name as abbrName
+        FROM ${schemaName}.resource_appsystem_appmodule raa
+                 LEFT JOIN ${schemaName}.resource_ipobject_appmodule ria ON ria.app_module_id = raa.app_module_id
+                 LEFT JOIN ${schemaName}.resource_softwareservice_env rse ON rse.resource_id = ria.resource_id
+        WHERE raa.resource_id = #{appSystemId}
+          AND rse.env_id = #{envId}
     </select>
 
     <select id="getAppModuleCountBySystemIdAndEnvId" resultType="java.lang.Integer">
-        select count(distinct a.app_module_id)
-        from ((SELECT sieaa.app_module_id
-               FROM ${schemaName}.scence_ipobject_env_appmodule_appsystem sieaa
-               WHERE sieaa.app_system_id = #{appSystemId}
-                 AND sieaa.env_id = #{envId})
-              union
-              (
-                  SELECT dace.app_module_id
-                  FROM deploy_app_config_env dace
-                           LEFT JOIN ${schemaName}.resource_appmodule ra ON ra.id = dace.app_module_id
-                  WHERE dace.app_system_id = #{appSystemId}
-                    AND dace.env_id = #{envId}
-              )) a
+        SELECT count(distinct raa.app_module_id)
+        FROM ${schemaName}.resource_appsystem_appmodule raa
+                 LEFT JOIN ${schemaName}.resource_ipobject_appmodule ria ON ria.app_module_id = raa.app_module_id
+                 LEFT JOIN ${schemaName}.resource_softwareservice_env rse ON rse.resource_id = ria.resource_id
+        WHERE raa.resource_id = #{appSystemId}
+          AND rse.env_id = #{envId}
     </select>
 
     <select id="getAppEnvAutoConfigBySystemIdAndModuleIdAndEnvId"
