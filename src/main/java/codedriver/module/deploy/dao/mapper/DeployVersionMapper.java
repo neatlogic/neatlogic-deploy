@@ -19,6 +19,8 @@ public interface DeployVersionMapper {
 
     DeployVersionVo getDeployVersionById(Long id);
 
+    DeployVersionVo getDeployVersionBaseInfoById(Long id);
+
     DeployVersionVo getVersionByAppSystemIdAndAppModuleIdAndVersion(@Param("appSystemId") Long appSystemId, @Param("appModuleId") Long appModuleId, @Param("version") String version);
 
     List<DeployVersionVo> getDeployVersionByIdList(List<Long> idList);
@@ -39,7 +41,7 @@ public interface DeployVersionMapper {
 
     DeployVersionEnvVo getDeployVersionEnvByVersionIdAndEnvId(@Param("versionId") Long versionId, @Param("envId") Long envId);
 
-    DeployVersionEnvVo getDeployVersionEnvByVersionIdAndEnvIdAndBuildNo(@Param("versionId") Long versionId, @Param("envId") Long envId,@Param("buildNo")Integer buildNo);
+    DeployVersionEnvVo getDeployVersionEnvByVersionIdAndEnvIdAndBuildNo(@Param("versionId") Long versionId, @Param("envId") Long envId, @Param("buildNo") Integer buildNo);
 
     List<Long> getDeployVersionIdList(DeployVersionVo versionVo);
 
@@ -48,6 +50,8 @@ public interface DeployVersionMapper {
     DeployVersionDependencyVo getDeployVersionDependencyByVersionIdAndPackageId(@Param("versionId") Long versionId, @Param("packageId") Long packageId);
 
     String getDeployVersionAppbuildCredentialByProxyToUrl(String redirectUrl);
+
+    List<DeployVersionEnvInstanceVo> getDeployedInstanceByVersionIdAndEnvId(@Param("versionId") Long versionId, @Param("envId") Long envId);
 
     int unFreezeDeployVersionById(@Param("id") Long id, @Param("isFreeze") Long isFreeze);
 
@@ -71,7 +75,7 @@ public interface DeployVersionMapper {
 
     int insertDeployVersionDependency(DeployVersionDependencyVo vo);
 
-    int insertDeployedInstance(DeployVersionDeployedInstanceVo vo);
+    int insertDeployedInstance(DeployVersionEnvInstanceVo vo);
 
     int deleteDeployVersionById(Long id);
 
