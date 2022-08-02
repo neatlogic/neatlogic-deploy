@@ -48,6 +48,7 @@ public class SearchDeployVersionInstanceApi extends PrivateApiComponentBase {
     }
 
     @Input({
+            @Param(name = "keyword", type = ApiParamType.STRING, xss = true, desc = "关键词"),
             @Param(name = "versionId", type = ApiParamType.LONG, isRequired = true, desc = "版本id"),
             @Param(name = "envId", type = ApiParamType.LONG, isRequired = true, desc = "环境id")
     })
@@ -78,6 +79,7 @@ public class SearchDeployVersionInstanceApi extends PrivateApiComponentBase {
                     vo.setDeployUser(deployedInstanceVo.getDeployUser());
                     vo.setDeployTime(deployedInstanceVo.getDeployTime());
                     vo.setStatus(1);
+                    vo.setDeployUserVo(deployedInstanceVo.getDeployUserVo());
                 }
                 result.add(vo);
             }

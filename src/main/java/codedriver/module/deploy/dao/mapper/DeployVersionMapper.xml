@@ -432,23 +432,39 @@
         WHERE version_id = #{versionId}
           and package_id = #{packageId}
     </select>
+
     <select id="getDeployVersionAppbuildCredentialByProxyToUrl" resultType="java.lang.String">
         select user_uuid
         from deploy_version_appbuild_credential
         where proxy_to_url = #{value}
     </select>
 
+    <resultMap id="DeployVersionDeployedInstanceVoMap" type="codedriver.framework.deploy.dto.version.DeployVersionDeployedInstanceVo">
+        <result column="id" property="id"/>
+        <result column="resourceId" property="resourceId"/>
+        <result column="versionId" property="versionId"/>
+        <result column="envId" property="envId"/>
+        <result column="deployUser" property="deployUser"/>
+        <result column="deployTime" property="deployTime"/>
+        <association property="deployUserVo" javaType="codedriver.framework.dto.UserVo">
+            <result property="uuid" column="deployUser"/>
+            <result property="userName" column="deployUserName"/>
+        </association>
+    </resultMap>
+
     <select id="getDeployedInstanceByVersionIdAndEnvId"
-            resultType="codedriver.framework.deploy.dto.version.DeployVersionDeployedInstanceVo">
+            resultMap="DeployVersionDeployedInstanceVoMap">
         select
-            id,
-            resource_id as resourceId,
-            version_id as versionId,
-            env_id as envId,
-            deploy_user as deployUser,
-            deploy_time as deployTime
-        from deploy_version_deployed_instance
-        where version_id = #{versionId} and env_id = #{envId}
+            a.id,
+            a.resource_id as resourceId,
+            a.version_id as versionId,
+            a.env_id as envId,
+            a.deploy_user as deployUser,
+            a.deploy_time as deployTime,
+            b.user_name as deployUserName
+        from deploy_version_deployed_instance a
+        left join `user` b on a.deploy_user = b.uuid
+        where a.version_id = #{versionId} and a.env_id = #{envId}
     </select>
 
     <update id="unFreezeDeployVersionById">
