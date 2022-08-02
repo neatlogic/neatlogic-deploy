@@ -29,18 +29,18 @@ import java.util.Date;
 @Transactional
 @AuthAction(action = DEPLOY_BASE.class)
 @OperationType(type = OperationTypeEnum.UPDATE)
-public class SaveDeployAppConfigAuthorityApi extends PrivateApiComponentBase {
+public class SaveBatchDeployAppConfigAuthorityApi extends PrivateApiComponentBase {
     @Resource
     private DeployAppConfigMapper deployAppConfigMapper;
 
     @Override
     public String getToken() {
-        return "deploy/app/config/authority/save";
+        return "deploy/app/config/authority/batch/save";
     }
 
     @Override
     public String getName() {
-        return "保存应用配置权限";
+        return "批量保存应用配置权限";
     }
 
     @Override
@@ -57,7 +57,7 @@ public class SaveDeployAppConfigAuthorityApi extends PrivateApiComponentBase {
     })
     @Output({
     })
-    @Description(desc = "保存应用配置权限")
+    @Description(desc = "批量保存应用配置权限")
     @Override
     public Object myDoService(JSONObject paramObj) {
         DeployAppConfigAuthorityVo deployAppConfigAuthorityVo = paramObj.toJavaObject(DeployAppConfigAuthorityVo.class);

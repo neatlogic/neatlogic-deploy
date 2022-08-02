@@ -135,51 +135,40 @@ public class SearchDeployAppConfigAuthorityApi extends PrivateApiComponentBase {
                     Long envId = appConfigAuthorityVo.getEnvId();
 
                     //如果环境是所有环境，需要循环现有环境构造数据结构
+                    JSONObject actionAuth = new JSONObject();
+
                     if (envId == 0) {
-                        for (DeployAppEnvironmentVo environmentVo : envList) {
-                            bodyList.add(getActionAuth(environmentVo, appConfigAuthorityVo, authorityList));
+                        actionAuth.put("envName", "所有");
+                    } else {
+                        actionAuth.put("envName", envIdNameMap.get(envId));
+                    }
+
+                    actionAuth.put("envId", envId);
+                    actionAuth.put("authUuid", appConfigAuthorityVo.getAuthUuid());
+                    actionAuth.put("authType", appConfigAuthorityVo.getAuthType());
+
+                    List<String> actionList = appConfigAuthorityVo.getActionList();
+                    //如果是所有权限，需要现有的所有权限
+                    if (actionList.size() == 1 && StringUtils.equals(actionList.get(0), "0")) {
+                        for (Object object : authorityList) {
+                            JSONObject jsonObject = JSONObject.parseObject(object.toString());
+                            actionAuth.put(jsonObject.getString("value"), 1);
                         }
                     } else {
-                        bodyList.add(getActionAuth(new DeployAppEnvironmentVo(envId, envIdNameMap.get(envId)), appConfigAuthorityVo, authorityList));
+                        for (Object object : authorityList) {
+                            JSONObject jsonObject = JSONObject.parseObject(object.toString());
+                            if (appConfigAuthorityVo.getActionList().contains(jsonObject.getString("value"))) {
+                                actionAuth.put(jsonObject.getString("value"), 1);
+                            } else {
+                                actionAuth.put(jsonObject.getString("value"), 0);
+                            }
+                        }
                     }
+                    bodyList.add(actionAuth);
+
                 }
             }
         }
         return TableResultUtil.getResult(finalTheadList, bodyList, searchVo);
-    }
-
-    /**
-     * 构造权限数据结构
-     *
-     * @param deployAppEnvironmentVo 环境
-     * @param appConfigAuthorityVo   权限
-     * @param authorityList          现有权限列表
-     * @return 权限列表
-     */
-    JSONObject getActionAuth(DeployAppEnvironmentVo deployAppEnvironmentVo, DeployAppConfigAuthorityVo appConfigAuthorityVo, JSONArray authorityList) {
-        JSONObject actionAuth = new JSONObject();
-        actionAuth.put("envId", deployAppEnvironmentVo.getId());
-        actionAuth.put("envName", deployAppEnvironmentVo.getName());
-        actionAuth.put("authUuid", appConfigAuthorityVo.getAuthUuid());
-        actionAuth.put("authType", appConfigAuthorityVo.getAuthType());
-
-        List<String> actionList = appConfigAuthorityVo.getActionList();
-        //如果是所有权限，需要现有的所有权限
-        if (actionList.size() == 1 && StringUtils.equals(actionList.get(0), "0")) {
-            for (Object object : authorityList) {
-                JSONObject jsonObject = JSONObject.parseObject(object.toString());
-                actionAuth.put(jsonObject.getString("value"), 1);
-            }
-        } else {
-            for (Object object : authorityList) {
-                JSONObject jsonObject = JSONObject.parseObject(object.toString());
-                if (appConfigAuthorityVo.getActionList().contains(jsonObject.getString("value"))) {
-                    actionAuth.put(jsonObject.getString("value"), 1);
-                } else {
-                    actionAuth.put(jsonObject.getString("value"), 0);
-                }
-            }
-        }
-        return actionAuth;
     }
 }

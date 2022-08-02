@@ -965,19 +965,22 @@
 
     <insert id="insertAppConfigAuthority">
         INSERT INTO `deploy_app_config_authority` (`app_system_id`,
-                                                   `env_id`,
-                                                   `auth_type`,
-                                                   `auth_uuid`,
-                                                   `action`,
-                                                   `lcd`,
-                                                   `lcu`)
-        VALUES (#{appSystemId},
-                #{envId},
-                #{authType},
-                #{authUuid},
-                #{action},
-                #{lcd},
-                #{lcu})
+        `env_id`,
+        `auth_type`,
+        `auth_uuid`,
+        `action`,
+        `lcd`,
+        `lcu`)
+        VALUES
+        <foreach collection="envIdList" separator="," item="envId">
+            (#{appSystemId},
+            #{envId},
+            #{authType},
+            #{authUuid},
+            #{action},
+            #{lcd},
+            #{lcu})
+        </foreach>
         ON DUPLICATE KEY UPDATE `lcd` = #{lcd},
                                 `lcu` = #{lcu};
     </insert>
