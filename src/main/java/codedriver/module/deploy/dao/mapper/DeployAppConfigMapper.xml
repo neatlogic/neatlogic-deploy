@@ -11,17 +11,15 @@
             resultType="java.lang.Long">
         SELECT DISTINCT id from
         (
-        SELECT ra.`id`
-        FROM
-        ${searchVo.schemaName}.resource_appsystem ra
-        left join ${searchVo.schemaName}.`resource_appsystem_appmodule` raa ON raa.resource_id = ra.id
-        left join deploy_app_config_user dacu on ra.id = dacu.app_system_id and dacu.user_uuid = #{userUuid}
+        SELECT a.`id`
+        FROM ${searchVo.schemaName}.`scence_appsystem_appmodule` a
+        left join deploy_app_config_user dacu on a.`id` = dacu.app_system_id and dacu.user_uuid = #{userUuid}
         <if test="searchVo.isConfig != null">
-            left join deploy_app_config dac on ra.id = dac.app_system_id and dac.app_module_id = 0 and dac.env_id = 0
+            left join deploy_app_config dac on a.`id` = dac.app_system_id and dac.app_module_id = 0 and dac.env_id = 0
         </if>
         <where>
             <if test="searchVo.keyword != null and searchVo.keyword != ''">
-                ra.`name` LIKE concat('%', #{searchVo.keyword}, '%') or raa.app_module_name LIKE concat('%',
+                a.`name` LIKE concat('%', #{searchVo.keyword}, '%') or a.`app_module_name` LIKE concat('%',
                 #{searchVo.keyword}, '%')
             </if>
             <choose>
@@ -36,7 +34,7 @@
             </choose>
         </where>
         order by if(dacu.user_uuid = #{userUuid},1,0) desc,
-        CONVERT(ra.abbr_name USING gbk) COLLATE gbk_chinese_ci ASC)a
+        CONVERT(a.`abbr_name` USING gbk) COLLATE gbk_chinese_ci ASC) a
         <if test="searchVo.needPage">
             limit #{searchVo.startNum}, #{searchVo.pageSize}
         </if>
@@ -56,39 +54,39 @@
     </resultMap>
 
     <select id="getAppSystemListByIdList" resultMap="appConfigSystemMap">
-        select ra.id as appSystemId,ra.`name` as appSystemName,ra.`abbr_name` as appSystemNameAbbrName, if(dacu.user_uuid is null,0,1) as isFavorite,
+        select sa.id as appSystemId,sa.`name` as appSystemName,sa.`abbr_name` as appSystemNameAbbrName, if(dacu.user_uuid is null,0,1) as isFavorite,
         if(dac.config is null,0,1) as isConfig
-        from ${schemaName}.resource_appsystem ra
-        left join deploy_app_config_user dacu on ra.id = dacu.app_system_id and dacu.user_uuid = #{userUuid}
-        left join deploy_app_config dac on ra.id = dac.app_system_id and dac.app_module_id = 0 and dac.env_id = 0
-        where ra.id in
+        from ${schemaName}.`scence_appsystem` sa
+        left join deploy_app_config_user dacu on sa.id = dacu.app_system_id and dacu.user_uuid = #{userUuid}
+        left join deploy_app_config dac on sa.id = dac.app_system_id and dac.app_module_id = 0 and dac.env_id = 0
+        where sa.id in
         <foreach collection="idList" item="id" open="(" close=")" separator=",">
             #{id}
         </foreach>
         order by if(dacu.user_uuid = #{userUuid},1,0) desc,
-        CONVERT(ra.abbr_name USING gbk) COLLATE gbk_chinese_ci ASC
+        CONVERT(sa.abbr_name USING gbk) COLLATE gbk_chinese_ci ASC
     </select>
 
     <select id="getAppSystemModuleListBySystemIdList" resultMap="appConfigSystemMap">
-        select ce.id as appSystemId,ce.`name` as appSystemName,
-        raa.app_module_id AS appModuleId,
-        raa.app_module_name AS appModuleName,
-        raa.app_module_abbr_name AS appModuleNameAbbrName
-        from cmdb_cientity ce
-        join ${schemaName}.`resource_appsystem_appmodule` raa on raa.resource_id = ce.id
+        select a.`id` as appSystemId,a.`name` as appSystemName,
+        a.`app_module_id` AS appModuleId,
+        a.`app_module_name` AS appModuleName,
+        a.`app_module_abbr_name` AS appModuleNameAbbrName
+        from ${schemaName}.`scence_appsystem_appmodule` a
         <if test="isConfig != null">
-            left join deploy_app_config dac on ce.id = dac.app_system_id and dac.app_module_id = 0 and dac.env_id = 0
+            left join deploy_app_config b on a.id = b.app_system_id and b.app_module_id = 0 and b.env_id = 0
         </if>
-        where ce.id in
+        where a.`app_module_id` is not null
+        and a.`id` in
         <foreach collection="idList" item="id" open="(" close=")" separator=",">
             #{id}
         </foreach>
         <choose>
             <when test="isConfig != null and isConfig == 1">
-                and dac.`config` is not NULL
+                and b.`config` is not NULL
             </when>
             <when test="isConfig != null and isConfig == 0">
-                and dac.`config` is NULL
+                and b.`config` is NULL
             </when>
             <otherwise>
             </otherwise>
@@ -258,33 +256,32 @@
             resultMap="appEnvMap">
         (
         SELECT
-        rse.env_id AS envId,
-        rse.env_name AS envName,
-        ria.app_module_id AS appModuleId,
-        ria.app_module_name AS appModuleName
-        FROM
-        ${schemaName}.resource_appsystem_appmodule raa
-        JOIN ${schemaName}.resource_ipobject_appmodule ria ON raa.app_module_id = ria.app_module_id
-        JOIN cmdb_cientity cc ON cc.id =ria.resource_id
-        JOIN ${schemaName}.resource_softwareservice_env rse ON ria.resource_id = rse.resource_id
+        a.`env_id` AS envId,
+        a.`env_name` AS envName,
+        a.`app_module_id` AS appModuleId,
+        a.`app_module_name` AS appModuleName
+        FROM ${schemaName}.`scence_appinstance_env_appmodule_appsystem` a
         <where>
-            cc.ci_id IN (
-            SELECT
-            a.`id`
-            FROM
-            `cmdb_ci` a
-            WHERE
-            a.lft &gt;= ( SELECT a.lft FROM `cmdb_ci` a WHERE a.name = 'APPIns' )
-            AND a.rht &lt;= ( SELECT a.rht FROM `cmdb_ci` a WHERE a.name = 'APPIns' ))
-            <if test="appSystemId != null">
-                AND raa.resource_id = #{appSystemId}
-            </if>
-            <if test="appModuleIdList != null and appModuleIdList.size() > 0">
-                and ria.app_module_id in
-                <foreach collection="appModuleIdList" item="id" separator="," open="(" close=")">
-                    #{id}
-                </foreach>
-            </if>
+            a.`env_id` is not null
+            <choose>
+                <when test="appSystemId != null">
+                    AND a.`app_system_id` = #{appSystemId}
+                </when>
+                <otherwise>
+                    and a.`app_system_id` is not null
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="appModuleIdList != null and appModuleIdList.size() > 0">
+                    and a.`app_module_id` in
+                    <foreach collection="appModuleIdList" item="appModuleId" separator="," open="(" close=")">
+                        #{appModuleId}
+                    </foreach>
+                </when>
+                <otherwise>
+                    and a.`app_module_id` is not null
+                </otherwise>
+            </choose>
         </where>
         ) UNION
         (
@@ -315,33 +312,30 @@
             resultType="codedriver.framework.deploy.dto.app.DeployAppEnvironmentVo">
         SELECT a.`id`,
         a.`name`
-        FROM `cmdb_cientity` a
-        JOIN `cmdb_ci` b ON a.ci_id = b.id
-        WHERE b.name = 'APPEnv'
-        AND a.id not in(
+        FROM  ${schemaName}.`scence_env` a
+        where a.id not in(
         (
         SELECT
-        rse.env_id
-        FROM
-        ${schemaName}.resource_appsystem_appmodule raa
-        JOIN ${schemaName}.resource_ipobject_appmodule ria ON raa.app_module_id = ria.app_module_id
-        JOIN cmdb_cientity cc ON cc.id =ria.resource_id
-        JOIN ${schemaName}.resource_softwareservice_env rse ON ria.resource_id = rse.resource_id
+        a.`env_id`
+        FROM ${schemaName}.`scence_appinstance_env_appmodule_appsystem` a
         <where>
-            cc.ci_id IN (
-            SELECT
-            a.`id`
-            FROM
-            `cmdb_ci` a
-            WHERE
-            a.lft &gt;= ( SELECT a.lft FROM `cmdb_ci` a WHERE a.name = 'APPIns' )
-            AND a.rht &lt;= ( SELECT a.rht FROM `cmdb_ci` a WHERE a.name = 'APPIns' ))
-            <if test="appSystemId != null">
-                AND raa.resource_id = #{appSystemId}
-            </if>
-            <if test="appModuleId != null">
-                and ria.app_module_id = #{appModuleId}
-            </if>
+            a.`env_id` is not null
+            <choose>
+                <when test="appSystemId != null">
+                    AND a.`app_system_id` = #{appSystemId}
+                </when>
+                <otherwise>
+                    and a.`app_system_id` is not null
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="appModuleId != null">
+                    and a.`app_module_id` = #{appModuleId}
+                </when>
+                <otherwise>
+                    and a.`app_module_id` is not null
+                </otherwise>
+            </choose>
         </where>
         ) UNION
         (
@@ -366,29 +360,28 @@
     <select id="getCmdbEnvListByAppSystemIdAndModuleId"
             resultType="codedriver.framework.deploy.dto.app.DeployAppEnvironmentVo">
         SELECT distinct
-        rse.env_id AS id,
-        rse.env_name AS name,
+        a.`env_id` AS id,
+        a.`env_name` AS name,
         0 AS isDeletable
-        FROM
-        ${schemaName}.resource_appsystem_appmodule raa
-        JOIN ${schemaName}.resource_ipobject_appmodule ria ON raa.app_module_id = ria.app_module_id
-        JOIN cmdb_cientity cc ON cc.id = ria.resource_id
-        JOIN ${schemaName}.resource_softwareservice_env rse ON ria.resource_id = rse.resource_id
+        FROM ${schemaName}.`scence_appinstance_env_appmodule_appsystem` a
         <where>
-        cc.ci_id IN (
-        SELECT
-        a.`id`
-        FROM
-        `cmdb_ci` a
-        WHERE
-        a.lft &gt;= ( SELECT a.lft FROM `cmdb_ci` a WHERE a.name = 'APPIns' )
-        AND a.rht &lt;= ( SELECT a.rht FROM `cmdb_ci` a WHERE a.name = 'APPIns' ))
-        <if test="appSystemId != null">
-            AND raa.resource_id = #{appSystemId}
-        </if>
-        <if test="appModuleId != null">
-            and ria.app_module_id = #{appModuleId}
-        </if>
+            a.`env_id` is not null
+            <choose>
+                <when test="appSystemId != null">
+                    AND a.`app_system_id` = #{appSystemId}
+                </when>
+                <otherwise>
+                    AND a.app_system_id is not null
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="appModuleId != null">
+                    and a.`app_module_id` = #{appModuleId}
+                </when>
+                <otherwise>
+                    and a.`app_module_id` is not null
+                </otherwise>
+            </choose>
         </where>
     </select>
 
@@ -416,30 +409,29 @@
             resultType="java.lang.Long">
         (
         SELECT
-        ria.app_module_id
-        FROM
-        ${schemaName}.resource_appsystem_appmodule raa
-        JOIN ${schemaName}.resource_ipobject_appmodule ria ON raa.app_module_id = ria.app_module_id
-        JOIN cmdb_cientity cc ON cc.id = ria.resource_id
-        JOIN ${schemaName}.resource_softwareservice_env rse ON ria.resource_id = rse.resource_id
+        a.`app_module_id`
+        FROM ${schemaName}.`scence_appinstance_env_appmodule_appsystem` a
         <where>
-            cc.ci_id IN (
-            SELECT
-            a.`id`
-            FROM
-            `cmdb_ci` a
-            WHERE
-            a.lft &gt;= ( SELECT a.lft FROM `cmdb_ci` a WHERE a.name = 'APPIns' )
-            AND a.rht &lt;= ( SELECT a.rht FROM `cmdb_ci` a WHERE a.name = 'APPIns' ))
-            <if test="appSystemId != null">
-                AND raa.resource_id = #{appSystemId}
-            </if>
-            <if test="appModuleIdList != null and appModuleIdList.size() > 0">
-                and ria.app_module_id in
-                <foreach collection="appModuleIdList" item="appModuleId" open="(" close=")" separator=",">
-                    #{appModuleId}
-                </foreach>
-            </if>
+            a.`env_id` IS NOT NULL
+            <choose>
+                <when test="appSystemId != null">
+                    AND a.`app_system_id` = #{appSystemId}
+                </when>
+                <otherwise>
+                    and a.`app_system_id` IS NOT NULL
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="appModuleIdList != null and appModuleIdList.size() > 0">
+                    and a.`app_module_id` in
+                    <foreach collection="appModuleIdList" item="appModuleId" open="(" close=")" separator=",">
+                        #{appModuleId}
+                    </foreach>
+                </when>
+                <otherwise>
+                    and a.`app_module_id` IS NOT NULL
+                </otherwise>
+            </choose>
         </where>
         ) UNION
         (
@@ -551,15 +543,12 @@
     </select>
 
     <sql id="searchAppModuleEnvConfigInstance">
-        FROM ${schemaName}.resource_appsystem_appmodule raa
-        JOIN ${schemaName}.resource_ipobject_appmodule ria ON raa.app_module_id = ria.app_module_id
-        JOIN ${schemaName}.resource_softwareservice_env rse ON ria.resource_id = rse.resource_id
-        JOIN ${schemaName}.resource_appinstance ra ON ra.id = rse.resource_id
-        WHERE raa.resource_id = #{searchVo.appSystemId}
-        AND ria.app_module_id = #{searchVo.appModuleId}
-        AND rse.env_id = #{searchVo.envId}
+        FROM ${schemaName}.`scence_appinstance_env_appmodule_appsystem` a
+        WHERE a.`app_system_id` = #{searchVo.appSystemId}
+        AND a.`app_module_id` = #{searchVo.appModuleId}
+        AND a.`env_id` = #{searchVo.envId}
         <if test="searchVo.isAutoConfig != null">
-            AND rse.resource_id
+            AND a.`id`
             <if test="searchVo.isAutoConfig == 1">
                 in
             </if>
@@ -567,7 +556,7 @@
                 not in
             </if>
             (select `instance_id`
-            from deploy_app_env_auto_config
+            from `deploy_app_env_auto_config`
             WHERE `app_system_id` = #{searchVo.appSystemId}
             and `app_module_id` = #{searchVo.appModuleId}
             and `env_id` = #{searchVo.envId})
@@ -575,60 +564,55 @@
     </sql>
 
     <select id="getAppModuleEnvAutoConfigInstanceIdCount" resultType="int">
-        SELECT count(rse.resource_id)
+        SELECT count(a.id)
         <include refid="searchAppModuleEnvConfigInstance"></include>
     </select>
 
     <select id="getAppModuleEnvAutoConfigInstanceIdList" resultType="java.lang.Long">
-        SELECT rse.resource_id
+        SELECT a.id
         <include refid="searchAppModuleEnvConfigInstance"></include>
-        ORDER BY rse.resource_id DESC
+        ORDER BY a.id DESC
         LIMIT #{searchVo.startNum}, #{searchVo.pageSize}
     </select>
 
     <select id="getAppConfigEnvInstanceCount" resultType="int">
-        SELECT count(ra.id)
-        FROM resource_appinstance ra
-        LEFT JOIN resource_softwareservice_env rse ON rse.resource_id = ra.id
-        LEFT JOIN resource_ipobject_appmodule ria ON ria.resource_id = ra.id
+        SELECT count(a.`id`)
+        FROM `scence_appinstance_ip_port_env_appmodule` a
         WHERE
-        ( ria.app_module_id IS NULL AND rse.env_id IS NULL )
-        OR ( ria.app_module_id IS NULL AND rse.env_id = #{envId} )
-        OR (ria.app_module_id = #{appModuleId} AND rse.env_id IS NULL)
+        ( a.`app_module_id` IS NULL AND a.`env_id` IS NULL )
+        OR ( a.`app_module_id` IS NULL AND a.`env_id` = #{envId} )
+        OR (a.`app_module_id` = #{appModuleId} AND a.`env_id` IS NULL)
         <if test="keyword != null and keyword != ''">
-            AND ra.`ip` LIKE concat('%', #{keyword}, '%') or ra.`port` LIKE concat('%', #{keyword},'%')
+            AND a.`ip` LIKE concat('%', #{keyword}, '%') or a.`port` LIKE concat('%', #{keyword},'%')
         </if>
     </select>
 
     <select id="searchAppConfigEnvInstanceList"
             resultType="codedriver.framework.deploy.dto.app.DeployAppConfigInstanceVo">
-        SELECT ra.id,
-        ra.ip,
-        ra.port,
-        ra.name
-        FROM resource_appinstance ra
-        LEFT JOIN resource_softwareservice_env rse ON rse.resource_id = ra.id
-        LEFT JOIN resource_ipobject_appmodule ria ON ria.resource_id = ra.id
+        SELECT a.`id`,
+        a.`ip`,
+        a.`port`,
+        a.`name`
+        FROM `scence_appinstance_ip_port_env_appmodule` a
         WHERE
-        ( ria.app_module_id IS NULL AND rse.env_id IS NULL )
-        OR ( ria.app_module_id IS NULL AND rse.env_id = #{envId} )
-        OR (ria.app_module_id = #{appModuleId} AND rse.env_id IS NULL)
+        ( a.`app_module_id` IS NULL AND a.`env_id` IS NULL )
+        OR ( a.`app_module_id` IS NULL AND a.`env_id` = #{envId} )
+        OR (a.`app_module_id` = #{appModuleId} AND a.`env_id` IS NULL)
         <if test="keyword != null and keyword != ''">
-            AND ra.`ip` LIKE concat('%', #{keyword}, '%') or ra.`port` LIKE concat('%', #{keyword},'%')
+            AND a.`ip` LIKE concat('%', #{keyword}, '%') or a.`port` LIKE concat('%', #{keyword},'%')
         </if>
-        ORDER BY ra.id DESC
+        ORDER BY a.`id` DESC
         LIMIT #{startNum}, #{pageSize}
     </select>
 
     <select id="getAppSystemIdListCount" resultType="java.lang.Integer">
-        SELECT count(distinct ra.`id`) FROM ${schemaName}.`resource_appsystem` ra
-        left join ${schemaName}.`resource_appsystem_appmodule` raa on raa.resource_id = ra.id
+        SELECT count(distinct a.`id`) FROM ${schemaName}.`scence_appsystem_appmodule` a
         <if test="isConfig != null">
-            left join deploy_app_config dac on ra.id = dac.app_system_id and dac.app_module_id = 0 and dac.env_id = 0
+            left join deploy_app_config b on a.`id` = b.`app_system_id` and b.`app_module_id` = 0 and b.`env_id` = 0
         </if>
         <where>
             <if test="keyword != null and keyword != ''">
-                ra.`name` LIKE concat('%', #{keyword}, '%') or raa.app_module_name LIKE concat('%', #{keyword}, '%')
+                a.`name` LIKE concat('%', #{keyword}, '%') or a.`app_module_name` LIKE concat('%', #{keyword}, '%')
             </if>
             <choose>
                 <when test="isConfig != null and isConfig == 1">
@@ -788,28 +772,25 @@
     </resultMap>
 
     <select id="getAppConfigEnvDatabaseCount" parameterType="java.lang.String" resultType="java.lang.Integer">
-        SELECT count(rd.id)
+        SELECT count(a.id)
         <include refid="searchDatabase"></include>
     </select>
     <sql id="searchDatabase">
-        FROM ${schemaName}.resource_database rd
-        LEFT JOIN ${schemaName}.resource_database_appmodule rda ON rda.resource_id = rd.id
-        LEFT JOIN ${schemaName}.resource_softwareservice_env rse ON rse.resource_id = rd.id
-
+        FROM ${schemaName}.`scence_database_env_appmodule` a
         <where>
-            (rse.env_id = #{searchVo.envId} OR rse.env_id IS NULL)
+            (a.env_id = #{searchVo.envId} OR a.env_id IS NULL)
             AND (
-            rda.app_module_id = #{searchVo.appModuleId}
-            OR rda.app_module_id IS NULL
+            a.app_module_id = #{searchVo.appModuleId}
+            OR a.app_module_id IS NULL
             )
             <if test="searchVo.defaultValue != null and searchVo.defaultValue.size() > 0">
-                AND rd.`id` IN
+                AND a.`id` IN
                 <foreach collection="searchVo.defaultValue" item="id" open="(" separator="," close=")">
                     #{id}
                 </foreach>
             </if>
             <if test="searchVo.notInIdList != null and searchVo.notInIdList.size() > 0">
-                AND rd.`id` NOT IN
+                AND a.`id` NOT IN
                 <foreach collection="searchVo.notInIdList" item="id" open="(" separator="," close=")">
                     #{id}
                 </foreach>
@@ -818,7 +799,7 @@
     </sql>
 
     <select id="getAppConfigEnvDatabaseResourceIdList" parameterType="java.lang.String" resultType="java.lang.Long">
-        SELECT rd.id
+        SELECT a.id
         <include refid="searchDatabase"></include>
         <if test="searchVo.needPage">
             LIMIT #{searchVo.startNum}, #{searchVo.pageSize}
@@ -829,22 +810,13 @@
             resultType="java.lang.Long">
         (
         SELECT
-        raa.resource_id as id
+        a.`app_system_id` as id
         FROM
-        ${schemaName}.resource_appsystem_appmodule raa
-        JOIN ${schemaName}.resource_ipobject_appmodule ria ON raa.app_module_id = ria.app_module_id
-        JOIN cmdb_cientity cc ON cc.id = ria.resource_id
-        JOIN ${schemaName}.resource_softwareservice_env rse ON ria.resource_id = rse.resource_id
+        ${schemaName}.`scence_appinstance_env_appmodule_appsystem` a
         <where>
-            cc.ci_id IN (
-            SELECT
-            a.`id`
-            FROM
-            `cmdb_ci` a
-            WHERE
-            a.lft &gt;= ( SELECT a.lft FROM `cmdb_ci` a WHERE a.name = 'APPIns' )
-            AND a.rht &lt;= ( SELECT a.rht FROM `cmdb_ci` a WHERE a.name = 'APPIns' ))
-            and raa.resource_id in
+            a.`env_id` is not null
+            and a.`app_module_id` is not null
+            and a.`app_system_id` in
             <foreach collection="idList" item="id" separator="," open="(" close=")">
                 #{id}
             </foreach>
@@ -931,23 +903,41 @@
 
     <select id="getAppModuleListBySystemIdAndEnvId"
             resultType="codedriver.framework.deploy.dto.app.DeployAppModuleVo">
-        SELECT distinct raa.app_module_id        as id,
-                        raa.app_module_name      as name,
-                        raa.app_module_abbr_name as abbrName
-        FROM ${schemaName}.resource_appsystem_appmodule raa
-                 LEFT JOIN ${schemaName}.resource_ipobject_appmodule ria ON ria.app_module_id = raa.app_module_id
-                 LEFT JOIN ${schemaName}.resource_softwareservice_env rse ON rse.resource_id = ria.resource_id
-        WHERE raa.resource_id = #{appSystemId}
-          AND rse.env_id = #{envId}
+        (SELECT sieaa.app_module_id        as id,
+                sieaa.app_module_name      as name,
+                sieaa.app_module_abbr_name as abbrName
+         FROM ${schemaName}.scence_ipobject_env_appmodule_appsystem sieaa
+         WHERE sieaa.app_system_id = #{appSystemId}
+           AND sieaa.env_id = #{envId}
+           AND sieaa.`app_module_id` IS NOT NULL)
+        union
+        (
+            SELECT dace.app_module_id as id,
+                   ra.name,
+                   ra.abbr_name   as abbrName
+            FROM deploy_app_config_env dace
+                     LEFT JOIN ${schemaName}.resource_appmodule ra ON ra.id = dace.app_module_id
+            WHERE dace.app_system_id = #{appSystemId}
+              AND dace.env_id = #{envId}
+        )
     </select>
 
     <select id="getAppModuleCountBySystemIdAndEnvId" resultType="java.lang.Integer">
-        SELECT count(distinct raa.app_module_id)
-        FROM ${schemaName}.resource_appsystem_appmodule raa
-                 LEFT JOIN ${schemaName}.resource_ipobject_appmodule ria ON ria.app_module_id = raa.app_module_id
-                 LEFT JOIN ${schemaName}.resource_softwareservice_env rse ON rse.resource_id = ria.resource_id
-        WHERE raa.resource_id = #{appSystemId}
-          AND rse.env_id = #{envId}
+        select count(a.app_module_id)
+        from ((SELECT sieaa.app_module_id
+               FROM ${schemaName}.scence_ipobject_env_appmodule_appsystem sieaa
+               WHERE sieaa.app_system_id = #{appSystemId}
+                 AND sieaa.env_id = #{envId}
+                 AND sieaa.`app_module_id` IS NOT NULL)
+            union
+              (
+                  SELECT dace.app_module_id
+                  FROM deploy_app_config_env dace
+                           LEFT JOIN ${schemaName}.resource_appmodule ra ON ra.id = dace.app_module_id
+                  WHERE dace.app_system_id = #{appSystemId}
+                    AND dace.env_id = #{envId}
+              )) a
+
     </select>
 
     <select id="getAppEnvAutoConfigBySystemIdAndModuleIdAndEnvId"

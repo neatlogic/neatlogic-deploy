@@ -72,7 +72,7 @@ public class CreateDeployJobApi extends PrivateApiComponentBase {
             @Param(name = "moduleList", type = ApiParamType.JSONARRAY, isRequired = true, desc = "模块列表"),
             @Param(name = "envId", type = ApiParamType.LONG, desc = "环境id"),
             @Param(name = "envName", type = ApiParamType.STRING, desc = "环境id，如果入参也有envId，则会以envName为准"),
-            @Param(name = "param", type = ApiParamType.JSONOBJECT, isRequired = true, desc = "执行参数"),
+            @Param(name = "param", type = ApiParamType.JSONOBJECT, desc = "执行参数"),
             @Param(name = "source", type = ApiParamType.STRING, desc = "来源 itsm|human|deploy   ITSM|人工发起的等，不传默认是发布发起的"),
             @Param(name = "roundCount", type = ApiParamType.LONG, isRequired = true, desc = "分组数 "),
             @Param(name = "executeConfig", type = ApiParamType.JSONOBJECT, desc = "执行目标"),
@@ -122,9 +122,6 @@ public class CreateDeployJobApi extends PrivateApiComponentBase {
     private void convertParam(JSONObject jsonObj) {
         if (jsonObj.containsKey("sysName")) {
             jsonObj.put("appSystemName", jsonObj.getString("sysName"));
-        }
-        if (jsonObj.containsKey("parentJobId")) {
-            jsonObj.put("parentId", jsonObj.getLong("parentJobId"));
         }
     }
 
