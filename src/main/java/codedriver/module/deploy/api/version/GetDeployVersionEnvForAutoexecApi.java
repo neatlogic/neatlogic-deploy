@@ -92,7 +92,7 @@ public class GetDeployVersionEnvForAutoexecApi extends PrivateApiComponentBase {
             }
             UserContext.init(credentialUser, "+8:00");
             UserContext.get().setToken("GZIP_" + LoginAuthHandlerBase.buildJwt(credentialUser).getCc());
-            String url = baseUrl + "/codedriver/api/rest/deploy/version/env/get/forautoexec";
+            String url = baseUrl + "/codedriver/api/rest/" + this.getToken();
             HttpRequestUtil httpRequestUtil = HttpRequestUtil.post(url)
                     .setPayload(paramObj.toJSONString()).setAuthType(AuthenticateType.BUILDIN)
                     .sendRequest();
