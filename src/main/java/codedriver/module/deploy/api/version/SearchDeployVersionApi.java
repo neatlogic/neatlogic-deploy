@@ -1,14 +1,19 @@
 package codedriver.module.deploy.api.version;
 
+import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.dto.BasePageVo;
 import codedriver.framework.deploy.auth.DEPLOY_BASE;
+import codedriver.framework.deploy.constvalue.VersionEnvStatus;
+import codedriver.framework.deploy.dto.app.DeployAppEnvironmentVo;
+import codedriver.framework.deploy.dto.version.DeployVersionEnvVo;
 import codedriver.framework.deploy.dto.version.DeployVersionVo;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.framework.util.TableResultUtil;
+import codedriver.module.deploy.dao.mapper.DeployAppConfigMapper;
 import codedriver.module.deploy.dao.mapper.DeployVersionMapper;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
@@ -16,7 +21,10 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * @author longrf
@@ -29,6 +37,9 @@ public class SearchDeployVersionApi extends PrivateApiComponentBase {
 
     @Resource
     DeployVersionMapper deployVersionMapper;
+
+    @Resource
+    DeployAppConfigMapper deployAppConfigMapper;
 
     @Override
     public String getName() {
@@ -62,17 +73,43 @@ public class SearchDeployVersionApi extends PrivateApiComponentBase {
     @Description(desc = "查询发布版本列表")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
-        DeployVersionVo versionVo = paramObj.toJavaObject(DeployVersionVo.class);
-        List<DeployVersionVo> returnList = new ArrayList<>();
+        DeployVersionVo paramVersionVo = paramObj.toJavaObject(DeployVersionVo.class);
+        List<DeployVersionVo> returnVersionList = new ArrayList<>();
 
-        int count = deployVersionMapper.searchDeployVersionCount(versionVo);
+        int count = deployVersionMapper.searchDeployVersionCount(paramVersionVo);
         if (count > 0) {
-            versionVo.setRowNum(count);
-            List<Long> idList = deployVersionMapper.getDeployVersionIdList(versionVo);
+            paramVersionVo.setRowNum(count);
+            List<Long> idList = deployVersionMapper.getDeployVersionIdList(paramVersionVo);
             if (CollectionUtils.isNotEmpty(idList)) {
-                returnList = deployVersionMapper.getDeployVersionByIdList(idList);
+                returnVersionList = deployVersionMapper.getDeployVersionByIdList(idList);
+                //补充版本的环境
+                for (DeployVersionVo returnVersion : returnVersionList) {
+                    List<DeployVersionEnvVo> returnVersionEnvList = new ArrayList<>();
+                    List<DeployVersionEnvVo> versionEnvVoList = deployVersionMapper.getDeployVersionEnvByVersionId(returnVersion.getId());
+                    Map<Long, DeployVersionEnvVo> versionEnvVoMap = new HashMap<>();
+                    if (CollectionUtils.isNotEmpty(versionEnvVoList)) {
+                        versionEnvVoMap = versionEnvVoList.stream().collect(Collectors.toMap(DeployVersionEnvVo::getEnvId, e -> e));
+                    }
+                    List<Long> moduleIdList = new ArrayList<>();
+                    moduleIdList.add(returnVersion.getAppModuleId());
+                    List<DeployAppEnvironmentVo> allEnvList = deployAppConfigMapper.getDeployAppEnvListByAppSystemIdAndModuleIdList(returnVersion.getAppSystemId(), moduleIdList, TenantContext.get().getDataDbName());
+                    if (CollectionUtils.isNotEmpty(allEnvList)) {
+                        for (DeployAppEnvironmentVo deployEnvVo : allEnvList) {
+                            DeployVersionEnvVo returnVersionEnvVo = null;
+                            if (versionEnvVoMap.containsKey(deployEnvVo.getId())) {
+                                DeployVersionEnvVo versionEnvVo = versionEnvVoMap.get(deployEnvVo.getId());
+                                returnVersionEnvVo = new DeployVersionEnvVo(returnVersion.getId(), deployEnvVo.getId(), deployEnvVo.getName(), versionEnvVo.getStatus(), versionEnvVo.getIsMirror(), versionEnvVo.getBuildNo());
+                            } else {
+                                returnVersionEnvVo = new DeployVersionEnvVo(returnVersion.getId(), deployEnvVo.getId(), deployEnvVo.getName(), VersionEnvStatus.PENDING.getValue());
+                            }
+                            returnVersionEnvList.add(returnVersionEnvVo);
+                        }
+                    }
+                    returnVersion.setEnvList(returnVersionEnvList);
+                }
+
             }
         }
-        return TableResultUtil.getResult(returnList, versionVo);
+        return TableResultUtil.getResult(returnVersionList, paramVersionVo);
     }
 }

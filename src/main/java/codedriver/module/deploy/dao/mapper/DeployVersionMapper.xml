@@ -133,13 +133,6 @@
             <result column="buildNo" property="buildNo"/>
             <result column="buildNoStatus" property="status"/>
         </collection>
-        <collection property="envList" ofType="codedriver.framework.deploy.dto.version.DeployVersionEnvVo">
-            <id column="envId" property="envId"/>
-            <result column="envName" property="envName"/>
-            <result column="envBuildNo" property="buildNo"/>
-            <result column="isMirror" property="isMirror"/>
-            <result column="envStatus" property="status"/>
-        </collection>
     </resultMap>
 
     <select id="getDeployVersionByIdList" resultMap="deployVersionMap">
@@ -153,19 +146,13 @@
         dv.is_freeze as isFreeze,
         dvb.build_no as buildNo,
         dvb.status as buildNoStatus,
-        dve.env_id as envId,
-        cc.name as envName,
-        dve.status as envStatus,
-        dve.is_mirror as isMirror,
-        dve.build_no as envBuildNo,
         dv.fcu,
         dv.fcd,
         dv.lcu,
         dv.lcd
         from deploy_version dv
         left join deploy_version_buildno dvb on dvb.version_id = dv.id
-        left join deploy_version_env dve on dve.version_id = dv.id
-        left join cmdb_cientity cc on cc.id = dve.env_id left join cmdb_cientity cci on cci.id = dv.app_system_id
+        left join cmdb_cientity cci on cci.id = dv.app_system_id
         left join cmdb_cientity cce on cce.id = dv.app_module_id
         where dv.id IN
         <foreach collection="list" item="id" open="(" separator="," close=")">
@@ -407,6 +394,19 @@
           and build_no = #{buildNo}
     </select>
 
+    <select id="getDeployVersionEnvByVersionId"
+            resultType="codedriver.framework.deploy.dto.version.DeployVersionEnvVo">
+        select version_id    as versionId,
+               env_id        as envId,
+               job_id        as jobId,
+               status        as status,
+               runner_map_id as runnerMapId,
+               runner_group  as runnerGroupStr,
+               build_no      as buildNo,
+               is_mirror     as isMirror
+        from deploy_version_env
+        where version_id = #{id}
+    </select>
 
     <resultMap id="DeployVersionDependencyMap" type="codedriver.framework.deploy.dto.version.DeployVersionDependencyVo">
         <result column="id" property="id"/>
