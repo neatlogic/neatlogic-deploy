@@ -19,8 +19,8 @@
         </if>
         <where>
             <if test="searchVo.keyword != null and searchVo.keyword != ''">
-                a.`name` LIKE concat('%', #{searchVo.keyword}, '%') or a.`app_module_name` LIKE concat('%',
-                #{searchVo.keyword}, '%')
+                a.`name` LIKE concat('%', #{searchVo.keyword}, '%') or a.`app_module_name` LIKE concat('%', #{searchVo.keyword}, '%')
+                or a.`abbr_name` LIKE concat('%', #{searchVo.keyword}, '%')or a.`app_module_abbr_name` LIKE concat('%', #{searchVo.keyword}, '%')
             </if>
             <choose>
                 <when test="searchVo.isConfig != null and searchVo.isConfig == 1">
@@ -53,8 +53,34 @@
         </collection>
     </resultMap>
 
-    <select id="getAppSystemListByIdList" resultMap="appConfigSystemMap">
-        select sa.id as appSystemId,sa.`name` as appSystemName,sa.`abbr_name` as appSystemNameAbbrName, if(dacu.user_uuid is null,0,1) as isFavorite,
+    <select id="getAppSystemListIncludeModuleByIdList" resultMap="appConfigSystemMap">
+        select
+        saa.id as appSystemId,
+        saa.`name` as appSystemName,
+        saa.`abbr_name` as appSystemNameAbbrName,
+        saa.app_module_id as appModuleId,
+        saa.`app_module_name` as appModuleName,
+        saa.`app_module_abbr_name` as appModuleNameAbbrName,
+        if(dacu.user_uuid is null,0,1) as isFavorite,
+        if(dac.config is null,0,1) as isConfig
+        from ${schemaName}.`scence_appsystem_appmodule` saa
+        left join deploy_app_config_user dacu on saa.id = dacu.app_system_id and dacu.user_uuid = #{userUuid}
+        left join deploy_app_config dac on saa.id = dac.app_system_id and dac.app_module_id = 0 and dac.env_id = 0
+        where saa.id in
+        <foreach collection="idList" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+        order by if(dacu.user_uuid = #{userUuid},1,0) desc,
+        CONVERT(saa.abbr_name USING gbk) COLLATE gbk_chinese_ci ASC,
+        CONVERT(saa.app_module_abbr_name USING gbk) COLLATE gbk_chinese_ci ASC
+    </select>
+
+    <select id="getAppSystemListByIdList" resultType="codedriver.framework.deploy.dto.app.DeployAppSystemVo">
+        select
+        sa.id as id,
+        sa.`name` as name,
+        sa.`abbr_name` as abbrName,
+        if(dacu.user_uuid is null,0,1) as isFavorite,
         if(dac.config is null,0,1) as isConfig
         from ${schemaName}.`scence_appsystem` sa
         left join deploy_app_config_user dacu on sa.id = dacu.app_system_id and dacu.user_uuid = #{userUuid}
@@ -613,6 +639,7 @@
         <where>
             <if test="keyword != null and keyword != ''">
                 a.`name` LIKE concat('%', #{keyword}, '%') or a.`app_module_name` LIKE concat('%', #{keyword}, '%')
+                or a.`abbr_name` LIKE concat('%', #{keyword}, '%')or a.`app_module_abbr_name` LIKE concat('%', #{keyword}, '%')
             </if>
             <choose>
                 <when test="isConfig != null and isConfig == 1">
