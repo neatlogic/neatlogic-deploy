@@ -540,10 +540,10 @@
         <if test="isCompiled != null">
             <choose>
                 <when test="isCompiled == 1">
-                    complied_count = compiled_count + 1,
+                    complie_success_count = complie_success_count + 1,
                 </when>
                 <otherwise>
-                    complie_failed_count = complie_failed_count + 1,
+                    complie_fail_count = complie_fail_count + 1,
                 </otherwise>
             </choose>
         </if>
