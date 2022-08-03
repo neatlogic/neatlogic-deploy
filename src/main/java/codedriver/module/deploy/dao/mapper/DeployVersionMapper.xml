@@ -905,11 +905,11 @@
             #{resourceId},
             #{versionId},
             #{envId},
-            #{lcu},
-            #{lcd}
+            #{deployUser},
+            #{deployTime}
         ) ON DUPLICATE KEY UPDATE
-            lcu = #{lcu},
-            lcd = #{lcd}
+            lcu = #{deployUser},
+            lcd = #{deployTime}
     </insert>
 
     <delete id="deleteDeployVersionById">
