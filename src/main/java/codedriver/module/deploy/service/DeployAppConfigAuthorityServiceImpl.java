@@ -1,36 +1,38 @@
 package codedriver.module.deploy.service;
 
-import codedriver.framework.autoexec.dto.combop.AutoexecCombopScenarioVo;
+import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.deploy.constvalue.DeployAppConfigAction;
 import codedriver.framework.deploy.dto.app.DeployAppConfigVo;
 import codedriver.framework.deploy.dto.app.DeployPipelineConfigVo;
-import com.alibaba.fastjson.JSONArray;
+import codedriver.framework.deploy.exception.DeployAppConfigNotFoundException;
+import codedriver.module.deploy.dao.mapper.DeployAppConfigMapper;
 import com.alibaba.fastjson.JSONObject;
-import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 
 @Service
 public class DeployAppConfigAuthorityServiceImpl implements DeployAppConfigAuthorityService {
 
-
     @Resource
     private DeployAppPipelineService deployAppPipelineService;
 
-    @Override
-    public JSONArray getAuthorityListBySystemId(Long appSystemId) {
-        JSONArray resultArray = DeployAppConfigAction.getValueTextList();
-        DeployPipelineConfigVo pipelineConfigVo = deployAppPipelineService.getDeployPipelineConfigVo(new DeployAppConfigVo(appSystemId));
+    @Resource
+    private DeployAppConfigMapper deployAppConfigMapper;
 
-        if(CollectionUtils.isNotEmpty(pipelineConfigVo.getScenarioList())){
-            for (AutoexecCombopScenarioVo scenarioVo : pipelineConfigVo.getScenarioList()) {
-                JSONObject scenarioKeyValue = new JSONObject();
-                scenarioKeyValue.put("value", scenarioVo.getScenarioName());
-                scenarioKeyValue.put("text", scenarioVo.getScenarioName());
-                resultArray.add(scenarioKeyValue);
-            }
+    @Override
+    public JSONObject getAuthorityListBySystemId(Long appSystemId) {
+        JSONObject returnObj = new JSONObject();
+        returnObj.put("operationAuthList", DeployAppConfigAction.getValueTextList());
+        DeployPipelineConfigVo pipelineConfigVo = deployAppPipelineService.getDeployPipelineConfigVo(new DeployAppConfigVo(appSystemId));
+        if (pipelineConfigVo == null) {
+            throw new DeployAppConfigNotFoundException(appSystemId);
         }
-        return resultArray;
+        returnObj.put("scenarioAuthList", pipelineConfigVo.getScenarioList());
+
+        returnObj.put("envAuthList", deployAppConfigMapper.getDeployAppEnvListByAppSystemIdAndModuleIdList(appSystemId, new ArrayList<>(), TenantContext.get().getDataDbName()));
+
+        return returnObj;
     }
 }

@@ -1,6 +1,6 @@
 package codedriver.module.deploy.service;
 
-import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 
 public interface DeployAppConfigAuthorityService {
 
@@ -9,5 +9,5 @@ public interface DeployAppConfigAuthorityService {
      * @param appSystemId 系统id
      * @return 权限列表
      */
-    JSONArray getAuthorityListBySystemId(Long appSystemId);
+    JSONObject getAuthorityListBySystemId(Long appSystemId);
 }

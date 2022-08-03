@@ -193,7 +193,7 @@
         </collection>
     </resultMap>
     <select id="getAppConfigAuthorityDetailList" resultMap="appConfigAuthorityMap">
-        select app_system_id,env_id,auth_type,auth_uuid,`action`
+        select app_system_id,env_id,auth_type,auth_uuid,`action`,action_type
         from deploy_app_config_authority
         where
         <foreach collection="appConfigAuthList" item="appConfigAuth" open="(" separator=")or(" close=")">
@@ -959,6 +959,7 @@
         `auth_type`,
         `auth_uuid`,
         `action`,
+        `action_type`,
         `lcd`,
         `lcu`)
         VALUES
@@ -968,6 +969,7 @@
             #{authType},
             #{authUuid},
             #{action},
+            #{authorityActionType},
             #{lcd},
             #{lcu})
         </foreach>

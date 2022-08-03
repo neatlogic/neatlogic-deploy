@@ -50,8 +50,8 @@ public class SaveDeployAppConfigAuthorityApi extends PrivateApiComponentBase {
 
     @Input({
             @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "应用资产id"),
-            @Param(name = "envIdList", type = ApiParamType.JSONARRAY, isRequired = true, desc = "环境资产id"),
-            @Param(name = "authorityStrList", type = ApiParamType.JSONARRAY, isRequired = true, desc = "授权用户列表"),
+            @Param(name = "authorityActionType", type = ApiParamType.STRING, isRequired = true, desc = "授权操作类型"),
+            @Param(name = "authorityStrList", type = ApiParamType.JSONARRAY, isRequired = true, desc = "授权列表"),
             @Param(name = "actionList", type = ApiParamType.JSONARRAY, isRequired = true, minSize = 1, desc = "授权操作列表"),
             @Param(name = "isEdit", type = ApiParamType.INTEGER, isRequired = true, desc = "是否编辑，0：否，1：是"),
     })
