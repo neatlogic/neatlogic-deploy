@@ -3,6 +3,7 @@ package codedriver.module.deploy.api.version;
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.deploy.auth.DEPLOY_MODIFY;
+import codedriver.framework.deploy.constvalue.BuildNoStatus;
 import codedriver.framework.deploy.dto.version.DeployVersionBuildNoVo;
 import codedriver.framework.deploy.dto.version.DeployVersionVo;
 import codedriver.framework.deploy.exception.DeployVersionBuildNoNotFoundException;
@@ -67,23 +68,30 @@ public class UpdateDeployVersionInfoForAutoexecApi extends PrivateApiComponentBa
         if (versionVo == null) {
             throw new DeployVersionNotFoundException(version);
         }
-        DeployVersionVo updateVo = verInfo.toJavaObject(DeployVersionVo.class);
-        updateVo.setId(versionVo.getId());
-        updateVo.setRunnerMapId(runnerId);
-        updateVo.setRunnerGroup(runnerGroup);
-        deployVersionMapper.updateDeployVersionInfoById(updateVo);
-        DeployVersionBuildNoVo buildNoVo = deployVersionMapper.getDeployVersionBuildNoByVersionIdAndBuildNo(versionVo.getId(), buildNo);
-        if (buildNoVo == null) {
-            throw new DeployVersionBuildNoNotFoundException(versionVo.getVersion(), buildNo);
-        }
+        String status = verInfo.getString("status");
         DeployVersionBuildNoVo updateBuildNo = new DeployVersionBuildNoVo();
         updateBuildNo.setVersionId(versionVo.getId());
         updateBuildNo.setRunnerMapId(runnerId);
         updateBuildNo.setRunnerGroup(runnerGroup);
         updateBuildNo.setBuildNo(buildNo);
         updateBuildNo.setEndRev(verInfo.getString("endRev"));
-        updateBuildNo.setStatus(verInfo.getString("status"));
+        updateBuildNo.setStatus(status);
         deployVersionMapper.updateDeployVersionBuildNoByVersionIdAndBuildNo(updateBuildNo);
+
+        DeployVersionVo updateVo = verInfo.toJavaObject(DeployVersionVo.class);
+        updateVo.setId(versionVo.getId());
+        updateVo.setRunnerMapId(runnerId);
+        updateVo.setRunnerGroup(runnerGroup);
+        if (BuildNoStatus.COMPILED.getValue().equals(status)) {
+            updateVo.setIsCompiled(1);
+        } else if (BuildNoStatus.COMPILE_FAILED.getValue().equals(status)) {
+            updateVo.setIsCompiled(0);
+        }
+        deployVersionMapper.updateDeployVersionInfoById(updateVo);
+        DeployVersionBuildNoVo buildNoVo = deployVersionMapper.getDeployVersionBuildNoByVersionIdAndBuildNo(versionVo.getId(), buildNo);
+        if (buildNoVo == null) {
+            throw new DeployVersionBuildNoNotFoundException(versionVo.getVersion(), buildNo);
+        }
         return null;
     }
 
