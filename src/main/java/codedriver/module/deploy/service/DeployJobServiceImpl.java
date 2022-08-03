@@ -217,6 +217,7 @@ public class DeployJobServiceImpl implements DeployJobService {
             jobVo.setIsFirstFire(1);
             fireAction.doService(jobVo);
             resultJson.put("jobId", jobVo.getId());
+            resultJson.put("appSystemName", jsonObj.getString("appSystemName"));
             resultJson.put("appModuleName", jsonObj.getString("appModuleName"));
         } catch (Exception ex) {
             logger.error(ex.getMessage(), ex);
@@ -230,9 +231,9 @@ public class DeployJobServiceImpl implements DeployJobService {
     @Override
     public JSONObject createScheduleJob(JSONObject jsonObj) {
         JSONObject resultJson = new JSONObject();
-        IAutoexecJobActionCrossoverService autoexecJobActionCrossoverService = CrossoverServiceFactory.getApi(IAutoexecJobActionCrossoverService.class);
-        AutoexecJobVo jobVo = autoexecJobActionCrossoverService.validateAndCreateJobFromCombop(jsonObj, false);
         try {
+            IAutoexecJobActionCrossoverService autoexecJobActionCrossoverService = CrossoverServiceFactory.getApi(IAutoexecJobActionCrossoverService.class);
+            AutoexecJobVo jobVo = autoexecJobActionCrossoverService.validateAndCreateJobFromCombop(jsonObj, false);
             // 保存之后，如果设置的人工触发，那只有点执行按钮才能触发；如果是自动触发，则启动一个定时作业；如果没到点就人工触发了，则取消定时作业，立即执行
             if (JobTriggerType.AUTO.getValue().equals(jobVo.getTriggerType())) {
                 if (!jsonObj.containsKey("planStartTime")) {

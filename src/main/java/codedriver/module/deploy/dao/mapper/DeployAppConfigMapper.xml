@@ -644,10 +644,10 @@
             </if>
             <choose>
                 <when test="isConfig != null and isConfig == 1">
-                    and dac.`config` is not NULL
+                    and a.`config` is not NULL
                 </when>
                 <when test="isConfig != null and isConfig == 0">
-                    and dac.`config` is NULL
+                    and a.`config` is NULL
                 </when>
                 <otherwise>
                 </otherwise>

@@ -13,8 +13,8 @@ import codedriver.framework.deploy.auth.DEPLOY_MODIFY;
 import codedriver.framework.deploy.constvalue.VersionDirection;
 import codedriver.framework.deploy.dto.instance.DeployInstanceVersionAuditVo;
 import codedriver.framework.deploy.dto.instance.DeployInstanceVersionVo;
+import codedriver.framework.deploy.dto.version.DeployVersionEnvInstanceVo;
 import codedriver.framework.deploy.dto.version.DeployVersionVo;
-import codedriver.framework.deploy.dto.version.DeployVersionDeployedInstanceVo;
 import codedriver.framework.deploy.exception.DeployInstanceInEnvNotFoundException;
 import codedriver.framework.deploy.exception.DeployVersionBuildNoNotFoundException;
 import codedriver.framework.deploy.exception.DeployVersionNotFoundException;
@@ -114,7 +114,7 @@ public class SaveDeployInstanceVersionApi extends PrivateApiComponentBase {
             oldBuildNo = currentVersion.getBuildNo();
         }
         deployInstanceVersionMapper.insertDeployInstanceVersionAudit(new DeployInstanceVersionAuditVo(sysId, moduleId, envId, resourceId, versionVo.getId(), oldVersionId, buildNo, oldBuildNo, VersionDirection.FORWARD.getValue()));
-        deployVersionMapper.insertDeployedInstance(new DeployVersionDeployedInstanceVo(resourceId, versionVo.getId(), execUser, lcd));
+        deployVersionMapper.insertDeployedInstance(new DeployVersionEnvInstanceVo(resourceId, versionVo.getId(), envId, execUser, lcd));
         return null;
     }
 }
