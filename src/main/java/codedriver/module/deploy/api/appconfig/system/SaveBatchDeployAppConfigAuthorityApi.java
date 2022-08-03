@@ -66,10 +66,10 @@ public class SaveBatchDeployAppConfigAuthorityApi extends PrivateApiComponentBas
         for (AuthorityVo authorityVo : deployAppConfigAuthorityVo.getAuthorityList()) {
             deployAppConfigAuthorityVo.setAuthUuid(authorityVo.getUuid());
             deployAppConfigAuthorityVo.setAuthType(authorityVo.getType());
-            for (String action : deployAppConfigAuthorityVo.getActionList()) {
-                deployAppConfigAuthorityVo.setAction(action);
-                deployAppConfigMapper.insertAppConfigAuthority(deployAppConfigAuthorityVo);
-            }
+//            for (String action : deployAppConfigAuthorityVo.getActionList()) {
+//                deployAppConfigAuthorityVo.setAction(action);
+//                deployAppConfigMapper.insertAppConfigAuthority(deployAppConfigAuthorityVo);
+//            }
         }
 
         //如果是编辑，则需要删除多余权限

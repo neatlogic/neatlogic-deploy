@@ -173,15 +173,15 @@
     </select>
 
     <select id="getAppConfigAuthorityCount" resultType="java.lang.Integer">
-        select count(distinct app_system_id,env_id,auth_uuid)
+        select count(distinct `app_system_id`,`auth_uuid`)
         from deploy_app_config_authority
         <include refid="appConfigAuthorityWhere"/>
     </select>
-    <select id="getAppConfigAuthorityList" resultType="codedriver.framework.deploy.dto.app.DeployAppConfigAuthorityVo">
-        select app_system_id as appSystemId,env_id as envId,auth_uuid as authUuid
+
+    <select id="getAppConfigAuthorityList" resultMap="appConfigAuthorityMap">
+        select `app_system_id`,`auth_type`,`auth_uuid`,`action`,`action_type`
         from deploy_app_config_authority
         <include refid="appConfigAuthorityWhere"/>
-        group by app_system_id,env_id,auth_uuid
         order by auth_uuid
         limit #{startNum}, #{pageSize}
     </select>
@@ -197,25 +197,19 @@
             </if>
             <if test="actionList != null and actionList.size() > 0">
                 and `action` in
-                <foreach collection="actionList" item="action" close=")" separator="," open="(">
-                    #{action}
-                </foreach>
-            </if>
-            <if test="envIdList != null and envIdList.size() > 0">
-                and env_id in
-                <foreach collection="envIdList" item="envId" close=")" separator="," open="(">
-                    #{envId}
+                <foreach collection="actionList" item="vo" close=")" separator="," open="(">
+                    #{vo.action}
                 </foreach>
             </if>
         </where>
     </sql>
     <resultMap id="appConfigAuthorityMap" type="codedriver.framework.deploy.dto.app.DeployAppConfigAuthorityVo">
         <result column="app_system_id" property="appSystemId"/>
-        <result column="env_id" property="envId"/>
         <result column="auth_type" property="authType"/>
         <result column="auth_uuid" property="authUuid"/>
-        <collection property="actionList" ofType="string">
-            <result column="action"/>
+        <collection property="actionList" ofType="codedriver.framework.deploy.dto.app.DeployAppConfigAuthorityActionVo">
+            <result column="action" property="action"/>
+            <result column="action_type" property="type"/>
         </collection>
     </resultMap>
     <select id="getAppConfigAuthorityDetailList" resultMap="appConfigAuthorityMap">
@@ -338,7 +332,7 @@
             resultType="codedriver.framework.deploy.dto.app.DeployAppEnvironmentVo">
         SELECT a.`id`,
         a.`name`
-        FROM  ${schemaName}.`scence_env` a
+        FROM ${schemaName}.`scence_env` a
         where a.id not in(
         (
         SELECT
@@ -639,7 +633,8 @@
         <where>
             <if test="keyword != null and keyword != ''">
                 a.`name` LIKE concat('%', #{keyword}, '%') or a.`app_module_name` LIKE concat('%', #{keyword}, '%')
-                or a.`abbr_name` LIKE concat('%', #{keyword}, '%')or a.`app_module_abbr_name` LIKE concat('%', #{keyword}, '%')
+                or a.`abbr_name` LIKE concat('%', #{keyword}, '%')or a.`app_module_abbr_name` LIKE concat('%',
+                #{keyword}, '%')
             </if>
             <choose>
                 <when test="isConfig != null and isConfig == 1">
@@ -982,7 +977,6 @@
 
     <insert id="insertAppConfigAuthority">
         INSERT INTO `deploy_app_config_authority` (`app_system_id`,
-        `env_id`,
         `auth_type`,
         `auth_uuid`,
         `action`,
@@ -990,23 +984,22 @@
         `lcd`,
         `lcu`)
         VALUES
-        <foreach collection="envIdList" separator="," item="envId">
+        <foreach collection="actionList" separator="," item="vo">
             (#{appSystemId},
-            #{envId},
             #{authType},
             #{authUuid},
-            #{action},
-            #{authorityActionType},
+            #{vo.action},
+            #{vo.type},
             #{lcd},
             #{lcu})
         </foreach>
         ON DUPLICATE KEY UPDATE `lcd` = #{lcd},
-                                `lcu` = #{lcu};
+        `lcu` = #{lcu};
     </insert>
     <insert id="insertAppModuleRunnerGroup">
         INSERT INTO `deploy_app_module_runner_group` (`app_system_id`, `app_module_id`, `runner_group_id`)
-        VALUES (#{appSystemId}, #{appModuleId}, #{runnerGroupId})
-        ON DUPLICATE KEY UPDATE `runner_group_id` = #{runnerGroupId}
+        VALUES (#{appSystemId}, #{appModuleId}, #{runnerGroupId}) ON DUPLICATE KEY
+        UPDATE `runner_group_id` = #{runnerGroupId}
     </insert>
     <insert id="insertAppEnvAutoConfig">
         INSERT INTO deploy_app_env_auto_config

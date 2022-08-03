@@ -12,16 +12,14 @@ import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.dto.BasePageVo;
 import codedriver.framework.deploy.auth.DEPLOY_BASE;
 import codedriver.framework.deploy.constvalue.DeployAppConfigAction;
-import codedriver.framework.deploy.dto.app.DeployAppConfigAuthorityVo;
-import codedriver.framework.deploy.dto.app.DeployAppConfigVo;
-import codedriver.framework.deploy.dto.app.DeployAppEnvironmentVo;
-import codedriver.framework.deploy.dto.app.DeployPipelineConfigVo;
+import codedriver.framework.deploy.constvalue.DeployAppConfigActionType;
+import codedriver.framework.deploy.dto.app.*;
+import codedriver.framework.deploy.exception.DeployAppConfigNotFoundException;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.framework.util.TableResultUtil;
 import codedriver.module.deploy.dao.mapper.DeployAppConfigMapper;
-import codedriver.module.deploy.service.DeployAppConfigAuthorityService;
 import codedriver.module.deploy.service.DeployAppPipelineService;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
@@ -31,6 +29,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -44,14 +43,12 @@ import java.util.stream.Collectors;
 @OperationType(type = OperationTypeEnum.SEARCH)
 public class SearchDeployAppConfigAuthorityApi extends PrivateApiComponentBase {
     List<JSONObject> theadList = new ArrayList<>();
+    List<JSONObject> operationTheadList = new ArrayList<>();
     @Resource
     private DeployAppConfigMapper deployAppConfigMapper;
 
     @Resource
     DeployAppPipelineService deployAppPipelineService;
-
-    @Resource
-    DeployAppConfigAuthorityService deployAppConfigAuthorityService;
 
     @Override
     public String getToken() {
@@ -70,20 +67,23 @@ public class SearchDeployAppConfigAuthorityApi extends PrivateApiComponentBase {
 
     //拼装默认theadList
     {
+        //用户
         theadList.add(new JSONObject() {{
             put("name", "user");
             put("displayName", "用户");
         }});
-        theadList.add(new JSONObject() {{
-            put("name", "envName");
-            put("displayName", "环境");
-        }});
+        //操作权限
         for (DeployAppConfigAction action : DeployAppConfigAction.values()) {
             JSONObject thead = new JSONObject();
             thead.put("name", action.getValue());
             thead.put("displayName", action.getText());
-            theadList.add(thead);
+            operationTheadList.add(thead);
         }
+
+        theadList.add(new JSONObject() {{
+            put("list", operationTheadList);
+            put("displayName", "操作权限");
+        }});
     }
 
     @Input({
@@ -103,70 +103,107 @@ public class SearchDeployAppConfigAuthorityApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject paramObj) {
         DeployAppConfigAuthorityVo searchVo = paramObj.toJavaObject(DeployAppConfigAuthorityVo.class);
-        //根据appSystemId获取对应的场景theadList
+        //获取当前应用下的所有环境
+        List<DeployAppEnvironmentVo> envList = deployAppConfigMapper.getDeployAppEnvListByAppSystemIdAndModuleIdList(paramObj.getLong("appSystemId"), new ArrayList<>(), TenantContext.get().getDataDbName());
+
         DeployPipelineConfigVo pipelineConfigVo = deployAppPipelineService.getDeployPipelineConfigVo(new DeployAppConfigVo(paramObj.getLong("appSystemId")));
-        JSONArray finalTheadList = JSONArray.parseArray(theadList.toString());
-        if (CollectionUtils.isNotEmpty(pipelineConfigVo.getScenarioList())) {
-            for (AutoexecCombopScenarioVo scenarioVo : pipelineConfigVo.getScenarioList()) {
-                JSONObject scenarioKeyValue = new JSONObject();
-                scenarioKeyValue.put("name", scenarioVo.getScenarioName());
-                scenarioKeyValue.put("displayName", scenarioVo.getScenarioName());
-                finalTheadList.add(scenarioKeyValue);
-            }
+        if (pipelineConfigVo == null) {
+            throw new DeployAppConfigNotFoundException(paramObj.getLong("appSystemId"));
         }
+
+        /*拼凑双层表头theadList*/
+        JSONArray finalTheadList = JSONArray.parseArray(theadList.toString());
+        List<JSONObject> envTheadList = new ArrayList<>();
+        List<JSONObject> scenarioTheadList = new ArrayList<>();
+        //表头：环境权限
+        for (DeployAppEnvironmentVo env : envList) {
+            JSONObject thead = new JSONObject();
+            thead.put("name", env.getName());
+            thead.put("displayName", env.getName());
+            envTheadList.add(thead);
+        }
+        finalTheadList.add(new JSONObject() {{
+            put("list", envTheadList);
+            put("displayName", "环境权限");
+        }});
+        //表头：场景权限
+        for (AutoexecCombopScenarioVo scenarioVo : pipelineConfigVo.getScenarioList()) {
+            JSONObject thead = new JSONObject();
+            thead.put("name", scenarioVo.getScenarioName());
+            thead.put("displayName", scenarioVo.getScenarioName());
+            scenarioTheadList.add(thead);
+        }
+        finalTheadList.add(new JSONObject() {{
+            put("list", scenarioTheadList);
+            put("displayName", "场景权限");
+        }});
+
         //获取tbodyList
         List<JSONObject> bodyList = new ArrayList<>();
         Integer count = deployAppConfigMapper.getAppConfigAuthorityCount(searchVo);
         if (count > 0) {
-            List<DeployAppConfigAuthorityVo> appConfigAuthList = deployAppConfigMapper.getAppConfigAuthorityList(searchVo);
             searchVo.setRowNum(count);
-            //查询已有权限
-            List<DeployAppConfigAuthorityVo> appConfigAuthorityVos = deployAppConfigMapper.getAppConfigAuthorityDetailList(appConfigAuthList);
-            if (CollectionUtils.isNotEmpty(appConfigAuthorityVos)) {
+            List<DeployAppConfigAuthorityVo> appConfigAuthList = deployAppConfigMapper.getAppConfigAuthorityList(searchVo);
+            if (CollectionUtils.isNotEmpty(appConfigAuthList)) {
 
-                //获取所有权限
-//                JSONArray authorityList = deployAppConfigAuthorityService.getAuthorityListBySystemId(paramObj.getLong("appSystemId"));
-                JSONArray authorityList = new JSONArray();
-                //获取当前应用下的所有环境
-                List<DeployAppEnvironmentVo> envList = deployAppConfigMapper.getDeployAppEnvListByAppSystemIdAndModuleIdList(paramObj.getLong("appSystemId"), new ArrayList<>(), TenantContext.get().getDataDbName());
-                Map<Long, String> envIdNameMap = envList.stream().collect(Collectors.toMap(DeployAppEnvironmentVo::getId, DeployAppEnvironmentVo::getName));
+                Map<Long, String> envIdNameMap = new HashMap<>();
+                List<String> scenarioList = new ArrayList<>();
+                if (CollectionUtils.isNotEmpty(envList)) {
+                    envIdNameMap = envList.stream().collect(Collectors.toMap(DeployAppEnvironmentVo::getId, DeployAppEnvironmentVo::getName));
+                }
+                if (CollectionUtils.isNotEmpty(pipelineConfigVo.getScenarioList())) {
+                    scenarioList = pipelineConfigVo.getScenarioList().stream().map(AutoexecCombopScenarioVo::getScenarioName).collect(Collectors.toList());
+                }
 
-                //循环已有权限，构造数据结构
-                for (DeployAppConfigAuthorityVo appConfigAuthorityVo : appConfigAuthorityVos) {
-                    Long envId = appConfigAuthorityVo.getEnvId();
-
-                    //如果环境是所有环境，需要循环现有环境构造数据结构
+                for (DeployAppConfigAuthorityVo appConfigAuthorityVo : appConfigAuthList) {
+                    List<DeployAppConfigAuthorityActionVo> actionList = appConfigAuthorityVo.getActionList();
                     JSONObject actionAuth = new JSONObject();
-
-                    if (envId == 0) {
-                        actionAuth.put("envName", "所有");
-                    } else {
-                        actionAuth.put("envName", envIdNameMap.get(envId));
-                    }
-
-                    actionAuth.put("envId", envId);
                     actionAuth.put("authUuid", appConfigAuthorityVo.getAuthUuid());
                     actionAuth.put("authType", appConfigAuthorityVo.getAuthType());
 
-                    List<String> actionList = appConfigAuthorityVo.getActionList();
-                    //如果是所有权限，需要现有的所有权限
-                    if (actionList.size() == 1 && StringUtils.equals(actionList.get(0), "0")) {
-                        for (Object object : authorityList) {
-                            JSONObject jsonObject = JSONObject.parseObject(object.toString());
-                            actionAuth.put(jsonObject.getString("value"), 1);
-                        }
-                    } else {
-                        for (Object object : authorityList) {
-                            JSONObject jsonObject = JSONObject.parseObject(object.toString());
-                            if (appConfigAuthorityVo.getActionList().contains(jsonObject.getString("value"))) {
-                                actionAuth.put(jsonObject.getString("value"), 1);
-                            } else {
-                                actionAuth.put(jsonObject.getString("value"), 0);
+                    if (CollectionUtils.isNotEmpty(actionList)) {
+                        for (DeployAppConfigAuthorityActionVo actionVo : actionList) {
+
+                            //操作权限
+                            if (StringUtils.equals(actionVo.getType(), DeployAppConfigActionType.OPERATION.getValue())) {
+                                if (StringUtils.equals(actionVo.getAction(), "all")) {
+                                    for (JSONObject operation : DeployAppConfigAction.getValueTextList()) {
+                                        actionAuth.put(operation.getString("value"), 1);
+                                    }
+                                } else {
+                                    if (DeployAppConfigAction.getValueList().contains(actionVo.getAction())) {
+                                        actionAuth.put(actionVo.getAction(), 1);
+                                    }
+                                }
+
+                                //环境权限
+                            } else if (StringUtils.equals(actionVo.getType(), DeployAppConfigActionType.ENV.getValue())) {
+                                if (StringUtils.equals(actionVo.getAction(), "all")) {
+                                    for (DeployAppEnvironmentVo env : envList) {
+                                        actionAuth.put(env.getName(), 1);
+                                    }
+                                } else {
+                                    String envName = envIdNameMap.get(Long.valueOf(actionVo.getAction()));
+                                    if (StringUtils.isNotEmpty(envName)) {
+                                        actionAuth.put(envName, 1);
+                                    }
+                                }
+
+                                //场景权限
+                            } else if (StringUtils.equals(actionVo.getType(), DeployAppConfigActionType.SCENARIO.getValue())) {
+                                if (StringUtils.equals(actionVo.getAction(), "all")) {
+                                    for (AutoexecCombopScenarioVo scenarioVo : pipelineConfigVo.getScenarioList()) {
+                                        actionAuth.put(scenarioVo.getScenarioName(), 1);
+                                    }
+                                } else {
+                                    if (scenarioList.contains(actionVo.getAction())) {
+                                        actionAuth.put(actionVo.getAction(), 1);
+                                    }
+                                }
                             }
                         }
+                        bodyList.add(actionAuth);
                     }
-                    bodyList.add(actionAuth);
-
                 }
             }
         }
