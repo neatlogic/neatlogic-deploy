@@ -86,9 +86,9 @@ public class SearchDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
                 return TableResultUtil.getResult(returnAppSystemList, searchVo);
             }
             if (StringUtils.isNotEmpty(searchVo.getKeyword())) {
-                returnAppSystemList = deployAppConfigMapper.getAppSystemListByIdList(appSystemIdList, TenantContext.get().getDataDbName(), UserContext.get().getUserUuid());
+                returnAppSystemList = deployAppConfigMapper.getAppSystemListIncludeModuleByIdList(appSystemIdList, TenantContext.get().getDataDbName(), UserContext.get().getUserUuid());
             } else {
-                returnAppSystemList = deployAppConfigMapper.getAppSystemListByIdListSimple(appSystemIdList, TenantContext.get().getDataDbName(), UserContext.get().getUserUuid());
+                returnAppSystemList = deployAppConfigMapper.getAppSystemListByIdList(appSystemIdList, TenantContext.get().getDataDbName(), UserContext.get().getUserUuid());
             }
             /*补充系统是否有模块、有环境 ,补充模块是否有环境*/
             TenantContext.get().switchDataDatabase();
