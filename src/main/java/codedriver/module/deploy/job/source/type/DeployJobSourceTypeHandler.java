@@ -28,6 +28,7 @@ import codedriver.framework.cmdb.dto.resourcecenter.ResourceVo;
 import codedriver.framework.cmdb.exception.cientity.CiEntityNotFoundException;
 import codedriver.framework.crossover.CrossoverServiceFactory;
 import codedriver.framework.dao.mapper.runner.RunnerMapper;
+import codedriver.framework.deploy.auth.DEPLOY_MODIFY;
 import codedriver.framework.deploy.constvalue.BuildNoStatus;
 import codedriver.framework.deploy.constvalue.JobSourceType;
 import codedriver.framework.deploy.dto.app.DeployAppConfigVo;
@@ -340,7 +341,7 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
         deployJobMapper.insertIgnoreDeployJobContent(new DeployJobContentVo(jobVo.getConfigStr()));
         Integer buildNo = paramJson.getInteger("buildNo");
         //如果buildNo是-1，表示新建buildNo
-        if (buildNo != null ) {
+        if (buildNo != null) {
             DeployVersionVo deployVersionVo = deployVersionMapper.getVersionByAppSystemIdAndAppModuleIdAndVersion(deployJobVo.getAppSystemId(), deployJobVo.getAppModuleId(), deployJobVo.getVersion());
             if (deployVersionVo == null) {
                 throw new DeployVersionNotFoundException(deployJobVo.getVersion());
@@ -387,7 +388,7 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
         if (appSystem == null) {
             throw new CiEntityNotFoundException(deployJobVo.getAppSystemId());
         }
-        ResourceVo appModule = iResourceCrossoverMapper.getAppModuleById(deployJobVo.getAppModuleId(),TenantContext.get().getDataDbName());
+        ResourceVo appModule = iResourceCrossoverMapper.getAppModuleById(deployJobVo.getAppModuleId(), TenantContext.get().getDataDbName());
         if (appModule == null) {
             throw new CiEntityNotFoundException(deployJobVo.getAppModuleId());
         }
@@ -413,4 +414,15 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
         environment.put("VERSION", deployJobVo.getVersion());
         environment.put("BUILD_NO", deployJobVo.getBuildNo());
     }
+
+    @Override
+    public void myExecuteAuthCheck(AutoexecJobVo originJob, String execUser) {
+        //TODO 校验execUser 执行权限(应用配置的环境、场景)
+    }
+
+    @Override
+    public List<String> getModifyAuthList() {
+        return Collections.singletonList(DEPLOY_MODIFY.class.getSimpleName());
+    }
+
 }

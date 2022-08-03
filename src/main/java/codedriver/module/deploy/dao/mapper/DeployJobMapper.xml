@@ -38,7 +38,7 @@
         </if>
         <where>
             <if test="combopName != null and combopName != ''">
-            ac.name like concat('%', #{combopName}, '%')
+                ac.name like concat('%', #{combopName}, '%')
             </if>
             <if test="excludeIdList != null and excludeIdList.size() > 0">
                 AND aj.id not in
@@ -313,12 +313,50 @@
         order by laneSort, groupSort, jobSort
     </select>
 
+    <select id="getBatchDeployJobLockById" parameterType="java.lang.Long"
+            resultType="codedriver.framework.deploy.dto.job.DeployJobVo">
+        SELECT a.id              as batchJobId,
+               a.`name`          as batchJobName,
+               a.`status`        as batchJobStatus,
+               a.error_msg       as batchJobErrorMsg,
+               a.plan_start_time as batchJobPlanStartTime,
+               a.start_time      as batchJobStartTime,
+               a.end_time        as batchJobEndTime,
+               a.source          as batchJobSource,
+               a.reviewer        as batchJobReviewer,
+               a.review_status   as batchJobReviewStatus,
+               a.review_time     as batchJobReviewTime
+        FROM autoexec_job AS a
+        where id = #{value} for
+        update
+    </select>
+
     <select id="getDeployJobContent"
             resultType="codedriver.framework.deploy.dto.job.DeployJobContentVo">
         SELECT `hash`,
                `content`
         FROM `autoexec_job_content`
         where `hash` = #{value}
+    </select>
+    <select id="getBatchDeployJobListByIdAndWithoutStatus"
+            resultType="codedriver.framework.autoexec.dto.job.AutoexecJobVo">
+        SELECT e.id as batchJobId,
+        e.`name` as batchJobName,
+        e.`status` as batchJobStatus,
+        e.error_msg as batchJobErrorMsg,
+        e.plan_start_time as batchJobPlanStartTime,
+        e.start_time as batchJobStartTime,
+        e.end_time as batchJobEndTime,
+        e.source as batchJobSource
+        FROM autoexec_job AS a
+        LEFT JOIN deploy_job_lane AS b ON a.id = b.batch_job_id
+        LEFT JOIN deploy_job_lane_group AS c ON b.id = c.lane_id
+        LEFT JOIN deploy_job_lane_group_job AS d ON c.id = d.group_id
+        LEFT JOIN autoexec_job AS e ON d.job_id = e.id
+        where a.id = #{value} and e.status not in
+        <foreach collection="statusList" item="status" open="(" close=")" separator=",">
+            #{status}
+        </foreach>
     </select>
 
     <insert id="insertDeployJob">
@@ -357,9 +395,8 @@
     <insert id="insertDeployVersionBuildNo">
         INSERT INTO `deploy_version_buildno` (`version_id`, `build_no`, `job_id`, `status`)
         values (#{versionId}, #{buildNo}, #{jobId}, #{status})
-        ON DUPLICATE KEY UPDATE
-        `job_id` = #{jobId},
-        `status` = #{status}
+        ON DUPLICATE KEY UPDATE `job_id` = #{jobId},
+                                `status` = #{status}
     </insert>
 
     <insert id="insertLane" parameterType="codedriver.framework.deploy.dto.job.LaneVo">
