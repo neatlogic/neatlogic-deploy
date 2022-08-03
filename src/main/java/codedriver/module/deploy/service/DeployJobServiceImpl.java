@@ -217,6 +217,7 @@ public class DeployJobServiceImpl implements DeployJobService {
             jobVo.setIsFirstFire(1);
             fireAction.doService(jobVo);
             resultJson.put("jobId", jobVo.getId());
+            resultJson.put("appSystemName", jsonObj.getString("appSystemName"));
             resultJson.put("appModuleName", jsonObj.getString("appModuleName"));
         } catch (Exception ex) {
             logger.error(ex.getMessage(), ex);

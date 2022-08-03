@@ -15,7 +15,10 @@ import codedriver.framework.cmdb.dto.resourcecenter.ResourceVo;
 import codedriver.framework.crossover.CrossoverServiceFactory;
 import codedriver.framework.deploy.constvalue.JobSource;
 import codedriver.framework.deploy.dto.job.DeployJobVo;
+import codedriver.framework.deploy.dto.version.DeployVersionEnvVo;
+import codedriver.framework.deploy.dto.version.DeployVersionVo;
 import codedriver.module.deploy.dao.mapper.DeployJobMapper;
+import codedriver.module.deploy.dao.mapper.DeployVersionMapper;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.stereotype.Service;
 
@@ -26,6 +29,8 @@ public class DeployJobSourceHandler extends AutoexecJobSourceHandlerBase {
     AutoexecJobMapper autoexecJobMapper;
     @Resource
     DeployJobMapper deployJobMapper;
+    @Resource
+    DeployVersionMapper deployVersionMapper;
 
     @Override
     public String getName() {
@@ -57,8 +62,15 @@ public class DeployJobSourceHandler extends AutoexecJobSourceHandlerBase {
                 result.put("envAbbrName",env.getAbbrName());
                 result.put("envName",env.getName());
             }
-            result.put("version",deployJobVo.getVersion());
-            result.put("buildNo",deployJobVo.getBuildNo());
+            DeployVersionVo versionVo = deployVersionMapper.getDeployVersionBySystemIdAndModuleIdAndVersion(deployJobVo.getAppSystemId(),deployJobVo.getAppModuleId(),deployJobVo.getVersion());
+            if(versionVo != null) {
+                result.put("version", versionVo);
+                result.put("buildNo", deployVersionMapper.getDeployVersionBuildNoByVersionIdAndBuildNo(versionVo.getId(),deployJobVo.getBuildNo()));
+                DeployVersionEnvVo versionEnvVo = deployVersionMapper.getDeployVersionEnvByVersionIdAndEnvId(versionVo.getId(),deployJobVo.getEnvId());
+                if(versionEnvVo != null) {
+                    result.put("env", versionEnvVo);
+                }
+            }
             result.put("roundCount",jobVo.getRoundCount());
         }
         return result;

@@ -37,6 +37,30 @@
 
     </select>
 
+    <select id="getDeployVersionBaseInfoById" resultType="codedriver.framework.deploy.dto.version.DeployVersionVo">
+        select id,
+               version,
+               app_system_id   as appSystemId,
+               app_system_name as appSystemName,
+               app_module_id   as appModuleId,
+               app_module_name as appModuleName,
+               is_freeze       as isFreeze,
+               repo_type       as repoType,
+               repo            as repo,
+               trunk           as trunk,
+               branch          as branch,
+               tag             as tag,
+               tags_dir        as tagsDir,
+               start_rev       as startRev,
+               end_rev         as endRev,
+               fcu,
+               fcd,
+               lcu,
+               lcd
+        from deploy_version
+        where id = #{value}
+    </select>
+
     <select id="searchDeployVersionCount" resultType="java.lang.Integer">
         select count(dv.id)
         from deploy_version dv
@@ -260,6 +284,31 @@
         update
     </select>
 
+    <select id="getDeployVersionBySystemIdAndModuleIdAndVersion"
+            resultType="codedriver.framework.deploy.dto.version.DeployVersionVo">
+        select dv.id,
+               dv.version,
+               dv.app_system_id as appSystemId,
+               dv.app_module_id as appModuleId,
+               dv.is_freeze     as isFreeze,
+               dv.repo_type     as repoType,
+               dv.repo          as repo,
+               dv.trunk         as trunk,
+               dv.branch        as branch,
+               dv.tag           as tag,
+               dv.tags_dir      as tagsDir,
+               dv.start_rev     as startRev,
+               dv.end_rev       as endRev,
+               dv.fcu,
+               dv.fcd,
+               dv.lcu,
+               dv.lcd
+        from deploy_version dv
+        where dv.version = #{version}
+          and dv.app_system_id = #{appSystemId}
+          and dv.app_module_id = #{appModuleId}
+    </select>
+
     <select id="getDeployVersionBuildNoListCount" resultType="java.lang.Integer">
         SELECT count(dvb.build_no)
         <include refid="searchDeployVersionBuildNo"></include>
@@ -408,10 +457,39 @@
         WHERE version_id = #{versionId}
           and package_id = #{packageId}
     </select>
+
     <select id="getDeployVersionAppbuildCredentialByProxyToUrl" resultType="java.lang.String">
         select user_uuid
         from deploy_version_appbuild_credential
         where proxy_to_url = #{value}
+    </select>
+
+    <resultMap id="DeployVersionEnvInstanceVoMap" type="codedriver.framework.deploy.dto.version.DeployVersionEnvInstanceVo">
+        <result column="id" property="id"/>
+        <result column="resourceId" property="resourceId"/>
+        <result column="versionId" property="versionId"/>
+        <result column="envId" property="envId"/>
+        <result column="deployUser" property="deployUser"/>
+        <result column="deployTime" property="deployTime"/>
+        <association property="deployUserVo" javaType="codedriver.framework.dto.UserVo">
+            <result property="uuid" column="deployUser"/>
+            <result property="userName" column="deployUserName"/>
+        </association>
+    </resultMap>
+
+    <select id="getDeployedInstanceByVersionIdAndEnvId"
+            resultMap="DeployVersionEnvInstanceVoMap">
+        select
+            a.id,
+            a.resource_id as resourceId,
+            a.version_id as versionId,
+            a.env_id as envId,
+            a.deploy_user as deployUser,
+            a.deploy_time as deployTime,
+            b.user_name as deployUserName
+        from deploy_version_deployed_instance a
+        left join `user` b on a.deploy_user = b.uuid
+        where a.version_id = #{versionId} and a.env_id = #{envId}
     </select>
 
     <update id="unFreezeDeployVersionById">
@@ -805,12 +883,14 @@
             id,
             resource_id,
             version_id,
-            lcu,
-            lcd
+            env_id,
+            deploy_user,
+            deploy_time
         ) values (
             #{id},
             #{resourceId},
             #{versionId},
+            #{envId},
             #{lcu},
             #{lcd}
         ) ON DUPLICATE KEY UPDATE
