@@ -68,7 +68,7 @@ public class DeployJobSourceHandler extends AutoexecJobSourceHandlerBase {
                 result.put("buildNo", deployVersionMapper.getDeployVersionBuildNoByVersionIdAndBuildNo(versionVo.getId(),deployJobVo.getBuildNo()));
                 DeployVersionEnvVo versionEnvVo = deployVersionMapper.getDeployVersionEnvByVersionIdAndEnvId(versionVo.getId(),deployJobVo.getEnvId());
                 if(versionEnvVo != null) {
-                    result.put("isMirror", versionEnvVo.getIsMirror());
+                    result.put("env", versionEnvVo);
                 }
             }
             result.put("roundCount",jobVo.getRoundCount());
