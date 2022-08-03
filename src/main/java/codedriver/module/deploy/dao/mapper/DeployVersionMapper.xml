@@ -908,8 +908,8 @@
             #{deployUser},
             #{deployTime}
         ) ON DUPLICATE KEY UPDATE
-            lcu = #{deployUser},
-            lcd = #{deployTime}
+            deploy_user = #{deployUser},
+            deploy_time = #{deployTime}
     </insert>
 
     <delete id="deleteDeployVersionById">
