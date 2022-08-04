@@ -125,6 +125,8 @@
         <result column="appModuleId" property="appModuleId"/>
         <result column="appModuleName" property="appModuleName"/>
         <result column="isFreeze" property="isFreeze"/>
+        <result column="complieSuccessCount" property="complieSuccessCount"/>
+        <result column="complieFailCount" property="complieFailCount"/>
         <result column="fcu" property="fcu"/>
         <result column="fcd" property="fcd"/>
         <result column="lcu" property="lcu"/>
@@ -158,6 +160,8 @@
         dve.status as envStatus,
         dve.is_mirror as isMirror,
         dve.build_no as envBuildNo,
+        dv.complie_success_count as complieSuccessCount,
+        dv.complie_fail_count as complieFailCount,
         dv.fcu,
         dv.fcd,
         dv.lcu,
@@ -533,6 +537,16 @@
         <if test="runnerGroupStr != null and runnerGroupStr != ''">
             runner_group = #{runnerGroupStr},
         </if>
+        <if test="isCompiled != null">
+            <choose>
+                <when test="isCompiled == 1">
+                    complie_success_count = complie_success_count + 1,
+                </when>
+                <otherwise>
+                    complie_fail_count = complie_fail_count + 1,
+                </otherwise>
+            </choose>
+        </if>
         lcu = #{lcu},
         lcd = now(3)
         where id = #{id}
@@ -891,11 +905,11 @@
             #{resourceId},
             #{versionId},
             #{envId},
-            #{lcu},
-            #{lcd}
+            #{deployUser},
+            #{deployTime}
         ) ON DUPLICATE KEY UPDATE
-            lcu = #{lcu},
-            lcd = #{lcd}
+            deploy_user = #{deployUser},
+            deploy_time = #{deployTime}
     </insert>
 
     <delete id="deleteDeployVersionById">

@@ -638,10 +638,10 @@
             </if>
             <choose>
                 <when test="isConfig != null and isConfig == 1">
-                    and a.`config` is not NULL
+                    and b.`config` is not NULL
                 </when>
                 <when test="isConfig != null and isConfig == 0">
-                    and a.`config` is NULL
+                    and b.`config` is NULL
                 </when>
                 <otherwise>
                 </otherwise>
