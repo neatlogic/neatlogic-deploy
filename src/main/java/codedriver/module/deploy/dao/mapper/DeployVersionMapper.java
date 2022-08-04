@@ -25,6 +25,8 @@ public interface DeployVersionMapper {
 
     List<DeployVersionVo> getDeployVersionByIdList(List<Long> idList);
 
+    List<DeployVersionVo> getDeployVersionIncludeEnvListByVersionIdList(List<Long> idList);
+
     List<DeployVersionBuildNoVo> searchDeployVersionBuildNoList(DeployVersionBuildNoVo versionBuildNoVo);
 
     Long getJobIdByDeployVersionIdAndBuildNo(@Param("versionId") Long versionId, @Param("buildNo") Integer buildNo);

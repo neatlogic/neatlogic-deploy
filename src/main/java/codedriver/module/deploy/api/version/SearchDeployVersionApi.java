@@ -1,12 +1,9 @@
 package codedriver.module.deploy.api.version;
 
-import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.dto.BasePageVo;
 import codedriver.framework.deploy.auth.DEPLOY_BASE;
-import codedriver.framework.deploy.constvalue.VersionEnvStatus;
-import codedriver.framework.deploy.dto.app.DeployAppEnvironmentVo;
 import codedriver.framework.deploy.dto.version.DeployVersionEnvVo;
 import codedriver.framework.deploy.dto.version.DeployVersionVo;
 import codedriver.framework.restful.annotation.*;
@@ -21,7 +18,6 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -82,32 +78,25 @@ public class SearchDeployVersionApi extends PrivateApiComponentBase {
             List<Long> idList = deployVersionMapper.getDeployVersionIdList(paramVersionVo);
             if (CollectionUtils.isNotEmpty(idList)) {
                 returnVersionList = deployVersionMapper.getDeployVersionByIdList(idList);
+                List<DeployVersionVo> versionVoListIncludeEnvList = deployVersionMapper.getDeployVersionIncludeEnvListByVersionIdList(idList);
+                Map<Long, List<DeployVersionEnvVo>> allEnvListMap = versionVoListIncludeEnvList.stream().collect(Collectors.toMap(DeployVersionVo::getId, DeployVersionVo::getEnvList));
                 //补充版本的环境
                 for (DeployVersionVo returnVersion : returnVersionList) {
                     List<DeployVersionEnvVo> returnVersionEnvList = new ArrayList<>();
-                    List<DeployVersionEnvVo> versionEnvVoList = deployVersionMapper.getDeployVersionEnvByVersionId(returnVersion.getId());
-                    Map<Long, DeployVersionEnvVo> versionEnvVoMap = new HashMap<>();
-                    if (CollectionUtils.isNotEmpty(versionEnvVoList)) {
-                        versionEnvVoMap = versionEnvVoList.stream().collect(Collectors.toMap(DeployVersionEnvVo::getEnvId, e -> e));
-                    }
-                    List<Long> moduleIdList = new ArrayList<>();
-                    moduleIdList.add(returnVersion.getAppModuleId());
-                    List<DeployAppEnvironmentVo> allEnvList = deployAppConfigMapper.getDeployAppEnvListByAppSystemIdAndModuleIdList(returnVersion.getAppSystemId(), moduleIdList, TenantContext.get().getDataDbName());
-                    if (CollectionUtils.isNotEmpty(allEnvList)) {
-                        for (DeployAppEnvironmentVo deployEnvVo : allEnvList) {
-                            DeployVersionEnvVo returnVersionEnvVo = null;
-                            if (versionEnvVoMap.containsKey(deployEnvVo.getId())) {
-                                DeployVersionEnvVo versionEnvVo = versionEnvVoMap.get(deployEnvVo.getId());
-                                returnVersionEnvVo = new DeployVersionEnvVo(returnVersion.getId(), deployEnvVo.getId(), deployEnvVo.getName(), versionEnvVo.getStatus(), versionEnvVo.getIsMirror(), versionEnvVo.getBuildNo());
-                            } else {
-                                returnVersionEnvVo = new DeployVersionEnvVo(returnVersion.getId(), deployEnvVo.getId(), deployEnvVo.getName(), VersionEnvStatus.PENDING.getValue());
+                    List<DeployVersionEnvVo> versionEnvVoList = returnVersion.getEnvList();
+                    Map<Long, DeployVersionEnvVo> envListIncludeStatus = versionEnvVoList.stream().collect(Collectors.toMap(DeployVersionEnvVo::getEnvId, e -> e));
+
+                    List<DeployVersionEnvVo> allVersionEnvVoList = allEnvListMap.get(returnVersion.getId());
+                    if (CollectionUtils.isNotEmpty(allVersionEnvVoList)) {
+                        for (DeployVersionEnvVo envVo : allVersionEnvVoList) {
+                            if (envListIncludeStatus.containsKey(envVo.getEnvId())) {
+                                envVo = envListIncludeStatus.get(envVo.getEnvId());
                             }
-                            returnVersionEnvList.add(returnVersionEnvVo);
+                            returnVersionEnvList.add(envVo);
                         }
                     }
                     returnVersion.setEnvList(returnVersionEnvList);
                 }
-
             }
         }
         return TableResultUtil.getResult(returnVersionList, paramVersionVo);

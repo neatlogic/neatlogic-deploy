@@ -155,6 +155,11 @@
         dv.is_freeze as isFreeze,
         dvb.build_no as buildNo,
         dvb.status as buildNoStatus,
+        dve.env_id as envId,
+        cc.name as envName,
+        dve.status as envStatus,
+        dve.is_mirror as isMirror,
+        dve.build_no as envBuildNo,
         dv.complie_success_count as complieSuccessCount,
         dv.complie_fail_count as complieFailCount,
         dv.fcu,
@@ -171,6 +176,39 @@
             #{id}
         </foreach>
         ORDER BY dv.fcd DESC, dvb.compile_start_time DESC,dvb.build_no DESC
+    </select>
+
+    <select id="getDeployVersionIncludeEnvListByVersionIdList" resultMap="deployVersionMap">
+        (SELECT dv.id,
+        dv.version,
+        a.env_id AS envId,
+        a.env_name AS envName
+        FROM codedriver_develop_data.`scence_appinstance_env_appmodule_appsystem` a
+        JOIN deploy_version dv ON a.app_system_id = dv.app_system_id
+        AND a.app_module_id = dv.app_module_id
+        AND a.`env_id` IS NOT NULL
+        LEFT JOIN deploy_version_env dve ON dve.version_id = dv.id
+        WHERE dv.id IN
+        <foreach collection="list" item="id" separator="," open="(" close=")">
+            #{id}
+        </foreach>
+        )
+        UNION
+        (
+        SELECT dv.id,
+        dv.version,
+        cc.id AS envId,
+        cc.NAME AS envName
+        FROM deploy_version dv
+        JOIN deploy_app_config_env dace ON dace.app_system_id = dv.app_system_id
+        AND dace.app_module_id = dv.app_module_id
+        LEFT JOIN deploy_version_env dve ON dve.version_id = dv.id
+        JOIN cmdb_cientity cc ON cc.id = dace.env_id
+        WHERE dv.id IN
+        <foreach collection="list" item="id" separator="," open="(" close=")">
+            #{id}
+        </foreach>
+        )
     </select>
 
     <select id="getJobIdByDeployVersionIdAndBuildNo" resultType="java.lang.Long">
