@@ -5,6 +5,7 @@
 
 package codedriver.module.deploy.dao.mapper;
 
+import codedriver.framework.autoexec.dto.job.AutoexecJobVo;
 import codedriver.framework.deploy.dto.job.DeployJobContentVo;
 import codedriver.framework.deploy.dto.job.DeployJobVo;
 import codedriver.framework.deploy.dto.job.LaneGroupVo;
@@ -43,6 +44,10 @@ public interface DeployJobMapper {
     DeployJobContentVo getDeployJobContentLock(String contentHash);
 
     DeployJobVo getBatchDeployJobById(Long id);
+
+    DeployJobVo getBatchDeployJobLockById(Long id);
+
+    List<AutoexecJobVo> getBatchDeployJobListByIdAndWithoutStatus(@Param("id") Long id, @Param("statusList") List<String> statusList);
 
     DeployJobContentVo getDeployJobContent(String contentHash);
 
