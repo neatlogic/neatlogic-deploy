@@ -25,7 +25,7 @@ public interface DeployVersionMapper {
 
     List<DeployVersionVo> getDeployVersionByIdList(List<Long> idList);
 
-    List<DeployVersionVo> getDeployVersionIncludeEnvListByVersionIdList(List<Long> idList);
+    List<DeployVersionVo> getDeployVersionIncludeEnvListByVersionIdList(@Param("idList") List<Long> idList, @Param("schemaName") String schemaName);
 
     List<DeployVersionBuildNoVo> searchDeployVersionBuildNoList(DeployVersionBuildNoVo versionBuildNoVo);
 

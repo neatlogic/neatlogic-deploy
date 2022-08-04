@@ -183,7 +183,7 @@
         dv.version,
         a.env_id AS envId,
         a.env_name AS envName
-        FROM codedriver_develop_data.`scence_appinstance_env_appmodule_appsystem` a
+        FROM ${schemaName}.`scence_appinstance_env_appmodule_appsystem` a
         JOIN deploy_version dv ON a.app_system_id = dv.app_system_id
         AND a.app_module_id = dv.app_module_id
         AND a.`env_id` IS NOT NULL

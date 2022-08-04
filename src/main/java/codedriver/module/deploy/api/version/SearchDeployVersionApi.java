@@ -1,5 +1,6 @@
 package codedriver.module.deploy.api.version;
 
+import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.dto.BasePageVo;
@@ -78,7 +79,7 @@ public class SearchDeployVersionApi extends PrivateApiComponentBase {
             List<Long> idList = deployVersionMapper.getDeployVersionIdList(paramVersionVo);
             if (CollectionUtils.isNotEmpty(idList)) {
                 returnVersionList = deployVersionMapper.getDeployVersionByIdList(idList);
-                List<DeployVersionVo> versionVoListIncludeEnvList = deployVersionMapper.getDeployVersionIncludeEnvListByVersionIdList(idList);
+                List<DeployVersionVo> versionVoListIncludeEnvList = deployVersionMapper.getDeployVersionIncludeEnvListByVersionIdList(idList, TenantContext.get().getDataDbName());
                 Map<Long, List<DeployVersionEnvVo>> allEnvListMap = versionVoListIncludeEnvList.stream().collect(Collectors.toMap(DeployVersionVo::getId, DeployVersionVo::getEnvList));
                 //补充版本的环境
                 for (DeployVersionVo returnVersion : returnVersionList) {
