@@ -444,20 +444,6 @@
           and build_no = #{buildNo}
     </select>
 
-    <select id="getDeployVersionEnvByVersionId"
-            resultType="codedriver.framework.deploy.dto.version.DeployVersionEnvVo">
-        select version_id    as versionId,
-               env_id        as envId,
-               job_id        as jobId,
-               status        as status,
-               runner_map_id as runnerMapId,
-               runner_group  as runnerGroupStr,
-               build_no      as buildNo,
-               is_mirror     as isMirror
-        from deploy_version_env
-        where version_id = #{id}
-    </select>
-
     <resultMap id="DeployVersionDependencyMap" type="codedriver.framework.deploy.dto.version.DeployVersionDependencyVo">
         <result column="id" property="id"/>
         <result column="version_id" property="versionId"/>

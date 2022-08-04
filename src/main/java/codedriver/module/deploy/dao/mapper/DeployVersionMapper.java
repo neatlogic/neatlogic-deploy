@@ -47,8 +47,6 @@ public interface DeployVersionMapper {
 
     DeployVersionEnvVo getDeployVersionEnvByVersionIdAndEnvIdAndBuildNo(@Param("versionId") Long versionId, @Param("envId") Long envId, @Param("buildNo") Integer buildNo);
 
-    List<DeployVersionEnvVo> getDeployVersionEnvByVersionId(Long id);
-
     List<Long> getDeployVersionIdList(DeployVersionVo versionVo);
 
     List<DeployVersionDependencyVo> getDeployVersionDependencyListByVersionId(Long versionId);
