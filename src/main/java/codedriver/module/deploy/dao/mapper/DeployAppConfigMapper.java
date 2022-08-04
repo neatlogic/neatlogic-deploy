@@ -18,6 +18,8 @@ public interface DeployAppConfigMapper {
 
     List<Long> getAppSystemIdList(@Param("searchVo") DeployResourceSearchVo searchVo, @Param("userUuid") String userUuid);
 
+    List<Long> searchAppSystemIdList(DeployResourceSearchVo searchVo);
+
     List<DeployAppSystemVo> getAppSystemListIncludeModuleByIdList(@Param("idList") List<Long> idList, @Param("schemaName") String schemaName, @Param("userUuid") String userUuid);
 
     List<DeployAppSystemVo> getAppSystemListByIdList(@Param("idList") List<Long> idList, @Param("schemaName") String schemaName, @Param("userUuid") String userUuid);
@@ -48,7 +50,7 @@ public interface DeployAppConfigMapper {
 
     DeployAppConfigVo getAppConfigDraft(DeployAppConfigVo deployAppConfigDraftVo);
 
-    List<DeployAppConfigInstanceVo> searchAppConfigEnvInstanceList( DeployAppConfigInstanceVo searchVo);
+    List<DeployAppConfigInstanceVo> searchAppConfigEnvInstanceList(DeployAppConfigInstanceVo searchVo);
 
     List<DeployAppEnvironmentVo> getDeployAppEnvListByAppSystemIdAndModuleIdList(@Param("appSystemId") Long appSystemId, @Param("appModuleIdList") List<Long> appModuleIdList, @Param("schemaName") String schemaName);
 
@@ -77,6 +79,8 @@ public interface DeployAppConfigMapper {
     List<Long> getAppConfigUserAppSystemIdList(@Param("userUuid") String userUuid, @Param("appSystemIdList") List<Long> appSystemIdList);
 
     List<DeployAppEnvAutoConfigVo> getAppEnvAutoConfigBySystemIdAndModuleIdAndEnvId(@Param("systemId") Long systemId, @Param("moduleId") Long moduleId, @Param("envId") Long envId);
+
+    List<DeployAppModuleEnvVo> getDeployAppModuleEnvListByAppSystemId(@Param("appSystemId") Long appSystemId, @Param("schemaName") String schemaName);
 
     Integer insertAppConfigAuthority(DeployAppConfigAuthorityVo deployAppConfigAuthorityVo);
 
@@ -114,6 +118,7 @@ public interface DeployAppConfigMapper {
 
     /**
      * 查询发布应用配置的应用实例下的无模块无环境、无模块同环境、同模块无环境的实例个数
+     *
      * @param searchVo searchVo
      * @return count
      */
