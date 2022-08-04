@@ -178,6 +178,37 @@
         ORDER BY dv.fcd DESC, dvb.compile_start_time DESC,dvb.build_no DESC
     </select>
 
+    <select id="getDeployVersionIncludeEnvListByVersionIdList" resultMap="deployVersionMap">
+        (SELECT dv.id,
+        dv.version,
+        a.env_id AS envId,
+        a.env_name AS envName
+        FROM ${schemaName}.`scence_appinstance_env_appmodule_appsystem` a
+        JOIN deploy_version dv ON a.app_system_id = dv.app_system_id
+        AND a.app_module_id = dv.app_module_id
+        AND a.`env_id` IS NOT NULL
+        WHERE dv.id IN
+        <foreach collection="idList" item="id" separator="," open="(" close=")">
+            #{id}
+        </foreach>
+        )
+        UNION
+        (
+        SELECT dv.id,
+        dv.version,
+        cc.id AS envId,
+        cc.NAME AS envName
+        FROM deploy_version dv
+        JOIN deploy_app_config_env dace ON dace.app_system_id = dv.app_system_id
+        AND dace.app_module_id = dv.app_module_id
+        JOIN cmdb_cientity cc ON cc.id = dace.env_id
+        WHERE dv.id IN
+        <foreach collection="idList" item="id" separator="," open="(" close=")">
+            #{id}
+        </foreach>
+        )
+    </select>
+
     <select id="getJobIdByDeployVersionIdAndBuildNo" resultType="java.lang.Long">
         SELECT `job_id`
         FROM `deploy_version_buildno`
@@ -410,7 +441,6 @@
           and env_id = #{envId}
           and build_no = #{buildNo}
     </select>
-
 
     <resultMap id="DeployVersionDependencyMap" type="codedriver.framework.deploy.dto.version.DeployVersionDependencyVo">
         <result column="id" property="id"/>
