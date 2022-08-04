@@ -938,7 +938,7 @@
                    ra.name,
                    ra.abbr_name   as abbrName
             FROM deploy_app_config_env dace
-                     LEFT JOIN ${schemaName}.resource_appmodule ra ON ra.id = dace.app_module_id
+                     LEFT JOIN ${schemaName}.scence_appmodule ra ON ra.id = dace.app_module_id
             WHERE dace.app_system_id = #{appSystemId}
               AND dace.env_id = #{envId}
         )

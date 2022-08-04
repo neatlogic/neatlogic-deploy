@@ -43,7 +43,6 @@ import java.util.stream.Collectors;
 @OperationType(type = OperationTypeEnum.SEARCH)
 public class SearchDeployAppConfigAuthorityApi extends PrivateApiComponentBase {
     List<JSONObject> theadList = new ArrayList<>();
-    List<JSONObject> operationTheadList = new ArrayList<>();
     @Resource
     private DeployAppConfigMapper deployAppConfigMapper;
 
@@ -67,23 +66,20 @@ public class SearchDeployAppConfigAuthorityApi extends PrivateApiComponentBase {
 
     //拼装默认theadList
     {
-        //用户
         theadList.add(new JSONObject() {{
             put("name", "user");
             put("displayName", "用户");
         }});
-        //操作权限
+        theadList.add(new JSONObject() {{
+            put("name", "envName");
+            put("displayName", "环境");
+        }});
         for (DeployAppConfigAction action : DeployAppConfigAction.values()) {
             JSONObject thead = new JSONObject();
             thead.put("name", action.getValue());
             thead.put("displayName", action.getText());
-            operationTheadList.add(thead);
+            theadList.add(thead);
         }
-
-        theadList.add(new JSONObject() {{
-            put("list", operationTheadList);
-            put("displayName", "操作权限");
-        }});
     }
 
     @Input({
@@ -103,40 +99,22 @@ public class SearchDeployAppConfigAuthorityApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject paramObj) {
         DeployAppConfigAuthorityVo searchVo = paramObj.toJavaObject(DeployAppConfigAuthorityVo.class);
-        //获取当前应用下的所有环境
-        List<DeployAppEnvironmentVo> envList = deployAppConfigMapper.getDeployAppEnvListByAppSystemIdAndModuleIdList(paramObj.getLong("appSystemId"), new ArrayList<>(), TenantContext.get().getDataDbName());
 
+        //根据appSystemId获取对应的场景theadList
         DeployPipelineConfigVo pipelineConfigVo = deployAppPipelineService.getDeployPipelineConfigVo(new DeployAppConfigVo(paramObj.getLong("appSystemId")));
         if (pipelineConfigVo == null) {
             throw new DeployAppConfigNotFoundException(paramObj.getLong("appSystemId"));
         }
 
-        /*拼凑双层表头theadList*/
         JSONArray finalTheadList = JSONArray.parseArray(theadList.toString());
-        List<JSONObject> envTheadList = new ArrayList<>();
-        List<JSONObject> scenarioTheadList = new ArrayList<>();
-        //表头：环境权限
-        for (DeployAppEnvironmentVo env : envList) {
-            JSONObject thead = new JSONObject();
-            thead.put("name", env.getName());
-            thead.put("displayName", env.getName());
-            envTheadList.add(thead);
+        if(CollectionUtils.isNotEmpty(pipelineConfigVo.getScenarioList())) {
+            for (AutoexecCombopScenarioVo scenarioVo : pipelineConfigVo.getScenarioList()) {
+                JSONObject scenarioKeyValue = new JSONObject();
+                scenarioKeyValue.put("name", scenarioVo.getScenarioName());
+                scenarioKeyValue.put("displayName", scenarioVo.getScenarioName());
+                finalTheadList.add(scenarioKeyValue);
+            }
         }
-        finalTheadList.add(new JSONObject() {{
-            put("list", envTheadList);
-            put("displayName", "环境权限");
-        }});
-        //表头：场景权限
-        for (AutoexecCombopScenarioVo scenarioVo : pipelineConfigVo.getScenarioList()) {
-            JSONObject thead = new JSONObject();
-            thead.put("name", scenarioVo.getScenarioName());
-            thead.put("displayName", scenarioVo.getScenarioName());
-            scenarioTheadList.add(thead);
-        }
-        finalTheadList.add(new JSONObject() {{
-            put("list", scenarioTheadList);
-            put("displayName", "场景权限");
-        }});
 
         //获取tbodyList
         List<JSONObject> bodyList = new ArrayList<>();
@@ -145,7 +123,8 @@ public class SearchDeployAppConfigAuthorityApi extends PrivateApiComponentBase {
             searchVo.setRowNum(count);
             List<DeployAppConfigAuthorityVo> appConfigAuthList = deployAppConfigMapper.getAppConfigAuthorityList(searchVo);
             if (CollectionUtils.isNotEmpty(appConfigAuthList)) {
-
+                //获取当前应用下的所有环境
+                List<DeployAppEnvironmentVo> envList = deployAppConfigMapper.getDeployAppEnvListByAppSystemIdAndModuleIdList(paramObj.getLong("appSystemId"), new ArrayList<>(), TenantContext.get().getDataDbName());
                 Map<Long, String> envIdNameMap = new HashMap<>();
                 List<String> scenarioList = new ArrayList<>();
                 if (CollectionUtils.isNotEmpty(envList)) {
