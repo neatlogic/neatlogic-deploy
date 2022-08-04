@@ -187,7 +187,6 @@
         JOIN deploy_version dv ON a.app_system_id = dv.app_system_id
         AND a.app_module_id = dv.app_module_id
         AND a.`env_id` IS NOT NULL
-        LEFT JOIN deploy_version_env dve ON dve.version_id = dv.id
         WHERE dv.id IN
         <foreach collection="idList" item="id" separator="," open="(" close=")">
             #{id}
@@ -202,7 +201,6 @@
         FROM deploy_version dv
         JOIN deploy_app_config_env dace ON dace.app_system_id = dv.app_system_id
         AND dace.app_module_id = dv.app_module_id
-        LEFT JOIN deploy_version_env dve ON dve.version_id = dv.id
         JOIN cmdb_cientity cc ON cc.id = dace.env_id
         WHERE dv.id IN
         <foreach collection="idList" item="id" separator="," open="(" close=")">
