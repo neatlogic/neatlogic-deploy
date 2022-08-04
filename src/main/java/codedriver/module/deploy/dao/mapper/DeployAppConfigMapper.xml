@@ -178,8 +178,8 @@
         <include refid="appConfigAuthorityWhere"/>
     </select>
 
-    <select id="getAppConfigAuthorityList" resultMap="appConfigAuthorityMap">
-        select `app_system_id`,`auth_type`,`auth_uuid`,`action`,`action_type`
+    <select id="getAppConfigAuthorityList" resultType="codedriver.framework.deploy.dto.app.DeployAppConfigAuthorityVo">
+        select distinct `app_system_id` as appSystemId,`auth_type` as authType,`auth_uuid` as authUuid
         from deploy_app_config_authority
         <include refid="appConfigAuthorityWhere"/>
         order by auth_uuid
@@ -196,9 +196,10 @@
                 </foreach>
             </if>
             <if test="actionList != null and actionList.size() > 0">
-                and `action` in
-                <foreach collection="actionList" item="vo" close=")" separator="," open="(">
-                    #{vo.action}
+                <foreach collection="actionList" item="vo" separator=",">
+                    and`action_type` = #{vo.type}
+                    and (`action` = #{vo.action}
+                    or `action` = 'all')
                 </foreach>
             </if>
         </where>
@@ -212,14 +213,26 @@
             <result column="action_type" property="type"/>
         </collection>
     </resultMap>
+
     <select id="getAppConfigAuthorityDetailList" resultMap="appConfigAuthorityMap">
-        select app_system_id,env_id,auth_type,auth_uuid,`action`,action_type
+        select app_system_id,auth_type,auth_uuid,`action`,action_type
         from deploy_app_config_authority
         where
         <foreach collection="appConfigAuthList" item="appConfigAuth" open="(" separator=")or(" close=")">
-            app_system_id = #{appConfigAuth.appSystemId} and env_id = #{appConfigAuth.envId} and
-            auth_uuid = #{appConfigAuth.authUuid}
+            app_system_id = #{appConfigAuth.appSystemId}
+          and auth_uuid = #{appConfigAuth.authUuid}
         </foreach>
+    </select>
+
+    <select id="getAppConfigAuthorityListByAppSystemId"
+            resultType="codedriver.framework.deploy.dto.app.DeployAppConfigAuthorityVo">
+        select app_system_id AS appSystemId,
+               auth_type AS authType,
+               auth_uuid AS authUuid,
+               `action`,
+               action_type AS authorityActionType
+        from deploy_app_config_authority
+        where app_system_id = #{value}
     </select>
 
     <select id="getAppConfig" parameterType="codedriver.framework.deploy.dto.app.DeployAppConfigVo"
@@ -955,7 +968,7 @@
               (
                   SELECT dace.app_module_id
                   FROM deploy_app_config_env dace
-                           LEFT JOIN ${schemaName}.resource_appmodule ra ON ra.id = dace.app_module_id
+                           LEFT JOIN ${schemaName}.scence_appmodule ra ON ra.id = dace.app_module_id
                   WHERE dace.app_system_id = #{appSystemId}
                     AND dace.env_id = #{envId}
               )) a
@@ -1125,15 +1138,24 @@
           and `env_id` = #{envId}
     </update>
 
-    <delete id="deleteAppConfigAuthorityByAppIdAndEnvIdAndAuthUuidAndLcd">
+    <delete id="deleteAppConfigAuthorityByAppIdAndAuthUuidAndLcd">
         delete
         from `deploy_app_config_authority`
         where `app_system_id` = #{appSystemId}
-        and `env_id` = #{envId}
         and `auth_uuid` = #{authUuid}
         <if test="lcd != null">
             and `lcd` != #{lcd}
         </if>
+    </delete>
+
+    <delete id="deleteAppConfigAuthorityByAppIdAndAuthUuidList">
+        delete
+        from `deploy_app_config_authority`
+        where `app_system_id` = #{appSystemId}
+        and `auth_uuid` in
+        <foreach collection="uuidList" item="uuid" separator="," open="(" close=")">
+            #{uuid}
+        </foreach>
     </delete>
 
     <delete id="deleteAppEnvAutoConfig">

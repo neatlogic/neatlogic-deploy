@@ -46,7 +46,6 @@ public class DeleteDeployAppConfigAuthorityApi extends PrivateApiComponentBase {
 
     @Input({
             @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "应用资产id"),
-            @Param(name = "envId", type = ApiParamType.LONG, isRequired = true, desc = "环境资产id"),
             @Param(name = "authUuid", type = ApiParamType.STRING, isRequired = true, desc = "授权列表")
     })
     @Output({
@@ -55,7 +54,7 @@ public class DeleteDeployAppConfigAuthorityApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject paramObj) {
         DeployAppConfigAuthorityVo deployAppConfigAuthorityVo = paramObj.toJavaObject(DeployAppConfigAuthorityVo.class);
-        deployAppConfigMapper.deleteAppConfigAuthorityByAppIdAndEnvIdAndAuthUuidAndLcd(deployAppConfigAuthorityVo.getAppSystemId(),deployAppConfigAuthorityVo.getEnvId(),deployAppConfigAuthorityVo.getAuthUuid(),null);
+        deployAppConfigMapper.deleteAppConfigAuthorityByAppIdAndAuthUuidAndLcd(deployAppConfigAuthorityVo.getAppSystemId(),deployAppConfigAuthorityVo.getEnvId(),deployAppConfigAuthorityVo.getAuthUuid(),null);
         return null;
     }
 }

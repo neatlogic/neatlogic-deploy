@@ -8,19 +8,14 @@ package codedriver.module.deploy.api.appconfig.system;
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.deploy.auth.DEPLOY_BASE;
-import codedriver.framework.deploy.dto.app.DeployAppConfigAuthorityVo;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.deploy.dao.mapper.DeployAppConfigMapper;
-import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * @author lvzk
@@ -49,23 +44,15 @@ public class DeleteBatchDeployAppConfigAuthorityApi extends PrivateApiComponentB
     }
 
     @Input({
-            @Param(name = "authorityVoList", type = ApiParamType.JSONARRAY, explode = DeployAppConfigAuthorityVo[].class, desc = "需要删除的应用权限列表列表")
+            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "应用资产id"),
+            @Param(name = "uuidList", type = ApiParamType.JSONARRAY, isRequired = true,  desc = "授权列表")
     })
     @Output({
     })
     @Description(desc = "批量删除应用配置权限")
     @Override
     public Object myDoService(JSONObject paramObj) {
-        JSONArray authorityArray = paramObj.getJSONArray("authorityVoList");
-        List<DeployAppConfigAuthorityVo> authorityVoList = new ArrayList<>();
-        if (CollectionUtils.isNotEmpty(authorityArray)) {
-            authorityVoList = authorityArray.toJavaList(DeployAppConfigAuthorityVo.class);
-        }
-        if (CollectionUtils.isNotEmpty(authorityVoList)) {
-            for (DeployAppConfigAuthorityVo deployAppConfigAuthorityVo : authorityVoList) {
-                deployAppConfigMapper.deleteAppConfigAuthorityByAppIdAndEnvIdAndAuthUuidAndLcd(deployAppConfigAuthorityVo.getAppSystemId(), deployAppConfigAuthorityVo.getEnvId(), deployAppConfigAuthorityVo.getAuthUuid(), null);
-            }
-        }
+        deployAppConfigMapper.deleteAppConfigAuthorityByAppIdAndAuthUuidList(paramObj.getLong("appSystemId"), paramObj.getJSONArray("uuidList").toJavaList(String.class));
         return null;
     }
 }

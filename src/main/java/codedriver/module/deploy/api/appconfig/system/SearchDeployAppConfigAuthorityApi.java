@@ -70,10 +70,6 @@ public class SearchDeployAppConfigAuthorityApi extends PrivateApiComponentBase {
             put("name", "user");
             put("displayName", "用户");
         }});
-        theadList.add(new JSONObject() {{
-            put("name", "envName");
-            put("displayName", "环境");
-        }});
         for (DeployAppConfigAction action : DeployAppConfigAction.values()) {
             JSONObject thead = new JSONObject();
             thead.put("name", action.getValue());
@@ -84,7 +80,6 @@ public class SearchDeployAppConfigAuthorityApi extends PrivateApiComponentBase {
 
     @Input({
             @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "应用资产id"),
-            @Param(name = "envIdList", type = ApiParamType.JSONARRAY, desc = "环境Id列表"),
             @Param(name = "authorityStrList", type = ApiParamType.JSONARRAY, desc = "用户列表"),
             @Param(name = "actionList", type = ApiParamType.JSONARRAY, desc = "动作列表"),
             @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "当前页"),
@@ -99,6 +94,16 @@ public class SearchDeployAppConfigAuthorityApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject paramObj) {
         DeployAppConfigAuthorityVo searchVo = paramObj.toJavaObject(DeployAppConfigAuthorityVo.class);
+        JSONArray finalTheadList = JSONArray.parseArray(theadList.toString());
+
+        //获取当前应用下的所有环境
+        List<DeployAppEnvironmentVo> envList = deployAppConfigMapper.getDeployAppEnvListByAppSystemIdAndModuleIdList(paramObj.getLong("appSystemId"), new ArrayList<>(), TenantContext.get().getDataDbName());
+        for (DeployAppEnvironmentVo environmentVo : envList) {
+            JSONObject envKeyValue = new JSONObject();
+            envKeyValue.put("name", environmentVo.getName());
+            envKeyValue.put("displayName", environmentVo.getName());
+            finalTheadList.add(envKeyValue);
+        }
 
         //根据appSystemId获取对应的场景theadList
         DeployPipelineConfigVo pipelineConfigVo = deployAppPipelineService.getDeployPipelineConfigVo(new DeployAppConfigVo(paramObj.getLong("appSystemId")));
@@ -106,7 +111,6 @@ public class SearchDeployAppConfigAuthorityApi extends PrivateApiComponentBase {
             throw new DeployAppConfigNotFoundException(paramObj.getLong("appSystemId"));
         }
 
-        JSONArray finalTheadList = JSONArray.parseArray(theadList.toString());
         if(CollectionUtils.isNotEmpty(pipelineConfigVo.getScenarioList())) {
             for (AutoexecCombopScenarioVo scenarioVo : pipelineConfigVo.getScenarioList()) {
                 JSONObject scenarioKeyValue = new JSONObject();
@@ -122,9 +126,9 @@ public class SearchDeployAppConfigAuthorityApi extends PrivateApiComponentBase {
         if (count > 0) {
             searchVo.setRowNum(count);
             List<DeployAppConfigAuthorityVo> appConfigAuthList = deployAppConfigMapper.getAppConfigAuthorityList(searchVo);
-            if (CollectionUtils.isNotEmpty(appConfigAuthList)) {
-                //获取当前应用下的所有环境
-                List<DeployAppEnvironmentVo> envList = deployAppConfigMapper.getDeployAppEnvListByAppSystemIdAndModuleIdList(paramObj.getLong("appSystemId"), new ArrayList<>(), TenantContext.get().getDataDbName());
+            List<DeployAppConfigAuthorityVo> returnList= deployAppConfigMapper.getAppConfigAuthorityDetailList(appConfigAuthList);
+            if (CollectionUtils.isNotEmpty(returnList)) {
+
                 Map<Long, String> envIdNameMap = new HashMap<>();
                 List<String> scenarioList = new ArrayList<>();
                 if (CollectionUtils.isNotEmpty(envList)) {
@@ -134,7 +138,7 @@ public class SearchDeployAppConfigAuthorityApi extends PrivateApiComponentBase {
                     scenarioList = pipelineConfigVo.getScenarioList().stream().map(AutoexecCombopScenarioVo::getScenarioName).collect(Collectors.toList());
                 }
 
-                for (DeployAppConfigAuthorityVo appConfigAuthorityVo : appConfigAuthList) {
+                for (DeployAppConfigAuthorityVo appConfigAuthorityVo : returnList) {
                     List<DeployAppConfigAuthorityActionVo> actionList = appConfigAuthorityVo.getActionList();
                     JSONObject actionAuth = new JSONObject();
                     actionAuth.put("authUuid", appConfigAuthorityVo.getAuthUuid());
