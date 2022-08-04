@@ -205,7 +205,7 @@
         LEFT JOIN deploy_version_env dve ON dve.version_id = dv.id
         JOIN cmdb_cientity cc ON cc.id = dace.env_id
         WHERE dv.id IN
-        <foreach collection="list" item="id" separator="," open="(" close=")">
+        <foreach collection="idList" item="id" separator="," open="(" close=")">
             #{id}
         </foreach>
         )
