@@ -102,8 +102,6 @@ public interface DeployAppConfigMapper {
 
     Integer updateAppConfigDraft(DeployAppConfigVo deployAppConfigDraftVo);
 
-    Integer deleteAppConfigAuthorityByAppIdAndAuthUuidAndLcd(@Param("appSystemId") Long appSystemId, @Param("authUuid") String uuid, @Param("lcd") Date nowTime);
-
     void deleteAppConfigAuthorityByAppIdAndAuthUuidListAndLcd(@Param("appSystemId") Long appSystemId, @Param("authUuidList") List<String> authUuidList, @Param("lcd") Date nowTime);
 
     Integer deleteAppConfigAuthorityByAppIdAndAuthUuidList(@Param("appSystemId") Long appSystemId, @Param("uuidList") List<String> uuidList);
