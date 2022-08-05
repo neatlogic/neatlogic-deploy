@@ -6,6 +6,7 @@
 package codedriver.module.deploy.service;
 
 import codedriver.framework.deploy.dto.job.LaneGroupVo;
+import com.alibaba.fastjson.JSONObject;
 
 public interface DeployBatchJobService {
     /**
@@ -21,7 +22,7 @@ public interface DeployBatchJobService {
      *
      * @param groupId 组id
      */
-    void fireLaneGroup(Long groupId, String batchJobAction, String jobAction) throws Exception;
+    void fireLaneGroup(Long groupId, String batchJobAction, String jobAction, JSONObject passThroughEnv) throws Exception;
 
     /**
      * @param groupId  组id
@@ -35,19 +36,19 @@ public interface DeployBatchJobService {
      * @param groupVo  组
      * @param isRefire 是否重跑
      */
-    void fireLaneGroup(LaneGroupVo groupVo, int isRefire) throws Exception;
+    void fireLaneGroup(LaneGroupVo groupVo, int isRefire, JSONObject passThroughEnv) throws Exception;
 
     /**
      * 检查并激活下一个组
      *
      * @param groupVo 组
      */
-    void checkAndFireLaneNextGroup(LaneGroupVo groupVo);
+    void checkAndFireLaneNextGroup(LaneGroupVo groupVo, JSONObject passThroughEnv);
 
     /**
      * 检查并激活下一个组
      *
      * @param groupId 组id
      */
-    void checkAndFireLaneNextGroup(Long groupId);
+    void checkAndFireLaneNextGroup(Long groupId, JSONObject passThroughEnv);
 }

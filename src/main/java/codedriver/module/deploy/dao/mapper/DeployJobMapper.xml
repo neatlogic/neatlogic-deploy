@@ -25,6 +25,27 @@
         where a.id = #{value}
     </select>
 
+    <select id="getDeployJobByJobIdList" resultType="codedriver.framework.deploy.dto.job.DeployJobVo">
+        select a.id,
+        app_system_id as appSystemId,
+        b.name as appSystemName,
+        app_module_id as appModuleId,
+        c.name as appModuleName,
+        env_id as envId,
+        d.name as envName,
+        version,
+        build_no as buildNo,
+        runner_map_id as runnerMapId
+        from deploy_job a
+        left join cmdb_cientity b ON a.app_system_id = b.id
+        left join cmdb_cientity c ON a.app_module_id = c.id
+        left join cmdb_cientity d ON a.env_id = d.id
+        where a.id in
+        <foreach collection="list" item="id" separator="," open="(" close=")">
+            #{id}
+        </foreach>
+    </select>
+
     <sql id="searchJobSql">
         <if test="(typeIdList != null and typeIdList.size() > 0) or (combopName != null and combopName != '' )">
             LEFT JOIN `autoexec_combop` ac ON aj.`operation_id` = ac.`id`
