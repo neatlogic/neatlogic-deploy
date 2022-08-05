@@ -1148,6 +1148,19 @@
         </if>
     </delete>
 
+    <delete id="deleteAppConfigAuthorityByAppIdAndAuthUuidListAndLcd">
+        delete
+        from `deploy_app_config_authority`
+        where `app_system_id` = #{appSystemId}
+        and `auth_uuid`  in
+        <foreach collection="authUuidList" open="(" close=")" separator="," item="authUuid">
+           #{authUuid}
+        </foreach>
+        <if test="lcd != null">
+            and `lcd` != #{lcd}
+        </if>
+    </delete>
+
     <delete id="deleteAppConfigAuthorityByAppIdAndAuthUuidList">
         delete
         from `deploy_app_config_authority`

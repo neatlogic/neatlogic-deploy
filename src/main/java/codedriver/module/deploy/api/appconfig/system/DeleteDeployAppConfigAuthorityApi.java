@@ -54,7 +54,7 @@ public class DeleteDeployAppConfigAuthorityApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject paramObj) {
         DeployAppConfigAuthorityVo deployAppConfigAuthorityVo = paramObj.toJavaObject(DeployAppConfigAuthorityVo.class);
-        deployAppConfigMapper.deleteAppConfigAuthorityByAppIdAndAuthUuidAndLcd(deployAppConfigAuthorityVo.getAppSystemId(),deployAppConfigAuthorityVo.getEnvId(),deployAppConfigAuthorityVo.getAuthUuid(),null);
+        deployAppConfigMapper.deleteAppConfigAuthorityByAppIdAndAuthUuidAndLcd(deployAppConfigAuthorityVo.getAppSystemId(),deployAppConfigAuthorityVo.getAuthUuid(),null);
         return null;
     }
 }
