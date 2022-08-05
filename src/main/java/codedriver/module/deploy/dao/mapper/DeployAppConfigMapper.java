@@ -34,6 +34,8 @@ public interface DeployAppConfigMapper {
 
     List<DeployAppConfigAuthorityVo> getAppConfigAuthorityDetailList(@Param("appConfigAuthList") List<DeployAppConfigAuthorityVo> appConfigAuthList);
 
+    List<DeployAppConfigAuthorityVo> getAppConfigAuthorityListByAppSystemId(Long appSystemId);
+
     List<DeployAppEnvAutoConfigVo> getAppEnvAutoConfigListBySystemIdAndModuleIdAndEnvIdAndInstanceIdList(@Param("appSystemId") Long appSystemId, @Param("appModuleId") Long appModuleId, @Param("envId") Long envId, @Param("instanceIdList") List<Long> instanceIdList);
 
     List<DeployAppEnvAutoConfigKeyValueVo> getAppEnvAutoConfigKeyValueList(DeployAppEnvAutoConfigVo envAutoConfigVo);
@@ -48,7 +50,7 @@ public interface DeployAppConfigMapper {
 
     DeployAppConfigVo getAppConfigDraft(DeployAppConfigVo deployAppConfigDraftVo);
 
-    List<DeployAppConfigInstanceVo> searchAppConfigEnvInstanceList( DeployAppConfigInstanceVo searchVo);
+    List<DeployAppConfigInstanceVo> searchAppConfigEnvInstanceList(DeployAppConfigInstanceVo searchVo);
 
     List<DeployAppEnvironmentVo> getDeployAppEnvListByAppSystemIdAndModuleIdList(@Param("appSystemId") Long appSystemId, @Param("appModuleIdList") List<Long> appModuleIdList, @Param("schemaName") String schemaName);
 
@@ -100,7 +102,9 @@ public interface DeployAppConfigMapper {
 
     Integer updateAppConfigDraft(DeployAppConfigVo deployAppConfigDraftVo);
 
-    Integer deleteAppConfigAuthorityByAppIdAndEnvIdAndAuthUuidAndLcd(@Param("appSystemId") Long appSystemId, @Param("envId") Long envId, @Param("authUuid") String uuid, @Param("lcd") Date nowTime);
+    Integer deleteAppConfigAuthorityByAppIdAndAuthUuidAndLcd(@Param("appSystemId") Long appSystemId, @Param("envId") Long envId, @Param("authUuid") String uuid, @Param("lcd") Date nowTime);
+
+    Integer deleteAppConfigAuthorityByAppIdAndAuthUuidList(@Param("appSystemId") Long appSystemId, @Param("uuidList") List<String> uuidList);
 
     Integer deleteAppEnvAutoConfig(DeployAppEnvAutoConfigVo deployAppEnvAutoConfigVo);
 
@@ -114,6 +118,7 @@ public interface DeployAppConfigMapper {
 
     /**
      * 查询发布应用配置的应用实例下的无模块无环境、无模块同环境、同模块无环境的实例个数
+     *
      * @param searchVo searchVo
      * @return count
      */
@@ -174,4 +179,5 @@ public interface DeployAppConfigMapper {
     void deleteAppConfigEnvByAppSystemIdAndAppModuleIdAndEnvIdList(@Param("appSystemId") Long appSystemId, @Param("appModuleId") Long appModuleId, @Param("envIdList") List<Long> envIdList);
 
     void deleteAppConfigDBConfigByIdList(List<Long> idList);
+
 }

@@ -8,7 +8,6 @@ package codedriver.module.deploy.api.appconfig.system;
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.deploy.auth.DEPLOY_BASE;
-import codedriver.framework.deploy.dto.app.DeployAppConfigAuthorityVo;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
@@ -25,18 +24,18 @@ import javax.annotation.Resource;
 @Service
 @AuthAction(action = DEPLOY_BASE.class)
 @OperationType(type = OperationTypeEnum.UPDATE)
-public class DeployAppConfigAuthorityDeleteApi extends PrivateApiComponentBase {
+public class DeleteBatchDeployAppConfigAuthorityApi extends PrivateApiComponentBase {
     @Resource
     private DeployAppConfigMapper deployAppConfigMapper;
 
     @Override
     public String getToken() {
-        return "deploy/app/config/authority/delete";
+        return "deploy/app/config/authority/batch/delete";
     }
 
     @Override
     public String getName() {
-        return "删除应用配置权限";
+        return "批量删除应用配置权限";
     }
 
     @Override
@@ -46,16 +45,14 @@ public class DeployAppConfigAuthorityDeleteApi extends PrivateApiComponentBase {
 
     @Input({
             @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "应用资产id"),
-            @Param(name = "envId", type = ApiParamType.LONG, isRequired = true, desc = "环境资产id"),
-            @Param(name = "authUuid", type = ApiParamType.STRING, isRequired = true, desc = "授权列表")
+            @Param(name = "uuidList", type = ApiParamType.JSONARRAY, isRequired = true,  desc = "授权列表")
     })
     @Output({
     })
-    @Description(desc = "删除应用配置权限")
+    @Description(desc = "批量删除应用配置权限")
     @Override
     public Object myDoService(JSONObject paramObj) {
-        DeployAppConfigAuthorityVo deployAppConfigAuthorityVo = paramObj.toJavaObject(DeployAppConfigAuthorityVo.class);
-        deployAppConfigMapper.deleteAppConfigAuthorityByAppIdAndEnvIdAndAuthUuidAndLcd(deployAppConfigAuthorityVo.getAppSystemId(),deployAppConfigAuthorityVo.getEnvId(),deployAppConfigAuthorityVo.getAuthUuid(),null);
+        deployAppConfigMapper.deleteAppConfigAuthorityByAppIdAndAuthUuidList(paramObj.getLong("appSystemId"), paramObj.getJSONArray("uuidList").toJavaList(String.class));
         return null;
     }
 }
