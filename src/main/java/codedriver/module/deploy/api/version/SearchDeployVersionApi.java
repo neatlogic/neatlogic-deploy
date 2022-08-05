@@ -1,9 +1,11 @@
 package codedriver.module.deploy.api.version;
 
+import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.dto.BasePageVo;
 import codedriver.framework.deploy.auth.DEPLOY_BASE;
+import codedriver.framework.deploy.dto.version.DeployVersionEnvVo;
 import codedriver.framework.deploy.dto.version.DeployVersionVo;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
@@ -17,6 +19,8 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * @author longrf
@@ -62,17 +66,36 @@ public class SearchDeployVersionApi extends PrivateApiComponentBase {
     @Description(desc = "查询发布版本列表")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
-        DeployVersionVo versionVo = paramObj.toJavaObject(DeployVersionVo.class);
-        List<DeployVersionVo> returnList = new ArrayList<>();
+        DeployVersionVo paramVersionVo = paramObj.toJavaObject(DeployVersionVo.class);
+        List<DeployVersionVo> returnVersionList = new ArrayList<>();
 
-        int count = deployVersionMapper.searchDeployVersionCount(versionVo);
+        int count = deployVersionMapper.searchDeployVersionCount(paramVersionVo);
         if (count > 0) {
-            versionVo.setRowNum(count);
-            List<Long> idList = deployVersionMapper.getDeployVersionIdList(versionVo);
+            paramVersionVo.setRowNum(count);
+            List<Long> idList = deployVersionMapper.getDeployVersionIdList(paramVersionVo);
             if (CollectionUtils.isNotEmpty(idList)) {
-                returnList = deployVersionMapper.getDeployVersionByIdList(idList);
+                returnVersionList = deployVersionMapper.getDeployVersionByIdList(idList);
+                List<DeployVersionVo> versionVoListIncludeEnvList = deployVersionMapper.getDeployVersionIncludeEnvListByVersionIdList(idList, TenantContext.get().getDataDbName());
+                Map<Long, List<DeployVersionEnvVo>> allEnvListMap = versionVoListIncludeEnvList.stream().collect(Collectors.toMap(DeployVersionVo::getId, DeployVersionVo::getEnvList));
+                //补充版本的环境
+                for (DeployVersionVo returnVersion : returnVersionList) {
+                    List<DeployVersionEnvVo> returnVersionEnvList = new ArrayList<>();
+                    List<DeployVersionEnvVo> versionEnvVoList = returnVersion.getEnvList();
+                    Map<Long, DeployVersionEnvVo> envListIncludeStatus = versionEnvVoList.stream().collect(Collectors.toMap(DeployVersionEnvVo::getEnvId, e -> e));
+
+                    List<DeployVersionEnvVo> allVersionEnvVoList = allEnvListMap.get(returnVersion.getId());
+                    if (CollectionUtils.isNotEmpty(allVersionEnvVoList)) {
+                        for (DeployVersionEnvVo envVo : allVersionEnvVoList) {
+                            if (envListIncludeStatus.containsKey(envVo.getEnvId())) {
+                                envVo = envListIncludeStatus.get(envVo.getEnvId());
+                            }
+                            returnVersionEnvList.add(envVo);
+                        }
+                    }
+                    returnVersion.setEnvList(returnVersionEnvList);
+                }
             }
         }
-        return TableResultUtil.getResult(returnList, versionVo);
+        return TableResultUtil.getResult(returnVersionList, paramVersionVo);
     }
 }
