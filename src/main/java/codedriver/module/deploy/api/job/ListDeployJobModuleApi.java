@@ -126,7 +126,7 @@ public class ListDeployJobModuleApi extends PrivateApiComponentBase {
                         List<AutoexecCombopPhaseOperationVo> phaseOperationList = pipelinePhaseVo.getConfig().getPhaseOperationList();
                         for (AutoexecCombopPhaseOperationVo operationVo : phaseOperationList) {
                             if (StringUtils.equals(ToolType.TOOL.getValue(), operationVo.getOperationType())) {
-                                AutoexecOperationBaseVo autoexecOperationBaseVo = autoexecServiceCrossoverService.getAutoexecOperationBaseVoByIdAndType(operationVo);
+                                AutoexecOperationBaseVo autoexecOperationBaseVo = autoexecServiceCrossoverService.getAutoexecOperationBaseVoByIdAndType(operationVo, false);
                                 if (autoexecOperationBaseVo != null && StringUtils.equals(autoexecOperationBaseVo.getTypeName(), "BUILD")) {
                                     appModuleVo.setIsHasBuildTypeTool(1);
                                 }
