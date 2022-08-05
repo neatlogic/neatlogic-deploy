@@ -1152,9 +1152,9 @@
         delete
         from `deploy_app_config_authority`
         where `app_system_id` = #{appSystemId}
-        and `auth_uuid`  in
+        and `auth_uuid` in
         <foreach collection="authUuidList" open="(" close=")" separator="," item="authUuid">
-           #{authUuid}
+            #{authUuid}
         </foreach>
         <if test="lcd != null">
             and `lcd` != #{lcd}
