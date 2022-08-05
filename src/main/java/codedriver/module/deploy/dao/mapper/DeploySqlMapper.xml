@@ -379,10 +379,13 @@
             ,sort = #{sort}
         </if>
         <choose>
-            <when test="status == 'pending'">
+            <when test="status == null || status == 'pending'">
+                ,`start_time`= null
+                ,`end_time`= null
             </when>
             <when test="status == 'running'">
                 ,`start_time`=now(3)
+                ,`end_time`= null
             </when>
             <otherwise>
                 ,`end_time`=now(3)
