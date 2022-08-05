@@ -1138,14 +1138,15 @@
           and `env_id` = #{envId}
     </update>
 
-    <delete id="deleteAppConfigAuthorityByAppIdAndAuthUuidAndLcd">
+    <delete id="deleteAppConfigAuthorityByAppIdAndAuthUuidListAndLcd">
         delete
         from `deploy_app_config_authority`
         where `app_system_id` = #{appSystemId}
-        and `auth_uuid` = #{authUuid}
-        <if test="lcd != null">
-            and `lcd` != #{lcd}
-        </if>
+        and `auth_uuid` in
+        <foreach collection="authUuidList" open="(" close=")" separator="," item="authUuid">
+            #{authUuid}
+        </foreach>
+        and `lcd` != #{lcd}
     </delete>
 
     <delete id="deleteAppConfigAuthorityByAppIdAndAuthUuidList">
