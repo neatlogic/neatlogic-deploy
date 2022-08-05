@@ -5,6 +5,7 @@
 
 package codedriver.module.deploy.api.job;
 
+import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.auth.core.AuthActionChecker;
 import codedriver.framework.autoexec.constvalue.JobStatus;
@@ -16,6 +17,8 @@ import codedriver.framework.deploy.constvalue.JobSource;
 import codedriver.framework.deploy.dto.job.DeployJobVo;
 import codedriver.framework.deploy.dto.job.LaneGroupVo;
 import codedriver.framework.deploy.dto.job.LaneVo;
+import codedriver.framework.deploy.exception.DeployBatchJobCannotEditException;
+import codedriver.framework.deploy.exception.DeployBatchJobNotFoundException;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
@@ -27,6 +30,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.Objects;
 
 @Service
 @AuthAction(action = BATCHDEPLOY_MODIFY.class)
@@ -64,6 +68,16 @@ public class SaveBatchDeployJobApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         Long id = jsonObj.getLong("id");
+        if(id != null){
+            DeployJobVo deployJobVo = deployJobMapper.getBatchDeployJobById(id);
+            if(deployJobVo == null){
+                throw new DeployBatchJobNotFoundException(id);
+            }
+            //如果批量作业是running状态则不允许编辑
+            if(Objects.equals(JobStatus.RUNNING.getValue(), deployJobVo.getStatus())){
+                throw new DeployBatchJobCannotEditException(JobStatus.RUNNING.getText());
+            }
+        }
         DeployJobVo deployJobVo = JSONObject.toJavaObject(jsonObj, DeployJobVo.class);
         String saveMode = jsonObj.getString("saveMode");
         if (saveMode.equals("save")) {
@@ -77,6 +91,7 @@ public class SaveBatchDeployJobApi extends PrivateApiComponentBase {
             }
         }
         deployJobVo.setSource(JobSource.BATCHDEPLOY.getValue());
+        deployJobVo.setExecUser(UserContext.get().getUserUuid());
         if (id == null) {
             deployJobMapper.insertAutoExecJob(deployJobVo);
         } else {

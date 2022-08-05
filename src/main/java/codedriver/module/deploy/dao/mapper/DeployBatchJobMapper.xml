@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright(c) 2022 TechSure Co., Ltd. All Rights Reserved.
+  ~ 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
+  -->
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="codedriver.module.deploy.dao.mapper.DeployBatchJobMapper">
+    <select id="getBatchDeployJobLockById" parameterType="java.lang.Long"
+            resultType="codedriver.framework.deploy.dto.job.DeployJobVo">
+        SELECT a.id              as batchJobId,
+               a.`name`          as batchJobName,
+               a.`status`        as batchJobStatus,
+               a.error_msg       as batchJobErrorMsg,
+               a.plan_start_time as batchJobPlanStartTime,
+               a.start_time      as batchJobStartTime,
+               a.end_time        as batchJobEndTime,
+               a.source          as batchJobSource,
+               a.reviewer        as batchJobReviewer,
+               a.review_status   as batchJobReviewStatus,
+               a.review_time     as batchJobReviewTime
+        FROM autoexec_job AS a
+        where id = #{value} for
+        update
+    </select>
+
+    <select id="getBatchDeployJobListByIdAndStatus"
+            resultType="codedriver.framework.autoexec.dto.job.AutoexecJobVo">
+        SELECT e.id as id,
+        e.`name` as name,
+        e.`status` as status,
+        e.error_msg as errorMsg,
+        e.plan_start_time as planStartTime,
+        e.start_time as startTime,
+        e.end_time as endTime,
+        e.source as source
+        FROM autoexec_job AS a
+        LEFT JOIN deploy_job_lane AS b ON a.id = b.batch_job_id
+        LEFT JOIN deploy_job_lane_group AS c ON b.id = c.lane_id
+        LEFT JOIN deploy_job_lane_group_job AS d ON c.id = d.group_id
+        LEFT JOIN autoexec_job AS e ON d.job_id = e.id
+        where a.id = #{id} and e.status in
+        <foreach collection="statusList" item="status" open="(" close=")" separator=",">
+            #{status}
+        </foreach>
+    </select>
+    <select id="getLaneListByBatchJobId" resultType="codedriver.framework.deploy.dto.job.LaneVo">
+        SELECT id,
+               batch_job_id AS batchJobId,
+               sort,
+               status
+        FROM deploy_job_lane
+        WHERE batch_job_id = #{value}
+    </select>
+    <select id="getLaneFireGroupId" resultType="java.lang.Long">
+        SELECT g.id
+        FROM deploy_job_lane l
+                 LEFT JOIN deploy_job_lane_group g on l.id = g.lane_id
+        WHERE l.batch_job_id = #{batchJobId}
+          AND l.id = #{laneId}
+        ORDER BY g.sort
+        LIMIT 1
+    </select>
+    <select id="getLaneGroupByGroupId" resultType="codedriver.framework.deploy.dto.job.LaneGroupVo">
+        SELECT id,
+               lane_id   AS laneId,
+               need_wait AS needWait,
+               sort      AS sort,
+               status    AS status
+        FROM deploy_job_lane_group
+        WHERE id = #{value}
+    </select>
+    <select id="getJobsByGroupIdAndWithoutStatus"
+            resultType="codedriver.framework.autoexec.dto.job.AutoexecJobVo">
+        select  e.id as id,
+        e.`name` as name,
+        e.`status` as status,
+        e.error_msg as errorMsg,
+        e.plan_start_time as planStartTime,
+        e.start_time as startTime,
+        e.end_time as endTime,
+        e.source as source
+        from deploy_job_lane_group_job AS d
+        LEFT JOIN autoexec_job AS e ON d.job_id = e.id
+        where d.group_id = #{groupId}
+        and e.status not in
+        <foreach collection="statusList" item="status" open="(" close=")" separator=",">
+            #{status}
+        </foreach>
+    </select>
+    <select id="getNextGroupId" resultType="java.lang.Long">
+        SELECT id
+        FROM deploy_job_lane_group
+        WHERE lane_id = #{laneId}
+          AND sort > #{currentSort}
+        ORDER BY sort
+        LIMIT 1
+    </select>
+    <select id="getLaneById" resultType="codedriver.framework.deploy.dto.job.LaneVo">
+        SELECT id,
+               batch_job_id AS batchJobId,
+               sort,
+               STATUS
+        FROM deploy_job_lane
+        WHERE id = #{value}
+    </select>
+    <select id="getLaneGroupByJobId" resultType="codedriver.framework.deploy.dto.job.LaneGroupVo">
+        SELECT b.id,
+               b.lane_id   AS laneId,
+               b.need_wait AS needWait,
+               b.sort      AS sort,
+               b.status    AS status
+        FROM deploy_job_lane_group_job a
+                 left join deploy_job_lane_group b on a.group_id = b.id
+        WHERE a.job_id = #{value}
+    </select>
+    <update id="updateLaneStatus">
+        UPDATE deploy_job_lane
+        SET status = #{laneStatus}
+        WHERE id = #{laneId}
+    </update>
+    <update id="updateGroupStatusByLaneId">
+        UPDATE
+            deploy_job_lane_group g
+                LEFT JOIN deploy_job_lane l on l.id = g.lane_id
+        SET g.status = #{groupStatus}
+        WHERE l.id = #{laneId}
+    </update>
+    <update id="updateGroupStatus">
+        UPDATE
+            deploy_job_lane_group g
+        SET g.status = #{group.status}
+        WHERE g.id = #{group.id}
+    </update>
+</mapper>
