@@ -56,16 +56,16 @@
         #{sqlVo.isDelete},
         #{sqlVo.sort},
         <choose>
-            <when test="sqlVo.warnCount != null">
-                #{sqlVo.warnCount},
+            <when test="sqlVo.isModified != null">
+                #{sqlVo.isModified},
             </when>
             <otherwise>
                 0,
             </otherwise>
         </choose>
         <choose>
-            <when test="sqlVo.isModified != null">
-                #{sqlVo.isModified}
+            <when test="sqlVo.warnCount != null">
+                #{sqlVo.warnCount}
             </when>
             <otherwise>
                 0
