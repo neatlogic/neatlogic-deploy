@@ -13,7 +13,7 @@ public interface DeployBatchJobService {
      *
      * @param batchJobId 批量作业id
      */
-    void fireBatch(Long batchJobId);
+    void fireBatch(Long batchJobId, String batchJobAction, String jobAction);
 
 
     /**
@@ -21,14 +21,13 @@ public interface DeployBatchJobService {
      *
      * @param groupId 组id
      */
-    void fireLaneGroup(Long groupId) throws Exception;
+    void fireLaneGroup(Long groupId, String batchJobAction, String jobAction) throws Exception;
 
     /**
-     *
-     * @param groupId 组id
-     * @param needWait 执行完该组后是否需要等待，即不继续激活下一组，1：是，0：否
+     * @param groupId  组id
+     * @param isGoon 执行完当前组是否停止不继续执行后续组，但仍受needWait约束
      */
-    public void fireLaneGroup(Long groupId, int needWait);
+    void refireLaneGroup(Long groupId, int isGoon, String batchJobAction, String jobAction);
 
     /**
      * 激活泳道
@@ -36,7 +35,7 @@ public interface DeployBatchJobService {
      * @param groupVo  组
      * @param isRefire 是否重跑
      */
-    void fireLaneGroup(LaneGroupVo groupVo, boolean isRefire) throws Exception;
+    void fireLaneGroup(LaneGroupVo groupVo, int isRefire) throws Exception;
 
     /**
      * 检查并激活下一个组
