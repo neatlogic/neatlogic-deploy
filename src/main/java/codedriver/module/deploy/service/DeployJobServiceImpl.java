@@ -87,12 +87,14 @@ public class DeployJobServiceImpl implements DeployJobService {
                 throw new CiEntityNotFoundException(jsonObj.getString("appSystemName"));
             }
             jsonObj.put("appSystemId", appSystem.getId());
+            jsonObj.put("appSystemAbbrName", appSystem.getAbbrName());
         } else if (appSystemId != null) {
-            CiEntityVo appSystem = iCiEntityCrossoverMapper.getCiEntityBaseInfoById(appSystemId);
+            AppSystemVo appSystem = iAppSystemMapper.getAppSystemById(appSystemId, TenantContext.get().getDataDbName());
             if (iCiEntityCrossoverMapper.getCiEntityBaseInfoById(appSystemId) == null) {
                 throw new CiEntityNotFoundException(jsonObj.getLong("appSystemId"));
             }
             jsonObj.put("appSystemName", appSystem.getName());
+            jsonObj.put("appSystemAbbrName", appSystem.getAbbrName());
         } else {
             throw new ParamIrregularException("appSystemId | appSystemName");
         }
@@ -149,13 +151,15 @@ public class DeployJobServiceImpl implements DeployJobService {
             moduleJson.put("id", appModuleVo.getId());
             jsonObj.put("appModuleId", appModuleVo.getId());
             jsonObj.put("appModuleName", moduleJson.getString("name"));
+            jsonObj.put("appModuleAbbrName", moduleJson.getString("abbrName"));
         } else if (appModuleId != null) {
-            CiEntityVo entityVo = iCiEntityCrossoverMapper.getCiEntityBaseInfoById(appModuleId);
-            if (entityVo == null) {
+            AppModuleVo appModuleVo = iAppSystemMapper.getAppModuleById(appModuleId, TenantContext.get().getDataDbName());
+            if (appModuleVo == null) {
                 throw new CiEntityNotFoundException(moduleJson.getLong("id"));
             }
             jsonObj.put("appModuleId", moduleJson.getLong("id"));
-            jsonObj.put("appModuleName", entityVo.getName());
+            jsonObj.put("appModuleName", appModuleVo.getName());
+            jsonObj.put("appModuleAbbrName", appModuleVo.getAbbrName());
         } else {
             throw new AppModuleNotFoundException();
         }
@@ -203,7 +207,7 @@ public class DeployJobServiceImpl implements DeployJobService {
             }
             put("selectNodeList", selectNodeArray);
         }});
-        jsonObj.put("name", jsonObj.getString("appSystemName") + "/" + jsonObj.getString("appModuleName") + "/" + jsonObj.getString("envName") + "/" + jsonObj.getString("scenarioName"));
+        jsonObj.put("name", jsonObj.getString("appSystemAbbrName") + "/" + jsonObj.getString("appModuleAbbrName") + "/" + jsonObj.getString("envName") + "/" + jsonObj.getString("scenarioName"));
     }
 
     @Override
