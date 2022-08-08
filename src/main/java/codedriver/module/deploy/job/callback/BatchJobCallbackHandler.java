@@ -13,6 +13,7 @@ import codedriver.framework.deploy.constvalue.JobSource;
 import codedriver.framework.deploy.dto.job.LaneGroupVo;
 import codedriver.module.deploy.dao.mapper.DeployBatchJobMapper;
 import codedriver.module.deploy.service.DeployBatchJobService;
+import org.apache.commons.collections4.MapUtils;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
@@ -44,8 +45,8 @@ public class BatchJobCallbackHandler extends AutoexecJobCallbackBase {
             if (Objects.equals(JobSource.DEPLOY.getValue(), autoexecJob.getSource()) && autoexecJob.getParentId() != null) {
                 //作业回调
                 AutoexecJobVo parentJobVo = autoexecJobMapper.getJobInfo(autoexecJob.getParentId());
-                if (parentJobVo != null && Objects.equals(parentJobVo.getSource(), JobSource.BATCHDEPLOY.getValue())) {
-                    return Arrays.asList(JobStatus.COMPLETED.getValue(),JobStatus.FAILED.getValue(),JobStatus.ABORTED.getValue()).contains(autoexecJob.getStatus()) ;
+                if (MapUtils.isNotEmpty(jobVo.getPassThroughEnv()) && jobVo.getPassThroughEnv().containsKey("DEPLOY_ID_PATH") && parentJobVo != null && Objects.equals(parentJobVo.getSource(), JobSource.BATCHDEPLOY.getValue())) {
+                    return Arrays.asList(JobStatus.COMPLETED.getValue(), JobStatus.FAILED.getValue(), JobStatus.ABORTED.getValue()).contains(autoexecJob.getStatus());
                 }
             } else if (Objects.equals(autoexecJob.getSource(), JobSource.BATCHDEPLOY.getValue())) {
                 //TODO 批量作业回调
@@ -58,8 +59,8 @@ public class BatchJobCallbackHandler extends AutoexecJobCallbackBase {
     public void doService(Long invokeId, AutoexecJobVo jobVo) {
         Long jobId = jobVo.getId();
         LaneGroupVo laneGroupVo = deployBatchJobMapper.getLaneGroupByJobId(jobId);
-        if(laneGroupVo != null) {
-            deployBatchJobService.checkAndFireLaneNextGroup(laneGroupVo.getId());
+        if (laneGroupVo != null) {
+            deployBatchJobService.checkAndFireLaneNextGroup(laneGroupVo.getId(),jobVo.getPassThroughEnv());
         }
     }
 }
