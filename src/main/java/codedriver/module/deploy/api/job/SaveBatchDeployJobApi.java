@@ -14,6 +14,7 @@ import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.deploy.auth.BATCHDEPLOY_MODIFY;
 import codedriver.framework.deploy.auth.BATCHDEPLOY_VERIFY;
 import codedriver.framework.deploy.constvalue.JobSource;
+import codedriver.framework.deploy.dto.job.DeployJobAuthVo;
 import codedriver.framework.deploy.dto.job.DeployJobVo;
 import codedriver.framework.deploy.dto.job.LaneGroupVo;
 import codedriver.framework.deploy.dto.job.LaneVo;
@@ -62,19 +63,20 @@ public class SaveBatchDeployJobApi extends PrivateApiComponentBase {
     @Input({@Param(name = "id", type = ApiParamType.LONG, desc = "作业id，不提供代表添加作业"),
             @Param(name = "name", type = ApiParamType.STRING, isRequired = true, desc = "作业名称"),
             @Param(name = "saveMode", type = ApiParamType.ENUM, rule = "save,commit", isRequired = true, desc = "暂存或提交"),
-            @Param(name = "laneList", type = ApiParamType.JSONARRAY, desc = "通道列表")})
+            @Param(name = "laneList", type = ApiParamType.JSONARRAY, desc = "通道列表"),
+            @Param(name = "authList", type = ApiParamType.JSONARRAY, desc = "授权列表")})
     @Output({@Param(explode = DeployJobVo.class)})
     @Description(desc = "保存批量发布作业接口")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         Long id = jsonObj.getLong("id");
-        if(id != null){
+        if (id != null) {
             DeployJobVo deployJobVo = deployJobMapper.getBatchDeployJobById(id);
-            if(deployJobVo == null){
+            if (deployJobVo == null) {
                 throw new DeployBatchJobNotFoundException(id);
             }
             //如果批量作业是running状态则不允许编辑
-            if(Objects.equals(JobStatus.RUNNING.getValue(), deployJobVo.getStatus())){
+            if (Objects.equals(JobStatus.RUNNING.getValue(), deployJobVo.getStatus())) {
                 throw new DeployBatchJobCannotEditException(JobStatus.RUNNING.getText());
             }
         }
@@ -82,6 +84,7 @@ public class SaveBatchDeployJobApi extends PrivateApiComponentBase {
         String saveMode = jsonObj.getString("saveMode");
         if (saveMode.equals("save")) {
             deployJobVo.setStatus(JobStatus.SAVED.getValue());
+            deployJobVo.setReviewStatus(null);
         } else {
             deployJobVo.setStatus(JobStatus.PENDING.getValue());
             if (!AuthActionChecker.check(BATCHDEPLOY_VERIFY.class)) {
@@ -99,6 +102,7 @@ public class SaveBatchDeployJobApi extends PrivateApiComponentBase {
             deployJobMapper.deleteLaneGroupJobByJobId(deployJobVo.getId());
             deployJobMapper.resetAutoexecJobParentId(deployJobVo.getId());
             deployJobMapper.deleteJobInvokeByJobId(deployJobVo.getId());
+            deployJobMapper.deleteJobAuthByJobId(deployJobVo.getId());
         }
         if (CollectionUtils.isNotEmpty(deployJobVo.getLaneList())) {
             for (int i = 0; i < deployJobVo.getLaneList().size(); i++) {
@@ -133,6 +137,12 @@ public class SaveBatchDeployJobApi extends PrivateApiComponentBase {
                     laneVo.setStatus(JobStatus.PENDING.getValue());
                     deployJobMapper.insertLane(laneVo);
                 }
+            }
+        }
+        if (CollectionUtils.isNotEmpty(deployJobVo.getAuthList())) {
+            for (DeployJobAuthVo authVo : deployJobVo.getAuthList()) {
+                authVo.setJobId(deployJobVo.getId());
+                deployJobMapper.insertDeployJobAuth(authVo);
             }
         }
         return deployJobMapper.getBatchDeployJobById(deployJobVo.getId());

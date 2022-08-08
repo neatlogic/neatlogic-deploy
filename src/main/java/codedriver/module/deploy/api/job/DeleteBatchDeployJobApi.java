@@ -5,7 +5,6 @@
 
 package codedriver.module.deploy.api.job;
 
-import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.deploy.auth.BATCHDEPLOY_MODIFY;
@@ -49,10 +48,13 @@ public class DeleteBatchDeployJobApi extends PrivateApiComponentBase {
     @Description(desc = "删除批量发布作业接口")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
-        DeployJobVo deployJobVo = JSONObject.toJavaObject(jsonObj, DeployJobVo.class);
-        deployJobVo.setReviewer(UserContext.get().getUserUuid(true));
-        deployJobMapper.updateDeployJobReviewStatusById(deployJobVo);
-        return deployJobMapper.getBatchDeployJobById(deployJobVo.getId());
+        Long id = jsonObj.getLong("id");
+        deployJobMapper.deleteLaneGroupJobByJobId(id);
+        deployJobMapper.resetAutoexecJobParentId(id);
+        deployJobMapper.deleteJobInvokeByJobId(id);
+        deployJobMapper.deleteJobAuthByJobId(id);
+        deployJobMapper.deleteJobById(id);
+        return null;
     }
 
 }
