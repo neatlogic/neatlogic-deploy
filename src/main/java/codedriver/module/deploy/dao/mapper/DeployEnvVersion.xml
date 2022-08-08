@@ -40,6 +40,23 @@
         limit 1
     </select>
 
+    <select id="getDeployEnvVersionAuditBySystemIdAndModuleId"
+            resultType="codedriver.framework.deploy.dto.env.DeployEnvVersionAuditVo">
+        select
+            id,
+            app_system_id as appSystemId,
+            app_module_id as appModuleId,
+            env_id as envId,
+            new_version_id as newVersionId,
+            old_version_id as oldVersionId,
+            new_build_no as newBuildNo,
+            old_build_no as oldBuildNo,
+            direction,
+            fcu,
+            fcd
+        from deploy_env_version_audit where app_system_id = #{appSystemId} and app_module_id = #{appModuleId}
+    </select>
+
     <insert id="insertDeployEnvVersion" parameterType="codedriver.framework.deploy.dto.env.DeployEnvVersionVo">
         insert into deploy_env_version (
             app_system_id,

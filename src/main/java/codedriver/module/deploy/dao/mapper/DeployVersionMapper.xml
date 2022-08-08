@@ -526,6 +526,20 @@
         where a.version_id = #{versionId} and a.env_id = #{envId}
     </select>
 
+    <select id="getDeployVersionBySystemId" parameterType="java.lang.Long"
+            resultType="codedriver.framework.deploy.dto.version.DeployVersionVo">
+        select id,
+               version,
+               app_system_id   as appSystemId,
+               app_module_id   as appModuleId,
+               fcu,
+               fcd,
+               lcu,
+               lcd
+        from deploy_version
+        where app_system_id = #{value}
+    </select>
+
     <update id="unFreezeDeployVersionById">
         update deploy_version
         set is_freeze = #{isFreeze}
