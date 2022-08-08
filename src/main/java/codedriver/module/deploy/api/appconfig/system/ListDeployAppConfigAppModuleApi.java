@@ -65,8 +65,11 @@ public class ListDeployAppConfigAppModuleApi extends PrivateApiComponentBase {
         //TODO 考虑权限问题
         TenantContext.get().switchDataDatabase();
         IResourceCrossoverMapper resourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
-        List<Long> idList = resourceCrossoverMapper.getAppSystemModuleIdListByAppSystemIdAndAppModuleIdList(paramObj.getLong("appSystemId"),paramObj.getJSONArray("appModuleIdList"));
+        List<Long> idList = resourceCrossoverMapper.getAppSystemModuleIdListByAppSystemId(paramObj.getLong("appSystemId"));
         if (CollectionUtils.isNotEmpty(idList)) {
+            if (CollectionUtils.isNotEmpty(paramObj.getJSONArray("appModuleIdList"))) {
+                idList.addAll(paramObj.getJSONArray("appModuleIdList").toJavaList(Long.class));
+            }
             moduleResourceList = resourceCrossoverMapper.getAppModuleListByIdListSimple(idList);
         }
         TenantContext.get().switchDefaultDatabase();
