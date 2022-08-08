@@ -102,14 +102,17 @@ public class SearchDeployActiveVersionApi extends PrivateApiComponentBase {
                         if (moduleEnvList.size() > 0) {
                             moduleEnvListMap = moduleEnvList.stream().collect(Collectors.toMap(DeployAppModuleEnvVo::getId, DeployAppModuleEnvVo::getEnvList));
                             // 查出每个模块下的活动版本与最新非活动版本
-                            // 活动版本：没有走到最后一个环境的版本
-                            // 最新非活动版本：PRD环境（或自定义的顺序最后的环境）的当前版本是谁，谁就是最新的非活动版本
+                            // 活动版本：尚有环境未发布的版本
+                            // 非活动版本：全部环境都已发布的版本
                             for (Long moduleId : moduleIdList) {
-                                // todo 以环境为角度，取出当前模块下的所有环境（每个环境的记录按fcd排序），
-                                //  然后用版本作为外层循环，找出每个环境中当前版本的最后一次出现的位置，
-                                //  如果记录是【最后一条】或【最后一条记录的版本大于当前版本】，则认为当前版本在当前环境发布了，
-                                //  如果记录不是最后一条或最后一条记录的版本小于当前版本，则认为当前版本在当前环境回退过，回退时间为下一条记录的fcd
-                                //  版本在所有环境都被认为发布了，即可称之为非活动版本，如果有多个非活动版本，只取最后一个
+                                /**
+                                 * 以环境为角度，取出当前模块下的所有环境的audit（每个环境的记录按时间排序），
+                                 * 然后用版本循环，找出每个环境中当前版本的最后一次出现的位置（index），
+                                 * 如果没有找到，则认为当前版本未在当前环境发布
+                                 * 如果index是【最后一条】或【index的版本大于当前版本】，则认为当前版本在当前环境发布了，
+                                 * 如果index不是最后一条或最后一条记录的版本小于当前版本，则认为当前版本在当前环境回退过，回退时间为下一条记录的fcd
+                                 * 版本在所有环境都被认为发布了，即可称之为非活动版本，如果有多个非活动版本，只取最后一个
+                                 */
                                 List<AppEnvironmentVo> moduleAllEnv = moduleEnvListMap.get(moduleId); // 当前模块所有的环境
                                 DeployModuleActiveVersionVo moduleActiveVersion = new DeployModuleActiveVersionVo(systemId, moduleId);
                                 moduleActiveVersionList.add(moduleActiveVersion);
@@ -205,7 +208,6 @@ public class SearchDeployActiveVersionApi extends PrivateApiComponentBase {
                                 }
                             }
                         }
-
                     }
                 }
             }
