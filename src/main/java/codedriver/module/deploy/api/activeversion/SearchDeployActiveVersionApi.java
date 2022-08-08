@@ -110,6 +110,7 @@ public class SearchDeployActiveVersionApi extends PrivateApiComponentBase {
                                 //  如果记录是【最后一条】或【最后一条记录的版本大于当前版本】，则认为当前版本在当前环境发布了，
                                 //  如果记录不是最后一条或最后一条记录的版本小于当前版本，则认为当前版本在当前环境回退过，回退时间为下一条记录的fcd
                                 //  版本在所有环境都被认为发布了，即可称之为非活动版本，如果有多个非活动版本，只取最后一个
+                                List<AppEnvironmentVo> moduleAllEnv = moduleEnvListMap.get(moduleId); // 当前模块所有的环境
                                 DeployModuleActiveVersionVo moduleActiveVersion = new DeployModuleActiveVersionVo(systemId, moduleId);
                                 moduleActiveVersionList.add(moduleActiveVersion);
                                 List<DeployEnvVersionAuditVo> envVersionAuditList = deployEnvVersionMapper.getDeployEnvVersionAuditBySystemIdAndModuleId(systemId, moduleId);
@@ -117,6 +118,8 @@ public class SearchDeployActiveVersionApi extends PrivateApiComponentBase {
                                     List<DeployActiveVersionVo> activeVersionList = new ArrayList<>();
                                     moduleActiveVersion.setVersionList(activeVersionList);
                                     Map<Long, List<DeployEnvVersionAuditVo>> envVersionAuditMap = envVersionAuditList.stream().collect(Collectors.groupingBy(DeployEnvVersionAuditVo::getEnvId));
+                                    // 没有audit记录的环境
+                                    List<Long> noAuditEnvIdList = moduleAllEnv.stream().map(AppEnvironmentVo::getEnvId).filter(envId -> !envVersionAuditMap.containsKey(envId)).collect(Collectors.toList());
                                     List<DeployVersionVo> moduleVersionList = moduleVersionMap.get(moduleId);
                                     for (DeployVersionVo versionVo : moduleVersionList) {
                                         // todo 环境有顺序
@@ -124,16 +127,22 @@ public class SearchDeployActiveVersionApi extends PrivateApiComponentBase {
                                         activeVersionList.add(activeVersion);
                                         activeVersion.setVersionId(versionVo.getId());
                                         activeVersion.setVersion(versionVo.getVersion());
+                                        activeVersion.setcompileSuccessCount(versionVo.getcompileSuccessCount());
+                                        activeVersion.setcompileFailCount(versionVo.getcompileFailCount());
                                         List<DeployEnvVersionVo> envStatusList = new ArrayList<>();
                                         activeVersion.setEnvList(envStatusList);
                                         for (Map.Entry<Long, List<DeployEnvVersionAuditVo>> map : envVersionAuditMap.entrySet()) {
                                             Long envId = map.getKey();
                                             List<DeployEnvVersionAuditVo> auditList = map.getValue();
+                                            DeployEnvVersionVo envStatus = new DeployEnvVersionVo();
+                                            envStatus.setEnvId(envId);
+                                            Optional<AppEnvironmentVo> first = moduleAllEnv.stream().filter(o -> Objects.equals(o.getEnvId(), envId)).findFirst();
+                                            first.ifPresent(appEnvironmentVo -> envStatus.setEnvName(appEnvironmentVo.getEnvName()));
                                             if (auditList != null) {
                                                 // 按时间排序
                                                 auditList.sort(Comparator.comparing(DeployEnvVersionAuditVo::getId));
                                                 DeployEnvVersionAuditVo lastAudit = auditList.get(auditList.size() - 1);
-                                                // 当前版本在当前环境最后一次出现的位置
+                                                // 当前版本在当前环境的audit中最后一次出现的位置
                                                 Integer index = null;
                                                 Date deployTime = null;
                                                 for (int i = 0; i < auditList.size(); i++) {
@@ -143,9 +152,7 @@ public class SearchDeployActiveVersionApi extends PrivateApiComponentBase {
                                                         deployTime = auditVo.getFcd();
                                                     }
                                                 }
-                                                DeployEnvVersionVo envStatus = new DeployEnvVersionVo();
-                                                envStatus.setEnvId(envId);
-                                                // 当前版本在当前环境没有发布
+                                                // 没有audit说明当前版本在当前环境没有发布
                                                 if (index == null) {
                                                     envStatus.setStatus(DeployEnvVersionStatus.PENDING.getValue());
                                                     continue;
@@ -164,6 +171,10 @@ public class SearchDeployActiveVersionApi extends PrivateApiComponentBase {
                                                 }
                                                 envStatusList.add(envStatus);
                                             }
+                                        }
+                                        // 没有audit记录的环境都认为未发布
+                                        if (noAuditEnvIdList.size() > 0) {
+                                            noAuditEnvIdList.forEach(o -> envStatusList.add(new DeployEnvVersionVo(o, DeployEnvVersionStatus.PENDING.getValue())));
                                         }
                                     }
                                 }
