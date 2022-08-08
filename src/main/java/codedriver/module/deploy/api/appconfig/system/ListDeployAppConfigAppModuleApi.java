@@ -49,7 +49,8 @@ public class ListDeployAppConfigAppModuleApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "应用系统id")
+            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "应用系统id"),
+            @Param(name = "appModuleIdList", type = ApiParamType.JSONARRAY, desc = "应用模块id列表")
     })
     @Output({
             @Param(explode = DeployAppModuleVo[].class, desc = "发布应用配置的应用系统模块列表")
@@ -64,7 +65,7 @@ public class ListDeployAppConfigAppModuleApi extends PrivateApiComponentBase {
         //TODO 考虑权限问题
         TenantContext.get().switchDataDatabase();
         IResourceCrossoverMapper resourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
-        List<Long> idList = resourceCrossoverMapper.getAppSystemModuleIdListByAppSystemId(paramObj.getLong("appSystemId"));
+        List<Long> idList = resourceCrossoverMapper.getAppSystemModuleIdListByAppSystemIdAndAppModuleIdList(paramObj.getLong("appSystemId"),paramObj.getJSONArray("appModuleIdList"));
         if (CollectionUtils.isNotEmpty(idList)) {
             moduleResourceList = resourceCrossoverMapper.getAppModuleListByIdListSimple(idList);
         }
