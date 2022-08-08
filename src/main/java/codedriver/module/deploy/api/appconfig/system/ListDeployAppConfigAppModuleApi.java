@@ -55,7 +55,7 @@ public class ListDeployAppConfigAppModuleApi extends PrivateApiComponentBase {
     @Output({
             @Param(explode = DeployAppModuleVo[].class, desc = "发布应用配置的应用系统模块列表")
     })
-    @Description(desc = "查询发布应用配置的应用系统模块列表(树的模块下拉),入参appSystemId和appModuleIdList互斥,只能选择一个作为入参")
+    @Description(desc = "查询发布应用配置的应用系统模块列表(树的模块下拉)")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         List<ResourceVo> moduleResourceList = new ArrayList<>();
