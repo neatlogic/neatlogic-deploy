@@ -55,7 +55,7 @@ public class ListDeployAppConfigAppModuleApi extends PrivateApiComponentBase {
     @Output({
             @Param(explode = DeployAppModuleVo[].class, desc = "发布应用配置的应用系统模块列表")
     })
-    @Description(desc = "查询发布应用配置的应用系统模块列表(树的模块下拉)")
+    @Description(desc = "查询发布应用配置的应用系统模块列表(树的模块下拉),入参appSystemId和appModuleIdList互斥,只能选择一个作为入参")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         List<ResourceVo> moduleResourceList = new ArrayList<>();
@@ -65,13 +65,9 @@ public class ListDeployAppConfigAppModuleApi extends PrivateApiComponentBase {
         //TODO 考虑权限问题
         TenantContext.get().switchDataDatabase();
         IResourceCrossoverMapper resourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
-        List<Long> idList = resourceCrossoverMapper.getAppSystemModuleIdListByAppSystemId(paramObj.getLong("appSystemId"));
-        if (CollectionUtils.isNotEmpty(paramObj.getJSONArray("appModuleIdList"))) {
-            idList.addAll(paramObj.getJSONArray("appModuleIdList").toJavaList(Long.class));
-        }
-        if (CollectionUtils.isNotEmpty(idList)) {
-            moduleResourceList = resourceCrossoverMapper.getAppModuleListByIdListSimple(idList);
-
+        List<Long> moduleIdList = resourceCrossoverMapper.getAppSystemModuleIdListByAppSystemIdAndAppModuleIdList(paramObj.getLong("appSystemId"), paramObj.getJSONArray("appModuleIdList"));
+        if (CollectionUtils.isNotEmpty(moduleIdList)) {
+            moduleResourceList = resourceCrossoverMapper.getAppModuleListByIdListSimple(moduleIdList);
         }
         TenantContext.get().switchDefaultDatabase();
 
