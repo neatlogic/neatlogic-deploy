@@ -19,7 +19,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 /**
  * @author lvzk
@@ -29,7 +31,7 @@ import java.util.Date;
 @Transactional
 @AuthAction(action = DEPLOY_BASE.class)
 @OperationType(type = OperationTypeEnum.UPDATE)
-public class DeployAppConfigAuthoritySaveApi extends PrivateApiComponentBase {
+public class SaveDeployAppConfigAuthorityApi extends PrivateApiComponentBase {
     @Resource
     private DeployAppConfigMapper deployAppConfigMapper;
 
@@ -50,7 +52,6 @@ public class DeployAppConfigAuthoritySaveApi extends PrivateApiComponentBase {
 
     @Input({
             @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "应用资产id"),
-            @Param(name = "envId", type = ApiParamType.LONG, isRequired = true, desc = "环境资产id"),
             @Param(name = "authorityStrList", type = ApiParamType.JSONARRAY, isRequired = true, desc = "授权列表"),
             @Param(name = "actionList", type = ApiParamType.JSONARRAY, isRequired = true, minSize = 1, desc = "授权操作列表"),
             @Param(name = "isEdit", type = ApiParamType.INTEGER, isRequired = true, desc = "是否编辑，0：否，1：是"),
@@ -62,20 +63,18 @@ public class DeployAppConfigAuthoritySaveApi extends PrivateApiComponentBase {
     public Object myDoService(JSONObject paramObj) {
         DeployAppConfigAuthorityVo deployAppConfigAuthorityVo = paramObj.toJavaObject(DeployAppConfigAuthorityVo.class);
         Date nowTime = new Date(System.currentTimeMillis());
+        List<String> authUuidList = new ArrayList<>();
         deployAppConfigAuthorityVo.setLcd(nowTime);
         for (AuthorityVo authorityVo : deployAppConfigAuthorityVo.getAuthorityList()) {
+            authUuidList.add(authorityVo.getUuid());
             deployAppConfigAuthorityVo.setAuthUuid(authorityVo.getUuid());
             deployAppConfigAuthorityVo.setAuthType(authorityVo.getType());
-            for (String action : deployAppConfigAuthorityVo.getActionList()) {
-                deployAppConfigAuthorityVo.setAction(action);
-                deployAppConfigMapper.insertAppConfigAuthority(deployAppConfigAuthorityVo);
-            }
+            deployAppConfigMapper.insertAppConfigAuthority(deployAppConfigAuthorityVo);
         }
 
         //如果是编辑，则需要删除多余权限
         if (deployAppConfigAuthorityVo.getIsEdit() == 1) {
-            AuthorityVo authorityVo = deployAppConfigAuthorityVo.getAuthorityList().get(0);
-            deployAppConfigMapper.deleteAppConfigAuthorityByAppIdAndEnvIdAndAuthUuidAndLcd(deployAppConfigAuthorityVo.getAppSystemId(), deployAppConfigAuthorityVo.getEnvId(), authorityVo.getUuid(), nowTime);
+            deployAppConfigMapper.deleteAppConfigAuthorityByAppIdAndAuthUuidListAndLcd(deployAppConfigAuthorityVo.getAppSystemId(), authUuidList, nowTime);
         }
         return null;
     }

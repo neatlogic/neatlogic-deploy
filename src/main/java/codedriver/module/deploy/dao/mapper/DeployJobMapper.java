@@ -21,6 +21,8 @@ import java.util.List;
 public interface DeployJobMapper {
     DeployJobVo getDeployJobByJobId(Long id);
 
+    List<DeployJobVo> getDeployJobByJobIdList(List<Long> idList);
+
     int searchDeployJobCount(DeployJobVo deployJobVo);
 
     List<DeployJobVo> searchDeployJob(DeployJobVo deployJobVo);

@@ -13,20 +13,26 @@ import codedriver.framework.autoexec.dao.mapper.AutoexecJobMapper;
 import codedriver.framework.autoexec.dto.job.AutoexecJobVo;
 import codedriver.framework.autoexec.job.action.core.AutoexecJobActionHandlerFactory;
 import codedriver.framework.autoexec.job.action.core.IAutoexecJobActionHandler;
+import codedriver.framework.deploy.dto.job.DeployJobVo;
 import codedriver.framework.deploy.dto.job.LaneGroupVo;
 import codedriver.framework.deploy.dto.job.LaneVo;
 import codedriver.framework.deploy.exception.DeployBatchJobCannotExecuteException;
 import codedriver.framework.deploy.exception.DeployBatchJobFireWithRevokedException;
 import codedriver.framework.deploy.exception.DeployBatchJobGroupFireWithInvalidStatusException;
+import codedriver.framework.deploy.exception.DeployBatchJobGroupNotFoundException;
 import codedriver.module.deploy.dao.mapper.DeployBatchJobMapper;
 import codedriver.module.deploy.dao.mapper.DeployJobMapper;
+import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class DeployBatchJobServiceImpl implements DeployBatchJobService {
@@ -39,7 +45,7 @@ public class DeployBatchJobServiceImpl implements DeployBatchJobService {
     DeployBatchJobMapper deployBatchJobMapper;
 
     @Override
-    public void fireBatch(Long batchJobId) {
+    public void fireBatch(Long batchJobId, String batchJobAction, String jobAction) {
         deployBatchJobMapper.getBatchDeployJobLockById(batchJobId);
         AutoexecJobVo batchJobVo = autoexecJobMapper.getJobInfo(batchJobId);
         //不允许存在"已撤销"的作业
@@ -52,7 +58,7 @@ public class DeployBatchJobServiceImpl implements DeployBatchJobService {
         if (!Objects.equals(loginUserUuid, batchJobVo.getExecUser())) {
             throw new DeployBatchJobCannotExecuteException();
         }
-        batchJobVo.setStatus(JobStatus.PENDING.getValue());
+        batchJobVo.setStatus(JobStatus.RUNNING.getValue());
         autoexecJobMapper.updateJobStatus(batchJobVo);
         //循环泳道，获取每个泳道第一个组fire
         List<LaneVo> laneVos = deployBatchJobMapper.getLaneListByBatchJobId(batchJobVo.getId());
@@ -60,38 +66,48 @@ public class DeployBatchJobServiceImpl implements DeployBatchJobService {
             Long fireGroupId = deployBatchJobMapper.getLaneFireGroupId(batchJobVo.getId(), laneVo.getId());
             deployBatchJobMapper.updateLaneStatus(laneVo.getId(), JobStatus.RUNNING.getValue());
             deployBatchJobMapper.updateGroupStatusByLaneId(laneVo.getId(), JobStatus.PENDING.getValue());
-            fireLaneGroup(fireGroupId);
+            fireLaneGroup(fireGroupId, batchJobAction, jobAction, new JSONObject());
         }
     }
 
     @Override
-    public void fireLaneGroup(Long groupId) {
+    public void fireLaneGroup(Long groupId, String batchJobAction, String jobAction, JSONObject PassThroughEnv) {
         LaneGroupVo groupVo = deployBatchJobMapper.getLaneGroupByGroupId(groupId);
-        fireLaneGroup(groupVo, false);
+        if (groupVo == null) {
+            throw new DeployBatchJobGroupNotFoundException(groupId);
+        }
+        groupVo.setBatchJobAction(batchJobAction);
+        groupVo.setJobAction(jobAction);
+        fireLaneGroup(groupVo, 0, PassThroughEnv);
     }
 
     @Override
-    public void fireLaneGroup(Long groupId, int needWait) {
+    public void refireLaneGroup(Long groupId, int isGoon, String batchJobAction, String jobAction) {
         LaneGroupVo groupVo = deployBatchJobMapper.getLaneGroupByGroupId(groupId);
-        groupVo.setNeedWait(needWait);
-        fireLaneGroup(groupVo, false);
+        if (groupVo == null) {
+            throw new DeployBatchJobGroupNotFoundException(groupId);
+        }
+        groupVo.setBatchJobAction(batchJobAction);
+        groupVo.setJobAction(jobAction);
+        groupVo.setIsGoon(isGoon);
+        fireLaneGroup(groupVo, 1, new JSONObject());
     }
 
     @Override
-    public void fireLaneGroup(LaneGroupVo groupVo, boolean isRefire) {
+    public void fireLaneGroup(LaneGroupVo groupVo, int isRefire, JSONObject passThroughEnv) {
         Long groupId = groupVo.getId();
         if (Objects.equals(groupVo.getStatus(), JobStatus.COMPLETED.getValue())) {
             logger.info("Batch run fire group:#" + groupId + " status succeed, ignore.");
             //无需等待，直接执行下一个组
-            if (groupVo.getNeedWait() != 1) {
-                checkAndFireLaneNextGroup(groupVo);
+            if (groupVo.getIsGoon() == 1 && groupVo.getNeedWait() != 1) {
+                checkAndFireLaneNextGroup(groupVo, passThroughEnv);
             }
             return;
         }
 
         // 如果待触发的group的状态是running，则停止触发
         if (Objects.equals(JobStatus.RUNNING.getValue(), groupVo.getStatus())) {
-            if (isRefire) {
+            if (isRefire == 1) {
                 throw new DeployBatchJobGroupFireWithInvalidStatusException(groupVo.getStatus());
             }
             return;
@@ -104,17 +120,35 @@ public class DeployBatchJobServiceImpl implements DeployBatchJobService {
         deployBatchJobMapper.updateLaneStatus(groupVo.getLaneId(), JobStatus.RUNNING.getValue());
 
         List<AutoexecJobVo> jobVoList = deployBatchJobMapper.getJobsByGroupIdAndWithoutStatus(groupId, Collections.singletonList(JobStatus.REVOKED.getValue()));
-        if (jobVoList.size() == 0) {
-            if (groupVo.getNeedWait() != 1) {
-                checkAndFireLaneNextGroup(groupVo);
+        //循环执行作业
+        int completedContinueCount = 0;
+        if (CollectionUtils.isNotEmpty(jobVoList)) {
+            List<DeployJobVo> deployJobVos = deployJobMapper.getDeployJobByJobIdList(jobVoList.stream().map(AutoexecJobVo::getId).collect(Collectors.toList()));
+            Map<Long, String> deployJobIdPathMap = deployJobVos.stream().collect(Collectors.toMap(AutoexecJobVo::getId, o -> o.getAppSystemId() + "/" + o.getAppModuleId() + "/" + o.getEnvId()));
+            if (MapUtils.isEmpty(passThroughEnv)) {
+                passThroughEnv = new JSONObject();
             }
-        } else {
-            //循环执行作业
+            if (StringUtils.isBlank(groupVo.getBatchJobAction())) {
+                groupVo.setBatchJobAction(passThroughEnv.getString("BATCH_JOB_ACTION"));
+            } else {
+                passThroughEnv.put("BATCH_JOB_ACTION", groupVo.getBatchJobAction());
+            }
+            if (StringUtils.isBlank(groupVo.getJobAction())) {
+                groupVo.setJobAction(passThroughEnv.getString("JOB_ACTION"));
+            } else {
+                passThroughEnv.put("JOB_ACTION", groupVo.getJobAction());
+            }
             for (AutoexecJobVo jobVo : jobVoList) {
                 try {
-                    jobVo.setAction(groupVo.getRefireType());
-                    jobVo.setAction(JobAction.RESET_REFIRE.getValue());
+                    //跳过所有已完成的子作业
+                    if (Objects.equals(groupVo.getBatchJobAction(), JobAction.REFIRE.getValue()) && Objects.equals(jobVo.getStatus(), JobStatus.COMPLETED.getValue())) {
+                        completedContinueCount++;
+                        continue;
+                    }
+                    passThroughEnv.put("DEPLOY_ID_PATH", deployJobIdPathMap.get(jobVo.getId()));
+                    jobVo.setAction(groupVo.getJobAction());
                     IAutoexecJobActionHandler refireAction = AutoexecJobActionHandlerFactory.getAction(JobAction.REFIRE.getValue());
+                    jobVo.setPassThroughEnv(passThroughEnv);
                     jobVo.setIsTakeOver(1);
                     refireAction.doService(jobVo);
                 } catch (Exception ex) {
@@ -122,17 +156,22 @@ public class DeployBatchJobServiceImpl implements DeployBatchJobService {
                 }
             }
         }
+        //如果作业执行策略是refireAll且所有作业都是已完成，则
+        if (completedContinueCount == jobVoList.size()) {
+            checkAndFireLaneNextGroup(groupVo, passThroughEnv);
+        }
     }
 
     @Override
-    public void checkAndFireLaneNextGroup(Long groupId) {
+    public void checkAndFireLaneNextGroup(Long groupId, JSONObject passThroughEnv) {
         LaneGroupVo groupVo = deployBatchJobMapper.getLaneGroupByGroupId(groupId);
-        if (groupVo != null)
-            checkAndFireLaneNextGroup(groupVo);
+        if (groupVo != null) {
+            checkAndFireLaneNextGroup(groupVo, passThroughEnv);
+        }
     }
 
     @Override
-    public void checkAndFireLaneNextGroup(LaneGroupVo groupVo) {
+    public void checkAndFireLaneNextGroup(LaneGroupVo groupVo, JSONObject passThroughEnv) {
         Long groupId = groupVo.getId();
         List<AutoexecJobVo> groupJobs = deployBatchJobMapper.getJobsByGroupIdAndWithoutStatus(groupId, Collections.singletonList(JobStatus.REVOKED.getValue()));
         //初始化 状态数量map
@@ -171,9 +210,9 @@ public class DeployBatchJobServiceImpl implements DeployBatchJobService {
             deployBatchJobMapper.updateGroupStatus(groupVo);
             if (Objects.equals(groupStatus, JobStatus.COMPLETED.getValue())) {
                 if (nextGroupId == null) {
-                    fireLaneNextGroup(groupVo, nextGroupId);
-                } else if (groupVo.getNeedWait() == 0) {
-                    fireLaneNextGroup(groupVo, nextGroupId);
+                    fireLaneNextGroup(groupVo, nextGroupId, passThroughEnv);
+                } else if (groupVo.getIsGoon() == 1 && groupVo.getNeedWait() == 0) {
+                    fireLaneNextGroup(groupVo, nextGroupId, passThroughEnv);
                 }
             }
         }
@@ -185,10 +224,10 @@ public class DeployBatchJobServiceImpl implements DeployBatchJobService {
      * @param currentGroupVo 当前组
      * @param nextGroupId    下一组id
      */
-    public void fireLaneNextGroup(LaneGroupVo currentGroupVo, Long nextGroupId) {
+    public void fireLaneNextGroup(LaneGroupVo currentGroupVo, Long nextGroupId, JSONObject passThroughEnv) {
         if (nextGroupId != null) {
             logger.info("Next group found:#" + nextGroupId + ", for lane:#" + currentGroupVo.getLaneId() + " pre sort:#" + currentGroupVo.getSort());
-            fireLaneGroup(nextGroupId);
+            fireLaneGroup(nextGroupId, currentGroupVo.getBatchJobAction(), currentGroupVo.getJobAction(), passThroughEnv);
         } else {
             deployBatchJobMapper.updateLaneStatus(currentGroupVo.getLaneId(), JobStatus.COMPLETED.getValue());
             logger.info("Batch run lane:#" + currentGroupVo.getLaneId() + " finished.");

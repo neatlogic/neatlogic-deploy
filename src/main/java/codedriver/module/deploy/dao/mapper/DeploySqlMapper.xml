@@ -27,16 +27,9 @@
         `sort`,
         `is_modified`,
         `warn_count`
-        <choose>
-            <when test="sqlVo.status == 'pending'">
-            </when>
-            <when test="sqlVo.status == 'running'">
-                ,`start_time`
-            </when>
-            <otherwise>
-                ,`end_time`
-            </otherwise>
-        </choose>
+        <if test="sqlVo.status == 'running'">
+            ,`start_time`
+        </if>
         )
         values (#{sqlVo.id},
         #{sysId},
@@ -78,16 +71,9 @@
                 0
             </otherwise>
         </choose>
-        <choose>
-            <when test="sqlVo.status == 'pending'">
-            </when>
-            <when test="sqlVo.status == 'running'">
-                ,now(3)
-            </when>
-            <otherwise>
-                ,now(3)
-            </otherwise>
-        </choose>
+        <if test="sqlVo.status == 'running'">
+            ,now(3)
+        </if>
         )
     </insert>
 
@@ -379,13 +365,18 @@
             ,sort = #{sort}
         </if>
         <choose>
-            <when test="status == 'pending'">
+          <when test="status == 'pending'">
+                ,`start_time`= null
+                ,`end_time`= null
             </when>
             <when test="status == 'running'">
                 ,`start_time`=now(3)
+                ,`end_time`= null
+            </when>
+          <when test="status == 'aborted' || status == 'succeed' || status == 'failed' || status == 'ignored'">
+              ,`end_time`=now(3)
             </when>
             <otherwise>
-                ,`end_time`=now(3)
             </otherwise>
         </choose>
         <if test="isModified != null">
