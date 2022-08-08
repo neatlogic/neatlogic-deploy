@@ -49,7 +49,8 @@ public class ListDeployAppConfigAppModuleApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "应用系统id")
+            @Param(name = "appSystemId", type = ApiParamType.LONG, desc = "应用系统id"),
+            @Param(name = "appModuleIdList", type = ApiParamType.JSONARRAY, desc = "应用模块id列表")
     })
     @Output({
             @Param(explode = DeployAppModuleVo[].class, desc = "发布应用配置的应用系统模块列表")
@@ -65,15 +66,19 @@ public class ListDeployAppConfigAppModuleApi extends PrivateApiComponentBase {
         TenantContext.get().switchDataDatabase();
         IResourceCrossoverMapper resourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
         List<Long> idList = resourceCrossoverMapper.getAppSystemModuleIdListByAppSystemId(paramObj.getLong("appSystemId"));
+        if (CollectionUtils.isNotEmpty(paramObj.getJSONArray("appModuleIdList"))) {
+            idList.addAll(paramObj.getJSONArray("appModuleIdList").toJavaList(Long.class));
+        }
         if (CollectionUtils.isNotEmpty(idList)) {
             moduleResourceList = resourceCrossoverMapper.getAppModuleListByIdListSimple(idList);
+
         }
         TenantContext.get().switchDefaultDatabase();
 
         //补充模块是否有环境（有实例的环境）
         List<Long> hasEnvAppModuleIdList = deployAppConfigMapper.getHasEnvAppModuleIdListByAppSystemIdAndModuleIdList(paramObj.getLong("appSystemId"), moduleResourceList.stream().map(ResourceVo::getId).collect(Collectors.toList()), TenantContext.get().getDataDbName());
         for (ResourceVo resourceVo : moduleResourceList) {
-            DeployAppModuleVo returnAppModuleVo = new DeployAppModuleVo(resourceVo.getId(), resourceVo.getName(),resourceVo.getAbbrName());
+            DeployAppModuleVo returnAppModuleVo = new DeployAppModuleVo(resourceVo.getId(), resourceVo.getName(), resourceVo.getAbbrName());
             returnAppModuleVoList.add(returnAppModuleVo);
             if (hasEnvAppModuleIdList.contains(resourceVo.getId())) {
                 returnAppModuleVo.setIsHasEnv(1);
