@@ -110,12 +110,18 @@ public class SearchDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
 
                 //补充模块是否有环境
                 if (CollectionUtils.isNotEmpty(returnSystemVo.getAppModuleList())) {
+                    int isHasConfig = 0;
+                    if (CollectionUtils.isNotEmpty(deployAppConfigMapper.getAppConfigListByAppSystemId(paramObj.getLong("appSystemId")))) {
+                        isHasConfig = 1;
+                    }
+
                     List<Long> appModuleIdList = deployAppConfigMapper.getHasEnvAppModuleIdListByAppSystemIdAndModuleIdList(returnSystemVo.getId(), returnSystemVo.getAppModuleList().stream().map(DeployAppModuleVo::getId).collect(Collectors.toList()), TenantContext.get().getDataDbName());
 
                     for (DeployAppModuleVo appModuleVo : returnSystemVo.getAppModuleList()) {
                         if (appModuleIdList.contains(appModuleVo.getId())) {
                             appModuleVo.setIsHasEnv(1);
                         }
+                        appModuleVo.setIsConfig(isHasConfig);
                     }
                 }
             }

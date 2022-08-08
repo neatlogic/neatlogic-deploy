@@ -71,6 +71,11 @@ public class ListDeployAppConfigAppModuleApi extends PrivateApiComponentBase {
         }
         TenantContext.get().switchDefaultDatabase();
 
+        int isHasConfig = 0;
+        if (CollectionUtils.isNotEmpty(deployAppConfigMapper.getAppConfigListByAppSystemId(paramObj.getLong("appSystemId")))) {
+            isHasConfig = 1;
+        }
+
         //补充模块是否有环境（有实例的环境）
         List<Long> hasEnvAppModuleIdList = deployAppConfigMapper.getHasEnvAppModuleIdListByAppSystemIdAndModuleIdList(paramObj.getLong("appSystemId"), moduleResourceList.stream().map(ResourceVo::getId).collect(Collectors.toList()), TenantContext.get().getDataDbName());
         for (ResourceVo resourceVo : moduleResourceList) {
@@ -79,6 +84,7 @@ public class ListDeployAppConfigAppModuleApi extends PrivateApiComponentBase {
             if (hasEnvAppModuleIdList.contains(resourceVo.getId())) {
                 returnAppModuleVo.setIsHasEnv(1);
             }
+            returnAppModuleVo.setIsConfig(isHasConfig);
         }
         return returnAppModuleVoList;
     }
