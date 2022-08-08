@@ -18,7 +18,6 @@ import com.alibaba.fastjson.JSONObject;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -73,6 +72,7 @@ public class SearchDeployActiveVersionApi extends PrivateApiComponentBase {
                 List<Long> moduleIdList = resourceCrossoverMapper.getAppSystemModuleIdListByAppSystemId(systemId);
                 TenantContext.get().switchDefaultDatabase();
                 if (moduleIdList.size() > 0) {
+                    // // todo 找出所有模块各自的所有版本
                     // 查询当前系统所有模块各自所拥有的环境
                     // todo 模块没有环境要不要查出来？
                     List<DeployAppModuleEnvVo> moduleEnvList = deployAppConfigMapper.getDeployAppModuleEnvListByAppSystemId(systemId, TenantContext.get().getDataDbName());
@@ -83,7 +83,11 @@ public class SearchDeployActiveVersionApi extends PrivateApiComponentBase {
                         // 活动版本：没有走到最后一个环境的版本
                         // 最新非活动版本：PRD环境（或自定义的顺序最后的环境）的当前版本是谁，谁就是最新的非活动版本
                         for (Long moduleId : moduleIdList) {
-
+                            // todo 以环境为角度，取出当前模块下的所有环境（每个环境的记录按fcd排序），
+                            //  然后用版本作为外层循环，找出每个环境中找出当前版本的最后一次出现的位置，
+                            //  如果记录是【最后一条】或【最后一条记录的版本大于当前版本】，则认为当前版本在当前环境发布了，
+                            //  如果记录不是最后一条或最后一条记录的版本小于当前版本，则认为当前版本在当前环境回退过，回退时间为下一条记录的fcd
+                            //  版本在所有环境都被认为发布了，即可称之为非活动版本
                         }
                     }
 
