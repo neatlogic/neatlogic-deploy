@@ -116,15 +116,14 @@ public class SearchDeployActiveVersionApi extends PrivateApiComponentBase {
                                 List<DeployEnvVersionAuditVo> envVersionAuditList = deployEnvVersionMapper.getDeployEnvVersionAuditBySystemIdAndModuleId(systemId, moduleId);
                                 if (envVersionAuditList.size() > 0) {
                                     List<DeployActiveVersionVo> activeVersionList = new ArrayList<>();
-                                    moduleActiveVersion.setVersionList(activeVersionList);
                                     Map<Long, List<DeployEnvVersionAuditVo>> envVersionAuditMap = envVersionAuditList.stream().collect(Collectors.groupingBy(DeployEnvVersionAuditVo::getEnvId));
                                     // 没有audit记录的环境
                                     List<Long> noAuditEnvIdList = moduleAllEnv.stream().map(AppEnvironmentVo::getEnvId).filter(envId -> !envVersionAuditMap.containsKey(envId)).collect(Collectors.toList());
                                     List<DeployVersionVo> moduleVersionList = moduleVersionMap.get(moduleId);
+                                    DeployActiveVersionVo inactive = null;
                                     for (DeployVersionVo versionVo : moduleVersionList) {
                                         // todo 环境有顺序
                                         DeployActiveVersionVo activeVersion = new DeployActiveVersionVo();
-                                        activeVersionList.add(activeVersion);
                                         activeVersion.setVersionId(versionVo.getId());
                                         activeVersion.setVersion(versionVo.getVersion());
                                         activeVersion.setcompileSuccessCount(versionVo.getcompileSuccessCount());
@@ -174,9 +173,35 @@ public class SearchDeployActiveVersionApi extends PrivateApiComponentBase {
                                         }
                                         // 没有audit记录的环境都认为未发布
                                         if (noAuditEnvIdList.size() > 0) {
-                                            noAuditEnvIdList.forEach(o -> envStatusList.add(new DeployEnvVersionVo(o, DeployEnvVersionStatus.PENDING.getValue())));
+                                            noAuditEnvIdList.forEach(o -> {
+                                                Optional<AppEnvironmentVo> first = moduleAllEnv.stream().filter(_o -> Objects.equals(_o.getEnvId(), o)).findFirst();
+                                                String envName = null;
+                                                if (first.isPresent()) {
+                                                    envName = first.get().getEnvName();
+                                                }
+                                                envStatusList.add(new DeployEnvVersionVo(o, envName, DeployEnvVersionStatus.PENDING.getValue()));
+                                            });
+                                        }
+                                        // 当前版本的所有环境都没有audit记录，则认为都未发布
+                                        if (envStatusList.size() == 0) {
+                                            moduleAllEnv.forEach(o -> envStatusList.add(new DeployEnvVersionVo(o.getEnvId(), o.getEnvName(), DeployEnvVersionStatus.PENDING.getValue())));
+                                            activeVersionList.add(activeVersion);
+                                            continue;
+                                        }
+                                        // 如果所有环境的状态都是已发布，那么当前版本为非活动版本
+                                        // allMatch的坑：当list为空集时默认返回true
+                                        if (envStatusList.stream().allMatch(o -> Objects.equals(o.getStatus(), DeployEnvVersionStatus.DEPLOYED.getValue()))) {
+                                            // 取最新的非活动版本
+                                            if (inactive == null || activeVersion.getVersionId() > inactive.getVersionId()) {
+                                                inactive = activeVersion;
+                                            }
+                                        } else { // 取全部活动版本
+                                            activeVersionList.add(activeVersion);
                                         }
                                     }
+                                    activeVersionList.add(inactive);
+                                    activeVersionList.sort(Comparator.comparing(DeployActiveVersionVo::getVersionId).reversed());
+                                    moduleActiveVersion.setVersionList(activeVersionList);
                                 }
                             }
                         }
