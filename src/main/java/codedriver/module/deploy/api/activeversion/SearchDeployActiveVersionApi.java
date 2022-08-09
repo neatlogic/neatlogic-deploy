@@ -82,10 +82,10 @@ public class SearchDeployActiveVersionApi extends PrivateApiComponentBase {
         if (systemIdListCount > 0) {
             List<DeployAppSystemVo> systemList = deployAppConfigMapper.searchAppSystemIdList(searchVo);
             IResourceCrossoverMapper resourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
-            // 每个系统各自的模块
             ResourceSearchVo moduleSearchVo = new ResourceSearchVo();
             moduleSearchVo.setAppSystemIdList(systemList.stream().map(DeployAppSystemVo::getId).collect(Collectors.toList()));
             TenantContext.get().switchDataDatabase();
+            // 每个系统各自的模块
             List<ModuleVo> systemModuleList = resourceCrossoverMapper.getAppModuleListByAppSystemIdList(moduleSearchVo);
             TenantContext.get().switchDefaultDatabase();
             if (systemModuleList.size() > 0) {
@@ -140,6 +140,8 @@ public class SearchDeployActiveVersionApi extends PrivateApiComponentBase {
                             List<DeployEnvVersionAuditVo> envVersionAuditList = deployEnvVersionMapper.getDeployEnvVersionAuditBySystemIdAndModuleId(systemVo.getId(), moduleVo.getAppModuleId());
                             List<DeployActiveVersionVo> activeVersionList = new ArrayList<>();
                             moduleActiveVersion.setVersionList(activeVersionList);
+                            // 非活动版本
+                            DeployActiveVersionVo inactive = null;
                             if (envVersionAuditList.size() == 0) {
                                 // 当前模块没有任何audit，则认为所有版本在所有环境都未发布
                                 for (DeployVersionVo versionVo : moduleVersionList) {
@@ -154,7 +156,6 @@ public class SearchDeployActiveVersionApi extends PrivateApiComponentBase {
                                 Map<Long, List<DeployEnvVersionAuditVo>> envVersionAuditMap = envVersionAuditList.stream().collect(Collectors.groupingBy(DeployEnvVersionAuditVo::getEnvId));
                                 // 没有audit记录的环境
                                 List<Long> noAuditEnvIdList = moduleAllEnv.stream().map(AppEnvironmentVo::getEnvId).filter(envId -> !envVersionAuditMap.containsKey(envId)).collect(Collectors.toList());
-                                DeployActiveVersionVo inactive = null;
                                 for (DeployVersionVo versionVo : moduleVersionList) {
                                     // todo 环境有顺序
                                     DeployActiveVersionVo activeVersion = new DeployActiveVersionVo(versionVo);
@@ -232,9 +233,12 @@ public class SearchDeployActiveVersionApi extends PrivateApiComponentBase {
                                         activeVersionList.add(activeVersion);
                                     }
                                 }
-                                activeVersionList.add(inactive);
                             }
                             activeVersionList.sort(Comparator.comparing(DeployActiveVersionVo::getVersionId).reversed());
+                            // 保证非活动版本始终在末尾
+                            if (inactive != null) {
+                                activeVersionList.add(inactive);
+                            }
                         }
                     }
                 }
