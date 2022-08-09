@@ -72,7 +72,6 @@ public class SearchDeployActiveVersionApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         DeployResourceSearchVo searchVo = paramObj.toJavaObject(DeployResourceSearchVo.class);
-        TenantContext.get().switchDataDatabase();
         // 按系统分页
         Integer systemIdListCount = deployAppConfigMapper.getAppSystemIdListCount(searchVo);
         List<DeploySystemActiveVersionVo> result = new ArrayList<>();
@@ -143,7 +142,6 @@ public class SearchDeployActiveVersionApi extends PrivateApiComponentBase {
                                             if (auditList != null) {
                                                 // 按时间排序
                                                 auditList.sort(Comparator.comparing(DeployEnvVersionAuditVo::getId));
-                                                DeployEnvVersionAuditVo lastAudit = auditList.get(auditList.size() - 1);
                                                 // 当前版本在当前环境的audit中最后一次出现的位置
                                                 Integer index = null;
                                                 Date deployTime = null;
@@ -160,7 +158,7 @@ public class SearchDeployActiveVersionApi extends PrivateApiComponentBase {
                                                     continue;
                                                 }
                                                 // 当前版本在当前环境发布了
-                                                if ((index == auditList.size() - 1) || (lastAudit.getNewVersionId() > versionVo.getId())) {
+                                                if ((index == auditList.size() - 1) || (auditList.get(auditList.size() - 1).getNewVersionId() > versionVo.getId())) {
                                                     envStatus.setStatus(DeployEnvVersionStatus.DEPLOYED.getValue());
                                                     envStatus.setDeployTime(deployTime);
                                                 } else { // 当前版本在当前环境回退了
