@@ -131,6 +131,7 @@ public class SearchDeployActiveVersionApi extends PrivateApiComponentBase {
                             }
                             // 当前模块所有的环境
                             List<AppEnvironmentVo> moduleAllEnv = moduleEnvListMap.get(moduleVo.getAppModuleId());
+                            moduleActiveVersion.setEnvList(moduleAllEnv);
                             // 当前模块所有的版本
                             List<DeployVersionVo> moduleVersionList = moduleVersionMap.get(moduleVo.getAppModuleId());
                             if (moduleAllEnv == null || moduleVersionList == null) {
