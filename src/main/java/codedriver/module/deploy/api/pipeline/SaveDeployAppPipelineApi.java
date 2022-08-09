@@ -81,10 +81,6 @@ public class SaveDeployAppPipelineApi extends PrivateApiComponentBase {
                 newConfigVo.setRuntimeParamList(autoexecParamList);
                 deployAppConfigVo.setConfig(newConfigVo);
             }
-            if (Objects.equals(oldDeployAppConfigVo.getConfigStr(), deployAppConfigVo.getConfigStr())) {
-                //如果没有改动，不用更新数据库数据
-                return null;
-            }
         }
         DeployPipelineExecuteConfigVo executeConfigVo = newConfigVo.getExecuteConfig();
 //        if (StringUtils.isBlank(executeConfigVo.getExecuteUser())) {
@@ -108,9 +104,10 @@ public class SaveDeployAppPipelineApi extends PrivateApiComponentBase {
             }
         }
         setPhaseGroupId(deployAppConfigVo);
-        deployAppConfigVo.setConfigStr(null);
+        String configStr = deployAppConfigVo.getConfigStr();
         IAutoexecCombopCrossoverService autoexecCombopCrossoverService = CrossoverServiceFactory.getApi(IAutoexecCombopCrossoverService.class);
         autoexecCombopCrossoverService.verifyAutoexecCombopConfig(deployAppConfigVo.getConfig().getAutoexecCombopConfigVo(), false);
+        deployAppConfigVo.setConfigStr(configStr);
         if (oldDeployAppConfigVo != null) {
             deleteDependency(oldDeployAppConfigVo);
             deployAppConfigVo.setLcu(UserContext.get().getUserUuid());

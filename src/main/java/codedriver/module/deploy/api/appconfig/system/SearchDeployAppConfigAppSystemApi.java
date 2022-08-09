@@ -62,6 +62,8 @@ public class SearchDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
             @Param(name = "keyword", type = ApiParamType.STRING, desc = "模糊搜索-应用名|模块名"),
             @Param(name = "isFavorite", type = ApiParamType.ENUM, rule = "0,1", desc = "是否只显示已收藏的"),
             @Param(name = "isConfig", type = ApiParamType.ENUM, rule = "0,1", desc = "是否只显示已配置的"),
+            @Param(name = "appSystemIdList", type = ApiParamType.JSONARRAY, desc = "应用系统id列表"),
+            @Param(name = "appModuleIdList", type = ApiParamType.JSONARRAY, desc = "应用模块id列表"),
             @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "当前页"),
             @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "每页数据条目"),
             @Param(name = "needPage", type = ApiParamType.BOOLEAN, desc = "是否需要分页，默认true"),
@@ -106,14 +108,18 @@ public class SearchDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
                     returnSystemVo.setIsHasEnv(1);
                 }
 
-                //补充模块是否有环境
+                //补充模块是是否配置、否有环境
                 if (CollectionUtils.isNotEmpty(returnSystemVo.getAppModuleList())) {
+                    int isHasConfig = 0;
+                    if (CollectionUtils.isNotEmpty(deployAppConfigMapper.getAppConfigListByAppSystemId(returnSystemVo.getId()))) {
+                        isHasConfig = 1;
+                    }
                     List<Long> appModuleIdList = deployAppConfigMapper.getHasEnvAppModuleIdListByAppSystemIdAndModuleIdList(returnSystemVo.getId(), returnSystemVo.getAppModuleList().stream().map(DeployAppModuleVo::getId).collect(Collectors.toList()), TenantContext.get().getDataDbName());
-
                     for (DeployAppModuleVo appModuleVo : returnSystemVo.getAppModuleList()) {
                         if (appModuleIdList.contains(appModuleVo.getId())) {
                             appModuleVo.setIsHasEnv(1);
                         }
+                        appModuleVo.setIsConfig(isHasConfig);
                     }
                 }
             }

@@ -1,3 +1,8 @@
+/*
+ * Copyright(c) 2022 TechSure Co., Ltd. All Rights Reserved.
+ * 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
+ */
+
 package codedriver.module.deploy.api.appconfig.module;
 
 import codedriver.framework.auth.core.AuthAction;
@@ -66,11 +71,10 @@ public class SaveDeployAppConfigAppModuleApi extends PrivateApiComponentBase {
             @Param(name = "description", type = ApiParamType.STRING, desc = "备注"),
             @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "应用系统id")
     })
-    @Output({})
+    @Output({@Param(name = "Return", type = ApiParamType.LONG, desc = "应用模块id")})
     @Description(desc = "保存发布应用配置的应用模块")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
-
         //校验应用系统id是否存在
         ICiEntityCrossoverMapper iCiEntityCrossoverMapper = CrossoverServiceFactory.getApi(ICiEntityCrossoverMapper.class);
         CiEntityVo appSystemCiEntity = iCiEntityCrossoverMapper.getCiEntityBaseInfoById(paramObj.getLong("appSystemId"));
@@ -136,6 +140,6 @@ public class SaveDeployAppConfigAppModuleApi extends PrivateApiComponentBase {
         List<CiEntityTransactionVo> ciEntityTransactionList = new ArrayList<>();
         ciEntityTransactionList.add(ciEntityTransactionVo);
         ciEntityService.saveCiEntity(ciEntityTransactionList);
-        return null;
+        return ciEntityTransactionVo.getCiEntityId();
     }
 }

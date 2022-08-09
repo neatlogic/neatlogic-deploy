@@ -5,10 +5,7 @@
 
 package codedriver.module.deploy.dao.mapper;
 
-import codedriver.framework.deploy.dto.job.DeployJobContentVo;
-import codedriver.framework.deploy.dto.job.DeployJobVo;
-import codedriver.framework.deploy.dto.job.LaneGroupVo;
-import codedriver.framework.deploy.dto.job.LaneVo;
+import codedriver.framework.deploy.dto.job.*;
 import codedriver.framework.deploy.dto.version.DeployVersionBuildNoVo;
 import org.apache.ibatis.annotations.Param;
 
@@ -59,6 +56,8 @@ public interface DeployJobMapper {
 
     void insertLaneGroup(LaneGroupVo laneGroupVo);
 
+    void insertDeployJobAuth(DeployJobAuthVo deployJobAuthVo);
+
     void insertGroupJob(@Param("groupId") Long groupId, @Param("jobId") Long jobId, @Param("sort") Integer sort);
 
     void insertJobInvoke(@Param("jobId") Long jobId, @Param("invokeId") Long invokeId, @Param("source") String source, @Param("type") String type);
@@ -79,6 +78,10 @@ public interface DeployJobMapper {
 
     void deleteLaneGroupJobByJobId(Long jobId);
 
+    void deleteJobAuthByJobId(Long jobId);
+
     void deleteJobInvokeByJobId(Long jobId);
+
+    void deleteJobById(Long jobId);
 
 }

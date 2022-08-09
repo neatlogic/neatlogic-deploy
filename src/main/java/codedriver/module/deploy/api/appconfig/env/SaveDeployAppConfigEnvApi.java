@@ -1,3 +1,8 @@
+/*
+ * Copyright(c) 2022 TechSure Co., Ltd. All Rights Reserved.
+ * 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
+ */
+
 package codedriver.module.deploy.api.appconfig.env;
 
 import codedriver.framework.auth.core.AuthAction;
@@ -50,8 +55,7 @@ public class SaveDeployAppConfigEnvApi extends PrivateApiComponentBase {
             @Param(name = "appModuleId", type = ApiParamType.LONG, isRequired = true, desc = "应用模块id"),
             @Param(name = "envIdList", type = ApiParamType.JSONARRAY, isRequired = true, desc = "环境id列表"),
     })
-    @Output({
-    })
+    @Output({@Param(name = "Return", type = ApiParamType.LONG, desc = "环境id")})
     @Description(desc = "保存发布应用配置的应用系统环境")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
