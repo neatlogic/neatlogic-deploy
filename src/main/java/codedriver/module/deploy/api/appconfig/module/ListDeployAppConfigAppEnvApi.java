@@ -95,10 +95,19 @@ public class ListDeployAppConfigAppEnvApi extends PrivateApiComponentBase {
                     }
                 }
                 cmdbEnvList.addAll(deployEnvList);
-                return cmdbEnvList;
+                returnEnvList = cmdbEnvList;
 
             } else {
-                return CollectionUtils.isNotEmpty(cmdbEnvList) ? cmdbEnvList : deployEnvList;
+                returnEnvList = CollectionUtils.isNotEmpty(cmdbEnvList) ? cmdbEnvList : deployEnvList;
+            }
+            int isHasConfig = 0;
+            if (CollectionUtils.isNotEmpty(deployAppConfigMapper.getAppConfigListByAppSystemId(paramObj.getLong("appSystemId")))) {
+                isHasConfig = 1;
+            }
+            if (CollectionUtils.isNotEmpty(returnEnvList)) {
+                for (DeployAppEnvironmentVo env : returnEnvList) {
+                    env.setIsConfig(isHasConfig);
+                }
             }
         }
         return returnEnvList;

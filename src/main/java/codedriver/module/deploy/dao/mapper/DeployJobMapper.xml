@@ -235,6 +235,29 @@
         </where>
     </select>
 
+    <select id="getDeployJobListByAppSystemIdAndAppModuleIdAndEnvId"
+            resultType="codedriver.framework.deploy.dto.job.DeployJobVo">
+        select
+        id,
+        app_system_id as appSystemId,
+        app_module_id as appModuleId,
+        env_id as envId,
+        version,
+        runner_map_id as runnerMapId
+        from deploy_job
+        <where>
+            <if test="appSystemId != null">
+                app_system_id = #{appSystemId}
+            </if>
+            <if test="appModuleId != null">
+                and app_module_id = #{appModuleId}
+            </if>
+            <if test="envId != null">
+                and env_id = #{envId}
+            </if>
+        </where>
+    </select>
+
     <select id="getDeployJobContentLock"
             resultType="codedriver.framework.deploy.dto.job.DeployJobContentVo">
         SELECT `hash`,

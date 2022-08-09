@@ -55,6 +55,7 @@ public class SearchDeployJobApi extends PrivateApiComponentBase {
 
     @Input({@Param(name = "appSystemId", type = ApiParamType.LONG, desc = "应用系统id"),
             @Param(name = "appModuleId", type = ApiParamType.LONG, desc = "应用模块id"),
+            @Param(name = "envId", type = ApiParamType.LONG, desc = "环境id"),
             @Param(name = "statusList", type = ApiParamType.JSONARRAY, desc = "作业状态"),
             @Param(name = "typeIdList", type = ApiParamType.JSONARRAY, desc = "组合工具类型"),
             @Param(name = "idList", type = ApiParamType.JSONARRAY, desc = "id列表，用于精确查找作业刷新状态"),
@@ -75,16 +76,19 @@ public class SearchDeployJobApi extends PrivateApiComponentBase {
     public Object myDoService(JSONObject jsonObj) throws Exception {
         Long appSystemId = jsonObj.getLong("appSystemId");
         Long appModuleId = jsonObj.getLong("appModuleId");
+        Long envId = jsonObj.getLong("envId");
         Long parentId = jsonObj.getLong("parentId");
+        DeployJobVo deployJobVo = JSONObject.toJavaObject(jsonObj, DeployJobVo.class);
         //根据appSystemId和appModuleId 获取invokeIdList
         if (appSystemId != null || appModuleId != null) {
-            List<DeployJobVo> deployJobVos = deployJobMapper.getDeployJobListByAppSystemIdAndAppModuleId(appSystemId, appModuleId);
+            List<DeployJobVo> deployJobVos = deployJobMapper.getDeployJobListByAppSystemIdAndAppModuleIdAndEnvId(appSystemId, appModuleId, envId);
             if (CollectionUtils.isNotEmpty(deployJobVos)) {
-                jsonObj.put("invokeIdList", deployJobVos.stream().map(DeployJobVo::getId).collect(Collectors.toList()));
+                deployJobVo.setInvokeIdList(deployJobVos.stream().map(DeployJobVo::getId).collect(Collectors.toSet()));
+            } else {
+                return TableResultUtil.getResult(new ArrayList<>(), deployJobVo);
             }
         }
 
-        DeployJobVo deployJobVo = JSONObject.toJavaObject(jsonObj, DeployJobVo.class);
         if (parentId != null) {
             List<Long> idList = deployJobMapper.getJobIdListByParentId(parentId);
             deployJobVo.setIdList(idList);

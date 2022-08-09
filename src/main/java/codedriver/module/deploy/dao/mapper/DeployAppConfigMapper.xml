@@ -14,6 +14,7 @@
         SELECT a.`id`
         FROM ${searchVo.schemaName}.`scence_appsystem_appmodule` a
         left join deploy_app_config_user dacu on a.`id` = dacu.app_system_id and dacu.user_uuid = #{userUuid}
+        LEFT JOIN deploy_app_config_authority daca ON daca.app_system_id = a.id
         <if test="searchVo.isConfig != null">
             left join deploy_app_config dac on a.`id` = dac.app_system_id and dac.app_module_id = 0 and dac.env_id = 0
         </if>
@@ -29,11 +30,22 @@
                     #{item}
                 </foreach>
             </if>
-            <if test="searchVo.appModuleIdList != null and searchVo.appModuleIdList.size() > 0">
-                AND a.`app_module_id` IN
-                <foreach collection="searchVo.appModuleIdList" item="item" open="(" separator="," close=")">
-                    #{item}
-                </foreach>
+            <if test="searchVo.isHasAllAuthority == 0">
+                AND  IF(
+                daca.app_system_id > 0,
+                daca.action_type = 'operation'
+                AND daca.action IN ( 'view', 'all' )
+                AND daca.auth_uuid IN
+                (
+                'alluser'
+                <if test="searchVo.authUuidList != null and searchVo.authUuidList.size() > 0">
+                    ,
+                    <foreach collection="searchVo.authUuidList" item="item" separator=",">
+                        #{item}
+                    </foreach>
+                </if>
+                ),
+                1 = 1)
             </if>
             <choose>
                 <when test="searchVo.isConfig != null and searchVo.isConfig == 1">
@@ -701,12 +713,13 @@
     <select id="getAppSystemIdListCount" resultType="java.lang.Integer">
         SELECT count(distinct a.`id`)
         FROM ${schemaName}.`scence_appsystem_appmodule` a
+        LEFT JOIN deploy_app_config_authority daca ON daca.app_system_id = a.id
         <if test="isConfig != null">
             left join deploy_app_config b on a.`id` = b.`app_system_id` and b.`app_module_id` = 0 and b.`env_id` = 0
         </if>
         <where>
             <if test="keyword != null and keyword != ''">
-              ( a.`name` LIKE concat('%', #{keyword}, '%') or a.`app_module_name` LIKE concat('%', #{keyword}, '%')
+                ( a.`name` LIKE concat('%', #{keyword}, '%') or a.`app_module_name` LIKE concat('%', #{keyword}, '%')
                 or a.`abbr_name` LIKE concat('%', #{keyword}, '%')or a.`app_module_abbr_name` LIKE concat('%',
                 #{keyword}, '%'))
             </if>
@@ -716,11 +729,22 @@
                     #{item}
                 </foreach>
             </if>
-            <if test="appModuleIdList != null and appModuleIdList.size() > 0">
-                AND a.`app_module_id` IN
-                <foreach collection="appModuleIdList" item="item" open="(" separator="," close=")">
-                    #{item}
-                </foreach>
+            <if test="isHasAllAuthority == 0">
+                AND  IF(
+                daca.app_system_id > 0,
+                daca.action_type = 'operation'
+                AND daca.action IN ( 'view', 'all' )
+                AND daca.auth_uuid IN
+                (
+                'alluser'
+                <if test="authUuidList != null and authUuidList.size() > 0">
+                    ,
+                    <foreach collection="authUuidList" item="item" separator=",">
+                        #{item}
+                    </foreach>
+                </if>
+                ),
+                1 = 1)
             </if>
             <choose>
                 <when test="isConfig != null and isConfig == 1">
