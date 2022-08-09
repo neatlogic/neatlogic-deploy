@@ -8,11 +8,13 @@ package codedriver.module.deploy.api.appconfig.env;
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.deploy.auth.DEPLOY_BASE;
+import codedriver.framework.deploy.constvalue.DeployAppConfigAction;
 import codedriver.framework.deploy.dto.app.DeployAppEnvAutoConfigVo;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.deploy.dao.mapper.DeployAppConfigMapper;
+import codedriver.module.deploy.service.DeployAppAuthorityService;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.stereotype.Service;
 
@@ -25,10 +27,13 @@ import javax.annotation.Resource;
 @Service
 @AuthAction(action = DEPLOY_BASE.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
-public class DeployAppConfigEnvAutoConfigDeleteApi extends PrivateApiComponentBase {
+public class DeleteDeployAppConfigEnvAutoConfigApi extends PrivateApiComponentBase {
 
     @Resource
     private DeployAppConfigMapper deployAppConfigMapper;
+
+    @Resource
+    DeployAppAuthorityService deployAppAuthorityService;
 
     @Override
     public String getToken() {
@@ -56,6 +61,11 @@ public class DeployAppConfigEnvAutoConfigDeleteApi extends PrivateApiComponentBa
     @Description(desc = "删除应用环境实例autoConfig接口")
     @Override
     public Object myDoService(JSONObject paramObj) {
+
+        //校验环境权限、编辑配置的操作权限
+        deployAppAuthorityService.checkEnvAuth(paramObj.getLong("appSystemId"), paramObj.getLong("envId"));
+        deployAppAuthorityService.checkOperationAuth(paramObj.getLong("appSystemId"), DeployAppConfigAction.EDIT);
+
         DeployAppEnvAutoConfigVo appEnvAutoConfigVo = JSONObject.toJavaObject(paramObj, DeployAppEnvAutoConfigVo.class);
         deployAppConfigMapper.deleteAppEnvAutoConfig(appEnvAutoConfigVo);
         return null;
