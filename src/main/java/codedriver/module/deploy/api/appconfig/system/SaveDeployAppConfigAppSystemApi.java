@@ -1,3 +1,8 @@
+/*
+ * Copyright(c) 2022 TechSure Co., Ltd. All Rights Reserved.
+ * 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
+ */
+
 package codedriver.module.deploy.api.appconfig.system;
 
 import codedriver.framework.auth.core.AuthAction;
@@ -64,7 +69,7 @@ public class SaveDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
             @Param(name = "maintenanceWindow", type = ApiParamType.STRING, desc = "维护窗口"),
             @Param(name = "description", type = ApiParamType.STRING, desc = "备注")
     })
-    @Output({})
+    @Output({@Param(name = "Return", type = ApiParamType.LONG, desc = "应用id")})
     @Description(desc = "保存发布应用配置的应用系统")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
@@ -75,7 +80,7 @@ public class SaveDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
         //构建数据结构
         JSONArray stateIdArray = paramObj.getJSONArray("stateIdList");
         if (CollectionUtils.isNotEmpty(stateIdArray)) {
-             stateIdList = stateIdArray.toJavaList(Long.class);
+            stateIdList = stateIdArray.toJavaList(Long.class);
         }
         JSONArray ownerIdArray = paramObj.getJSONArray("ownerIdList");
         if (CollectionUtils.isNotEmpty(ownerIdArray)) {
@@ -125,6 +130,6 @@ public class SaveDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
         List<CiEntityTransactionVo> ciEntityTransactionList = new ArrayList<>();
         ciEntityTransactionList.add(ciEntityTransactionVo);
         ciEntityService.saveCiEntity(ciEntityTransactionList);
-        return null;
+        return ciEntityTransactionVo.getCiEntityId();
     }
 }
