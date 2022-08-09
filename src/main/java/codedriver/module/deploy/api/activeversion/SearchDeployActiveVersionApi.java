@@ -173,6 +173,8 @@ public class SearchDeployActiveVersionApi extends PrivateApiComponentBase {
                                     List<DeployEnvVersionAuditVo> auditList = map.getValue();
                                     DeployEnvVersionVo envStatus = new DeployEnvVersionVo();
                                     envStatus.setEnvId(envId);
+                                    envStatus.setStatus(DeployEnvVersionStatus.PENDING.getValue());
+                                    envStatusList.add(envStatus);
                                     Optional<AppEnvironmentVo> first = moduleAllEnv.stream().filter(o -> Objects.equals(o.getEnvId(), envId)).findFirst();
                                     first.ifPresent(appEnvironmentVo -> envStatus.setEnvName(appEnvironmentVo.getEnvName()));
                                     if (auditList != null) {
@@ -190,7 +192,6 @@ public class SearchDeployActiveVersionApi extends PrivateApiComponentBase {
                                         }
                                         // 没有audit说明当前版本在当前环境没有发布
                                         if (index == null) {
-                                            envStatus.setStatus(DeployEnvVersionStatus.PENDING.getValue());
                                             continue;
                                         }
                                         // 当前版本在当前环境发布了
@@ -205,19 +206,18 @@ public class SearchDeployActiveVersionApi extends PrivateApiComponentBase {
                                                 envStatus.setRollbackTime(auditVo.getFcd());
                                             }
                                         }
-                                        envStatusList.add(envStatus);
                                     }
                                 }
                                 // 没有audit记录的环境都认为未发布
                                 if (noAuditEnvIdList.size() > 0) {
-                                    noAuditEnvIdList.forEach(o -> {
-                                        Optional<AppEnvironmentVo> first = moduleAllEnv.stream().filter(_o -> Objects.equals(_o.getEnvId(), o)).findFirst();
+                                    for (Long envId : noAuditEnvIdList) {
+                                        Optional<AppEnvironmentVo> first = moduleAllEnv.stream().filter(_o -> Objects.equals(_o.getEnvId(), envId)).findFirst();
                                         String envName = null;
                                         if (first.isPresent()) {
                                             envName = first.get().getEnvName();
                                         }
-                                        envStatusList.add(new DeployEnvVersionVo(o, envName, DeployEnvVersionStatus.PENDING.getValue()));
-                                    });
+                                        envStatusList.add(new DeployEnvVersionVo(envId, envName, DeployEnvVersionStatus.PENDING.getValue()));
+                                    }
                                 }
                                 // 当前版本的所有环境都没有audit记录，则认为都未发布
                                 if (envStatusList.size() == 0) {
