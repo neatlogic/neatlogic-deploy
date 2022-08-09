@@ -111,20 +111,21 @@ public class SearchDeployActiveVersionApi extends PrivateApiComponentBase {
                             // 按模块给环境分类
                             moduleEnvListMap = moduleEnvList.stream().collect(Collectors.toMap(DeployAppModuleEnvVo::getId, DeployAppModuleEnvVo::getEnvList));
                         }
-                        // 查出每个模块下的活动版本与最新非活动版本
-                        // 活动版本：尚有环境未发布的版本
-                        // 非活动版本：全部环境都已发布的版本
+                        /**
+                         * 查出每个模块下的活动版本与最新非活动版本
+                         * 活动版本：尚有环境未发布的版本
+                         * 非活动版本：全部环境都已发布的版本
+                         *
+                         * 以环境为角度，取出当前模块下的所有环境的audit（每个环境的记录按时间排序），
+                         * 用版本循环，找出每个环境中当前版本在audit中最后一次出现的位置（index），
+                         * 如果没有找到，则认为当前版本未在当前环境发布
+                         * 如果index是【最后一条】或【index的版本大于当前版本】，则认为当前版本在当前环境发布了，
+                         * 如果index不是最后一条或最后一条记录的版本小于当前版本，则认为当前版本在当前环境回退过，回退时间为下一条记录的fcd
+                         * 版本在所有环境都发布了，即可称之为非活动版本，如果有多个非活动版本，只取最后一个
+                         */
                         for (ModuleVo moduleVo : moduleList) {
                             DeployModuleActiveVersionVo moduleActiveVersion = new DeployModuleActiveVersionVo(systemVo.getId(), moduleVo.getAppModuleId(), moduleVo.getAppModuleAbbrName(), moduleVo.getAppModuleName());
                             moduleActiveVersionList.add(moduleActiveVersion);
-                            /**
-                             * 以环境为角度，取出当前模块下的所有环境的audit（每个环境的记录按时间排序），
-                             * 用版本循环，找出每个环境中当前版本在audit中最后一次出现的位置（index），
-                             * 如果没有找到，则认为当前版本未在当前环境发布
-                             * 如果index是【最后一条】或【index的版本大于当前版本】，则认为当前版本在当前环境发布了，
-                             * 如果index不是最后一条或最后一条记录的版本小于当前版本，则认为当前版本在当前环境回退过，回退时间为下一条记录的fcd
-                             * 版本在所有环境都发布了，即可称之为非活动版本，如果有多个非活动版本，只取最后一个
-                             */
                             if (moduleEnvListMap == null || moduleVersionMap == null) {
                                 continue;
                             }
@@ -135,21 +136,28 @@ public class SearchDeployActiveVersionApi extends PrivateApiComponentBase {
                             if (moduleAllEnv == null || moduleVersionList == null) {
                                 continue;
                             }
-                            // 当前模块所有audit
+                            // 当前模块所有的audit
                             List<DeployEnvVersionAuditVo> envVersionAuditList = deployEnvVersionMapper.getDeployEnvVersionAuditBySystemIdAndModuleId(systemVo.getId(), moduleVo.getAppModuleId());
-                            if (envVersionAuditList.size() > 0) {
-                                List<DeployActiveVersionVo> activeVersionList = new ArrayList<>();
+                            List<DeployActiveVersionVo> activeVersionList = new ArrayList<>();
+                            moduleActiveVersion.setVersionList(activeVersionList);
+                            if (envVersionAuditList.size() == 0) {
+                                // 当前模块没有任何audit，则认为所有版本在所有环境都未发布
+                                for (DeployVersionVo versionVo : moduleVersionList) {
+                                    // todo 环境有顺序
+                                    DeployActiveVersionVo activeVersion = new DeployActiveVersionVo(versionVo);
+                                    activeVersionList.add(activeVersion);
+                                    List<DeployEnvVersionVo> envStatusList = new ArrayList<>();
+                                    activeVersion.setEnvList(envStatusList);
+                                    moduleAllEnv.forEach(o -> envStatusList.add(new DeployEnvVersionVo(o.getEnvId(), o.getEnvName(), DeployEnvVersionStatus.PENDING.getValue())));
+                                }
+                            } else {
                                 Map<Long, List<DeployEnvVersionAuditVo>> envVersionAuditMap = envVersionAuditList.stream().collect(Collectors.groupingBy(DeployEnvVersionAuditVo::getEnvId));
                                 // 没有audit记录的环境
                                 List<Long> noAuditEnvIdList = moduleAllEnv.stream().map(AppEnvironmentVo::getEnvId).filter(envId -> !envVersionAuditMap.containsKey(envId)).collect(Collectors.toList());
                                 DeployActiveVersionVo inactive = null;
                                 for (DeployVersionVo versionVo : moduleVersionList) {
                                     // todo 环境有顺序
-                                    DeployActiveVersionVo activeVersion = new DeployActiveVersionVo();
-                                    activeVersion.setVersionId(versionVo.getId());
-                                    activeVersion.setVersion(versionVo.getVersion());
-                                    activeVersion.setcompileSuccessCount(versionVo.getcompileSuccessCount());
-                                    activeVersion.setcompileFailCount(versionVo.getcompileFailCount());
+                                    DeployActiveVersionVo activeVersion = new DeployActiveVersionVo(versionVo);
                                     List<DeployEnvVersionVo> envStatusList = new ArrayList<>();
                                     activeVersion.setEnvList(envStatusList);
                                     for (Map.Entry<Long, List<DeployEnvVersionAuditVo>> map : envVersionAuditMap.entrySet()) {
@@ -225,12 +233,9 @@ public class SearchDeployActiveVersionApi extends PrivateApiComponentBase {
                                     }
                                 }
                                 activeVersionList.add(inactive);
-                                activeVersionList.sort(Comparator.comparing(DeployActiveVersionVo::getVersionId).reversed());
-                                moduleActiveVersion.setVersionList(activeVersionList);
                             }
+                            activeVersionList.sort(Comparator.comparing(DeployActiveVersionVo::getVersionId).reversed());
                         }
-                        // 当前系统的所有版本
-
                     }
                 }
             }
