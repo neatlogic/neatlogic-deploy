@@ -385,22 +385,20 @@
 
     <select id="getDeployAppModuleEnvListByAppSystemId"
             resultMap="deployAppModuleEnvMap">
-        (
-            SELECT
-                a.`env_id` AS envId,
-                a.`env_name` AS envName,
-                a.`app_module_id` AS appModuleId
-            FROM ${schemaName}.`scence_appinstance_env_appmodule_appsystem` a
-            where a.`env_id` is not null and a.`app_system_id` = #{appSystemId}
-            UNION
-            SELECT
-                cc.id AS envId,
-                cc.name AS envName,
-                dace.app_module_id AS appModuleId
-            FROM deploy_app_config_env dace
-            JOIN cmdb_cientity cc ON cc.id = dace.env_id
-            where dace.app_system_id = #{appSystemId}
-        )
+        SELECT
+            a.`env_id` AS envId,
+            a.`env_name` AS envName,
+            a.`app_module_id` AS appModuleId
+        FROM ${schemaName}.`scence_appinstance_env_appmodule_appsystem` a
+        where a.`env_id` is not null and a.`app_system_id` = #{appSystemId}
+        UNION
+        SELECT
+            cc.id AS envId,
+            cc.name AS envName,
+            dace.app_module_id AS appModuleId
+        FROM deploy_app_config_env dace
+        JOIN cmdb_cientity cc ON cc.id = dace.env_id
+        where dace.app_system_id = #{appSystemId}
     </select>
 
     <select id="getDeployAppHasNotEnvListByAppSystemIdAndModuleIdList"
