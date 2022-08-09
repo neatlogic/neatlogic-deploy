@@ -58,6 +58,12 @@ public class DeployAppAuthChecker {
     //    6）环境制品：制品管理权限&环境权限
 
 
+    /**
+     * 根据系统id获取当前登录人所有权限
+     *
+     * @param appSystemId 系统id
+     * @return
+     */
     public static JSONObject getAppConfigAuthorityList(Long appSystemId) {
         JSONObject returnObj = new JSONObject();
         if (appSystemId != null) {
@@ -108,7 +114,13 @@ public class DeployAppAuthChecker {
     }
 
 
-    //校验是否拥有操作权限
+    /**
+     * 校验是否拥有操作权限
+     *
+     * @param appSystemId 系统id
+     * @param action      操作权限
+     * @return
+     */
     private static boolean hasOperationPrivilege(Long appSystemId, DeployAppConfigAction action) {
         if (appSystemId != null) {
             boolean hasAuth = AuthActionChecker.check(DEPLOY_MODIFY.class);
@@ -124,7 +136,13 @@ public class DeployAppAuthChecker {
         return false;
     }
 
-    //校验是否拥有环境权限
+    /**
+     * 校验是否拥有环境权限
+     *
+     * @param appSystemId 系统id
+     * @param envAction   环境权限
+     * @return
+     */
     private static boolean hasEnvPrivilege(Long appSystemId, Long envAction) {
         if (appSystemId != null) {
             boolean hasAuth = AuthActionChecker.check(DEPLOY_MODIFY.class);
@@ -140,7 +158,13 @@ public class DeployAppAuthChecker {
         return false;
     }
 
-    //校验是否拥有场景权限
+    /**
+     * 校验是否拥有场景权限
+     *
+     * @param appSystemId    系统id
+     * @param scenarioAction 场景权限
+     * @return
+     */
     private static boolean hasScenarioPrivilege(Long appSystemId, String scenarioAction) {
         if (appSystemId != null) {
             boolean hasAuth = AuthActionChecker.check(DEPLOY_MODIFY.class);
@@ -194,6 +218,12 @@ public class DeployAppAuthChecker {
         return false;
     }
 
+    /**
+     * 根据系统id获取所有权限
+     *
+     * @param appSystemId 系统id
+     * @return
+     */
     private static JSONObject getAllAuthority(Long appSystemId) {
         JSONObject returnObj = new JSONObject();
         //操作权限
