@@ -206,6 +206,11 @@ public class DeployBatchJobServiceImpl implements DeployBatchJobService {
         if (!groupStatus.equals(groupVo.getStatus())) {
             Long nextGroupId = deployBatchJobMapper.getNextGroupId(groupVo.getLaneId(), groupVo.getSort());
             logger.info("Batch run update group:#" + groupId + " status:" + groupStatus);
+            if (groupStatus.equalsIgnoreCase(JobStatus.COMPLETED.getValue())) {
+                if (groupVo.getNeedWait() == 1) {
+                    groupStatus = nextGroupId == null ? groupStatus : JobPhaseStatus.WAIT_INPUT.getValue();
+                }
+            }
             groupVo.setStatus(groupStatus);
             deployBatchJobMapper.updateGroupStatus(groupVo);
             if (Objects.equals(groupStatus, JobStatus.COMPLETED.getValue())) {
