@@ -8,10 +8,12 @@ package codedriver.module.deploy.api.appconfig.module;
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.deploy.auth.DEPLOY_BASE;
+import codedriver.framework.deploy.constvalue.DeployAppConfigAction;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.deploy.dao.mapper.DeployAppConfigMapper;
+import codedriver.module.deploy.service.DeployAppAuthorityService;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.stereotype.Service;
 
@@ -23,11 +25,14 @@ import javax.annotation.Resource;
  **/
 @Service
 @AuthAction(action = DEPLOY_BASE.class)
-@OperationType(type = OperationTypeEnum.SEARCH)
-public class DeployAppConfigModuleRunnerGroupSaveApi extends PrivateApiComponentBase {
+@OperationType(type = OperationTypeEnum.OPERATE)
+public class SaveDeployAppConfigModuleRunnerGroupApi extends PrivateApiComponentBase {
 
     @Resource
     private DeployAppConfigMapper deployAppConfigMapper;
+
+    @Resource
+    DeployAppAuthorityService deployAppAuthorityService;
 
     @Override
     public String getToken() {
@@ -54,6 +59,10 @@ public class DeployAppConfigModuleRunnerGroupSaveApi extends PrivateApiComponent
     @Description(desc = "保存应用模块runner组接口")
     @Override
     public Object myDoService(JSONObject paramObj) {
+
+        //校验编辑配置的操作权限
+        deployAppAuthorityService.checkOperationAuth(paramObj.getLong("appSystemId"), DeployAppConfigAction.EDIT);
+
         Long appSystemId = paramObj.getLong("appSystemId");
         Long moduleId = paramObj.getLong("appModuleId");
         Long runnerGroupId = paramObj.getLong("runnerGroupId");

@@ -113,6 +113,12 @@ public class DeployAppAuthChecker {
         return returnObj;
     }
 
+    /**
+     * 批量校验是否拥有这些权限
+     */
+
+
+
 
     /**
      * 校验是否拥有操作权限
@@ -121,7 +127,7 @@ public class DeployAppAuthChecker {
      * @param action      操作权限
      * @return
      */
-    private static boolean hasOperationPrivilege(Long appSystemId, DeployAppConfigAction action) {
+    public static boolean hasOperationPrivilege(Long appSystemId, DeployAppConfigAction action) {
         if (appSystemId != null) {
             boolean hasAuth = AuthActionChecker.check(DEPLOY_MODIFY.class);
             if (!hasAuth) {
@@ -143,7 +149,7 @@ public class DeployAppAuthChecker {
      * @param envAction   环境权限
      * @return
      */
-    private static boolean hasEnvPrivilege(Long appSystemId, Long envAction) {
+    public static boolean hasEnvPrivilege(Long appSystemId, Long envAction) {
         if (appSystemId != null) {
             boolean hasAuth = AuthActionChecker.check(DEPLOY_MODIFY.class);
             if (!hasAuth) {

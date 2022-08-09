@@ -31,10 +31,17 @@
                 </foreach>
             </if>
             <if test="searchVo.isHasAllAuthority == 0">
-                AND  IF(
+                AND IF(
                 daca.app_system_id > 0,
                 daca.action_type = 'operation'
-                AND daca.action IN ( 'view', 'all' )
+                AND daca.action IN
+                ('all'
+                <if test="searchVo.actionList != null and searchVo.actionList.size() > 0">,
+                    <foreach collection="searchVo.actionList" item="item" separator=",">
+                        #{item}
+                    </foreach>
+                </if>
+                )
                 AND daca.auth_uuid IN
                 (
                 'alluser'
@@ -686,7 +693,14 @@
                 AND  IF(
                 daca.app_system_id > 0,
                 daca.action_type = 'operation'
-                AND daca.action IN ( 'view', 'all' )
+                AND daca.action IN
+                ('all'
+                <if test="actionList != null and actionList.size() > 0">,
+                    <foreach collection="actionList" item="item" separator=",">
+                        #{item}
+                    </foreach>
+                </if>
+                )
                 AND daca.auth_uuid IN
                 (
                 'alluser'
@@ -1222,7 +1236,7 @@
             <if test="envId != 0L">
                 AND `env_id` = #{envId}
             </if>
-            <if test="instanceId != null">
+            <if test="instanceId != 0L">
                 and `instance_id` = #{instanceId}
             </if>
             <if test="lcd != null">

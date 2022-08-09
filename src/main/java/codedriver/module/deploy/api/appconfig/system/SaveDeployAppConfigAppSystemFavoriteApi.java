@@ -7,10 +7,12 @@ import codedriver.framework.cmdb.exception.cientity.CiEntityNotFoundException;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.crossover.CrossoverServiceFactory;
 import codedriver.framework.deploy.auth.DEPLOY_BASE;
+import codedriver.framework.deploy.constvalue.DeployAppConfigAction;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.deploy.dao.mapper.DeployAppConfigMapper;
+import codedriver.module.deploy.service.DeployAppAuthorityService;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.stereotype.Service;
 
@@ -28,6 +30,9 @@ public class SaveDeployAppConfigAppSystemFavoriteApi extends PrivateApiComponent
 
     @Resource
     DeployAppConfigMapper deployAppConfigMapper;
+
+    @Resource
+    DeployAppAuthorityService deployAppAuthorityService;
 
     @Override
     public String getName() {
@@ -53,6 +58,9 @@ public class SaveDeployAppConfigAppSystemFavoriteApi extends PrivateApiComponent
     @Description(desc = "收藏发布应用配置的应用")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
+
+        //校验编辑配置的操作权限
+        deployAppAuthorityService.checkOperationAuth(paramObj.getLong("appSystemId"), DeployAppConfigAction.EDIT);
 
         //校验应用系统id是否存在
         ICiEntityCrossoverMapper iCiEntityCrossoverMapper = CrossoverServiceFactory.getApi(ICiEntityCrossoverMapper.class);
