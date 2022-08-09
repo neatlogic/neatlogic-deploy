@@ -256,6 +256,10 @@
         <result column="batchJobReviewer" property="reviewer"/>
         <result column="batchJobReviewStatus" property="reviewStatus"/>
         <result column="batchJobReviewTime" property="reviewTime"/>
+        <collection property="authList" ofType="codedriver.framework.deploy.dto.job.DeployJobAuthVo">
+            <result column="jobAuthType" property="type"/>
+            <result column="jobAuthUuid" property="authUuid"/>
+        </collection>
         <collection property="laneList" ofType="codedriver.framework.deploy.dto.job.LaneVo">
             <id column="laneId" property="id"/>
             <result column="sort" property="sort"/>
@@ -280,6 +284,12 @@
                     <result column="jobAppModuleName" property="appModuleName"/>
                     <result column="jobEnvId" property="envId"/>
                     <result column="jobEnvName" property="envName"/>
+                    <collection property="phaseList" ofType="codedriver.framework.autoexec.dto.job.AutoexecJobPhaseVo">
+                        <id column="jobPhaseId" property="id"/>
+                        <result column="jobPhaseName" property="name"/>
+                        <result column="jobPhaseStatus" property="status"/>
+                        <result column="jobPhaseSort" property="sort"/>
+                    </collection>
                 </collection>
             </collection>
         </collection>
@@ -320,7 +330,14 @@
                f.`app_module_id` as jobAppModuleId,
                h.`name`          as jobAppModuleName,
                f.`env_id`        as jobEnvId,
-               i.`name`          as jobEnvName
+               i.`name`          as jobEnvName,
+               j.`sort`          AS jobGroupSort,
+               k.`id`            AS jobPhaseId,
+               k.`name`          AS jobPhaseName,
+               k.`sort`          AS jobPhaseSort,
+               k.`status`        AS jobPhaseStatus,
+               l.`type`          AS jobAuthType,
+               l.`auth_uuid`     AS jobAuthUuid
         FROM autoexec_job AS a
                  LEFT JOIN deploy_job_lane AS b ON a.id = b.batch_job_id
                  LEFT JOIN deploy_job_lane_group AS c ON b.id = c.lane_id
@@ -330,8 +347,11 @@
                  LEFT JOIN cmdb_cientity g ON f.app_system_id = g.id
                  LEFT JOIN cmdb_cientity h ON f.app_module_id = h.id
                  LEFT JOIN cmdb_cientity i ON f.env_id = i.id
+                 LEFT JOIN autoexec_job_group j ON e.id = j.job_id
+                 LEFT JOIN autoexec_job_phase k ON j.id = k.group_id
+                 LEFT JOIN deploy_job_auth l ON a.id = l.job_id
         where a.id = #{value}
-        order by laneSort, groupSort, jobSort
+        order by laneSort, groupSort, jobSort, jobGroupSort, jobPhaseSort, jobPhaseName
     </select>
 
     <select id="getDeployJobContent"
@@ -387,6 +407,11 @@
     <insert id="insertLane" parameterType="codedriver.framework.deploy.dto.job.LaneVo">
         INSERT INTO `deploy_job_lane` (`id`, `batch_job_id`, `sort`, `status`)
         VALUES (#{id}, #{batchJobId}, #{sort}, #{status})
+    </insert>
+
+    <insert id="insertDeployJobAuth" parameterType="codedriver.framework.deploy.dto.job.DeployJobAuthVo">
+        INSERT INTO `deploy_job_auth` (`job_id`, `type`, `auth_uuid`)
+        VALUES (#{jobId}, #{type}, #{authUuid})
     </insert>
 
     <insert id="insertLaneGroup" parameterType="codedriver.framework.deploy.dto.job.LaneGroupVo">
@@ -454,6 +479,12 @@
         WHERE job_id = #{value}
     </delete>
 
+    <delete id="deleteJobAuthByJobId" parameterType="java.lang.Long">
+        DELETE
+        FROM `deploy_job_auth`
+        WHERE job_id = #{value}
+    </delete>
+
     <delete id="deleteDeployJobContentByHash" parameterType="java.lang.String">
         DELETE
         FROM `deploy_job_content`
@@ -466,6 +497,12 @@
                  LEFT JOIN deploy_job_lane_group b ON a.id = b.lane_id
                  LEFT JOIN deploy_job_lane_group_job c ON b.id = c.group_id
         WHERE a.batch_job_id = #{value}
+    </delete>
+
+    <delete id="deleteJobById" parameterType="java.lang.Long">
+        DELETE
+        FROM `autoexec_job`
+        WHERE `id` = #{value}
     </delete>
 
 </mapper>

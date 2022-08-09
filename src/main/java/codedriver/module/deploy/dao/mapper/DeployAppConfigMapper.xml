@@ -19,8 +19,21 @@
         </if>
         <where>
             <if test="searchVo.keyword != null and searchVo.keyword != ''">
-                a.`name` LIKE concat('%', #{searchVo.keyword}, '%') or a.`app_module_name` LIKE concat('%', #{searchVo.keyword}, '%')
-                or a.`abbr_name` LIKE concat('%', #{searchVo.keyword}, '%')or a.`app_module_abbr_name` LIKE concat('%', #{searchVo.keyword}, '%')
+               ( a.`name` LIKE concat('%', #{searchVo.keyword}, '%') or a.`app_module_name` LIKE concat('%', #{searchVo.keyword}, '%')
+                or a.`abbr_name` LIKE concat('%', #{searchVo.keyword}, '%')or a.`app_module_abbr_name` LIKE concat('%',
+                #{searchVo.keyword}, '%'))
+            </if>
+            <if test="searchVo.appSystemIdList != null and searchVo.appSystemIdList.size() > 0">
+                AND a.`id` IN
+                <foreach collection="searchVo.appSystemIdList" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="searchVo.appModuleIdList != null and searchVo.appModuleIdList.size() > 0">
+                AND a.`app_module_id` IN
+                <foreach collection="searchVo.appModuleIdList" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
             </if>
             <choose>
                 <when test="searchVo.isConfig != null and searchVo.isConfig == 1">
@@ -682,15 +695,28 @@
     </select>
 
     <select id="getAppSystemIdListCount" resultType="java.lang.Integer">
-        SELECT count(distinct a.`id`) FROM ${schemaName}.`scence_appsystem_appmodule` a
+        SELECT count(distinct a.`id`)
+        FROM ${schemaName}.`scence_appsystem_appmodule` a
         <if test="isConfig != null">
             left join deploy_app_config b on a.`id` = b.`app_system_id` and b.`app_module_id` = 0 and b.`env_id` = 0
         </if>
         <where>
             <if test="keyword != null and keyword != ''">
-                a.`name` LIKE concat('%', #{keyword}, '%') or a.`app_module_name` LIKE concat('%', #{keyword}, '%')
+              ( a.`name` LIKE concat('%', #{keyword}, '%') or a.`app_module_name` LIKE concat('%', #{keyword}, '%')
                 or a.`abbr_name` LIKE concat('%', #{keyword}, '%')or a.`app_module_abbr_name` LIKE concat('%',
-                #{keyword}, '%')
+                #{keyword}, '%'))
+            </if>
+            <if test="appSystemIdList != null and appSystemIdList.size() > 0">
+                AND a.`id` IN
+                <foreach collection="appSystemIdList" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="appModuleIdList != null and appModuleIdList.size() > 0">
+                AND a.`app_module_id` IN
+                <foreach collection="appModuleIdList" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
             </if>
             <choose>
                 <when test="isConfig != null and isConfig == 1">
