@@ -65,15 +65,16 @@ public class ListDeployAppConfigAppModuleApi extends PrivateApiComponentBase {
         //TODO 考虑权限问题
         TenantContext.get().switchDataDatabase();
         IResourceCrossoverMapper resourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
-        List<Long> idList = resourceCrossoverMapper.getAppSystemModuleIdListByAppSystemId(paramObj.getLong("appSystemId"));
-        if (CollectionUtils.isNotEmpty(paramObj.getJSONArray("appModuleIdList"))) {
-            idList.addAll(paramObj.getJSONArray("appModuleIdList").toJavaList(Long.class));
-        }
-        if (CollectionUtils.isNotEmpty(idList)) {
-            moduleResourceList = resourceCrossoverMapper.getAppModuleListByIdListSimple(idList);
-
+        List<Long> moduleIdList = resourceCrossoverMapper.getAppSystemModuleIdListByAppSystemIdAndAppModuleIdList(paramObj.getLong("appSystemId"), paramObj.getJSONArray("appModuleIdList"));
+        if (CollectionUtils.isNotEmpty(moduleIdList)) {
+            moduleResourceList = resourceCrossoverMapper.getAppModuleListByIdListSimple(moduleIdList);
         }
         TenantContext.get().switchDefaultDatabase();
+
+        int isHasConfig = 0;
+        if (CollectionUtils.isNotEmpty(deployAppConfigMapper.getAppConfigListByAppSystemId(paramObj.getLong("appSystemId")))) {
+            isHasConfig = 1;
+        }
 
         //补充模块是否有环境（有实例的环境）
         List<Long> hasEnvAppModuleIdList = deployAppConfigMapper.getHasEnvAppModuleIdListByAppSystemIdAndModuleIdList(paramObj.getLong("appSystemId"), moduleResourceList.stream().map(ResourceVo::getId).collect(Collectors.toList()), TenantContext.get().getDataDbName());
@@ -83,6 +84,7 @@ public class ListDeployAppConfigAppModuleApi extends PrivateApiComponentBase {
             if (hasEnvAppModuleIdList.contains(resourceVo.getId())) {
                 returnAppModuleVo.setIsHasEnv(1);
             }
+            returnAppModuleVo.setIsConfig(isHasConfig);
         }
         return returnAppModuleVoList;
     }
