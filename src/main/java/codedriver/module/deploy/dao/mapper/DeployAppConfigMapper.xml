@@ -53,16 +53,22 @@
         </if>
     </select>
 
-    <select id="searchAppSystemIdList" resultType="java.lang.Long">
-        SELECT DISTINCT a.`id`
-        FROM ${schemaName}.`scence_appsystem_appmodule` a
+    <select id="searchAppSystemIdList" resultType="codedriver.framework.deploy.dto.app.DeployAppSystemVo">
+        SELECT DISTINCT `id`, `abbr_name` as abbrName, `name`
+        FROM ${schemaName}.`scence_appsystem_appmodule`
         <where>
             <if test="keyword != null and keyword != ''">
-                a.`name` LIKE concat('%', #{keyword}, '%') or a.`app_module_name` LIKE concat('%', #{keyword}, '%')
-                or a.`abbr_name` LIKE concat('%', #{keyword}, '%') or a.`app_module_abbr_name` LIKE concat('%', #{keyword}, '%')
+                `name` LIKE concat('%', #{keyword}, '%') or `app_module_name` LIKE concat('%', #{keyword}, '%')
+                or `abbr_name` LIKE concat('%', #{keyword}, '%') or `app_module_abbr_name` LIKE concat('%', #{keyword}, '%')
+            </if>
+            <if test="defaultValue != null and defaultValue.size() > 0">
+                AND `id` IN
+                <foreach collection="defaultValue" item="id" open="(" separator="," close=")">
+                    #{id}
+                </foreach>
             </if>
         </where>
-        order by CONVERT(a.`abbr_name` USING gbk) COLLATE gbk_chinese_ci ASC
+        order by CONVERT(`abbr_name` USING gbk) COLLATE gbk_chinese_ci ASC
         <if test="needPage">
             limit #{startNum}, #{pageSize}
         </if>
