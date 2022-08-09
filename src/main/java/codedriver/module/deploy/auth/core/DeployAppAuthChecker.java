@@ -197,9 +197,7 @@ public class DeployAppAuthChecker {
     private static JSONObject getAllAuthority(Long appSystemId) {
         JSONObject returnObj = new JSONObject();
         //操作权限
-        List<String> operationAuthList = new ArrayList<>();
-        operationAuthList.addAll(DeployAppConfigAction.getValueList());
-        returnObj.put("operationAuthList", operationAuthList);
+        returnObj.put("operationAuthList", DeployAppConfigAction.getValueList());
         //环境权限
         List<String> envAuthList = new ArrayList<>();
         for (DeployAppEnvironmentVo env : checker.deployAppConfigMapper.getDeployAppEnvListByAppSystemIdAndModuleIdList(appSystemId, new ArrayList<>(), TenantContext.get().getDataDbName())) {
