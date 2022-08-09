@@ -58,8 +58,8 @@
         FROM ${schemaName}.`scence_appsystem_appmodule`
         <where>
             <if test="keyword != null and keyword != ''">
-                `name` LIKE concat('%', #{keyword}, '%') or `app_module_name` LIKE concat('%', #{keyword}, '%')
-                or `abbr_name` LIKE concat('%', #{keyword}, '%') or `app_module_abbr_name` LIKE concat('%', #{keyword}, '%')
+                and (`name` LIKE concat('%', #{keyword}, '%') or `app_module_name` LIKE concat('%', #{keyword}, '%')
+                or `abbr_name` LIKE concat('%', #{keyword}, '%') or `app_module_abbr_name` LIKE concat('%', #{keyword}, '%'))
             </if>
             <if test="defaultValue != null and defaultValue.size() > 0">
                 AND `id` IN

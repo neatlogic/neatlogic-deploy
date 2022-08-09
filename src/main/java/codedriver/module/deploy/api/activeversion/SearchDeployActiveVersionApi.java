@@ -102,7 +102,6 @@ public class SearchDeployActiveVersionApi extends PrivateApiComponentBase {
                         Map<Long, List<DeployVersionVo>> moduleVersionMap = systemVersionList.stream().collect(Collectors.groupingBy(DeployVersionVo::getAppModuleId));
                         if (moduleList.size() > 0) {
                             // 查询当前系统所有模块各自所拥有的环境
-                            // todo 模块没有环境要不要查出来？
                             List<DeployAppModuleEnvVo> moduleEnvList = deployAppConfigMapper.getDeployAppModuleEnvListByAppSystemId(systemVo.getId(), TenantContext.get().getDataDbName());
                             Map<Long, List<AppEnvironmentVo>> moduleEnvListMap;
                             if (moduleEnvList.size() > 0) {
@@ -119,9 +118,11 @@ public class SearchDeployActiveVersionApi extends PrivateApiComponentBase {
                                      * 如果index不是最后一条或最后一条记录的版本小于当前版本，则认为当前版本在当前环境回退过，回退时间为下一条记录的fcd
                                      * 版本在所有环境都发布了，即可称之为非活动版本，如果有多个非活动版本，只取最后一个
                                      */
-                                    List<AppEnvironmentVo> moduleAllEnv = moduleEnvListMap.get(moduleVo.getAppModuleId()); // 当前模块所有的环境
+                                    // 当前模块所有的环境
+                                    List<AppEnvironmentVo> moduleAllEnv = moduleEnvListMap.get(moduleVo.getAppModuleId());
                                     DeployModuleActiveVersionVo moduleActiveVersion = new DeployModuleActiveVersionVo(systemVo.getId(), moduleVo.getAppModuleId(), moduleVo.getAppModuleAbbrName(), moduleVo.getAppModuleName());
                                     moduleActiveVersionList.add(moduleActiveVersion);
+                                    // 当前模块所有audit
                                     List<DeployEnvVersionAuditVo> envVersionAuditList = deployEnvVersionMapper.getDeployEnvVersionAuditBySystemIdAndModuleId(systemVo.getId(), moduleVo.getAppModuleId());
                                     if (envVersionAuditList.size() > 0) {
                                         List<DeployActiveVersionVo> activeVersionList = new ArrayList<>();
