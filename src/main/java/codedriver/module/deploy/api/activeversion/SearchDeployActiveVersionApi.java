@@ -80,7 +80,7 @@ public class SearchDeployActiveVersionApi extends PrivateApiComponentBase {
         Integer systemIdListCount = deployAppConfigMapper.getAppSystemIdListCount(searchVo);
         List<DeploySystemActiveVersionVo> result = new ArrayList<>();
         if (systemIdListCount > 0) {
-            List<DeployAppSystemVo> systemList = deployAppConfigMapper.searchAppSystemIdList(searchVo);
+            List<DeployAppSystemVo> systemList = deployAppConfigMapper.searchAppSystemList(searchVo);
             IResourceCrossoverMapper resourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
             ResourceSearchVo moduleSearchVo = new ResourceSearchVo();
             moduleSearchVo.setAppSystemIdList(systemList.stream().map(DeployAppSystemVo::getId).collect(Collectors.toList()));

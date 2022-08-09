@@ -53,7 +53,7 @@
         </if>
     </select>
 
-    <select id="searchAppSystemIdList" resultType="codedriver.framework.deploy.dto.app.DeployAppSystemVo">
+    <select id="searchAppSystemList" resultType="codedriver.framework.deploy.dto.app.DeployAppSystemVo">
         SELECT DISTINCT `id`, `abbr_name` as abbrName, `name`
         FROM ${schemaName}.`scence_appsystem_appmodule`
         <where>

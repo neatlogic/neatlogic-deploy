@@ -18,7 +18,7 @@ public interface DeployAppConfigMapper {
 
     List<Long> getAppSystemIdList(@Param("searchVo") DeployResourceSearchVo searchVo, @Param("userUuid") String userUuid);
 
-    List<DeployAppSystemVo> searchAppSystemIdList(DeployResourceSearchVo searchVo);
+    List<DeployAppSystemVo> searchAppSystemList(DeployResourceSearchVo searchVo);
 
     List<DeployAppSystemVo> getAppSystemListIncludeModuleByIdList(@Param("idList") List<Long> idList, @Param("schemaName") String schemaName, @Param("userUuid") String userUuid);
 
