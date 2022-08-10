@@ -25,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 @Transactional
@@ -85,7 +86,9 @@ public class RollbackDeployInstanceVersionApi extends PrivateApiComponentBase {
             throw new DeployInstanceVersionWhichCanRollbackNotFoundException(resourceId);
         }
         deployInstanceVersionMapper.insertDeployInstanceVersion(new DeployInstanceVersionVo(sysId, moduleId, envId, resourceId, oldestVersion.getOldVersionId(), oldestVersion.getOldBuildNo()));
-        deployInstanceVersionMapper.insertDeployInstanceVersionAudit(new DeployInstanceVersionAuditVo(sysId, moduleId, envId, resourceId, oldestVersion.getOldVersionId(), currentVersion.getVersionId(), oldestVersion.getOldBuildNo(), currentVersion.getBuildNo(), VersionDirection.ROLLBACK.getValue()));
+        if (!Objects.equals(oldestVersion.getOldVersionId(), currentVersion.getVersionId())) {
+            deployInstanceVersionMapper.insertDeployInstanceVersionAudit(new DeployInstanceVersionAuditVo(sysId, moduleId, envId, resourceId, oldestVersion.getOldVersionId(), currentVersion.getVersionId(), oldestVersion.getOldBuildNo(), currentVersion.getBuildNo(), VersionDirection.ROLLBACK.getValue()));
+        }
         return null;
     }
 }

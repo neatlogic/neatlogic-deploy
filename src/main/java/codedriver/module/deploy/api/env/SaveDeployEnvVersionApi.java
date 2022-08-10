@@ -25,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.Date;
+import java.util.Objects;
 
 @Service
 @Transactional
@@ -98,7 +99,9 @@ public class SaveDeployEnvVersionApi extends PrivateApiComponentBase {
             oldVersionId = currentVersion.getVersionId();
             oldBuildNo = currentVersion.getBuildNo();
         }
-        deployEnvVersionMapper.insertDeployEnvVersionAudit(new DeployEnvVersionAuditVo(sysId, moduleId, envId, versionVo.getId(), oldVersionId, buildNo, oldBuildNo, VersionDirection.FORWARD.getValue()));
+        if (!Objects.equals(versionVo.getId(), oldVersionId)) {
+            deployEnvVersionMapper.insertDeployEnvVersionAudit(new DeployEnvVersionAuditVo(sysId, moduleId, envId, versionVo.getId(), oldVersionId, buildNo, oldBuildNo, VersionDirection.FORWARD.getValue()));
+        }
         return null;
     }
 }
