@@ -181,9 +181,7 @@ public class SearchDeployActiveVersionApi extends PrivateApiComponentBase {
                                     }
                                     Long envId = map.getKey();
                                     List<DeployEnvVersionAuditVo> auditList = map.getValue();
-                                    DeployEnvVersionVo envStatus = new DeployEnvVersionVo();
-                                    envStatus.setEnvId(envId);
-                                    envStatus.setStatus(DeployEnvVersionStatus.PENDING.getValue());
+                                    DeployEnvVersionVo envStatus = new DeployEnvVersionVo(envId, DeployEnvVersionStatus.PENDING.getValue());
                                     envStatusList.add(envStatus);
                                     Optional<AppEnvironmentVo> first = moduleAllEnv.stream().filter(o -> Objects.equals(o.getEnvId(), envId)).findFirst();
                                     first.ifPresent(appEnvironmentVo -> envStatus.setEnvName(appEnvironmentVo.getEnvName()));
