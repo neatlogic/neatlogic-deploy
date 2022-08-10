@@ -79,10 +79,13 @@ public class SaveDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
 
-        //校验编辑配置的操作权限
-        deployAppAuthorityService.checkOperationAuth(paramObj.getLong("appSystemId"), DeployAppConfigAction.EDIT);
-
         Long appSystemId = paramObj.getLong("id");
+
+        //校验编辑配置的操作权限
+        if (appSystemId != null) {
+            deployAppAuthorityService.checkOperationAuth(appSystemId, DeployAppConfigAction.EDIT);
+        }
+
         List<Long> stateIdList = new ArrayList<>();
         List<Long> ownerIdList = new ArrayList<>();
         //构建数据结构

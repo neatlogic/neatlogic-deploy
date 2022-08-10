@@ -14,15 +14,18 @@
         SELECT a.`id`
         FROM ${searchVo.schemaName}.`scence_appsystem_appmodule` a
         left join deploy_app_config_user dacu on a.`id` = dacu.app_system_id and dacu.user_uuid = #{userUuid}
-        LEFT JOIN deploy_app_config_authority daca ON daca.app_system_id = a.id
+        <if test="searchVo.isHasAllAuthority == 0">
+            LEFT JOIN deploy_app_config_authority daca ON daca.app_system_id = a.id
+        </if>
         <if test="searchVo.isConfig != null">
             left join deploy_app_config dac on a.`id` = dac.app_system_id and dac.app_module_id = 0 and dac.env_id = 0
         </if>
         <where>
             <if test="searchVo.keyword != null and searchVo.keyword != ''">
-               ( a.`name` LIKE concat('%', #{searchVo.keyword}, '%') or a.`app_module_name` LIKE concat('%', #{searchVo.keyword}, '%')
-                or a.`abbr_name` LIKE concat('%', #{searchVo.keyword}, '%')or a.`app_module_abbr_name` LIKE concat('%',
-                #{searchVo.keyword}, '%'))
+                ( a.`name` LIKE concat('%', #{searchVo.keyword}, '%') or a.`app_module_name` LIKE
+                concat('%',#{searchVo.keyword}, '%')
+                or a.`abbr_name` LIKE concat('%', #{searchVo.keyword}, '%')or a.`app_module_abbr_name` LIKE
+                concat('%',#{searchVo.keyword}, '%'))
             </if>
             <if test="searchVo.appSystemIdList != null and searchVo.appSystemIdList.size() > 0">
                 AND a.`id` IN
@@ -36,8 +39,8 @@
                 daca.action_type = 'operation'
                 AND daca.action IN
                 ('all'
-                <if test="searchVo.actionList != null and searchVo.actionList.size() > 0">,
-                    <foreach collection="searchVo.actionList" item="item" separator=",">
+                <if test="searchVo.authorityActionList != null and searchVo.authorityActionList.size() > 0">,
+                    <foreach collection="searchVo.authorityActionList" item="item" separator=",">
                         #{item}
                     </foreach>
                 </if>
@@ -78,7 +81,8 @@
         <where>
             <if test="keyword != null and keyword != ''">
                 and (`name` LIKE concat('%', #{keyword}, '%') or `app_module_name` LIKE concat('%', #{keyword}, '%')
-                or `abbr_name` LIKE concat('%', #{keyword}, '%') or `app_module_abbr_name` LIKE concat('%', #{keyword}, '%'))
+                or `abbr_name` LIKE concat('%', #{keyword}, '%') or `app_module_abbr_name` LIKE concat('%',
+                #{keyword},'%'))
             </if>
             <if test="defaultValue != null and defaultValue.size() > 0">
                 AND `id` IN
@@ -204,24 +208,24 @@
         FROM `deploy_app_config_authority`
         WHERE `action` IN ('view', 'edit')
         AND (
-              (`auth_type` = 'common' AND `auth_uuid` = 'alluser')
-            <if test="userUuid != null and userUuid != ''">
-                OR (`auth_type` = 'user' AND `auth_uuid` = #{userUuid})
-            </if>
-            <if test="teamUuidList != null and teamUuidList.size() > 0">
-                OR (`auth_type` = 'team' AND `auth_uuid` IN
-                <foreach collection="teamUuidList" item="teamUuid" open="(" separator="," close=")">
-                    #{teamUuid}
-                </foreach>
-                )
-            </if>
-            <if test="roleUuidList != null and roleUuidList.size() > 0">
-                OR (`auth_type` = 'role' AND `auth_uuid` IN
-                <foreach collection="roleUuidList" item="roleUuid" open="(" separator="," close=")">
-                    #{roleUuid}
-                </foreach>
-                )
-            </if>
+        (`auth_type` = 'common' AND `auth_uuid` = 'alluser')
+        <if test="userUuid != null and userUuid != ''">
+            OR (`auth_type` = 'user' AND `auth_uuid` = #{userUuid})
+        </if>
+        <if test="teamUuidList != null and teamUuidList.size() > 0">
+            OR (`auth_type` = 'team' AND `auth_uuid` IN
+            <foreach collection="teamUuidList" item="teamUuid" open="(" separator="," close=")">
+                #{teamUuid}
+            </foreach>
+            )
+        </if>
+        <if test="roleUuidList != null and roleUuidList.size() > 0">
+            OR (`auth_type` = 'role' AND `auth_uuid` IN
+            <foreach collection="roleUuidList" item="roleUuid" open="(" separator="," close=")">
+                #{roleUuid}
+            </foreach>
+            )
+        </if>
         )
     </select>
 
@@ -273,19 +277,28 @@
         where
         <foreach collection="appConfigAuthList" item="appConfigAuth" open="(" separator=")or(" close=")">
             app_system_id = #{appConfigAuth.appSystemId}
-          and auth_uuid = #{appConfigAuth.authUuid}
+            and auth_uuid = #{appConfigAuth.authUuid}
         </foreach>
     </select>
 
     <select id="getAppConfigAuthorityListByAppSystemId"
             resultType="codedriver.framework.deploy.dto.app.DeployAppConfigAuthorityVo">
         select app_system_id AS appSystemId,
-               auth_type AS authType,
-               auth_uuid AS authUuid,
+               auth_type     AS authType,
+               auth_uuid     AS authUuid,
                `action`,
-               action_type AS authorityActionType
+               action_type   AS authorityActionType
         from deploy_app_config_authority
         where app_system_id = #{value}
+    </select>
+
+    <select id="getHasConfigAuthoritySystemIdListByAppSystemIdList" resultType="java.lang.Long">
+        select app_system_id
+        from deploy_app_config_authority
+        where app_system_id in
+        <foreach collection="list" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
     </select>
 
     <select id="getAppConfig" parameterType="codedriver.framework.deploy.dto.app.DeployAppConfigVo"
@@ -404,19 +417,18 @@
 
     <select id="getDeployAppModuleEnvListByAppSystemId"
             resultMap="deployAppModuleEnvMap">
-        SELECT
-            a.`env_id` AS envId,
-            a.`env_name` AS envName,
-            a.`app_module_id` AS appModuleId
+        SELECT a.`env_id`        AS envId,
+               a.`env_name`      AS envName,
+               a.`app_module_id` AS appModuleId
         FROM ${schemaName}.`scence_appinstance_env_appmodule_appsystem` a
-        where a.`env_id` is not null and a.`app_system_id` = #{appSystemId}
+        where a.`env_id` is not null
+          and a.`app_system_id` = #{appSystemId}
         UNION
-        SELECT
-            cc.id AS envId,
-            cc.name AS envName,
-            dace.app_module_id AS appModuleId
+        SELECT cc.id              AS envId,
+               cc.name            AS envName,
+               dace.app_module_id AS appModuleId
         FROM deploy_app_config_env dace
-        JOIN cmdb_cientity cc ON cc.id = dace.env_id
+                 JOIN cmdb_cientity cc ON cc.id = dace.env_id
         where dace.app_system_id = #{appSystemId}
     </select>
 
@@ -720,7 +732,9 @@
     <select id="getAppSystemIdListCount" resultType="java.lang.Integer">
         SELECT count(distinct a.`id`)
         FROM ${schemaName}.`scence_appsystem_appmodule` a
-        LEFT JOIN deploy_app_config_authority daca ON daca.app_system_id = a.id
+        <if test="isHasAllAuthority == 0">
+            LEFT JOIN deploy_app_config_authority daca ON daca.app_system_id = a.id
+        </if>
         <if test="isConfig != null">
             left join deploy_app_config b on a.`id` = b.`app_system_id` and b.`app_module_id` = 0 and b.`env_id` = 0
         </if>
@@ -736,30 +750,7 @@
                     #{item}
                 </foreach>
             </if>
-            <if test="isHasAllAuthority == 0">
-                AND  IF(
-                daca.app_system_id > 0,
-                daca.action_type = 'operation'
-                AND daca.action IN
-                ('all'
-                <if test="actionList != null and actionList.size() > 0">,
-                    <foreach collection="actionList" item="item" separator=",">
-                        #{item}
-                    </foreach>
-                </if>
-                )
-                AND daca.auth_uuid IN
-                (
-                'alluser'
-                <if test="authUuidList != null and authUuidList.size() > 0">
-                    ,
-                    <foreach collection="authUuidList" item="item" separator=",">
-                        #{item}
-                    </foreach>
-                </if>
-                ),
-                1 = 1)
-            </if>
+            <include refid="checkDeployAuthority"/>
             <choose>
                 <when test="isConfig != null and isConfig == 1">
                     and b.`config` is not NULL
@@ -772,6 +763,33 @@
             </choose>
         </where>
     </select>
+
+    <sql id="checkDeployAuthority">
+        <if test="isHasAllAuthority == 0">
+            AND IF(
+            daca.app_system_id > 0,
+            daca.action_type = 'operation'
+            AND daca.action IN
+            ('all'
+            <if test="authorityActionList != null and authorityActionList.size() > 0">,
+                <foreach collection="authorityActionList" item="item" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            )
+            AND daca.auth_uuid IN
+            (
+            'alluser'
+            <if test="authUuidList != null and authUuidList.size() > 0">
+                ,
+                <foreach collection="authUuidList" item="item" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            ),
+            1 = 1)
+        </if>
+    </sql>
 
     <select id="getCiEntityIdListCount" resultType="java.lang.Integer">
         SELECT COUNT(a.id)
@@ -847,7 +865,8 @@
         <result column="dbResourceId" property="dbResourceId"/>
         <result column="dbResourceName" property="dbResourceName"/>
         <result column="configStr" property="configStr"/>
-        <collection property="accountList" ofType="codedriver.framework.deploy.dto.app.DeployAppConfigEnvDBConfigAccountVo">
+        <collection property="accountList"
+                    ofType="codedriver.framework.deploy.dto.app.DeployAppConfigEnvDBConfigAccountVo">
             <id column="DBConfigAccountId" property="id"/>
             <result column="accountAlias" property="accountAlias"/>
             <result column="accountId" property="accountId"/>
@@ -887,7 +906,7 @@
                b.account_alias  as accountAlias,
                b.account_id     as accountId,
                c.account        as account,
-               c.password        as passwordCipher
+               c.password       as passwordCipher
         FROM deploy_app_config_env_db a
                  LEFT JOIN cmdb_cientity cc ON cc.id = a.db_resource_id
                  LEFT JOIN deploy_app_config_env_db_account b ON a.id = b.db_config_id
@@ -995,23 +1014,24 @@
         ${sql}
     </select>
 
-    <select id="getAppConfigAppSystemIdListByAppSystemIdList" parameterType="java.lang.Long" resultType="java.lang.Long">
+    <select id="getAppConfigAppSystemIdListByAppSystemIdList" parameterType="java.lang.Long"
+            resultType="java.lang.Long">
         SELECT
-            `app_system_id`
+        `app_system_id`
         FROM `deploy_app_config`
         WHERE `app_module_id` = 0
-          AND `env_id` = 0
-          <if test="list != null and list.size() > 0">
+        AND `env_id` = 0
+        <if test="list != null and list.size() > 0">
             AND `app_system_id` IN
-                <foreach collection="list" item="appSystemId" open="(" separator="," close=")">
+            <foreach collection="list" item="appSystemId" open="(" separator="," close=")">
                 #{appSystemId}
-                </foreach>
-          </if>
+            </foreach>
+        </if>
     </select>
 
     <select id="getAppConfigUserAppSystemIdList" resultType="java.lang.Long">
         SELECT
-            `app_system_id`
+        `app_system_id`
         FROM `deploy_app_config_user`
         WHERE `user_uuid` = #{userUuid}
         <if test="appSystemIdList != null and appSystemIdList.size() > 0">
@@ -1060,7 +1080,7 @@
         (
             SELECT dace.app_module_id as id,
                    ra.name,
-                   ra.abbr_name   as abbrName
+                   ra.abbr_name       as abbrName
             FROM deploy_app_config_env dace
                      LEFT JOIN ${schemaName}.scence_appmodule ra ON ra.id = dace.app_module_id
             WHERE dace.app_system_id = #{appSystemId}
@@ -1075,7 +1095,7 @@
                WHERE sieaa.app_system_id = #{appSystemId}
                  AND sieaa.env_id = #{envId}
                  AND sieaa.`app_module_id` IS NOT NULL)
-            union
+              union
               (
                   SELECT dace.app_module_id
                   FROM deploy_app_config_env dace
@@ -1088,15 +1108,16 @@
 
     <select id="getAppEnvAutoConfigBySystemIdAndModuleIdAndEnvId"
             resultMap="appEnvAutoConfigMap">
-        select
-            `app_system_id` AS appSystemId,
-            `app_module_id` AS appModuleId,
-            `env_id` AS envId,
-            `instance_id` AS instanceId,
-            `key`,
-            `value`
+        select `app_system_id` AS appSystemId,
+               `app_module_id` AS appModuleId,
+               `env_id`        AS envId,
+               `instance_id`   AS instanceId,
+               `key`,
+               `value`
         from `deploy_app_env_auto_config`
-        where `app_system_id` = #{systemId} and `app_module_id` = #{moduleId} and `env_id` = #{envId}
+        where `app_system_id` = #{systemId}
+          and `app_module_id` = #{moduleId}
+          and `env_id` = #{envId}
     </select>
 
     <insert id="insertAppConfigAuthority">
@@ -1192,16 +1213,15 @@
     <insert id="insertAppConfigSystemFavorite">
         insert into deploy_app_config_user(`app_system_id`, `user_uuid`)
         VALUES (#{appSystemId},
-                #{userUuid})
-        ON DUPLICATE KEY
-            UPDATE `app_system_id` = #{appSystemId},
-                   `user_uuid`     = #{userUuid}
+                #{userUuid}) ON DUPLICATE KEY
+        UPDATE `app_system_id` = #{appSystemId},
+            `user_uuid` = #{userUuid}
     </insert>
 
     <insert id="insertAppConfigEnvDBConfig"
             parameterType="codedriver.framework.deploy.dto.app.DeployAppConfigEnvDBConfigAccountVo">
         INSERT INTO deploy_app_config_env_db (id, db_alias, app_system_id, app_module_id, env_id, db_resource_id,
-                                                     config)
+                                              config)
         VALUES (#{id},
                 #{dbAlias},
                 #{appSystemId},

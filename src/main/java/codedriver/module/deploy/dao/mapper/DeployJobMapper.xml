@@ -57,6 +57,10 @@
                 #{invokeId}
             </foreach>
         </if>
+        <if test="isHasAllAuthority == 0">
+            LEFT JOIN deploy_job dj ON dj.id = aj.id
+            LEFT JOIN deploy_app_config_authority daca ON daca.app_system_id = dj.app_system_id
+        </if>
         <where>
             <if test="combopName != null and combopName != ''">
                 ac.name like concat('%', #{combopName}, '%')
@@ -136,6 +140,7 @@
                     and aj.plan_start_time &lt;= STR_TO_DATE(#{planStartTimeRange[1]},'%Y-%m-%d')
                 </if>
             </if>
+            <include refid="codedriver.module.deploy.dao.mapper.DeployAppConfigMapper.checkDeployAuthority"/>
         </where>
     </sql>
 
@@ -279,6 +284,7 @@
         <result column="batchJobReviewer" property="reviewer"/>
         <result column="batchJobReviewStatus" property="reviewStatus"/>
         <result column="batchJobReviewTime" property="reviewTime"/>
+        <result column="batchJobTriggerType" property="triggerType"/>
         <collection property="authList" ofType="codedriver.framework.deploy.dto.job.DeployJobAuthVo">
             <result column="jobAuthType" property="type"/>
             <result column="jobAuthUuid" property="authUuid"/>
@@ -331,6 +337,7 @@
                a.reviewer        as batchJobReviewer,
                a.review_status   as batchJobReviewStatus,
                a.review_time     as batchJobReviewTime,
+               a.trigger_type    as batchJobTriggerType,
                b.id              as laneId,
                b.sort            as laneSort,
                b.`status`        as laneStatus,
@@ -338,16 +345,16 @@
                c.need_wait       as groupNeedWait,
                c.sort            as groupSort,
                c.`status`        as groupStatus,
+               d.`sort`          as jobSort,
                e.id              as jobId,
                e.`name`          as jobName,
                e.`status`        as jobStatus,
                e.error_msg       as jobErrorMsg,
-               a.trigger_type    as jobTriggerType,
-               d.sort            as jobSort,
                e.plan_start_time as jobPlanStartTime,
                e.start_time      as jobStartTime,
                e.end_time        as jobEndTime,
                e.source          as jobSource,
+               e.trigger_type    as jobTriggerType,
                f.`app_system_id` as jobAppSystemId,
                g.`name`          as jobAppSystemName,
                f.`app_module_id` as jobAppModuleId,
@@ -408,8 +415,7 @@
         e.`name` as jobName,
         e.`status` as jobStatus,
         e.error_msg as jobErrorMsg,
-        a.trigger_type as jobTriggerType,
-        d.sort as jobSort,
+        e.trigger_type as jobTriggerType,
         e.plan_start_time as jobPlanStartTime,
         e.start_time as jobStartTime,
         e.end_time as jobEndTime,
@@ -433,7 +439,7 @@
         LEFT JOIN autoexec_job_group j ON e.id = j.job_id
         LEFT JOIN autoexec_job_phase k ON j.id = k.group_id
         where e.id in
-        <foreach collection="idList" item="item" open="(" close=")">#{item}</foreach>
+        <foreach collection="idList" item="item" open="(" close=")" separator=",">#{item}</foreach>
     </select>
 
     <select id="getDeployJobContent"
@@ -464,12 +470,14 @@
                                     `status`,
                                     `source`,
                                     `exec_user`,
+                                    `trigger_type`,
                                     `review_status`)
         VALUES (#{id},
                 #{name},
                 #{status},
                 #{source},
                 #{execUser},
+                #{triggerType},
                 #{reviewStatus})
     </insert>
 
@@ -539,6 +547,7 @@
         SET name          = #{name},
             status        = #{status},
             exec_user     = #{execUser},
+            trigger_type  = #{triggerType},
             review_status = #{reviewStatus}
         WHERE id = #{id}
     </update>
