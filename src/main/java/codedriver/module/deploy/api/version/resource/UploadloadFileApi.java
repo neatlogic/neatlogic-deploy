@@ -7,6 +7,7 @@ package codedriver.module.deploy.api.version.resource;
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.deploy.auth.DEPLOY_BASE;
+import codedriver.framework.deploy.constvalue.DeployAppConfigAction;
 import codedriver.framework.deploy.constvalue.DeployResourceType;
 import codedriver.framework.deploy.dto.version.DeployVersionVo;
 import codedriver.framework.deploy.exception.DeployVersionNotFoundException;
@@ -18,6 +19,7 @@ import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateBinaryStreamApiComponentBase;
 import codedriver.framework.util.HttpRequestUtil;
 import codedriver.module.deploy.dao.mapper.DeployVersionMapper;
+import codedriver.module.deploy.service.DeployAppAuthorityService;
 import codedriver.module.deploy.service.DeployVersionService;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.lang3.StringUtils;
@@ -50,6 +52,9 @@ public class UploadloadFileApi extends PrivateBinaryStreamApiComponentBase {
 
     @Resource
     DeployVersionService deployVersionService;
+
+    @Resource
+    DeployAppAuthorityService deployAppAuthorityService;
 
     @Override
     public String getToken() {
@@ -93,6 +98,13 @@ public class UploadloadFileApi extends PrivateBinaryStreamApiComponentBase {
         if (version == null) {
             throw new DeployVersionNotFoundException(id);
         }
+
+        //校验环境权限、制品管理的操作权限
+        if (envId != null) {
+            deployAppAuthorityService.checkEnvAuth(version.getAppSystemId(), envId);
+        }
+        deployAppAuthorityService.checkOperationAuth(version.getAppSystemId(), DeployAppConfigAction.VERSION_AND_PRODUCT_MANAGER);
+
         String runnerUrl;
         String url;
         String fullPath;

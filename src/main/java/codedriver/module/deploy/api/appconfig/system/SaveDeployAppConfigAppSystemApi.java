@@ -33,6 +33,7 @@ import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @author longrf
@@ -79,10 +80,13 @@ public class SaveDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
 
-        //校验编辑配置的操作权限
-        deployAppAuthorityService.checkOperationAuth(paramObj.getLong("appSystemId"), DeployAppConfigAction.EDIT);
-
         Long appSystemId = paramObj.getLong("id");
+
+        //校验编辑配置的操作权限
+        if (!Objects.isNull(appSystemId)) {
+            deployAppAuthorityService.checkOperationAuth(appSystemId, DeployAppConfigAction.EDIT);
+        }
+
         List<Long> stateIdList = new ArrayList<>();
         List<Long> ownerIdList = new ArrayList<>();
         //构建数据结构

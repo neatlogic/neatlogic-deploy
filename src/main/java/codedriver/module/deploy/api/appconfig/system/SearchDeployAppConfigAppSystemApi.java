@@ -92,23 +92,27 @@ public class SearchDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
             } else {
                 returnAppSystemList = deployAppConfigMapper.getAppSystemListByIdList(appSystemIdList, TenantContext.get().getDataDbName(), UserContext.get().getUserUuid());
             }
-            /*补充系统是否有模块、有环境 ,补充模块是否有环境*/
+            /*补充系统是否有模块、是否有环境、是否有配置权限 ,补充模块是否有环境*/
             TenantContext.get().switchDataDatabase();
             IResourceCrossoverMapper resourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
-            List<Long> hasModuleAppSystemIdList = resourceCrossoverMapper.getHasModuleAppSystemIdListByAppSystemIdList(returnAppSystemList.stream().map(DeployAppSystemVo::getId).collect(Collectors.toList()));
+            List<Long> hasModuleAppSystemIdList = resourceCrossoverMapper.getHasModuleAppSystemIdListByAppSystemIdList(appSystemIdList);
             TenantContext.get().switchDefaultDatabase();
-            List<Long> hasEnvAppSystemIdList = deployAppConfigMapper.getHasEnvAppSystemIdListByAppSystemIdList(returnAppSystemList.stream().map(DeployAppSystemVo::getId).collect(Collectors.toList()), TenantContext.get().getDataDbName());
+            List<Long> hasEnvAppSystemIdList = deployAppConfigMapper.getHasEnvAppSystemIdListByAppSystemIdList(appSystemIdList, TenantContext.get().getDataDbName());
 
+            List<Long> hasConfigAuthoritySystemIdList = deployAppConfigMapper.getHasConfigAuthoritySystemIdListByAppSystemIdList(appSystemIdList);
             for (DeployAppSystemVo returnSystemVo : returnAppSystemList) {
-                //补充系统是否有模块、有环境
+                //补充系统是否有模块、是否有环境、是否有配置权限
                 if (hasModuleAppSystemIdList.contains(returnSystemVo.getId())) {
                     returnSystemVo.setIsHasModule(1);
                 }
                 if (hasEnvAppSystemIdList.contains(returnSystemVo.getId())) {
                     returnSystemVo.setIsHasEnv(1);
                 }
+                if (hasConfigAuthoritySystemIdList.contains(returnSystemVo.getId())) {
+                    returnSystemVo.setIsConfigAuthority(1);
+                }
 
-                //补充模块是是否配置、否有环境
+                //补充模块是否配置、是否有环境
                 if (CollectionUtils.isNotEmpty(returnSystemVo.getAppModuleList())) {
                     int isHasConfig = 0;
                     if (CollectionUtils.isNotEmpty(deployAppConfigMapper.getAppConfigListByAppSystemId(returnSystemVo.getId()))) {

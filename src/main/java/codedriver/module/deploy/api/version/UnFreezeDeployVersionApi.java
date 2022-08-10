@@ -3,6 +3,7 @@ package codedriver.module.deploy.api.version;
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.deploy.auth.DEPLOY_MODIFY;
+import codedriver.framework.deploy.constvalue.DeployAppConfigAction;
 import codedriver.framework.deploy.dto.version.DeployVersionVo;
 import codedriver.framework.deploy.exception.DeployVersionNotFoundException;
 import codedriver.framework.restful.annotation.Description;
@@ -12,6 +13,7 @@ import codedriver.framework.restful.annotation.Param;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.deploy.dao.mapper.DeployVersionMapper;
+import codedriver.module.deploy.service.DeployAppAuthorityService;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.stereotype.Service;
 
@@ -28,6 +30,9 @@ public class UnFreezeDeployVersionApi extends PrivateApiComponentBase {
 
     @Resource
     DeployVersionMapper deployVersionMapper;
+
+    @Resource
+    DeployAppAuthorityService deployAppAuthorityService;
 
     @Override
     public String getName() {
@@ -56,6 +61,10 @@ public class UnFreezeDeployVersionApi extends PrivateApiComponentBase {
         if (deployVersionVo == null) {
             throw new DeployVersionNotFoundException(versionId);
         }
+
+        //校验制品管理的操作权限
+        deployAppAuthorityService.checkOperationAuth(deployVersionVo.getAppSystemId(), DeployAppConfigAction.VERSION_AND_PRODUCT_MANAGER);
+
         deployVersionMapper.unFreezeDeployVersionById(versionId, paramObj.getLong("isFreeze"));
         return null;
     }
