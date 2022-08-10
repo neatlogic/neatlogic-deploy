@@ -22,8 +22,10 @@
         </if>
         <where>
             <if test="searchVo.keyword != null and searchVo.keyword != ''">
-                ( a.`name` LIKE concat('%', #{searchVo.keyword}, '%') or a.`app_module_name` LIKE concat('%',#{searchVo.keyword}, '%')
-                or a.`abbr_name` LIKE concat('%', #{searchVo.keyword}, '%')or a.`app_module_abbr_name` LIKE concat('%',#{searchVo.keyword}, '%'))
+                ( a.`name` LIKE concat('%', #{searchVo.keyword}, '%') or a.`app_module_name` LIKE
+                concat('%',#{searchVo.keyword}, '%')
+                or a.`abbr_name` LIKE concat('%', #{searchVo.keyword}, '%')or a.`app_module_abbr_name` LIKE
+                concat('%',#{searchVo.keyword}, '%'))
             </if>
             <if test="searchVo.appSystemIdList != null and searchVo.appSystemIdList.size() > 0">
                 AND a.`id` IN
@@ -79,7 +81,8 @@
         <where>
             <if test="keyword != null and keyword != ''">
                 and (`name` LIKE concat('%', #{keyword}, '%') or `app_module_name` LIKE concat('%', #{keyword}, '%')
-                or `abbr_name` LIKE concat('%', #{keyword}, '%') or `app_module_abbr_name` LIKE concat('%', #{keyword},'%'))
+                or `abbr_name` LIKE concat('%', #{keyword}, '%') or `app_module_abbr_name` LIKE concat('%',
+                #{keyword},'%'))
             </if>
             <if test="defaultValue != null and defaultValue.size() > 0">
                 AND `id` IN
