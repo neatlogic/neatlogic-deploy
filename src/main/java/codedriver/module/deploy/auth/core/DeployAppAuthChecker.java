@@ -113,6 +113,10 @@ public class DeployAppAuthChecker {
         return returnObj;
     }
 
+    /**
+     * 批量校验是否拥有这些权限
+     */
+
 
     /**
      * 校验是否拥有操作权限
@@ -121,19 +125,21 @@ public class DeployAppAuthChecker {
      * @param action      操作权限
      * @return
      */
-    private static boolean hasOperationPrivilege(Long appSystemId, DeployAppConfigAction action) {
+    public static boolean hasOperationPrivilege(Long appSystemId, DeployAppConfigAction action) {
+        boolean hasAuth = false;
         if (appSystemId != null) {
-            boolean hasAuth = AuthActionChecker.check(DEPLOY_MODIFY.class);
+            hasAuth = AuthActionChecker.check(DEPLOY_MODIFY.class);
             if (!hasAuth) {
                 //访问系统需要的权限
                 List<DeployAppConfigAuthorityVo> systemAuthList = checker.deployAppConfigMapper.getAppConfigAuthorityListByAppSystemId(appSystemId);
                 if (CollectionUtils.isEmpty(systemAuthList)) {
-                    return true;
+                    hasAuth = true;
+                } else {
+                    hasAuth = checkActionAuthList(systemAuthList.stream().filter(e -> (StringUtils.equals(action.getValue(), e.getAction()) || StringUtils.equals(e.getAction(), "all")) && StringUtils.equals(e.getAuthorityActionType(), DeployAppConfigActionType.OPERATION.getValue())).collect(Collectors.toList()));
                 }
-                return checkActionAuthList(systemAuthList.stream().filter(e -> (StringUtils.equals(action.getValue(), e.getAction()) || StringUtils.equals(e.getAction(), "all")) && StringUtils.equals(e.getAuthorityActionType(), DeployAppConfigActionType.OPERATION.getValue())).collect(Collectors.toList()));
             }
         }
-        return false;
+        return hasAuth;
     }
 
     /**
@@ -143,19 +149,21 @@ public class DeployAppAuthChecker {
      * @param envAction   环境权限
      * @return
      */
-    private static boolean hasEnvPrivilege(Long appSystemId, Long envAction) {
+    public static boolean hasEnvPrivilege(Long appSystemId, Long envAction) {
+        boolean hasAuth = false;
         if (appSystemId != null) {
-            boolean hasAuth = AuthActionChecker.check(DEPLOY_MODIFY.class);
+            hasAuth = AuthActionChecker.check(DEPLOY_MODIFY.class);
             if (!hasAuth) {
                 //访问系统需要的权限
                 List<DeployAppConfigAuthorityVo> systemAuthList = checker.deployAppConfigMapper.getAppConfigAuthorityListByAppSystemId(appSystemId);
                 if (CollectionUtils.isEmpty(systemAuthList)) {
-                    return true;
+                    hasAuth = true;
+                } else {
+                    hasAuth = checkActionAuthList(systemAuthList.stream().filter(e -> (StringUtils.equals(envAction.toString(), e.getAction()) || StringUtils.equals(e.getAction(), "all")) && StringUtils.equals(e.getAuthorityActionType(), DeployAppConfigActionType.ENV.getValue())).collect(Collectors.toList()));
                 }
-                return checkActionAuthList(systemAuthList.stream().filter(e -> (StringUtils.equals(envAction.toString(), e.getAction()) || StringUtils.equals(e.getAction(), "all")) && StringUtils.equals(e.getAuthorityActionType(), DeployAppConfigActionType.ENV.getValue())).collect(Collectors.toList()));
             }
         }
-        return false;
+        return hasAuth;
     }
 
     /**
@@ -166,18 +174,20 @@ public class DeployAppAuthChecker {
      * @return
      */
     private static boolean hasScenarioPrivilege(Long appSystemId, String scenarioAction) {
+        boolean hasAuth = false;
         if (appSystemId != null) {
-            boolean hasAuth = AuthActionChecker.check(DEPLOY_MODIFY.class);
+            hasAuth = AuthActionChecker.check(DEPLOY_MODIFY.class);
             if (!hasAuth) {
                 //访问系统需要的权限
                 List<DeployAppConfigAuthorityVo> systemAuthList = checker.deployAppConfigMapper.getAppConfigAuthorityListByAppSystemId(appSystemId);
                 if (CollectionUtils.isEmpty(systemAuthList)) {
-                    return true;
+                    hasAuth = true;
+                } else {
+                    hasAuth = checkActionAuthList(systemAuthList.stream().filter(e -> (StringUtils.equals(scenarioAction, e.getAction()) || StringUtils.equals(e.getAction(), "all")) && StringUtils.equals(e.getAuthorityActionType(), DeployAppConfigActionType.SCENARIO.getValue())).collect(Collectors.toList()));
                 }
-                return checkActionAuthList(systemAuthList.stream().filter(e -> (StringUtils.equals(scenarioAction, e.getAction()) || StringUtils.equals(e.getAction(), "all")) && StringUtils.equals(e.getAuthorityActionType(), DeployAppConfigActionType.SCENARIO.getValue())).collect(Collectors.toList()));
             }
         }
-        return false;
+        return hasAuth;
     }
 
     /**

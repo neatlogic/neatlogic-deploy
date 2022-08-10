@@ -6,7 +6,6 @@
 package codedriver.module.deploy.api.pipeline;
 
 import codedriver.framework.auth.core.AuthAction;
-import codedriver.framework.autoexec.auth.AUTOEXEC_BASE;
 import codedriver.framework.autoexec.constvalue.ParamType;
 import codedriver.framework.autoexec.crossover.IAutoexecServiceCrossoverService;
 import codedriver.framework.autoexec.dto.AutoexecParamVo;
@@ -15,6 +14,7 @@ import codedriver.framework.common.util.RC4Util;
 import codedriver.framework.crossover.CrossoverServiceFactory;
 import codedriver.framework.dependency.core.DependencyManager;
 import codedriver.framework.deploy.auth.DEPLOY_BASE;
+import codedriver.framework.deploy.constvalue.DeployAppConfigAction;
 import codedriver.framework.deploy.dto.app.DeployAppConfigVo;
 import codedriver.framework.deploy.dto.app.DeployPipelineConfigVo;
 import codedriver.framework.restful.annotation.Description;
@@ -25,6 +25,7 @@ import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.deploy.dao.mapper.DeployAppConfigMapper;
 import codedriver.module.deploy.dependency.handler.Matrix2DeployAppPipelineParamDependencyHandler;
+import codedriver.module.deploy.service.DeployAppAuthorityService;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
@@ -44,6 +45,9 @@ public class SaveDeployAppPipelineParamApi extends PrivateApiComponentBase {
 
     @Resource
     private DeployAppConfigMapper deployAppConfigMapper;
+
+    @Resource
+    DeployAppAuthorityService deployAppAuthorityService;
 
     @Override
     public String getToken() {
@@ -67,6 +71,9 @@ public class SaveDeployAppPipelineParamApi extends PrivateApiComponentBase {
     @Description(desc = "保存应用流水线作业参数")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
+        //校验环境权限、编辑配置的操作权限
+        deployAppAuthorityService.checkOperationAuth(jsonObj.getLong("appSystemId"), DeployAppConfigAction.EDIT);
+
         Long appSystemId = jsonObj.getLong("appSystemId");
         DeployAppConfigVo searchVo = new DeployAppConfigVo(appSystemId);
         DeployAppConfigVo deployAppConfigVo = deployAppConfigMapper.getAppConfigVo(searchVo);

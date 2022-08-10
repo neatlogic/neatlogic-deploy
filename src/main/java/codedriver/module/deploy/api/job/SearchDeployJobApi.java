@@ -80,7 +80,7 @@ public class SearchDeployJobApi extends PrivateApiComponentBase {
         Long parentId = jsonObj.getLong("parentId");
         DeployJobVo deployJobVo = JSONObject.toJavaObject(jsonObj, DeployJobVo.class);
         //根据appSystemId和appModuleId 获取invokeIdList
-        if (appSystemId != null || appModuleId != null) {
+        if (appSystemId != null || appModuleId != null || envId != null) {
             List<DeployJobVo> deployJobVos = deployJobMapper.getDeployJobListByAppSystemIdAndAppModuleIdAndEnvId(appSystemId, appModuleId, envId);
             if (CollectionUtils.isNotEmpty(deployJobVos)) {
                 deployJobVo.setInvokeIdList(deployJobVos.stream().map(DeployJobVo::getId).collect(Collectors.toSet()));
