@@ -391,23 +391,13 @@
             <id column="jobId" property="id"/>
             <result column="jobName" property="name"/>
             <result column="jobStatus" property="status"/>
-            <result column="jobTriggerType" property="triggerType"/>
             <result column="jobErrorMsg" property="errorMsg"/>
-            <result column="jobPlanStartTime" property="planStartTime"/>
             <result column="jobStartTime" property="startTime"/>
             <result column="jobEndTime" property="endTime"/>
-            <result column="jobSource" property="source"/>
-            <result column="jobAppSystemId" property="appSystemId"/>
-            <result column="jobAppSystemName" property="appSystemName"/>
-            <result column="jobAppModuleId" property="appModuleId"/>
-            <result column="jobAppModuleName" property="appModuleName"/>
-            <result column="jobEnvId" property="envId"/>
-            <result column="jobEnvName" property="envName"/>
             <collection property="phaseList" ofType="codedriver.framework.autoexec.dto.job.AutoexecJobPhaseVo">
                 <id column="jobPhaseId" property="id"/>
                 <result column="jobPhaseName" property="name"/>
                 <result column="jobPhaseStatus" property="status"/>
-                <result column="jobPhaseSort" property="sort"/>
             </collection>
         </collection>
     </resultMap>
@@ -423,10 +413,8 @@
         e.error_msg as jobErrorMsg,
         e.start_time as jobStartTime,
         e.end_time as jobEndTime,
-        j.`sort` AS jobGroupSort,
         k.`id` AS jobPhaseId,
         k.`name` AS jobPhaseName,
-        k.`sort` AS jobPhaseSort,
         k.`status` AS jobPhaseStatus
         FROM
         deploy_job_lane_group c

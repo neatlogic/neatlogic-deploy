@@ -53,7 +53,6 @@ public interface DeployJobMapper {
 
     void insertAutoExecJob(DeployJobVo deployJobVo);
 
-
     void insertIgnoreDeployJobContent(DeployJobContentVo deployJobContentVo);
 
     void insertLane(LaneVo laneVo);
