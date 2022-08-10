@@ -432,7 +432,7 @@
         LEFT JOIN autoexec_job_group j ON e.id = j.job_id
         LEFT JOIN autoexec_job_phase k ON j.id = k.group_id
         where e.id in
-        <foreach collection="idList" item="item" open="(" close=")">#{item}</foreach>
+        <foreach collection="idList" item="item" open="(" close=")" separator=",">#{item}</foreach>
     </select>
 
     <select id="getDeployJobContent"
