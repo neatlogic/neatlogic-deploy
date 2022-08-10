@@ -10,6 +10,8 @@ public interface DeployEnvVersionMapper {
 
     DeployEnvVersionVo getDeployEnvVersionByEnvIdLock(@Param("appSystemId") Long appSystemId, @Param("appModuleId") Long appModuleId, @Param("envId") Long envId);
 
+    List<DeployEnvVersionVo> getDeployEnvVersionBySystemId(Long appSystemId);
+
     DeployEnvVersionAuditVo getDeployEnvOldestVersionByEnvIdAndNewVersionId(@Param("appSystemId") Long appSystemId, @Param("appModuleId") Long appModuleId, @Param("envId") Long envId, @Param("newVersionId") Long newVersionId);
 
     List<DeployEnvVersionAuditVo> getDeployEnvVersionAuditBySystemId(Long appSystemId);

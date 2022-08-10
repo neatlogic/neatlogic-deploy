@@ -119,6 +119,12 @@ public class SearchDeployActiveVersionApi extends PrivateApiComponentBase {
                     if (systemAuditList.size() > 0) {
                         moduleEnvVersionAuditMap = systemAuditList.stream().collect(Collectors.groupingBy(DeployEnvVersionAuditVo::getAppModuleId));
                     }
+                    // 所有模块所有环境的当前版本
+                    List<DeployEnvVersionVo> moduleCurrentVersionList = deployEnvVersionMapper.getDeployEnvVersionBySystemId(systemVo.getId());
+                    Map<Long, List<DeployEnvVersionVo>> moduleCurrentVersionMap = null;
+                    if (moduleCurrentVersionList.size() > 0) {
+                        moduleCurrentVersionMap = moduleCurrentVersionList.stream().collect(Collectors.groupingBy(DeployEnvVersionVo::getAppModuleId));
+                    }
                     /**
                      * 查出每个模块下的活动版本与最新非活动版本
                      * 活动版本：尚有环境未发布的版本
@@ -136,9 +142,34 @@ public class SearchDeployActiveVersionApi extends PrivateApiComponentBase {
                         if (moduleEnvListMap == null || moduleVersionMap == null) {
                             continue;
                         }
+                        // 当前模块所有环境的当前版本
+                        Map<Long, List<DeployEnvVersionVo>> envCurrentVersionMap = null;
+                        if (moduleCurrentVersionMap != null) {
+                            List<DeployEnvVersionVo> envCurrentVersionList = moduleCurrentVersionMap.get(moduleVo.getAppModuleId());
+                            if (envCurrentVersionList != null) {
+                                envCurrentVersionMap = envCurrentVersionList.stream().collect(Collectors.groupingBy(DeployEnvVersionVo::getEnvId));
+                            }
+                        }
                         // 当前模块所有的环境
                         List<AppEnvironmentVo> moduleAllEnv = moduleEnvListMap.get(moduleVo.getAppModuleId());
-                        moduleActiveVersion.setEnvList(moduleAllEnv);
+                        List<DeployEnvVersionVo> envList = new ArrayList<>();
+                        if (moduleAllEnv != null) {
+                            for (AppEnvironmentVo vo : moduleAllEnv) {
+                                DeployEnvVersionVo envVo = new DeployEnvVersionVo();
+                                envVo.setEnvId(vo.getEnvId());
+                                envVo.setEnvName(vo.getEnvName());
+                                // 当前环境的当前版本
+                                if (envCurrentVersionMap != null) {
+                                    List<DeployEnvVersionVo> currentVersion = envCurrentVersionMap.get(vo.getEnvId());
+                                    if (CollectionUtils.isNotEmpty(currentVersion)) {
+                                        envVo.setVersionId(currentVersion.get(0).getVersionId());
+                                        envVo.setVersion(currentVersion.get(0).getVersion());
+                                    }
+                                }
+                                envList.add(envVo);
+                            }
+                        }
+                        moduleActiveVersion.setEnvList(envList);
                         // 当前模块所有的版本
                         List<DeployVersionVo> moduleVersionList = moduleVersionMap.get(moduleVo.getAppModuleId());
                         if (moduleAllEnv == null || moduleVersionList == null) {
