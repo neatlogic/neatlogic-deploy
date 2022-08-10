@@ -114,7 +114,10 @@ public class DownloadDeployAppBuildApi extends PrivateBinaryStreamApiComponentBa
             String tenantLicense = licenseMapper.getTenantLicenseByTenantUuid(tenantUuid);
             TenantContext.get().setUseDefaultDatasource(false);
             if (!Objects.equals(proxyTenantLicense, tenantLicense)) {
+                response.setHeader("Build-Local", "false");
                 downloadFromCurrentEnv(jsonObj, request, response);
+            } else {
+                response.setHeader("Build-Local", "true");
             }
         } else {
             String proxyToUrl = jsonObj.getString("proxyToUrl");
@@ -123,6 +126,7 @@ public class DownloadDeployAppBuildApi extends PrivateBinaryStreamApiComponentBa
             } else {
                 //无需下载appbuild
                 getResponseHeader(jsonObj, response);
+                response.setHeader("Build-Local", "true");
             }
         }
         return null;
@@ -226,7 +230,7 @@ public class DownloadDeployAppBuildApi extends PrivateBinaryStreamApiComponentBa
             httpRequestUtil = HttpRequestUtil.download(url, "POST", response.getOutputStream())
                     .setPayload(jsonObj.toJSONString()).setAuthType(AuthenticateType.BUILDIN)
                     .addHeader("User-Agent", request.getHeader("User-Agent"))
-                    .setResponseHeaders(Arrays.asList("Build-No","Build-Status","Build-Env-Status","isMirror","Test"))
+                    .setResponseHeaders(Arrays.asList("Build-No", "Build-Status", "Build-Env-Status", "isMirror", "Build-Local"))
                     .sendRequest();
         } catch (Exception ex) {
             logger.error(ex.getMessage(), ex);
