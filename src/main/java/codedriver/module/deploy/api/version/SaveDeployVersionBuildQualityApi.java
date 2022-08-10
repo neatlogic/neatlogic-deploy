@@ -56,7 +56,7 @@ public class SaveDeployVersionBuildQualityApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
 
-        //校验制品管理的操作权限
+        //校验版本&制品管理的操作权限
         deployAppAuthorityService.checkOperationAuth(paramObj.getLong("sysId"), DeployAppConfigAction.VERSION_AND_PRODUCT_MANAGER);
 
         Long sysId = paramObj.getLong("sysId");

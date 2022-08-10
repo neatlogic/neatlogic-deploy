@@ -86,7 +86,7 @@ public class DeleteFileApi extends PrivateApiComponentBase {
             throw new DeployVersionNotFoundException(id);
         }
 
-        //校验环境权限、制品管理的操作权限
+        //校验环境权限、校验版本&制品管理的操作权限
         if (envId != null) {
             deployAppAuthorityService.checkEnvAuth(version.getAppSystemId(), envId);
         }

@@ -62,7 +62,7 @@ public class UnFreezeDeployVersionApi extends PrivateApiComponentBase {
             throw new DeployVersionNotFoundException(versionId);
         }
 
-        //校验制品管理的操作权限
+        //校验版本&制品管理的操作权限
         deployAppAuthorityService.checkOperationAuth(deployVersionVo.getAppSystemId(), DeployAppConfigAction.VERSION_AND_PRODUCT_MANAGER);
 
         deployVersionMapper.unFreezeDeployVersionById(versionId, paramObj.getLong("isFreeze"));
