@@ -58,7 +58,6 @@ public class DeleteDeployVersionApi extends PrivateApiComponentBase {
     @Description(desc = "删除发布版本")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
-
         Long versionId = paramObj.getLong("id");
         Long sysId = paramObj.getLong("sysId");
         Long moduleId = paramObj.getLong("moduleId");

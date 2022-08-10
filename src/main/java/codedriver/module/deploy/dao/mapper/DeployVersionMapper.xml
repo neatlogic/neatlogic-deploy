@@ -64,14 +64,18 @@
     <select id="searchDeployVersionCount" resultType="java.lang.Integer">
         select count(dv.id)
         from deploy_version dv
-        LEFT JOIN deploy_app_config_authority daca ON daca.app_system_id = dv.app_system_id
+        <if test="isHasAllAuthority == 0">
+            LEFT JOIN deploy_app_config_authority daca ON daca.app_system_id = dv.app_system_id
+        </if>
         <include refid="searchVersionWhere"></include>
     </select>
 
     <select id="getDeployVersionIdList" resultType="java.lang.Long">
         select dv.id
         from deploy_version dv
-        LEFT JOIN deploy_app_config_authority daca ON daca.app_system_id = dv.app_system_id
+        <if test="isHasAllAuthority == 0">
+            LEFT JOIN deploy_app_config_authority daca ON daca.app_system_id = dv.app_system_id
+        </if>
         <include refid="searchVersionWhere"></include>
         <if test="needPage == true">
             LIMIT #{startNum}, #{pageSize}
