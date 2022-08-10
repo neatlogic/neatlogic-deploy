@@ -409,7 +409,6 @@
         e.`status` as jobStatus,
         e.error_msg as jobErrorMsg,
         e.trigger_type as jobTriggerType,
-        d.sort as jobSort,
         e.plan_start_time as jobPlanStartTime,
         e.start_time as jobStartTime,
         e.end_time as jobEndTime,
