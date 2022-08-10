@@ -45,6 +45,8 @@ public interface DeployJobMapper {
 
     DeployJobVo getBatchDeployJobById(Long id);
 
+    List<DeployJobVo> getDeployJobByIdList(@Param("idList") List<Long> idList);
+
     DeployJobContentVo getDeployJobContent(String contentHash);
 
     void insertDeployJob(DeployJobVo deployJobVo);

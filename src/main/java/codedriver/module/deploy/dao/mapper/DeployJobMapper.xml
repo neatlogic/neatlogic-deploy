@@ -318,7 +318,7 @@
         </collection>
     </resultMap>
 
-    <select id="getBatchDeployJobById" parameterType="java.lang.Long"
+    <select id="getBatchDeployJobById"
             resultMap="deployBatchJobResultMap">
         SELECT a.id              as batchJobId,
                a.`name`          as batchJobName,
@@ -375,6 +375,65 @@
                  LEFT JOIN deploy_job_auth l ON a.id = l.job_id
         where a.id = #{value}
         order by laneSort, groupSort, jobSort, jobGroupSort, jobPhaseSort, jobPhaseName
+    </select>
+
+    <resultMap id="deployJobResultMap" type="codedriver.framework.deploy.dto.job.DeployJobVo">
+        <id column="jobId" property="id"/>
+        <result column="jobName" property="name"/>
+        <result column="jobStatus" property="status"/>
+        <result column="jobTriggerType" property="triggerType"/>
+        <result column="jobErrorMsg" property="errorMsg"/>
+        <result column="jobPlanStartTime" property="planStartTime"/>
+        <result column="jobStartTime" property="startTime"/>
+        <result column="jobEndTime" property="endTime"/>
+        <result column="jobSource" property="source"/>
+        <result column="jobAppSystemId" property="appSystemId"/>
+        <result column="jobAppSystemName" property="appSystemName"/>
+        <result column="jobAppModuleId" property="appModuleId"/>
+        <result column="jobAppModuleName" property="appModuleName"/>
+        <result column="jobEnvId" property="envId"/>
+        <result column="jobEnvName" property="envName"/>
+        <collection property="phaseList" ofType="codedriver.framework.autoexec.dto.job.AutoexecJobPhaseVo">
+            <id column="jobPhaseId" property="id"/>
+            <result column="jobPhaseName" property="name"/>
+            <result column="jobPhaseStatus" property="status"/>
+            <result column="jobPhaseSort" property="sort"/>
+        </collection>
+    </resultMap>
+
+    <select id="getDeployJobByIdList" parameterType="java.lang.Long"
+            resultMap="deployJobResultMap">
+        SELECT
+        e.id as jobId,
+        e.`name` as jobName,
+        e.`status` as jobStatus,
+        e.error_msg as jobErrorMsg,
+        a.trigger_type as jobTriggerType,
+        d.sort as jobSort,
+        e.plan_start_time as jobPlanStartTime,
+        e.start_time as jobStartTime,
+        e.end_time as jobEndTime,
+        e.source as jobSource,
+        f.`app_system_id` as jobAppSystemId,
+        g.`name` as jobAppSystemName,
+        f.`app_module_id` as jobAppModuleId,
+        h.`name` as jobAppModuleName,
+        f.`env_id` as jobEnvId,
+        i.`name` as jobEnvName,
+        j.`sort` AS jobGroupSort,
+        k.`id` AS jobPhaseId,
+        k.`name` AS jobPhaseName,
+        k.`sort` AS jobPhaseSort,
+        k.`status` AS jobPhaseStatus
+        FROM autoexec_job e
+        LEFT JOIN deploy_job f ON e.id = f.id
+        LEFT JOIN cmdb_cientity g ON f.app_system_id = g.id
+        LEFT JOIN cmdb_cientity h ON f.app_module_id = h.id
+        LEFT JOIN cmdb_cientity i ON f.env_id = i.id
+        LEFT JOIN autoexec_job_group j ON e.id = j.job_id
+        LEFT JOIN autoexec_job_phase k ON j.id = k.group_id
+        where e.id in
+        <foreach collection="idList" item="item" open="(" close=")">#{item}</foreach>
     </select>
 
     <select id="getDeployJobContent"
