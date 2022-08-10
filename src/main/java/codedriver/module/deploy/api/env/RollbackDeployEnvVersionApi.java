@@ -20,6 +20,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.Objects;
 
 @Service
 @Transactional
@@ -73,7 +74,9 @@ public class RollbackDeployEnvVersionApi extends PrivateApiComponentBase {
             throw new DeployEnvVersionWhichCanRollbackNotFoundException(envName);
         }
         deployEnvVersionMapper.insertDeployEnvVersion(new DeployEnvVersionVo(sysId, moduleId, envId, oldestVersion.getOldVersionId(), oldestVersion.getOldBuildNo()));
-        deployEnvVersionMapper.insertDeployEnvVersionAudit(new DeployEnvVersionAuditVo(sysId, moduleId, envId, oldestVersion.getOldVersionId(), currentVersion.getVersionId(), oldestVersion.getOldBuildNo(), currentVersion.getBuildNo(), VersionDirection.ROLLBACK.getValue()));
+        if (!Objects.equals(oldestVersion.getOldVersionId(), currentVersion.getVersionId())) {
+            deployEnvVersionMapper.insertDeployEnvVersionAudit(new DeployEnvVersionAuditVo(sysId, moduleId, envId, oldestVersion.getOldVersionId(), currentVersion.getVersionId(), oldestVersion.getOldBuildNo(), currentVersion.getBuildNo(), VersionDirection.ROLLBACK.getValue()));
+        }
         return null;
     }
 }

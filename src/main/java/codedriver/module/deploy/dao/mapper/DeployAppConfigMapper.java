@@ -18,6 +18,8 @@ public interface DeployAppConfigMapper {
 
     List<Long> getAppSystemIdList(@Param("searchVo") DeployResourceSearchVo searchVo, @Param("userUuid") String userUuid);
 
+    List<DeployAppSystemVo> searchAppSystemList(DeployResourceSearchVo searchVo);
+
     List<DeployAppSystemVo> getAppSystemListIncludeModuleByIdList(@Param("idList") List<Long> idList, @Param("schemaName") String schemaName, @Param("userUuid") String userUuid);
 
     List<DeployAppSystemVo> getAppSystemListByIdList(@Param("idList") List<Long> idList, @Param("schemaName") String schemaName, @Param("userUuid") String userUuid);
@@ -81,6 +83,8 @@ public interface DeployAppConfigMapper {
     List<Long> getAppConfigUserAppSystemIdList(@Param("userUuid") String userUuid, @Param("appSystemIdList") List<Long> appSystemIdList);
 
     List<DeployAppEnvAutoConfigVo> getAppEnvAutoConfigBySystemIdAndModuleIdAndEnvId(@Param("systemId") Long systemId, @Param("moduleId") Long moduleId, @Param("envId") Long envId);
+
+    List<DeployAppModuleEnvVo> getDeployAppModuleEnvListByAppSystemId(@Param("appSystemId") Long appSystemId, @Param("schemaName") String schemaName);
 
     Integer insertAppConfigAuthority(DeployAppConfigAuthorityVo deployAppConfigAuthorityVo);
 

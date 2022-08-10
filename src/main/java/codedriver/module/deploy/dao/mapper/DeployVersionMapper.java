@@ -57,6 +57,8 @@ public interface DeployVersionMapper {
 
     List<DeployVersionEnvInstanceVo> getDeployedInstanceByVersionIdAndEnvId(@Param("versionId") Long versionId, @Param("envId") Long envId);
 
+    List<DeployVersionVo> getDeployVersionBySystemId(Long systemId);
+
     int unFreezeDeployVersionById(@Param("id") Long id, @Param("isFreeze") Long isFreeze);
 
     int updateDeployVersionDependencyBuildTimeById(Long id);

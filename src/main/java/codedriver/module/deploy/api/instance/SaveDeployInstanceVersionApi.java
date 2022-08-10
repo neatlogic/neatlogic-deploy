@@ -31,6 +31,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 @Transactional
@@ -113,7 +114,9 @@ public class SaveDeployInstanceVersionApi extends PrivateApiComponentBase {
             oldVersionId = currentVersion.getVersionId();
             oldBuildNo = currentVersion.getBuildNo();
         }
-        deployInstanceVersionMapper.insertDeployInstanceVersionAudit(new DeployInstanceVersionAuditVo(sysId, moduleId, envId, resourceId, versionVo.getId(), oldVersionId, buildNo, oldBuildNo, VersionDirection.FORWARD.getValue()));
+        if (!Objects.equals(versionVo.getId(), oldVersionId)) {
+            deployInstanceVersionMapper.insertDeployInstanceVersionAudit(new DeployInstanceVersionAuditVo(sysId, moduleId, envId, resourceId, versionVo.getId(), oldVersionId, buildNo, oldBuildNo, VersionDirection.FORWARD.getValue()));
+        }
         deployVersionMapper.insertDeployedInstance(new DeployVersionEnvInstanceVo(resourceId, versionVo.getId(), envId, execUser, lcd));
         return null;
     }

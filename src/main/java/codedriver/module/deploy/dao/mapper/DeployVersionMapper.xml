@@ -128,8 +128,8 @@
         <result column="appModuleId" property="appModuleId"/>
         <result column="appModuleName" property="appModuleName"/>
         <result column="isFreeze" property="isFreeze"/>
-        <result column="complieSuccessCount" property="complieSuccessCount"/>
-        <result column="complieFailCount" property="complieFailCount"/>
+        <result column="compileSuccessCount" property="compileSuccessCount"/>
+        <result column="compileFailCount" property="compileFailCount"/>
         <result column="fcu" property="fcu"/>
         <result column="fcd" property="fcd"/>
         <result column="lcu" property="lcu"/>
@@ -163,8 +163,8 @@
         dve.status as envStatus,
         dve.is_mirror as isMirror,
         dve.build_no as envBuildNo,
-        dv.complie_success_count as complieSuccessCount,
-        dv.complie_fail_count as complieFailCount,
+        dv.compile_success_count as compileSuccessCount,
+        dv.compile_fail_count as compileFailCount,
         dv.fcu,
         dv.fcd,
         dv.lcu,
@@ -529,6 +529,22 @@
         where a.version_id = #{versionId} and a.env_id = #{envId}
     </select>
 
+    <select id="getDeployVersionBySystemId" parameterType="java.lang.Long"
+            resultType="codedriver.framework.deploy.dto.version.DeployVersionVo">
+        select id,
+               version,
+               app_system_id   as appSystemId,
+               app_module_id   as appModuleId,
+               compile_success_count as compileSuccessCount,
+               compile_fail_count as compileFailCount,
+               fcu,
+               fcd,
+               lcu,
+               lcd
+        from deploy_version
+        where app_system_id = #{value}
+    </select>
+
     <update id="unFreezeDeployVersionById">
         update deploy_version
         set is_freeze = #{isFreeze}
@@ -573,10 +589,10 @@
         <if test="isCompiled != null">
             <choose>
                 <when test="isCompiled == 1">
-                    complie_success_count = complie_success_count + 1,
+                    compile_success_count = compile_success_count + 1,
                 </when>
                 <otherwise>
-                    complie_fail_count = complie_fail_count + 1,
+                    compile_fail_count = compile_fail_count + 1,
                 </otherwise>
             </choose>
         </if>
