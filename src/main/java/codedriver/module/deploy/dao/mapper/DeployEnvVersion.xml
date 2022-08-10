@@ -40,7 +40,7 @@
         limit 1
     </select>
 
-    <select id="getDeployEnvVersionAuditBySystemIdAndModuleId"
+    <select id="getDeployEnvVersionAuditBySystemId" parameterType="java.lang.Long"
             resultType="codedriver.framework.deploy.dto.env.DeployEnvVersionAuditVo">
         select
             id,
@@ -54,7 +54,7 @@
             direction,
             fcu,
             fcd
-        from deploy_env_version_audit where app_system_id = #{appSystemId} and app_module_id = #{appModuleId}
+        from deploy_env_version_audit where app_system_id = #{value}
     </select>
 
     <insert id="insertDeployEnvVersion" parameterType="codedriver.framework.deploy.dto.env.DeployEnvVersionVo">
