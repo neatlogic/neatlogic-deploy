@@ -6,6 +6,7 @@ import codedriver.framework.cmdb.exception.cientity.CiEntityNotFoundException;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.crossover.CrossoverServiceFactory;
 import codedriver.framework.deploy.auth.DEPLOY_BASE;
+import codedriver.framework.deploy.constvalue.DeployAppConfigAction;
 import codedriver.framework.deploy.dto.version.DeployVersionVo;
 import codedriver.framework.deploy.exception.DeployVersionIsRepeatException;
 import codedriver.framework.dto.FieldValidResultVo;
@@ -17,6 +18,7 @@ import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.IValid;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.deploy.dao.mapper.DeployVersionMapper;
+import codedriver.module.deploy.service.DeployAppAuthorityService;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.stereotype.Service;
@@ -34,6 +36,9 @@ public class SaveDeployVersionApi extends PrivateApiComponentBase {
 
     @Resource
     DeployVersionMapper deployVersionMapper;
+
+    @Resource
+    DeployAppAuthorityService deployAppAuthorityService;
 
     @Override
     public String getName() {
@@ -61,6 +66,10 @@ public class SaveDeployVersionApi extends PrivateApiComponentBase {
     @Description(desc = "保存发布版本")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
+
+        //校验环境权限、编辑配置的操作权限
+        deployAppAuthorityService.checkOperationAuth(paramObj.getLong("appSystemId"), DeployAppConfigAction.VERSION_AND_PRODUCT_MANAGER);
+
         DeployVersionVo versionVo = paramObj.toJavaObject(DeployVersionVo.class);
         if (deployVersionMapper.checkDeployVersionIsRepeat(versionVo) > 0) {
             throw new DeployVersionIsRepeatException(versionVo.getVersion());
