@@ -279,6 +279,7 @@
         <result column="batchJobReviewer" property="reviewer"/>
         <result column="batchJobReviewStatus" property="reviewStatus"/>
         <result column="batchJobReviewTime" property="reviewTime"/>
+        <result column="batchJobTriggerType" property="triggerType"/>
         <collection property="authList" ofType="codedriver.framework.deploy.dto.job.DeployJobAuthVo">
             <result column="jobAuthType" property="type"/>
             <result column="jobAuthUuid" property="authUuid"/>
@@ -331,7 +332,7 @@
                a.reviewer        as batchJobReviewer,
                a.review_status   as batchJobReviewStatus,
                a.review_time     as batchJobReviewTime,
-               a.trigger_type    as jobTriggerType,
+               a.trigger_type    as batchJobTriggerType,
                b.id              as laneId,
                b.sort            as laneSort,
                b.`status`        as laneStatus,
@@ -348,6 +349,7 @@
                e.start_time      as jobStartTime,
                e.end_time        as jobEndTime,
                e.source          as jobSource,
+               e.trigger_type    as jobTriggerType,
                f.`app_system_id` as jobAppSystemId,
                g.`name`          as jobAppSystemName,
                f.`app_module_id` as jobAppModuleId,
