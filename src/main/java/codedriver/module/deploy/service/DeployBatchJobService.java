@@ -51,4 +51,12 @@ public interface DeployBatchJobService {
      * @param groupId 组id
      */
     void checkAndFireLaneNextGroup(Long groupId, JSONObject passThroughEnv);
+
+    /**
+     * 激活该泳道下一组
+     *
+     * @param currentGroupVo 当前组
+     * @param nextGroupId    下一组id
+     */
+    void fireLaneNextGroup(LaneGroupVo currentGroupVo, Long nextGroupId, JSONObject passThroughEnv);
 }

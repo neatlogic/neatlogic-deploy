@@ -20,6 +20,7 @@ import codedriver.framework.deploy.exception.DeployBatchJobCannotExecuteExceptio
 import codedriver.framework.deploy.exception.DeployBatchJobFireWithRevokedException;
 import codedriver.framework.deploy.exception.DeployBatchJobGroupFireWithInvalidStatusException;
 import codedriver.framework.deploy.exception.DeployBatchJobGroupNotFoundException;
+import codedriver.framework.exception.core.ApiRuntimeException;
 import codedriver.module.deploy.dao.mapper.DeployBatchJobMapper;
 import codedriver.module.deploy.dao.mapper.DeployJobMapper;
 import com.alibaba.fastjson.JSONObject;
@@ -90,6 +91,7 @@ public class DeployBatchJobServiceImpl implements DeployBatchJobService {
         groupVo.setBatchJobAction(batchJobAction);
         groupVo.setJobAction(jobAction);
         groupVo.setIsGoon(isGoon);
+        groupVo.setIsGroupRun(1);
         fireLaneGroup(groupVo, 1, new JSONObject());
     }
 
@@ -207,7 +209,12 @@ public class DeployBatchJobServiceImpl implements DeployBatchJobService {
             Long nextGroupId = deployBatchJobMapper.getNextGroupId(groupVo.getLaneId(), groupVo.getSort());
             logger.info("Batch run update group:#" + groupId + " status:" + groupStatus);
             if (groupStatus.equalsIgnoreCase(JobStatus.COMPLETED.getValue())) {
+                //如果组已完成且需要waitInput，则将状态改为 waitInput
                 if (groupVo.getNeedWait() == 1) {
+                    groupStatus = nextGroupId == null ? groupStatus : JobPhaseStatus.WAIT_INPUT.getValue();
+                }
+            }else if(groupStatus.equalsIgnoreCase(JobStatus.FAILED.getValue())){
+                if (groupVo.getIsGroupRun() == 0) {
                     groupStatus = nextGroupId == null ? groupStatus : JobPhaseStatus.WAIT_INPUT.getValue();
                 }
             }
@@ -229,10 +236,17 @@ public class DeployBatchJobServiceImpl implements DeployBatchJobService {
      * @param currentGroupVo 当前组
      * @param nextGroupId    下一组id
      */
+    @Override
     public void fireLaneNextGroup(LaneGroupVo currentGroupVo, Long nextGroupId, JSONObject passThroughEnv) {
         if (nextGroupId != null) {
             logger.info("Next group found:#" + nextGroupId + ", for lane:#" + currentGroupVo.getLaneId() + " pre sort:#" + currentGroupVo.getSort());
-            fireLaneGroup(nextGroupId, currentGroupVo.getBatchJobAction(), currentGroupVo.getJobAction(), passThroughEnv);
+            try {
+                fireLaneGroup(nextGroupId, currentGroupVo.getBatchJobAction(), currentGroupVo.getJobAction(), passThroughEnv);
+            }catch (ApiRuntimeException ex){
+                LaneVo laneVo = deployBatchJobMapper.getLaneById(currentGroupVo.getLaneId());
+                autoexecJobMapper.updateJobStatus(new AutoexecJobVo(laneVo.getBatchJobId(),JobStatus.FAILED.getValue()));
+                throw new ApiRuntimeException(ex.getMessage(),ex);
+            }
         } else {
             deployBatchJobMapper.updateLaneStatus(currentGroupVo.getLaneId(), JobStatus.COMPLETED.getValue());
             logger.info("Batch run lane:#" + currentGroupVo.getLaneId() + " finished.");
