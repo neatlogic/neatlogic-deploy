@@ -254,7 +254,7 @@ public class DeployAppAuthChecker {
         if (CollectionUtils.isEmpty(checker.deployAppConfigMapper.getAppConfigAuthorityListByAppSystemId(appSystemId))) {
             returnActionSet = paramActionSet;
         }
-        List<DeployAppConfigAuthorityActionVo> hasActionList = checker.deployAppConfigMapper.getDeployAppHasAuthorityActionList(checkVo);
+        List<DeployAppConfigAuthorityActionVo> hasActionList = checker.deployAppConfigMapper.getDeployAppAuthorityActionList(checkVo);
         if (CollectionUtils.isEmpty(hasActionList)) {
             return returnActionSet;
         }
@@ -275,7 +275,7 @@ public class DeployAppAuthChecker {
         List<Long> paramSystemIdList = paramAuthCheckList.stream().map(DeployAppAuthCheckVo::getAppSystemId).collect(Collectors.toList());
         //已经配置过权限的系统id列表
         List<Long> hasAuthAppSystemIdList = checker.deployAppConfigMapper.getDeployAppHasAuthorityAppSystemIdListByAppSystemIdList(paramSystemIdList);
-        List<DeployAppAuthCheckVo> hasAuthorityCheckVoList = checker.deployAppConfigMapper.getBatchDeployAppHasAuthorityActionList(paramAuthCheckList);
+        List<DeployAppAuthCheckVo> hasAuthorityCheckVoList = checker.deployAppConfigMapper.getBatchDeployAppAuthorityActionList(paramAuthCheckList);
         Map<Long, List<DeployAppConfigAuthorityActionVo>> hasAuthorityActionMap = hasAuthorityCheckVoList.stream().collect(Collectors.toMap(DeployAppAuthCheckVo::getAppSystemId, DeployAppAuthCheckVo::getActionVoList));
         for (DeployAppAuthCheckVo checkVo : paramAuthCheckList) {
             if (checkVo.getIsHasAllAuthority() == 1) {
@@ -312,7 +312,7 @@ public class DeployAppAuthChecker {
                     returnActionSet.addAll(DeployAppConfigAction.getValueList().stream().filter(needActionList::contains).collect(Collectors.toList()));
                 } else if (StringUtils.equals(actionVo.getType(), DeployAppConfigActionType.ENV.getValue())) {
                     if (envIdList == null) {
-                        envIdList = checker.deployAppConfigMapper.getDeployAppEnvIdListByAppSystemIdAndModuleIdList(appSystemId, TenantContext.get().getDataDbName());
+                        envIdList = checker.deployAppConfigMapper.getDeployAppEnvIdListByAppSystemId(appSystemId, TenantContext.get().getDataDbName());
                     }
                     for (Long envId : envIdList) {
                         if (needActionList.contains(envId.toString())) {

@@ -407,7 +407,7 @@
         )
     </select>
 
-    <select id="getDeployAppEnvIdListByAppSystemIdAndModuleIdList"
+    <select id="getDeployAppEnvIdListByAppSystemId"
             resultType="long">
         (
         SELECT
@@ -1159,7 +1159,7 @@
           and `env_id` = #{envId}
     </select>
 
-    <select id="getDeployAppHasAuthorityActionList" resultType="codedriver.framework.deploy.dto.app.DeployAppConfigAuthorityActionVo">
+    <select id="getDeployAppAuthorityActionList" resultType="codedriver.framework.deploy.dto.app.DeployAppConfigAuthorityActionVo">
         select `action`,action_type as type
         from deploy_app_config_authority
         <where>
@@ -1194,7 +1194,7 @@
         </collection>
     </resultMap>
 
-    <select id="getBatchDeployAppHasAuthorityActionList" resultMap="DeployAppAuthCheckVoMap">
+    <select id="getBatchDeployAppAuthorityActionList" resultMap="DeployAppAuthCheckVoMap">
         select app_system_id as appSystemId,`action`,action_type as actionType
         from deploy_app_config_authority
         <where>

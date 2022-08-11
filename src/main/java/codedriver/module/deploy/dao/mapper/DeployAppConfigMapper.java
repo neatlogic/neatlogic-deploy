@@ -156,7 +156,7 @@ public interface DeployAppConfigMapper {
 
     List<Long> getHasEnvAppSystemIdListByAppSystemIdList(@Param("idList") List<Long> idList, @Param("schemaName") String schemaName);
 
-    List<Long> getDeployAppEnvIdListByAppSystemIdAndModuleIdList(@Param("appSystemId") Long appSystemId, @Param("schemaName") String schemaName);
+    List<Long> getDeployAppEnvIdListByAppSystemId(@Param("appSystemId") Long appSystemId, @Param("schemaName") String schemaName);
 
     List<Long> getDeployAppHasAuthorityAppSystemIdListByAppSystemIdList(List<Long> paramSystemIdList);
 
@@ -166,9 +166,9 @@ public interface DeployAppConfigMapper {
 
     List<DeployAppModuleVo> getAppModuleListBySystemIdAndEnvId(@Param("appSystemId") Long appSystemId, @Param("envId") Long envId, @Param("schemaName") String schemaName);
 
-    List<DeployAppConfigAuthorityActionVo> getDeployAppHasAuthorityActionList(DeployAppAuthCheckVo deployAppAuthCheckVo);
+    List<DeployAppConfigAuthorityActionVo> getDeployAppAuthorityActionList(DeployAppAuthCheckVo deployAppAuthCheckVo);
 
-    List<DeployAppAuthCheckVo> getBatchDeployAppHasAuthorityActionList(List<DeployAppAuthCheckVo> deployAppAuthCheckVoList);
+    List<DeployAppAuthCheckVo> getBatchDeployAppAuthorityActionList(List<DeployAppAuthCheckVo> deployAppAuthCheckVoList);
 
     void deleteAppConfigSystemFavoriteByAppSystemIdAndUserUuid(@Param("appSystemId") Long appSystemId, @Param("userUuid") String userUuid);
 
