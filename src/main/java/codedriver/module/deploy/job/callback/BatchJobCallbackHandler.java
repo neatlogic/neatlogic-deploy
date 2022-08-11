@@ -10,8 +10,6 @@ import codedriver.framework.autoexec.dao.mapper.AutoexecJobMapper;
 import codedriver.framework.autoexec.dto.job.AutoexecJobVo;
 import codedriver.framework.autoexec.job.callback.core.AutoexecJobCallbackBase;
 import codedriver.framework.deploy.constvalue.JobSource;
-import codedriver.framework.deploy.dto.job.LaneGroupVo;
-import codedriver.module.deploy.dao.mapper.DeployBatchJobMapper;
 import codedriver.module.deploy.service.DeployBatchJobService;
 import org.apache.commons.collections4.MapUtils;
 import org.springframework.stereotype.Component;
@@ -30,8 +28,6 @@ public class BatchJobCallbackHandler extends AutoexecJobCallbackBase {
     private AutoexecJobMapper autoexecJobMapper;
     @Resource
     private DeployBatchJobService deployBatchJobService;
-    @Resource
-    private DeployBatchJobMapper deployBatchJobMapper;
 
     @Override
     public String getHandler() {
@@ -57,10 +53,6 @@ public class BatchJobCallbackHandler extends AutoexecJobCallbackBase {
 
     @Override
     public void doService(Long invokeId, AutoexecJobVo jobVo) {
-        Long jobId = jobVo.getId();
-        LaneGroupVo laneGroupVo = deployBatchJobMapper.getLaneGroupByJobId(jobId);
-        if (laneGroupVo != null) {
-            deployBatchJobService.checkAndFireLaneNextGroup(laneGroupVo.getId(),jobVo.getPassThroughEnv());
-        }
+        deployBatchJobService.checkAndFireLaneNextGroupByJobId(jobVo.getId(),jobVo.getPassThroughEnv());
     }
 }
