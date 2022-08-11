@@ -228,7 +228,6 @@ public class SearchDeployActiveVersionApi extends PrivateApiComponentBase {
                                     envVersionAuditSortedMap.put(vo.getEnvId(), null);
                                 }
                             }
-                            // 没有audit记录的环境
                             for (DeployVersionVo versionVo : moduleVersionList) {
                                 DeployActiveVersionVo activeVersion = new DeployActiveVersionVo(versionVo);
                                 List<DeployEnvVersionVo> envStatusList = new ArrayList<>();
@@ -242,7 +241,7 @@ public class SearchDeployActiveVersionApi extends PrivateApiComponentBase {
                                     Optional<AppEnvironmentVo> first = moduleAllEnv.stream().filter(o -> Objects.equals(o.getEnvId(), envId)).findFirst();
                                     first.ifPresent(appEnvironmentVo -> envStatus.setEnvName(appEnvironmentVo.getEnvName()));
                                     // 没有audit记录的环境都认为未发布
-                                    if (auditList == null) {
+                                    if (CollectionUtils.isEmpty(auditList)) {
                                         continue;
                                     }
                                     // 按时间排序
