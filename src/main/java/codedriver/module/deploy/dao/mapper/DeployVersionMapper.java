@@ -23,6 +23,8 @@ public interface DeployVersionMapper {
 
     DeployVersionVo getVersionByAppSystemIdAndAppModuleIdAndVersion(@Param("appSystemId") Long appSystemId, @Param("appModuleId") Long appModuleId, @Param("version") String version);
 
+    List<DeployVersionVo> getDeployVersionBaseInfoByIdList(List<Long> idList);
+
     List<DeployVersionVo> getDeployVersionByIdList(List<Long> idList);
 
     List<DeployVersionVo> getDeployVersionIncludeEnvListByVersionIdList(@Param("idList") List<Long> idList, @Param("schemaName") String schemaName);
