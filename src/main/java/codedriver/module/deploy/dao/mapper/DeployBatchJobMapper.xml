@@ -24,7 +24,7 @@
         update
     </select>
 
-    <select id="getBatchDeployJobListByIdAndStatus"
+    <select id="getBatchDeployJobListByIdAndNotInStatus"
             resultType="codedriver.framework.autoexec.dto.job.AutoexecJobVo">
         SELECT e.id as id,
         e.`name` as name,
@@ -39,7 +39,7 @@
         LEFT JOIN deploy_job_lane_group AS c ON b.id = c.lane_id
         LEFT JOIN deploy_job_lane_group_job AS d ON c.id = d.group_id
         LEFT JOIN autoexec_job AS e ON d.job_id = e.id
-        where a.id = #{id} and e.status in
+        where a.id = #{id} and e.status not in
         <foreach collection="statusList" item="status" open="(" close=")" separator=",">
             #{status}
         </foreach>

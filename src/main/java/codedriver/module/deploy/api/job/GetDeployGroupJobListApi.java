@@ -8,7 +8,7 @@ package codedriver.module.deploy.api.job;
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.deploy.auth.DEPLOY_BASE;
-import codedriver.framework.deploy.dto.job.DeployJobVo;
+import codedriver.framework.deploy.dto.job.LaneGroupVo;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
@@ -25,14 +25,14 @@ import java.util.List;
 @Service
 @AuthAction(action = DEPLOY_BASE.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
-public class GetDeployJobListApi extends PrivateApiComponentBase {
+public class GetDeployGroupJobListApi extends PrivateApiComponentBase {
     @Resource
     private DeployJobMapper deployJobMapper;
 
 
     @Override
     public String getName() {
-        return "根据指定id获取发布作业列表";
+        return "根据指定id获取发布作业组列表";
     }
 
     @Override
@@ -42,14 +42,14 @@ public class GetDeployJobListApi extends PrivateApiComponentBase {
 
     @Override
     public String getToken() {
-        return "/deploy/job/list";
+        return "/deploy/batchjob/group/list";
     }
 
     @Input({
             @Param(name = "idList", type = ApiParamType.JSONARRAY, desc = "id列表，用于精确查找作业刷新状态"),
     })
-    @Output({@Param(type = ApiParamType.JSONARRAY, explode = DeployJobVo[].class)})
-    @Description(desc = "根据指定id获取发布作业列表接口")
+    @Output({@Param(type = ApiParamType.JSONARRAY, explode = LaneGroupVo[].class)})
+    @Description(desc = "根据指定id获取发布作业组列表接口，用于刷新作业状态")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         List<Long> idList = new ArrayList<>();
@@ -58,7 +58,7 @@ public class GetDeployJobListApi extends PrivateApiComponentBase {
             idList.add(pIdList.getLong(i));
         }
         if (CollectionUtils.isNotEmpty(idList)) {
-            return deployJobMapper.getDeployJobByIdList(idList);
+            return deployJobMapper.getDeployJobGroupByJobIdList(idList);
         }
         return null;
     }

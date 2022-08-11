@@ -20,7 +20,7 @@ import java.util.List;
 public interface DeployBatchJobMapper {
     DeployJobVo getBatchDeployJobLockById(Long batchJobId);
 
-    List<AutoexecJobVo> getBatchDeployJobListByIdAndStatus(@Param("id") Long batchJobId, @Param("statusList") List<String> statusList);
+    List<AutoexecJobVo> getBatchDeployJobListByIdAndNotInStatus(@Param("id") Long batchJobId, @Param("statusList") List<String> statusList);
 
     List<AutoexecJobVo> getJobsByGroupIdAndWithoutStatus(@Param("groupId") Long groupId, @Param("statusList") List<String> statusList);
 

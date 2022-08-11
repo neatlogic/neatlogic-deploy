@@ -101,6 +101,7 @@
           AND dsd.sql_file = #{sqlFile}
           and dsjp.job_id = #{jobId}
           and dsjp.job_phase_name = #{phaseName}
+          and dsd.resource_id = #{resourceId}
     </select>
 
     <select id="getDeploySqlDetailList"
