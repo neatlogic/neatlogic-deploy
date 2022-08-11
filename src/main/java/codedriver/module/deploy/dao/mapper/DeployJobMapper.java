@@ -45,14 +45,13 @@ public interface DeployJobMapper {
 
     DeployJobVo getBatchDeployJobById(Long id);
 
-    List<DeployJobVo> getDeployJobByIdList(@Param("idList") List<Long> idList);
+    List<LaneGroupVo> getDeployJobGroupByJobIdList(@Param("idList") List<Long> idList);
 
     DeployJobContentVo getDeployJobContent(String contentHash);
 
     void insertDeployJob(DeployJobVo deployJobVo);
 
     void insertAutoExecJob(DeployJobVo deployJobVo);
-
 
     void insertIgnoreDeployJobContent(DeployJobContentVo deployJobContentVo);
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c)  2022 TechSure Co.,Ltd.  All Rights Reserved.
+ * Copyright(c) 2022 TechSure Co., Ltd. All Rights Reserved.
  * 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
  */
 
@@ -43,7 +43,7 @@ public class ExecuteBatchDeployJobGroupApi extends PrivateApiComponentBase {
 
     @Input({
             @Param(name = "id", type = ApiParamType.LONG, isRequired = true, desc = "批量作业组id"),
-            @Param(name = "isGoon", type = ApiParamType.ENUM, rule = "1,0", isRequired = true, desc = "执行完当前组是否停止不继续执行后续组，但仍受needWait约束，1：是，0：否"),
+            @Param(name = "isGoon", type = ApiParamType.ENUM, rule = "1,0", isRequired = true, desc = "执行完当前组是否继续执行后续组，但仍受needWait约束，1：是，0：否"),
             @Param(name = "batchJobAction", type = ApiParamType.ENUM, rule = "refireAll,refireResetAll", isRequired = true, desc = "批量作业执行策略，refireAll：跳过所有已完成的子作业；refireResetAll:执行所有子作业"),
             @Param(name = "jobAction", type = ApiParamType.ENUM, rule = "refireAll,refireResetAll", isRequired = true, desc = "子作业执行策略，refireAll：跳过所有已完成、已忽略的节点；refireResetAll:执行所有节点"),
     })

@@ -7,20 +7,19 @@ package codedriver.module.deploy.api.job.batch;
 
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.autoexec.constvalue.JobStatus;
+import codedriver.framework.autoexec.dao.mapper.AutoexecJobMapper;
 import codedriver.framework.autoexec.dto.job.AutoexecJobVo;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.deploy.auth.DEPLOY_BASE;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
-import codedriver.module.deploy.dao.mapper.DeployBatchJobMapper;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -35,7 +34,7 @@ import java.util.List;
 public class CheckBatchDeployJobApi extends PrivateApiComponentBase {
 
     @Resource
-    private DeployBatchJobMapper deployBatchJobMapper;
+    private AutoexecJobMapper autoexecJobMapper;
 
     @Override
     public String getName() {
@@ -55,10 +54,12 @@ public class CheckBatchDeployJobApi extends PrivateApiComponentBase {
     @Description(desc = "验证批量发布作业接口")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
-        List<AutoexecJobVo> jobVoList = deployBatchJobMapper.getBatchDeployJobListByIdAndStatus(jsonObj.getLong("id"), Collections.singletonList(JobStatus.COMPLETED.getValue()));
+        Long batchJobId = jsonObj.getLong("id");
+        List<AutoexecJobVo> jobVoList = autoexecJobMapper.getJobListLockByParentIdAndStatus(batchJobId, JobStatus.COMPLETED.getValue());
+        autoexecJobMapper.updateJobStatus(new AutoexecJobVo(batchJobId,JobStatus.CHECKED.getValue()));
         if(CollectionUtils.isNotEmpty(jobVoList)){
             for (AutoexecJobVo jobVo : jobVoList){
-
+                autoexecJobMapper.updateJobStatus(new AutoexecJobVo(jobVo.getId(),JobStatus.CHECKED.getValue()));
             }
         }
         return null;
@@ -66,6 +67,6 @@ public class CheckBatchDeployJobApi extends PrivateApiComponentBase {
 
     @Override
     public String getToken() {
-        return "autoexec/job/check";
+        return "deploy/batchjob/check";
     }
 }
