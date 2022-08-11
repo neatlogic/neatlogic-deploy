@@ -21,6 +21,20 @@
         for update
     </select>
 
+    <select id="getDeployEnvVersionBySystemId"
+            resultType="codedriver.framework.deploy.dto.env.DeployEnvVersionVo">
+        SELECT
+            a.app_system_id AS appSystemId,
+            a.app_module_id AS appModuleId,
+            a.env_id AS envId,
+            a.version_id AS versionId,
+            b.version
+        FROM
+            deploy_env_version a JOIN deploy_version b ON a.version_id = b.id
+        WHERE
+            a.app_system_id = #{value}
+    </select>
+
     <select id="getDeployEnvOldestVersionByEnvIdAndNewVersionId"
             resultType="codedriver.framework.deploy.dto.env.DeployEnvVersionAuditVo">
         select
