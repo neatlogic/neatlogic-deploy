@@ -8,7 +8,6 @@ import codedriver.framework.deploy.dto.version.DeployVersionVo;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
-import codedriver.module.deploy.dao.mapper.DeployAppConfigMapper;
 import codedriver.module.deploy.dao.mapper.DeployEnvVersionMapper;
 import codedriver.module.deploy.dao.mapper.DeployVersionMapper;
 import com.alibaba.fastjson.JSONObject;
@@ -28,9 +27,6 @@ public class GetDeployModuleVersionAuditListApi extends PrivateApiComponentBase 
 
     @Resource
     DeployVersionMapper deployVersionMapper;
-
-    @Resource
-    DeployAppConfigMapper deployAppConfigMapper;
 
     @Resource
     DeployEnvVersionMapper deployEnvVersionMapper;
@@ -67,7 +63,7 @@ public class GetDeployModuleVersionAuditListApi extends PrivateApiComponentBase 
         if (auditList.size() > 0) {
             Set<Long> versionIdSet = auditList.stream().map(DeployEnvVersionAuditVo::getNewVersionId).collect(Collectors.toSet());
             versionIdSet.addAll(auditList.stream().map(DeployEnvVersionAuditVo::getOldVersionId).collect(Collectors.toSet()));
-            List<DeployVersionVo> versionList = deployVersionMapper.getDeployVersionByIdList(new ArrayList<>(versionIdSet));
+            List<DeployVersionVo> versionList = deployVersionMapper.getDeployVersionBaseInfoByIdList(new ArrayList<>(versionIdSet));
             Map<Long, String> versionMap = versionList.stream().collect(Collectors.toMap(DeployVersionVo::getId, DeployVersionVo::getVersion));
             for (DeployEnvVersionAuditVo vo : auditList) {
                 vo.setNewVersion(versionMap.get(vo.getNewVersionId()));
