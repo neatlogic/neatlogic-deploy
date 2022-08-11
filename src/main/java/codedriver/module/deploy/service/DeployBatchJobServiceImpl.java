@@ -17,7 +17,7 @@ import codedriver.framework.deploy.dto.job.DeployJobVo;
 import codedriver.framework.deploy.dto.job.LaneGroupVo;
 import codedriver.framework.deploy.dto.job.LaneVo;
 import codedriver.framework.deploy.exception.DeployBatchJobCannotExecuteException;
-import codedriver.framework.deploy.exception.DeployBatchJobFireWithRevokedException;
+import codedriver.framework.deploy.exception.DeployBatchJobFireWithRevokedAndCheckedException;
 import codedriver.framework.deploy.exception.DeployBatchJobGroupFireWithInvalidStatusException;
 import codedriver.framework.deploy.exception.DeployBatchJobGroupNotFoundException;
 import codedriver.framework.exception.core.ApiRuntimeException;
@@ -51,8 +51,8 @@ public class DeployBatchJobServiceImpl implements DeployBatchJobService {
         AutoexecJobVo batchJobVo = autoexecJobMapper.getJobInfo(batchJobId);
         //不允许存在"已撤销"的作业
         List<AutoexecJobVo> autoexecJobList = deployBatchJobMapper.getBatchDeployJobListByIdAndNotInStatus(batchJobId, Arrays.asList(JobStatus.REVOKED.getValue(), JobStatus.CHECKED.getValue()));
-        if (CollectionUtils.isNotEmpty(autoexecJobList)) {
-            throw new DeployBatchJobFireWithRevokedException(autoexecJobList);
+        if (CollectionUtils.isEmpty(autoexecJobList)) {
+            throw new DeployBatchJobFireWithRevokedAndCheckedException();
         }
         //更新批量发布父作业状态
         String loginUserUuid = UserContext.get().getUserUuid();

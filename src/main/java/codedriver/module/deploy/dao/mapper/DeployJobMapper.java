@@ -45,6 +45,8 @@ public interface DeployJobMapper {
 
     DeployJobVo getBatchDeployJobById(Long id);
 
+    DeployJobVo getBatchDeployJobStatusById(Long id);
+
     List<LaneGroupVo> getDeployJobGroupByJobIdList(@Param("idList") List<Long> idList);
 
     DeployJobContentVo getDeployJobContent(String contentHash);
