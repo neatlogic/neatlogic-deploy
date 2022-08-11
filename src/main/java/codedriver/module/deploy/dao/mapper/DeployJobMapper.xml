@@ -325,7 +325,14 @@
         </collection>
     </resultMap>
 
-    <select id="getBatchDeployJobById"
+    <select id="getBatchDeployJobStatusById" parameterType="java.lang.Long"
+            resultType="codedriver.framework.deploy.dto.job.DeployJobVo">
+        SELECT id, name, status
+        FROM autoexec_job
+        WHERE id = #{value}
+    </select>
+
+    <select id="getBatchDeployJobById" parameterType="java.lang.Long"
             resultMap="deployBatchJobResultMap">
         SELECT a.id              as batchJobId,
                a.`name`          as batchJobName,
