@@ -941,7 +941,7 @@
         <include refid="searchDatabase"></include>
     </select>
     <sql id="searchDatabase">
-        FROM ${schemaName}.`scence_database_env_appmodule` a
+        FROM ${schemaName}.`scence_database_ip_port_env_appmodule` a
         <where>
             (a.env_id = #{searchVo.envId} OR a.env_id IS NULL)
             AND (
@@ -959,6 +959,11 @@
                 <foreach collection="searchVo.notInIdList" item="id" open="(" separator="," close=")">
                     #{id}
                 </foreach>
+            </if>
+            <if test="searchVo.keyword != null and searchVo.keyword != ''">
+                AND (a.`name` LIKE concat('%', #{searchVo.keyword}, '%') OR a.`ip` LIKE concat('%', #{searchVo.keyword},
+                '%') OR a.`port`
+                LIKE concat('%', #{searchVo.keyword}, '%'))
             </if>
         </where>
     </sql>
