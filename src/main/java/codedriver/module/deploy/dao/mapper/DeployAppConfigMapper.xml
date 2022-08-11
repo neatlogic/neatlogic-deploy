@@ -412,6 +412,7 @@
         (
         SELECT
         a.`env_id` AS envId
+        FROM ${schemaName}.`scence_appinstance_env_appmodule_appsystem` a
         <where>
             a.`env_id` is not null
             <choose>
@@ -1163,8 +1164,6 @@
         from deploy_app_config_authority
         <where>
             app_system_id = #{appSystemId}
-            AND
-            action_type = 'operation'
             AND `action` IN
             ('all'
             <if test="authorityActionList != null and authorityActionList.size() > 0">,
@@ -1184,6 +1183,53 @@
             </if>
             )
         </where>
+    </select>
+
+    <resultMap id="DeployAppAuthCheckVoMap" type="codedriver.framework.deploy.dto.app.DeployAppAuthCheckVo">
+        <result column="appSystemId" property="appSystemId"/>
+        <collection property="actionVoList"
+                    ofType="codedriver.framework.deploy.dto.app.DeployAppConfigAuthorityActionVo">
+            <result column="actionType" property="type"/>
+            <result column="action" property="action"/>
+        </collection>
+    </resultMap>
+
+    <select id="getBatchDeployAppHasAuthorityActionList" resultMap="DeployAppAuthCheckVoMap">
+        select app_system_id as appSystemId,`action`,action_type as actionType
+        from deploy_app_config_authority
+        <where>
+            <foreach collection="list" item="vo" separator="or">
+             ( app_system_id = #{vo.appSystemId}
+                AND `action` IN
+                ('all'
+                <if test="vo.authorityActionList != null and vo.authorityActionList.size() > 0">,
+                    <foreach collection="vo.authorityActionList" item="action" separator=",">
+                        #{action}
+                    </foreach>
+                </if>
+                )
+                AND auth_uuid IN
+                (
+                'alluser'
+                <if test="vo.authUuidList != null and vo.authUuidList.size() > 0">
+                    ,
+                    <foreach collection="vo.authUuidList" item="uuid" separator=",">
+                        #{uuid}
+                    </foreach>
+                </if>
+                ))
+            </foreach>
+        </where>
+    </select>
+
+    <select id="getDeployAppHasAuthorityAppSystemIdListByAppSystemIdList" resultType="java.lang.Long">
+        select app_system_id
+        from deploy_app_config_authority
+        where
+        app_system_id in
+        <foreach collection="list" open="(" separator="," close=")" item="appSystemId">
+            #{appSystemId}
+        </foreach>
     </select>
 
     <insert id="insertAppConfigAuthority">

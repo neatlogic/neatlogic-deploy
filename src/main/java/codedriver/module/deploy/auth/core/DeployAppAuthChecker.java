@@ -39,21 +39,6 @@ public class DeployAppAuthChecker {
         checker = this;
     }
 
-    //发布管理员最高权限
-
-    //如果当前系统配置了权限，则校验权限，否则所有人都是拥有所有权限
-
-    // 1）创建作业、执行作业：需要校验 环境权限&场景权限
-    //    2）查看作业：查看作业、配置权限
-    //    3）应用配置查看：查看作业、配置权限
-    //    4）配置修改：
-    //        A.应用层： 编辑配置权限
-    //        B.模块层： 编辑配置权限
-    //        C.环境层： 编辑配置权限&环境权限
-    //    5）版本制品：制品管理权限
-    //    6）环境制品：制品管理权限&环境权限
-
-
     /**
      * 根据系统id获取当前登录人所有权限
      *
@@ -250,13 +235,13 @@ public class DeployAppAuthChecker {
 
 
     /**
-     * 获取同一系统的多个权限的权限列表
+     * 校验同一系统的多个权限的权限列表，并返回拥有的权限
      *
-     * @param appSystemId 系统id
+     * @param appSystemId    系统id
      * @param paramActionSet 校验的权限列表
      * @return 通过校验的权限列表
      */
-    public static Set<String> getHasAuthorityActionList(Long appSystemId, Set<String> paramActionSet) {
+    public static Set<String> checkAuthorityActionList(Long appSystemId, Set<String> paramActionSet) {
         Set<String> returnActionSet = new HashSet<>();
 
         if (appSystemId == null || CollectionUtils.isEmpty(paramActionSet)) {
@@ -273,23 +258,64 @@ public class DeployAppAuthChecker {
         if (CollectionUtils.isEmpty(hasActionList)) {
             return returnActionSet;
         }
+        return getActionSet(appSystemId,new ArrayList<>(paramActionSet),hasActionList);
+    }
 
+    /**
+     * 校验多个系统的不同权限，并返回拥有的权限
+     *
+     * @param paramAuthCheckList check列表
+     * @return 拥有的权限
+     */
+    public static Map<Long, Set<String>> checkBatchAuthorityActionList(List<DeployAppAuthCheckVo> paramAuthCheckList) {
+        HashMap<Long, Set<String>> returnMap = new HashMap<>();
+        if (CollectionUtils.isEmpty(paramAuthCheckList)) {
+            return returnMap;
+        }
+        List<Long> paramSystemIdList = paramAuthCheckList.stream().map(DeployAppAuthCheckVo::getAppSystemId).collect(Collectors.toList());
+        //已经配置过权限的系统id列表
+        List<Long> hasAuthAppSystemIdList = checker.deployAppConfigMapper.getDeployAppHasAuthorityAppSystemIdListByAppSystemIdList(paramSystemIdList);
+        List<DeployAppAuthCheckVo> hasAuthorityCheckVoList = checker.deployAppConfigMapper.getBatchDeployAppHasAuthorityActionList(paramAuthCheckList);
+        Map<Long, List<DeployAppConfigAuthorityActionVo>> hasAuthorityActionMap = hasAuthorityCheckVoList.stream().collect(Collectors.toMap(DeployAppAuthCheckVo::getAppSystemId, DeployAppAuthCheckVo::getActionVoList));
+        for (DeployAppAuthCheckVo checkVo : paramAuthCheckList) {
+            if (checkVo.getIsHasAllAuthority() == 1) {
+                returnMap.put(checkVo.getAppSystemId(), new HashSet<>(checkVo.getAuthorityActionList()));
+            }
+            if (!hasAuthAppSystemIdList.contains(checkVo.getAppSystemId())) {
+                returnMap.put(checkVo.getAppSystemId(), new HashSet<>(checkVo.getAuthorityActionList()));
+            } else {
+                returnMap.put(checkVo.getAppSystemId(), getActionSet(checkVo.getAppSystemId(), checkVo.getAuthorityActionList(), hasAuthorityActionMap.get(checkVo.getAppSystemId())));
+            }
+        }
+        return returnMap;
+    }
+
+    /**
+     * 取 所需权限 和 现有权限 的交集
+     *
+     * @param appSystemId    系统id
+     * @param needActionList 所需权限
+     * @param hasActionList  现有权限
+     * @return 所需权限和现有权限的交集
+     */
+    private static Set<String> getActionSet(Long appSystemId, List<String> needActionList, List<DeployAppConfigAuthorityActionVo> hasActionList) {
+        Set<String> returnActionSet = new HashSet<>();
         List<Long> envIdList = null;
         List<AutoexecCombopScenarioVo> scenarioList = null;
         for (DeployAppConfigAuthorityActionVo actionVo : hasActionList) {
             if (!StringUtils.equals(actionVo.getAction(), "all")) {
-                if (paramActionSet.contains(actionVo.getAction())) {
+                if (needActionList.contains(actionVo.getAction())) {
                     returnActionSet.add(actionVo.getAction());
                 }
             } else {
                 if (StringUtils.equals(actionVo.getType(), DeployAppConfigActionType.OPERATION.getValue())) {
-                    paramActionSet.addAll(DeployAppConfigAction.getValueList().stream().filter(paramActionSet::contains).collect(Collectors.toList()));
+                    returnActionSet.addAll(DeployAppConfigAction.getValueList().stream().filter(needActionList::contains).collect(Collectors.toList()));
                 } else if (StringUtils.equals(actionVo.getType(), DeployAppConfigActionType.ENV.getValue())) {
                     if (envIdList == null) {
                         envIdList = checker.deployAppConfigMapper.getDeployAppEnvIdListByAppSystemIdAndModuleIdList(appSystemId, TenantContext.get().getDataDbName());
                     }
                     for (Long envId : envIdList) {
-                        if (paramActionSet.contains(envId.toString())) {
+                        if (needActionList.contains(envId.toString())) {
                             returnActionSet.add(envId.toString());
                         }
                     }
@@ -303,22 +329,15 @@ public class DeployAppAuthChecker {
                     }
                     if (CollectionUtils.isNotEmpty(scenarioList)) {
                         for (AutoexecCombopScenarioVo scenarioVo : scenarioList) {
-                            returnActionSet.add(scenarioVo.getScenarioName());
+                            if (needActionList.contains(scenarioVo.getScenarioName())) {
+                                returnActionSet.add(scenarioVo.getScenarioName());
+                            }
                         }
                     }
                 }
             }
         }
         return returnActionSet;
-    }
-
-
-    public static Map<Long, Set<String>> getBatchAuthorityActionMap(List<DeployAppAuthCheckVo> paramAuthCheckList) {
-
-        HashMap<Long, Set<String>> returnMap = new HashMap<>();
-
-
-        return returnMap;
     }
 
 }
