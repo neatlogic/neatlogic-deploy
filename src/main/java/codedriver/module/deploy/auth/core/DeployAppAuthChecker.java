@@ -8,10 +8,7 @@ import codedriver.framework.common.constvalue.UserType;
 import codedriver.framework.deploy.auth.DEPLOY_MODIFY;
 import codedriver.framework.deploy.constvalue.DeployAppConfigAction;
 import codedriver.framework.deploy.constvalue.DeployAppConfigActionType;
-import codedriver.framework.deploy.dto.app.DeployAppConfigAuthorityVo;
-import codedriver.framework.deploy.dto.app.DeployAppConfigVo;
-import codedriver.framework.deploy.dto.app.DeployAppEnvironmentVo;
-import codedriver.framework.deploy.dto.app.DeployPipelineConfigVo;
+import codedriver.framework.deploy.dto.app.*;
 import codedriver.framework.deploy.exception.DeployAppConfigNotFoundException;
 import codedriver.framework.dto.AuthenticationInfoVo;
 import codedriver.module.deploy.dao.mapper.DeployAppConfigMapper;
@@ -24,7 +21,9 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Component
@@ -112,11 +111,6 @@ public class DeployAppAuthChecker {
         }
         return returnObj;
     }
-
-    /**
-     * 批量校验是否拥有这些权限
-     */
-
 
     /**
      * 校验是否拥有操作权限
@@ -256,4 +250,72 @@ public class DeployAppAuthChecker {
         returnObj.put("scenarioAuthList", scenarioAuthList);
         return returnObj;
     }
+
+
+    /**
+     * 获取同一系统的多个权限的权限列表
+     */
+    public static Set<String> getHasAuthorityActionList(Long appSystemId, Set<String> paramActionSet) {
+        Set<String> returnActionSet = new HashSet<>();
+
+        if (appSystemId == null || CollectionUtils.isEmpty(paramActionSet)) {
+            return returnActionSet;
+        }
+        DeployAppAuthCheckVo checkVo = new DeployAppAuthCheckVo(appSystemId, new ArrayList<>(paramActionSet));
+        if (checkVo.getIsHasAllAuthority() == 1) {
+            returnActionSet = paramActionSet;
+        }
+        if (CollectionUtils.isEmpty(checker.deployAppConfigMapper.getAppConfigAuthorityListByAppSystemId(appSystemId))) {
+            returnActionSet = paramActionSet;
+        }
+        List<DeployAppConfigAuthorityActionVo> hasActionList = checker.deployAppConfigMapper.getDeployAppHasAuthorityActionList(checkVo);
+        if (CollectionUtils.isEmpty(hasActionList)) {
+            return returnActionSet;
+        }
+
+        List<Long> envIdList = null;
+        List<AutoexecCombopScenarioVo> scenarioList = null;
+        for (DeployAppConfigAuthorityActionVo actionVo : hasActionList) {
+            if (!StringUtils.equals(actionVo.getAction(), "all")) {
+                if (paramActionSet.contains(actionVo.getAction())) {
+                    returnActionSet.add(actionVo.getAction());
+                }
+            } else {
+                if (StringUtils.equals(actionVo.getType(), DeployAppConfigActionType.OPERATION.getValue())) {
+                    for (String operation : DeployAppConfigAction.getValueList()) {
+                        if (paramActionSet.contains(operation)) {
+                            returnActionSet.add(operation);
+                        }
+                    }
+                } else if (StringUtils.equals(actionVo.getType(), DeployAppConfigActionType.ENV.getValue())) {
+                    if (envIdList == null) {
+                        envIdList = checker.deployAppConfigMapper.getDeployAppEnvIdListByAppSystemIdAndModuleIdList(appSystemId, TenantContext.get().getDataDbName());
+                    }
+                    for (Long envId : envIdList) {
+                        if (paramActionSet.contains(envId.toString())) {
+                            returnActionSet.add(envId.toString());
+                        }
+                    }
+                } else if (StringUtils.equals(actionVo.getType(), DeployAppConfigActionType.SCENARIO.getValue())) {
+                    if (scenarioList == null) {
+                        DeployPipelineConfigVo pipelineConfigVo = checker.deployAppPipelineService.getDeployPipelineConfigVo(new DeployAppConfigVo(appSystemId));
+                        if (pipelineConfigVo == null) {
+                            throw new DeployAppConfigNotFoundException(appSystemId);
+                        }
+                        scenarioList = pipelineConfigVo.getScenarioList();
+                    }
+                    if (CollectionUtils.isNotEmpty(scenarioList)) {
+                        for (AutoexecCombopScenarioVo scenarioVo : scenarioList) {
+                            returnActionSet.add(scenarioVo.getScenarioName());
+                        }
+                    }
+                }
+            }
+        }
+        return returnActionSet;
+    }
+
+
+    public static
+
 }

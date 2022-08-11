@@ -407,6 +407,39 @@
         )
     </select>
 
+    <select id="getDeployAppEnvIdListByAppSystemIdAndModuleIdList"
+            resultType="long">
+        (
+        SELECT
+        a.`env_id` AS envId
+        <where>
+            a.`env_id` is not null
+            <choose>
+                <when test="appSystemId != null">
+                    AND a.`app_system_id` = #{appSystemId}
+                </when>
+                <otherwise>
+                    and a.`app_system_id` is not null
+                </otherwise>
+            </choose>
+            and a.`app_module_id` is not null
+        </where>
+        ) UNION
+        (
+        SELECT
+        cc.id AS envId
+        FROM
+        deploy_app_config_env dace
+        JOIN cmdb_cientity cc ON cc.id = dace.env_id
+        JOIN cmdb_cientity cce ON cce.id = dace.app_module_id
+        <where>
+            <if test="appSystemId != null">
+                dace.app_system_id = #{appSystemId}
+            </if>
+        </where>
+        )
+    </select>
+
     <resultMap id="deployAppModuleEnvMap" type="codedriver.framework.deploy.dto.app.DeployAppModuleEnvVo">
         <result column="appModuleId" property="id"/>
         <collection property="envList" ofType="codedriver.framework.cmdb.dto.resourcecenter.entity.AppEnvironmentVo">
@@ -1118,6 +1151,34 @@
         where `app_system_id` = #{systemId}
           and `app_module_id` = #{moduleId}
           and `env_id` = #{envId}
+    </select>
+
+    <select id="getDeployAppHasAuthorityActionList" resultType="codedriver.framework.deploy.dto.app.DeployAppConfigAuthorityActionVo">
+        select `action`,action_type as type
+        from deploy_app_config_authority
+        <where>
+            app_system_id = #{appSystemId}
+            AND
+            action_type = 'operation'
+            AND `action` IN
+            ('all'
+            <if test="authorityActionList != null and authorityActionList.size() > 0">,
+                <foreach collection="authorityActionList" item="item" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            )
+            AND auth_uuid IN
+            (
+            'alluser'
+            <if test="authUuidList != null and authUuidList.size() > 0">
+                ,
+                <foreach collection="authUuidList" item="item" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            )
+        </where>
     </select>
 
     <insert id="insertAppConfigAuthority">

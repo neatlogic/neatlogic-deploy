@@ -156,11 +156,15 @@ public interface DeployAppConfigMapper {
 
     List<Long> getHasEnvAppSystemIdListByAppSystemIdList(@Param("idList") List<Long> idList, @Param("schemaName") String schemaName);
 
+    List<Long> getDeployAppEnvIdListByAppSystemIdAndModuleIdList(@Param("appSystemId") Long appSystemId, @Param("schemaName") String schemaName);
+
     List<ResourceVo> getAppConfigEnvDatabaseResourceListByIdList(String sql);
 
     List<DeployAppModuleVo> getAppModuleListByIdList(String sql);
 
     List<DeployAppModuleVo> getAppModuleListBySystemIdAndEnvId(@Param("appSystemId") Long appSystemId, @Param("envId") Long envId, @Param("schemaName") String schemaName);
+
+    List<DeployAppConfigAuthorityActionVo> getDeployAppHasAuthorityActionList(DeployAppAuthCheckVo deployAppAuthCheckVo);
 
     void deleteAppConfigSystemFavoriteByAppSystemIdAndUserUuid(@Param("appSystemId") Long appSystemId, @Param("userUuid") String userUuid);
 
