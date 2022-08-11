@@ -20,10 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Component
@@ -254,6 +251,10 @@ public class DeployAppAuthChecker {
 
     /**
      * 获取同一系统的多个权限的权限列表
+     *
+     * @param appSystemId 系统id
+     * @param paramActionSet 校验的权限列表
+     * @return 通过校验的权限列表
      */
     public static Set<String> getHasAuthorityActionList(Long appSystemId, Set<String> paramActionSet) {
         Set<String> returnActionSet = new HashSet<>();
@@ -282,11 +283,7 @@ public class DeployAppAuthChecker {
                 }
             } else {
                 if (StringUtils.equals(actionVo.getType(), DeployAppConfigActionType.OPERATION.getValue())) {
-                    for (String operation : DeployAppConfigAction.getValueList()) {
-                        if (paramActionSet.contains(operation)) {
-                            returnActionSet.add(operation);
-                        }
-                    }
+                    paramActionSet.addAll(DeployAppConfigAction.getValueList().stream().filter(paramActionSet::contains).collect(Collectors.toList()));
                 } else if (StringUtils.equals(actionVo.getType(), DeployAppConfigActionType.ENV.getValue())) {
                     if (envIdList == null) {
                         envIdList = checker.deployAppConfigMapper.getDeployAppEnvIdListByAppSystemIdAndModuleIdList(appSystemId, TenantContext.get().getDataDbName());
@@ -316,6 +313,12 @@ public class DeployAppAuthChecker {
     }
 
 
-    public static
+    public static Map<Long, Set<String>> getBatchAuthorityActionMap(List<DeployAppAuthCheckVo> paramAuthCheckList) {
+
+        HashMap<Long, Set<String>> returnMap = new HashMap<>();
+
+
+        return returnMap;
+    }
 
 }
