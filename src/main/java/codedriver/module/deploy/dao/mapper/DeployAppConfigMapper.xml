@@ -1227,7 +1227,7 @@
         from deploy_app_config_authority
         where
         app_system_id in
-        <foreach collection="list" open="(" separator="," close=")" item="appSystemId">
+        <foreach collection="appSystemIdSet" open="(" separator="," close=")" item="appSystemId">
             #{appSystemId}
         </foreach>
     </select>

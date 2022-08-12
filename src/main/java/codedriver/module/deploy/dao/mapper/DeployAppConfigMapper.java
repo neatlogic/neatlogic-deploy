@@ -158,7 +158,7 @@ public interface DeployAppConfigMapper {
 
     List<Long> getDeployAppEnvIdListByAppSystemId(@Param("appSystemId") Long appSystemId, @Param("schemaName") String schemaName);
 
-    List<Long> getDeployAppHasAuthorityAppSystemIdListByAppSystemIdList(List<Long> paramSystemIdList);
+    List<Long> getDeployAppHasAuthorityAppSystemIdListByAppSystemIdList(@Param("appSystemIdSet") Set<Long> appSystemIdSet);
 
     List<ResourceVo> getAppConfigEnvDatabaseResourceListByIdList(String sql);
 
