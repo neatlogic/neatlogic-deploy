@@ -24,6 +24,8 @@ public interface DeployBatchJobMapper {
 
     List<AutoexecJobVo> getJobsByGroupIdAndWithoutStatus(@Param("groupId") Long groupId, @Param("statusList") List<String> statusList);
 
+    DeployJobVo getBatchJobByGroupId(@Param("groupId") Long groupId);
+
     List<LaneVo> getLaneListByBatchJobId(Long batchJobId);
 
     LaneGroupVo getLaneGroupByGroupId(Long groupId);

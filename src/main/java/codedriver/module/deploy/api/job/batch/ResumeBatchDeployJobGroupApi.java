@@ -8,11 +8,15 @@ package codedriver.module.deploy.api.job.batch;
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.deploy.auth.DEPLOY_BASE;
+import codedriver.framework.deploy.dto.job.DeployJobVo;
 import codedriver.framework.deploy.dto.job.LaneGroupVo;
+import codedriver.framework.deploy.exception.DeployBatchJobCannotExecuteException;
 import codedriver.framework.deploy.exception.DeployBatchJobGroupNotFoundException;
+import codedriver.framework.deploy.exception.DeployBatchJobNotFoundException;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
+import codedriver.module.deploy.auth.core.BatchDeployAuthChecker;
 import codedriver.module.deploy.dao.mapper.DeployBatchJobMapper;
 import codedriver.module.deploy.service.DeployBatchJobService;
 import com.alibaba.fastjson.JSONObject;
@@ -59,6 +63,13 @@ public class ResumeBatchDeployJobGroupApi extends PrivateApiComponentBase {
         LaneGroupVo currentGroup = deployBatchJobMapper.getLaneGroupByGroupId(currentGroupId);
         if (currentGroup == null) {
             throw new DeployBatchJobGroupNotFoundException(currentGroupId);
+        }
+        DeployJobVo batchJobVo = deployBatchJobMapper.getBatchJobByGroupId(currentGroupId);
+        if (batchJobVo == null) {
+            throw new DeployBatchJobNotFoundException();
+        }
+        if (!BatchDeployAuthChecker.isCanGroupExecute(batchJobVo)) {
+            throw new DeployBatchJobCannotExecuteException();
         }
         currentGroup.setBatchJobAction(jsonObj.getString("batchJobAction"));
         currentGroup.setJobAction(jsonObj.getString("jobAction"));

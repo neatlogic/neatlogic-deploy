@@ -5,25 +5,19 @@
 
 package codedriver.module.deploy.api.job.batch;
 
-import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.auth.core.AuthAction;
-import codedriver.framework.auth.core.AuthActionChecker;
-import codedriver.framework.autoexec.constvalue.JobStatus;
-import codedriver.framework.autoexec.constvalue.ReviewStatus;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.deploy.auth.DEPLOY_BASE;
-import codedriver.framework.deploy.auth.DEPLOY_MODIFY;
 import codedriver.framework.deploy.dto.job.DeployJobVo;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
+import codedriver.module.deploy.auth.core.BatchDeployAuthChecker;
 import codedriver.module.deploy.dao.mapper.DeployJobMapper;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.Arrays;
-import java.util.Objects;
 
 /**
  * @author lvzk
@@ -54,26 +48,11 @@ public class GetBatchDeployJobApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         DeployJobVo deployJobVo = deployJobMapper.getBatchDeployJobById(jsonObj.getLong("id"));
-        if (!Objects.equals(JobStatus.CHECKED.getValue(), deployJobVo.getStatus())) {
-            if (Objects.equals(deployJobVo.getReviewStatus(), ReviewStatus.PASSED.getValue())) {
-                if (!Objects.equals(JobStatus.RUNNING.getValue(), deployJobVo.getStatus())) {
-                    if (UserContext.get().getUserUuid().equals(deployJobVo.getExecUser())) {
-                        deployJobVo.setIsCanExecute(1);
-                    }
-                }
-                int authCount = deployJobMapper.getDeployJobAuthCountByJobIdAndUuid(deployJobVo.getId(), UserContext.get().getUserUuid(true));
-                if ((authCount > 0 || AuthActionChecker.checkByUserUuid(UserContext.get().getUserUuid(true), DEPLOY_MODIFY.class.getSimpleName())) && !Objects.equals(deployJobVo.getExecUser(), UserContext.get().getUserUuid(true))) {
-                    deployJobVo.setIsCanTakeOver(1);
-                }
-            }
-            if (!Objects.equals(deployJobVo.getReviewStatus(), ReviewStatus.WAITING.getValue())) {
-                if (Arrays.asList(JobStatus.PENDING.getValue(), JobStatus.SAVED.getValue(), JobStatus.COMPLETED.getValue(), JobStatus.FAILED.getValue()).contains(deployJobVo.getStatus())
-                        && (AuthActionChecker.checkByUserUuid(UserContext.get().getUserUuid(true), DEPLOY_MODIFY.class.getSimpleName()) || Objects.equals(deployJobVo.getExecUser(), UserContext.get().getUserUuid(true)))) {
-                    deployJobVo.setIsCanEdit(1);
-                }
-            }
-        }
-
+        deployJobVo.setIsCanExecute(BatchDeployAuthChecker.isCanExecute(deployJobVo) ? 1 : 0);
+        deployJobVo.setIsCanTakeOver(BatchDeployAuthChecker.isCanTakeOver(deployJobVo) ? 1 : 0);
+        deployJobVo.setIsCanEdit(BatchDeployAuthChecker.isCanEdit(deployJobVo) ? 1 : 0);
+        deployJobVo.setIsCanCheck(BatchDeployAuthChecker.isCanCheck(deployJobVo) ? 1 : 0);
+        deployJobVo.setIsCanGroupExecute(BatchDeployAuthChecker.isCanGroupExecute(deployJobVo) ? 1 : 0);
         return deployJobVo;
     }
 
