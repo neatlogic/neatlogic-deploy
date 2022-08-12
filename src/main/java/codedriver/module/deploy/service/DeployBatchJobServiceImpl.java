@@ -60,6 +60,7 @@ public class DeployBatchJobServiceImpl implements DeployBatchJobService, IDeploy
         if (!Objects.equals(loginUserUuid, batchJobVo.getExecUser())) {
             throw new DeployBatchJobCannotExecuteException();
         }
+        batchJobVo.setIsFirstFire(1);
         batchJobVo.setStatus(JobStatus.RUNNING.getValue());
         autoexecJobMapper.updateJobStatus(batchJobVo);
         //循环泳道，获取每个泳道第一个组fire

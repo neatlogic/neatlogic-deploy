@@ -51,6 +51,8 @@ public interface DeployJobMapper {
 
     DeployJobContentVo getDeployJobContent(String contentHash);
 
+    int getDeployJobAuthCountByJobIdAndUuid(@Param("jobId") Long id, @Param("userUuid") String userUuid);
+
     void insertDeployJob(DeployJobVo deployJobVo);
 
     void insertAutoExecJob(DeployJobVo deployJobVo);
