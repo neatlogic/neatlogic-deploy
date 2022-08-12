@@ -16,6 +16,8 @@ public interface DeployEnvVersionMapper {
 
     List<DeployEnvVersionAuditVo> getDeployEnvVersionAuditBySystemId(Long appSystemId);
 
+    List<DeployEnvVersionAuditVo> getDeployEnvVersionAuditBySystemIdAndModueIdAndEnvId(@Param("appSystemId") Long appSystemId, @Param("appModuleId") Long appModuleId, @Param("envId") Long envId);
+
     int insertDeployEnvVersion(DeployEnvVersionVo vo);
 
     int insertDeployEnvVersionAudit(DeployEnvVersionAuditVo vo);

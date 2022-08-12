@@ -42,4 +42,5 @@ public interface DeployBatchJobMapper {
 
     void updateGroupStatus(@Param("group") LaneGroupVo groupVo);
 
+    void updateBatchJobStatusByGroupId(@Param("groupId") Long groupId, @Param("status") String status);
 }

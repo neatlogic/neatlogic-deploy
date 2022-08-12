@@ -151,6 +151,26 @@
         </collection>
     </resultMap>
 
+    <select id="getDeployVersionBaseInfoByIdList" parameterType="java.util.List"
+            resultType="codedriver.framework.deploy.dto.version.DeployVersionVo">
+        select id,
+               version,
+               app_system_id   as appSystemId,
+               app_system_name as appSystemName,
+               app_module_id   as appModuleId,
+               app_module_name as appModuleName,
+               is_freeze       as isFreeze,
+               fcu,
+               fcd,
+               lcu,
+               lcd
+        from deploy_version
+        where id in
+        <foreach collection="list" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </select>
+
     <select id="getDeployVersionByIdList" resultMap="deployVersionMap">
         select
         dv.id,

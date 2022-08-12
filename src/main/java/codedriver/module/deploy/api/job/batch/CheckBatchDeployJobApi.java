@@ -6,9 +6,12 @@
 package codedriver.module.deploy.api.job.batch;
 
 import codedriver.framework.auth.core.AuthAction;
+import codedriver.framework.autoexec.constvalue.JobAction;
 import codedriver.framework.autoexec.constvalue.JobStatus;
 import codedriver.framework.autoexec.dao.mapper.AutoexecJobMapper;
 import codedriver.framework.autoexec.dto.job.AutoexecJobVo;
+import codedriver.framework.autoexec.job.action.core.AutoexecJobActionHandlerFactory;
+import codedriver.framework.autoexec.job.action.core.IAutoexecJobActionHandler;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.deploy.auth.DEPLOY_BASE;
 import codedriver.framework.restful.annotation.*;
@@ -56,11 +59,16 @@ public class CheckBatchDeployJobApi extends PrivateApiComponentBase {
     public Object myDoService(JSONObject jsonObj) throws Exception {
         Long batchJobId = jsonObj.getLong("id");
         List<AutoexecJobVo> jobVoList = autoexecJobMapper.getJobListLockByParentIdAndStatus(batchJobId, JobStatus.COMPLETED.getValue());
-        autoexecJobMapper.updateJobStatus(new AutoexecJobVo(batchJobId,JobStatus.CHECKED.getValue()));
         if(CollectionUtils.isNotEmpty(jobVoList)){
             for (AutoexecJobVo jobVo : jobVoList){
-                autoexecJobMapper.updateJobStatus(new AutoexecJobVo(jobVo.getId(),JobStatus.CHECKED.getValue()));
+                jobVo.setAction(JobAction.CHECK.getValue());
+                IAutoexecJobActionHandler action = AutoexecJobActionHandlerFactory.getAction(JobAction.CHECK.getValue());
+                action.doService(jobVo);
             }
+        }
+        jobVoList = autoexecJobMapper.getJobListByParentIdAndNotInStatus(batchJobId, JobStatus.CHECKED.getValue());
+        if(CollectionUtils.isEmpty(jobVoList)){
+            autoexecJobMapper.updateJobStatus(new AutoexecJobVo(batchJobId,JobStatus.CHECKED.getValue()));
         }
         return null;
     }

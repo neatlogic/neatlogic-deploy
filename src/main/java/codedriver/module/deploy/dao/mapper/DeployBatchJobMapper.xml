@@ -72,7 +72,7 @@
     </select>
     <select id="getJobsByGroupIdAndWithoutStatus"
             resultType="codedriver.framework.autoexec.dto.job.AutoexecJobVo">
-        select  e.id as id,
+        select e.id as id,
         e.`name` as name,
         e.`status` as status,
         e.error_msg as errorMsg,
@@ -131,5 +131,14 @@
             deploy_job_lane_group g
         SET g.status = #{group.status}
         WHERE g.id = #{group.id}
+    </update>
+    <update id="updateBatchJobStatusByGroupId">
+        update autoexec_job a
+            left join deploy_job_lane b on b.batch_job_id = a.id
+            left join deploy_job_lane_group c on b.id = c.lane_id
+        set a.status = #{status},
+            b.status = #{status},
+            c.status = #{status}
+        where c.id = #{groupId}
     </update>
 </mapper>
