@@ -42,7 +42,7 @@ public class GetBatchDeployJobStatusApi extends PrivateApiComponentBase {
     @Description(desc = "获取单个批量作业状态信息接口，主要用于刷新状态")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
-        return deployJobMapper.getBatchDeployJobStatusById(jsonObj.getLong("id"));
+        return deployJobMapper.getJobBaseInfoById(jsonObj.getLong("id"));
     }
 
     @Override
