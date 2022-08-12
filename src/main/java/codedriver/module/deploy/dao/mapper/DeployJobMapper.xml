@@ -326,9 +326,12 @@
         </collection>
     </resultMap>
 
-    <select id="getBatchDeployJobStatusById" parameterType="java.lang.Long"
+    <select id="getJobBaseInfoById" parameterType="java.lang.Long"
             resultType="codedriver.framework.deploy.dto.job.DeployJobVo">
-        SELECT id, name, status
+        SELECT id,
+               name,
+               status,
+               parent_id as parentId
         FROM autoexec_job
         WHERE id = #{value}
     </select>

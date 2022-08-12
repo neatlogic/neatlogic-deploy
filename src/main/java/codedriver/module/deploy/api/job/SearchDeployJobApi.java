@@ -56,6 +56,7 @@ public class SearchDeployJobApi extends PrivateApiComponentBase {
     @Input({@Param(name = "appSystemId", type = ApiParamType.LONG, desc = "应用系统id"),
             @Param(name = "appModuleId", type = ApiParamType.LONG, desc = "应用模块id"),
             @Param(name = "envId", type = ApiParamType.LONG, desc = "环境id"),
+            @Param(name = "parentId", type = ApiParamType.LONG, desc = "父作业id"),
             @Param(name = "statusList", type = ApiParamType.JSONARRAY, desc = "作业状态"),
             @Param(name = "typeIdList", type = ApiParamType.JSONARRAY, desc = "组合工具类型"),
             @Param(name = "idList", type = ApiParamType.JSONARRAY, desc = "id列表，用于精确查找作业刷新状态"),
