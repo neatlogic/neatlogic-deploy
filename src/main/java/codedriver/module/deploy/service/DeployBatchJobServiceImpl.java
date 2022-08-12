@@ -171,6 +171,7 @@ public class DeployBatchJobServiceImpl implements DeployBatchJobService, IDeploy
                     IAutoexecJobActionHandler refireAction = AutoexecJobActionHandlerFactory.getAction(JobAction.REFIRE.getValue());
                     jobVo.setPassThroughEnv(passThroughEnv);
                     jobVo.setIsTakeOver(1);
+                    jobVo.setExecUser(UserContext.get().getUserUuid(true));
                     refireAction.doService(jobVo);
                 } catch (Exception ex) {
                     logger.error("Fire job by batch failed," + ex.getMessage(), ex);
