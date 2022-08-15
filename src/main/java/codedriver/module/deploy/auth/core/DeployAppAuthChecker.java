@@ -40,6 +40,8 @@ public class DeployAppAuthChecker {
         checker = this;
     }
 
+    static List<String> actionTypeList = DeployAppConfigActionType.getValueList();
+
     /**
      * 根据系统id获取当前登录人所有权限
      *
@@ -316,24 +318,29 @@ public class DeployAppAuthChecker {
         if (CollectionUtils.isEmpty(hasActionList)) {
             return returnActionSet;
         }
-        List<String> needCheckActionStringList = needCheckActionList.stream().map(DeployAppConfigAuthorityActionVo::getAction).collect(Collectors.toList());
+
+        Map<String, List<DeployAppConfigAuthorityActionVo>> needAuthorityActionVoTypeMap = needCheckActionList.stream().collect(Collectors.groupingBy(DeployAppConfigAuthorityActionVo::getType));
+        Map<String, List<DeployAppConfigAuthorityActionVo>> hasAuthorityActionVoTypeMap = hasActionList.stream().collect(Collectors.groupingBy(DeployAppConfigAuthorityActionVo::getType));
+
+        List<String> allActionTypeList = new ArrayList<>();
+        for (String actionType : actionTypeList) {
+            List<DeployAppConfigAuthorityActionVo> actionTypeActionVoList = hasAuthorityActionVoTypeMap.get(actionType);
+            if (CollectionUtils.isEmpty(actionTypeActionVoList)) {
+                continue;
+            }
+            if (CollectionUtils.isNotEmpty(actionTypeActionVoList.stream().filter(e -> StringUtils.equals(e.getAction(), "all")).collect(Collectors.toList()))) {
+                allActionTypeList.add(actionType);
+                if (StringUtils.equals(actionType, actionType) && CollectionUtils.isNotEmpty(needAuthorityActionVoTypeMap.get(actionType))) {
+                    returnActionSet.addAll(needAuthorityActionVoTypeMap.get(actionType).stream().map(DeployAppConfigAuthorityActionVo::getTypeActionString).collect(Collectors.toList()));
+                }
+            }
+        }
+
         for (DeployAppConfigAuthorityActionVo actionVo : hasActionList) {
-            if (!StringUtils.equals(actionVo.getAction(), "all")) {
-                if (needCheckActionStringList.contains(actionVo.getAction())) {
-                    returnActionSet.add(actionVo.getAction());
-                }
-            } else {
-                Map<String, List<DeployAppConfigAuthorityActionVo>> needAuthorityActionVoTypeMap = needCheckActionList.stream().collect(Collectors.groupingBy(DeployAppConfigAuthorityActionVo::getType));
-                if (StringUtils.equals(actionVo.getType(), DeployAppConfigActionType.OPERATION.getValue()) && needAuthorityActionVoTypeMap.containsKey(actionVo.getType())) {
-                    returnActionSet.addAll(DeployAppConfigAction.getValueList().stream().filter(needCheckActionStringList::contains).collect(Collectors.toList()));
-                } else if (StringUtils.equals(actionVo.getType(), DeployAppConfigActionType.ENV.getValue()) && needAuthorityActionVoTypeMap.containsKey(actionVo.getType())) {
-                    returnActionSet.addAll(needAuthorityActionVoTypeMap.get(DeployAppConfigActionType.ENV.getValue()).stream().map(DeployAppConfigAuthorityActionVo::getAction).collect(Collectors.toList()));
-                } else if (StringUtils.equals(actionVo.getType(), DeployAppConfigActionType.SCENARIO.getValue()) && needAuthorityActionVoTypeMap.containsKey(actionVo.getType())) {
-                    returnActionSet.addAll(needAuthorityActionVoTypeMap.get(DeployAppConfigActionType.SCENARIO.getValue()).stream().map(DeployAppConfigAuthorityActionVo::getAction).collect(Collectors.toList()));
-                }
+            if (!allActionTypeList.contains(actionVo.getType())) {
+                returnActionSet.add(actionVo.getTypeActionString());
             }
         }
         return returnActionSet;
     }
-
 }
