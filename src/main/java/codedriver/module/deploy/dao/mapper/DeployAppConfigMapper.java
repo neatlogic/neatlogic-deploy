@@ -114,6 +114,8 @@ public interface DeployAppConfigMapper {
 
     Integer deleteAppEnvAutoConfig(DeployAppEnvAutoConfigVo deployAppEnvAutoConfigVo);
 
+    Integer deleteAppEnvAutoConfigByAppSystemIdAndAppModuleIdAndEnvId(@Param("appSystemId") Long appSystemId, @Param("appModuleId") Long appModuleId, @Param("envId") Long envId);
+
     Integer deleteAppConfigDraft(DeployAppConfigVo deployAppConfigDraftVo);
 
     Integer getAppSystemIdListCount(DeployResourceSearchVo searchVo);
@@ -156,11 +158,19 @@ public interface DeployAppConfigMapper {
 
     List<Long> getHasEnvAppSystemIdListByAppSystemIdList(@Param("idList") List<Long> idList, @Param("schemaName") String schemaName);
 
+    List<Long> getDeployAppEnvIdListByAppSystemId(@Param("appSystemId") Long appSystemId, @Param("schemaName") String schemaName);
+
+    List<Long> getDeployAppHasAuthorityAppSystemIdListByAppSystemIdList(@Param("appSystemIdSet") Set<Long> appSystemIdSet);
+
     List<ResourceVo> getAppConfigEnvDatabaseResourceListByIdList(String sql);
 
     List<DeployAppModuleVo> getAppModuleListByIdList(String sql);
 
     List<DeployAppModuleVo> getAppModuleListBySystemIdAndEnvId(@Param("appSystemId") Long appSystemId, @Param("envId") Long envId, @Param("schemaName") String schemaName);
+
+    List<DeployAppConfigAuthorityActionVo> getDeployAppAuthorityActionList(DeployAppAuthCheckVo deployAppAuthCheckVo);
+
+    List<DeployAppAuthCheckVo> getBatchDeployAppAuthorityActionList(List<DeployAppAuthCheckVo> deployAppAuthCheckVoList);
 
     void deleteAppConfigSystemFavoriteByAppSystemIdAndUserUuid(@Param("appSystemId") Long appSystemId, @Param("userUuid") String userUuid);
 

@@ -79,7 +79,7 @@ public class ListDeployAppConfigAuthorityApi extends PrivateApiComponentBase {
         for (AutoexecCombopScenarioVo scenarioVo : pipelineConfigVo.getScenarioList()) {
             JSONObject scenarioValueText = new JSONObject();
             scenarioValueText.put("text", scenarioVo.getScenarioName());
-            scenarioValueText.put("value", scenarioVo.getScenarioName());
+            scenarioValueText.put("value", scenarioVo.getScenarioId());
             scenarioAuthList.add(scenarioValueText);
         }
         returnObj.put("scenarioAuthList", scenarioAuthList);

@@ -407,6 +407,40 @@
         )
     </select>
 
+    <select id="getDeployAppEnvIdListByAppSystemId"
+            resultType="long">
+        (
+        SELECT
+        a.`env_id` AS envId
+        FROM ${schemaName}.`scence_appinstance_env_appmodule_appsystem` a
+        <where>
+            a.`env_id` is not null
+            <choose>
+                <when test="appSystemId != null">
+                    AND a.`app_system_id` = #{appSystemId}
+                </when>
+                <otherwise>
+                    and a.`app_system_id` is not null
+                </otherwise>
+            </choose>
+            and a.`app_module_id` is not null
+        </where>
+        ) UNION
+        (
+        SELECT
+        cc.id AS envId
+        FROM
+        deploy_app_config_env dace
+        JOIN cmdb_cientity cc ON cc.id = dace.env_id
+        JOIN cmdb_cientity cce ON cce.id = dace.app_module_id
+        <where>
+            <if test="appSystemId != null">
+                dace.app_system_id = #{appSystemId}
+            </if>
+        </where>
+        )
+    </select>
+
     <resultMap id="deployAppModuleEnvMap" type="codedriver.framework.deploy.dto.app.DeployAppModuleEnvVo">
         <result column="appModuleId" property="id"/>
         <collection property="envList" ofType="codedriver.framework.cmdb.dto.resourcecenter.entity.AppEnvironmentVo">
@@ -1125,6 +1159,80 @@
           and `env_id` = #{envId}
     </select>
 
+    <select id="getDeployAppAuthorityActionList"
+            resultType="codedriver.framework.deploy.dto.app.DeployAppConfigAuthorityActionVo">
+        select `action`,action_type as type
+        from deploy_app_config_authority
+        <where>
+            app_system_id = #{appSystemId}
+            AND `action` IN
+            ('all'
+            <if test="authorityActionList != null and authorityActionList.size() > 0">,
+                <foreach collection="authorityActionList" item="item" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            )
+            AND auth_uuid IN
+            (
+            'alluser'
+            <if test="authUuidList != null and authUuidList.size() > 0">
+                ,
+                <foreach collection="authUuidList" item="item" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            )
+        </where>
+    </select>
+
+    <resultMap id="DeployAppAuthCheckVoMap" type="codedriver.framework.deploy.dto.app.DeployAppAuthCheckVo">
+        <result column="appSystemId" property="appSystemId"/>
+        <collection property="actionVoList"
+                    ofType="codedriver.framework.deploy.dto.app.DeployAppConfigAuthorityActionVo">
+            <result column="actionType" property="type"/>
+            <result column="action" property="action"/>
+        </collection>
+    </resultMap>
+
+    <select id="getBatchDeployAppAuthorityActionList" resultMap="DeployAppAuthCheckVoMap">
+        select app_system_id as appSystemId,`action`,action_type as actionType
+        from deploy_app_config_authority
+        <where>
+            <foreach collection="list" item="vo" separator="or">
+                ( app_system_id = #{vo.appSystemId}
+                AND `action` IN
+                ('all'
+                <if test="vo.authorityActionList != null and vo.authorityActionList.size() > 0">,
+                    <foreach collection="vo.authorityActionList" item="action" separator=",">
+                        #{action}
+                    </foreach>
+                </if>
+                )
+                AND auth_uuid IN
+                (
+                'alluser'
+                <if test="vo.authUuidList != null and vo.authUuidList.size() > 0">
+                    ,
+                    <foreach collection="vo.authUuidList" item="uuid" separator=",">
+                        #{uuid}
+                    </foreach>
+                </if>
+                ))
+            </foreach>
+        </where>
+    </select>
+
+    <select id="getDeployAppHasAuthorityAppSystemIdListByAppSystemIdList" resultType="java.lang.Long">
+        select app_system_id
+        from deploy_app_config_authority
+        where
+        app_system_id in
+        <foreach collection="appSystemIdSet" open="(" separator="," close=")" item="appSystemId">
+            #{appSystemId}
+        </foreach>
+    </select>
+
     <insert id="insertAppConfigAuthority">
         INSERT INTO `deploy_app_config_authority` (`app_system_id`,
         `auth_type`,
@@ -1308,7 +1416,7 @@
             <if test="envId != 0L">
                 AND `env_id` = #{envId}
             </if>
-            <if test="instanceId != 0L">
+            <if test="instanceId != null">
                 and `instance_id` = #{instanceId}
             </if>
             <if test="lcd != null">
@@ -1317,13 +1425,25 @@
         </where>
     </delete>
 
+    <delete id="deleteAppEnvAutoConfigByAppSystemIdAndAppModuleIdAndEnvId">
+        delete
+        from deploy_app_env_auto_config
+        <where>
+            `app_system_id` = #{appSystemId}
+            <if test="appModuleId != 0L">
+                AND `app_module_id` = #{appModuleId}
+            </if>
+            <if test="envId != 0L">
+                AND `env_id` = #{envId}
+            </if>
+        </where>
+    </delete>
+
     <delete id="deleteAppConfigDraft" parameterType="codedriver.framework.deploy.dto.app.DeployAppConfigVo">
         DELETE
         FROM `deploy_app_config_draft`
         <where>
-            <if test="appSystemId != null">
-                AND `app_system_id` = #{appSystemId}
-            </if>
+            `app_system_id` = #{appSystemId}
             <if test="appModuleId != 0L">
                 AND `app_module_id` = #{appModuleId}
             </if>
@@ -1336,9 +1456,7 @@
     <delete id="deleteAppConfigEnv">
         DELETE FROM `deploy_app_config_env`
         <where>
-            <if test="appSystemId != null">
-                AND `app_system_id` = #{appSystemId}
-            </if>
+            `app_system_id` = #{appSystemId}
             <if test="appModuleId != 0L">
                 AND `app_module_id` = #{appModuleId}
             </if>
@@ -1358,9 +1476,7 @@
     <delete id="deleteAppConfig">
         DELETE FROM `deploy_app_config`
         <where>
-            <if test="appSystemId != null">
-                AND `app_system_id` = #{appSystemId}
-            </if>
+            `app_system_id` = #{appSystemId}
             <if test="appModuleId != 0L">
                 AND `app_module_id` = #{appModuleId}
             </if>
@@ -1379,9 +1495,7 @@
     <delete id="deleteAppModuleRunnerGroup">
         DELETE FROM `deploy_app_module_runner_group`
         <where>
-            <if test="appSystemId != null">
-                AND `app_system_id` = #{appSystemId}
-            </if>
+            `app_system_id` = #{appSystemId}
             <if test="appModuleId != 0L">
                 AND `app_module_id` = #{appModuleId}
             </if>
@@ -1414,9 +1528,7 @@
         FROM
         deploy_app_config_env_db
         <where>
-            <if test="appSystemId != null">
-                AND `app_system_id` = #{appSystemId}
-            </if>
+            `app_system_id` = #{appSystemId}
             <if test="appModuleId != 0L">
                 AND `app_module_id` = #{appModuleId}
             </if>
@@ -1431,9 +1543,7 @@
         delete
         from deploy_app_config_env_db
         <where>
-            <if test="appSystemId != null">
-                AND `app_system_id` = #{appSystemId}
-            </if>
+            `app_system_id` = #{appSystemId}
             <if test="appModuleId != 0L">
                 AND `app_module_id` = #{appModuleId}
             </if>
