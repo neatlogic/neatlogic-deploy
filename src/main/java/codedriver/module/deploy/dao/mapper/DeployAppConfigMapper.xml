@@ -1159,7 +1159,8 @@
           and `env_id` = #{envId}
     </select>
 
-    <select id="getDeployAppAuthorityActionList" resultType="codedriver.framework.deploy.dto.app.DeployAppConfigAuthorityActionVo">
+    <select id="getDeployAppAuthorityActionList"
+            resultType="codedriver.framework.deploy.dto.app.DeployAppConfigAuthorityActionVo">
         select `action`,action_type as type
         from deploy_app_config_authority
         <where>
@@ -1199,7 +1200,7 @@
         from deploy_app_config_authority
         <where>
             <foreach collection="list" item="vo" separator="or">
-             ( app_system_id = #{vo.appSystemId}
+                ( app_system_id = #{vo.appSystemId}
                 AND `action` IN
                 ('all'
                 <if test="vo.authorityActionList != null and vo.authorityActionList.size() > 0">,
@@ -1428,9 +1429,7 @@
         delete
         from deploy_app_env_auto_config
         <where>
-            <if test="appSystemId != null">
-                AND `app_system_id` = #{appSystemId}
-            </if>
+            `app_system_id` = #{appSystemId}
             <if test="appModuleId != 0L">
                 AND `app_module_id` = #{appModuleId}
             </if>
@@ -1444,9 +1443,7 @@
         DELETE
         FROM `deploy_app_config_draft`
         <where>
-            <if test="appSystemId != null">
-                AND `app_system_id` = #{appSystemId}
-            </if>
+            `app_system_id` = #{appSystemId}
             <if test="appModuleId != 0L">
                 AND `app_module_id` = #{appModuleId}
             </if>
@@ -1459,9 +1456,7 @@
     <delete id="deleteAppConfigEnv">
         DELETE FROM `deploy_app_config_env`
         <where>
-            <if test="appSystemId != null">
-                AND `app_system_id` = #{appSystemId}
-            </if>
+            `app_system_id` = #{appSystemId}
             <if test="appModuleId != 0L">
                 AND `app_module_id` = #{appModuleId}
             </if>
@@ -1481,9 +1476,7 @@
     <delete id="deleteAppConfig">
         DELETE FROM `deploy_app_config`
         <where>
-            <if test="appSystemId != null">
-                AND `app_system_id` = #{appSystemId}
-            </if>
+            `app_system_id` = #{appSystemId}
             <if test="appModuleId != 0L">
                 AND `app_module_id` = #{appModuleId}
             </if>
@@ -1502,9 +1495,7 @@
     <delete id="deleteAppModuleRunnerGroup">
         DELETE FROM `deploy_app_module_runner_group`
         <where>
-            <if test="appSystemId != null">
-                AND `app_system_id` = #{appSystemId}
-            </if>
+            `app_system_id` = #{appSystemId}
             <if test="appModuleId != 0L">
                 AND `app_module_id` = #{appModuleId}
             </if>
@@ -1537,9 +1528,7 @@
         FROM
         deploy_app_config_env_db
         <where>
-            <if test="appSystemId != null">
-                AND `app_system_id` = #{appSystemId}
-            </if>
+            `app_system_id` = #{appSystemId}
             <if test="appModuleId != 0L">
                 AND `app_module_id` = #{appModuleId}
             </if>
@@ -1554,9 +1543,7 @@
         delete
         from deploy_app_config_env_db
         <where>
-            <if test="appSystemId != null">
-                AND `app_system_id` = #{appSystemId}
-            </if>
+            `app_system_id` = #{appSystemId}
             <if test="appModuleId != 0L">
                 AND `app_module_id` = #{appModuleId}
             </if>

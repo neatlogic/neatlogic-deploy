@@ -40,7 +40,7 @@ public class DeployAppAuthChecker {
         checker = this;
     }
 
-    static List<String> actionTypeList = DeployAppConfigActionType.getValueList();
+    private final static List<String> actionTypeList = DeployAppConfigActionType.getValueList();
 
     /**
      * 根据系统id获取当前登录人所有权限
@@ -241,7 +241,7 @@ public class DeployAppAuthChecker {
      * 校验同一系统的多个权限的权限列表，并返回拥有的权限
      *
      * @param appSystemId     系统id
-     * @param paramActionList 校验的权限列表
+     * @param paramActionList 校验的权限列表 需要拼接actionType前缀，如：operation#view env#481856650534925
      * @return 通过校验的权限列表
      */
     public static Set<String> checkAuthorityActionList(Long appSystemId, List<String> paramActionList) {
@@ -268,7 +268,7 @@ public class DeployAppAuthChecker {
     /**
      * 校验多个系统的不同权限，并返回拥有的权限
      *
-     * @param paramAuthCheckSetMap 入参
+     * @param paramAuthCheckSetMap 入参 Map的key为appSystemId ，value的Set<String>是校验的权限列表，需要拼接actionType前缀，如：operation#view env#481856650534925
      * @return 拥有的权限
      */
     public static Map<Long, Set<String>> checkBatchAuthorityActionList(Map<Long, Set<String>> paramAuthCheckSetMap) {
