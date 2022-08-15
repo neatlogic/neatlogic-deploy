@@ -255,6 +255,7 @@ public class DeployAppAuthChecker {
         if (CollectionUtils.isEmpty(checker.deployAppConfigMapper.getAppConfigAuthorityListByAppSystemId(appSystemId))) {
             returnActionSet = new HashSet<>(paramActionList);
         }
+        checkVo.setAuthorityActionList(new ArrayList<>(DeployAppConfigActionType.getActionList(checkVo.getAuthorityActionList())));
         List<DeployAppConfigAuthorityActionVo> hasActionList = checker.deployAppConfigMapper.getDeployAppAuthorityActionList(checkVo);
         if (CollectionUtils.isEmpty(hasActionList)) {
             return returnActionSet;
