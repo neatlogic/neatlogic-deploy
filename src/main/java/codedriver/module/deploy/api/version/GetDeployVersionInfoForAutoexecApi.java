@@ -57,11 +57,11 @@ public class GetDeployVersionInfoForAutoexecApi extends PrivateApiComponentBase 
         Integer buildNo = paramObj.getInteger("buildNo");
         DeployVersionVo versionVo = deployVersionMapper.getDeployVersionBaseInfoBySystemIdAndModuleIdAndVersion(new DeployVersionVo(version, sysId, moduleId));
         if (versionVo == null) {
-            throw new DeployVersionNotFoundException(version);
+            return null;
         }
         DeployVersionBuildNoVo buildNoVo = deployVersionMapper.getDeployVersionBuildNoByVersionIdAndBuildNo(versionVo.getId(), buildNo);
         if (buildNoVo == null) {
-            throw new DeployVersionBuildNoNotFoundException(versionVo.getVersion(), buildNo);
+            return null;
         }
         JSONObject result = new JSONObject();
         result.put("version", version);

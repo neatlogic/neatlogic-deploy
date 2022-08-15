@@ -68,6 +68,10 @@ public class UpdateDeployVersionInfoForAutoexecApi extends PrivateApiComponentBa
         if (versionVo == null) {
             throw new DeployVersionNotFoundException(version);
         }
+        DeployVersionBuildNoVo buildNoVo = deployVersionMapper.getDeployVersionBuildNoByVersionIdAndBuildNo(versionVo.getId(), buildNo);
+        if (buildNoVo == null) {
+            throw new DeployVersionBuildNoNotFoundException(versionVo.getVersion(), buildNo);
+        }
         String status = verInfo.getString("status");
         DeployVersionBuildNoVo updateBuildNo = new DeployVersionBuildNoVo();
         updateBuildNo.setVersionId(versionVo.getId());
@@ -88,10 +92,6 @@ public class UpdateDeployVersionInfoForAutoexecApi extends PrivateApiComponentBa
             updateVo.setIsCompiled(0);
         }
         deployVersionMapper.updateDeployVersionInfoById(updateVo);
-        DeployVersionBuildNoVo buildNoVo = deployVersionMapper.getDeployVersionBuildNoByVersionIdAndBuildNo(versionVo.getId(), buildNo);
-        if (buildNoVo == null) {
-            throw new DeployVersionBuildNoNotFoundException(versionVo.getVersion(), buildNo);
-        }
         return null;
     }
 
