@@ -30,7 +30,7 @@ public class DeployAppAuthChecker {
     @Resource
     private DeployAppPipelineService deployAppPipelineService;
 
-    @Autowired
+    @Resource
     private DeployAppConfigMapper deployAppConfigMapper;
 
     private static DeployAppAuthChecker checker;
@@ -259,7 +259,7 @@ public class DeployAppAuthChecker {
         if (CollectionUtils.isEmpty(hasActionList)) {
             return returnActionSet;
         }
-        return getActionSet( DeployAppConfigActionType.getActionVoList(paramActionList), hasActionList);
+        return getActionSet(DeployAppConfigActionType.getActionVoList(paramActionList), hasActionList);
     }
 
     /**
@@ -307,7 +307,7 @@ public class DeployAppAuthChecker {
      * 取 所需权限 和 现有权限 的交集
      *
      * @param needCheckActionList 所需权限
-     * @param hasActionList  现有权限
+     * @param hasActionList       现有权限
      * @return 所需权限和现有权限的交集
      */
     private static Set<String> getActionSet(List<DeployAppConfigAuthorityActionVo> needCheckActionList, List<DeployAppConfigAuthorityActionVo> hasActionList) {

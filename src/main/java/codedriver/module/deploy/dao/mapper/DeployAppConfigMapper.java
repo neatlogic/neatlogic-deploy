@@ -114,6 +114,8 @@ public interface DeployAppConfigMapper {
 
     Integer deleteAppEnvAutoConfig(DeployAppEnvAutoConfigVo deployAppEnvAutoConfigVo);
 
+    Integer deleteAppEnvAutoConfigByAppSystemIdAndAppModuleIdAndEnvId(@Param("appSystemId") Long appSystemId, @Param("appModuleId") Long appModuleId, @Param("envId") Long envId);
+
     Integer deleteAppConfigDraft(DeployAppConfigVo deployAppConfigDraftVo);
 
     Integer getAppSystemIdListCount(DeployResourceSearchVo searchVo);
