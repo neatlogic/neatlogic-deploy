@@ -210,7 +210,6 @@ public class DeployAppPipelineServiceImpl implements DeployAppPipelineService {
             overrideProfile(appConfig.getOverrideProfileList(), envOverrideConfig.getOverrideProfileList());
         }
 
-        overrideProfileParamSetInherit(appConfig.getOverrideProfileList(), targetLevel);
         if (CollectionUtils.isEmpty(profileIdList)) {
             profileIdList = new ArrayList<>(getProfileIdSet(appConfig));
         }
@@ -224,6 +223,7 @@ public class DeployAppPipelineServiceImpl implements DeployAppPipelineService {
                 appConfig.setOverrideProfileList(deployProfileList);
             }
         }
+        overrideProfileParamSetInherit(appConfig.getOverrideProfileList(), targetLevel);
         return appConfig;
     }
 
