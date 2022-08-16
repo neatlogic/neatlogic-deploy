@@ -1,33 +1,33 @@
 /*
- * Copyright(c) 2021 TechSureCo.,Ltd.AllRightsReserved.
+ * Copyright(c) 2022 TechSure Co., Ltd. All Rights Reserved.
  * 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
  */
 
-package codedriver.module.deploy.api.pipeline;
+package codedriver.module.deploy.api.apppipeline;
 
 import codedriver.framework.auth.core.AuthAction;
-import codedriver.framework.autoexec.crossover.IAutoexecServiceCrossoverService;
 import codedriver.framework.common.constvalue.ApiParamType;
-import codedriver.framework.crossover.CrossoverServiceFactory;
 import codedriver.framework.deploy.auth.DEPLOY_BASE;
-import codedriver.framework.deploy.dto.app.DeployAppConfigVo;
-import codedriver.framework.deploy.dto.app.DeployPipelineConfigVo;
+import codedriver.framework.deploy.dto.app.*;
 import codedriver.framework.exception.type.ParamNotExistsException;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.deploy.dao.mapper.DeployAppConfigMapper;
 import codedriver.module.deploy.service.DeployAppPipelineService;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.*;
 
 @Service
 @AuthAction(action = DEPLOY_BASE.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
-public class GetDeployAppPipelineDraftApi extends PrivateApiComponentBase {
+public class ListDeployAppPipelineProfileApi extends PrivateApiComponentBase {
 
     @Resource
     private DeployAppPipelineService deployAppPipelineService;
@@ -37,12 +37,12 @@ public class GetDeployAppPipelineDraftApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "获取应用流水线草稿";
+        return "获取应用流水线预置参数集列表";
     }
 
     @Override
     public String getToken() {
-        return "deploy/app/pipeline/draft/get";
+        return "deploy/app/pipeline/profile/List";
     }
 
     @Override
@@ -53,33 +53,30 @@ public class GetDeployAppPipelineDraftApi extends PrivateApiComponentBase {
     @Input({
             @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "应用系统ID"),
             @Param(name = "appModuleId", type = ApiParamType.LONG, desc = "模块ID"),
-            @Param(name = "envId", type = ApiParamType.LONG, desc = "环境ID")
+            @Param(name = "envId", type = ApiParamType.LONG, desc = "环境ID"),
+            @Param(name = "defaultValue", type = ApiParamType.JSONARRAY, desc = "默认值")
     })
     @Output({
-            @Param(name = "Return", explode = DeployAppConfigVo.class, desc = "应用流水线草稿")
+            @Param(name = "Return", explode = DeployProfileVo[].class, desc = "应用流水线预置参数集列表")
     })
-    @Description(desc = "获取应用流水线草稿")
+    @Description(desc = "获取应用流水线预置参数集列表")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
-        DeployAppConfigVo searchVo = paramObj.toJavaObject(DeployAppConfigVo.class);
-        DeployAppConfigVo deployAppConfigDraftVo = deployAppConfigMapper.getAppConfigDraft(searchVo);
-        if (deployAppConfigDraftVo == null) {
-            return null;
-        }
-        String overrideConfigStr = deployAppConfigDraftVo.getConfigStr();
-        if (StringUtils.isBlank(overrideConfigStr)) {
-            return null;
-        }
+        DeployAppConfigVo deployAppConfigVo = paramObj.toJavaObject(DeployAppConfigVo.class);
         String targetLevel = null;
         DeployPipelineConfigVo appConfig = null;
         DeployPipelineConfigVo moduleOverrideConfig = null;
         DeployPipelineConfigVo envOverrideConfig = null;
-        Long appSystemId = searchVo.getAppSystemId();
-        Long moduleId = searchVo.getAppModuleId();
-        Long envId = searchVo.getEnvId();
+        Long appSystemId = deployAppConfigVo.getAppSystemId();
+        Long moduleId = deployAppConfigVo.getAppModuleId();
+        Long envId = deployAppConfigVo.getEnvId();
+        String overrideConfigStr = deployAppConfigMapper.getAppConfig(deployAppConfigVo);
         if (moduleId == 0L && envId == 0L) {
             targetLevel = "应用";
             //查询应用层流水线配置信息
+            if (StringUtils.isBlank(overrideConfigStr)) {
+                overrideConfigStr = "{}";
+            }
             appConfig = JSONObject.parseObject(overrideConfigStr, DeployPipelineConfigVo.class);
         } else if (moduleId == 0L && envId != 0L) {
             // 如果是访问环境层配置信息，moduleId不能为空
@@ -92,7 +89,9 @@ public class GetDeployAppPipelineDraftApi extends PrivateApiComponentBase {
                 configStr = "{}";
             }
             appConfig = JSONObject.parseObject(configStr, DeployPipelineConfigVo.class);
-            moduleOverrideConfig = JSONObject.parseObject(overrideConfigStr, DeployPipelineConfigVo.class);
+            if (StringUtils.isNotBlank(overrideConfigStr)) {
+                moduleOverrideConfig = JSONObject.parseObject(overrideConfigStr, DeployPipelineConfigVo.class);
+            }
         } else {
             targetLevel = "环境";
             //查询应用层配置信息
@@ -105,12 +104,18 @@ public class GetDeployAppPipelineDraftApi extends PrivateApiComponentBase {
             if (StringUtils.isNotBlank(moduleOverrideConfigStr)) {
                 moduleOverrideConfig = JSONObject.parseObject(moduleOverrideConfigStr, DeployPipelineConfigVo.class);
             }
-            envOverrideConfig = JSONObject.parseObject(overrideConfigStr, DeployPipelineConfigVo.class);
+            if (StringUtils.isNotBlank(overrideConfigStr)) {
+                envOverrideConfig = JSONObject.parseObject(overrideConfigStr, DeployPipelineConfigVo.class);
+            }
         }
-        DeployPipelineConfigVo deployPipelineConfigVo = deployAppPipelineService.mergeDeployPipelineConfigVo(appConfig, moduleOverrideConfig, envOverrideConfig, targetLevel);
-        IAutoexecServiceCrossoverService autoexecServiceCrossoverService = CrossoverServiceFactory.getApi(IAutoexecServiceCrossoverService.class);
-        autoexecServiceCrossoverService.updateAutoexecCombopConfig(deployPipelineConfigVo.getAutoexecCombopConfigVo());
-        deployAppConfigDraftVo.setConfig(deployPipelineConfigVo);
-        return deployAppConfigDraftVo;
+        JSONArray defaultValue = paramObj.getJSONArray("defaultValue");
+        if (CollectionUtils.isNotEmpty(defaultValue)) {
+            List<Long> profileIdList = defaultValue.toJavaList(Long.class);
+            DeployPipelineConfigVo config = deployAppPipelineService.mergeDeployPipelineConfigVo(appConfig, moduleOverrideConfig, envOverrideConfig, targetLevel, profileIdList);
+            return config.getOverrideProfileList();
+        } else {
+            DeployPipelineConfigVo config = deployAppPipelineService.mergeDeployPipelineConfigVo(appConfig, moduleOverrideConfig, envOverrideConfig, targetLevel);
+            return config.getOverrideProfileList();
+        }
     }
 }
