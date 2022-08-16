@@ -4,6 +4,9 @@
  */
 package codedriver.module.deploy.service;
 
+import codedriver.framework.autoexec.crossover.IAutoexecScenarioCrossoverMapper;
+import codedriver.framework.autoexec.dto.scenario.AutoexecScenarioVo;
+import codedriver.framework.autoexec.exception.AutoexecScenarioIsNotFoundException;
 import codedriver.framework.cmdb.crossover.ICiEntityCrossoverMapper;
 import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
 import codedriver.framework.cmdb.exception.cientity.CiEntityNotFoundException;
@@ -11,15 +14,21 @@ import codedriver.framework.crossover.CrossoverServiceFactory;
 import codedriver.framework.deploy.constvalue.DeployAppConfigAction;
 import codedriver.framework.deploy.exception.DeployAppEnvAuthException;
 import codedriver.framework.deploy.exception.DeployAppOperationAuthException;
+import codedriver.framework.deploy.exception.DeployAppScenarioAuthException;
 import codedriver.module.deploy.auth.core.DeployAppAuthChecker;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+import java.util.Set;
+
 @Service
-public class DeployAppAuthorityServiceImpl implements DeployAppAuthorityService{
+public class DeployAppAuthorityServiceImpl implements DeployAppAuthorityService {
 
     @Override
     public void checkOperationAuth(Long appSystemId, DeployAppConfigAction action) {
-        if (!DeployAppAuthChecker.hasOperationPrivilege(appSystemId, action)) {
+        Set<String> authList = DeployAppAuthChecker.builder().addOperationAction(action.getValue()).checker(appSystemId);
+
+        if (!authList.contains(action.getValue())) {
             ICiEntityCrossoverMapper iCiEntityCrossoverMapper = CrossoverServiceFactory.getApi(ICiEntityCrossoverMapper.class);
             CiEntityVo appSystemCiEntity = iCiEntityCrossoverMapper.getCiEntityBaseInfoById(appSystemId);
             if (appSystemCiEntity == null) {
@@ -31,7 +40,8 @@ public class DeployAppAuthorityServiceImpl implements DeployAppAuthorityService{
 
     @Override
     public void checkEnvAuth(Long appSystemId, Long envId) {
-        if (!DeployAppAuthChecker.hasEnvPrivilege(appSystemId, envId)) {
+        Set<String> authList = DeployAppAuthChecker.builder().addEnvAction(envId).checker(appSystemId);
+        if (!authList.contains(envId.toString())) {
             ICiEntityCrossoverMapper iCiEntityCrossoverMapper = CrossoverServiceFactory.getApi(ICiEntityCrossoverMapper.class);
             CiEntityVo appSystemCiEntity = iCiEntityCrossoverMapper.getCiEntityBaseInfoById(appSystemId);
             if (appSystemCiEntity == null) {
@@ -44,4 +54,43 @@ public class DeployAppAuthorityServiceImpl implements DeployAppAuthorityService{
             throw new DeployAppEnvAuthException(appSystemCiEntity, envCiEntity);
         }
     }
+
+    @Override
+    public void checkScenarioAuth(Long appSystemId, Long scenarioId) {
+        Set<String> authList = DeployAppAuthChecker.builder().addScenarioAction(scenarioId).checker(appSystemId);
+        if (!authList.contains(scenarioId.toString())) {
+            ICiEntityCrossoverMapper iCiEntityCrossoverMapper = CrossoverServiceFactory.getApi(ICiEntityCrossoverMapper.class);
+            CiEntityVo appSystemCiEntity = iCiEntityCrossoverMapper.getCiEntityBaseInfoById(appSystemId);
+            if (appSystemCiEntity == null) {
+                throw new CiEntityNotFoundException(appSystemId);
+            }
+            IAutoexecScenarioCrossoverMapper iAutoexecScenarioCrossoverMapper = CrossoverServiceFactory.getApi(IAutoexecScenarioCrossoverMapper.class);
+            AutoexecScenarioVo scenarioVo = iAutoexecScenarioCrossoverMapper.getScenarioById(scenarioId);
+            if (scenarioVo == null) {
+                throw new AutoexecScenarioIsNotFoundException(scenarioId);
+            }
+            throw new DeployAppScenarioAuthException(appSystemCiEntity, scenarioVo);
+        }
+    }
+
+    @Override
+    public void checkEnvAuthList(Long appSystemId, List<Long> envIdList) {
+
+        Set<String> authSet = DeployAppAuthChecker.builder().addEnvActionList(envIdList).checker(appSystemId);
+        for (Long envId : envIdList) {
+            if (!authSet.contains(envId.toString())) {
+                ICiEntityCrossoverMapper iCiEntityCrossoverMapper = CrossoverServiceFactory.getApi(ICiEntityCrossoverMapper.class);
+                CiEntityVo appSystemCiEntity = iCiEntityCrossoverMapper.getCiEntityBaseInfoById(appSystemId);
+                if (appSystemCiEntity == null) {
+                    throw new CiEntityNotFoundException(appSystemId);
+                }
+                CiEntityVo envCiEntity = iCiEntityCrossoverMapper.getCiEntityBaseInfoById(envId);
+                if (envCiEntity == null) {
+                    throw new CiEntityNotFoundException(envId);
+                }
+                throw new DeployAppEnvAuthException(appSystemCiEntity, envCiEntity);
+            }
+        }
+    }
+
 }
