@@ -93,7 +93,8 @@ public class DeleteDeployVersionApi extends PrivateApiComponentBase {
             deployInstanceVersionMapper.deleteDeployInstanceVersionAuditByVersionId(versionId);
             deployVersionMapper.deleteDeployVersionDependencyByVersionId(versionId);
             deployVersionMapper.deleteDeployedInstanceByVersionId(versionId);
-            // todo deploy_build_quality deploy_build_quality_log
+            deployVersionMapper.deleteDeployVersionBuildQualityByVersionId(versionId);
+            deployVersionMapper.deleteDeployVersionBuildQualityLogByVersionId(versionId);
         }
         return null;
     }

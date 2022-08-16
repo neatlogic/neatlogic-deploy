@@ -1162,4 +1162,12 @@
         delete from deploy_version_deployed_instance where version_id = #{value}
     </delete>
 
+    <delete id="deleteDeployVersionBuildQualityByVersionId" parameterType="java.lang.Long">
+        delete from deploy_build_quality where version_id = #{value}
+    </delete>
+
+    <delete id="deleteDeployVersionBuildQualityLogByVersionId" parameterType="java.lang.Long">
+        delete from deploy_build_quality_log where version_id = #{value}
+    </delete>
+
 </mapper>

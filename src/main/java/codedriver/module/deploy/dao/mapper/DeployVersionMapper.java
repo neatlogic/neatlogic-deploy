@@ -101,4 +101,8 @@ public interface DeployVersionMapper {
 
     int deleteDeployedInstanceByVersionId(Long versionId);
 
+    int deleteDeployVersionBuildQualityByVersionId(Long versionId);
+
+    int deleteDeployVersionBuildQualityLogByVersionId(Long versionId);
+
 }
