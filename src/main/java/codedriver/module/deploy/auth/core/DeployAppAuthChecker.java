@@ -4,20 +4,13 @@
  */
 package codedriver.module.deploy.auth.core;
 
-import codedriver.framework.asynchronization.threadlocal.TenantContext;
-import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.auth.core.AuthActionChecker;
-import codedriver.framework.autoexec.dto.combop.AutoexecCombopScenarioVo;
 import codedriver.framework.deploy.auth.DEPLOY_MODIFY;
-import codedriver.framework.deploy.constvalue.DeployAppConfigAction;
 import codedriver.framework.deploy.constvalue.DeployAppConfigActionType;
-import codedriver.framework.deploy.dto.app.*;
+import codedriver.framework.deploy.dto.app.DeployAppAuthCheckVo;
+import codedriver.framework.deploy.dto.app.DeployAppConfigAuthorityActionVo;
 import codedriver.framework.deploy.exception.DeployAppAuthActionIrregularException;
-import codedriver.framework.deploy.exception.DeployAppConfigNotFoundException;
-import codedriver.framework.dto.AuthenticationInfoVo;
 import codedriver.module.deploy.dao.mapper.DeployAppConfigMapper;
-import codedriver.module.deploy.service.DeployAppPipelineService;
-import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -30,9 +23,6 @@ import java.util.stream.Collectors;
 
 @Component
 public class DeployAppAuthChecker {
-
-    @Resource
-    private DeployAppPipelineService deployAppPipelineService;
 
     @Resource
     private DeployAppConfigMapper deployAppConfigMapper;
@@ -179,7 +169,7 @@ public class DeployAppAuthChecker {
      * @param typeActionList 权限列表
      * @return 拥有的权限列表
      */
-    public static Set<String> check(Long appSystemId, List<String> typeActionList) {
+    private static Set<String> check(Long appSystemId, List<String> typeActionList) {
         Set<String> returnActionSet = new HashSet<>();
 
         if (appSystemId == null || CollectionUtils.isEmpty(typeActionList)) {
@@ -220,7 +210,7 @@ public class DeployAppAuthChecker {
      * @param typeActionListMap 需要校验的map
      * @return 拥有的权限map
      */
-    public static Map<Long, Set<String>> batchCheck(Map<Long, Set<String>> typeActionListMap) {
+    private static Map<Long, Set<String>> batchCheck(Map<Long, Set<String>> typeActionListMap) {
 
         HashMap<Long, Set<String>> returnMap = new HashMap<>();
         if (MapUtils.isEmpty(typeActionListMap)) {
@@ -293,124 +283,4 @@ public class DeployAppAuthChecker {
         }
         return returnActionSet;
     }
-
-    /**
-     * 根据系统id获取当前登录人所有权限
-     *
-     * @param appSystemId 系统id
-     * @return
-     */
-    public static JSONObject getAppConfigAuthorityList(Long appSystemId) {
-        JSONObject returnObj = new JSONObject();
-        List<String> operationAuthList = new ArrayList<>();
-        List<String> envAuthList = new ArrayList<>();
-        List<String> scenarioAuthList = new ArrayList<>();
-
-        if (appSystemId != null) {
-
-            /*发布管理员拥有所有权限*/
-            if (AuthActionChecker.check(DEPLOY_MODIFY.class)) {
-                return getAllAuthority(appSystemId);
-            }
-
-            /*如果当前系统没有配置权限，则所有人均拥有所有权限*/
-            //访问系统需要的权限
-            List<DeployAppConfigAuthorityVo> systemAuthList = checker.deployAppConfigMapper.getAppConfigAuthorityListByAppSystemId(appSystemId);
-            if (CollectionUtils.isEmpty(systemAuthList)) {
-                return getAllAuthority(appSystemId);
-            }
-
-            List<String> authUuidList = new ArrayList<>();
-            AuthenticationInfoVo authInfo = UserContext.get().getAuthenticationInfoVo();
-            authUuidList.add(authInfo.getUserUuid());
-            if (CollectionUtils.isNotEmpty(authInfo.getTeamUuidList())) {
-                authUuidList.addAll(authInfo.getTeamUuidList());
-            }
-            if (CollectionUtils.isNotEmpty(authInfo.getRoleUuidList())) {
-                authUuidList.addAll(authInfo.getRoleUuidList());
-            }
-
-            List<DeployAppConfigAuthorityActionVo> hasAllAuthorityList = checker.deployAppConfigMapper.getDeployAppAllAuthorityActionListByAppSystemIdAndAuthUuidList(appSystemId, authUuidList);
-            if (CollectionUtils.isNotEmpty(hasAllAuthorityList)) {
-
-                Map<String, List<DeployAppConfigAuthorityActionVo>> hasAuthorityActionVoTypeMap = hasAllAuthorityList.stream().collect(Collectors.groupingBy(DeployAppConfigAuthorityActionVo::getType));
-                List<String> allActionTypeList = new ArrayList<>();
-                for (String actionType : actionTypeList) {
-                    List<DeployAppConfigAuthorityActionVo> actionTypeActionVoList = hasAuthorityActionVoTypeMap.get(actionType);
-                    if (CollectionUtils.isEmpty(actionTypeActionVoList)) {
-                        continue;
-                    }
-                    if (CollectionUtils.isNotEmpty(actionTypeActionVoList.stream().filter(e -> StringUtils.equals(e.getAction(), "all")).collect(Collectors.toList()))) {
-
-
-                        allActionTypeList.add(actionType);
-                        if (StringUtils.equals(actionType, DeployAppConfigActionType.OPERATION.getValue())) {
-                            operationAuthList.addAll(DeployAppConfigAction.getValueList());
-                        } else if (StringUtils.equals(actionType, DeployAppConfigActionType.ENV.getValue())) {
-                            List<DeployAppEnvironmentVo> envVoList = checker.deployAppConfigMapper.getDeployAppEnvListByAppSystemIdAndModuleIdList(appSystemId, new ArrayList<>(), TenantContext.get().getDataDbName());
-                            if (CollectionUtils.isNotEmpty(envVoList)) {
-                                for (DeployAppEnvironmentVo envVo : envVoList) {
-                                    envAuthList.add(envVo.getId().toString());
-                                }
-                            }
-                        } else if (StringUtils.equals(actionType, DeployAppConfigActionType.SCENARIO.getValue())) {
-                            DeployPipelineConfigVo pipelineConfigVo = checker.deployAppPipelineService.getDeployPipelineConfigVo(new DeployAppConfigVo(appSystemId));
-                            if (pipelineConfigVo == null) {
-                                continue;
-                            }
-                            for (AutoexecCombopScenarioVo scenarioVo : pipelineConfigVo.getScenarioList()) {
-                                scenarioAuthList.add(scenarioVo.getScenarioId().toString());
-                            }
-                        }
-                    }
-                }
-
-                for (DeployAppConfigAuthorityActionVo actionVo : hasAllAuthorityList) {
-                    if (!allActionTypeList.contains(actionVo.getType())) {
-                        if (StringUtils.equals(actionVo.getType(), DeployAppConfigActionType.OPERATION.getValue())) {
-                            operationAuthList.add(actionVo.getAction());
-                        } else if (StringUtils.equals(actionVo.getType(), DeployAppConfigActionType.ENV.getValue())) {
-                            envAuthList.add(actionVo.getAction());
-                        } else if (StringUtils.equals(actionVo.getType(), DeployAppConfigActionType.SCENARIO.getValue())) {
-                            scenarioAuthList.add(actionVo.getAction());
-                        }
-                    }
-                }
-            }
-        }
-        returnObj.put("operationAuthList", operationAuthList);
-        returnObj.put("envAuthList", envAuthList);
-        returnObj.put("scenarioAuthList", scenarioAuthList);
-        return returnObj;
-    }
-
-    /**
-     * 根据系统id获取所有权限
-     *
-     * @param appSystemId 系统id
-     * @return
-     */
-    private static JSONObject getAllAuthority(Long appSystemId) {
-        JSONObject returnObj = new JSONObject();
-        //操作权限
-        returnObj.put("operationAuthList", DeployAppConfigAction.getValueList());
-        //环境权限
-        List<String> envAuthList = new ArrayList<>();
-        for (DeployAppEnvironmentVo env : checker.deployAppConfigMapper.getDeployAppEnvListByAppSystemIdAndModuleIdList(appSystemId, new ArrayList<>(), TenantContext.get().getDataDbName())) {
-            envAuthList.add(env.getId().toString());
-        }
-        returnObj.put("envAuthList", envAuthList);
-        //场景权限
-        DeployPipelineConfigVo pipelineConfigVo = checker.deployAppPipelineService.getDeployPipelineConfigVo(new DeployAppConfigVo(appSystemId));
-        if (pipelineConfigVo == null) {
-            throw new DeployAppConfigNotFoundException(appSystemId);
-        }
-        List<String> scenarioAuthList = new ArrayList<>();
-        for (AutoexecCombopScenarioVo scenarioVo : pipelineConfigVo.getScenarioList()) {
-            scenarioAuthList.add(scenarioVo.getScenarioId().toString());
-        }
-        returnObj.put("scenarioAuthList", scenarioAuthList);
-        return returnObj;
-    }
-
 }
