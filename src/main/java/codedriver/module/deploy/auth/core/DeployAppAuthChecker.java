@@ -113,8 +113,8 @@ public class DeployAppAuthChecker {
             return this;
         }
 
-        public Set<String> checker() {
-            return DeployAppAuthChecker.checker(appSystemId, typeActionList);
+        public Set<String> check() {
+            return DeployAppAuthChecker.check(appSystemId, typeActionList);
         }
 
     }
@@ -167,8 +167,8 @@ public class DeployAppAuthChecker {
             return this;
         }
 
-        public Map<Long, Set<String>> batchChecker() {
-            return DeployAppAuthChecker.batchChecker(typeActionListMap);
+        public Map<Long, Set<String>> batchCheck() {
+            return DeployAppAuthChecker.batchCheck(typeActionListMap);
         }
     }
 
@@ -179,7 +179,7 @@ public class DeployAppAuthChecker {
      * @param typeActionList 权限列表
      * @return 拥有的权限列表
      */
-    public static Set<String> checker(Long appSystemId, List<String> typeActionList) {
+    public static Set<String> check(Long appSystemId, List<String> typeActionList) {
         Set<String> returnActionSet = new HashSet<>();
 
         if (appSystemId == null || CollectionUtils.isEmpty(typeActionList)) {
@@ -220,7 +220,7 @@ public class DeployAppAuthChecker {
      * @param typeActionListMap 需要校验的map
      * @return 拥有的权限map
      */
-    public static Map<Long, Set<String>> batchChecker(Map<Long, Set<String>> typeActionListMap) {
+    public static Map<Long, Set<String>> batchCheck(Map<Long, Set<String>> typeActionListMap) {
 
         HashMap<Long, Set<String>> returnMap = new HashMap<>();
         if (MapUtils.isEmpty(typeActionListMap)) {
