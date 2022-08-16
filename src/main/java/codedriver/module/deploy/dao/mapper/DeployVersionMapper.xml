@@ -840,6 +840,7 @@
             <if test="endRev != null and endRev != ''">
                 `end_rev` = #{endRev},
             </if>
+            `lcu` = #{lcu},
             `lcd` = now(3)
     </insert>
 
