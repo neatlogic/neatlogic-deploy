@@ -65,8 +65,8 @@ public class TakeOverBatchDeployJobApi extends PrivateApiComponentBase {
         }
         if (BatchDeployAuthChecker.isCanTakeOver(deployBatchJobVo)) {
             deployBatchJobVo.setExecUser(UserContext.get().getUserUuid(true));
-            autoexecJobMapper.updateJobExecUser(deployBatchJobVo);
-        }else{
+            autoexecJobMapper.updateJobExecUser(deployBatchJobVo.getId(), deployBatchJobVo.getExecUser());
+        } else {
             throw new DeployBatchJobCannotTakeOverException();
         }
         return null;

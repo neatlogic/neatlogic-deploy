@@ -23,6 +23,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -65,16 +66,14 @@ public class SaveDeployAppConfigEnvApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         JSONArray envIdArray = paramObj.getJSONArray("envIdList");
-        List<Long> envIdList = null;
+        List<Long> envIdList = new ArrayList<>();
         if (CollectionUtils.isNotEmpty(envIdArray)) {
             envIdList = envIdArray.toJavaList(Long.class);
         }
 
         //校验编辑配置的操作权限
         deployAppAuthorityService.checkOperationAuth(paramObj.getLong("appSystemId"), DeployAppConfigAction.EDIT);
-        for (Long envId : envIdList) {
-            //TODO 循环校验环境权限
-        }
+        deployAppAuthorityService.checkEnvAuthList(paramObj.getLong("appSystemId"), envIdList);
 
         //校验应用系统id、应用模块id、环境id是否存在
         ICiEntityCrossoverMapper iCiEntityCrossoverMapper = CrossoverServiceFactory.getApi(ICiEntityCrossoverMapper.class);
