@@ -11,6 +11,8 @@ import codedriver.framework.restful.annotation.OperationType;
 import codedriver.framework.restful.annotation.Param;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
+import codedriver.module.deploy.dao.mapper.DeployEnvVersionMapper;
+import codedriver.module.deploy.dao.mapper.DeployInstanceVersionMapper;
 import codedriver.module.deploy.dao.mapper.DeployVersionMapper;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.stereotype.Service;
@@ -33,6 +35,12 @@ public class DeleteDeployVersionApi extends PrivateApiComponentBase {
 
     @Resource
     DeployVersionMapper deployVersionMapper;
+
+    @Resource
+    DeployEnvVersionMapper deployEnvVersionMapper;
+
+    @Resource
+    DeployInstanceVersionMapper deployInstanceVersionMapper;
 
     @Override
     public String getName() {
@@ -79,6 +87,12 @@ public class DeleteDeployVersionApi extends PrivateApiComponentBase {
             deployVersionMapper.deleteDeployVersionById(versionId);
             deployVersionMapper.deleteDeployVersionBuildNoByVersionId(versionId);
             deployVersionMapper.deleteDeployVersionEnvByVersionId(versionId);
+            deployEnvVersionMapper.deleteDeployEnvVersionByVersionId(versionId);
+            deployEnvVersionMapper.deleteDeployEnvVersionAuditByVersionId(versionId);
+            deployInstanceVersionMapper.deleteDeployInstanceVersionByVersionId(versionId);
+            deployInstanceVersionMapper.deleteDeployInstanceVersionAuditByVersionId(versionId);
+            deployVersionMapper.deleteDeployVersionDependencyByVersionId(versionId);
+            deployVersionMapper.deleteDeployedInstanceByVersionId(versionId);
         }
         return null;
     }

@@ -95,4 +95,8 @@ public interface DeployVersionMapper {
 
     int deleteDeployVersionDependencyByVersionIdAndPackageIdList(@Param("versionId") Long versionId, @Param("packageIdList") List<Long> packageIdList);
 
+    int deleteDeployVersionDependencyByVersionId(@Param("versionId") Long versionId);
+
+    int deleteDeployedInstanceByVersionId(Long versionId);
+
 }

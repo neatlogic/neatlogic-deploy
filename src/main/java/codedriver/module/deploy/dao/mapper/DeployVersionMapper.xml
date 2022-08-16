@@ -1010,10 +1010,14 @@
           and build_no = #{buildNo}
     </delete>
 
-    <delete id="deleteDeployVersionDependencyByVersionIdAndPackageIdList">
+    <sql id="deleteDeployVersionDependency">
         delete
         from deploy_version_dependency
         where version_id = #{versionId}
+    </sql>
+
+    <delete id="deleteDeployVersionDependencyByVersionIdAndPackageIdList">
+        <include refid="deleteDeployVersionDependency"/>
         <if test="packageIdList != null and packageIdList.size() > 0">
             and package_id in
             <foreach collection="packageIdList" item="item" open="(" separator="," close=")">
@@ -1021,4 +1025,13 @@
             </foreach>
         </if>
     </delete>
+
+    <delete id="deleteDeployVersionDependencyByVersionId" parameterType="java.lang.Long">
+        <include refid="deleteDeployVersionDependency"/>
+    </delete>
+
+    <delete id="deleteDeployedInstanceByVersionId" parameterType="java.lang.Long">
+        delete from deploy_version_deployed_instance where version_id = #{value}
+    </delete>
+
 </mapper>
