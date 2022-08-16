@@ -22,4 +22,6 @@ public interface PipelineMapper {
     int searchJobTemplateCount(PipelineJobTemplateVo jobTemplateVo);
 
     PipelineVo getPipelineById(Long id);
+
+    void insertPipelineJobTemplate(PipelineJobTemplateVo pipelineJobTemplateVo);
 }

@@ -13,6 +13,8 @@
                dpj.group_id      as groupId,
                dpj.app_system_id as appSystemId,
                dpj.app_module_id as appModuleId,
+               dpj.scenario_id   as scenarioId,
+               dpj.round_count   as roundCount,
                dpj.env_id        as envId,
                dpj.config        as configStr,
                dpj.sort          as sort,
@@ -42,10 +44,13 @@
 
     <select id="searchJobTemplate" parameterType="codedriver.framework.deploy.dto.pipeline.PipelineJobTemplateVo"
             resultType="codedriver.framework.deploy.dto.pipeline.PipelineJobTemplateVo">
-        SELECT dpj.id,
+        SELECT
+        dpj.id,
         dpj.group_id as groupId,
         dpj.app_system_id as appSystemId,
         dpj.app_module_id as appModuleId,
+        dpj.scenario_id as scenarioId,
+        dpj.round_count as roundCount,
         dpj.env_id as envId,
         dpj.config as configStr,
         dpj.sort as sort,
@@ -95,6 +100,8 @@
                     <result column="jobTemplateAppName" property="appSystemName"/>
                     <result column="jobTemplateModuleName" property="appModuleName"/>
                     <result column="jobTemplateEnvName" property="envName"/>
+                    <result column="jobTemplateScenarioId" property="scenarioId"/>
+                    <result column="jobTemplateRoundCount" property="roundCount"/>
                     <result column="jobTemplateConfigStr" property="configStr"/>
                     <result column="jobEnvId" property="envId"/>
                     <result column="jobEnvName" property="envName"/>
@@ -121,6 +128,8 @@
                dpj.app_system_id as jobTemplateAppId,
                dpj.app_module_id as jobTemplateModuleId,
                dpj.env_id        as jobTemplateEnvId,
+               dpj.scenario_id   as jobTemplateScenarioId,
+               dpj.round_count   as jobTemplateRoundCount,
                dpj.config        as jobTemplateConfigStr,
                ciapp.`name`      as jobTemplateAppName,
                cimodule.`name`   as jobTemplateModuleName,
@@ -160,4 +169,26 @@
         select count(1) from deploy_pipeline
         <include refid="searchPipelineCondition"/>
     </select>
+
+    <insert id="insertPipelineJobTemplate"
+            parameterType="codedriver.framework.deploy.dto.pipeline.PipelineJobTemplateVo">
+        insert into deploy_pipeline_jobtemplate (id,
+                                                 group_id,
+                                                 app_system_id,
+                                                 app_module_id,
+                                                 scenario_id,
+                                                 round_count,
+                                                 env_id,
+                                                 config,
+                                                 sort)
+        values (#{id},
+                #{groupId},
+                #{appSystemId},
+                #{appModuleId},
+                #{scenarioId},
+                #{roundCount},
+                #{envId},
+                #{configStr,typeHandler=CompressHandler},
+                #{sort})
+    </insert>
 </mapper>
