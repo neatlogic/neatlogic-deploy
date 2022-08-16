@@ -100,7 +100,7 @@ public class SearchDeployAppConfigAuthorityApi extends PrivateApiComponentBase {
         List<DeployAppEnvironmentVo> envList = deployAppConfigMapper.getDeployAppEnvListByAppSystemIdAndModuleIdList(paramObj.getLong("appSystemId"), new ArrayList<>(), TenantContext.get().getDataDbName());
         for (DeployAppEnvironmentVo environmentVo : envList) {
             JSONObject envKeyValue = new JSONObject();
-            envKeyValue.put("name", environmentVo.getName());
+            envKeyValue.put("name", environmentVo.getId());
             envKeyValue.put("displayName", environmentVo.getName());
             finalTheadList.add(envKeyValue);
         }
@@ -114,7 +114,7 @@ public class SearchDeployAppConfigAuthorityApi extends PrivateApiComponentBase {
         if(CollectionUtils.isNotEmpty(pipelineConfigVo.getScenarioList())) {
             for (AutoexecCombopScenarioVo scenarioVo : pipelineConfigVo.getScenarioList()) {
                 JSONObject scenarioKeyValue = new JSONObject();
-                scenarioKeyValue.put("name", scenarioVo.getScenarioName());
+                scenarioKeyValue.put("name", scenarioVo.getScenarioId());
                 scenarioKeyValue.put("displayName", scenarioVo.getScenarioName());
                 finalTheadList.add(scenarioKeyValue);
             }
@@ -130,12 +130,12 @@ public class SearchDeployAppConfigAuthorityApi extends PrivateApiComponentBase {
             if (CollectionUtils.isNotEmpty(returnList)) {
 
                 Map<Long, String> envIdNameMap = new HashMap<>();
-                List<String> scenarioList = new ArrayList<>();
+                List<Long> scenarioIdList = new ArrayList<>();
                 if (CollectionUtils.isNotEmpty(envList)) {
                     envIdNameMap = envList.stream().collect(Collectors.toMap(DeployAppEnvironmentVo::getId, DeployAppEnvironmentVo::getName));
                 }
                 if (CollectionUtils.isNotEmpty(pipelineConfigVo.getScenarioList())) {
-                    scenarioList = pipelineConfigVo.getScenarioList().stream().map(AutoexecCombopScenarioVo::getScenarioName).collect(Collectors.toList());
+                    scenarioIdList = pipelineConfigVo.getScenarioList().stream().map(AutoexecCombopScenarioVo::getScenarioId).collect(Collectors.toList());
                 }
 
                 for (DeployAppConfigAuthorityVo appConfigAuthorityVo : returnList) {
@@ -163,12 +163,12 @@ public class SearchDeployAppConfigAuthorityApi extends PrivateApiComponentBase {
                             } else if (StringUtils.equals(actionVo.getType(), DeployAppConfigActionType.ENV.getValue())) {
                                 if (StringUtils.equals(actionVo.getAction(), "all")) {
                                     for (DeployAppEnvironmentVo env : envList) {
-                                        actionAuth.put(env.getName(), 1);
+                                        actionAuth.put(env.getId().toString(), 1);
                                     }
                                 } else {
                                     String envName = envIdNameMap.get(Long.valueOf(actionVo.getAction()));
                                     if (StringUtils.isNotEmpty(envName)) {
-                                        actionAuth.put(envName, 1);
+                                        actionAuth.put(actionVo.getAction(), 1);
                                     }
                                 }
 
@@ -176,10 +176,10 @@ public class SearchDeployAppConfigAuthorityApi extends PrivateApiComponentBase {
                             } else if (StringUtils.equals(actionVo.getType(), DeployAppConfigActionType.SCENARIO.getValue())) {
                                 if (StringUtils.equals(actionVo.getAction(), "all")) {
                                     for (AutoexecCombopScenarioVo scenarioVo : pipelineConfigVo.getScenarioList()) {
-                                        actionAuth.put(scenarioVo.getScenarioName(), 1);
+                                        actionAuth.put(scenarioVo.getScenarioId().toString(), 1);
                                     }
                                 } else {
-                                    if (scenarioList.contains(actionVo.getAction())) {
+                                    if (scenarioIdList.contains(Long.valueOf(actionVo.getAction()))) {
                                         actionAuth.put(actionVo.getAction(), 1);
                                     }
                                 }

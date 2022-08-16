@@ -12,7 +12,6 @@ import codedriver.framework.cmdb.exception.cientity.CiEntityNotFoundException;
 import codedriver.framework.crossover.CrossoverServiceFactory;
 import codedriver.framework.deploy.dto.app.DeployAppConfigEnvDBConfigVo;
 import codedriver.framework.deploy.dto.app.DeployAppConfigVo;
-import codedriver.framework.deploy.dto.app.DeployAppEnvAutoConfigVo;
 import codedriver.framework.deploy.exception.DeployAppConfigModuleRunnerGroupNotFoundException;
 import codedriver.framework.dto.runner.RunnerGroupVo;
 import codedriver.framework.dto.runner.RunnerMapVo;
@@ -53,7 +52,7 @@ public class DeployAppConfigServiceImpl implements DeployAppConfigService {
 
         deployAppConfigMapper.deleteAppConfig(configVo);
         deployAppConfigMapper.deleteAppConfigDraft(configVo);
-        deployAppConfigMapper.deleteAppEnvAutoConfig(new DeployAppEnvAutoConfigVo(configVo.getAppSystemId(), configVo.getAppModuleId(), configVo.getEnvId()));
+        deployAppConfigMapper.deleteAppEnvAutoConfigByAppSystemIdAndAppModuleIdAndEnvId(configVo.getAppSystemId(), configVo.getAppModuleId(), configVo.getEnvId());
         deployAppConfigMapper.deleteAppConfigDBConfig(new DeployAppConfigEnvDBConfigVo(configVo.getAppSystemId(), configVo.getAppModuleId(), configVo.getEnvId()));
         deployAppConfigMapper.deleteAppConfigDBConfigAccount(new DeployAppConfigEnvDBConfigVo(configVo.getAppSystemId(), configVo.getAppModuleId(), configVo.getEnvId()));
     }
