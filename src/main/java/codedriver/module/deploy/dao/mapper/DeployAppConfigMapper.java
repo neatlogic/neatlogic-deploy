@@ -170,6 +170,8 @@ public interface DeployAppConfigMapper {
 
     List<DeployAppConfigAuthorityActionVo> getDeployAppAuthorityActionList(DeployAppAuthCheckVo deployAppAuthCheckVo);
 
+    List<DeployAppConfigAuthorityActionVo> getDeployAppAllAuthorityActionListByAppSystemIdAndAuthUuidList(@Param("appSystemId") Long appSystemId, @Param("authUuidList") List<String> authUuidList);
+
     List<DeployAppAuthCheckVo> getBatchDeployAppAuthorityActionList(List<DeployAppAuthCheckVo> deployAppAuthCheckVoList);
 
     void deleteAppConfigSystemFavoriteByAppSystemIdAndUserUuid(@Param("appSystemId") Long appSystemId, @Param("userUuid") String userUuid);

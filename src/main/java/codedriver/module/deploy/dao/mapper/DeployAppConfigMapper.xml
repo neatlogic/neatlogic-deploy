@@ -1186,6 +1186,25 @@
         </where>
     </select>
 
+    <select id="getDeployAppAllAuthorityActionListByAppSystemIdAndAuthUuidList"
+            resultType="codedriver.framework.deploy.dto.app.DeployAppConfigAuthorityActionVo">
+        select `action`,action_type as type
+        from deploy_app_config_authority
+        <where>
+            app_system_id = #{appSystemId}
+            AND auth_uuid IN
+            (
+            'alluser'
+            <if test="authUuidList != null and authUuidList.size() > 0">
+                ,
+                <foreach collection="authUuidList" item="item" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            )
+        </where>
+    </select>
+
     <resultMap id="DeployAppAuthCheckVoMap" type="codedriver.framework.deploy.dto.app.DeployAppAuthCheckVo">
         <result column="appSystemId" property="appSystemId"/>
         <collection property="actionVoList"
