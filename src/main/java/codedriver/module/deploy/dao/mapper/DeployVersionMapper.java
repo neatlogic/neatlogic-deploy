@@ -77,6 +77,8 @@ public interface DeployVersionMapper {
 
     int insertDeployVersionEnv(DeployVersionEnvVo vo);
 
+    int insertDeployVersionBuildNo(DeployVersionBuildNoVo deployVersionBuildNoVo);
+
     int insertDeployVersionBuildQuality(DeployVersionBuildQualityVo vo);
 
     int insertDeployVersionBuildQualityLog(DeployVersionBuildQualityVo vo);
@@ -94,5 +96,13 @@ public interface DeployVersionMapper {
     int deleteDeployVersionBuildNoByVersionIdAndBuildNo(@Param("versionId") Long versionId, @Param("buildNo") Integer buildNo);
 
     int deleteDeployVersionDependencyByVersionIdAndPackageIdList(@Param("versionId") Long versionId, @Param("packageIdList") List<Long> packageIdList);
+
+    int deleteDeployVersionDependencyByVersionId(@Param("versionId") Long versionId);
+
+    int deleteDeployedInstanceByVersionId(Long versionId);
+
+    int deleteDeployVersionBuildQualityByVersionId(Long versionId);
+
+    int deleteDeployVersionBuildQualityLogByVersionId(Long versionId);
 
 }

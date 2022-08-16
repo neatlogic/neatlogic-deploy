@@ -356,11 +356,11 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
                 } else {
                     deployJobVo.setBuildNo(maxBuildNo + 1);
                 }
-                deployJobMapper.insertDeployVersionBuildNo(new DeployVersionBuildNoVo(deployVersionVo.getId(), deployJobVo.getBuildNo(), deployJobVo.getId(), BuildNoStatus.PENDING.getValue()));
+                deployVersionMapper.insertDeployVersionBuildNo(new DeployVersionBuildNoVo(deployVersionVo.getId(), deployJobVo.getBuildNo(), deployJobVo.getId(), BuildNoStatus.PENDING.getValue()));
             } else if (buildNo > 0) {
                 deployJobVo.setBuildNo(buildNo);
             }
-            deployJobMapper.insertDeployVersionBuildNo(new DeployVersionBuildNoVo(deployVersionVo.getId(), deployJobVo.getBuildNo(), deployJobVo.getId(), BuildNoStatus.PENDING.getValue()));
+            deployVersionMapper.insertDeployVersionBuildNo(new DeployVersionBuildNoVo(deployVersionVo.getId(), deployJobVo.getBuildNo(), deployJobVo.getId(), BuildNoStatus.PENDING.getValue()));
         }
         deployJobMapper.insertDeployJob(deployJobVo);
         jobVo.setInvokeId(deployJobVo.getId());

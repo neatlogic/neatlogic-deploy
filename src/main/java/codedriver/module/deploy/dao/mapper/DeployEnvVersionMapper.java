@@ -21,4 +21,8 @@ public interface DeployEnvVersionMapper {
     int insertDeployEnvVersion(DeployEnvVersionVo vo);
 
     int insertDeployEnvVersionAudit(DeployEnvVersionAuditVo vo);
+
+    int deleteDeployEnvVersionByVersionId(Long versionId);
+
+    int deleteDeployEnvVersionAuditByVersionId(Long versionId);
 }

@@ -13,4 +13,8 @@ public interface DeployInstanceVersionMapper {
     int insertDeployInstanceVersion(DeployInstanceVersionVo vo);
 
     int insertDeployInstanceVersionAudit(DeployInstanceVersionAuditVo vo);
+
+    int deleteDeployInstanceVersionByVersionId(Long versionId);
+
+    int deleteDeployInstanceVersionAuditByVersionId(Long versionId);
 }

@@ -115,4 +115,12 @@
             now(3)
         )
     </insert>
+
+    <delete id="deleteDeployInstanceVersionByVersionId">
+        delete from deploy_instance_version where version_id = #{value}
+    </delete>
+
+    <delete id="deleteDeployInstanceVersionAuditByVersionId">
+        delete from deploy_instance_version_audit where new_version_id = #{value} or old_version_id = #{value}
+    </delete>
 </mapper>
