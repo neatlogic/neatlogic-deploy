@@ -26,7 +26,7 @@ public class DeployAppAuthorityServiceImpl implements DeployAppAuthorityService 
 
     @Override
     public void checkOperationAuth(Long appSystemId, DeployAppConfigAction action) {
-        Set<String> authList = DeployAppAuthChecker.builder().addOperationAction(action.getValue()).checker(appSystemId);
+        Set<String> authList = DeployAppAuthChecker.builder(appSystemId).addOperationAction(action.getValue()).checker();
 
         if (!authList.contains(action.getValue())) {
             ICiEntityCrossoverMapper iCiEntityCrossoverMapper = CrossoverServiceFactory.getApi(ICiEntityCrossoverMapper.class);
@@ -40,7 +40,7 @@ public class DeployAppAuthorityServiceImpl implements DeployAppAuthorityService 
 
     @Override
     public void checkEnvAuth(Long appSystemId, Long envId) {
-        Set<String> authList = DeployAppAuthChecker.builder().addEnvAction(envId).checker(appSystemId);
+        Set<String> authList = DeployAppAuthChecker.builder(appSystemId).addEnvAction(envId).checker();
         if (!authList.contains(envId.toString())) {
             ICiEntityCrossoverMapper iCiEntityCrossoverMapper = CrossoverServiceFactory.getApi(ICiEntityCrossoverMapper.class);
             CiEntityVo appSystemCiEntity = iCiEntityCrossoverMapper.getCiEntityBaseInfoById(appSystemId);
@@ -57,7 +57,7 @@ public class DeployAppAuthorityServiceImpl implements DeployAppAuthorityService 
 
     @Override
     public void checkScenarioAuth(Long appSystemId, Long scenarioId) {
-        Set<String> authList = DeployAppAuthChecker.builder().addScenarioAction(scenarioId).checker(appSystemId);
+        Set<String> authList = DeployAppAuthChecker.builder(appSystemId).addScenarioAction(scenarioId).checker();
         if (!authList.contains(scenarioId.toString())) {
             ICiEntityCrossoverMapper iCiEntityCrossoverMapper = CrossoverServiceFactory.getApi(ICiEntityCrossoverMapper.class);
             CiEntityVo appSystemCiEntity = iCiEntityCrossoverMapper.getCiEntityBaseInfoById(appSystemId);
@@ -76,7 +76,7 @@ public class DeployAppAuthorityServiceImpl implements DeployAppAuthorityService 
     @Override
     public void checkEnvAuthList(Long appSystemId, List<Long> envIdList) {
 
-        Set<String> authSet = DeployAppAuthChecker.builder().addEnvActionList(envIdList).checker(appSystemId);
+        Set<String> authSet = DeployAppAuthChecker.builder(appSystemId).addEnvActionList(envIdList).checker();
         for (Long envId : envIdList) {
             if (!authSet.contains(envId.toString())) {
                 ICiEntityCrossoverMapper iCiEntityCrossoverMapper = CrossoverServiceFactory.getApi(ICiEntityCrossoverMapper.class);

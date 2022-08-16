@@ -44,18 +44,38 @@ public class DeployAppAuthChecker {
         checker = this;
     }
 
+    //权限类型
     private final static List<String> actionTypeList = DeployAppConfigActionType.getValueList();
 
-    public static Builder builder() {
-        return new Builder();
+    /**
+     * 校验单个系统权限的构造方法
+     *
+     * @param appSystemId 系统id
+     * @return Builder
+     */
+    public static Builder builder(Long appSystemId) {
+        return new Builder(appSystemId);
     }
 
+    /**
+     * 校验多的系统权限的构造方法
+     *
+     * @return BatchBuilder
+     */
+    public static BatchBuilder batchbuilder() {
+        return new BatchBuilder();
+    }
+
+    //校验单个系统权限内部类
     public static class Builder {
 
         //校验单系统权限时配合check()使用
         private final List<String> typeActionList = new ArrayList<>();
-        //校验多系统时batchCheck()使用
-        private final Map<Long, Set<String>> typeActionListMap = new HashMap<>();
+        private final Long appSystemId;
+
+        public Builder(Long appSystemId) {
+            this.appSystemId = appSystemId;
+        }
 
         public Builder addOperationAction(String operationString) {
             typeActionList.add(DeployAppConfigActionType.OPERATION.getValue() + "#" + operationString);
@@ -93,7 +113,19 @@ public class DeployAppAuthChecker {
             return this;
         }
 
-        public Builder addOperationActionMap(Long appSystemId, List<String> operationList) {
+        public Set<String> checker() {
+            return DeployAppAuthChecker.checker(appSystemId, typeActionList);
+        }
+
+    }
+
+    //批量校验多个系统权限内部类
+    public static class BatchBuilder {
+
+        //校验多系统时batchCheck()使用
+        private final Map<Long, Set<String>> typeActionListMap = new HashMap<>();
+
+        public BatchBuilder addOperationActionMap(Long appSystemId, List<String> operationList) {
             Set<String> oldOperationSet = typeActionListMap.get(appSystemId);
             Set<String> paramOperationSet = new HashSet<>();
             for (String operation : operationList) {
@@ -107,7 +139,7 @@ public class DeployAppAuthChecker {
             return this;
         }
 
-        public Builder addEnvActionMap(Long appSystemId, List<Long> envIdList) {
+        public BatchBuilder addEnvActionMap(Long appSystemId, List<Long> envIdList) {
             Set<String> oldEnvIdSet = typeActionListMap.get(appSystemId);
             Set<String> paramEnvSet = new HashSet<>();
             for (Long envId : envIdList) {
@@ -121,7 +153,7 @@ public class DeployAppAuthChecker {
             return this;
         }
 
-        public Builder addScenarioActionMap(Long appSystemId, List<Long> scenarioIdList) {
+        public BatchBuilder addScenarioActionMap(Long appSystemId, List<Long> scenarioIdList) {
             Set<String> oldScenarioSet = typeActionListMap.get(appSystemId);
             Set<String> paramScenarioIdSet = new HashSet<>();
             for (Long scenarioId : scenarioIdList) {
@@ -135,15 +167,18 @@ public class DeployAppAuthChecker {
             return this;
         }
 
-        public Set<String> checker(Long appSystemId) {
-            return DeployAppAuthChecker.checker(appSystemId, typeActionList);
-        }
-
         public Map<Long, Set<String>> batchChecker() {
             return DeployAppAuthChecker.batchChecker(typeActionListMap);
         }
     }
 
+    /**
+     * 校验单个系统权限
+     *
+     * @param appSystemId    系统id
+     * @param typeActionList 权限列表
+     * @return 拥有的权限列表
+     */
     public static Set<String> checker(Long appSystemId, List<String> typeActionList) {
         Set<String> returnActionSet = new HashSet<>();
 
@@ -181,8 +216,9 @@ public class DeployAppAuthChecker {
 
     /**
      * 批量校验多系统下的多权限
+     *
      * @param typeActionListMap 需要校验的map
-     * @return
+     * @return 拥有的权限map
      */
     public static Map<Long, Set<String>> batchChecker(Map<Long, Set<String>> typeActionListMap) {
 
