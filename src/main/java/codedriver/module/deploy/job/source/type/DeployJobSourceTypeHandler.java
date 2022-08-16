@@ -418,17 +418,30 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
     }
 
     @Override
-    public void myExecuteAuthCheck(AutoexecJobVo originJob, String execUser) {
-        //TODO 校验execUser 执行权限(应用配置的环境、场景)
+    public void myExecuteAuthCheck(AutoexecJobVo jobVo) {
         //包含BATCHJOB_MODIFY 则拥有所有应用的执行权限
-        if(AuthActionChecker.checkByUserUuid(UserContext.get().getUserUuid(true), BATCHDEPLOY_MODIFY.class.getSimpleName())){
-
+        if (!AuthActionChecker.checkByUserUuid(UserContext.get().getUserUuid(true), BATCHDEPLOY_MODIFY.class.getSimpleName())) {
+            //TODO 校验execUser 执行权限(应用配置的环境、场景)
         }
     }
 
     @Override
     public List<String> getModifyAuthList() {
         return Collections.singletonList(DEPLOY_MODIFY.class.getSimpleName());
+    }
+
+    @Override
+    public void getJobActionAuth(AutoexecJobVo jobVo) {
+        //包含BATCHJOB_MODIFY 则拥有所有应用的执行权限
+        if (AuthActionChecker.checkByUserUuid(UserContext.get().getUserUuid(true), BATCHDEPLOY_MODIFY.class.getSimpleName())) {
+            if (UserContext.get().getUserUuid().equals(jobVo.getExecUser())) {
+                jobVo.setIsCanExecute(1);
+            } else {
+                jobVo.setIsCanTakeOver(1);
+            }
+        } else {
+            //TODO 校验execUser 执行权限(应用配置的环境、场景)
+        }
     }
 
 }
