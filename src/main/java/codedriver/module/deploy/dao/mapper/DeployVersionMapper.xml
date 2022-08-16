@@ -830,7 +830,17 @@
         )
         ON DUPLICATE KEY UPDATE
             `job_id` = #{jobId},
-            `status` = #{status}
+            `status` = #{status},
+            <if test="runnerMapId != null">
+                `runner_map_id` = #{runnerMapId},
+            </if>
+            <if test="runnerGroupStr != null and runnerGroupStr != ''">
+                `runner_group` = #{runnerGroupStr},
+            </if>
+            <if test="endRev != null and endRev != ''">
+                `end_rev` = #{endRev},
+            </if>
+            `lcd` = now(3)
     </insert>
 
     <insert id="insertDeployVersionBuildQuality"

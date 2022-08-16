@@ -66,20 +66,32 @@ public class SaveDeployVersionForAutoexecApi extends PrivateApiComponentBase {
         JSONObject verInfo = paramObj.getJSONObject("verInfo");
         String status = verInfo.getString("status");
         DeployVersionVo versionVo = verInfo.toJavaObject(DeployVersionVo.class);
-        versionVo.setAppSystemId(sysId);
-        versionVo.setAppModuleId(moduleId);
-        versionVo.setVersion(version);
-        versionVo.setRunnerMapId(runnerId);
-        versionVo.setRunnerGroup(runnerGroup);
-        if (BuildNoStatus.COMPILED.getValue().equals(status)) {
-            versionVo.setCompileSuccessCount(1);
-        } else if (BuildNoStatus.COMPILE_FAILED.getValue().equals(status)) {
-            versionVo.setCompileFailCount(1);
+        DeployVersionVo oldVersionVo = deployVersionMapper.getDeployVersionBaseInfoBySystemIdAndModuleIdAndVersionLock(new DeployVersionVo(version, sysId, moduleId));
+        if (oldVersionVo == null) {
+            versionVo.setAppSystemId(sysId);
+            versionVo.setAppModuleId(moduleId);
+            versionVo.setVersion(version);
+            versionVo.setRunnerMapId(runnerId);
+            versionVo.setRunnerGroup(runnerGroup);
+            if (BuildNoStatus.COMPILED.getValue().equals(status)) {
+                versionVo.setCompileSuccessCount(1);
+            } else if (BuildNoStatus.COMPILE_FAILED.getValue().equals(status)) {
+                versionVo.setCompileFailCount(1);
+            }
+            deployVersionMapper.insertDeployVersion(versionVo);
+        } else {
+            versionVo.setId(oldVersionVo.getId());
+            versionVo.setRunnerMapId(runnerId);
+            versionVo.setRunnerGroup(runnerGroup);
+            if (BuildNoStatus.COMPILED.getValue().equals(status)) {
+                versionVo.setIsCompiled(1);
+            } else if (BuildNoStatus.COMPILE_FAILED.getValue().equals(status)) {
+                versionVo.setIsCompiled(0);
+            }
+            deployVersionMapper.updateDeployVersionInfoById(versionVo);
         }
-        deployVersionMapper.insertDeployVersion(versionVo);
         DeployVersionBuildNoVo buildNoVo = new DeployVersionBuildNoVo(versionVo.getId(), buildNo, jobId, status, runnerId, runnerGroup, verInfo.getString("endRev"));
         deployVersionMapper.insertDeployVersionBuildNo(buildNoVo);
-        // todo 是否要插入环境
         return null;
     }
 
