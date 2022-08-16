@@ -17,11 +17,9 @@ import codedriver.framework.deploy.crossover.IDeployBatchJobCrossoverService;
 import codedriver.framework.deploy.dto.job.DeployJobVo;
 import codedriver.framework.deploy.dto.job.LaneGroupVo;
 import codedriver.framework.deploy.dto.job.LaneVo;
-import codedriver.framework.deploy.exception.DeployBatchJobCannotExecuteException;
-import codedriver.framework.deploy.exception.DeployBatchJobFireWithRevokedAndCheckedException;
-import codedriver.framework.deploy.exception.DeployBatchJobGroupFireWithInvalidStatusException;
-import codedriver.framework.deploy.exception.DeployBatchJobGroupNotFoundException;
+import codedriver.framework.deploy.exception.*;
 import codedriver.framework.exception.core.ApiRuntimeException;
+import codedriver.module.deploy.auth.core.BatchDeployAuthChecker;
 import codedriver.module.deploy.dao.mapper.DeployBatchJobMapper;
 import codedriver.module.deploy.dao.mapper.DeployJobMapper;
 import com.alibaba.fastjson.JSONObject;
@@ -48,8 +46,13 @@ public class DeployBatchJobServiceImpl implements DeployBatchJobService, IDeploy
 
     @Override
     public void fireBatch(Long batchJobId, String batchJobAction, String jobAction) {
-        deployBatchJobMapper.getBatchDeployJobLockById(batchJobId);
-        AutoexecJobVo batchJobVo = autoexecJobMapper.getJobInfo(batchJobId);
+        DeployJobVo batchJobVo = deployBatchJobMapper.getBatchDeployJobLockById(batchJobId);
+        if (batchJobVo == null) {
+            throw new DeployBatchJobNotFoundException(batchJobId);
+        }
+        if (!BatchDeployAuthChecker.isCanExecute(batchJobVo)) {
+            throw new DeployBatchJobCannotExecuteException();
+        }
         //不允许存在"已撤销"的作业
         List<AutoexecJobVo> autoexecJobList = deployBatchJobMapper.getBatchDeployJobListByIdAndNotInStatus(batchJobId, Arrays.asList(JobStatus.REVOKED.getValue(), JobStatus.CHECKED.getValue()));
         if (CollectionUtils.isEmpty(autoexecJobList)) {
@@ -60,6 +63,7 @@ public class DeployBatchJobServiceImpl implements DeployBatchJobService, IDeploy
         if (!Objects.equals(loginUserUuid, batchJobVo.getExecUser())) {
             throw new DeployBatchJobCannotExecuteException();
         }
+        batchJobVo.setIsFirstFire(1);
         batchJobVo.setStatus(JobStatus.RUNNING.getValue());
         autoexecJobMapper.updateJobStatus(batchJobVo);
         //循环泳道，获取每个泳道第一个组fire
@@ -88,6 +92,13 @@ public class DeployBatchJobServiceImpl implements DeployBatchJobService, IDeploy
         LaneGroupVo groupVo = deployBatchJobMapper.getLaneGroupByGroupId(groupId);
         if (groupVo == null) {
             throw new DeployBatchJobGroupNotFoundException(groupId);
+        }
+        DeployJobVo batchJobVo = deployBatchJobMapper.getBatchJobByGroupId(groupId);
+        if (batchJobVo == null) {
+            throw new DeployBatchJobNotFoundException();
+        }
+        if (!BatchDeployAuthChecker.isCanGroupExecute(batchJobVo)) {
+            throw new DeployBatchJobCannotExecuteException();
         }
         groupVo.setBatchJobAction(batchJobAction);
         groupVo.setJobAction(jobAction);
@@ -160,6 +171,7 @@ public class DeployBatchJobServiceImpl implements DeployBatchJobService, IDeploy
                     IAutoexecJobActionHandler refireAction = AutoexecJobActionHandlerFactory.getAction(JobAction.REFIRE.getValue());
                     jobVo.setPassThroughEnv(passThroughEnv);
                     jobVo.setIsTakeOver(1);
+                    jobVo.setExecUser(UserContext.get().getUserUuid(true));
                     refireAction.doService(jobVo);
                 } catch (Exception ex) {
                     logger.error("Fire job by batch failed," + ex.getMessage(), ex);

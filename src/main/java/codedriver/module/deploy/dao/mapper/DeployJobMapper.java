@@ -16,6 +16,7 @@ import java.util.List;
  * @date 2022/6/27 16:19 下午
  */
 public interface DeployJobMapper {
+
     DeployJobVo getDeployJobByJobId(Long id);
 
     List<DeployJobVo> getDeployJobByJobIdList(List<Long> idList);
@@ -45,11 +46,13 @@ public interface DeployJobMapper {
 
     DeployJobVo getBatchDeployJobById(Long id);
 
-    DeployJobVo getBatchDeployJobStatusById(Long id);
+    DeployJobVo getJobBaseInfoById(Long id);
 
     List<LaneGroupVo> getDeployJobGroupByJobIdList(@Param("idList") List<Long> idList);
 
     DeployJobContentVo getDeployJobContent(String contentHash);
+
+    int getDeployJobAuthCountByJobIdAndUuid(@Param("jobId") Long id, @Param("userUuid") String userUuid);
 
     void insertDeployJob(DeployJobVo deployJobVo);
 

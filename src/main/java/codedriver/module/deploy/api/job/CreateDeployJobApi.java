@@ -78,7 +78,7 @@ public class CreateDeployJobApi extends PrivateApiComponentBase {
             @Param(name = "executeConfig", type = ApiParamType.JSONOBJECT, desc = "执行目标"),
             @Param(name = "planStartTime", type = ApiParamType.LONG, desc = "计划时间"),
             @Param(name = "triggerType", type = ApiParamType.ENUM, rule = "auto,manual", desc = "触发方式"),
-            @Param(name = "execUser", type = ApiParamType.STRING, desc = "执行用户"),
+            @Param(name = "assignExecUser", type = ApiParamType.STRING, desc = "指定执行用户"),
             @Param(name = "parentId", type = ApiParamType.LONG, desc = "父作业id"),
             @Param(name = "proxyToUrl", type = ApiParamType.STRING, desc = "不从当前环境runner下载,则需要传跳转url，即协议+IP地址（域名）+端口号")
 

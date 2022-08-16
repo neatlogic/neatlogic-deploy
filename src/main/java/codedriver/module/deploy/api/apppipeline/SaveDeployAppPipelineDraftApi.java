@@ -1,10 +1,11 @@
 /*
- * Copyright(c) 2021 TechSureCo.,Ltd.AllRightsReserved.
+ * Copyright(c) 2022 TechSure Co., Ltd. All Rights Reserved.
  * 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
  */
 
-package codedriver.module.deploy.api.pipeline;
+package codedriver.module.deploy.api.apppipeline;
 
+import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.deploy.auth.DEPLOY_BASE;
@@ -27,9 +28,9 @@ import java.util.Objects;
 
 @Service
 @AuthAction(action = DEPLOY_BASE.class)
-@OperationType(type = OperationTypeEnum.DELETE)
+@OperationType(type = OperationTypeEnum.OPERATE)
 @Transactional
-public class DeleteDeployAppPipelineDraftApi extends PrivateApiComponentBase {
+public class SaveDeployAppPipelineDraftApi extends PrivateApiComponentBase {
 
     @Resource
     private DeployAppConfigMapper deployAppConfigMapper;
@@ -39,12 +40,12 @@ public class DeleteDeployAppPipelineDraftApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "删除流水线草稿";
+        return "保存流水线草稿";
     }
 
     @Override
     public String getToken() {
-        return "deploy/app/pipeline/draft/delete";
+        return "deploy/app/pipeline/draft/save";
     }
 
     @Override
@@ -55,9 +56,10 @@ public class DeleteDeployAppPipelineDraftApi extends PrivateApiComponentBase {
     @Input({
             @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "应用系统ID"),
             @Param(name = "appModuleId", type = ApiParamType.LONG, desc = "模块ID"),
-            @Param(name = "envId", type = ApiParamType.LONG, desc = "环境ID")
+            @Param(name = "envId", type = ApiParamType.LONG, desc = "环境ID"),
+            @Param(name = "config", type = ApiParamType.JSONOBJECT, isRequired = true, desc = "流水线草稿配置信息")
     })
-    @Description(desc = "删除流水线草稿")
+    @Description(desc = "保存流水线草稿")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
 
@@ -68,7 +70,17 @@ public class DeleteDeployAppPipelineDraftApi extends PrivateApiComponentBase {
         }
 
         DeployAppConfigVo deployAppConfigDraftVo = paramObj.toJavaObject(DeployAppConfigVo.class);
-        deployAppConfigMapper.deleteAppConfigDraft(deployAppConfigDraftVo);
+        DeployAppConfigVo oldDeployAppConfigDraftVo = deployAppConfigMapper.getAppConfigDraft(deployAppConfigDraftVo);
+        if (oldDeployAppConfigDraftVo != null) {
+            if (Objects.equals(oldDeployAppConfigDraftVo.getConfigStr(), deployAppConfigDraftVo.getConfigStr())) {
+                return null;
+            }
+            deployAppConfigDraftVo.setLcu(UserContext.get().getUserUuid());
+            deployAppConfigMapper.updateAppConfigDraft(deployAppConfigDraftVo);
+        } else {
+            deployAppConfigDraftVo.setFcu(UserContext.get().getUserUuid());
+            deployAppConfigMapper.insertAppConfigDraft(deployAppConfigDraftVo);
+        }
         return null;
     }
 }

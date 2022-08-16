@@ -5,17 +5,13 @@
 
 package codedriver.module.deploy.api.job.batch;
 
+import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.auth.core.AuthAction;
-import codedriver.framework.autoexec.constvalue.JobAction;
-import codedriver.framework.autoexec.constvalue.JobStatus;
 import codedriver.framework.autoexec.dao.mapper.AutoexecJobMapper;
-import codedriver.framework.autoexec.dto.job.AutoexecJobVo;
-import codedriver.framework.autoexec.job.action.core.AutoexecJobActionHandlerFactory;
-import codedriver.framework.autoexec.job.action.core.IAutoexecJobActionHandler;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.deploy.auth.DEPLOY_BASE;
 import codedriver.framework.deploy.dto.job.DeployJobVo;
-import codedriver.framework.deploy.exception.DeployBatchJobCannotCheckException;
+import codedriver.framework.deploy.exception.DeployBatchJobCannotTakeOverException;
 import codedriver.framework.deploy.exception.DeployBatchJobNotFoundException;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
@@ -23,23 +19,21 @@ import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.deploy.auth.core.BatchDeployAuthChecker;
 import codedriver.module.deploy.dao.mapper.DeployBatchJobMapper;
 import com.alibaba.fastjson.JSONObject;
-import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.util.List;
 
 /**
  * @author lvzk
- * @since 2021/8/10 15:20
+ * @since 2021/8/12 15:20
  **/
 
 @Service
 @Transactional
 @AuthAction(action = DEPLOY_BASE.class)
 @OperationType(type = OperationTypeEnum.OPERATE)
-public class CheckBatchDeployJobApi extends PrivateApiComponentBase {
+public class TakeOverBatchDeployJobApi extends PrivateApiComponentBase {
 
     @Resource
     private AutoexecJobMapper autoexecJobMapper;
@@ -48,7 +42,7 @@ public class CheckBatchDeployJobApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "验证批量发布作业";
+        return "接管批量发布作业";
     }
 
     @Override
@@ -61,7 +55,7 @@ public class CheckBatchDeployJobApi extends PrivateApiComponentBase {
     })
     @Output({
     })
-    @Description(desc = "验证批量发布作业接口")
+    @Description(desc = "接管批量发布作业接口")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         Long batchJobId = jsonObj.getLong("id");
@@ -69,27 +63,17 @@ public class CheckBatchDeployJobApi extends PrivateApiComponentBase {
         if (deployBatchJobVo == null) {
             throw new DeployBatchJobNotFoundException(batchJobId);
         }
-        if(BatchDeployAuthChecker.isCanCheck(deployBatchJobVo)) {
-            throw new DeployBatchJobCannotCheckException();
+        if (BatchDeployAuthChecker.isCanTakeOver(deployBatchJobVo)) {
+            deployBatchJobVo.setExecUser(UserContext.get().getUserUuid(true));
+            autoexecJobMapper.updateJobExecUser(deployBatchJobVo.getId(), deployBatchJobVo.getExecUser());
+        } else {
+            throw new DeployBatchJobCannotTakeOverException();
         }
-        List<AutoexecJobVo> jobVoList = autoexecJobMapper.getJobListLockByParentIdAndStatus(batchJobId, JobStatus.COMPLETED.getValue());
-        if (CollectionUtils.isNotEmpty(jobVoList)) {
-            for (AutoexecJobVo jobVo : jobVoList) {
-                jobVo.setAction(JobAction.CHECK.getValue());
-                IAutoexecJobActionHandler action = AutoexecJobActionHandlerFactory.getAction(JobAction.CHECK.getValue());
-                action.doService(jobVo);
-            }
-        }
-        jobVoList = autoexecJobMapper.getJobListByParentIdAndNotInStatus(batchJobId, JobStatus.CHECKED.getValue());
-        if (CollectionUtils.isEmpty(jobVoList)) {
-            autoexecJobMapper.updateJobStatus(new AutoexecJobVo(batchJobId, JobStatus.CHECKED.getValue()));
-        }
-
         return null;
     }
 
     @Override
     public String getToken() {
-        return "deploy/batchjob/check";
+        return "deploy/batchjob/takeover";
     }
 }

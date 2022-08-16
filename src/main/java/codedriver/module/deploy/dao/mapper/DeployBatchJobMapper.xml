@@ -8,17 +8,18 @@
 <mapper namespace="codedriver.module.deploy.dao.mapper.DeployBatchJobMapper">
     <select id="getBatchDeployJobLockById" parameterType="java.lang.Long"
             resultType="codedriver.framework.deploy.dto.job.DeployJobVo">
-        SELECT a.id              as batchJobId,
-               a.`name`          as batchJobName,
-               a.`status`        as batchJobStatus,
-               a.error_msg       as batchJobErrorMsg,
-               a.plan_start_time as batchJobPlanStartTime,
-               a.start_time      as batchJobStartTime,
-               a.end_time        as batchJobEndTime,
-               a.source          as batchJobSource,
-               a.reviewer        as batchJobReviewer,
-               a.review_status   as batchJobReviewStatus,
-               a.review_time     as batchJobReviewTime
+        SELECT a.id              as id,
+               a.`name`          as name,
+               a.`status`        as status,
+               a.error_msg       as errorMsg,
+               a.plan_start_time as planStartTime,
+               a.start_time      as startTime,
+               a.end_time        as endTime,
+               a.source          as source,
+               a.exec_user       as execUser,
+               a.reviewer,
+               a.review_status   as reviewStatus,
+               a.review_time     as reviewTime
         FROM autoexec_job AS a
         where id = #{value} for
         update
@@ -113,6 +114,24 @@
         FROM deploy_job_lane_group_job a
                  left join deploy_job_lane_group b on a.group_id = b.id
         WHERE a.job_id = #{value}
+    </select>
+    <select id="getBatchJobByGroupId" resultType="codedriver.framework.deploy.dto.job.DeployJobVo">
+        SELECT a.id              as id,
+               a.`name`          as name,
+               a.`status`        as status,
+               a.error_msg       as errorMsg,
+               a.plan_start_time as planStartTime,
+               a.start_time      as startTime,
+               a.end_time        as endTime,
+               a.exec_user       as execUser,
+               a.reviewer,
+               a.review_status   as reviewStatus,
+               a.review_time     as reviewTime,
+               a.source          as source
+        FROM autoexec_job AS a
+                 LEFT JOIN deploy_job_lane AS b ON a.id = b.batch_job_id
+                 LEFT JOIN deploy_job_lane_group AS c ON b.id = c.lane_id
+        where c.id = #{groupId}
     </select>
     <update id="updateLaneStatus">
         UPDATE deploy_job_lane

@@ -12,6 +12,7 @@ import codedriver.framework.deploy.dto.job.DeployJobVo;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
+import codedriver.module.deploy.auth.core.BatchDeployAuthChecker;
 import codedriver.module.deploy.dao.mapper.DeployJobMapper;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.stereotype.Service;
@@ -46,7 +47,13 @@ public class GetBatchDeployJobApi extends PrivateApiComponentBase {
     @Description(desc = "获取单个批量作业信息接口")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
-        return deployJobMapper.getBatchDeployJobById(jsonObj.getLong("id"));
+        DeployJobVo deployJobVo = deployJobMapper.getBatchDeployJobById(jsonObj.getLong("id"));
+        deployJobVo.setIsCanExecute(BatchDeployAuthChecker.isCanExecute(deployJobVo) ? 1 : 0);
+        deployJobVo.setIsCanTakeOver(BatchDeployAuthChecker.isCanTakeOver(deployJobVo) ? 1 : 0);
+        deployJobVo.setIsCanEdit(BatchDeployAuthChecker.isCanEdit(deployJobVo) ? 1 : 0);
+        deployJobVo.setIsCanCheck(BatchDeployAuthChecker.isCanCheck(deployJobVo) ? 1 : 0);
+        deployJobVo.setIsCanGroupExecute(BatchDeployAuthChecker.isCanGroupExecute(deployJobVo) ? 1 : 0);
+        return deployJobVo;
     }
 
     @Override

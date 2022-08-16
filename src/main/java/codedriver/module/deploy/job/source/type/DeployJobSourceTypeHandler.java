@@ -7,6 +7,7 @@ package codedriver.module.deploy.job.source.type;
 
 import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.asynchronization.threadlocal.UserContext;
+import codedriver.framework.auth.core.AuthActionChecker;
 import codedriver.framework.autoexec.constvalue.ExecMode;
 import codedriver.framework.autoexec.constvalue.JobNodeStatus;
 import codedriver.framework.autoexec.dao.mapper.AutoexecJobMapper;
@@ -28,6 +29,7 @@ import codedriver.framework.cmdb.dto.resourcecenter.ResourceVo;
 import codedriver.framework.cmdb.exception.cientity.CiEntityNotFoundException;
 import codedriver.framework.crossover.CrossoverServiceFactory;
 import codedriver.framework.dao.mapper.runner.RunnerMapper;
+import codedriver.framework.deploy.auth.BATCHDEPLOY_MODIFY;
 import codedriver.framework.deploy.auth.DEPLOY_MODIFY;
 import codedriver.framework.deploy.constvalue.BuildNoStatus;
 import codedriver.framework.deploy.constvalue.JobSourceType;
@@ -416,13 +418,30 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
     }
 
     @Override
-    public void myExecuteAuthCheck(AutoexecJobVo originJob, String execUser) {
-        //TODO 校验execUser 执行权限(应用配置的环境、场景)
+    public void myExecuteAuthCheck(AutoexecJobVo jobVo) {
+        //包含BATCHJOB_MODIFY 则拥有所有应用的执行权限
+        if (!AuthActionChecker.checkByUserUuid(UserContext.get().getUserUuid(true), BATCHDEPLOY_MODIFY.class.getSimpleName())) {
+            //TODO 校验execUser 执行权限(应用配置的环境、场景)
+        }
     }
 
     @Override
     public List<String> getModifyAuthList() {
         return Collections.singletonList(DEPLOY_MODIFY.class.getSimpleName());
+    }
+
+    @Override
+    public void getJobActionAuth(AutoexecJobVo jobVo) {
+        //包含BATCHJOB_MODIFY 则拥有所有应用的执行权限
+        if (AuthActionChecker.checkByUserUuid(UserContext.get().getUserUuid(true), BATCHDEPLOY_MODIFY.class.getSimpleName())) {
+            if (UserContext.get().getUserUuid().equals(jobVo.getExecUser())) {
+                jobVo.setIsCanExecute(1);
+            } else {
+                jobVo.setIsCanTakeOver(1);
+            }
+        } else {
+            //TODO 校验execUser 执行权限(应用配置的环境、场景)
+        }
     }
 
 }

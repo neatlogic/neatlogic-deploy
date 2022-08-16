@@ -1,5 +1,5 @@
 /*
- * Copyright (c)  2022 TechSure Co.,Ltd.  All Rights Reserved.
+ * Copyright(c) 2022 TechSure Co., Ltd. All Rights Reserved.
  * 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
  */
 
@@ -20,6 +20,7 @@ import codedriver.framework.deploy.dto.job.LaneGroupVo;
 import codedriver.framework.deploy.dto.job.LaneVo;
 import codedriver.framework.deploy.exception.DeployBatchJobCannotEditException;
 import codedriver.framework.deploy.exception.DeployBatchJobNotFoundException;
+import codedriver.framework.deploy.exception.DeployJobHasParentException;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
@@ -66,6 +67,7 @@ public class SaveBatchDeployJobApi extends PrivateApiComponentBase {
             @Param(name = "laneList", type = ApiParamType.JSONARRAY, desc = "通道列表"),
             @Param(name = "authList", type = ApiParamType.JSONARRAY, desc = "授权列表")})
     @Output({@Param(explode = DeployJobVo.class)})
+    @ResubmitInterval(3)
     @Description(desc = "保存批量发布作业接口")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
@@ -117,6 +119,10 @@ public class SaveBatchDeployJobApi extends PrivateApiComponentBase {
                             hasGroupJob = true;
                             for (int k = 0; k < groupVo.getJobList().size(); k++) {
                                 DeployJobVo jobVo = groupVo.getJobList().get(k);
+                                DeployJobVo checkJobVo = deployJobMapper.getJobBaseInfoById(jobVo.getId());
+                                if (checkJobVo.getParentId() != null && !checkJobVo.getParentId().equals(deployJobVo.getId())) {
+                                    throw new DeployJobHasParentException(checkJobVo.getName());
+                                }
                                 jobVo.setParentId(deployJobVo.getId());
                                 deployJobMapper.updateAutoExecJobParentIdById(jobVo);
                                 deployJobMapper.insertGroupJob(groupVo.getId(), jobVo.getId(), k + 1);

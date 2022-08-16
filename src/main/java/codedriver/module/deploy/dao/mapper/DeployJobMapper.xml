@@ -285,6 +285,7 @@
         <result column="batchJobReviewStatus" property="reviewStatus"/>
         <result column="batchJobReviewTime" property="reviewTime"/>
         <result column="batchJobTriggerType" property="triggerType"/>
+        <result column="batchJobExecUser" property="execUser"/>
         <collection property="authList" ofType="codedriver.framework.deploy.dto.job.DeployJobAuthVo">
             <result column="jobAuthType" property="type"/>
             <result column="jobAuthUuid" property="authUuid"/>
@@ -325,9 +326,12 @@
         </collection>
     </resultMap>
 
-    <select id="getBatchDeployJobStatusById" parameterType="java.lang.Long"
+    <select id="getJobBaseInfoById" parameterType="java.lang.Long"
             resultType="codedriver.framework.deploy.dto.job.DeployJobVo">
-        SELECT id, name, status
+        SELECT id,
+               name,
+               status,
+               parent_id as parentId
         FROM autoexec_job
         WHERE id = #{value}
     </select>
@@ -346,6 +350,7 @@
                a.review_status   as batchJobReviewStatus,
                a.review_time     as batchJobReviewTime,
                a.trigger_type    as batchJobTriggerType,
+               a.exec_user       as batchJobExecUser,
                b.id              as laneId,
                b.sort            as laneSort,
                b.`status`        as laneStatus,
@@ -441,6 +446,13 @@
                `content`
         FROM `autoexec_job_content`
         where `hash` = #{value}
+    </select>
+    <select id="getDeployJobAuthCountByJobIdAndUuid"
+            resultType="java.lang.Integer">
+        select count(1)
+        from deploy_job_auth
+        where auth_uuid = #{userUuid}
+          and job_id = #{jobId}
     </select>
 
     <insert id="insertDeployJob">
