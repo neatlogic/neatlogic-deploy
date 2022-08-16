@@ -356,11 +356,11 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
                 } else {
                     deployJobVo.setBuildNo(maxBuildNo + 1);
                 }
-                deployJobMapper.insertDeployVersionBuildNo(new DeployVersionBuildNoVo(deployVersionVo.getId(), deployJobVo.getBuildNo(), deployJobVo.getId(), BuildNoStatus.PENDING.getValue()));
+                deployVersionMapper.insertDeployVersionBuildNo(new DeployVersionBuildNoVo(deployVersionVo.getId(), deployJobVo.getBuildNo(), deployJobVo.getId(), BuildNoStatus.PENDING.getValue()));
             } else if (buildNo > 0) {
                 deployJobVo.setBuildNo(buildNo);
             }
-            deployJobMapper.insertDeployVersionBuildNo(new DeployVersionBuildNoVo(deployVersionVo.getId(), deployJobVo.getBuildNo(), deployJobVo.getId(), BuildNoStatus.PENDING.getValue()));
+            deployVersionMapper.insertDeployVersionBuildNo(new DeployVersionBuildNoVo(deployVersionVo.getId(), deployJobVo.getBuildNo(), deployJobVo.getId(), BuildNoStatus.PENDING.getValue()));
         }
         deployJobMapper.insertDeployJob(deployJobVo);
         jobVo.setInvokeId(deployJobVo.getId());
@@ -421,7 +421,7 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
     public void myExecuteAuthCheck(AutoexecJobVo originJob, String execUser) {
         //TODO 校验execUser 执行权限(应用配置的环境、场景)
         //包含BATCHJOB_MODIFY 则拥有所有应用的执行权限
-        if(AuthActionChecker.checkByUserUuid(UserContext.get().getUserUuid(true), BATCHDEPLOY_MODIFY.class.getSimpleName())){
+        if (AuthActionChecker.checkByUserUuid(UserContext.get().getUserUuid(true), BATCHDEPLOY_MODIFY.class.getSimpleName())) {
 
         }
     }

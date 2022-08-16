@@ -674,12 +674,100 @@
     </update>
 
     <insert id="insertDeployVersion">
-        insert into deploy_version
-        (id, version, app_system_id, app_module_id, is_freeze, fcu, fcd, lcu,
-         lcd)
-        values (#{id}, #{version}, #{appSystemId}, #{appModuleId},
-                #{isFreeze},
-                #{fcu}, now(3), #{lcu}, now(3))
+        insert into deploy_version(
+            id,
+            version,
+            app_system_id,
+            app_module_id,
+            is_freeze,
+            <if test="repoType != null and repoType != ''">
+                repo_type,
+            </if>
+            <if test="repo != null and repo != ''">
+                repo,
+            </if>
+            <if test="trunk != null and trunk != ''">
+                trunk,
+            </if>
+            <if test="branch != null and branch != ''">
+                branch,
+            </if>
+            <if test="tag != null and tag != ''">
+                tag,
+            </if>
+            <if test="tagsDir != null and tagsDir != ''">
+                tags_dir,
+            </if>
+            <if test="startRev != null and startRev != ''">
+                start_rev,
+            </if>
+            <if test="endRev != null and endRev != ''">
+                end_rev,
+            </if>
+            <if test="runnerMapId != null">
+                runner_map_id,
+            </if>
+            <if test="runnerGroupStr != null and runnerGroupStr != ''">
+                runner_group,
+            </if>
+            <if test="compileSuccessCount != null">
+                compile_success_count,
+            </if>
+            <if test="compileFailCount != null">
+                compile_fail_count,
+            </if>
+            fcu,
+            fcd,
+            lcu,
+            lcd
+         )
+        values (
+            #{id},
+            #{version},
+            #{appSystemId},
+            #{appModuleId},
+            #{isFreeze},
+            <if test="repoType != null and repoType != ''">
+                #{repoType},
+            </if>
+            <if test="repo != null and repo != ''">
+                #{repo},
+            </if>
+            <if test="trunk != null and trunk != ''">
+                #{trunk},
+            </if>
+            <if test="branch != null and branch != ''">
+                #{branch},
+            </if>
+            <if test="tag != null and tag != ''">
+                #{tag},
+            </if>
+            <if test="tagsDir != null and tagsDir != ''">
+                #{tagsDir},
+            </if>
+            <if test="startRev != null and startRev != ''">
+                #{startRev},
+            </if>
+            <if test="endRev != null and endRev != ''">
+                #{endRev},
+            </if>
+            <if test="runnerMapId != null">
+                #{runnerMapId},
+            </if>
+            <if test="runnerGroupStr != null and runnerGroupStr != ''">
+                #{runnerGroupStr},
+            </if>
+            <if test="compileSuccessCount != null">
+                #{compileSuccessCount},
+            </if>
+            <if test="compileFailCount != null">
+                #{compileFailCount},
+            </if>
+            #{fcu},
+            now(3),
+            #{lcu},
+            now(3)
+        )
     </insert>
 
     <insert id="insertDeployVersionEnv" parameterType="codedriver.framework.deploy.dto.version.DeployVersionEnvVo">
@@ -703,6 +791,46 @@
                 #{isMirror},
                 #{lcu},
                 now(3))
+    </insert>
+
+    <insert id="insertDeployVersionBuildNo">
+        INSERT INTO `deploy_version_buildno` (
+            `version_id`,
+            `build_no`,
+            `job_id`,
+            `status`,
+            <if test="runnerMapId != null">
+                runner_map_id,
+            </if>
+            <if test="runnerGroupStr != null and runnerGroupStr != ''">
+                runner_group,
+            </if>
+            <if test="endRev != null and endRev != ''">
+                end_rev,
+            </if>
+            lcu,
+            lcd
+        )
+        values (
+            #{versionId},
+            #{buildNo},
+            #{jobId},
+            #{status},
+            <if test="runnerMapId != null">
+                #{runnerMapId},
+            </if>
+            <if test="runnerGroupStr != null and runnerGroupStr != ''">
+                #{runnerGroupStr},
+            </if>
+            <if test="endRev != null and endRev != ''">
+                #{endRev},
+            </if>
+            #{lcu},
+            now(3)
+        )
+        ON DUPLICATE KEY UPDATE
+            `job_id` = #{jobId},
+            `status` = #{status}
     </insert>
 
     <insert id="insertDeployVersionBuildQuality"

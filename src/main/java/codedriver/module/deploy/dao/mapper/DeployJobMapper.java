@@ -70,8 +70,6 @@ public interface DeployJobMapper {
 
     void insertJobInvoke(@Param("jobId") Long jobId, @Param("invokeId") Long invokeId, @Param("source") String source, @Param("type") String type);
 
-    void insertDeployVersionBuildNo(DeployVersionBuildNoVo deployVersionBuildNoVo);
-
     void updateAutoExecJob(DeployJobVo deployJobVo);
 
     void resetAutoexecJobParentId(Long jobId);

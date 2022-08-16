@@ -77,6 +77,8 @@ public interface DeployVersionMapper {
 
     int insertDeployVersionEnv(DeployVersionEnvVo vo);
 
+    int insertDeployVersionBuildNo(DeployVersionBuildNoVo deployVersionBuildNoVo);
+
     int insertDeployVersionBuildQuality(DeployVersionBuildQualityVo vo);
 
     int insertDeployVersionBuildQualityLog(DeployVersionBuildQualityVo vo);
