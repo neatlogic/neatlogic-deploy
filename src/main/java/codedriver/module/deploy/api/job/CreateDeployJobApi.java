@@ -98,12 +98,22 @@ public class CreateDeployJobApi extends PrivateApiComponentBase {
         runner.execute(moduleArray, 3, module -> {
             JSONObject moduleJson = JSONObject.parseObject(module.toString());
             if (MapUtils.isNotEmpty(moduleJson)) {
-                deployJobService.convertModule(jsonObj, moduleJson);
-                if (jsonObj.containsKey("triggerType")) {
-                    result.add(deployJobService.createScheduleJob(jsonObj));
-                } else {
-                    result.add(deployJobService.createJob(jsonObj));
+                try {
+                    deployJobService.convertModule(jsonObj, moduleJson);
+                    if (jsonObj.containsKey("triggerType")) {
+                        result.add(deployJobService.createScheduleJob(jsonObj));
+                    } else {
+                        result.add(deployJobService.createJob(jsonObj));
+                    }
+                } catch (Exception ex) {
+                    logger.error(ex.getMessage(), ex);
+                    JSONObject resultJson = new JSONObject();
+                    resultJson.put("appSystemName", jsonObj.getString("appSystemName"));
+                    resultJson.put("appModuleName", jsonObj.getString("appModuleName"));
+                    resultJson.put("errorMsg", ex.getMessage());
+                    result.add(resultJson);
                 }
+
             }
         }, "DEPLOY-JOB-CREATE");
         return result;

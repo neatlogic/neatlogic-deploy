@@ -42,14 +42,17 @@ import codedriver.framework.deploy.dto.sql.DeploySqlJobPhaseVo;
 import codedriver.framework.deploy.dto.version.DeployVersionBuildNoVo;
 import codedriver.framework.deploy.dto.version.DeployVersionVo;
 import codedriver.framework.deploy.exception.DeployAppConfigModuleRunnerGroupNotFoundException;
+import codedriver.framework.deploy.exception.DeployJobCannotExecuteException;
 import codedriver.framework.deploy.exception.DeployPipelineConfigNotFoundException;
 import codedriver.framework.deploy.exception.DeployVersionNotFoundException;
 import codedriver.framework.dto.runner.RunnerGroupVo;
 import codedriver.framework.dto.runner.RunnerMapVo;
 import codedriver.framework.exception.runner.RunnerNotFoundByRunnerMapIdException;
+import codedriver.framework.exception.type.ParamIrregularException;
 import codedriver.framework.integration.authentication.enums.AuthenticateType;
 import codedriver.framework.util.HttpRequestUtil;
 import codedriver.framework.util.TableResultUtil;
+import codedriver.module.deploy.auth.core.DeployAppAuthChecker;
 import codedriver.module.deploy.dao.mapper.DeployAppConfigMapper;
 import codedriver.module.deploy.dao.mapper.DeployJobMapper;
 import codedriver.module.deploy.dao.mapper.DeploySqlMapper;
@@ -262,6 +265,9 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
     @Override
     public AutoexecSqlDetailVo getSqlDetail(AutoexecJobVo jobVo) {
         Long sqlId = jobVo.getActionParam().getLong("nodeId");
+        if (sqlId == null) {
+            throw new ParamIrregularException("nodeId");
+        }
         DeploySqlDetailVo deploySqlDetailVo = deploySqlMapper.getDeployJobSqlDetailById(sqlId);
         AutoexecSqlDetailVo autoexecSqlDetailVo = null;
         if (deploySqlDetailVo != null) {
@@ -421,7 +427,11 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
     public void myExecuteAuthCheck(AutoexecJobVo jobVo) {
         //包含BATCHJOB_MODIFY 则拥有所有应用的执行权限
         if (!AuthActionChecker.checkByUserUuid(UserContext.get().getUserUuid(true), BATCHDEPLOY_MODIFY.class.getSimpleName())) {
-            //TODO 校验execUser 执行权限(应用配置的环境、场景)
+            DeployJobVo deployJobVo = deployJobMapper.getDeployJobByJobId(jobVo.getId());
+            Set<String> authSet = DeployAppAuthChecker.builder(deployJobVo.getAppSystemId()).addEnvAction(deployJobVo.getEnvId()).addScenarioAction(deployJobVo.getScenarioId()).check();
+            if (!authSet.containsAll(Arrays.asList(deployJobVo.getEnvId().toString(), deployJobVo.getScenarioId().toString()))) {
+                throw new DeployJobCannotExecuteException(deployJobVo);
+            }
         }
     }
 
@@ -432,15 +442,21 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
 
     @Override
     public void getJobActionAuth(AutoexecJobVo jobVo) {
+        boolean isHasAuth = false;
         //包含BATCHJOB_MODIFY 则拥有所有应用的执行权限
         if (AuthActionChecker.checkByUserUuid(UserContext.get().getUserUuid(true), BATCHDEPLOY_MODIFY.class.getSimpleName())) {
-            if (UserContext.get().getUserUuid().equals(jobVo.getExecUser())) {
-                jobVo.setIsCanExecute(1);
-            } else {
-                jobVo.setIsCanTakeOver(1);
-            }
+            isHasAuth = true;
         } else {
-            //TODO 校验execUser 执行权限(应用配置的环境、场景)
+            DeployJobVo deployJobVo = deployJobMapper.getDeployJobByJobId(jobVo.getId());
+            Set<String> authSet = DeployAppAuthChecker.builder(deployJobVo.getAppSystemId()).addEnvAction(deployJobVo.getEnvId()).addScenarioAction(deployJobVo.getScenarioId()).check();
+            if (authSet.containsAll(Arrays.asList(deployJobVo.getEnvId().toString(), deployJobVo.getScenarioId().toString()))) {
+                isHasAuth = true;
+            }
+        }
+        if (isHasAuth && UserContext.get().getUserUuid().equals(jobVo.getExecUser())) {
+            jobVo.setIsCanExecute(1);
+        } else {
+            jobVo.setIsCanTakeOver(1);
         }
     }
 

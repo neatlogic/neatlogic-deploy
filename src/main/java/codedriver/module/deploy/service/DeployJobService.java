@@ -35,7 +35,7 @@ public interface DeployJobService {
      * @param jsonObj 作业入参
      * @return result
      */
-    JSONObject createJob(JSONObject jsonObj);
+    JSONObject createJob(JSONObject jsonObj) throws Exception;
 
 
     /**

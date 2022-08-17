@@ -144,7 +144,7 @@ public class DeployJobServiceImpl implements DeployJobService {
         IAppSystemMapper iAppSystemMapper = CrossoverServiceFactory.getApi(IAppSystemMapper.class);
         Long appModuleId = moduleJson.getLong("id");
         if (moduleJson.containsKey("name")) {
-            AppModuleVo appModuleVo = iAppSystemMapper.getAppModuleByAbbrName(moduleJson.getString("name"), TenantContext.get().getDataDbName());
+            AppModuleVo appModuleVo = iAppSystemMapper.getAppModuleByAbbrName(moduleJson.getString("abbrName"), TenantContext.get().getDataDbName());
             if (appModuleVo == null) {
                 throw new CiEntityNotFoundException(moduleJson.getString("name"));
             }
@@ -166,9 +166,9 @@ public class DeployJobServiceImpl implements DeployJobService {
         jsonObj.put("buildNo", moduleJson.getInteger("buildNo"));
         jsonObj.put("version", moduleJson.getString("version"));
         JSONObject executeConfig = jsonObj.getJSONObject("executeConfig");
-        if(MapUtils.isEmpty(executeConfig)){
+        if (MapUtils.isEmpty(executeConfig)) {
             executeConfig = new JSONObject();
-            jsonObj.put("executeConfig",executeConfig);
+            jsonObj.put("executeConfig", executeConfig);
         }
         IResourceCrossoverMapper resourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
         executeConfig.put("executeNodeConfig", new JSONObject() {{
@@ -198,9 +198,9 @@ public class DeployJobServiceImpl implements DeployJobService {
                     JSONObject nodeJson = selectNodeArray.getJSONObject(i);
                     if (!nodeJson.containsKey("id")) {
                         ResourceVo resourceVo = resourceCrossoverMapper.getResourceByIpAndPort(TenantContext.get().getDataDbName(), nodeJson.getString("ip"), nodeJson.getInteger("port"));
-                        if(resourceVo != null){
-                            nodeJson.put("id",resourceVo.getId());
-                            nodeJson.put("name",resourceVo.getName());
+                        if (resourceVo != null) {
+                            nodeJson.put("id", resourceVo.getId());
+                            nodeJson.put("name", resourceVo.getName());
                         }
                     }
                 }
@@ -211,51 +211,40 @@ public class DeployJobServiceImpl implements DeployJobService {
     }
 
     @Override
-    public JSONObject createJob(JSONObject jsonObj) {
+    public JSONObject createJob(JSONObject jsonObj) throws Exception {
         JSONObject resultJson = new JSONObject();
-        try {
-            IAutoexecJobActionCrossoverService autoexecJobActionCrossoverService = CrossoverServiceFactory.getApi(IAutoexecJobActionCrossoverService.class);
-            AutoexecJobVo jobVo = autoexecJobActionCrossoverService.validateAndCreateJobFromCombop(jsonObj, false);
-            IAutoexecJobActionHandler fireAction = AutoexecJobActionHandlerFactory.getAction(JobAction.FIRE.getValue());
-            jobVo.setAction(JobAction.FIRE.getValue());
-            jobVo.setIsFirstFire(1);
-            fireAction.doService(jobVo);
-            resultJson.put("jobId", jobVo.getId());
-            resultJson.put("appSystemName", jsonObj.getString("appSystemName"));
-            resultJson.put("appModuleName", jsonObj.getString("appModuleName"));
-        } catch (Exception ex) {
-            logger.error(ex.getMessage(), ex);
-            resultJson.put("appSystemName", jsonObj.getString("appSystemName"));
-            resultJson.put("appModuleName", jsonObj.getString("appModuleName"));
-            resultJson.put("errorMsg", ex.getMessage());
-        }
+
+        IAutoexecJobActionCrossoverService autoexecJobActionCrossoverService = CrossoverServiceFactory.getApi(IAutoexecJobActionCrossoverService.class);
+        AutoexecJobVo jobVo = autoexecJobActionCrossoverService.validateAndCreateJobFromCombop(jsonObj, false);
+        IAutoexecJobActionHandler fireAction = AutoexecJobActionHandlerFactory.getAction(JobAction.FIRE.getValue());
+        jobVo.setAction(JobAction.FIRE.getValue());
+        jobVo.setIsFirstFire(1);
+        fireAction.doService(jobVo);
+        resultJson.put("jobId", jobVo.getId());
+        resultJson.put("appSystemName", jsonObj.getString("appSystemName"));
+        resultJson.put("appModuleName", jsonObj.getString("appModuleName"));
         return resultJson;
     }
 
     @Override
     public JSONObject createScheduleJob(JSONObject jsonObj) {
         JSONObject resultJson = new JSONObject();
-        try {
-            IAutoexecJobActionCrossoverService autoexecJobActionCrossoverService = CrossoverServiceFactory.getApi(IAutoexecJobActionCrossoverService.class);
-            AutoexecJobVo jobVo = autoexecJobActionCrossoverService.validateAndCreateJobFromCombop(jsonObj, false);
-            // 保存之后，如果设置的人工触发，那只有点执行按钮才能触发；如果是自动触发，则启动一个定时作业；如果没到点就人工触发了，则取消定时作业，立即执行
-            if (JobTriggerType.AUTO.getValue().equals(jobVo.getTriggerType())) {
-                if (!jsonObj.containsKey("planStartTime")) {
-                    throw new ParamIrregularException("planStartTime");
-                }
-                IJob jobHandler = SchedulerManager.getHandler(DeployJobAutoFireJob.class.getName());
-                if (jobHandler == null) {
-                    throw new ScheduleHandlerNotFoundException(DeployJobAutoFireJob.class.getName());
-                }
-                JobObject.Builder jobObjectBuilder = new JobObject.Builder(jobVo.getId().toString(), jobHandler.getGroupName(), jobHandler.getClassName(), TenantContext.get().getTenantUuid());
-                jobHandler.reloadJob(jobObjectBuilder.build());
+        IAutoexecJobActionCrossoverService autoexecJobActionCrossoverService = CrossoverServiceFactory.getApi(IAutoexecJobActionCrossoverService.class);
+        AutoexecJobVo jobVo = autoexecJobActionCrossoverService.validateAndCreateJobFromCombop(jsonObj, false);
+        // 保存之后，如果设置的人工触发，那只有点执行按钮才能触发；如果是自动触发，则启动一个定时作业；如果没到点就人工触发了，则取消定时作业，立即执行
+        if (JobTriggerType.AUTO.getValue().equals(jobVo.getTriggerType())) {
+            if (!jsonObj.containsKey("planStartTime")) {
+                throw new ParamIrregularException("planStartTime");
             }
-            resultJson.put("jobId", jobVo.getId());
-            resultJson.put("appModuleName", jsonObj.getString("appModuleName"));
-        } catch (Exception ex) {
-            logger.error(ex.getMessage(), ex);
-            resultJson.put("errorMsg", ex.getMessage());
+            IJob jobHandler = SchedulerManager.getHandler(DeployJobAutoFireJob.class.getName());
+            if (jobHandler == null) {
+                throw new ScheduleHandlerNotFoundException(DeployJobAutoFireJob.class.getName());
+            }
+            JobObject.Builder jobObjectBuilder = new JobObject.Builder(jobVo.getId().toString(), jobHandler.getGroupName(), jobHandler.getClassName(), TenantContext.get().getTenantUuid());
+            jobHandler.reloadJob(jobObjectBuilder.build());
         }
+        resultJson.put("jobId", jobVo.getId());
+        resultJson.put("appModuleName", jsonObj.getString("appModuleName"));
         return resultJson;
     }
 
