@@ -1298,7 +1298,7 @@
         INSERT INTO `deploy_app_module_runner_group`
         (`app_system_id`, `app_module_id`, `runner_group_id`)
         VALUES
-        <foreach collection="runnerVoList" separator="," item="vo">
+        <foreach collection="runnerGroupVoList" separator="," item="vo">
             (#{vo.appSystemId}, #{vo.appModuleId}, #{vo.runnerGroupId})
         </foreach>
     </insert>

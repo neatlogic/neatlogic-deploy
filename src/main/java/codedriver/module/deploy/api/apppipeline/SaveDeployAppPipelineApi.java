@@ -92,9 +92,9 @@ public class SaveDeployAppPipelineApi extends PrivateApiComponentBase {
             }
         } else {
             //只有新增流水线时才会配置执行器组（runner组）
-            List<DeployAppModuleRunnerVo> runnerVoList = deployAppConfigVo.getConfig().getModuleRunnerVoList();
-            if (CollectionUtils.isNotEmpty(runnerVoList)) {
-                deployAppConfigMapper.insertAppModuleRunnerGroupList(runnerVoList);
+            List<DeployAppModuleRunnerGroupVo> runnerGroupVoList = deployAppConfigVo.getConfig().getModuleRunnerGroupList();
+            if (CollectionUtils.isNotEmpty(runnerGroupVoList)) {
+                deployAppConfigMapper.insertAppModuleRunnerGroupList(runnerGroupVoList);
             }
         }
         DeployPipelineExecuteConfigVo executeConfigVo = newConfigVo.getExecuteConfig();

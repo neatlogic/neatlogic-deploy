@@ -92,7 +92,7 @@ public interface DeployAppConfigMapper {
 
     Integer insertAppModuleRunnerGroup(@Param("appSystemId") Long appSystemId, @Param("appModuleId") Long appModuleId, @Param("runnerGroupId") Long runnerGroupId);
 
-    void insertAppModuleRunnerGroupList(@Param("runnerVoList") List<DeployAppModuleRunnerVo> runnerVoList);
+    void insertAppModuleRunnerGroupList(@Param("runnerGroupVoList") List<DeployAppModuleRunnerGroupVo> runnerGroupVoList);
 
     Integer insertAppEnvAutoConfig(DeployAppEnvAutoConfigVo appEnvAutoConfigVo);
 
