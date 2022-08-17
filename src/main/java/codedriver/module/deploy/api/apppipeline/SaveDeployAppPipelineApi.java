@@ -17,10 +17,7 @@ import codedriver.framework.crossover.CrossoverServiceFactory;
 import codedriver.framework.dependency.core.DependencyManager;
 import codedriver.framework.deploy.auth.DEPLOY_BASE;
 import codedriver.framework.deploy.constvalue.DeployAppConfigAction;
-import codedriver.framework.deploy.dto.app.DeployAppConfigVo;
-import codedriver.framework.deploy.dto.app.DeployPipelineConfigVo;
-import codedriver.framework.deploy.dto.app.DeployPipelineExecuteConfigVo;
-import codedriver.framework.deploy.dto.app.DeployPipelinePhaseVo;
+import codedriver.framework.deploy.dto.app.*;
 import codedriver.framework.restful.annotation.Description;
 import codedriver.framework.restful.annotation.Input;
 import codedriver.framework.restful.annotation.OperationType;
@@ -92,6 +89,12 @@ public class SaveDeployAppPipelineApi extends PrivateApiComponentBase {
             if (CollectionUtils.isNotEmpty(autoexecParamList)) {
                 newConfigVo.setRuntimeParamList(autoexecParamList);
                 deployAppConfigVo.setConfig(newConfigVo);
+            }
+        } else {
+            //只有新增流水线时才会配置执行器组（runner组）
+            List<DeployAppModuleRunnerGroupVo> runnerGroupVoList = deployAppConfigVo.getConfig().getModuleRunnerGroupList();
+            if (CollectionUtils.isNotEmpty(runnerGroupVoList)) {
+                deployAppConfigMapper.insertAppModuleRunnerGroupList(runnerGroupVoList);
             }
         }
         DeployPipelineExecuteConfigVo executeConfigVo = newConfigVo.getExecuteConfig();

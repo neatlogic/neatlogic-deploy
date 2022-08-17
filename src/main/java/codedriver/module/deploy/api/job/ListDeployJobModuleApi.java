@@ -87,6 +87,9 @@ public class ListDeployJobModuleApi extends PrivateApiComponentBase {
             if (CollectionUtils.isEmpty(appConfigVoList)) {
                 throw new DeployAppConfigNotFoundException(appSystemId);
             }
+            //查询拥有runner的模块id列表
+            List<Long> hasRunnerAppModuleIdList = deployAppConfigMapper.getAppModuleIdListHasRunnerByAppSystemIdAndModuleIdList(appSystemId, returnAppModuleVoList.stream().map(DeployAppModuleVo::getId).collect(Collectors.toList()));
+
             IAutoexecServiceCrossoverService autoexecServiceCrossoverService = CrossoverServiceFactory.getApi(IAutoexecServiceCrossoverService.class);
             /*补充当前模块是否有BUILD分类的工具，前端需要根据此标识(isHasBuildTypeTool) 调用不同的选择版本下拉接口*/
             //1、获取流水线
@@ -139,6 +142,11 @@ public class ListDeployJobModuleApi extends PrivateApiComponentBase {
                             break;
                         }
                     }
+                }
+
+                //4、查询模块是否已有配置好的runner
+                if (hasRunnerAppModuleIdList.contains(appModuleVo.getId())) {
+                    appModuleVo.setIsHasRunner(1);
                 }
             }
         }

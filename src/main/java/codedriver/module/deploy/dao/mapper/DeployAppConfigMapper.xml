@@ -680,6 +680,20 @@
           AND damrg.app_module_id = #{appModuleId}
     </select>
 
+    <select id="getAppModuleIdListHasRunnerByAppSystemIdAndModuleIdList"
+            resultType="long">
+        SELECT distinct damrg.app_module_id
+        FROM deploy_app_module_runner_group damrg
+                 JOIN runnergroup rg ON rg.id = damrg.runner_group_id
+                  JOIN runnergroup_runner rgr ON rg.`id` = rgr.`runnergroup_id`
+                  JOIN runner r ON r.`id` = rgr.`runner_id`
+        WHERE damrg.app_system_id = #{appSystemId}
+          AND damrg.app_module_id in
+        <foreach collection="appModuleIdList" item="appModuleId" separator="," open="(" close=")">
+            #{appModuleId}
+        </foreach>
+    </select>
+
     <select id="getAppEnvAutoConfigListBySystemIdAndModuleIdAndEnvIdAndInstanceIdList"
             resultMap="appEnvAutoConfigMap">
         SELECT
@@ -1273,11 +1287,22 @@
         ON DUPLICATE KEY UPDATE `lcd` = #{lcd},
         `lcu` = #{lcu};
     </insert>
+
     <insert id="insertAppModuleRunnerGroup">
         INSERT INTO `deploy_app_module_runner_group` (`app_system_id`, `app_module_id`, `runner_group_id`)
         VALUES (#{appSystemId}, #{appModuleId}, #{runnerGroupId}) ON DUPLICATE KEY
         UPDATE `runner_group_id` = #{runnerGroupId}
     </insert>
+
+    <insert id="insertAppModuleRunnerGroupList">
+        INSERT INTO `deploy_app_module_runner_group`
+        (`app_system_id`, `app_module_id`, `runner_group_id`)
+        VALUES
+        <foreach collection="runnerGroupVoList" separator="," item="vo">
+            (#{vo.appSystemId}, #{vo.appModuleId}, #{vo.runnerGroupId})
+        </foreach>
+    </insert>
+
     <insert id="insertAppEnvAutoConfig">
         INSERT INTO deploy_app_env_auto_config
         (`app_system_id`,`app_module_id`,`env_id`,`instance_id`,`key`,`value`,`lcd`,`lcu`)
