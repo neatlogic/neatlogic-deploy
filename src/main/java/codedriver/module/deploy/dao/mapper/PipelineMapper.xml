@@ -20,11 +20,13 @@
                dpj.sort          as sort,
                ciapp.`name`      as appSystemName,
                cienv.`name`      as envName,
-               cimodule.`name`   as appModuleName
+               cimodule.`name`   as appModuleName,
+               aes.`name`        as scenarioName
         FROM deploy_pipeline_jobtemplate AS dpj
                  LEFT JOIN cmdb_cientity AS ciapp ON dpj.app_system_id = ciapp.id
                  LEFT JOIN cmdb_cientity AS cimodule ON dpj.app_module_id = cimodule.id
                  LEFT JOIN cmdb_cientity AS cienv ON dpj.env_id = cienv.id
+                 LEFT JOIN autoexec_scenario aes ON dpj.scenario_id = aes.id
         WHERE dpj.id = #{value}
     </select>
 
@@ -56,11 +58,13 @@
         dpj.sort as sort,
         ciapp.`name` as appSystemName,
         cienv.`name` as envName,
-        cimodule.`name` as appModuleName
+        cimodule.`name` as appModuleName,
+        aes.`name` as scenarioName
         FROM deploy_pipeline_jobtemplate AS dpj
         LEFT JOIN cmdb_cientity AS ciapp ON dpj.app_system_id = ciapp.id
         LEFT JOIN cmdb_cientity AS cimodule ON dpj.app_module_id = cimodule.id
         LEFT JOIN cmdb_cientity AS cienv ON dpj.env_id = cienv.id
+        LEFT JOIN autoexec_scenario aes ON dpj.scenario_id = aes.id
         <include refid="searchJobTemplateCondition"/>
     </select>
 
@@ -93,7 +97,6 @@
                 <collection property="jobTemplateList"
                             ofType="codedriver.framework.deploy.dto.pipeline.PipelineJobTemplateVo">
                     <id column="jobTemplateId" property="id"/>
-                    <result column="jobTemplateName" property="name"/>
                     <result column="jobTemplateAppId" property="appSystemId"/>
                     <result column="jobTemplateModuleId" property="appModuleId"/>
                     <result column="jobTemplateEnvId" property="envId"/>
@@ -101,6 +104,7 @@
                     <result column="jobTemplateModuleName" property="appModuleName"/>
                     <result column="jobTemplateEnvName" property="envName"/>
                     <result column="jobTemplateScenarioId" property="scenarioId"/>
+                    <result column="jobTemplateScenarioName" property="scenarioName"/>
                     <result column="jobTemplateRoundCount" property="roundCount"/>
                     <result column="jobTemplateConfigStr" property="configStr"/>
                     <result column="jobEnvId" property="envId"/>
@@ -124,11 +128,11 @@
                dpg.need_wait     as groupNeedWait,
                dpg.sort          as groupSort,
                dpj.id            as jobTemplateId,
-               dpj.name          as jobTemplateName,
                dpj.app_system_id as jobTemplateAppId,
                dpj.app_module_id as jobTemplateModuleId,
                dpj.env_id        as jobTemplateEnvId,
                dpj.scenario_id   as jobTemplateScenarioId,
+               aes.name          as jobTemplateScenarioName,
                dpj.round_count   as jobTemplateRoundCount,
                dpj.config        as jobTemplateConfigStr,
                ciapp.`name`      as jobTemplateAppName,
@@ -144,6 +148,7 @@
                  LEFT JOIN cmdb_cientity AS cimodule ON dpj.app_module_id = cimodule.id
                  LEFT JOIN cmdb_cientity AS cienv ON dpj.env_id = cienv.id
                  LEFT JOIN deploy_pipeline_auth AS dpa ON dp.id = dpa.pipeline_id
+                 LEFT JOIN autoexec_scenario aes ON dpj.scenario_id = aes.id
         where dp.id = #{value}
         order by dpl.sort, dpg.sort, dpj.sort
     </select>
@@ -170,6 +175,68 @@
         <include refid="searchPipelineCondition"/>
     </select>
 
+    <update id="updatePipeline" parameterType="codedriver.framework.deploy.dto.pipeline.PipelineVo">
+        UPDATE deploy_pipeline
+        SET `name`      = #{name},
+            `is_active` = #{isActive},
+            `lcu`= #{lcu},
+            `lcd`=NOW(3)
+        WHERE `id` = #{id}
+    </update>
+
+    <insert id="insertPipelineAuth" parameterType="codedriver.framework.deploy.dto.pipeline.PipelineAuthVo">
+        INSERT INTO `deploy_pipeline_auth` (`pipeline_id`, `type`, `auth_uuid`)
+        VALUES (#{pipelineId}, #{type}, #{authUuid})
+    </insert>
+
+    <insert id="insertLane" parameterType="codedriver.framework.deploy.dto.pipeline.PipelineLaneVo">
+        INSERT INTO `deploy_pipeline_lane` (`id`, `pipeline_id`, `sort`)
+        VALUES (#{id}, #{pipelineId}, #{sort})
+    </insert>
+
+    <insert id="insertLaneGroup" parameterType="codedriver.framework.deploy.dto.pipeline.PipelineGroupVo">
+        INSERT INTO `deploy_pipeline_group` (`id`, `lane_id`, `need_wait`, `sort`)
+        VALUES (#{id}, #{laneId}, #{needWait}, #{sort})
+    </insert>
+
+    <insert id="insertJobTemplate" parameterType="codedriver.framework.deploy.dto.pipeline.PipelineJobTemplateVo">
+        INSERT INTO `deploy_pipeline_jobtemplate` (`id`,
+                                                   `group_id`,
+                                                   `app_system_id`,
+                                                   `app_module_id`,
+                                                   `env_id`,
+                                                   `scenario_id`,
+                                                   `round_count`,
+                                                   `config`,
+                                                   `sort`)
+        VALUES (#{id},
+                #{groupId},
+                #{appSystemId},
+                #{appModuleId},
+                #{envId},
+                #{scenarioId},
+                #{roundCount},
+                #{configStr,typeHandler=CompressHandler},
+                #{sort})
+    </insert>
+
+    <insert id="insertPipeline" parameterType="codedriver.framework.deploy.dto.pipeline.PipelineVo">
+        INSERT INTO deploy_pipeline(`id`,
+                                    `name`,
+                                    `is_active`,
+                                    `fcd`,
+                                    `fcu`,
+                                    `lcd`,
+                                    `lcu`)
+        VALUES (#{id},
+                #{name},
+                #{isActive},
+                NOW(3),
+                #{fcu},
+                NOW(3),
+                #{lcu})
+    </insert>
+
     <insert id="insertPipelineJobTemplate"
             parameterType="codedriver.framework.deploy.dto.pipeline.PipelineJobTemplateVo">
         insert into deploy_pipeline_jobtemplate (id,
@@ -191,4 +258,18 @@
                 #{configStr,typeHandler=CompressHandler},
                 #{sort})
     </insert>
+
+    <delete id="deletePipelineAuthByPipelineId" parameterType="java.lang.Long">
+        DELETE
+        FROM `deploy_pipeline_auth`
+        WHERE pipeline_id = #{value}
+    </delete>
+
+    <delete id="deleteLaneGroupJobTemplateByPipelineId" parameterType="java.lang.Long">
+        DELETE a,b,c
+        FROM `deploy_pipeline_lane` a
+                 LEFT JOIN deploy_pipeline_group b ON a.id = b.lane_id
+                 LEFT JOIN deploy_pipeline_jobtemplate c ON b.id = c.group_id
+        WHERE a.pipeline_id = #{value}
+    </delete>
 </mapper>
