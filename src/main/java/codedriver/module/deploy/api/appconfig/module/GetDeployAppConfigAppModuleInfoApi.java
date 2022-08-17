@@ -73,7 +73,7 @@ public class GetDeployAppConfigAppModuleInfoApi extends PrivateApiComponentBase 
         CiEntityVo appModuleInfo = ciEntityService.getCiEntityById(ciEntityVo.getCiId(), paramObj.getLong("appModuleId"));
 
         //获取runner组信息
-        RunnerGroupVo runnerGroupVo = deployAppConfigMapper.getAppModuleRunnerGroupByAppSystemIdAndModuleId(paramObj.getLong("appSystemId"),paramObj.getLong("appModuleId"));
+        RunnerGroupVo runnerGroupVo = deployAppConfigMapper.getAppModuleRunnerGroupByAppSystemIdAndModuleId(paramObj.getLong("appSystemId"), paramObj.getLong("appModuleId"));
 
         JSONObject appSystemInfoObject = new JSONObject();
         appSystemInfoObject.put("appModuleInfo", appModuleInfo);
