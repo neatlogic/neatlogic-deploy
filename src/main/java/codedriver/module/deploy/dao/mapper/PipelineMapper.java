@@ -5,8 +5,7 @@
 
 package codedriver.module.deploy.dao.mapper;
 
-import codedriver.framework.deploy.dto.pipeline.PipelineJobTemplateVo;
-import codedriver.framework.deploy.dto.pipeline.PipelineVo;
+import codedriver.framework.deploy.dto.pipeline.*;
 
 import java.util.List;
 
@@ -23,5 +22,21 @@ public interface PipelineMapper {
 
     PipelineVo getPipelineById(Long id);
 
+    void updatePipeline(PipelineVo pipelineVo);
+
+    void insertPipelineAuth(PipelineAuthVo pipelineAuthVo);
+
+    void insertPipeline(PipelineVo pipelineVo);
+
+    void insertLane(PipelineLaneVo pipelineLaneVo);
+
+    void insertJobTemplate(PipelineJobTemplateVo jobTemplateVo);
+
+    void insertLaneGroup(PipelineGroupVo pipelineGroupVo);
+
     void insertPipelineJobTemplate(PipelineJobTemplateVo pipelineJobTemplateVo);
+
+    void deletePipelineAuthByPipelineId(Long pipelineId);
+
+    void deleteLaneGroupJobTemplateByPipelineId(Long pipelineId);
 }

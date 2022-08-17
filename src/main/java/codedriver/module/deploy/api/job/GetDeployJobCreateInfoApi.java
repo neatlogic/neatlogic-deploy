@@ -1,5 +1,5 @@
 /*
- * Copyright (c)  2022 TechSure Co.,Ltd.  All Rights Reserved.
+ * Copyright(c) 2022 TechSure Co., Ltd. All Rights Reserved.
  * 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
  */
 
@@ -70,10 +70,7 @@ public class GetDeployJobCreateInfoApi extends PrivateApiComponentBase {
     public Object myDoService(JSONObject jsonObj) throws Exception {
         JSONObject result = new JSONObject();
         Long appSystemId = jsonObj.getLong("appSystemId");
-        Long appModuleId = 0L;
-        if (jsonObj.containsKey("appModuleId")) {
-            appModuleId = jsonObj.getLong("appModuleId");
-        }
+        Long appModuleId = jsonObj.getLong("appModuleId");
 
         //查询系统名称
         ICiEntityCrossoverMapper ciEntityCrossoverMapper = CrossoverServiceFactory.getApi(ICiEntityCrossoverMapper.class);
@@ -103,7 +100,7 @@ public class GetDeployJobCreateInfoApi extends PrivateApiComponentBase {
         List<Long> appModuleIdList = new ArrayList<>();
         List<DeployAppEnvironmentVo> envList = new ArrayList<>();
         List<ResourceVo> appModuleList = new ArrayList<>();
-        if (appModuleId != 0L) {
+        if (appModuleId != null) {
             appModuleIdList.add(appModuleId);
         } else {
             TenantContext.get().switchDataDatabase();
