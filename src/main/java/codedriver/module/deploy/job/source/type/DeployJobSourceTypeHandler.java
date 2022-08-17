@@ -453,10 +453,12 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
                 isHasAuth = true;
             }
         }
-        if (isHasAuth && UserContext.get().getUserUuid().equals(jobVo.getExecUser())) {
-            jobVo.setIsCanExecute(1);
-        } else {
-            jobVo.setIsCanTakeOver(1);
+        if (isHasAuth) {
+            if (UserContext.get().getUserUuid().equals(jobVo.getExecUser())) {
+                jobVo.setIsCanExecute(1);
+            } else {
+                jobVo.setIsCanTakeOver(1);
+            }
         }
     }
 

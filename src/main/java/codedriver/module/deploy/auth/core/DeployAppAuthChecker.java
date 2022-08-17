@@ -78,7 +78,7 @@ public class DeployAppAuthChecker {
         }
 
         public Builder addScenarioAction(Long scenarioId) {
-            typeActionList.add(DeployAppConfigActionType.ENV.getValue() + "#" + scenarioId);
+            typeActionList.add(DeployAppConfigActionType.SCENARIO.getValue() + "#" + scenarioId);
             return this;
         }
 
