@@ -72,6 +72,8 @@ public interface DeployAppConfigMapper {
 
     RunnerGroupVo getAppModuleRunnerGroupByAppSystemIdAndModuleId(@Param("appSystemId") Long appSystemId, @Param("appModuleId") Long appModuleId);
 
+    List<Long> getAppModuleIdListHasRunnerByAppSystemIdAndModuleIdList(@Param("appSystemId") Long appSystemId, @Param("appModuleIdList") List<Long> appModuleIdList);
+
     DeployAppConfigEnvDBConfigVo getAppConfigEnvDBConfigById(Long id);
 
     List<DeployAppConfigEnvDBConfigVo> getAppConfigEnvDBConfigListByAppSystemIdAndAppModuleIdAndEnvId(@Param("appSystemId") Long appSystemId, @Param("appModuleId") Long appModuleId, @Param("envId") Long envId);
@@ -89,6 +91,8 @@ public interface DeployAppConfigMapper {
     Integer insertAppConfigAuthority(DeployAppConfigAuthorityVo deployAppConfigAuthorityVo);
 
     Integer insertAppModuleRunnerGroup(@Param("appSystemId") Long appSystemId, @Param("appModuleId") Long appModuleId, @Param("runnerGroupId") Long runnerGroupId);
+
+    void insertAppModuleRunnerGroupList(@Param("runnerGroupVoList") List<DeployAppModuleRunnerGroupVo> runnerGroupVoList);
 
     Integer insertAppEnvAutoConfig(DeployAppEnvAutoConfigVo appEnvAutoConfigVo);
 
