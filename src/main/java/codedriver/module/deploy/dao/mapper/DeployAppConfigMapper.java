@@ -28,6 +28,8 @@ public interface DeployAppConfigMapper {
 
     List<DeployAppSystemVo> getAppSystemListByUserUuid(@Param("userUuid") String userUuid, @Param("searchVo") DeployResourceSearchVo searchVo);
 
+    List<DeployAppSystemVo> getDeployAppSystemListIncludeEnvIdListByAppSystemIdList(@Param("appSystemIdList") List<Long> appSystemIdList, @Param("schemaName") String schemaName);
+
     Set<Long> getViewableAppSystemIdList(AuthenticationInfoVo authenticationInfoVo);
 
     Integer getAppConfigAuthorityCount(DeployAppConfigAuthorityVo searchVo);

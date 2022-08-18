@@ -14,9 +14,7 @@
         SELECT a.`id`
         FROM ${searchVo.schemaName}.`scence_appsystem_appmodule` a
         left join deploy_app_config_user dacu on a.`id` = dacu.app_system_id and dacu.user_uuid = #{userUuid}
-        <if test="searchVo.isHasAllAuthority == 0">
-            LEFT JOIN deploy_app_config_authority daca ON daca.app_system_id = a.id
-        </if>
+        LEFT JOIN deploy_app_config_authority daca ON daca.app_system_id = a.id
         <if test="searchVo.isConfig != null">
             left join deploy_app_config dac on a.`id` = dac.app_system_id and dac.app_module_id = 0 and dac.env_id = 0
         </if>
@@ -33,30 +31,19 @@
                     #{item}
                 </foreach>
             </if>
-            <if test="searchVo.isHasAllAuthority == 0">
-                AND IF(
-                daca.app_system_id > 0,
-                daca.action_type = 'operation'
+            AND IF(
+            daca.app_system_id > 0,
+            daca.action_type = 'operation'
+            <if test="searchVo.authorityActionList != null and searchVo.authorityActionList.size() > 0">
                 AND daca.action IN
                 ('all'
-                <if test="searchVo.authorityActionList != null and searchVo.authorityActionList.size() > 0">,
-                    <foreach collection="searchVo.authorityActionList" item="item" separator=",">
-                        #{item}
-                    </foreach>
-                </if>
+                <foreach collection="searchVo.authorityActionList" item="item" separator=",">
+                    #{item}
+                </foreach>
                 )
-                AND daca.auth_uuid IN
-                (
-                'alluser'
-                <if test="searchVo.authUuidList != null and searchVo.authUuidList.size() > 0">
-                    ,
-                    <foreach collection="searchVo.authUuidList" item="item" separator=",">
-                        #{item}
-                    </foreach>
-                </if>
-                ),
-                1 = 1)
             </if>
+            ,
+            1 = 1)
             <choose>
                 <when test="searchVo.isConfig != null and searchVo.isConfig == 1">
                     and dac.`config` is not NULL
@@ -108,6 +95,15 @@
             <result column="appModuleName" property="name"/>
             <result column="appModuleNameAbbrName" property="abbrName"/>
         </collection>
+        <collection property="authList" ofType="codedriver.framework.deploy.dto.app.DeployAppConfigAuthorityVo">
+            <id column="appSystemId" property="appSystemId"/>
+            <result column="authType" property="authType"/>
+            <result column="authUuid" property="authUuid"/>
+            <collection property="actionList" ofType="codedriver.framework.deploy.dto.app.DeployAppConfigAuthorityActionVo">
+                <result column="authAction" property="action"/>
+                <result column="authActionType" property="type"/>
+            </collection>
+        </collection>
     </resultMap>
 
     <select id="getAppSystemListIncludeModuleByIdList" resultMap="appConfigSystemMap">
@@ -119,10 +115,15 @@
         saa.`app_module_name` as appModuleName,
         saa.`app_module_abbr_name` as appModuleNameAbbrName,
         if(dacu.user_uuid is null,0,1) as isFavorite,
-        if(dac.config is null,0,1) as isConfig
+        if(dac.config is null,0,1) as isConfig,
+        daca.auth_type as authType,
+        daca.auth_uuid as authUuid,
+        daca.`action` as authAction,
+        daca.action_type authActionType
         from ${schemaName}.`scence_appsystem_appmodule` saa
         left join deploy_app_config_user dacu on saa.id = dacu.app_system_id and dacu.user_uuid = #{userUuid}
         left join deploy_app_config dac on saa.id = dac.app_system_id and dac.app_module_id = 0 and dac.env_id = 0
+        LEFT JOIN deploy_app_config_authority daca ON daca.app_system_id = saa.id
         where saa.id in
         <foreach collection="idList" item="id" open="(" close=")" separator=",">
             #{id}
@@ -132,16 +133,21 @@
         CONVERT(saa.app_module_abbr_name USING gbk) COLLATE gbk_chinese_ci ASC
     </select>
 
-    <select id="getAppSystemListByIdList" resultType="codedriver.framework.deploy.dto.app.DeployAppSystemVo">
+    <select id="getAppSystemListByIdList" resultMap="appConfigSystemMap">
         select
-        sa.id as id,
-        sa.`name` as name,
-        sa.`abbr_name` as abbrName,
+        sa.id as appSystemId,
+        sa.`name` as appSystemName,
+        sa.`abbr_name` as appSystemNameAbbrName,
         if(dacu.user_uuid is null,0,1) as isFavorite,
-        if(dac.config is null,0,1) as isConfig
+        if(dac.config is null,0,1) as isConfig,
+        daca.auth_type as authType,
+        daca.auth_uuid as authUuid,
+        daca.`action` as authAction,
+        daca.action_type authActionType
         from ${schemaName}.`scence_appsystem` sa
         left join deploy_app_config_user dacu on sa.id = dacu.app_system_id and dacu.user_uuid = #{userUuid}
         left join deploy_app_config dac on sa.id = dac.app_system_id and dac.app_module_id = 0 and dac.env_id = 0
+        LEFT JOIN deploy_app_config_authority daca ON daca.app_system_id = sa.id
         where sa.id in
         <foreach collection="idList" item="id" open="(" close=")" separator=",">
             #{id}
@@ -200,6 +206,55 @@
         order by if(dacu.user_uuid = #{userUuid}, 1, 0) desc,
         CONVERT(cc.name USING gbk) COLLATE gbk_chinese_ci ASC
         limit #{searchVo.startNum}, #{searchVo.pageSize}
+    </select>
+
+    <resultMap id="appConfigSystemIncludeEnvIdListMap" type="codedriver.framework.deploy.dto.app.DeployAppSystemVo">
+        <result column="appSystemId" property="id"/>
+        <collection property="envIdList" ofType="java.lang.Long">
+            <id column="envId"/>
+        </collection>
+    </resultMap>
+
+    <select id="getDeployAppSystemListIncludeEnvIdListByAppSystemIdList"
+            resultMap="appConfigSystemIncludeEnvIdListMap">
+        (
+        SELECT
+        a.app_system_id as appSystemId,
+        a.`env_id` AS envId
+        FROM ${schemaName}.`scence_appinstance_env_appmodule_appsystem` a
+        <where>
+            a.`env_id` is not null
+            <choose>
+                <when test="appSystemIdList != null and appSystemIdList.size() > 0">
+                    AND a.`app_system_id` in
+                    <foreach collection="appSystemIdList" open="(" close=")" separator="," item="appSystemId">
+                        #{appSystemId}
+                    </foreach>
+                </when>
+                <otherwise>
+                    and a.`app_system_id` is not null
+                </otherwise>
+            </choose>
+            and a.`app_module_id` is not null
+        </where>
+        ) UNION
+        (
+        SELECT
+        dace.app_system_id as appSystemId,
+        cc.id AS envId
+        FROM
+        deploy_app_config_env dace
+        JOIN cmdb_cientity cc ON cc.id = dace.env_id
+        JOIN cmdb_cientity cce ON cce.id = dace.app_module_id
+        <where>
+            <if test="appSystemIdList != null and appSystemIdList.size() > 0">
+                AND dace.app_system_id in
+                <foreach collection="appSystemIdList" open="(" close=")" separator="," item="appSystemId">
+                    #{appSystemId}
+                </foreach>
+            </if>
+        </where>
+        )
     </select>
 
     <select id="getViewableAppSystemIdList" resultType="java.lang.Long" useCache="false">
@@ -813,30 +868,19 @@
     </select>
 
     <sql id="checkDeployAuthority">
-        <if test="isHasAllAuthority == 0">
-            AND IF(
-            daca.app_system_id > 0,
-            daca.action_type = 'operation'
+        AND IF(
+        daca.app_system_id > 0,
+        daca.action_type = 'operation'
+        <if test="authorityActionList != null and authorityActionList.size() > 0">
             AND daca.action IN
             ('all'
-            <if test="authorityActionList != null and authorityActionList.size() > 0">,
-                <foreach collection="authorityActionList" item="item" separator=",">
-                    #{item}
-                </foreach>
-            </if>
+            <foreach collection="authorityActionList" item="item" separator=",">
+                #{item}
+            </foreach>
             )
-            AND daca.auth_uuid IN
-            (
-            'alluser'
-            <if test="authUuidList != null and authUuidList.size() > 0">
-                ,
-                <foreach collection="authUuidList" item="item" separator=",">
-                    #{item}
-                </foreach>
-            </if>
-            ),
-            1 = 1)
         </if>
+        ,
+        1 = 1)
     </sql>
 
     <select id="getCiEntityIdListCount" resultType="java.lang.Integer">

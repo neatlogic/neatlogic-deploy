@@ -20,6 +20,7 @@ import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.framework.util.TableResultUtil;
+import codedriver.module.deploy.auth.core.DeployAppAuthChecker;
 import codedriver.module.deploy.dao.mapper.DeployAppConfigMapper;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
@@ -29,6 +30,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -100,6 +102,8 @@ public class SearchDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
             List<Long> hasEnvAppSystemIdList = deployAppConfigMapper.getHasEnvAppSystemIdListByAppSystemIdList(appSystemIdList, TenantContext.get().getDataDbName());
 
             List<Long> hasConfigAuthoritySystemIdList = deployAppConfigMapper.getHasConfigAuthoritySystemIdListByAppSystemIdList(appSystemIdList);
+
+            Map<Long, JSONObject> appSystemIdAuthInfoMap = DeployAppAuthChecker.getAppConfigAuthorityList(returnAppSystemList.stream().collect(Collectors.toMap(DeployAppSystemVo::getId, DeployAppSystemVo::getAuthList)));
             for (DeployAppSystemVo returnSystemVo : returnAppSystemList) {
                 //补充系统是否有模块、是否有环境、是否有配置权限
                 if (hasModuleAppSystemIdList.contains(returnSystemVo.getId())) {
@@ -126,6 +130,7 @@ public class SearchDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
                         appModuleVo.setIsConfig(isHasConfig);
                     }
                 }
+                returnSystemVo.setAuthInfo(appSystemIdAuthInfoMap.get(returnSystemVo.getId()));
             }
         }
         return TableResultUtil.getResult(returnAppSystemList, searchVo);

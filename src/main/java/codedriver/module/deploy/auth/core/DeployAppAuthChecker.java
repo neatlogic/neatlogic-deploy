@@ -4,13 +4,20 @@
  */
 package codedriver.module.deploy.auth.core;
 
+import codedriver.framework.asynchronization.threadlocal.TenantContext;
+import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.auth.core.AuthActionChecker;
+import codedriver.framework.autoexec.dto.combop.AutoexecCombopScenarioVo;
+import codedriver.framework.common.constvalue.UserType;
 import codedriver.framework.deploy.auth.DEPLOY_MODIFY;
+import codedriver.framework.deploy.constvalue.DeployAppConfigAction;
 import codedriver.framework.deploy.constvalue.DeployAppConfigActionType;
-import codedriver.framework.deploy.dto.app.DeployAppAuthCheckVo;
-import codedriver.framework.deploy.dto.app.DeployAppConfigAuthorityActionVo;
+import codedriver.framework.deploy.dto.app.*;
 import codedriver.framework.deploy.exception.DeployAppAuthActionIrregularException;
+import codedriver.framework.dto.AuthenticationInfoVo;
 import codedriver.module.deploy.dao.mapper.DeployAppConfigMapper;
+import codedriver.module.deploy.service.DeployAppPipelineService;
+import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -26,6 +33,9 @@ public class DeployAppAuthChecker {
 
     @Resource
     private DeployAppConfigMapper deployAppConfigMapper;
+
+    @Resource
+    private DeployAppPipelineService deployAppPipelineService;
 
     private static DeployAppAuthChecker checker;
 
@@ -282,5 +292,159 @@ public class DeployAppAuthChecker {
             }
         }
         return returnActionSet;
+    }
+
+
+    public static Map<Long, JSONObject> getAppConfigAuthorityList(Map<Long, List<DeployAppConfigAuthorityVo>> appSystemIdAuthListMap) {
+
+
+
+        //有配置权限的系统idLis
+        List<Long> hasConfigAuthoritySystemIdList = checker.deployAppConfigMapper.getHasConfigAuthoritySystemIdListByAppSystemIdList(new ArrayList<>(appSystemIdAuthListMap.keySet()));
+
+        Map<Long, JSONObject> returnMap = new HashMap<>();
+        for (Long appSystemId : appSystemIdAuthListMap.keySet()) {
+            JSONObject returnObj = new JSONObject();
+            Set<String> operationAuthList = new HashSet<>();
+            Set<String> envAuthList = new HashSet<>();
+            Set<String> scenarioAuthList = new HashSet<>();
+
+            /*发布管理员拥有所有权限*/
+            if (AuthActionChecker.check(DEPLOY_MODIFY.class)) {
+                returnMap.put(appSystemId, getAllAuthInfo(appSystemId));
+                continue;
+            }
+
+            /*如果当前系统没有配置权限，则所有人均拥有所有权限*/
+            if (!hasConfigAuthoritySystemIdList.contains(appSystemId)) {
+                returnMap.put(appSystemId, getAllAuthInfo(appSystemId));
+                continue;
+            }
+
+            //批量获取系统的环境列表
+            List<DeployAppSystemVo> appSystemVoListIncludeEnvIdList = checker.deployAppConfigMapper.getDeployAppSystemListIncludeEnvIdListByAppSystemIdList(new ArrayList<>(appSystemIdAuthListMap.keySet()), TenantContext.get().getDataDbName());
+            Map<Long, List<Long>> appSystemIdEnvIdListMap = new HashMap<>();
+            if (CollectionUtils.isNotEmpty(appSystemVoListIncludeEnvIdList)) {
+                appSystemIdEnvIdListMap = appSystemVoListIncludeEnvIdList.stream().collect(Collectors.toMap(DeployAppSystemVo::getId, DeployAppSystemVo::getEnvIdList));
+            }
+
+            List<Long> envIdList = appSystemIdEnvIdListMap.get(appSystemId);
+            List<Long> scenarioIdList = new ArrayList<>();
+            DeployPipelineConfigVo pipelineConfigVo = new DeployPipelineConfigVo();
+            if (CollectionUtils.isNotEmpty(checker.deployAppConfigMapper.getAppConfigListByAppSystemId(appSystemId))) {
+                pipelineConfigVo = checker.deployAppPipelineService.getDeployPipelineConfigVo(new DeployAppConfigVo(appSystemId));
+            }
+            if (CollectionUtils.isNotEmpty(pipelineConfigVo.getScenarioList())) {
+                scenarioIdList = pipelineConfigVo.getScenarioList().stream().map(AutoexecCombopScenarioVo::getScenarioId).collect(Collectors.toList());
+            }
+
+            //分组角色信息
+            AuthenticationInfoVo authInfo = UserContext.get().getAuthenticationInfoVo();
+            //循环已配置的权限列表，解析权限，并构造结构
+            List<DeployAppConfigAuthorityVo> appSystemAuthList = appSystemIdAuthListMap.get(appSystemId);
+            for (DeployAppConfigAuthorityVo authVo : appSystemAuthList) {
+                JSONObject hasAuthObj = new JSONObject();
+                if (StringUtils.equals(authVo.getAuthType(), "common") && authVo.getAuthUuid().equals(UserType.ALL.getValue())) {
+                    hasAuthObj = getHasAuthObj(authVo.getActionList(), envIdList, scenarioIdList);
+                } else if (StringUtils.equals(authVo.getActionType(), "user") && authInfo.getUserUuid().equals(authVo.getAuthUuid())) {
+                    hasAuthObj = getHasAuthObj(authVo.getActionList(), envIdList, scenarioIdList);
+                } else if (StringUtils.equals(authVo.getActionType(), "team") && authInfo.getTeamUuidList().contains(authVo.getAuthUuid())) {
+                    hasAuthObj = getHasAuthObj(authVo.getActionList(), envIdList, scenarioIdList);
+                } else if (StringUtils.equals(authVo.getActionType(), "role") && authInfo.getRoleUuidList().contains(authVo.getAuthUuid())) {
+                    hasAuthObj = getHasAuthObj(authVo.getActionList(), envIdList, scenarioIdList);
+                } else {
+                    continue;
+                }
+                operationAuthList.addAll(hasAuthObj.getJSONArray("operationAuthList").toJavaList(String.class));
+                envAuthList.addAll(hasAuthObj.getJSONArray("envAuthList").toJavaList(String.class));
+                scenarioAuthList.addAll(hasAuthObj.getJSONArray("scenarioAuthList").toJavaList(String.class));
+
+            }
+            returnObj.put("operationAuthList", operationAuthList);
+            returnObj.put("envAuthList", envAuthList);
+            returnObj.put("scenarioAuthList", scenarioAuthList);
+            returnMap.put(appSystemId, returnObj);
+        }
+        return returnMap;
+    }
+
+
+    /**
+     * 循环具体权限动作，解析权限
+     *
+     * @param actionList     权限动作列表
+     * @param envIdList      环境id列表
+     * @param scenarioIdList 场景id列表
+     * @return 解析后的权限信息
+     */
+    private static JSONObject getHasAuthObj(List<DeployAppConfigAuthorityActionVo> actionList, List<Long> envIdList, List<Long> scenarioIdList) {
+        List<String> operationAuthList = new ArrayList<>();
+        List<String> envAuthList = new ArrayList<>();
+        List<String> scenarioAuthList = new ArrayList<>();
+        JSONObject returnObj = new JSONObject();
+        for (DeployAppConfigAuthorityActionVo actionVo : actionList) {
+            if (StringUtils.equals(actionVo.getAction(), "all")) {
+                if (StringUtils.equals(DeployAppConfigActionType.OPERATION.getValue(), actionVo.getType())) {
+                    operationAuthList.addAll(actionTypeList);
+                } else if (StringUtils.equals(DeployAppConfigActionType.ENV.getValue(), actionVo.getType())) {
+                    if (CollectionUtils.isNotEmpty(envIdList)) {
+                        for (Long envId : envIdList) {
+                            envAuthList.add(envId.toString());
+                        }
+                    }
+                } else if (StringUtils.equals(DeployAppConfigActionType.SCENARIO.getValue(), actionVo.getType())) {
+                    if (CollectionUtils.isNotEmpty(envIdList)) {
+                        for (Long scenarioId : scenarioIdList) {
+                            scenarioAuthList.add(scenarioId.toString());
+                        }
+                    }
+                }
+            } else {
+                if (StringUtils.equals(DeployAppConfigActionType.OPERATION.getValue(), actionVo.getType())) {
+                    operationAuthList.add(actionVo.getAction());
+                } else if (StringUtils.equals(DeployAppConfigActionType.ENV.getValue(), actionVo.getType())) {
+                    envAuthList.add(actionVo.getAction());
+
+                } else if (StringUtils.equals(DeployAppConfigActionType.SCENARIO.getValue(), actionVo.getType())) {
+                    scenarioAuthList.add(actionVo.getAction());
+                }
+            }
+        }
+        returnObj.put("operationAuthList", operationAuthList);
+        returnObj.put("envAuthList", envAuthList);
+        returnObj.put("scenarioAuthList", scenarioAuthList);
+        return returnObj;
+    }
+
+    /**
+     * 根据系统id获取所有权限
+     *
+     * @param appSystemId 系统id
+     * @return 所有权限信息
+     */
+    private static JSONObject getAllAuthInfo(Long appSystemId) {
+        JSONObject returnObj = new JSONObject();
+        //操作权限
+        returnObj.put("operationAuthList", DeployAppConfigAction.getValueList());
+        //环境权限
+        List<String> envAuthList = new ArrayList<>();
+        for (DeployAppEnvironmentVo env : checker.deployAppConfigMapper.getDeployAppEnvListByAppSystemIdAndModuleIdList(appSystemId, new ArrayList<>(), TenantContext.get().getDataDbName())) {
+            envAuthList.add(env.getId().toString());
+        }
+        returnObj.put("envAuthList", envAuthList);
+        //场景权限
+        DeployPipelineConfigVo pipelineConfigVo = new DeployPipelineConfigVo();
+        if (CollectionUtils.isNotEmpty(checker.deployAppConfigMapper.getAppConfigListByAppSystemId(appSystemId))) {
+            pipelineConfigVo = checker.deployAppPipelineService.getDeployPipelineConfigVo(new DeployAppConfigVo(appSystemId));
+        }
+        List<String> scenarioAuthList = new ArrayList<>();
+        if (pipelineConfigVo != null && CollectionUtils.isNotEmpty(pipelineConfigVo.getScenarioList())) {
+            scenarioAuthList = new ArrayList<>();
+            for (AutoexecCombopScenarioVo scenarioVo : pipelineConfigVo.getScenarioList()) {
+                scenarioAuthList.add(scenarioVo.getScenarioId().toString());
+            }
+        }
+        returnObj.put("scenarioAuthList", scenarioAuthList);
+        return returnObj;
     }
 }
