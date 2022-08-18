@@ -37,8 +37,8 @@ public class DeployPipelineUtil {
      * @param appSystemId
      * @return
      */
-    public static DeployPipelineConfigVo getDeployPipelineConfigVo(Long appSystemId) {
-        return getDeployPipelineConfigVo(appSystemId, 0L);
+    public static DeployPipelineConfigVo getDeployPipelineConfig(Long appSystemId) {
+        return getDeployPipelineConfig(appSystemId, 0L);
     }
 
     /**
@@ -47,8 +47,8 @@ public class DeployPipelineUtil {
      * @param appModuleId
      * @return
      */
-    public static DeployPipelineConfigVo getDeployPipelineConfigVo(Long appSystemId, Long appModuleId) {
-        return getDeployPipelineConfigVo(appSystemId, appModuleId, 0L);
+    public static DeployPipelineConfigVo getDeployPipelineConfig(Long appSystemId, Long appModuleId) {
+        return getDeployPipelineConfig(appSystemId, appModuleId, 0L);
     }
 
     /**
@@ -58,9 +58,9 @@ public class DeployPipelineUtil {
      * @param envId
      * @return
      */
-    public static DeployPipelineConfigVo getDeployPipelineConfigVo(Long appSystemId, Long appModuleId, Long envId) {
+    public static DeployPipelineConfigVo getDeployPipelineConfig(Long appSystemId, Long appModuleId, Long envId) {
         DeployAppConfigVo searchVo = new DeployAppConfigVo(appSystemId, appModuleId, envId);
-        return getDeployPipelineConfigVo(searchVo);
+        return getDeployPipelineConfig(searchVo);
     }
 
     /**
@@ -68,7 +68,7 @@ public class DeployPipelineUtil {
      * @param searchVo
      * @return
      */
-    public static DeployPipelineConfigVo getDeployPipelineConfigVo(DeployAppConfigVo searchVo) {
+    public static DeployPipelineConfigVo getDeployPipelineConfig(DeployAppConfigVo searchVo) {
         String targetLevel = null;
         DeployPipelineConfigVo appConfig = null;
         DeployPipelineConfigVo moduleOverrideConfig = null;
@@ -118,7 +118,7 @@ public class DeployPipelineUtil {
                 envOverrideConfig = JSONObject.parseObject(overrideConfigStr, DeployPipelineConfigVo.class);
             }
         }
-        DeployPipelineConfigVo deployPipelineConfigVo = mergeDeployPipelineConfigVo(appConfig, moduleOverrideConfig, envOverrideConfig, targetLevel);
+        DeployPipelineConfigVo deployPipelineConfigVo = mergeDeployPipelineConfig(appConfig, moduleOverrideConfig, envOverrideConfig, targetLevel);
         IAutoexecServiceCrossoverService autoexecServiceCrossoverService = CrossoverServiceFactory.getApi(IAutoexecServiceCrossoverService.class);
         autoexecServiceCrossoverService.updateAutoexecCombopConfig(deployPipelineConfigVo.getAutoexecCombopConfigVo());
         return deployPipelineConfigVo;
@@ -132,8 +132,8 @@ public class DeployPipelineUtil {
      * @param targetLevel
      * @return
      */
-    public static DeployPipelineConfigVo mergeDeployPipelineConfigVo(DeployPipelineConfigVo appConfig, DeployPipelineConfigVo moduleOverrideConfig, DeployPipelineConfigVo envOverrideConfig, String targetLevel) {
-        return mergeDeployPipelineConfigVo(appConfig, moduleOverrideConfig, envOverrideConfig, targetLevel, null);
+    public static DeployPipelineConfigVo mergeDeployPipelineConfig(DeployPipelineConfigVo appConfig, DeployPipelineConfigVo moduleOverrideConfig, DeployPipelineConfigVo envOverrideConfig, String targetLevel) {
+        return mergeDeployPipelineConfig(appConfig, moduleOverrideConfig, envOverrideConfig, targetLevel, null);
     }
 
     /**
@@ -145,7 +145,7 @@ public class DeployPipelineUtil {
      * @param profileIdList
      * @return
      */
-    public static DeployPipelineConfigVo mergeDeployPipelineConfigVo(DeployPipelineConfigVo appConfig, DeployPipelineConfigVo moduleOverrideConfig, DeployPipelineConfigVo envOverrideConfig, String targetLevel, List<Long> profileIdList) {
+    public static DeployPipelineConfigVo mergeDeployPipelineConfig(DeployPipelineConfigVo appConfig, DeployPipelineConfigVo moduleOverrideConfig, DeployPipelineConfigVo envOverrideConfig, String targetLevel, List<Long> profileIdList) {
         overrideProfileParamSetSource(appConfig.getOverrideProfileList(), "应用");
         if (moduleOverrideConfig == null && envOverrideConfig == null) {
             if (!Objects.equals(targetLevel, "应用")) {

@@ -104,7 +104,7 @@ public class GetDeployAppPipelineDraftApi extends PrivateApiComponentBase {
             }
             envOverrideConfig = JSONObject.parseObject(overrideConfigStr, DeployPipelineConfigVo.class);
         }
-        DeployPipelineConfigVo deployPipelineConfigVo = DeployPipelineUtil.mergeDeployPipelineConfigVo(appConfig, moduleOverrideConfig, envOverrideConfig, targetLevel);
+        DeployPipelineConfigVo deployPipelineConfigVo = DeployPipelineUtil.mergeDeployPipelineConfig(appConfig, moduleOverrideConfig, envOverrideConfig, targetLevel);
         IAutoexecServiceCrossoverService autoexecServiceCrossoverService = CrossoverServiceFactory.getApi(IAutoexecServiceCrossoverService.class);
         autoexecServiceCrossoverService.updateAutoexecCombopConfig(deployPipelineConfigVo.getAutoexecCombopConfigVo());
         deployAppConfigDraftVo.setConfig(deployPipelineConfigVo);

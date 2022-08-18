@@ -33,7 +33,6 @@ import codedriver.framework.deploy.auth.BATCHDEPLOY_MODIFY;
 import codedriver.framework.deploy.auth.DEPLOY_MODIFY;
 import codedriver.framework.deploy.constvalue.BuildNoStatus;
 import codedriver.framework.deploy.constvalue.JobSourceType;
-import codedriver.framework.deploy.dto.app.DeployAppConfigVo;
 import codedriver.framework.deploy.dto.app.DeployPipelineConfigVo;
 import codedriver.framework.deploy.dto.job.DeployJobContentVo;
 import codedriver.framework.deploy.dto.job.DeployJobVo;
@@ -323,7 +322,7 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
         Long appModuleId = paramJson.getLong("appModuleId");
         Long envId = paramJson.getLong("envId");
         //获取最终流水线
-        DeployPipelineConfigVo deployPipelineConfigVo = DeployPipelineUtil.getDeployPipelineConfigVo(appSystemId, appModuleId, envId);
+        DeployPipelineConfigVo deployPipelineConfigVo = DeployPipelineUtil.getDeployPipelineConfig(appSystemId, appModuleId, envId);
         if (deployPipelineConfigVo == null) {
             throw new DeployPipelineConfigNotFoundException();
         }

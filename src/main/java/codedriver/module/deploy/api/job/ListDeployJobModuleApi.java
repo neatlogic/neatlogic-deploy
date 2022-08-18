@@ -102,7 +102,7 @@ public class ListDeployJobModuleApi extends PrivateApiComponentBase {
                 if (configVo == null) {
                     throw new DeployAppConfigNotFoundException(appSystemId);
                 }
-                DeployPipelineConfigVo pipelineConfigVo = DeployPipelineUtil.getDeployPipelineConfigVo(configVo);
+                DeployPipelineConfigVo pipelineConfigVo = DeployPipelineUtil.getDeployPipelineConfig(configVo);
                 if (pipelineConfigVo == null) {
                     throw new DeployAppConfigNotFoundException(appSystemId);
                 }
