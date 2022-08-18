@@ -79,7 +79,10 @@ public class GetDeployAppPipelineApi extends PrivateApiComponentBase {
             }
             searchVo.setEnvName(env.getName());
         }
-        DeployPipelineConfigVo deployPipelineConfigVo = DeployPipelineUtil.getDeployPipelineConfig(searchVo);
+        DeployPipelineConfigVo deployPipelineConfigVo = DeployPipelineUtil.chain(searchVo.getAppSystemId())
+                .withAppModuleId(searchVo.getAppModuleId())
+                .withEnvId(searchVo.getEnvId())
+                .getDeployPipelineConfig();
         searchVo.setConfig(deployPipelineConfigVo);
         return searchVo;
     }

@@ -83,7 +83,9 @@ public class GetDeployJobCreateInfoApi extends PrivateApiComponentBase {
             throw new DeployAppConfigNotFoundException(appSystemCiEntityVo);
         }
         //场景
-        DeployPipelineConfigVo pipelineConfigVo = DeployPipelineUtil.getDeployPipelineConfig(jsonObj.toJavaObject(DeployAppConfigVo.class));
+        DeployPipelineConfigVo pipelineConfigVo = DeployPipelineUtil.chain(appSystemId)
+                .withAppModuleId(appModuleId)
+                .getDeployPipelineConfig();
         if (pipelineConfigVo == null) {
             throw new DeployAppConfigNotFoundException(appSystemCiEntityVo);
         }

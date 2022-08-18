@@ -118,7 +118,7 @@ public class GetDeployAppConfigAuthorityApi extends PrivateApiComponentBase {
                                 }
                             }
                         } else if (StringUtils.equals(actionType, DeployAppConfigActionType.SCENARIO.getValue())) {
-                            DeployPipelineConfigVo pipelineConfigVo = DeployPipelineUtil.getDeployPipelineConfig(appSystemId);
+                            DeployPipelineConfigVo pipelineConfigVo = DeployPipelineUtil.chain(appSystemId).getDeployPipelineConfig();
                             if (pipelineConfigVo == null) {
                                 continue;
                             }
@@ -165,7 +165,7 @@ public class GetDeployAppConfigAuthorityApi extends PrivateApiComponentBase {
         }
         returnObj.put("envAuthList", envAuthList);
         //场景权限
-        DeployPipelineConfigVo pipelineConfigVo = DeployPipelineUtil.getDeployPipelineConfig(appSystemId);
+        DeployPipelineConfigVo pipelineConfigVo = DeployPipelineUtil.chain(appSystemId).getDeployPipelineConfig();
         if (pipelineConfigVo == null) {
             throw new DeployAppConfigNotFoundException(appSystemId);
         }

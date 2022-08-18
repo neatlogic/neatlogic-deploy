@@ -322,7 +322,10 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
         Long appModuleId = paramJson.getLong("appModuleId");
         Long envId = paramJson.getLong("envId");
         //获取最终流水线
-        DeployPipelineConfigVo deployPipelineConfigVo = DeployPipelineUtil.getDeployPipelineConfig(appSystemId, appModuleId, envId);
+        DeployPipelineConfigVo deployPipelineConfigVo = DeployPipelineUtil.chain(appSystemId)
+                .withAppModuleId(appModuleId)
+                .withEnvId(envId)
+                .getDeployPipelineConfig();
         if (deployPipelineConfigVo == null) {
             throw new DeployPipelineConfigNotFoundException();
         }

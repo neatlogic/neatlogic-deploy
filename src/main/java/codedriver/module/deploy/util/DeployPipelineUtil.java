@@ -5,8 +5,10 @@
 
 package codedriver.module.deploy.util;
 
+import codedriver.framework.autoexec.constvalue.ToolType;
 import codedriver.framework.autoexec.crossover.IAutoexecProfileCrossoverService;
 import codedriver.framework.autoexec.crossover.IAutoexecServiceCrossoverService;
+import codedriver.framework.autoexec.dto.AutoexecOperationBaseVo;
 import codedriver.framework.autoexec.dto.combop.*;
 import codedriver.framework.autoexec.dto.profile.AutoexecProfileParamVo;
 import codedriver.framework.autoexec.dto.profile.AutoexecProfileVo;
@@ -31,6 +33,97 @@ public class DeployPipelineUtil {
     @Resource
     public void setDeployAppConfigMapper(DeployAppConfigMapper _deployAppConfigMapper) {
         deployAppConfigMapper = _deployAppConfigMapper;
+    }
+
+    public static Chain chain(Long appSystemId) {
+        return new Chain(appSystemId);
+    }
+
+    public static class Chain {
+        private final Long appSystemId;
+        private Long appModuleId = 0L;
+        private Long envId = 0L;
+        private boolean setIsHasBuildOrDeployTypeTool;
+
+        public Chain(Long appSystemId) {
+            this.appSystemId = appSystemId;
+        }
+
+        public Chain withAppModuleId(Long appModuleId) {
+            this.appModuleId = appModuleId;
+            return this;
+        }
+
+        public Chain withEnvId(Long envId) {
+            this.envId = envId;
+            return this;
+        }
+
+        public Chain withSetIsHasBuildOrDeployTypeTool(boolean setIsHasBuildOrDeployTypeTool) {
+            this.setIsHasBuildOrDeployTypeTool = setIsHasBuildOrDeployTypeTool;
+            return this;
+        }
+
+        public DeployPipelineConfigVo getDeployPipelineConfig() {
+            DeployPipelineConfigVo deployPipelineConfig = DeployPipelineUtil.getDeployPipelineConfig(appSystemId, appModuleId, envId);
+            if (setIsHasBuildOrDeployTypeTool) {
+                DeployPipelineUtil.setIsHasBuildOrDeployTypeTool(deployPipelineConfig);
+            }
+            return deployPipelineConfig;
+        }
+
+        public Long getAppSystemId() {
+            return appSystemId;
+        }
+
+        public Long getAppModuleId() {
+            return appModuleId;
+        }
+
+        public void setAppModuleId(Long appModuleId) {
+            this.appModuleId = appModuleId;
+        }
+
+        public Long getEnvId() {
+            return envId;
+        }
+
+        public void setEnvId(Long envId) {
+            this.envId = envId;
+        }
+
+        public boolean isSetIsHasBuildOrDeployTypeTool() {
+            return setIsHasBuildOrDeployTypeTool;
+        }
+
+        public void setSetIsHasBuildOrDeployTypeTool(boolean setIsHasBuildOrDeployTypeTool) {
+            this.setIsHasBuildOrDeployTypeTool = setIsHasBuildOrDeployTypeTool;
+        }
+    }
+
+    /**
+     * 设置DeployPipelinePhaseVo中isHasBuildTypeTool和isHasDeployTypeTool字段值
+     * @param pipelineConfigVo
+     */
+    public static void setIsHasBuildOrDeployTypeTool(DeployPipelineConfigVo pipelineConfigVo) {
+        IAutoexecServiceCrossoverService autoexecServiceCrossoverService = CrossoverServiceFactory.getApi(IAutoexecServiceCrossoverService.class);
+        for (DeployPipelinePhaseVo pipelinePhaseVo : pipelineConfigVo.getCombopPhaseList()) {
+            List<AutoexecCombopPhaseOperationVo> phaseOperationList = pipelinePhaseVo.getConfig().getPhaseOperationList();
+            for (AutoexecCombopPhaseOperationVo operationVo : phaseOperationList) {
+                if (Objects.equals(ToolType.TOOL.getValue(), operationVo.getOperationType())) {
+                    AutoexecOperationBaseVo autoexecOperationBaseVo = autoexecServiceCrossoverService.getAutoexecOperationBaseVoByIdAndType(pipelinePhaseVo.getName(), operationVo, false);
+                    if (autoexecOperationBaseVo != null && Objects.equals(autoexecOperationBaseVo.getTypeName(), "BUILD")) {
+                        pipelinePhaseVo.setIsHasBuildTypeTool(1);
+                    }
+                    if (autoexecOperationBaseVo != null && Objects.equals(autoexecOperationBaseVo.getTypeName(), "DEPLOY")) {
+                        pipelinePhaseVo.setIsHasDeployTypeTool(1);
+                    }
+                }
+                if (pipelinePhaseVo.getIsHasBuildTypeTool() == 1 && pipelinePhaseVo.getIsHasDeployTypeTool() == 1) {
+                    break;
+                }
+            }
+        }
     }
     /**
      * 获取流水线配置信息

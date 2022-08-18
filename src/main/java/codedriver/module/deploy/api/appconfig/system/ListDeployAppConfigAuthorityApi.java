@@ -67,7 +67,7 @@ public class ListDeployAppConfigAuthorityApi extends PrivateApiComponentBase {
         returnObj.put("operationAuthList", DeployAppConfigAction.getValueTextList());
 
         //场景权限
-        DeployPipelineConfigVo pipelineConfigVo = DeployPipelineUtil.getDeployPipelineConfig(appSystemId);
+        DeployPipelineConfigVo pipelineConfigVo = DeployPipelineUtil.chain(appSystemId).getDeployPipelineConfig();
         if (pipelineConfigVo == null) {
             throw new DeployAppConfigNotFoundException(appSystemId);
         }

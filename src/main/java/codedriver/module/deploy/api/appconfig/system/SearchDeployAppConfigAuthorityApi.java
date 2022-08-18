@@ -103,7 +103,7 @@ public class SearchDeployAppConfigAuthorityApi extends PrivateApiComponentBase {
         }
 
         //根据appSystemId获取对应的场景theadList
-        DeployPipelineConfigVo pipelineConfigVo = DeployPipelineUtil.getDeployPipelineConfig(paramObj.getLong("appSystemId"));
+        DeployPipelineConfigVo pipelineConfigVo = DeployPipelineUtil.chain(paramObj.getLong("appSystemId")).getDeployPipelineConfig();
         if (pipelineConfigVo == null) {
             throw new DeployAppConfigNotFoundException(paramObj.getLong("appSystemId"));
         }
