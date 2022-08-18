@@ -14,7 +14,7 @@ import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.deploy.dao.mapper.DeployAppConfigMapper;
-import codedriver.module.deploy.service.DeployAppPipelineService;
+import codedriver.module.deploy.util.DeployPipelineUtil;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
@@ -28,9 +28,6 @@ import java.util.*;
 @AuthAction(action = DEPLOY_BASE.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
 public class ListDeployAppPipelineProfileApi extends PrivateApiComponentBase {
-
-    @Resource
-    private DeployAppPipelineService deployAppPipelineService;
 
     @Resource
     private DeployAppConfigMapper deployAppConfigMapper;
@@ -111,10 +108,10 @@ public class ListDeployAppPipelineProfileApi extends PrivateApiComponentBase {
         JSONArray defaultValue = paramObj.getJSONArray("defaultValue");
         if (CollectionUtils.isNotEmpty(defaultValue)) {
             List<Long> profileIdList = defaultValue.toJavaList(Long.class);
-            DeployPipelineConfigVo config = deployAppPipelineService.mergeDeployPipelineConfigVo(appConfig, moduleOverrideConfig, envOverrideConfig, targetLevel, profileIdList);
+            DeployPipelineConfigVo config = DeployPipelineUtil.mergeDeployPipelineConfigVo(appConfig, moduleOverrideConfig, envOverrideConfig, targetLevel, profileIdList);
             return config.getOverrideProfileList();
         } else {
-            DeployPipelineConfigVo config = deployAppPipelineService.mergeDeployPipelineConfigVo(appConfig, moduleOverrideConfig, envOverrideConfig, targetLevel);
+            DeployPipelineConfigVo config = DeployPipelineUtil.mergeDeployPipelineConfigVo(appConfig, moduleOverrideConfig, envOverrideConfig, targetLevel);
             return config.getOverrideProfileList();
         }
     }

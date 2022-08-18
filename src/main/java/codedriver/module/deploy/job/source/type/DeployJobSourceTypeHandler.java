@@ -57,7 +57,7 @@ import codedriver.module.deploy.dao.mapper.DeployAppConfigMapper;
 import codedriver.module.deploy.dao.mapper.DeployJobMapper;
 import codedriver.module.deploy.dao.mapper.DeploySqlMapper;
 import codedriver.module.deploy.dao.mapper.DeployVersionMapper;
-import codedriver.module.deploy.service.DeployAppPipelineService;
+import codedriver.module.deploy.util.DeployPipelineUtil;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.nacos.common.utils.CollectionUtils;
@@ -89,9 +89,6 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
 
     @Resource
     RunnerMapper runnerMapper;
-
-    @Resource
-    DeployAppPipelineService deployAppPipelineService;
 
     @Resource
     DeployVersionMapper deployVersionMapper;
@@ -326,7 +323,7 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
         Long appModuleId = paramJson.getLong("appModuleId");
         Long envId = paramJson.getLong("envId");
         //获取最终流水线
-        DeployPipelineConfigVo deployPipelineConfigVo = deployAppPipelineService.getDeployPipelineConfigVo(new DeployAppConfigVo(appSystemId, appModuleId, envId));
+        DeployPipelineConfigVo deployPipelineConfigVo = DeployPipelineUtil.getDeployPipelineConfigVo(appSystemId, appModuleId, envId);
         if (deployPipelineConfigVo == null) {
             throw new DeployPipelineConfigNotFoundException();
         }

@@ -20,7 +20,7 @@ import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.framework.util.TableResultUtil;
 import codedriver.module.deploy.dao.mapper.DeployAppConfigMapper;
-import codedriver.module.deploy.service.DeployAppPipelineService;
+import codedriver.module.deploy.util.DeployPipelineUtil;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
@@ -45,9 +45,6 @@ public class SearchDeployAppConfigAuthorityApi extends PrivateApiComponentBase {
     List<JSONObject> theadList = new ArrayList<>();
     @Resource
     private DeployAppConfigMapper deployAppConfigMapper;
-
-    @Resource
-    DeployAppPipelineService deployAppPipelineService;
 
     @Override
     public String getToken() {
@@ -106,7 +103,7 @@ public class SearchDeployAppConfigAuthorityApi extends PrivateApiComponentBase {
         }
 
         //根据appSystemId获取对应的场景theadList
-        DeployPipelineConfigVo pipelineConfigVo = deployAppPipelineService.getDeployPipelineConfigVo(new DeployAppConfigVo(paramObj.getLong("appSystemId")));
+        DeployPipelineConfigVo pipelineConfigVo = DeployPipelineUtil.getDeployPipelineConfigVo(paramObj.getLong("appSystemId"));
         if (pipelineConfigVo == null) {
             throw new DeployAppConfigNotFoundException(paramObj.getLong("appSystemId"));
         }

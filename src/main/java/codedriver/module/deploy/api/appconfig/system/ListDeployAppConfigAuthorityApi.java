@@ -11,7 +11,6 @@ import codedriver.framework.autoexec.dto.combop.AutoexecCombopScenarioVo;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.deploy.auth.DEPLOY_BASE;
 import codedriver.framework.deploy.constvalue.DeployAppConfigAction;
-import codedriver.framework.deploy.dto.app.DeployAppConfigVo;
 import codedriver.framework.deploy.dto.app.DeployAppEnvironmentVo;
 import codedriver.framework.deploy.dto.app.DeployPipelineConfigVo;
 import codedriver.framework.deploy.exception.DeployAppConfigNotFoundException;
@@ -19,7 +18,7 @@ import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.deploy.dao.mapper.DeployAppConfigMapper;
-import codedriver.module.deploy.service.DeployAppPipelineService;
+import codedriver.module.deploy.util.DeployPipelineUtil;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.stereotype.Service;
 
@@ -35,9 +34,6 @@ import java.util.List;
 @AuthAction(action = DEPLOY_BASE.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
 public class ListDeployAppConfigAuthorityApi extends PrivateApiComponentBase {
-
-    @Resource
-    private DeployAppPipelineService deployAppPipelineService;
 
     @Resource
     private DeployAppConfigMapper deployAppConfigMapper;
@@ -71,7 +67,7 @@ public class ListDeployAppConfigAuthorityApi extends PrivateApiComponentBase {
         returnObj.put("operationAuthList", DeployAppConfigAction.getValueTextList());
 
         //场景权限
-        DeployPipelineConfigVo pipelineConfigVo = deployAppPipelineService.getDeployPipelineConfigVo(new DeployAppConfigVo(appSystemId));
+        DeployPipelineConfigVo pipelineConfigVo = DeployPipelineUtil.getDeployPipelineConfigVo(appSystemId);
         if (pipelineConfigVo == null) {
             throw new DeployAppConfigNotFoundException(appSystemId);
         }

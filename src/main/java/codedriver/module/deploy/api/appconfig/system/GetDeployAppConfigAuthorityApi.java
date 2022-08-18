@@ -21,7 +21,7 @@ import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.deploy.dao.mapper.DeployAppConfigMapper;
-import codedriver.module.deploy.service.DeployAppPipelineService;
+import codedriver.module.deploy.util.DeployPipelineUtil;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -37,9 +37,6 @@ import java.util.stream.Collectors;
 @AuthAction(action = DEPLOY_BASE.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
 public class GetDeployAppConfigAuthorityApi extends PrivateApiComponentBase {
-
-    @Resource
-    private DeployAppPipelineService deployAppPipelineService;
 
     @Resource
     private DeployAppConfigMapper deployAppConfigMapper;
@@ -121,7 +118,7 @@ public class GetDeployAppConfigAuthorityApi extends PrivateApiComponentBase {
                                 }
                             }
                         } else if (StringUtils.equals(actionType, DeployAppConfigActionType.SCENARIO.getValue())) {
-                            DeployPipelineConfigVo pipelineConfigVo = deployAppPipelineService.getDeployPipelineConfigVo(new DeployAppConfigVo(appSystemId));
+                            DeployPipelineConfigVo pipelineConfigVo = DeployPipelineUtil.getDeployPipelineConfigVo(appSystemId);
                             if (pipelineConfigVo == null) {
                                 continue;
                             }
@@ -168,7 +165,7 @@ public class GetDeployAppConfigAuthorityApi extends PrivateApiComponentBase {
         }
         returnObj.put("envAuthList", envAuthList);
         //场景权限
-        DeployPipelineConfigVo pipelineConfigVo = deployAppPipelineService.getDeployPipelineConfigVo(new DeployAppConfigVo(appSystemId));
+        DeployPipelineConfigVo pipelineConfigVo = DeployPipelineUtil.getDeployPipelineConfigVo(appSystemId);
         if (pipelineConfigVo == null) {
             throw new DeployAppConfigNotFoundException(appSystemId);
         }

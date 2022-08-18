@@ -3,7 +3,7 @@
  * 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
  */
 
-package codedriver.module.deploy.service;
+package codedriver.module.deploy.util;
 
 import codedriver.framework.autoexec.crossover.IAutoexecProfileCrossoverService;
 import codedriver.framework.autoexec.crossover.IAutoexecServiceCrossoverService;
@@ -18,213 +18,49 @@ import codedriver.module.deploy.dao.mapper.DeployAppConfigMapper;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 import java.util.*;
 
-@Service
-public class DeployAppPipelineServiceImpl implements DeployAppPipelineService {
+@Component
+public class DeployPipelineUtil {
+
+    private static DeployAppConfigMapper deployAppConfigMapper;
 
     @Resource
-    private DeployAppConfigMapper deployAppConfigMapper;
-
-//    /**
-//     * 查询应用、模块、环境的流水线配置信息
-//     * @param deployAppConfigVo
-//     * @return
-//     */
-//    @Override
-//    public DeployPipelineConfigVo getDeployPipelineConfigVo(DeployAppConfigVo deployAppConfigVo) {
-//        return getDeployPipelineConfigVo(deployAppConfigVo, null);
-//    }
-
-//    /**
-//     * 查询应用、模块、环境的流水线配置信息
-//     * @param deployAppConfigVo
-//     * @param profileIdList
-//     * @return
-//     */
-//    @Override
-//    public DeployPipelineConfigVo getDeployPipelineConfigVo(DeployAppConfigVo deployAppConfigVo, List<Long> profileIdList) {
-//        Long appSystemId = deployAppConfigVo.getAppSystemId();
-//        //查询应用层配置信息
-//        String configStr = deployAppConfigMapper.getAppConfig(new DeployAppConfigVo(appSystemId));
-//        if (StringUtils.isBlank(configStr)) {
-//            configStr = "{}";
-//        }
-//        DeployPipelineConfigVo config = JSONObject.parseObject(configStr, DeployPipelineConfigVo.class);
-//        overrideProfileParamSetSource(config.getOverrideProfileList(), "应用");
-//        String targetLevel = "应用";
-//        Long moduleId = deployAppConfigVo.getModuleId();
-//        Long envId = deployAppConfigVo.getEnvId();
-//        if (moduleId == 0L && envId == 0L) {
-//
-//        } else if (moduleId == 0L && envId != 0L) {
-//            // 如果是访问环境层配置信息，moduleId不能为空
-//            throw new ParamNotExistsException("moduleId");
-//        } else {
-//            //查询目标层配置信息
-//            String overrideConfigStr = deployAppConfigMapper.getAppConfig(deployAppConfigVo);
-//            if (StringUtils.isBlank(overrideConfigStr)) {
-//                //如果查询不到目标层配置信息，说明没改动过，则返回上层配置信息
-//                if (envId != 0L) {
-//                    targetLevel = "环境";
-//                    //目标层是环境层
-//                    //查询模块层配置信息
-//                    deployAppConfigVo.setEnvId(0L);
-//                    String moduleOverrideConfigStr = deployAppConfigMapper.getAppConfig(deployAppConfigVo);
-//                    if (StringUtils.isBlank(moduleOverrideConfigStr)) {
-//                        //如果查询不到模块层配置信息，说明没改动过，则返回应用层配置信息
-//                        overridePhase(config.getCombopPhaseList());
-//                    } else {
-//                        //如果查询到模块层配置信息，说明有改动过，则返回应用层与模块层结合配置信息
-//                        DeployPipelineConfigVo moduleOverrideConfig = JSONObject.parseObject(moduleOverrideConfigStr, DeployPipelineConfigVo.class);
-//                        overridePhase(config.getCombopPhaseList(), moduleOverrideConfig.getCombopPhaseList(), "模块");
-//                        overridePhaseGroup(config.getCombopGroupList(), moduleOverrideConfig.getCombopGroupList());
-//                        overrideProfileParamSetSource(moduleOverrideConfig.getOverrideProfileList(), "模块");
-//                        overrideProfile(config.getOverrideProfileList(), moduleOverrideConfig.getOverrideProfileList());
-//                    }
-//                } else {
-//                    targetLevel = "模块";
-//                    //目标层是模块层
-//                    overridePhase(config.getCombopPhaseList());
-//                }
-//            } else {
-//                //如果查询到目标层配置信息，说明有改动过，则返回目标层与上层结合配置信息
-//                if (envId != 0L) {
-//                    targetLevel = "环境";
-//                    //目标层是环境层
-//                    DeployPipelineConfigVo envOverrideConfig = JSONObject.parseObject(overrideConfigStr, DeployPipelineConfigVo.class);
-//                    //查询模块层配置信息
-//                    deployAppConfigVo.setEnvId(0L);
-//                    String moduleOverrideConfigStr = deployAppConfigMapper.getAppConfig(deployAppConfigVo);
-//                    if (StringUtils.isBlank(moduleOverrideConfigStr)) {
-//                        //如果查询不到模块层配置信息，说明没改动过，则返回应用层与环境层结合配置信息
-//                        overridePhase(config.getCombopPhaseList(), envOverrideConfig.getCombopPhaseList());
-//                        overridePhaseGroup(config.getCombopGroupList(), envOverrideConfig.getCombopGroupList());
-//                        overrideProfileParamSetSource(envOverrideConfig.getOverrideProfileList(), "模块");
-//                        overrideProfile(config.getOverrideProfileList(), envOverrideConfig.getOverrideProfileList());
-//                    } else {
-//                        //如果查询到模块层配置信息，说明有改动过，则返回应用层与模块层结合配置信息
-//                        DeployPipelineConfigVo moduleOverrideConfig = JSONObject.parseObject(moduleOverrideConfigStr, DeployPipelineConfigVo.class);
-//                        List<DeployPipelinePhaseVo> appSystemCombopPhaseList = config.getCombopPhaseList();
-//                        overridePhase(appSystemCombopPhaseList, moduleOverrideConfig.getCombopPhaseList(), "模块");
-//                        overridePhaseGroup(config.getCombopGroupList(), moduleOverrideConfig.getCombopGroupList());
-//                        overrideProfileParamSetSource(moduleOverrideConfig.getOverrideProfileList(), "模块");
-//                        overrideProfile(config.getOverrideProfileList(), moduleOverrideConfig.getOverrideProfileList());
-//
-//                        overridePhase(appSystemCombopPhaseList, envOverrideConfig.getCombopPhaseList());
-//                        overridePhaseGroup(config.getCombopGroupList(), envOverrideConfig.getCombopGroupList());
-//                        overrideProfileParamSetSource(envOverrideConfig.getOverrideProfileList(), "模块");
-//                        overrideProfile(config.getOverrideProfileList(), envOverrideConfig.getOverrideProfileList());
-//                    }
-//                } else {
-//                    //目标层是模块层
-//                    targetLevel = "模块";
-//                    DeployPipelineConfigVo moduleOverrideConfig = JSONObject.parseObject(overrideConfigStr, DeployPipelineConfigVo.class);
-//                    overridePhase(config.getCombopPhaseList(), moduleOverrideConfig.getCombopPhaseList());
-//                    overridePhaseGroup(config.getCombopGroupList(), moduleOverrideConfig.getCombopGroupList());
-//                    overrideProfileParamSetSource(moduleOverrideConfig.getOverrideProfileList(), "模块");
-//                    overrideProfile(config.getOverrideProfileList(), moduleOverrideConfig.getOverrideProfileList());
-//                }
-//            }
-//        }
-//
-//        overrideProfileParamSetInherit(config.getOverrideProfileList(), targetLevel);
-//        if (CollectionUtils.isEmpty(profileIdList)) {
-//            profileIdList = new ArrayList<>(getProfileIdSet(config));
-//        }
-//        if (CollectionUtils.isNotEmpty(profileIdList)) {
-//            IAutoexecProfileCrossoverService autoexecProfileCrossoverService = CrossoverServiceFactory.getApi(IAutoexecProfileCrossoverService.class);
-//            List<AutoexecProfileVo> profileList = autoexecProfileCrossoverService.getProfileVoListByIdList(profileIdList);
-//            if (CollectionUtils.isNotEmpty(profileList)) {
-//                List<DeployProfileVo> deployProfileList = getDeployProfileList(profileList);
-//                List<DeployProfileVo> overrideProfileList = config.getOverrideProfileList();
-//                finalOverrideProfile(deployProfileList, overrideProfileList);
-//                config.setOverrideProfileList(deployProfileList);
-//            }
-//        }
-//        return config;
-//    }
-
+    public void setDeployAppConfigMapper(DeployAppConfigMapper _deployAppConfigMapper) {
+        deployAppConfigMapper = _deployAppConfigMapper;
+    }
     /**
-     * 组装应用、模块、环境的流水线配置信息
-     * @param appConfig
-     * @param moduleOverrideConfig
-     * @param envOverrideConfig
-     * @param targetLevel
+     * 获取流水线配置信息
+     * @param appSystemId
      * @return
      */
-    @Override
-    public DeployPipelineConfigVo mergeDeployPipelineConfigVo(DeployPipelineConfigVo appConfig, DeployPipelineConfigVo moduleOverrideConfig, DeployPipelineConfigVo envOverrideConfig, String targetLevel) {
-        return mergeDeployPipelineConfigVo(appConfig, moduleOverrideConfig, envOverrideConfig, targetLevel, null);
+    public static DeployPipelineConfigVo getDeployPipelineConfigVo(Long appSystemId) {
+        return getDeployPipelineConfigVo(appSystemId, 0L);
     }
 
     /**
-     * 组装应用、模块、环境的流水线配置信息
-     * @param appConfig
-     * @param moduleOverrideConfig
-     * @param envOverrideConfig
-     * @param targetLevel
-     * @param profileIdList
+     * 获取流水线配置信息
+     * @param appSystemId
+     * @param appModuleId
      * @return
      */
-    @Override
-    public DeployPipelineConfigVo mergeDeployPipelineConfigVo(DeployPipelineConfigVo appConfig, DeployPipelineConfigVo moduleOverrideConfig, DeployPipelineConfigVo envOverrideConfig, String targetLevel, List<Long> profileIdList) {
-        overrideProfileParamSetSource(appConfig.getOverrideProfileList(), "应用");
-        if (moduleOverrideConfig == null && envOverrideConfig == null) {
-            if (!Objects.equals(targetLevel, "应用")) {
-                overridePhase(appConfig.getCombopPhaseList());
-                appConfig.getExecuteConfig().setInherit(1);
-            }
-        } else if (moduleOverrideConfig != null && envOverrideConfig == null) {
-            overrideExecuteConfig(appConfig.getExecuteConfig(), moduleOverrideConfig.getExecuteConfig());
-            if (Objects.equals(targetLevel, "环境")) {
-                overridePhase(appConfig.getCombopPhaseList(), moduleOverrideConfig.getCombopPhaseList(), "模块");
-                appConfig.getExecuteConfig().setInherit(1);
-            } else {
-                overridePhase(appConfig.getCombopPhaseList(), moduleOverrideConfig.getCombopPhaseList());
-            }
-            overridePhaseGroup(appConfig.getCombopGroupList(), moduleOverrideConfig.getCombopGroupList());
-            overrideProfileParamSetSource(moduleOverrideConfig.getOverrideProfileList(), "模块");
-            overrideProfile(appConfig.getOverrideProfileList(), moduleOverrideConfig.getOverrideProfileList());
-        } else if (moduleOverrideConfig == null && envOverrideConfig != null) {
-            overrideExecuteConfig(appConfig.getExecuteConfig(), envOverrideConfig.getExecuteConfig());
-            overridePhase(appConfig.getCombopPhaseList(), envOverrideConfig.getCombopPhaseList());
-            overridePhaseGroup(appConfig.getCombopGroupList(), envOverrideConfig.getCombopGroupList());
-            overrideProfileParamSetSource(envOverrideConfig.getOverrideProfileList(), "环境");
-            overrideProfile(appConfig.getOverrideProfileList(), envOverrideConfig.getOverrideProfileList());
-        } else if (moduleOverrideConfig != null && envOverrideConfig != null) {
-            overrideExecuteConfig(appConfig.getExecuteConfig(), moduleOverrideConfig.getExecuteConfig());
-            List<DeployPipelinePhaseVo> appSystemCombopPhaseList = appConfig.getCombopPhaseList();
-            overridePhase(appSystemCombopPhaseList, moduleOverrideConfig.getCombopPhaseList(), "模块");
-            overridePhaseGroup(appConfig.getCombopGroupList(), moduleOverrideConfig.getCombopGroupList());
-            overrideProfileParamSetSource(moduleOverrideConfig.getOverrideProfileList(), "模块");
-            overrideProfile(appConfig.getOverrideProfileList(), moduleOverrideConfig.getOverrideProfileList());
+    public static DeployPipelineConfigVo getDeployPipelineConfigVo(Long appSystemId, Long appModuleId) {
+        return getDeployPipelineConfigVo(appSystemId, appModuleId, 0L);
+    }
 
-            overrideExecuteConfig(appConfig.getExecuteConfig(), envOverrideConfig.getExecuteConfig());
-            overridePhase(appSystemCombopPhaseList, envOverrideConfig.getCombopPhaseList());
-            overridePhaseGroup(appConfig.getCombopGroupList(), envOverrideConfig.getCombopGroupList());
-            overrideProfileParamSetSource(envOverrideConfig.getOverrideProfileList(), "环境");
-            overrideProfile(appConfig.getOverrideProfileList(), envOverrideConfig.getOverrideProfileList());
-        }
-
-        if (CollectionUtils.isEmpty(profileIdList)) {
-            profileIdList = new ArrayList<>(getProfileIdSet(appConfig));
-        }
-        if (CollectionUtils.isNotEmpty(profileIdList)) {
-            IAutoexecProfileCrossoverService autoexecProfileCrossoverService = CrossoverServiceFactory.getApi(IAutoexecProfileCrossoverService.class);
-            List<AutoexecProfileVo> profileList = autoexecProfileCrossoverService.getProfileVoListByIdList(profileIdList);
-            if (CollectionUtils.isNotEmpty(profileList)) {
-                List<DeployProfileVo> deployProfileList = getDeployProfileList(profileList);
-                List<DeployProfileVo> overrideProfileList = appConfig.getOverrideProfileList();
-                finalOverrideProfile(deployProfileList, overrideProfileList);
-                appConfig.setOverrideProfileList(deployProfileList);
-            }
-        }
-        overrideProfileParamSetInherit(appConfig.getOverrideProfileList(), targetLevel);
-        return appConfig;
+    /**
+     * 获取流水线配置信息
+     * @param appSystemId
+     * @param appModuleId
+     * @param envId
+     * @return
+     */
+    public static DeployPipelineConfigVo getDeployPipelineConfigVo(Long appSystemId, Long appModuleId, Long envId) {
+        DeployAppConfigVo searchVo = new DeployAppConfigVo(appSystemId, appModuleId, envId);
+        return getDeployPipelineConfigVo(searchVo);
     }
 
     /**
@@ -232,8 +68,7 @@ public class DeployAppPipelineServiceImpl implements DeployAppPipelineService {
      * @param searchVo
      * @return
      */
-    @Override
-    public DeployPipelineConfigVo getDeployPipelineConfigVo(DeployAppConfigVo searchVo) {
+    public static DeployPipelineConfigVo getDeployPipelineConfigVo(DeployAppConfigVo searchVo) {
         String targetLevel = null;
         DeployPipelineConfigVo appConfig = null;
         DeployPipelineConfigVo moduleOverrideConfig = null;
@@ -290,10 +125,87 @@ public class DeployAppPipelineServiceImpl implements DeployAppPipelineService {
     }
 
     /**
+     * 组装应用、模块、环境的流水线配置信息
+     * @param appConfig
+     * @param moduleOverrideConfig
+     * @param envOverrideConfig
+     * @param targetLevel
+     * @return
+     */
+    public static DeployPipelineConfigVo mergeDeployPipelineConfigVo(DeployPipelineConfigVo appConfig, DeployPipelineConfigVo moduleOverrideConfig, DeployPipelineConfigVo envOverrideConfig, String targetLevel) {
+        return mergeDeployPipelineConfigVo(appConfig, moduleOverrideConfig, envOverrideConfig, targetLevel, null);
+    }
+
+    /**
+     * 组装应用、模块、环境的流水线配置信息
+     * @param appConfig
+     * @param moduleOverrideConfig
+     * @param envOverrideConfig
+     * @param targetLevel
+     * @param profileIdList
+     * @return
+     */
+    public static DeployPipelineConfigVo mergeDeployPipelineConfigVo(DeployPipelineConfigVo appConfig, DeployPipelineConfigVo moduleOverrideConfig, DeployPipelineConfigVo envOverrideConfig, String targetLevel, List<Long> profileIdList) {
+        overrideProfileParamSetSource(appConfig.getOverrideProfileList(), "应用");
+        if (moduleOverrideConfig == null && envOverrideConfig == null) {
+            if (!Objects.equals(targetLevel, "应用")) {
+                overridePhase(appConfig.getCombopPhaseList());
+                appConfig.getExecuteConfig().setInherit(1);
+            }
+        } else if (moduleOverrideConfig != null && envOverrideConfig == null) {
+            overrideExecuteConfig(appConfig.getExecuteConfig(), moduleOverrideConfig.getExecuteConfig());
+            if (Objects.equals(targetLevel, "环境")) {
+                overridePhase(appConfig.getCombopPhaseList(), moduleOverrideConfig.getCombopPhaseList(), "模块");
+                appConfig.getExecuteConfig().setInherit(1);
+            } else {
+                overridePhase(appConfig.getCombopPhaseList(), moduleOverrideConfig.getCombopPhaseList());
+            }
+            overridePhaseGroup(appConfig.getCombopGroupList(), moduleOverrideConfig.getCombopGroupList());
+            overrideProfileParamSetSource(moduleOverrideConfig.getOverrideProfileList(), "模块");
+            overrideProfile(appConfig.getOverrideProfileList(), moduleOverrideConfig.getOverrideProfileList());
+        } else if (moduleOverrideConfig == null && envOverrideConfig != null) {
+            overrideExecuteConfig(appConfig.getExecuteConfig(), envOverrideConfig.getExecuteConfig());
+            overridePhase(appConfig.getCombopPhaseList(), envOverrideConfig.getCombopPhaseList());
+            overridePhaseGroup(appConfig.getCombopGroupList(), envOverrideConfig.getCombopGroupList());
+            overrideProfileParamSetSource(envOverrideConfig.getOverrideProfileList(), "环境");
+            overrideProfile(appConfig.getOverrideProfileList(), envOverrideConfig.getOverrideProfileList());
+        } else if (moduleOverrideConfig != null && envOverrideConfig != null) {
+            overrideExecuteConfig(appConfig.getExecuteConfig(), moduleOverrideConfig.getExecuteConfig());
+            List<DeployPipelinePhaseVo> appSystemCombopPhaseList = appConfig.getCombopPhaseList();
+            overridePhase(appSystemCombopPhaseList, moduleOverrideConfig.getCombopPhaseList(), "模块");
+            overridePhaseGroup(appConfig.getCombopGroupList(), moduleOverrideConfig.getCombopGroupList());
+            overrideProfileParamSetSource(moduleOverrideConfig.getOverrideProfileList(), "模块");
+            overrideProfile(appConfig.getOverrideProfileList(), moduleOverrideConfig.getOverrideProfileList());
+
+            overrideExecuteConfig(appConfig.getExecuteConfig(), envOverrideConfig.getExecuteConfig());
+            overridePhase(appSystemCombopPhaseList, envOverrideConfig.getCombopPhaseList());
+            overridePhaseGroup(appConfig.getCombopGroupList(), envOverrideConfig.getCombopGroupList());
+            overrideProfileParamSetSource(envOverrideConfig.getOverrideProfileList(), "环境");
+            overrideProfile(appConfig.getOverrideProfileList(), envOverrideConfig.getOverrideProfileList());
+        }
+
+        if (CollectionUtils.isEmpty(profileIdList)) {
+            profileIdList = new ArrayList<>(getProfileIdSet(appConfig));
+        }
+        if (CollectionUtils.isNotEmpty(profileIdList)) {
+            IAutoexecProfileCrossoverService autoexecProfileCrossoverService = CrossoverServiceFactory.getApi(IAutoexecProfileCrossoverService.class);
+            List<AutoexecProfileVo> profileList = autoexecProfileCrossoverService.getProfileVoListByIdList(profileIdList);
+            if (CollectionUtils.isNotEmpty(profileList)) {
+                List<DeployProfileVo> deployProfileList = getDeployProfileList(profileList);
+                List<DeployProfileVo> overrideProfileList = appConfig.getOverrideProfileList();
+                finalOverrideProfile(deployProfileList, overrideProfileList);
+                appConfig.setOverrideProfileList(deployProfileList);
+            }
+        }
+        overrideProfileParamSetInherit(appConfig.getOverrideProfileList(), targetLevel);
+        return appConfig;
+    }
+
+    /**
      * 覆盖阶段列表配置信息
      * @param appSystemCombopPhaseList 应用层阶段列表数据
      */
-    private void overridePhase(List<DeployPipelinePhaseVo> appSystemCombopPhaseList) {
+    private static void overridePhase(List<DeployPipelinePhaseVo> appSystemCombopPhaseList) {
         overridePhase(appSystemCombopPhaseList, null);
     }
 
@@ -302,7 +214,7 @@ public class DeployAppPipelineServiceImpl implements DeployAppPipelineService {
      * @param appSystemCombopPhaseList 应用层阶段列表数据
      * @param overrideCombopPhaseList 模块层或环境层阶段列表数据
      */
-    private void overridePhase(List<DeployPipelinePhaseVo> appSystemCombopPhaseList, List<DeployPipelinePhaseVo> overrideCombopPhaseList) {
+    private static void overridePhase(List<DeployPipelinePhaseVo> appSystemCombopPhaseList, List<DeployPipelinePhaseVo> overrideCombopPhaseList) {
         overridePhase(appSystemCombopPhaseList, overrideCombopPhaseList, null);
     }
     /**
@@ -311,7 +223,7 @@ public class DeployAppPipelineServiceImpl implements DeployAppPipelineService {
      * @param overrideCombopPhaseList 模块层或环境层阶段列表数据
      * @param inheritName
      */
-    private void overridePhase(List<DeployPipelinePhaseVo> appSystemCombopPhaseList, List<DeployPipelinePhaseVo> overrideCombopPhaseList, String inheritName) {
+    private static void overridePhase(List<DeployPipelinePhaseVo> appSystemCombopPhaseList, List<DeployPipelinePhaseVo> overrideCombopPhaseList, String inheritName) {
         if (CollectionUtils.isEmpty(appSystemCombopPhaseList)) {
             return;
         }
@@ -365,7 +277,7 @@ public class DeployAppPipelineServiceImpl implements DeployAppPipelineService {
      * @param appSystemCombopGroupList 应用层阶段组列表数据
      * @param overrideCombopGroupList 模块层或环境层阶段组列表数据
      */
-    private void overridePhaseGroup(List<AutoexecCombopGroupVo> appSystemCombopGroupList, List<AutoexecCombopGroupVo> overrideCombopGroupList ) {
+    private static void overridePhaseGroup(List<AutoexecCombopGroupVo> appSystemCombopGroupList, List<AutoexecCombopGroupVo> overrideCombopGroupList ) {
         if (CollectionUtils.isNotEmpty(appSystemCombopGroupList) && CollectionUtils.isNotEmpty(overrideCombopGroupList)) {
             for (AutoexecCombopGroupVo appSystemCombopGroup : appSystemCombopGroupList) {
                 for (AutoexecCombopGroupVo overrideCombopGroup : overrideCombopGroupList) {
@@ -383,7 +295,7 @@ public class DeployAppPipelineServiceImpl implements DeployAppPipelineService {
      * @param appSystemDeployProfileList 应用层预置参数集列表数据
      * @param overrideDeployProfileList 模块层或环境层预置参数集列表数据
      */
-    private void overrideProfile(List<DeployProfileVo> appSystemDeployProfileList, List<DeployProfileVo> overrideDeployProfileList) {
+    private static void overrideProfile(List<DeployProfileVo> appSystemDeployProfileList, List<DeployProfileVo> overrideDeployProfileList) {
         if ( CollectionUtils.isEmpty(overrideDeployProfileList)) {
             return;
         }
@@ -413,7 +325,7 @@ public class DeployAppPipelineServiceImpl implements DeployAppPipelineService {
      * @param appSystemDeployProfileParamList 应用层预置参数集列表数据
      * @param overrideDeployProfileParamList 模块层或环境层预置参数集列表数据
      */
-    private void overrideProfileParam(List<DeployProfileParamVo> appSystemDeployProfileParamList, List<DeployProfileParamVo> overrideDeployProfileParamList) {
+    private static void overrideProfileParam(List<DeployProfileParamVo> appSystemDeployProfileParamList, List<DeployProfileParamVo> overrideDeployProfileParamList) {
         if (CollectionUtils.isEmpty(overrideDeployProfileParamList)) {
             return;
         }
@@ -445,7 +357,7 @@ public class DeployAppPipelineServiceImpl implements DeployAppPipelineService {
      * @param overrideDeployProfileList 预置参数集列表数据
      * @param targetLevel 目标层级
      */
-    private void overrideProfileParamSetInherit(List<DeployProfileVo> overrideDeployProfileList, String targetLevel) {
+    private static void overrideProfileParamSetInherit(List<DeployProfileVo> overrideDeployProfileList, String targetLevel) {
         if ( CollectionUtils.isEmpty(overrideDeployProfileList)) {
             return;
         }
@@ -469,7 +381,7 @@ public class DeployAppPipelineServiceImpl implements DeployAppPipelineService {
      * @param overrideDeployProfileList 预置参数集列表数据
      * @param source 来源名
      */
-    private void overrideProfileParamSetSource(List<DeployProfileVo> overrideDeployProfileList, String source) {
+    private static void overrideProfileParamSetSource(List<DeployProfileVo> overrideDeployProfileList, String source) {
         if ( CollectionUtils.isEmpty(overrideDeployProfileList)) {
             return;
         }
@@ -491,7 +403,7 @@ public class DeployAppPipelineServiceImpl implements DeployAppPipelineService {
      * @param config
      * @return
      */
-    private Set<Long> getProfileIdSet(DeployPipelineConfigVo config) {
+    private static Set<Long> getProfileIdSet(DeployPipelineConfigVo config) {
         Set<Long> profileIdSet = new HashSet<>();
         List<DeployPipelinePhaseVo> combopPhaseList = config.getCombopPhaseList();
         if (CollectionUtils.isEmpty(combopPhaseList)) {
@@ -525,7 +437,7 @@ public class DeployAppPipelineServiceImpl implements DeployAppPipelineService {
      * @param profileList
      * @return
      */
-    private List<DeployProfileVo> getDeployProfileList(List<AutoexecProfileVo> profileList) {
+    private static List<DeployProfileVo> getDeployProfileList(List<AutoexecProfileVo> profileList) {
         List<DeployProfileVo> deployProfileList = new ArrayList<>();
         for (AutoexecProfileVo autoexecProfileVo : profileList) {
             DeployProfileVo deployProfileVo = new DeployProfileVo();
@@ -552,7 +464,7 @@ public class DeployAppPipelineServiceImpl implements DeployAppPipelineService {
      * @param deployProfileList 原始的预置参数集列表
      * @param overrideDeployProfileList 流水线修改后的预置参数集列表
      */
-    private void finalOverrideProfile(List<DeployProfileVo> deployProfileList, List<DeployProfileVo> overrideDeployProfileList) {
+    private static void finalOverrideProfile(List<DeployProfileVo> deployProfileList, List<DeployProfileVo> overrideDeployProfileList) {
         if ( CollectionUtils.isEmpty(overrideDeployProfileList)) {
             return;
         }
@@ -573,7 +485,7 @@ public class DeployAppPipelineServiceImpl implements DeployAppPipelineService {
      * @param deployProfileParamList 原始的预置参数集列表
      * @param overrideDeployProfileParamList 流水线修改后的预置参数集列表
      */
-    private void finalOverrideProfileParam(List<DeployProfileParamVo> deployProfileParamList, List<DeployProfileParamVo> overrideDeployProfileParamList) {
+    private static void finalOverrideProfileParam(List<DeployProfileParamVo> deployProfileParamList, List<DeployProfileParamVo> overrideDeployProfileParamList) {
         if (CollectionUtils.isEmpty(overrideDeployProfileParamList)) {
             return;
         }
@@ -597,7 +509,7 @@ public class DeployAppPipelineServiceImpl implements DeployAppPipelineService {
      * @param appSystemExecuteConfigVo 应用层执行信息数据
      * @param overrideExecuteConfigVo 模块层或环境层执行信息数据
      */
-    private void overrideExecuteConfig(DeployPipelineExecuteConfigVo appSystemExecuteConfigVo, DeployPipelineExecuteConfigVo overrideExecuteConfigVo) {
+    private static void overrideExecuteConfig(DeployPipelineExecuteConfigVo appSystemExecuteConfigVo, DeployPipelineExecuteConfigVo overrideExecuteConfigVo) {
         Integer inherit = overrideExecuteConfigVo.getInherit();
         if (Objects.equals(inherit, 0)) {
             appSystemExecuteConfigVo.setInherit(inherit);
@@ -607,4 +519,5 @@ public class DeployAppPipelineServiceImpl implements DeployAppPipelineService {
             appSystemExecuteConfigVo.setInherit(1);
         }
     }
+
 }

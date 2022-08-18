@@ -20,19 +20,14 @@ import codedriver.framework.deploy.dto.app.DeployPipelineConfigVo;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
-import codedriver.module.deploy.service.DeployAppPipelineService;
+import codedriver.module.deploy.util.DeployPipelineUtil;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.stereotype.Service;
-
-import javax.annotation.Resource;
 
 @Service
 @AuthAction(action = DEPLOY_BASE.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
 public class GetDeployAppPipelineApi extends PrivateApiComponentBase {
-
-    @Resource
-    private DeployAppPipelineService deployAppPipelineService;
 
     @Override
     public String getName() {
@@ -84,7 +79,7 @@ public class GetDeployAppPipelineApi extends PrivateApiComponentBase {
             }
             searchVo.setEnvName(env.getName());
         }
-        DeployPipelineConfigVo deployPipelineConfigVo = deployAppPipelineService.getDeployPipelineConfigVo(searchVo);
+        DeployPipelineConfigVo deployPipelineConfigVo = DeployPipelineUtil.getDeployPipelineConfigVo(searchVo);
         searchVo.setConfig(deployPipelineConfigVo);
         return searchVo;
     }
