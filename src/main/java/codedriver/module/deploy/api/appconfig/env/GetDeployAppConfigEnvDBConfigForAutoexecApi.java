@@ -121,7 +121,7 @@ public class GetDeployAppConfigEnvDBConfigForAutoexecApi extends PrivateApiCompo
                     }
                     dbResourceObj.put("node", nodeObj);
                     dbResourceObj.put("args", dbConfigVo.getConfig());
-                    returnDBUserObject.put(dbConfigVo.getDbAlias() + "." + accountVo.getAccountAlias(), dbResourceObj);
+                    returnDBUserObject.put(dbConfigVo.getDbSchema() + "." + accountVo.getAccountAlias(), dbResourceObj);
                 }
             }
         }

@@ -69,7 +69,6 @@ public class DeleteDeployAppConfigEnvDbConfigApi extends PrivateApiComponentBase
 
 
         deployAppConfigMapper.deleteAppConfigDBConfigById(id);
-        deployAppConfigMapper.deleteAppConfigDBConfigAccountByDBConfigId(id);
         return null;
     }
 }
