@@ -14,10 +14,8 @@ import codedriver.framework.autoexec.dto.profile.AutoexecProfileParamVo;
 import codedriver.framework.autoexec.dto.profile.AutoexecProfileVo;
 import codedriver.framework.crossover.CrossoverServiceFactory;
 import codedriver.framework.deploy.dto.app.*;
-import codedriver.framework.deploy.exception.DeployAppConfigNotFoundException;
 import codedriver.framework.exception.type.ParamNotExistsException;
 import codedriver.module.deploy.dao.mapper.DeployAppConfigMapper;
-import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
@@ -43,19 +41,45 @@ public class DeployPipelineConfigManager {
         private final Long appSystemId;
         private Long appModuleId = 0L;
         private Long envId = 0L;
+        private boolean isAppSystemDraft;
+        private boolean isAppModuleDraft;
+        private boolean isEnvDraft;
         private boolean isHasBuildOrDeployTypeTool;
+        private List<Long> profileIdList;
 
         public Builder(Long appSystemId) {
             this.appSystemId = appSystemId;
         }
 
         public Builder withAppModuleId(Long appModuleId) {
-            this.appModuleId = appModuleId;
+            if (appModuleId != null) {
+                this.appModuleId = appModuleId;
+            }
             return this;
         }
 
         public Builder withEnvId(Long envId) {
-            this.envId = envId;
+            if (envId != null) {
+                this.envId = envId;
+            }
+            return this;
+        }
+        public Builder withAppSystemDraft(boolean isAppSystemDraft) {
+            this.isAppSystemDraft = isAppSystemDraft;
+            return this;
+        }
+        public Builder withAppModuleDraft(boolean isAppModuleDraft) {
+            this.isAppModuleDraft = isAppModuleDraft;
+            return this;
+        }
+
+        public Builder withEnvDraft(boolean isEnvDraft) {
+            this.isEnvDraft = isEnvDraft;
+            return this;
+        }
+
+        public Builder withProfileIdList(List<Long> profileIdList) {
+            this.profileIdList = profileIdList;
             return this;
         }
 
@@ -65,13 +89,12 @@ public class DeployPipelineConfigManager {
         }
 
         public DeployPipelineConfigVo getConfig() {
-            DeployPipelineConfigVo deployPipelineConfig = DeployPipelineConfigManager.getDeployPipelineConfig(appSystemId, appModuleId, envId);
-            if (isHasBuildOrDeployTypeTool) {
-                DeployPipelineConfigManager.setIsHasBuildOrDeployTypeTool(deployPipelineConfig);
+            DeployPipelineConfigVo deployPipelineConfig = getDeployPipelineConfig(appSystemId, appModuleId, envId, isAppSystemDraft, isAppModuleDraft, isEnvDraft, profileIdList);
+            if (deployPipelineConfig != null && isHasBuildOrDeployTypeTool) {
+                setIsHasBuildOrDeployTypeTool(deployPipelineConfig);
             }
             return deployPipelineConfig;
         }
-
 
     }
 
@@ -82,44 +105,37 @@ public class DeployPipelineConfigManager {
      */
     private static void setIsHasBuildOrDeployTypeTool(DeployPipelineConfigVo pipelineConfigVo) {
         IAutoexecServiceCrossoverService autoexecServiceCrossoverService = CrossoverServiceFactory.getApi(IAutoexecServiceCrossoverService.class);
-        for (DeployPipelinePhaseVo pipelinePhaseVo : pipelineConfigVo.getCombopPhaseList()) {
-            List<AutoexecCombopPhaseOperationVo> phaseOperationList = pipelinePhaseVo.getConfig().getPhaseOperationList();
-            for (AutoexecCombopPhaseOperationVo operationVo : phaseOperationList) {
-                if (Objects.equals(ToolType.TOOL.getValue(), operationVo.getOperationType())) {
-                    AutoexecOperationBaseVo autoexecOperationBaseVo = autoexecServiceCrossoverService.getAutoexecOperationBaseVoByIdAndType(pipelinePhaseVo.getName(), operationVo, false);
-                    if (autoexecOperationBaseVo != null && Objects.equals(autoexecOperationBaseVo.getTypeName(), "BUILD")) {
-                        pipelinePhaseVo.setIsHasBuildTypeTool(1);
+        List<AutoexecCombopScenarioVo> scenarioList = pipelineConfigVo.getScenarioList();
+        if (CollectionUtils.isEmpty(scenarioList)) {
+            return;
+        }
+        for (AutoexecCombopScenarioVo scenarioVo : scenarioList) {
+            List<String> combopPhaseNameList = scenarioVo.getCombopPhaseNameList();
+            for (DeployPipelinePhaseVo pipelinePhaseVo : pipelineConfigVo.getCombopPhaseList()) {
+                if (!combopPhaseNameList.contains(pipelinePhaseVo.getName())) {
+                    continue;
+                }
+                List<AutoexecCombopPhaseOperationVo> phaseOperationList = pipelinePhaseVo.getConfig().getPhaseOperationList();
+                for (AutoexecCombopPhaseOperationVo operationVo : phaseOperationList) {
+                    if (Objects.equals(ToolType.TOOL.getValue(), operationVo.getOperationType())) {
+                        AutoexecOperationBaseVo autoexecOperationBaseVo = autoexecServiceCrossoverService.getAutoexecOperationBaseVoByIdAndType(pipelinePhaseVo.getName(), operationVo, false);
+                        if (autoexecOperationBaseVo != null && Objects.equals(autoexecOperationBaseVo.getTypeName(), "BUILD")) {
+                            scenarioVo.setIsHasBuildTypeTool(1);
+                        }
+                        if (autoexecOperationBaseVo != null && Objects.equals(autoexecOperationBaseVo.getTypeName(), "DEPLOY")) {
+                            scenarioVo.setIsHasDeployTypeTool(1);
+                        }
                     }
-                    if (autoexecOperationBaseVo != null && Objects.equals(autoexecOperationBaseVo.getTypeName(), "DEPLOY")) {
-                        pipelinePhaseVo.setIsHasDeployTypeTool(1);
+                    if (scenarioVo.getIsHasBuildTypeTool() == 1 && scenarioVo.getIsHasDeployTypeTool() == 1) {
+                        break;
                     }
                 }
-                if (pipelinePhaseVo.getIsHasBuildTypeTool() == 1 && pipelinePhaseVo.getIsHasDeployTypeTool() == 1) {
+                if (scenarioVo.getIsHasBuildTypeTool() == 1 && scenarioVo.getIsHasDeployTypeTool() == 1) {
                     break;
                 }
             }
         }
-    }
 
-    /**
-     * 获取流水线配置信息
-     *
-     * @param appSystemId 应用id
-     * @return 配置
-     */
-    private static DeployPipelineConfigVo getDeployPipelineConfig(Long appSystemId) {
-        return getDeployPipelineConfig(appSystemId, 0L);
-    }
-
-    /**
-     * 获取流水线配置信息
-     *
-     * @param appSystemId 应用id
-     * @param appModuleId 应用模块id
-     * @return 配置
-     */
-    private static DeployPipelineConfigVo getDeployPipelineConfig(Long appSystemId, Long appModuleId) {
-        return getDeployPipelineConfig(appSystemId, appModuleId, 0L);
     }
 
     /**
@@ -128,93 +144,81 @@ public class DeployPipelineConfigManager {
      * @param appSystemId 应用id
      * @param appModuleId 应用模块id
      * @param envId       环境id
+     * @param isAppSystemDraft 是否取应用层配置草稿
+     * @param isAppModuleDraft 是否取模块层配置草稿
+     * @param isEnvDraft       是否取环境层配置草稿
      * @return 配置
      */
-    private static DeployPipelineConfigVo getDeployPipelineConfig(Long appSystemId, Long appModuleId, Long envId) {
-        DeployAppConfigVo searchVo = new DeployAppConfigVo(appSystemId, appModuleId, envId);
-        return getDeployPipelineConfig(searchVo);
-    }
-
-    private static DeployPipelineConfigVo getDeployPipelineConfig(DeployAppConfigVo searchVo) {
-        String targetLevel = null;
-        DeployPipelineConfigVo appConfig = null;
+    private static DeployPipelineConfigVo getDeployPipelineConfig(Long appSystemId, Long appModuleId, Long envId, boolean isAppSystemDraft, boolean isAppModuleDraft, boolean isEnvDraft, List<Long> profileIdList) {
+        String targetLevel;
+        DeployPipelineConfigVo appConfig;
         DeployPipelineConfigVo moduleOverrideConfig = null;
         DeployPipelineConfigVo envOverrideConfig = null;
-        String overrideConfigStr = null;
-        Long appSystemId = searchVo.getAppSystemId();
-        Long appModuleId = searchVo.getAppModuleId();
-        Long envId = searchVo.getEnvId();
-        DeployAppConfigVo deployAppConfigVo = deployAppConfigMapper.getAppConfigVo(searchVo);
-        if (deployAppConfigVo != null) {
-            overrideConfigStr = deployAppConfigVo.getConfigStr();
-        }
+        DeployAppConfigVo searchVo = new DeployAppConfigVo(appSystemId, appModuleId, envId);
         if (appModuleId == 0L && envId == 0L) {
             targetLevel = "应用";
             //查询应用层流水线配置信息
-            if (StringUtils.isBlank(overrideConfigStr)) {
-                throw new DeployAppConfigNotFoundException(appSystemId);
+            appConfig = getDeployPipelineConfigVo(searchVo, isAppSystemDraft);
+            if (appConfig == null) {
+                if (isAppSystemDraft) {
+                    return null;
+                } else {
+                    appConfig = new DeployPipelineConfigVo();
+                }
             }
-            appConfig = JSONObject.parseObject(overrideConfigStr, DeployPipelineConfigVo.class);
-        } else if (appModuleId == 0L && envId != 0L) {
+        } else if (appModuleId == 0L) {
             // 如果是访问环境层配置信息，moduleId不能为空
             throw new ParamNotExistsException("moduleId");
-        } else if (appModuleId != 0L && envId == 0L) {
+        } else if (envId == 0L) {
             targetLevel = "模块";
             //查询应用层配置信息
-            String configStr = deployAppConfigMapper.getAppConfig(new DeployAppConfigVo(appSystemId));
-            if (StringUtils.isBlank(configStr)) {
-                configStr = "{}";
+            appConfig = getDeployPipelineConfigVo(new DeployAppConfigVo(appSystemId), false);
+            if (appConfig == null) {
+                appConfig = new DeployPipelineConfigVo();
             }
-            appConfig = JSONObject.parseObject(configStr, DeployPipelineConfigVo.class);
-            if (StringUtils.isNotBlank(overrideConfigStr)) {
-                moduleOverrideConfig = JSONObject.parseObject(overrideConfigStr, DeployPipelineConfigVo.class);
-            }
+            moduleOverrideConfig = getDeployPipelineConfigVo(searchVo, isAppModuleDraft);
         } else {
             targetLevel = "环境";
             //查询应用层配置信息
-            String configStr = deployAppConfigMapper.getAppConfig(new DeployAppConfigVo(appSystemId));
-            if (StringUtils.isBlank(configStr)) {
-                configStr = "{}";
+            appConfig = getDeployPipelineConfigVo(new DeployAppConfigVo(appSystemId), false);
+            if (appConfig == null) {
+                appConfig = new DeployPipelineConfigVo();
             }
-            appConfig = JSONObject.parseObject(configStr, DeployPipelineConfigVo.class);
-            String moduleOverrideConfigStr = deployAppConfigMapper.getAppConfig(new DeployAppConfigVo(appSystemId, appModuleId));
-            if (StringUtils.isNotBlank(moduleOverrideConfigStr)) {
-                moduleOverrideConfig = JSONObject.parseObject(moduleOverrideConfigStr, DeployPipelineConfigVo.class);
-            }
-            if (StringUtils.isNotBlank(overrideConfigStr)) {
-                envOverrideConfig = JSONObject.parseObject(overrideConfigStr, DeployPipelineConfigVo.class);
-            }
+            moduleOverrideConfig = getDeployPipelineConfigVo(new DeployAppConfigVo(appSystemId, appModuleId), false);
+            envOverrideConfig = getDeployPipelineConfigVo(searchVo, isEnvDraft);
         }
-        DeployPipelineConfigVo deployPipelineConfigVo = mergeDeployPipelineConfig(appConfig, moduleOverrideConfig, envOverrideConfig, targetLevel);
+        DeployPipelineConfigVo deployPipelineConfigVo = mergeDeployPipelineConfig(appConfig, moduleOverrideConfig, envOverrideConfig, targetLevel, profileIdList);
         IAutoexecServiceCrossoverService autoexecServiceCrossoverService = CrossoverServiceFactory.getApi(IAutoexecServiceCrossoverService.class);
         autoexecServiceCrossoverService.updateAutoexecCombopConfig(deployPipelineConfigVo.getAutoexecCombopConfigVo());
         return deployPipelineConfigVo;
     }
 
-    /**
-     * 组装应用、模块、环境的流水线配置信息
-     *
-     * @param appConfig
-     * @param moduleOverrideConfig
-     * @param envOverrideConfig
-     * @param targetLevel
-     * @return
-     */
-    public static DeployPipelineConfigVo mergeDeployPipelineConfig(DeployPipelineConfigVo appConfig, DeployPipelineConfigVo moduleOverrideConfig, DeployPipelineConfigVo envOverrideConfig, String targetLevel) {
-        return mergeDeployPipelineConfig(appConfig, moduleOverrideConfig, envOverrideConfig, targetLevel, null);
+    private static DeployPipelineConfigVo getDeployPipelineConfigVo(DeployAppConfigVo searchVo, boolean isDraft) {
+        if (isDraft) {
+            DeployAppConfigVo deployAppConfigDraftVo = deployAppConfigMapper.getAppConfigDraft(searchVo);
+            if (deployAppConfigDraftVo != null) {
+                return deployAppConfigDraftVo.getConfig();
+            }
+        } else {
+            DeployAppConfigVo deployAppConfigVo = deployAppConfigMapper.getAppConfigVo(searchVo);
+            if (deployAppConfigVo != null) {
+                return deployAppConfigVo.getConfig();
+            }
+        }
+        return null;
     }
 
     /**
      * 组装应用、模块、环境的流水线配置信息
      *
-     * @param appConfig
-     * @param moduleOverrideConfig
-     * @param envOverrideConfig
-     * @param targetLevel
-     * @param profileIdList
-     * @return
+     * @param appConfig 应用层配置信息
+     * @param moduleOverrideConfig 模块层配置信息
+     * @param envOverrideConfig 环境层配置信息
+     * @param targetLevel 目标层
+     * @param profileIdList 预置参数集id列表
+     * @return 目标层配置信息
      */
-    public static DeployPipelineConfigVo mergeDeployPipelineConfig(DeployPipelineConfigVo appConfig, DeployPipelineConfigVo moduleOverrideConfig, DeployPipelineConfigVo envOverrideConfig, String targetLevel, List<Long> profileIdList) {
+    private static DeployPipelineConfigVo mergeDeployPipelineConfig(DeployPipelineConfigVo appConfig, DeployPipelineConfigVo moduleOverrideConfig, DeployPipelineConfigVo envOverrideConfig, String targetLevel, List<Long> profileIdList) {
         overrideProfileParamSetSource(appConfig.getOverrideProfileList(), "应用");
         if (moduleOverrideConfig == null && envOverrideConfig == null) {
             if (!Objects.equals(targetLevel, "应用")) {
@@ -294,9 +298,9 @@ public class DeployPipelineConfigManager {
      *
      * @param appSystemCombopPhaseList 应用层阶段列表数据
      * @param overrideCombopPhaseList  模块层或环境层阶段列表数据
-     * @param inheritName
+     * @param source 来源层名称
      */
-    private static void overridePhase(List<DeployPipelinePhaseVo> appSystemCombopPhaseList, List<DeployPipelinePhaseVo> overrideCombopPhaseList, String inheritName) {
+    private static void overridePhase(List<DeployPipelinePhaseVo> appSystemCombopPhaseList, List<DeployPipelinePhaseVo> overrideCombopPhaseList, String source) {
         if (CollectionUtils.isEmpty(appSystemCombopPhaseList)) {
             return;
         }
@@ -318,8 +322,8 @@ public class DeployPipelineConfigManager {
                     continue;
                 }
                 if (Objects.equals(overrideCombopPhaseVo.getOverride(), 1)) {
-                    if (StringUtils.isNotBlank(inheritName)) {
-                        appSystemCombopPhaseVo.setSource(inheritName);
+                    if (StringUtils.isNotBlank(source)) {
+                        appSystemCombopPhaseVo.setSource(source);
                         appSystemCombopPhaseVo.setOverride(0);
                     } else {
                         appSystemCombopPhaseVo.setOverride(1);
@@ -479,8 +483,8 @@ public class DeployPipelineConfigManager {
     /**
      * 获取流水线的阶段列表中引用预置参数集列表的profileId列表
      *
-     * @param config
-     * @return
+     * @param config 流水线配置信息
+     * @return 预置参数集Id列表
      */
     private static Set<Long> getProfileIdSet(DeployPipelineConfigVo config) {
         Set<Long> profileIdSet = new HashSet<>();
@@ -514,8 +518,8 @@ public class DeployPipelineConfigManager {
     /**
      * 将AutoexecProfileVo列表转化成DeployProfileVo列表
      *
-     * @param profileList
-     * @return
+     * @param profileList 自动化预置参数集信息列表
+     * @return 流水线预置参数集信息列表
      */
     private static List<DeployProfileVo> getDeployProfileList(List<AutoexecProfileVo> profileList) {
         List<DeployProfileVo> deployProfileList = new ArrayList<>();

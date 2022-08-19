@@ -7,8 +7,10 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="codedriver.module.deploy.dao.mapper.DeployAppConfigMapper">
 
+    <cache type="codedriver.framework.dao.cache.CodeDriverCache" flushInterval="30000" size="100"></cache>
+
     <select id="getAppSystemIdList" parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo"
-            resultType="java.lang.Long">
+            resultType="java.lang.Long" useCache="false">
         SELECT DISTINCT id from
         (
         SELECT a.`id`
@@ -75,7 +77,7 @@
         </if>
     </select>
 
-    <select id="searchAppSystemList" resultType="codedriver.framework.deploy.dto.app.DeployAppSystemVo">
+    <select id="searchAppSystemList" resultType="codedriver.framework.deploy.dto.app.DeployAppSystemVo" useCache="false">
         SELECT DISTINCT `id`, `abbr_name` as abbrName, `name`
         FROM ${schemaName}.`scence_appsystem_appmodule`
         <where>
@@ -110,7 +112,7 @@
         </collection>
     </resultMap>
 
-    <select id="getAppSystemListIncludeModuleByIdList" resultMap="appConfigSystemMap">
+    <select id="getAppSystemListIncludeModuleByIdList" resultMap="appConfigSystemMap" useCache="false">
         select
         saa.id as appSystemId,
         saa.`name` as appSystemName,
@@ -132,7 +134,7 @@
         CONVERT(saa.app_module_abbr_name USING gbk) COLLATE gbk_chinese_ci ASC
     </select>
 
-    <select id="getAppSystemListByIdList" resultType="codedriver.framework.deploy.dto.app.DeployAppSystemVo">
+    <select id="getAppSystemListByIdList" resultType="codedriver.framework.deploy.dto.app.DeployAppSystemVo" useCache="false">
         select
         sa.id as id,
         sa.`name` as name,
@@ -150,7 +152,7 @@
         CONVERT(sa.abbr_name USING gbk) COLLATE gbk_chinese_ci ASC
     </select>
 
-    <select id="getAppSystemModuleListBySystemIdList" resultMap="appConfigSystemMap">
+    <select id="getAppSystemModuleListBySystemIdList" resultMap="appConfigSystemMap" useCache="false">
         select a.`id` as appSystemId,a.`name` as appSystemName,
         a.`app_module_id` AS appModuleId,
         a.`app_module_name` AS appModuleName,
@@ -176,7 +178,7 @@
         </choose>
     </select>
 
-    <select id="getAppSystemListByUserUuid" resultMap="appConfigSystemMap">
+    <select id="getAppSystemListByUserUuid" resultMap="appConfigSystemMap" useCache="false">
         select cc.id as appSystemId,
         cc.name as appSystemName,
         if(dacu.user_uuid is null, 0, 1) as isFavorite,
@@ -229,13 +231,13 @@
         )
     </select>
 
-    <select id="getAppConfigAuthorityCount" resultType="java.lang.Integer">
+    <select id="getAppConfigAuthorityCount" resultType="java.lang.Integer" useCache="false">
         select count(distinct `app_system_id`,`auth_uuid`)
         from deploy_app_config_authority
         <include refid="appConfigAuthorityWhere"/>
     </select>
 
-    <select id="getAppConfigAuthorityList" resultType="codedriver.framework.deploy.dto.app.DeployAppConfigAuthorityVo">
+    <select id="getAppConfigAuthorityList" resultType="codedriver.framework.deploy.dto.app.DeployAppConfigAuthorityVo" useCache="false">
         select distinct `app_system_id` as appSystemId,`auth_type` as authType,`auth_uuid` as authUuid
         from deploy_app_config_authority
         <include refid="appConfigAuthorityWhere"/>
@@ -271,7 +273,7 @@
         </collection>
     </resultMap>
 
-    <select id="getAppConfigAuthorityDetailList" resultMap="appConfigAuthorityMap">
+    <select id="getAppConfigAuthorityDetailList" resultMap="appConfigAuthorityMap" useCache="false">
         select app_system_id,auth_type,auth_uuid,`action`,action_type
         from deploy_app_config_authority
         where
@@ -282,7 +284,7 @@
     </select>
 
     <select id="getAppConfigAuthorityListByAppSystemId"
-            resultType="codedriver.framework.deploy.dto.app.DeployAppConfigAuthorityVo">
+            resultType="codedriver.framework.deploy.dto.app.DeployAppConfigAuthorityVo" useCache="false">
         select app_system_id AS appSystemId,
                auth_type     AS authType,
                auth_uuid     AS authUuid,
@@ -292,7 +294,7 @@
         where app_system_id = #{value}
     </select>
 
-    <select id="getHasConfigAuthoritySystemIdListByAppSystemIdList" resultType="java.lang.Long">
+    <select id="getHasConfigAuthoritySystemIdListByAppSystemIdList" resultType="java.lang.Long" useCache="false">
         select app_system_id
         from deploy_app_config_authority
         where app_system_id in
@@ -302,7 +304,7 @@
     </select>
 
     <select id="getAppConfig" parameterType="codedriver.framework.deploy.dto.app.DeployAppConfigVo"
-            resultType="java.lang.String">
+            resultType="java.lang.String" useCache="false">
         SELECT `config`
         FROM `deploy_app_config`
         WHERE `app_system_id` = #{appSystemId}
@@ -311,7 +313,7 @@
     </select>
 
     <select id="getAppConfigVo" parameterType="codedriver.framework.deploy.dto.app.DeployAppConfigVo"
-            resultType="codedriver.framework.deploy.dto.app.DeployAppConfigVo">
+            resultType="codedriver.framework.deploy.dto.app.DeployAppConfigVo" useCache="true">
         SELECT `app_system_id` as appSystemId,
                `app_module_id` as appModuleId,
                `env_id`        as envId,
@@ -327,7 +329,7 @@
     </select>
 
     <select id="getAppConfigDraft" parameterType="codedriver.framework.deploy.dto.app.DeployAppConfigVo"
-            resultType="codedriver.framework.deploy.dto.app.DeployAppConfigVo">
+            resultType="codedriver.framework.deploy.dto.app.DeployAppConfigVo" useCache="true">
         SELECT `app_system_id` as appSystemId,
                `app_module_id` as appModuleId,
                `env_id`        as envId,
@@ -352,7 +354,7 @@
     </resultMap>
 
     <select id="getDeployAppEnvListByAppSystemIdAndModuleIdList"
-            resultMap="appEnvMap">
+            resultMap="appEnvMap" useCache="false">
         (
         SELECT
         a.`env_id` AS envId,
@@ -408,7 +410,7 @@
     </select>
 
     <select id="getDeployAppEnvIdListByAppSystemId"
-            resultType="long">
+            resultType="long" useCache="false">
         (
         SELECT
         a.`env_id` AS envId
@@ -450,7 +452,7 @@
     </resultMap>
 
     <select id="getDeployAppModuleEnvListByAppSystemId"
-            resultMap="deployAppModuleEnvMap">
+            resultMap="deployAppModuleEnvMap" useCache="false">
         SELECT a.`env_id`        AS envId,
                a.`env_name`      AS envName,
                a.`app_module_id` AS appModuleId
@@ -467,7 +469,7 @@
     </select>
 
     <select id="getDeployAppHasNotEnvListByAppSystemIdAndModuleIdList"
-            resultType="codedriver.framework.deploy.dto.app.DeployAppEnvironmentVo">
+            resultType="codedriver.framework.deploy.dto.app.DeployAppEnvironmentVo" useCache="false">
         SELECT a.`id`,
         a.`name`
         FROM ${schemaName}.`scence_env` a
@@ -516,7 +518,7 @@
     </select>
 
     <select id="getCmdbEnvListByAppSystemIdAndModuleId"
-            resultType="codedriver.framework.deploy.dto.app.DeployAppEnvironmentVo">
+            resultType="codedriver.framework.deploy.dto.app.DeployAppEnvironmentVo" useCache="false">
         SELECT distinct
         a.`env_id` AS id,
         a.`env_name` AS name,
@@ -544,7 +546,7 @@
     </select>
 
     <select id="getDeployAppEnvListByAppSystemIdAndModuleId"
-            resultType="codedriver.framework.deploy.dto.app.DeployAppEnvironmentVo">
+            resultType="codedriver.framework.deploy.dto.app.DeployAppEnvironmentVo" useCache="false">
         SELECT
         cc.id AS id,
         cc.name AS name,
@@ -564,7 +566,7 @@
     </select>
 
     <select id="getHasEnvAppModuleIdListByAppSystemIdAndModuleIdList"
-            resultType="java.lang.Long">
+            resultType="java.lang.Long" useCache="false">
         (
         SELECT
         a.`app_module_id`
@@ -614,7 +616,7 @@
 
     <select id="getAppEnvAutoConfigKeyValueList"
             parameterType="codedriver.framework.deploy.dto.app.DeployAppEnvAutoConfigVo"
-            resultType="codedriver.framework.deploy.dto.app.DeployAppEnvAutoConfigKeyValueVo">
+            resultType="codedriver.framework.deploy.dto.app.DeployAppEnvAutoConfigKeyValueVo" useCache="false">
         select `key`,
                `value`
         from deploy_app_env_auto_config
@@ -656,7 +658,7 @@
     </resultMap>
 
     <select id="getAppModuleRunnerGroupByAppSystemIdAndModuleId"
-            resultMap="runnerGroupMap">
+            resultMap="runnerGroupMap" useCache="false">
         SELECT rg.id             AS groupId,
                rg.name           AS groupName,
                rg.description    AS groupDescription,
@@ -681,7 +683,7 @@
     </select>
 
     <select id="getAppModuleIdListHasRunnerByAppSystemIdAndModuleIdList"
-            resultType="long">
+            resultType="long" useCache="false">
         SELECT distinct damrg.app_module_id
         FROM deploy_app_module_runner_group damrg
                  JOIN runnergroup rg ON rg.id = damrg.runner_group_id
@@ -695,7 +697,7 @@
     </select>
 
     <select id="getAppEnvAutoConfigListBySystemIdAndModuleIdAndEnvIdAndInstanceIdList"
-            resultMap="appEnvAutoConfigMap">
+            resultMap="appEnvAutoConfigMap" useCache="false">
         SELECT
         daeac.`app_system_id` AS appSystemId,
         daeac.`app_module_id` AS appModuleId,
@@ -735,19 +737,19 @@
         </if>
     </sql>
 
-    <select id="getAppModuleEnvAutoConfigInstanceIdCount" resultType="int">
+    <select id="getAppModuleEnvAutoConfigInstanceIdCount" resultType="int" useCache="false">
         SELECT count(a.id)
         <include refid="searchAppModuleEnvConfigInstance"></include>
     </select>
 
-    <select id="getAppModuleEnvAutoConfigInstanceIdList" resultType="java.lang.Long">
+    <select id="getAppModuleEnvAutoConfigInstanceIdList" resultType="java.lang.Long" useCache="false">
         SELECT a.id
         <include refid="searchAppModuleEnvConfigInstance"></include>
         ORDER BY a.id DESC
         LIMIT #{searchVo.startNum}, #{searchVo.pageSize}
     </select>
 
-    <select id="getAppConfigEnvInstanceCount" resultType="int">
+    <select id="getAppConfigEnvInstanceCount" resultType="int" useCache="false">
         SELECT count(a.`id`)
         FROM `scence_appinstance_ip_port_env_appmodule` a
         WHERE
@@ -760,7 +762,7 @@
     </select>
 
     <select id="searchAppConfigEnvInstanceList"
-            resultType="codedriver.framework.deploy.dto.app.DeployAppConfigInstanceVo">
+            resultType="codedriver.framework.deploy.dto.app.DeployAppConfigInstanceVo" useCache="false">
         SELECT a.`id`,
         a.`ip`,
         a.`port`,
@@ -777,7 +779,7 @@
         LIMIT #{startNum}, #{pageSize}
     </select>
 
-    <select id="getAppSystemIdListCount" resultType="java.lang.Integer">
+    <select id="getAppSystemIdListCount" resultType="java.lang.Integer" useCache="false">
         SELECT count(distinct a.`id`)
         FROM ${schemaName}.`scence_appsystem_appmodule` a
         <if test="isHasAllAuthority == 0">
@@ -839,7 +841,7 @@
         </if>
     </sql>
 
-    <select id="getCiEntityIdListCount" resultType="java.lang.Integer">
+    <select id="getCiEntityIdListCount" resultType="java.lang.Integer" useCache="false">
         SELECT COUNT(a.id)
         FROM `cmdb_cientity` a
         JOIN `cmdb_ci` b ON a.ci_id = b.id
@@ -859,7 +861,7 @@
         </choose>
     </select>
     <select id="getAppConfigListByAppSystemId"
-            resultType="codedriver.framework.deploy.dto.app.DeployAppConfigVo">
+            resultType="codedriver.framework.deploy.dto.app.DeployAppConfigVo" useCache="false">
         SELECT `id`,
                `app_system_id` as appSystemId,
                `app_module_id` as appModuleId,
@@ -873,7 +875,7 @@
         WHERE `app_system_id` = #{appSystemId}
     </select>
     <select id="getAppConfigByAppSystemIdAndAppModuleIdAndEnvId"
-            resultType="codedriver.framework.deploy.dto.app.DeployAppConfigVo">
+            resultType="codedriver.framework.deploy.dto.app.DeployAppConfigVo" useCache="false">
         SELECT `app_system_id` as appSystemId,
                `app_module_id` as appModuleId,
                `env_id`        as envId,
@@ -888,7 +890,7 @@
           and `env_id` = #{envId}
     </select>
 
-    <select id="getAppConfigEnv" resultType="int">
+    <select id="getAppConfigEnv" resultType="int" useCache="false">
         SELECT count(1)
         FROM deploy_app_config_env
         <where>
@@ -924,7 +926,7 @@
     </resultMap>
 
     <select id="getAppConfigEnvDBConfigById"
-            resultMap="DBConfigMap">
+            resultMap="DBConfigMap" useCache="false">
         SELECT a.id,
                a.app_system_id  as appSystemId,
                a.app_module_id  as appModuleId,
@@ -941,7 +943,7 @@
     </select>
 
     <select id="getAppConfigEnvDBConfigListByAppSystemIdAndAppModuleIdAndEnvId"
-            resultMap="DBConfigMap">
+            resultMap="DBConfigMap" useCache="false">
         SELECT a.id,
                a.app_system_id  as appSystemId,
                a.app_module_id  as appModuleId,
@@ -984,7 +986,7 @@
         <result column="port" property="port"/>
     </resultMap>
 
-    <select id="getAppConfigEnvDatabaseCount" parameterType="java.lang.String" resultType="java.lang.Integer">
+    <select id="getAppConfigEnvDatabaseCount" parameterType="java.lang.String" resultType="java.lang.Integer" useCache="false">
         SELECT count(a.id)
         <include refid="searchDatabase"></include>
     </select>
@@ -1016,7 +1018,7 @@
         </where>
     </sql>
 
-    <select id="getAppConfigEnvDatabaseResourceIdList" parameterType="java.lang.String" resultType="java.lang.Long">
+    <select id="getAppConfigEnvDatabaseResourceIdList" parameterType="java.lang.String" resultType="java.lang.Long" useCache="false">
         SELECT a.id
         <include refid="searchDatabase"></include>
         <if test="searchVo.needPage">
@@ -1025,7 +1027,7 @@
     </select>
 
     <select id="getHasEnvAppSystemIdListByAppSystemIdList"
-            resultType="java.lang.Long">
+            resultType="java.lang.Long" useCache="false">
         (
         SELECT
         a.`app_system_id` as id
@@ -1053,7 +1055,7 @@
         )
     </select>
 
-    <select id="getAppConfigEnvDatabaseResourceListByIdList" resultMap="DatabaseResourceMap">
+    <select id="getAppConfigEnvDatabaseResourceListByIdList" resultMap="DatabaseResourceMap" useCache="false">
         ${sql}
     </select>
 
@@ -1063,12 +1065,12 @@
         <result column="abbr_name" property="abbrName"/>
     </resultMap>
 
-    <select id="getAppModuleListByIdList" resultMap="AppModuleMap">
+    <select id="getAppModuleListByIdList" resultMap="AppModuleMap" useCache="false">
         ${sql}
     </select>
 
     <select id="getAppConfigAppSystemIdListByAppSystemIdList" parameterType="java.lang.Long"
-            resultType="java.lang.Long">
+            resultType="java.lang.Long" useCache="false">
         SELECT
         `app_system_id`
         FROM `deploy_app_config`
@@ -1082,7 +1084,7 @@
         </if>
     </select>
 
-    <select id="getAppConfigUserAppSystemIdList" resultType="java.lang.Long">
+    <select id="getAppConfigUserAppSystemIdList" resultType="java.lang.Long" useCache="false">
         SELECT
         `app_system_id`
         FROM `deploy_app_config_user`
@@ -1095,7 +1097,7 @@
         </if>
     </select>
 
-    <select id="checkDeployAppConfigEnvDBAliasNameIsRepeat" resultType="java.lang.Integer">
+    <select id="checkDeployAppConfigEnvDBAliasNameIsRepeat" resultType="java.lang.Integer" useCache="false">
         select count(1)
         from deploy_app_config_env_db
         where id != #{id}
@@ -1105,14 +1107,14 @@
           and `env_id` = #{envId}
     </select>
 
-    <select id="checkDeployAppConfigEnvDBExistsById" resultType="java.lang.Integer">
+    <select id="checkDeployAppConfigEnvDBExistsById" resultType="java.lang.Integer" useCache="false">
         select count(1)
         from deploy_app_config_env_db
         where id = #{id}
     </select>
 
     <select id="getAppConfigEnvDBConfigResourceIdByAppSystemIdAndAppModuleIdAndEnvId"
-            resultType="java.lang.Long">
+            resultType="java.lang.Long" useCache="false">
         select db_resource_id
         from deploy_app_config_env_db
         WHERE `app_system_id` = #{appSystemId}
@@ -1121,7 +1123,7 @@
     </select>
 
     <select id="getAppModuleListBySystemIdAndEnvId"
-            resultType="codedriver.framework.deploy.dto.app.DeployAppModuleVo">
+            resultType="codedriver.framework.deploy.dto.app.DeployAppModuleVo" useCache="false">
         (SELECT sieaa.app_module_id        as id,
                 sieaa.app_module_name      as name,
                 sieaa.app_module_abbr_name as abbrName
@@ -1141,7 +1143,7 @@
         )
     </select>
 
-    <select id="getAppModuleCountBySystemIdAndEnvId" resultType="java.lang.Integer">
+    <select id="getAppModuleCountBySystemIdAndEnvId" resultType="java.lang.Integer" useCache="false">
         select count(a.app_module_id)
         from ((SELECT sieaa.app_module_id
                FROM ${schemaName}.scence_ipobject_env_appmodule_appsystem sieaa
@@ -1160,7 +1162,7 @@
     </select>
 
     <select id="getAppEnvAutoConfigBySystemIdAndModuleIdAndEnvId"
-            resultMap="appEnvAutoConfigMap">
+            resultMap="appEnvAutoConfigMap" useCache="false">
         select `app_system_id` AS appSystemId,
                `app_module_id` AS appModuleId,
                `env_id`        AS envId,
@@ -1174,7 +1176,7 @@
     </select>
 
     <select id="getDeployAppAuthorityActionList"
-            resultType="codedriver.framework.deploy.dto.app.DeployAppConfigAuthorityActionVo">
+            resultType="codedriver.framework.deploy.dto.app.DeployAppConfigAuthorityActionVo" useCache="false">
         select `action`,action_type as type
         from deploy_app_config_authority
         <where>
@@ -1201,7 +1203,7 @@
     </select>
 
     <select id="getDeployAppAllAuthorityActionListByAppSystemIdAndAuthUuidList"
-            resultType="codedriver.framework.deploy.dto.app.DeployAppConfigAuthorityActionVo">
+            resultType="codedriver.framework.deploy.dto.app.DeployAppConfigAuthorityActionVo" useCache="false">
         select `action`,action_type as type
         from deploy_app_config_authority
         <where>
@@ -1228,7 +1230,7 @@
         </collection>
     </resultMap>
 
-    <select id="getBatchDeployAppAuthorityActionList" resultMap="DeployAppAuthCheckVoMap">
+    <select id="getBatchDeployAppAuthorityActionList" resultMap="DeployAppAuthCheckVoMap" useCache="false">
         select app_system_id as appSystemId,`action`,action_type as actionType
         from deploy_app_config_authority
         <where>
@@ -1256,7 +1258,7 @@
         </where>
     </select>
 
-    <select id="getDeployAppHasAuthorityAppSystemIdListByAppSystemIdList" resultType="java.lang.Long">
+    <select id="getDeployAppHasAuthorityAppSystemIdListByAppSystemIdList" resultType="java.lang.Long" useCache="false">
         select app_system_id
         from deploy_app_config_authority
         where
