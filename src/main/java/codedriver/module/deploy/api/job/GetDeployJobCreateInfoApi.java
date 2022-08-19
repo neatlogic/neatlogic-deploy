@@ -67,7 +67,7 @@ public class GetDeployJobCreateInfoApi extends PrivateApiComponentBase {
     public Object myDoService(JSONObject jsonObj) throws Exception {
         JSONObject result = new JSONObject();
         Long appSystemId = jsonObj.getLong("appSystemId");
-        Long appModuleId = jsonObj.getLong("appModuleId");
+        Long appModuleId = jsonObj.getLong("appModuleId") == null ? 0L : jsonObj.getLong("appModuleId");
 
         //查询系统名称
         ICiEntityCrossoverMapper ciEntityCrossoverMapper = CrossoverServiceFactory.getApi(ICiEntityCrossoverMapper.class);
