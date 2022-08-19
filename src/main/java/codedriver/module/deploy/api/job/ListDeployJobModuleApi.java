@@ -126,10 +126,10 @@ public class ListDeployJobModuleApi extends PrivateApiComponentBase {
                 }
 
                 //3、判断场景的阶段列表是否有BUILD分类的工具
-                for (DeployPipelinePhaseVo pipelinePhaseVo : pipelineConfigVo.getCombopPhaseList()) {
-                    if (scenarioVo.getCombopPhaseNameList().contains(pipelinePhaseVo.getName())) {
-                        appModuleVo.setIsHasBuildTypeTool(pipelinePhaseVo.getIsHasBuildTypeTool());
-                        appModuleVo.setIsHasDeployTypeTool(pipelinePhaseVo.getIsHasDeployTypeTool());
+                appModuleVo.setIsHasDeployTypeTool(scenarioVo.getIsHasDeployTypeTool());
+                appModuleVo.setIsHasBuildTypeTool(scenarioVo.getIsHasBuildTypeTool());
+//                for (DeployPipelinePhaseVo pipelinePhaseVo : pipelineConfigVo.getCombopPhaseList()) {
+//                    if (scenarioVo.getCombopPhaseNameList().contains(pipelinePhaseVo.getName())) {
 //                        List<AutoexecCombopPhaseOperationVo> phaseOperationList = pipelinePhaseVo.getConfig().getPhaseOperationList();
 //                        for (AutoexecCombopPhaseOperationVo operationVo : phaseOperationList) {
 //                            if (StringUtils.equals(ToolType.TOOL.getValue(), operationVo.getOperationType())) {
@@ -142,11 +142,11 @@ public class ListDeployJobModuleApi extends PrivateApiComponentBase {
 //                                }
 //                            }
 //                        }
-                        if (appModuleVo.getIsHasBuildTypeTool() == 1 && appModuleVo.getIsHasDeployTypeTool() == 1) {
-                            break;
-                        }
-                    }
-                }
+//                        if (appModuleVo.getIsHasBuildTypeTool() == 1 && appModuleVo.getIsHasDeployTypeTool() == 1) {
+//                            break;
+//                        }
+//                    }
+//                }
 
                 //4、查询模块是否已有配置好的runner
                 if (hasRunnerAppModuleIdList.contains(appModuleVo.getId())) {
