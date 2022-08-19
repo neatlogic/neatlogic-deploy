@@ -117,19 +117,13 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
 
     @Override
     public void downloadJobSqlFile(AutoexecJobVo jobVo) throws Exception {
+        AutoexecJobPhaseNodeVo nodeVo = jobVo.getCurrentNode();
         JSONObject paramObj = jobVo.getActionParam();
-        DeploySqlDetailVo sqlDetailVo = deploySqlMapper.getDeployJobSqlDetailById(paramObj.getLong("sqlId"));
-        paramObj.put("sysId", sqlDetailVo.getSysId());
-        paramObj.put("moduleId", sqlDetailVo.getModuleId());
-        paramObj.put("envId", sqlDetailVo.getEnvId());
-        paramObj.put("version", sqlDetailVo.getVersion());
-        ICiEntityCrossoverMapper ciEntityCrossoverMapper = CrossoverServiceFactory.getApi(ICiEntityCrossoverMapper.class);
-        CiEntityVo envCiEntity = ciEntityCrossoverMapper.getCiEntityBaseInfoById(sqlDetailVo.getEnvId());
-        paramObj.put("envName", envCiEntity.getName());
+        paramObj.put("jobId", nodeVo.getJobId());
+        paramObj.put("phase", nodeVo.getJobPhaseName());
         UserContext.get().getResponse().setContentType("text/plain");
         UserContext.get().getResponse().setHeader("Content-Disposition", " attachment; filename=\"" + paramObj.getString("sqlName") + "\"");
-        AutoexecJobPhaseNodeVo nodeVo = jobVo.getCurrentNode();
-        String url = nodeVo.getRunnerUrl() + "/api/binary/deploy/sql/file/download";
+        String url = nodeVo.getRunnerUrl() + "/api/binary/job/phase/node/sql/file/download";
         String result = HttpRequestUtil.download(url, "POST", UserContext.get().getResponse().getOutputStream()).setPayload(paramObj.toJSONString()).setAuthType(AuthenticateType.BUILDIN).sendRequest().getError();
 
         if (StringUtils.isNotBlank(result)) {
