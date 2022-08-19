@@ -70,8 +70,6 @@ public interface DeployAppConfigMapper {
 
     List<Long> getAppConfigEnvDBConfigResourceIdByAppSystemIdAndAppModuleIdAndEnvId(@Param("appSystemId") Long appSystemId, @Param("appModuleId") Long appModuleId, @Param("envId") Long envId);
 
-    List<Long> getHasConfigAuthoritySystemIdListByAppSystemIdList(List<Long> appSystemIdList);
-
     RunnerGroupVo getAppModuleRunnerGroupByAppSystemIdAndModuleId(@Param("appSystemId") Long appSystemId, @Param("appModuleId") Long appModuleId);
 
     List<Long> getAppModuleIdListHasRunnerByAppSystemIdAndModuleIdList(@Param("appSystemId") Long appSystemId, @Param("appModuleIdList") List<Long> appModuleIdList);

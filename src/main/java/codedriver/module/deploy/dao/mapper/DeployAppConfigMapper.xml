@@ -14,7 +14,9 @@
         SELECT a.`id`
         FROM ${searchVo.schemaName}.`scence_appsystem_appmodule` a
         left join deploy_app_config_user dacu on a.`id` = dacu.app_system_id and dacu.user_uuid = #{userUuid}
-        LEFT JOIN deploy_app_config_authority daca ON daca.app_system_id = a.id
+        <if test="searchVo.isHasAllAuthority == 0">
+            LEFT JOIN deploy_app_config_authority daca ON daca.app_system_id = a.id
+        </if>
         <if test="searchVo.isConfig != null">
             left join deploy_app_config dac on a.`id` = dac.app_system_id and dac.app_module_id = 0 and dac.env_id = 0
         </if>
@@ -31,19 +33,21 @@
                     #{item}
                 </foreach>
             </if>
-            AND IF(
-            daca.app_system_id > 0,
-            daca.action_type = 'operation'
-            <if test="searchVo.authorityActionList != null and searchVo.authorityActionList.size() > 0">
-                AND daca.action IN
-                ('all'
-                <foreach collection="searchVo.authorityActionList" item="item" separator=",">
-                    #{item}
-                </foreach>
-                )
+            <if test="searchVo.isHasAllAuthority == 0">
+                AND IF(
+                daca.app_system_id > 0,
+                daca.action_type = 'operation'
+                <if test="searchVo.authorityActionList != null and searchVo.authorityActionList.size() > 0">
+                    AND daca.action IN
+                    ('all'
+                    <foreach collection="searchVo.authorityActionList" item="item" separator=",">
+                        #{item}
+                    </foreach>
+                    )
+                </if>
+                ,
+                1 = 1)
             </if>
-            ,
-            1 = 1)
             <choose>
                 <when test="searchVo.isConfig != null and searchVo.isConfig == 1">
                     and dac.`config` is not NULL
@@ -90,6 +94,7 @@
         <result column="appSystemNameAbbrName" property="abbrName"/>
         <result column="isFavorite" property="isFavorite"/>
         <result column="isConfig" property="isConfig"/>
+        <result column="isConfigAuthority" property="isConfigAuthority"/>
         <collection property="appModuleList" ofType="codedriver.framework.deploy.dto.app.DeployAppModuleVo">
             <id column="appModuleId" property="id"/>
             <result column="appModuleName" property="name"/>
@@ -99,7 +104,8 @@
             <id column="appSystemId" property="appSystemId"/>
             <result column="authType" property="authType"/>
             <result column="authUuid" property="authUuid"/>
-            <collection property="actionList" ofType="codedriver.framework.deploy.dto.app.DeployAppConfigAuthorityActionVo">
+            <collection property="actionList"
+                        ofType="codedriver.framework.deploy.dto.app.DeployAppConfigAuthorityActionVo">
                 <result column="authAction" property="action"/>
                 <result column="authActionType" property="type"/>
             </collection>
@@ -116,6 +122,7 @@
         saa.`app_module_abbr_name` as appModuleNameAbbrName,
         if(dacu.user_uuid is null,0,1) as isFavorite,
         if(dac.config is null,0,1) as isConfig,
+        if( daca.app_system_id IS NULL, 0, 1 ) AS isConfigAuthority,
         daca.auth_type as authType,
         daca.auth_uuid as authUuid,
         daca.`action` as authAction,
@@ -140,6 +147,7 @@
         sa.`abbr_name` as appSystemNameAbbrName,
         if(dacu.user_uuid is null,0,1) as isFavorite,
         if(dac.config is null,0,1) as isConfig,
+        if( daca.app_system_id IS NULL, 0, 1 ) AS isConfigAuthority,
         daca.auth_type as authType,
         daca.auth_uuid as authUuid,
         daca.`action` as authAction,
@@ -345,15 +353,6 @@
                action_type   AS authorityActionType
         from deploy_app_config_authority
         where app_system_id = #{value}
-    </select>
-
-    <select id="getHasConfigAuthoritySystemIdListByAppSystemIdList" resultType="java.lang.Long">
-        select app_system_id
-        from deploy_app_config_authority
-        where app_system_id in
-        <foreach collection="list" item="id" open="(" separator="," close=")">
-            #{id}
-        </foreach>
     </select>
 
     <select id="getAppConfig" parameterType="codedriver.framework.deploy.dto.app.DeployAppConfigVo"
@@ -739,11 +738,11 @@
             resultType="long">
         SELECT distinct damrg.app_module_id
         FROM deploy_app_module_runner_group damrg
-                 JOIN runnergroup rg ON rg.id = damrg.runner_group_id
-                  JOIN runnergroup_runner rgr ON rg.`id` = rgr.`runnergroup_id`
-                  JOIN runner r ON r.`id` = rgr.`runner_id`
+        JOIN runnergroup rg ON rg.id = damrg.runner_group_id
+        JOIN runnergroup_runner rgr ON rg.`id` = rgr.`runnergroup_id`
+        JOIN runner r ON r.`id` = rgr.`runner_id`
         WHERE damrg.app_system_id = #{appSystemId}
-          AND damrg.app_module_id in
+        AND damrg.app_module_id in
         <foreach collection="appModuleIdList" item="appModuleId" separator="," open="(" close=")">
             #{appModuleId}
         </foreach>
@@ -868,19 +867,21 @@
     </select>
 
     <sql id="checkDeployAuthority">
-        AND IF(
-        daca.app_system_id > 0,
-        daca.action_type = 'operation'
-        <if test="authorityActionList != null and authorityActionList.size() > 0">
-            AND daca.action IN
-            ('all'
-            <foreach collection="authorityActionList" item="item" separator=",">
-                #{item}
-            </foreach>
-            )
+        <if test="isHasAllAuthority == 0">
+            AND IF(
+            daca.app_system_id > 0,
+            daca.action_type = 'operation'
+            <if test="authorityActionList != null and authorityActionList.size() > 0">
+                AND daca.action IN
+                ('all'
+                <foreach collection="authorityActionList" item="item" separator=",">
+                    #{item}
+                </foreach>
+                )
+            </if>
+            ,
+            1 = 1)
         </if>
-        ,
-        1 = 1)
     </sql>
 
     <select id="getCiEntityIdListCount" resultType="java.lang.Integer">

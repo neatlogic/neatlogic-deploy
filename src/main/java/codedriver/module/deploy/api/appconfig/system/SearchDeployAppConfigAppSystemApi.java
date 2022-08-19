@@ -31,6 +31,7 @@ import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -101,9 +102,7 @@ public class SearchDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
             TenantContext.get().switchDefaultDatabase();
             List<Long> hasEnvAppSystemIdList = deployAppConfigMapper.getHasEnvAppSystemIdListByAppSystemIdList(appSystemIdList, TenantContext.get().getDataDbName());
 
-            List<Long> hasConfigAuthoritySystemIdList = deployAppConfigMapper.getHasConfigAuthoritySystemIdListByAppSystemIdList(appSystemIdList);
-
-            Map<Long, JSONObject> appSystemIdAuthInfoMap = DeployAppAuthChecker.getAppConfigAuthorityList(returnAppSystemList.stream().collect(Collectors.toMap(DeployAppSystemVo::getId, DeployAppSystemVo::getAuthList)));
+            Map<Long, Set<String>> appSystemIdAuthInfoMap = DeployAppAuthChecker.getAppConfigAuthorityList(returnAppSystemList.stream().collect(Collectors.toMap(DeployAppSystemVo::getId, DeployAppSystemVo::getAuthList)));
             for (DeployAppSystemVo returnSystemVo : returnAppSystemList) {
                 //补充系统是否有模块、是否有环境、是否有配置权限
                 if (hasModuleAppSystemIdList.contains(returnSystemVo.getId())) {
@@ -111,9 +110,6 @@ public class SearchDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
                 }
                 if (hasEnvAppSystemIdList.contains(returnSystemVo.getId())) {
                     returnSystemVo.setIsHasEnv(1);
-                }
-                if (hasConfigAuthoritySystemIdList.contains(returnSystemVo.getId())) {
-                    returnSystemVo.setIsConfigAuthority(1);
                 }
 
                 //补充模块是否配置、是否有环境
@@ -130,7 +126,7 @@ public class SearchDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
                         appModuleVo.setIsConfig(isHasConfig);
                     }
                 }
-                returnSystemVo.setAuthInfo(appSystemIdAuthInfoMap.get(returnSystemVo.getId()));
+                returnSystemVo.setAuthActionSet(appSystemIdAuthInfoMap.get(returnSystemVo.getId()));
             }
         }
         return TableResultUtil.getResult(returnAppSystemList, searchVo);
