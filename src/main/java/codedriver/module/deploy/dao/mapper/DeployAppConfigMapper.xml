@@ -345,12 +345,8 @@
     </select>
 
     <select id="getAppConfigAuthorityListByAppSystemId"
-            resultType="codedriver.framework.deploy.dto.app.DeployAppConfigAuthorityVo">
-        select app_system_id AS appSystemId,
-               auth_type     AS authType,
-               auth_uuid     AS authUuid,
-               `action`,
-               action_type   AS authorityActionType
+            resultMap="appConfigAuthorityMap">
+        select app_system_id,auth_type,auth_uuid,`action`,action_type
         from deploy_app_config_authority
         where app_system_id = #{value}
     </select>
@@ -1301,6 +1297,19 @@
         </where>
     </select>
 
+    <select id="getBatchAppConfigAuthorityListByAppSystemIdList" resultMap="appConfigSystemMap">
+        select app_system_id as appSystemId,
+        auth_uuid as authUuid ,
+        auth_type as authType,
+        `action` as authAction,
+        action_type as authActionType
+        from deploy_app_config_authority
+        where app_system_id in
+        <foreach collection="list" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </select>
+
     <select id="getDeployAppHasAuthorityAppSystemIdListByAppSystemIdList" resultType="java.lang.Long">
         select app_system_id
         from deploy_app_config_authority
@@ -1310,6 +1319,17 @@
             #{appSystemId}
         </foreach>
     </select>
+
+    <select id="getDeployJobCreateBeforeConditionInfo"
+            resultType="codedriver.framework.deploy.dto.app.DeployAppSystemVo">
+        SELECT DISTINCT saa.id,
+                        IF(saa.app_module_id IS NULL, 0, 1) AS isHasModule,
+                        IF(dac.config IS NULL, 0, 1)        AS isConfig
+        FROM codedriver_develop_data.`scence_appsystem_appmodule` saa
+                 LEFT JOIN deploy_app_config dac ON saa.id = dac.app_system_id
+        where saa.id = #{appSystemId}
+    </select>
+
 
     <insert id="insertAppConfigAuthority">
         INSERT INTO `deploy_app_config_authority` (`app_system_id`,

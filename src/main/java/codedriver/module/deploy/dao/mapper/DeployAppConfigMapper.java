@@ -30,6 +30,8 @@ public interface DeployAppConfigMapper {
 
     List<DeployAppSystemVo> getDeployAppSystemListIncludeEnvIdListByAppSystemIdList(@Param("appSystemIdList") List<Long> appSystemIdList, @Param("schemaName") String schemaName);
 
+    DeployAppSystemVo getDeployJobCreateBeforeConditionInfo(Long appSystemId);
+
     Set<Long> getViewableAppSystemIdList(AuthenticationInfoVo authenticationInfoVo);
 
     Integer getAppConfigAuthorityCount(DeployAppConfigAuthorityVo searchVo);
@@ -177,6 +179,8 @@ public interface DeployAppConfigMapper {
     List<DeployAppConfigAuthorityActionVo> getDeployAppAllAuthorityActionListByAppSystemIdAndAuthUuidList(@Param("appSystemId") Long appSystemId, @Param("authUuidList") List<String> authUuidList);
 
     List<DeployAppAuthCheckVo> getBatchDeployAppAuthorityActionList(List<DeployAppAuthCheckVo> deployAppAuthCheckVoList);
+
+    List<DeployAppSystemVo> getBatchAppConfigAuthorityListByAppSystemIdList(List<Long> appSystemIdList);
 
     void deleteAppConfigSystemFavoriteByAppSystemIdAndUserUuid(@Param("appSystemId") Long appSystemId, @Param("userUuid") String userUuid);
 
