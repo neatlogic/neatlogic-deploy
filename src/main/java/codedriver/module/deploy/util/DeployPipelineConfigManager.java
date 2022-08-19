@@ -78,7 +78,7 @@ public class DeployPipelineConfigManager {
     /**
      * 设置DeployPipelinePhaseVo中isHasBuildTypeTool和isHasDeployTypeTool字段值
      *
-     * @param pipelineConfigVo
+     * @param pipelineConfigVo 配置
      */
     private static void setIsHasBuildOrDeployTypeTool(DeployPipelineConfigVo pipelineConfigVo) {
         IAutoexecServiceCrossoverService autoexecServiceCrossoverService = CrossoverServiceFactory.getApi(IAutoexecServiceCrossoverService.class);
@@ -104,8 +104,8 @@ public class DeployPipelineConfigManager {
     /**
      * 获取流水线配置信息
      *
-     * @param appSystemId
-     * @return
+     * @param appSystemId 应用id
+     * @return 配置
      */
     private static DeployPipelineConfigVo getDeployPipelineConfig(Long appSystemId) {
         return getDeployPipelineConfig(appSystemId, 0L);
@@ -114,9 +114,9 @@ public class DeployPipelineConfigManager {
     /**
      * 获取流水线配置信息
      *
-     * @param appSystemId
-     * @param appModuleId
-     * @return
+     * @param appSystemId 应用id
+     * @param appModuleId 应用模块id
+     * @return 配置
      */
     private static DeployPipelineConfigVo getDeployPipelineConfig(Long appSystemId, Long appModuleId) {
         return getDeployPipelineConfig(appSystemId, appModuleId, 0L);
@@ -125,22 +125,16 @@ public class DeployPipelineConfigManager {
     /**
      * 获取流水线配置信息
      *
-     * @param appSystemId
-     * @param appModuleId
-     * @param envId
-     * @return
+     * @param appSystemId 应用id
+     * @param appModuleId 应用模块id
+     * @param envId       环境id
+     * @return 配置
      */
     private static DeployPipelineConfigVo getDeployPipelineConfig(Long appSystemId, Long appModuleId, Long envId) {
         DeployAppConfigVo searchVo = new DeployAppConfigVo(appSystemId, appModuleId, envId);
         return getDeployPipelineConfig(searchVo);
     }
 
-    /**
-     * 获取流水线配置信息
-     *
-     * @param searchVo
-     * @return
-     */
     private static DeployPipelineConfigVo getDeployPipelineConfig(DeployAppConfigVo searchVo) {
         String targetLevel = null;
         DeployPipelineConfigVo appConfig = null;
@@ -238,13 +232,13 @@ public class DeployPipelineConfigManager {
             overridePhaseGroup(appConfig.getCombopGroupList(), moduleOverrideConfig.getCombopGroupList());
             overrideProfileParamSetSource(moduleOverrideConfig.getOverrideProfileList(), "模块");
             overrideProfile(appConfig.getOverrideProfileList(), moduleOverrideConfig.getOverrideProfileList());
-        } else if (moduleOverrideConfig == null && envOverrideConfig != null) {
+        } else if (moduleOverrideConfig == null) {
             overrideExecuteConfig(appConfig.getExecuteConfig(), envOverrideConfig.getExecuteConfig());
             overridePhase(appConfig.getCombopPhaseList(), envOverrideConfig.getCombopPhaseList());
             overridePhaseGroup(appConfig.getCombopGroupList(), envOverrideConfig.getCombopGroupList());
             overrideProfileParamSetSource(envOverrideConfig.getOverrideProfileList(), "环境");
             overrideProfile(appConfig.getOverrideProfileList(), envOverrideConfig.getOverrideProfileList());
-        } else if (moduleOverrideConfig != null && envOverrideConfig != null) {
+        } else {
             overrideExecuteConfig(appConfig.getExecuteConfig(), moduleOverrideConfig.getExecuteConfig());
             List<DeployPipelinePhaseVo> appSystemCombopPhaseList = appConfig.getCombopPhaseList();
             overridePhase(appSystemCombopPhaseList, moduleOverrideConfig.getCombopPhaseList(), "模块");
