@@ -25,6 +25,7 @@ public class GetPipelineApi extends PrivateApiComponentBase {
     @Resource
     private PipelineMapper pipelineMapper;
 
+
     @Override
     public String getName() {
         return "获取超级流水线详细信息";
@@ -40,7 +41,8 @@ public class GetPipelineApi extends PrivateApiComponentBase {
         return "/deploy/pipeline/get";
     }
 
-    @Input({@Param(name = "id", type = ApiParamType.LONG, desc = "id", isRequired = true)})
+    @Input({@Param(name = "id", type = ApiParamType.LONG, desc = "id", isRequired = true)
+    })
     @Output({@Param(explode = PipelineVo.class)})
     @Description(desc = "获取超级流水线详细信息接口")
     @Override

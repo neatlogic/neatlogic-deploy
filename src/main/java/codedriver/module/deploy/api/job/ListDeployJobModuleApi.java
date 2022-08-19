@@ -1,12 +1,13 @@
+/*
+ * Copyright(c) 2022 TechSure Co., Ltd. All Rights Reserved.
+ * 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
+ */
+
 package codedriver.module.deploy.api.job;
 
 import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.auth.core.AuthAction;
-import codedriver.framework.autoexec.constvalue.ToolType;
 import codedriver.framework.autoexec.crossover.IAutoexecServiceCrossoverService;
-import codedriver.framework.autoexec.dto.AutoexecOperationBaseVo;
-import codedriver.framework.autoexec.dto.combop.AutoexecCombopPhaseOperationVo;
-import codedriver.framework.autoexec.dto.combop.AutoexecCombopPhaseVo;
 import codedriver.framework.autoexec.dto.combop.AutoexecCombopScenarioVo;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.crossover.CrossoverServiceFactory;
@@ -14,6 +15,7 @@ import codedriver.framework.deploy.auth.DEPLOY_BASE;
 import codedriver.framework.deploy.dto.app.DeployAppConfigVo;
 import codedriver.framework.deploy.dto.app.DeployAppModuleVo;
 import codedriver.framework.deploy.dto.app.DeployPipelineConfigVo;
+import codedriver.framework.deploy.dto.app.DeployPipelinePhaseVo;
 import codedriver.framework.deploy.exception.DeployAppConfigNotFoundException;
 import codedriver.framework.deploy.exception.DeployAppConfigScenarioNotFoundException;
 import codedriver.framework.deploy.exception.DeployAppConfigScenarioPhaseNameListNotFoundException;
@@ -24,9 +26,8 @@ import codedriver.framework.restful.annotation.Param;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.deploy.dao.mapper.DeployAppConfigMapper;
-import codedriver.module.deploy.service.DeployAppPipelineService;
+import codedriver.module.deploy.util.DeployPipelineConfigManager;
 import com.alibaba.fastjson.JSONObject;
-import com.alibaba.nacos.api.utils.StringUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 
@@ -45,9 +46,6 @@ public class ListDeployJobModuleApi extends PrivateApiComponentBase {
 
     @Resource
     private DeployAppConfigMapper deployAppConfigMapper;
-
-    @Resource
-    private DeployAppPipelineService deployAppPipelineService;
 
     @Override
     public String getName() {
@@ -105,12 +103,16 @@ public class ListDeployJobModuleApi extends PrivateApiComponentBase {
                 if (configVo == null) {
                     throw new DeployAppConfigNotFoundException(appSystemId);
                 }
-                DeployPipelineConfigVo pipelineConfigVo = deployAppPipelineService.getDeployPipelineConfigVo(configVo);
+                DeployPipelineConfigVo pipelineConfigVo = DeployPipelineConfigManager.init(configVo.getAppSystemId())
+                        .withAppModuleId(configVo.getAppModuleId())
+                        .withEnvId(configVo.getEnvId())
+                        .isHasBuildOrDeployTypeTool(true)
+                        .getConfig();
                 if (pipelineConfigVo == null) {
                     throw new DeployAppConfigNotFoundException(appSystemId);
                 }
 
-                //2、找出当前流水线的某个场景下的所有phaseNameList
+                //2、找出当前流水线场景=scenarioId下的所有phaseNameList
                 if (CollectionUtils.isEmpty(pipelineConfigVo.getScenarioList())) {
                     throw new DeployAppConfigScenarioNotFoundException();
                 }
@@ -124,20 +126,22 @@ public class ListDeployJobModuleApi extends PrivateApiComponentBase {
                 }
 
                 //3、判断场景的阶段列表是否有BUILD分类的工具
-                for (AutoexecCombopPhaseVo pipelinePhaseVo : pipelineConfigVo.getCombopPhaseList()) {
+                for (DeployPipelinePhaseVo pipelinePhaseVo : pipelineConfigVo.getCombopPhaseList()) {
                     if (scenarioVo.getCombopPhaseNameList().contains(pipelinePhaseVo.getName())) {
-                        List<AutoexecCombopPhaseOperationVo> phaseOperationList = pipelinePhaseVo.getConfig().getPhaseOperationList();
-                        for (AutoexecCombopPhaseOperationVo operationVo : phaseOperationList) {
-                            if (StringUtils.equals(ToolType.TOOL.getValue(), operationVo.getOperationType())) {
-                                AutoexecOperationBaseVo autoexecOperationBaseVo = autoexecServiceCrossoverService.getAutoexecOperationBaseVoByIdAndType(pipelinePhaseVo.getName(), operationVo, false);
-                                if (autoexecOperationBaseVo != null && StringUtils.equals(autoexecOperationBaseVo.getTypeName(), "BUILD")) {
-                                    appModuleVo.setIsHasBuildTypeTool(1);
-                                }
-                                if (autoexecOperationBaseVo != null && StringUtils.equals(autoexecOperationBaseVo.getTypeName(), "DEPLOY")) {
-                                    appModuleVo.setIsHasDeployTypeTool(1);
-                                }
-                            }
-                        }
+                        appModuleVo.setIsHasBuildTypeTool(pipelinePhaseVo.getIsHasBuildTypeTool());
+                        appModuleVo.setIsHasDeployTypeTool(pipelinePhaseVo.getIsHasDeployTypeTool());
+//                        List<AutoexecCombopPhaseOperationVo> phaseOperationList = pipelinePhaseVo.getConfig().getPhaseOperationList();
+//                        for (AutoexecCombopPhaseOperationVo operationVo : phaseOperationList) {
+//                            if (StringUtils.equals(ToolType.TOOL.getValue(), operationVo.getOperationType())) {
+//                                AutoexecOperationBaseVo autoexecOperationBaseVo = autoexecServiceCrossoverService.getAutoexecOperationBaseVoByIdAndType(pipelinePhaseVo.getName(), operationVo, false);
+//                                if (autoexecOperationBaseVo != null && StringUtils.equals(autoexecOperationBaseVo.getTypeName(), "BUILD")) {
+//                                    appModuleVo.setIsHasBuildTypeTool(1);
+//                                }
+//                                if (autoexecOperationBaseVo != null && StringUtils.equals(autoexecOperationBaseVo.getTypeName(), "DEPLOY")) {
+//                                    appModuleVo.setIsHasDeployTypeTool(1);
+//                                }
+//                            }
+//                        }
                         if (appModuleVo.getIsHasBuildTypeTool() == 1 && appModuleVo.getIsHasDeployTypeTool() == 1) {
                             break;
                         }
