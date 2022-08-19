@@ -17,7 +17,7 @@ import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.deploy.dao.mapper.DeployAppConfigMapper;
-import codedriver.module.deploy.util.DeployPipelineUtil;
+import codedriver.module.deploy.util.DeployPipelineConfigManager;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
@@ -104,7 +104,7 @@ public class GetDeployAppPipelineDraftApi extends PrivateApiComponentBase {
             }
             envOverrideConfig = JSONObject.parseObject(overrideConfigStr, DeployPipelineConfigVo.class);
         }
-        DeployPipelineConfigVo deployPipelineConfigVo = DeployPipelineUtil.mergeDeployPipelineConfig(appConfig, moduleOverrideConfig, envOverrideConfig, targetLevel);
+        DeployPipelineConfigVo deployPipelineConfigVo = DeployPipelineConfigManager.mergeDeployPipelineConfig(appConfig, moduleOverrideConfig, envOverrideConfig, targetLevel);
         IAutoexecServiceCrossoverService autoexecServiceCrossoverService = CrossoverServiceFactory.getApi(IAutoexecServiceCrossoverService.class);
         autoexecServiceCrossoverService.updateAutoexecCombopConfig(deployPipelineConfigVo.getAutoexecCombopConfigVo());
         deployAppConfigDraftVo.setConfig(deployPipelineConfigVo);

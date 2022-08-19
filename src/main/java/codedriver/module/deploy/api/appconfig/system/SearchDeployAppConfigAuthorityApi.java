@@ -1,5 +1,5 @@
 /*
- * Copyright (c)  2022 TechSure Co.,Ltd.  All Rights Reserved.
+ * Copyright(c) 2022 TechSure Co., Ltd. All Rights Reserved.
  * 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
  */
 
@@ -20,7 +20,7 @@ import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.framework.util.TableResultUtil;
 import codedriver.module.deploy.dao.mapper.DeployAppConfigMapper;
-import codedriver.module.deploy.util.DeployPipelineUtil;
+import codedriver.module.deploy.util.DeployPipelineConfigManager;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
@@ -103,7 +103,7 @@ public class SearchDeployAppConfigAuthorityApi extends PrivateApiComponentBase {
         }
 
         //根据appSystemId获取对应的场景theadList
-        DeployPipelineConfigVo pipelineConfigVo = DeployPipelineUtil.chain(paramObj.getLong("appSystemId")).getDeployPipelineConfig();
+        DeployPipelineConfigVo pipelineConfigVo = DeployPipelineConfigManager.init(paramObj.getLong("appSystemId")).getConfig();
         if (pipelineConfigVo == null) {
             throw new DeployAppConfigNotFoundException(paramObj.getLong("appSystemId"));
         }

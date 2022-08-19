@@ -23,7 +23,7 @@ import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.deploy.dao.mapper.DeployAppConfigMapper;
-import codedriver.module.deploy.util.DeployPipelineUtil;
+import codedriver.module.deploy.util.DeployPipelineConfigManager;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
@@ -83,9 +83,9 @@ public class GetDeployJobCreateInfoApi extends PrivateApiComponentBase {
             throw new DeployAppConfigNotFoundException(appSystemCiEntityVo);
         }
         //场景
-        DeployPipelineConfigVo pipelineConfigVo = DeployPipelineUtil.chain(appSystemId)
+        DeployPipelineConfigVo pipelineConfigVo = DeployPipelineConfigManager.init(appSystemId)
                 .withAppModuleId(appModuleId)
-                .getDeployPipelineConfig();
+                .getConfig();
         if (pipelineConfigVo == null) {
             throw new DeployAppConfigNotFoundException(appSystemCiEntityVo);
         }

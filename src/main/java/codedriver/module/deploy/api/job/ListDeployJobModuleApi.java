@@ -1,12 +1,13 @@
+/*
+ * Copyright(c) 2022 TechSure Co., Ltd. All Rights Reserved.
+ * 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
+ */
+
 package codedriver.module.deploy.api.job;
 
 import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.auth.core.AuthAction;
-import codedriver.framework.autoexec.constvalue.ToolType;
 import codedriver.framework.autoexec.crossover.IAutoexecServiceCrossoverService;
-import codedriver.framework.autoexec.dto.AutoexecOperationBaseVo;
-import codedriver.framework.autoexec.dto.combop.AutoexecCombopPhaseOperationVo;
-import codedriver.framework.autoexec.dto.combop.AutoexecCombopPhaseVo;
 import codedriver.framework.autoexec.dto.combop.AutoexecCombopScenarioVo;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.crossover.CrossoverServiceFactory;
@@ -25,9 +26,8 @@ import codedriver.framework.restful.annotation.Param;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.deploy.dao.mapper.DeployAppConfigMapper;
-import codedriver.module.deploy.util.DeployPipelineUtil;
+import codedriver.module.deploy.util.DeployPipelineConfigManager;
 import com.alibaba.fastjson.JSONObject;
-import com.alibaba.nacos.api.utils.StringUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 
@@ -103,16 +103,16 @@ public class ListDeployJobModuleApi extends PrivateApiComponentBase {
                 if (configVo == null) {
                     throw new DeployAppConfigNotFoundException(appSystemId);
                 }
-                DeployPipelineConfigVo pipelineConfigVo = DeployPipelineUtil.chain(configVo.getAppSystemId())
+                DeployPipelineConfigVo pipelineConfigVo = DeployPipelineConfigManager.init(configVo.getAppSystemId())
                         .withAppModuleId(configVo.getAppModuleId())
                         .withEnvId(configVo.getEnvId())
-                        .withSetIsHasBuildOrDeployTypeTool(true)
-                        .getDeployPipelineConfig();
+                        .isHasBuildOrDeployTypeTool(true)
+                        .getConfig();
                 if (pipelineConfigVo == null) {
                     throw new DeployAppConfigNotFoundException(appSystemId);
                 }
 
-                //2、找出当前流水线的某个场景下的所有phaseNameList
+                //2、找出当前流水线场景=scenarioId下的所有phaseNameList
                 if (CollectionUtils.isEmpty(pipelineConfigVo.getScenarioList())) {
                     throw new DeployAppConfigScenarioNotFoundException();
                 }

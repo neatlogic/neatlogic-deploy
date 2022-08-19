@@ -21,7 +21,7 @@ import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.deploy.dao.mapper.DeployAppConfigMapper;
-import codedriver.module.deploy.util.DeployPipelineUtil;
+import codedriver.module.deploy.util.DeployPipelineConfigManager;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -118,7 +118,7 @@ public class GetDeployAppConfigAuthorityApi extends PrivateApiComponentBase {
                                 }
                             }
                         } else if (StringUtils.equals(actionType, DeployAppConfigActionType.SCENARIO.getValue())) {
-                            DeployPipelineConfigVo pipelineConfigVo = DeployPipelineUtil.chain(appSystemId).getDeployPipelineConfig();
+                            DeployPipelineConfigVo pipelineConfigVo = DeployPipelineConfigManager.init(appSystemId).getConfig();
                             if (pipelineConfigVo == null) {
                                 continue;
                             }
@@ -165,7 +165,7 @@ public class GetDeployAppConfigAuthorityApi extends PrivateApiComponentBase {
         }
         returnObj.put("envAuthList", envAuthList);
         //场景权限
-        DeployPipelineConfigVo pipelineConfigVo = DeployPipelineUtil.chain(appSystemId).getDeployPipelineConfig();
+        DeployPipelineConfigVo pipelineConfigVo = DeployPipelineConfigManager.init(appSystemId).getConfig();
         if (pipelineConfigVo == null) {
             throw new DeployAppConfigNotFoundException(appSystemId);
         }

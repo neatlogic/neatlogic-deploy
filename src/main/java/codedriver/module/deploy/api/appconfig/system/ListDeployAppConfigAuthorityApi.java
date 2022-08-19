@@ -1,5 +1,5 @@
 /*
- * Copyright (c)  2022 TechSure Co.,Ltd.  All Rights Reserved.
+ * Copyright(c) 2022 TechSure Co., Ltd. All Rights Reserved.
  * 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
  */
 
@@ -18,7 +18,7 @@ import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.deploy.dao.mapper.DeployAppConfigMapper;
-import codedriver.module.deploy.util.DeployPipelineUtil;
+import codedriver.module.deploy.util.DeployPipelineConfigManager;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.stereotype.Service;
 
@@ -67,7 +67,7 @@ public class ListDeployAppConfigAuthorityApi extends PrivateApiComponentBase {
         returnObj.put("operationAuthList", DeployAppConfigAction.getValueTextList());
 
         //场景权限
-        DeployPipelineConfigVo pipelineConfigVo = DeployPipelineUtil.chain(appSystemId).getDeployPipelineConfig();
+        DeployPipelineConfigVo pipelineConfigVo = DeployPipelineConfigManager.init(appSystemId).getConfig();
         if (pipelineConfigVo == null) {
             throw new DeployAppConfigNotFoundException(appSystemId);
         }

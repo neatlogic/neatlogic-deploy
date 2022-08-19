@@ -20,7 +20,7 @@ import codedriver.framework.deploy.dto.app.DeployPipelineConfigVo;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
-import codedriver.module.deploy.util.DeployPipelineUtil;
+import codedriver.module.deploy.util.DeployPipelineConfigManager;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.stereotype.Service;
 
@@ -79,10 +79,10 @@ public class GetDeployAppPipelineApi extends PrivateApiComponentBase {
             }
             searchVo.setEnvName(env.getName());
         }
-        DeployPipelineConfigVo deployPipelineConfigVo = DeployPipelineUtil.chain(searchVo.getAppSystemId())
+        DeployPipelineConfigVo deployPipelineConfigVo = DeployPipelineConfigManager.init(searchVo.getAppSystemId())
                 .withAppModuleId(searchVo.getAppModuleId())
                 .withEnvId(searchVo.getEnvId())
-                .getDeployPipelineConfig();
+                .getConfig();
         searchVo.setConfig(deployPipelineConfigVo);
         return searchVo;
     }
