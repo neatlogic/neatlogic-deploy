@@ -52,12 +52,16 @@ public class DeployPipelineConfigManager {
         }
 
         public Builder withAppModuleId(Long appModuleId) {
-            this.appModuleId = appModuleId;
+            if (appModuleId != null) {
+                this.appModuleId = appModuleId;
+            }
             return this;
         }
 
         public Builder withEnvId(Long envId) {
-            this.envId = envId;
+            if (envId != null) {
+                this.envId = envId;
+            }
             return this;
         }
         public Builder withAppSystemDraft(boolean isAppSystemDraft) {
