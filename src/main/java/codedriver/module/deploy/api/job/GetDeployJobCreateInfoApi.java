@@ -98,7 +98,7 @@ public class GetDeployJobCreateInfoApi extends PrivateApiComponentBase {
         List<Long> appModuleIdList = new ArrayList<>();
         List<DeployAppEnvironmentVo> envList = new ArrayList<>();
         List<ResourceVo> appModuleList = new ArrayList<>();
-        if (appModuleId != null) {
+        if (appModuleId != 0L) {
             appModuleIdList.add(appModuleId);
         } else {
             TenantContext.get().switchDataDatabase();
