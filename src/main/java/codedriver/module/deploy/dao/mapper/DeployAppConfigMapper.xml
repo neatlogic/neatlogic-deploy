@@ -68,7 +68,8 @@
         </if>
     </select>
 
-    <select id="searchAppSystemList" resultType="codedriver.framework.deploy.dto.app.DeployAppSystemVo" useCache="false">
+    <select id="searchAppSystemList" resultType="codedriver.framework.deploy.dto.app.DeployAppSystemVo"
+            useCache="false">
         SELECT DISTINCT `id`, `abbr_name` as abbrName, `name`
         FROM ${schemaName}.`scence_appsystem_appmodule`
         <where>
@@ -226,7 +227,7 @@
     </resultMap>
 
     <select id="getDeployAppSystemListIncludeEnvIdListByAppSystemIdList"
-            resultMap="appConfigSystemIncludeEnvIdListMap">
+            resultMap="appConfigSystemIncludeEnvIdListMap" useCache="false">
         (
         SELECT
         a.app_system_id as appSystemId,
@@ -300,7 +301,8 @@
         <include refid="appConfigAuthorityWhere"/>
     </select>
 
-    <select id="getAppConfigAuthorityList" resultType="codedriver.framework.deploy.dto.app.DeployAppConfigAuthorityVo" useCache="false">
+    <select id="getAppConfigAuthorityList" resultType="codedriver.framework.deploy.dto.app.DeployAppConfigAuthorityVo"
+            useCache="false">
         select distinct `app_system_id` as appSystemId,`auth_type` as authType,`auth_uuid` as authUuid
         from deploy_app_config_authority
         <include refid="appConfigAuthorityWhere"/>
@@ -348,18 +350,9 @@
 
     <select id="getAppConfigAuthorityListByAppSystemId"
             resultMap="appConfigAuthorityMap" useCache="false">
-        select app_system_id,auth_type,auth_uuid,`action`,action_type
+        select app_system_id, auth_type, auth_uuid, `action`, action_type
         from deploy_app_config_authority
         where app_system_id = #{value}
-    </select>
-
-    <select id="getHasConfigAuthoritySystemIdListByAppSystemIdList" resultType="java.lang.Long">
-        select app_system_id
-        from deploy_app_config_authority
-        where app_system_id in
-        <foreach collection="list" item="id" open="(" separator="," close=")">
-            #{id}
-        </foreach>
     </select>
 
     <select id="getAppConfig" parameterType="codedriver.framework.deploy.dto.app.DeployAppConfigVo"
@@ -1036,7 +1029,8 @@
         <result column="port" property="port"/>
     </resultMap>
 
-    <select id="getAppConfigEnvDatabaseCount" parameterType="java.lang.String" resultType="java.lang.Integer" useCache="false">
+    <select id="getAppConfigEnvDatabaseCount" parameterType="java.lang.String" resultType="java.lang.Integer"
+            useCache="false">
         SELECT count(a.id)
         <include refid="searchDatabase"></include>
     </select>
@@ -1068,7 +1062,8 @@
         </where>
     </sql>
 
-    <select id="getAppConfigEnvDatabaseResourceIdList" parameterType="java.lang.String" resultType="java.lang.Long" useCache="false">
+    <select id="getAppConfigEnvDatabaseResourceIdList" parameterType="java.lang.String" resultType="java.lang.Long"
+            useCache="false">
         SELECT a.id
         <include refid="searchDatabase"></include>
         <if test="searchVo.needPage">
@@ -1308,7 +1303,21 @@
         </where>
     </select>
 
-    <select id="getDeployAppHasAuthorityAppSystemIdListByAppSystemIdList" resultType="java.lang.Long">
+    <select id="getBatchAppConfigAuthorityListByAppSystemIdList" resultMap="appConfigSystemMap" useCache="false">
+        select a.id as appSystemId,
+        b.auth_uuid as authUuid ,
+        b.auth_type as authType,
+        b.`action` as authAction,
+        b.action_type as authActionType
+        FROM ${schemaName}.`scence_appsystem_appmodule` a
+        left join deploy_app_config_authority b on a.id =b.app_system_id
+        where a.id in
+        <foreach collection="appSystemIdList" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </select>
+
+    <select id="getDeployAppHasAuthorityAppSystemIdListByAppSystemIdList" resultType="java.lang.Long" useCache="false">
         select app_system_id
         from deploy_app_config_authority
         where
@@ -1319,7 +1328,7 @@
     </select>
 
     <select id="getDeployJobCreateBeforeConditionInfo"
-            resultType="codedriver.framework.deploy.dto.app.DeployAppSystemVo">
+            resultType="codedriver.framework.deploy.dto.app.DeployAppSystemVo" useCache="false">
         SELECT DISTINCT saa.id,
                         IF(saa.app_module_id IS NULL, 0, 1) AS isHasModule,
                         IF(dac.config IS NULL, 0, 1)        AS isConfig
