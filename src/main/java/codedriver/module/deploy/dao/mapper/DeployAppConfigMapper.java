@@ -106,6 +106,8 @@ public interface DeployAppConfigMapper {
 
     void insertAppConfigEnvDBConfig(DeployAppConfigEnvDBConfigVo dbConfigVo);
 
+    void insertBatchAppConfigEnvDBConfig(@Param("dbConfigVoList") List<DeployAppConfigEnvDBConfigVo> dbConfigVoList);
+
     Integer updateAppConfig(DeployAppConfigVo deployAppConfigVo);
 
     Integer updateAppConfigDraft(DeployAppConfigVo deployAppConfigDraftVo);
