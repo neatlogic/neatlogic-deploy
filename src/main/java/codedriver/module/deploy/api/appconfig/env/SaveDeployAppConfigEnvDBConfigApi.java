@@ -2,11 +2,7 @@ package codedriver.module.deploy.api.appconfig.env;
 
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.cmdb.crossover.ICiEntityCrossoverMapper;
-import codedriver.framework.cmdb.crossover.ICiEntityCrossoverService;
 import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
-import codedriver.framework.cmdb.dto.transaction.CiEntityTransactionVo;
-import codedriver.framework.cmdb.enums.EditModeType;
-import codedriver.framework.cmdb.enums.TransactionActionType;
 import codedriver.framework.cmdb.exception.cientity.CiEntityNotFoundException;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.crossover.CrossoverServiceFactory;
@@ -27,15 +23,11 @@ import codedriver.module.deploy.dao.mapper.DeployAppConfigMapper;
 import codedriver.module.deploy.service.DeployAppAuthorityService;
 import codedriver.module.deploy.service.DeployAppConfigService;
 import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
 /**
  * @author longrf
@@ -122,26 +114,26 @@ public class SaveDeployAppConfigEnvDBConfigApi extends PrivateApiComponentBase {
 
         //保存DB配置项系统模块环境信息
         //添加环境属性、模块关系
-        ICiEntityCrossoverService ciEntityService = CrossoverServiceFactory.getApi(ICiEntityCrossoverService.class);
-        CiEntityVo DBCiEntityInfo = ciEntityService.getCiEntityById(DBCiEntityVo.getCiId(), DBCiEntityVo.getId());
-        CiEntityTransactionVo ciEntityTransactionVo = new CiEntityTransactionVo(DBCiEntityInfo);
-        paramObj.put("ciId", DBCiEntityInfo.getCiId());
-        paramObj.put("needUpdateAttrList", new JSONArray(Collections.singletonList("app_environment")));
-        paramObj.put("needUpdateRelList", new JSONArray(Collections.singletonList("APPComponent")));
-        ciEntityTransactionVo.setAttrEntityData(DBCiEntityInfo.getAttrEntityData());
-        deployAppConfigService.addAttrEntityDataAndRelEntityData(ciEntityTransactionVo, paramObj);
-
-        //保存
-        ciEntityTransactionVo.setAction(TransactionActionType.UPDATE.getValue());
-        ciEntityTransactionVo.setEditMode(EditModeType.GLOBAL.getValue());
-        List<CiEntityTransactionVo> ciEntityTransactionList = new ArrayList<>();
-        ciEntityTransactionList.add(ciEntityTransactionVo);
-        ciEntityService.saveCiEntity(ciEntityTransactionList);
+//        ICiEntityCrossoverService ciEntityService = CrossoverServiceFactory.getApi(ICiEntityCrossoverService.class);
+//        CiEntityVo DBCiEntityInfo = ciEntityService.getCiEntityById(DBCiEntityVo.getCiId(), DBCiEntityVo.getId());
+//        CiEntityTransactionVo ciEntityTransactionVo = new CiEntityTransactionVo(DBCiEntityInfo);
+//        paramObj.put("ciId", DBCiEntityInfo.getCiId());
+//        paramObj.put("needUpdateAttrList", new JSONArray(Collections.singletonList("app_environment")));
+//        paramObj.put("needUpdateRelList", new JSONArray(Collections.singletonList("APPComponent")));
+//        ciEntityTransactionVo.setAttrEntityData(DBCiEntityInfo.getAttrEntityData());
+//        deployAppConfigService.addAttrEntityDataAndRelEntityData(ciEntityTransactionVo, paramObj);
+//
+//        //保存
+//        ciEntityTransactionVo.setAction(TransactionActionType.UPDATE.getValue());
+//        ciEntityTransactionVo.setEditMode(EditModeType.GLOBAL.getValue());
+//        List<CiEntityTransactionVo> ciEntityTransactionList = new ArrayList<>();
+//        ciEntityTransactionList.add(ciEntityTransactionVo);
+//        ciEntityService.saveCiEntity(ciEntityTransactionList);
 
         return null;
     }
 
-    public IValid name() {
+    public IValid dbSchema() {
         return value -> {
             DeployAppConfigEnvDBConfigVo configVo = JSON.toJavaObject(value, DeployAppConfigEnvDBConfigVo.class);
             if (deployAppConfigMapper.checkDeployAppConfigEnvDBSchemaIsRepeat(configVo) > 0) {

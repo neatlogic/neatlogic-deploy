@@ -1351,33 +1351,18 @@
 
     <insert id="insertAppConfigEnvDBConfig"
             parameterType="codedriver.framework.deploy.dto.app.DeployAppConfigEnvDBConfigAccountVo">
-        INSERT INTO deploy_app_config_env_db (id, db_alias, app_system_id, app_module_id, env_id, db_resource_id,
+        INSERT INTO deploy_app_config_env_db (id, db_schema, app_system_id, app_module_id, env_id, db_resource_id,
+                                              account_id,
                                               config)
         VALUES (#{id},
-                #{dbAlias},
+                #{dbSchema},
                 #{appSystemId},
                 #{appModuleId},
                 #{envId},
                 #{dbResourceId},
-                #{configStr}) ON DUPLICATE KEY
-        UPDATE `db_alias` = #{dbAlias},
-            `config` = #{configStr}
-    </insert>
+                #{accountId},
+                #{configStr})
 
-    <insert id="insertAppConfigEnvDBConfigAccount"
-            parameterType="codedriver.framework.deploy.dto.app.DeployAppConfigEnvDBConfigVo">
-        INSERT INTO deploy_app_config_env_db_account (id, account_id, account_alias, db_config_id)
-        VALUES
-        <foreach collection="accountList" separator="," item="item">
-            (#{item.id},
-            #{item.accountId},
-            #{item.accountAlias},
-            #{dbConfigId})
-        </foreach>
-        ON DUPLICATE KEY
-        UPDATE `account_id` =VALUES(account_id),
-        `account_alias` = VALUES(account_alias),
-        `db_config_id` = VALUES(db_config_id)
     </insert>
 
     <update id="updateAppConfig" parameterType="codedriver.framework.deploy.dto.app.DeployAppConfigVo">
@@ -1398,6 +1383,15 @@
         WHERE `app_system_id` = #{appSystemId}
           and `app_module_id` = #{appModuleId}
           and `env_id` = #{envId}
+    </update>
+
+    <update id="updateDeployAppConfigEnvDBConfig">
+        update deploy_app_config_env_db
+        set db_schema= #{dbSchema},
+            db_resource_id = #{dbResourceId},
+            account_id = #{accountId},
+            config = #{configStr}
+        where id = #{id}
     </update>
 
     <delete id="deleteAppConfigAuthorityByAppIdAndAuthUuidListAndLcd">
@@ -1518,43 +1512,6 @@
                 AND `app_module_id` = #{appModuleId}
             </if>
         </where>
-    </delete>
-
-    <delete id="deleteAppConfigDBConfigAccountByDBConfigId">
-        delete
-        from deploy_app_config_env_db_account
-        where db_config_id = #{id}
-    </delete>
-
-    <delete id="deleteAppConfigDBConfigAccountByDBConfigIdList">
-        delete
-        from deploy_app_config_env_db_account
-        where db_config_id in
-        <foreach collection="list" open="(" close=")" item="id" separator=",">
-            #{id}
-        </foreach>
-    </delete>
-
-    <delete id="deleteAppConfigDBConfigAccount">
-        DELETE
-        FROM
-        deploy_app_config_env_db_account
-        WHERE
-        db_config_id IN (
-        SELECT
-        id
-        FROM
-        deploy_app_config_env_db
-        <where>
-            `app_system_id` = #{appSystemId}
-            <if test="appModuleId != 0L">
-                AND `app_module_id` = #{appModuleId}
-            </if>
-            <if test="envId != 0L">
-                AND `env_id` = #{envId}
-            </if>
-        </where>
-        )
     </delete>
 
     <delete id="deleteAppConfigDBConfig">
