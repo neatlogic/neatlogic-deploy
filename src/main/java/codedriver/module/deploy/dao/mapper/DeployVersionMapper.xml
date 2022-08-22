@@ -131,6 +131,7 @@
         <result column="appSystemName" property="appSystemName"/>
         <result column="appModuleId" property="appModuleId"/>
         <result column="appModuleName" property="appModuleName"/>
+        <result column="description" property="description"/>
         <result column="isFreeze" property="isFreeze"/>
         <result column="compileSuccessCount" property="compileSuccessCount"/>
         <result column="compileFailCount" property="compileFailCount"/>
@@ -179,6 +180,7 @@
         cci.name as appSystemName,
         dv.app_module_id as appModuleId,
         cce.name as appModuleName,
+        dv.description as description,
         dv.is_freeze as isFreeze,
         dvb.build_no as buildNo,
         dvb.status as buildNoStatus,
@@ -679,6 +681,7 @@
             version,
             app_system_id,
             app_module_id,
+            description,
             is_freeze,
             <if test="repoType != null and repoType != ''">
                 repo_type,
@@ -726,6 +729,7 @@
             #{version},
             #{appSystemId},
             #{appModuleId},
+            #{description},
             #{isFreeze},
             <if test="repoType != null and repoType != ''">
                 #{repoType},
