@@ -33,7 +33,6 @@ import codedriver.framework.deploy.auth.BATCHDEPLOY_MODIFY;
 import codedriver.framework.deploy.auth.DEPLOY_MODIFY;
 import codedriver.framework.deploy.constvalue.BuildNoStatus;
 import codedriver.framework.deploy.constvalue.JobSourceType;
-import codedriver.framework.deploy.dto.app.DeployAppConfigVo;
 import codedriver.framework.deploy.dto.app.DeployPipelineConfigVo;
 import codedriver.framework.deploy.dto.job.DeployJobContentVo;
 import codedriver.framework.deploy.dto.job.DeployJobVo;
@@ -57,7 +56,7 @@ import codedriver.module.deploy.dao.mapper.DeployAppConfigMapper;
 import codedriver.module.deploy.dao.mapper.DeployJobMapper;
 import codedriver.module.deploy.dao.mapper.DeploySqlMapper;
 import codedriver.module.deploy.dao.mapper.DeployVersionMapper;
-import codedriver.module.deploy.service.DeployAppPipelineService;
+import codedriver.module.deploy.util.DeployPipelineConfigManager;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.nacos.common.utils.CollectionUtils;
@@ -91,9 +90,6 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
     RunnerMapper runnerMapper;
 
     @Resource
-    DeployAppPipelineService deployAppPipelineService;
-
-    @Resource
     DeployVersionMapper deployVersionMapper;
 
     @Override
@@ -117,19 +113,13 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
 
     @Override
     public void downloadJobSqlFile(AutoexecJobVo jobVo) throws Exception {
+        AutoexecJobPhaseNodeVo nodeVo = jobVo.getCurrentNode();
         JSONObject paramObj = jobVo.getActionParam();
-        DeploySqlDetailVo sqlDetailVo = deploySqlMapper.getDeployJobSqlDetailById(paramObj.getLong("sqlId"));
-        paramObj.put("sysId", sqlDetailVo.getSysId());
-        paramObj.put("moduleId", sqlDetailVo.getModuleId());
-        paramObj.put("envId", sqlDetailVo.getEnvId());
-        paramObj.put("version", sqlDetailVo.getVersion());
-        ICiEntityCrossoverMapper ciEntityCrossoverMapper = CrossoverServiceFactory.getApi(ICiEntityCrossoverMapper.class);
-        CiEntityVo envCiEntity = ciEntityCrossoverMapper.getCiEntityBaseInfoById(sqlDetailVo.getEnvId());
-        paramObj.put("envName", envCiEntity.getName());
+        paramObj.put("jobId", nodeVo.getJobId());
+        paramObj.put("phase", nodeVo.getJobPhaseName());
         UserContext.get().getResponse().setContentType("text/plain");
         UserContext.get().getResponse().setHeader("Content-Disposition", " attachment; filename=\"" + paramObj.getString("sqlName") + "\"");
-        AutoexecJobPhaseNodeVo nodeVo = jobVo.getCurrentNode();
-        String url = nodeVo.getRunnerUrl() + "/api/binary/deploy/sql/file/download";
+        String url = nodeVo.getRunnerUrl() + "/api/binary/job/phase/node/sql/file/download";
         String result = HttpRequestUtil.download(url, "POST", UserContext.get().getResponse().getOutputStream()).setPayload(paramObj.toJSONString()).setAuthType(AuthenticateType.BUILDIN).sendRequest().getError();
 
         if (StringUtils.isNotBlank(result)) {
@@ -332,7 +322,10 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
         Long appModuleId = paramJson.getLong("appModuleId");
         Long envId = paramJson.getLong("envId");
         //获取最终流水线
-        DeployPipelineConfigVo deployPipelineConfigVo = deployAppPipelineService.getDeployPipelineConfigVo(new DeployAppConfigVo(appSystemId, appModuleId, envId));
+        DeployPipelineConfigVo deployPipelineConfigVo = DeployPipelineConfigManager.init(appSystemId)
+                .withAppModuleId(appModuleId)
+                .withEnvId(envId)
+                .getConfig();
         if (deployPipelineConfigVo == null) {
             throw new DeployPipelineConfigNotFoundException();
         }

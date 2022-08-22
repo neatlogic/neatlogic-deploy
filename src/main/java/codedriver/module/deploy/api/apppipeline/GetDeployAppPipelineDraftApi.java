@@ -5,35 +5,29 @@
 
 package codedriver.module.deploy.api.apppipeline;
 
+import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.auth.core.AuthAction;
-import codedriver.framework.autoexec.crossover.IAutoexecServiceCrossoverService;
+import codedriver.framework.cmdb.crossover.IResourceCrossoverMapper;
+import codedriver.framework.cmdb.dto.resourcecenter.ResourceVo;
+import codedriver.framework.cmdb.exception.resourcecenter.AppEnvNotFoundException;
+import codedriver.framework.cmdb.exception.resourcecenter.AppModuleNotFoundException;
+import codedriver.framework.cmdb.exception.resourcecenter.AppSystemNotFoundException;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.crossover.CrossoverServiceFactory;
 import codedriver.framework.deploy.auth.DEPLOY_BASE;
 import codedriver.framework.deploy.dto.app.DeployAppConfigVo;
 import codedriver.framework.deploy.dto.app.DeployPipelineConfigVo;
-import codedriver.framework.exception.type.ParamNotExistsException;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
-import codedriver.module.deploy.dao.mapper.DeployAppConfigMapper;
-import codedriver.module.deploy.service.DeployAppPipelineService;
+import codedriver.module.deploy.util.DeployPipelineConfigManager;
 import com.alibaba.fastjson.JSONObject;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
-
-import javax.annotation.Resource;
 
 @Service
 @AuthAction(action = DEPLOY_BASE.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
 public class GetDeployAppPipelineDraftApi extends PrivateApiComponentBase {
-
-    @Resource
-    private DeployAppPipelineService deployAppPipelineService;
-
-    @Resource
-    private DeployAppConfigMapper deployAppConfigMapper;
 
     @Override
     public String getName() {
@@ -62,55 +56,45 @@ public class GetDeployAppPipelineDraftApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         DeployAppConfigVo searchVo = paramObj.toJavaObject(DeployAppConfigVo.class);
-        DeployAppConfigVo deployAppConfigDraftVo = deployAppConfigMapper.getAppConfigDraft(searchVo);
-        if (deployAppConfigDraftVo == null) {
-            return null;
+        String schemaName = TenantContext.get().getDataDbName();
+        IResourceCrossoverMapper resourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
+        ResourceVo appSystem = resourceCrossoverMapper.getAppSystemById(searchVo.getAppSystemId(), schemaName);
+        if (appSystem == null) {
+            throw new AppSystemNotFoundException(searchVo.getAppSystemId());
         }
-        String overrideConfigStr = deployAppConfigDraftVo.getConfigStr();
-        if (StringUtils.isBlank(overrideConfigStr)) {
-            return null;
+        searchVo.setAppSystemName(appSystem.getName());
+        boolean isAppSystemDraft = true;
+        boolean isAppModuleDraft = false;
+        boolean isEnvDraft = false;
+        Long appModuleId = searchVo.getAppModuleId();
+        if (appModuleId != null && appModuleId != 0) {
+            ResourceVo appModule = resourceCrossoverMapper.getAppModuleById(appModuleId, schemaName);
+            if (appModule == null) {
+                throw new AppModuleNotFoundException(appModuleId);
+            }
+            searchVo.setAppModuleName(appModule.getName());
+            isAppSystemDraft = false;
+            isAppModuleDraft = true;
         }
-        String targetLevel = null;
-        DeployPipelineConfigVo appConfig = null;
-        DeployPipelineConfigVo moduleOverrideConfig = null;
-        DeployPipelineConfigVo envOverrideConfig = null;
-        Long appSystemId = searchVo.getAppSystemId();
-        Long moduleId = searchVo.getAppModuleId();
         Long envId = searchVo.getEnvId();
-        if (moduleId == 0L && envId == 0L) {
-            targetLevel = "应用";
-            //查询应用层流水线配置信息
-            appConfig = JSONObject.parseObject(overrideConfigStr, DeployPipelineConfigVo.class);
-        } else if (moduleId == 0L && envId != 0L) {
-            // 如果是访问环境层配置信息，moduleId不能为空
-            throw new ParamNotExistsException("moduleId");
-        } else if (moduleId != 0L && envId == 0L) {
-            targetLevel = "模块";
-            //查询应用层配置信息
-            String configStr = deployAppConfigMapper.getAppConfig(new DeployAppConfigVo(appSystemId));
-            if (StringUtils.isBlank(configStr)) {
-                configStr = "{}";
+        if (envId != null && envId != 0) {
+            ResourceVo env = resourceCrossoverMapper.getAppEnvById(envId, schemaName);
+            if (env == null) {
+                throw new AppEnvNotFoundException(envId);
             }
-            appConfig = JSONObject.parseObject(configStr, DeployPipelineConfigVo.class);
-            moduleOverrideConfig = JSONObject.parseObject(overrideConfigStr, DeployPipelineConfigVo.class);
-        } else {
-            targetLevel = "环境";
-            //查询应用层配置信息
-            String configStr = deployAppConfigMapper.getAppConfig(new DeployAppConfigVo(appSystemId));
-            if (StringUtils.isBlank(configStr)) {
-                configStr = "{}";
-            }
-            appConfig = JSONObject.parseObject(configStr, DeployPipelineConfigVo.class);
-            String moduleOverrideConfigStr = deployAppConfigMapper.getAppConfig(new DeployAppConfigVo(appSystemId, moduleId));
-            if (StringUtils.isNotBlank(moduleOverrideConfigStr)) {
-                moduleOverrideConfig = JSONObject.parseObject(moduleOverrideConfigStr, DeployPipelineConfigVo.class);
-            }
-            envOverrideConfig = JSONObject.parseObject(overrideConfigStr, DeployPipelineConfigVo.class);
+            searchVo.setEnvName(env.getName());
+            isAppSystemDraft = false;
+            isAppModuleDraft = false;
+            isEnvDraft = true;
         }
-        DeployPipelineConfigVo deployPipelineConfigVo = deployAppPipelineService.mergeDeployPipelineConfigVo(appConfig, moduleOverrideConfig, envOverrideConfig, targetLevel);
-        IAutoexecServiceCrossoverService autoexecServiceCrossoverService = CrossoverServiceFactory.getApi(IAutoexecServiceCrossoverService.class);
-        autoexecServiceCrossoverService.updateAutoexecCombopConfig(deployPipelineConfigVo.getAutoexecCombopConfigVo());
-        deployAppConfigDraftVo.setConfig(deployPipelineConfigVo);
-        return deployAppConfigDraftVo;
+        DeployPipelineConfigVo deployPipelineConfigVo = DeployPipelineConfigManager.init(searchVo.getAppSystemId())
+                .withAppModuleId(searchVo.getAppModuleId())
+                .withEnvId(searchVo.getEnvId())
+                .withAppSystemDraft(isAppSystemDraft)
+                .withAppModuleDraft(isAppModuleDraft)
+                .withEnvDraft(isEnvDraft)
+                .getConfig();
+        searchVo.setConfig(deployPipelineConfigVo);
+        return searchVo;
     }
 }

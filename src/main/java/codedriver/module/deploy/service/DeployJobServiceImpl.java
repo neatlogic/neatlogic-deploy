@@ -42,6 +42,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -207,7 +208,8 @@ public class DeployJobServiceImpl implements DeployJobService {
             }
             put("selectNodeList", selectNodeArray);
         }});
-        jsonObj.put("name", jsonObj.getString("appSystemAbbrName") + "/" + jsonObj.getString("appModuleAbbrName") + "/" + jsonObj.getString("envName") + "/" + jsonObj.getString("scenarioName"));
+        String version = jsonObj.getString("version");
+        jsonObj.put("name", jsonObj.getString("appSystemAbbrName") + "/" + jsonObj.getString("appModuleAbbrName") + "/" + jsonObj.getString("envName") + (StringUtils.isBlank(version) ? StringUtils.EMPTY : "/" + jsonObj.getString("version")));
     }
 
     @Override
