@@ -69,11 +69,11 @@ public class GetDeployAppConfigEnvDBConfigForAutoexecApi extends PrivateApiCompo
         JSONObject returnDBUserObject = new JSONObject();
 
         //获取环境下的所有db配置
-        List<DeployAppConfigEnvDBConfigVo> configVoList = deployAppConfigMapper.getAppConfigEnvDBConfigListByAppSystemIdAndAppModuleIdAndEnvId(paramObj.getLong("sysId"), paramObj.getLong("moduleId"), paramObj.getLong("envId"));
-        if (CollectionUtils.isEmpty(configVoList)) {
+        List<DeployAppConfigEnvDBConfigVo> allDBConfigVoList = deployAppConfigMapper.getAppConfigEnvDBConfigListByAppSystemIdAndAppModuleIdAndEnvId(paramObj.getLong("sysId"), paramObj.getLong("moduleId"), paramObj.getLong("envId"));
+        if (CollectionUtils.isEmpty(allDBConfigVoList)) {
             return null;
         }
-        Set<Long> dbResourceIdSet = configVoList.stream().map(DeployAppConfigEnvDBConfigVo::getDbResourceId).collect(Collectors.toSet());
+        Set<Long> dbResourceIdSet = allDBConfigVoList.stream().map(DeployAppConfigEnvDBConfigVo::getDbResourceId).collect(Collectors.toSet());
         //获取db属性
         ICiEntityCrossoverService ciEntityCrossoverService = CrossoverServiceFactory.getApi(ICiEntityCrossoverService.class);
         CiEntityVo paramCiEntityVo = new CiEntityVo();
@@ -85,7 +85,7 @@ public class GetDeployAppConfigEnvDBConfigForAutoexecApi extends PrivateApiCompo
 
         Map<Long, CiEntityVo> allDBciEntityVoMap = allDBResourceInfoList.stream().collect(Collectors.toMap(CiEntityVo::getId, e -> e));
 
-        for (DeployAppConfigEnvDBConfigVo dbConfigVo : configVoList) {
+        for (DeployAppConfigEnvDBConfigVo dbConfigVo : allDBConfigVoList) {
             CiEntityVo dbCiEntityVo = allDBciEntityVoMap.get(dbConfigVo.getDbResourceId());
             if (dbCiEntityVo == null) {
                 continue;
