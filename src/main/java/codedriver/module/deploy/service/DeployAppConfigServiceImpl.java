@@ -54,7 +54,6 @@ public class DeployAppConfigServiceImpl implements DeployAppConfigService {
         deployAppConfigMapper.deleteAppConfigDraft(configVo);
         deployAppConfigMapper.deleteAppEnvAutoConfigByAppSystemIdAndAppModuleIdAndEnvId(configVo.getAppSystemId(), configVo.getAppModuleId(), configVo.getEnvId());
         deployAppConfigMapper.deleteAppConfigDBConfig(new DeployAppConfigEnvDBConfigVo(configVo.getAppSystemId(), configVo.getAppModuleId(), configVo.getEnvId()));
-        deployAppConfigMapper.deleteAppConfigDBConfigAccount(new DeployAppConfigEnvDBConfigVo(configVo.getAppSystemId(), configVo.getAppModuleId(), configVo.getEnvId()));
     }
 
     @Override

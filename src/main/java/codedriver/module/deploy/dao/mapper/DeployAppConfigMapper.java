@@ -66,8 +66,6 @@ public interface DeployAppConfigMapper {
 
     List<Long> getAppModuleEnvAutoConfigInstanceIdList(@Param("searchVo") DeployAppEnvAutoConfigVo searchVo, @Param("schemaName") String schemaName);
 
-    List<Long> getAppConfigEnvDBConfigResourceIdByAppSystemIdAndAppModuleIdAndEnvId(@Param("appSystemId") Long appSystemId, @Param("appModuleId") Long appModuleId, @Param("envId") Long envId);
-
     List<Long> getHasConfigAuthoritySystemIdListByAppSystemIdList(List<Long> appSystemIdList);
 
     RunnerGroupVo getAppModuleRunnerGroupByAppSystemIdAndModuleId(@Param("appSystemId") Long appSystemId, @Param("appModuleId") Long appModuleId);
@@ -108,11 +106,11 @@ public interface DeployAppConfigMapper {
 
     void insertAppConfigEnvDBConfig(DeployAppConfigEnvDBConfigVo dbConfigVo);
 
-    void insertAppConfigEnvDBConfigAccount(@Param("dbConfigId") Long dbConfigId, @Param("accountList") List<DeployAppConfigEnvDBConfigAccountVo> accountList);
-
     Integer updateAppConfig(DeployAppConfigVo deployAppConfigVo);
 
     Integer updateAppConfigDraft(DeployAppConfigVo deployAppConfigDraftVo);
+
+    void updateDeployAppConfigEnvDBConfig(DeployAppConfigEnvDBConfigVo dbConfigVo);
 
     void deleteAppConfigAuthorityByAppIdAndAuthUuidListAndLcd(@Param("appSystemId") Long appSystemId, @Param("authUuidList") List<String> authUuidList, @Param("lcd") Date nowTime);
 
@@ -138,9 +136,7 @@ public interface DeployAppConfigMapper {
      */
     int getAppConfigEnvInstanceCount(DeployAppConfigInstanceVo searchVo);
 
-    int checkDeployAppConfigEnvDBAliasNameIsRepeat(DeployAppConfigEnvDBConfigVo configVo);
-
-    int checkDeployAppConfigEnvDBExistsById(Long id);
+    int checkDeployAppConfigEnvDBSchemaIsRepeat(DeployAppConfigEnvDBConfigVo configVo);
 
     int getAppModuleCountBySystemIdAndEnvId(@Param("appSystemId") Long appSystemId, @Param("envId") Long envId, @Param("schemaName") String schemaName);
 
@@ -189,12 +185,6 @@ public interface DeployAppConfigMapper {
     void deleteAppConfigAuthorityByAppSystemId(Long appSystemId);
 
     void deleteAppModuleRunnerGroup(DeployAppConfigVo configVo);
-
-    void deleteAppConfigDBConfigAccountByDBConfigId(Long id);
-
-    void deleteAppConfigDBConfigAccountByDBConfigIdList(List<Long> idList);
-
-    void deleteAppConfigDBConfigAccount(DeployAppConfigEnvDBConfigVo appConfigEnvDBConfigVo);
 
     void deleteAppConfigDBConfig(DeployAppConfigEnvDBConfigVo appConfigEnvDBConfigVo);
 

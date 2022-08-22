@@ -13,7 +13,7 @@ import codedriver.framework.crossover.CrossoverServiceFactory;
 import codedriver.framework.deploy.auth.DEPLOY_BASE;
 import codedriver.framework.deploy.constvalue.DeployAppConfigAction;
 import codedriver.framework.deploy.dto.app.DeployAppConfigEnvDBConfigVo;
-import codedriver.framework.deploy.exception.DeployAppConfigEnvDBAliasNameRepeatException;
+import codedriver.framework.deploy.exception.DeployAppConfigEnvDBSchemaNameRepeatException;
 import codedriver.framework.dto.FieldValidResultVo;
 import codedriver.framework.restful.annotation.Description;
 import codedriver.framework.restful.annotation.Input;
@@ -22,6 +22,7 @@ import codedriver.framework.restful.annotation.Param;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.IValid;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
+import codedriver.framework.util.RegexUtils;
 import codedriver.module.deploy.dao.mapper.DeployAppConfigMapper;
 import codedriver.module.deploy.service.DeployAppAuthorityService;
 import codedriver.module.deploy.service.DeployAppConfigService;
@@ -33,7 +34,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -75,14 +76,15 @@ public class SaveDeployAppConfigEnvDBConfigApi extends PrivateApiComponentBase {
             @Param(name = "appModuleId", type = ApiParamType.LONG, isRequired = true, desc = "应用模块id"),
             @Param(name = "envId", type = ApiParamType.LONG, isRequired = true, desc = "环境id"),
             @Param(name = "id", type = ApiParamType.LONG, desc = "id"),
-            @Param(name = "dbAlias", type = ApiParamType.STRING, isRequired = true, desc = "数据库别名"),
+            @Param(name = "dbSchema", type = ApiParamType.REGEX, isRequired = true, rule = RegexUtils.DB_SCHEMA, desc = "数据库schema"),
             @Param(name = "dbResourceId", type = ApiParamType.LONG, isRequired = true, desc = "数据库资产id"),
-            @Param(name = "accountList", type = ApiParamType.JSONARRAY, isRequired = true, desc = "执行用户列表"),
+            @Param(name = "accountId", type = ApiParamType.LONG, isRequired = true, desc = "执行用户id"),
             @Param(name = "config", type = ApiParamType.JSONOBJECT, desc = "高级设置")
     })
     @Description(desc = "保存发布应用配置DB配置")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
+
 
         //校验环境权限、编辑配置的操作权限
         deployAppAuthorityService.checkEnvAuth(paramObj.getLong("appSystemId"), paramObj.getLong("envId"));
@@ -108,12 +110,15 @@ public class SaveDeployAppConfigEnvDBConfigApi extends PrivateApiComponentBase {
 
         //保存DB发布配置
         DeployAppConfigEnvDBConfigVo dbConfigVo = paramObj.toJavaObject(DeployAppConfigEnvDBConfigVo.class);
-        if (deployAppConfigMapper.checkDeployAppConfigEnvDBAliasNameIsRepeat(dbConfigVo) > 0) {
-            throw new DeployAppConfigEnvDBAliasNameRepeatException(dbConfigVo.getDbAlias());
+        if (deployAppConfigMapper.checkDeployAppConfigEnvDBSchemaIsRepeat(dbConfigVo) > 0) {
+            throw new DeployAppConfigEnvDBSchemaNameRepeatException(dbConfigVo.getDbSchema());
         }
-        deployAppConfigMapper.insertAppConfigEnvDBConfig(dbConfigVo);
-        deployAppConfigMapper.deleteAppConfigDBConfigAccountByDBConfigId(dbConfigVo.getId());
-        deployAppConfigMapper.insertAppConfigEnvDBConfigAccount(dbConfigVo.getId(), dbConfigVo.getAccountList());
+        Long id = paramObj.getLong("id");
+        if (id != null) {
+            deployAppConfigMapper.updateDeployAppConfigEnvDBConfig(dbConfigVo);
+        } else {
+            deployAppConfigMapper.insertAppConfigEnvDBConfig(dbConfigVo);
+        }
 
         //保存DB配置项系统模块环境信息
         //添加环境属性、模块关系
@@ -121,8 +126,8 @@ public class SaveDeployAppConfigEnvDBConfigApi extends PrivateApiComponentBase {
         CiEntityVo DBCiEntityInfo = ciEntityService.getCiEntityById(DBCiEntityVo.getCiId(), DBCiEntityVo.getId());
         CiEntityTransactionVo ciEntityTransactionVo = new CiEntityTransactionVo(DBCiEntityInfo);
         paramObj.put("ciId", DBCiEntityInfo.getCiId());
-        paramObj.put("needUpdateAttrList", new JSONArray(Arrays.asList("app_environment")));
-        paramObj.put("needUpdateRelList", new JSONArray(Arrays.asList("APPComponent")));
+        paramObj.put("needUpdateAttrList", new JSONArray(Collections.singletonList("app_environment")));
+        paramObj.put("needUpdateRelList", new JSONArray(Collections.singletonList("APPComponent")));
         ciEntityTransactionVo.setAttrEntityData(DBCiEntityInfo.getAttrEntityData());
         deployAppConfigService.addAttrEntityDataAndRelEntityData(ciEntityTransactionVo, paramObj);
 
@@ -136,11 +141,11 @@ public class SaveDeployAppConfigEnvDBConfigApi extends PrivateApiComponentBase {
         return null;
     }
 
-    public IValid name() {
+    public IValid dbSchema() {
         return value -> {
             DeployAppConfigEnvDBConfigVo configVo = JSON.toJavaObject(value, DeployAppConfigEnvDBConfigVo.class);
-            if (deployAppConfigMapper.checkDeployAppConfigEnvDBAliasNameIsRepeat(configVo) > 0) {
-                return new FieldValidResultVo(new DeployAppConfigEnvDBAliasNameRepeatException(configVo.getDbAlias()));
+            if (deployAppConfigMapper.checkDeployAppConfigEnvDBSchemaIsRepeat(configVo) > 0) {
+                return new FieldValidResultVo(new DeployAppConfigEnvDBSchemaNameRepeatException(configVo.getDbSchema()));
             }
             return new FieldValidResultVo();
         };
