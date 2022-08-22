@@ -468,6 +468,21 @@
         where dace.app_system_id = #{appSystemId}
     </select>
 
+    <select id="getDeployAppModuleEnvListByAppSystemIdAndModuleId"
+            resultType="codedriver.framework.cmdb.dto.resourcecenter.entity.AppEnvironmentVo" useCache="false">
+        SELECT a.`env_id`        AS envId,
+               a.`env_name`      AS envName
+        FROM ${schemaName}.`scence_appinstance_env_appmodule_appsystem` a
+        where a.`env_id` is not null
+          and a.`app_system_id` = #{systemId} and a.`app_module_id` = #{moduleId}
+        UNION
+        SELECT cc.id              AS envId,
+               cc.name            AS envName
+        FROM deploy_app_config_env dace
+                 JOIN cmdb_cientity cc ON cc.id = dace.env_id
+        where dace.app_system_id = #{systemId} and dace.app_module_id = #{moduleId}
+    </select>
+
     <select id="getDeployAppHasNotEnvListByAppSystemIdAndModuleIdList"
             resultType="codedriver.framework.deploy.dto.app.DeployAppEnvironmentVo" useCache="false">
         SELECT a.`id`,
