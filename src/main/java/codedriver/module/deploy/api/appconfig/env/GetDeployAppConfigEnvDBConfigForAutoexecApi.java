@@ -7,7 +7,6 @@ import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.crossover.CrossoverServiceFactory;
 import codedriver.framework.deploy.auth.DEPLOY_BASE;
-import codedriver.framework.deploy.dto.app.DeployAppConfigEnvDBConfigAccountVo;
 import codedriver.framework.deploy.dto.app.DeployAppConfigEnvDBConfigVo;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
@@ -19,9 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -76,53 +73,52 @@ public class GetDeployAppConfigEnvDBConfigForAutoexecApi extends PrivateApiCompo
         if (CollectionUtils.isEmpty(configVoList)) {
             return null;
         }
-        Map<Long, DeployAppConfigEnvDBConfigVo> configVoMap = configVoList.stream().collect(Collectors.toMap(DeployAppConfigEnvDBConfigVo::getDbResourceId, e -> e));
-
+        Set<Long> dbResourceIdSet = configVoList.stream().map(DeployAppConfigEnvDBConfigVo::getDbResourceId).collect(Collectors.toSet());
         //获取db属性
-        List<Long> allDBResourceIdList = new ArrayList<>(configVoMap.keySet());
         ICiEntityCrossoverService ciEntityCrossoverService = CrossoverServiceFactory.getApi(ICiEntityCrossoverService.class);
         CiEntityVo paramCiEntityVo = new CiEntityVo();
-        paramCiEntityVo.setIdList(allDBResourceIdList);
+        paramCiEntityVo.setIdList(new ArrayList<>(dbResourceIdSet));
         List<CiEntityVo> allDBResourceInfoList = ciEntityCrossoverService.getCiEntityByIdList(paramCiEntityVo);
+        if (CollectionUtils.isEmpty(allDBResourceInfoList)) {
+            return null;
+        }
 
-        for (CiEntityVo ciEntityVo : allDBResourceInfoList) {
-            DeployAppConfigEnvDBConfigVo dbConfigVo = configVoMap.get(ciEntityVo.getId());
-            //db的账号列表
-            List<DeployAppConfigEnvDBConfigAccountVo> accountList = dbConfigVo.getAccountList();
-            if (CollectionUtils.isEmpty(accountList)) {
+        Map<Long, CiEntityVo> allDBciEntityVoMap = allDBResourceInfoList.stream().collect(Collectors.toMap(CiEntityVo::getId, e -> e));
+
+        for (DeployAppConfigEnvDBConfigVo dbConfigVo : configVoList) {
+            CiEntityVo dbCiEntityVo = allDBciEntityVoMap.get(dbConfigVo.getDbResourceId());
+            if (dbCiEntityVo == null) {
                 continue;
             }
-            for (DeployAppConfigEnvDBConfigAccountVo accountVo : accountList) {
-                JSONObject dbResourceObj = new JSONObject();
-                JSONObject nodeObj = new JSONObject();
+            JSONObject nodeObj = new JSONObject();
+            JSONObject dbResourceObj = new JSONObject();
 
-                nodeObj.put("resourceId", ciEntityVo.getId());
-                nodeObj.put("nodeName", ciEntityVo.getName());
-                nodeObj.put("nodeType", ciEntityVo.getCiName());
-                nodeObj.put("username", accountVo.getAccount());
-                nodeObj.put("password", accountVo.getPasswordCipher());
-                List<AttrEntityVo> attrEntityList = ciEntityVo.getAttrEntityList();
-                for (AttrEntityVo attrEntityVo : attrEntityList) {
-                    if (StringUtils.equals("ip", attrEntityVo.getAttrName())) {
-                        nodeObj.put("host", attrEntityVo.getValueList().get(0));
-                        continue;
-                    }
-                    if (StringUtils.equals("name", attrEntityVo.getAttrName())) {
-                        nodeObj.put("name", attrEntityVo.getValueList().get(0));
-                        continue;
-                    }
-                    if (StringUtils.equals("service_addr", attrEntityVo.getAttrName())) {
-                        nodeObj.put("serviceAddr", attrEntityVo.getValueList().get(0));
-                        continue;
-                    }
-                    if (StringUtils.equals("port", attrEntityVo.getAttrName())) {
-                        nodeObj.put("port", attrEntityVo.getValueList().get(0));
-                        continue;
-                    }
-                    dbResourceObj.put("node", nodeObj);
-                    dbResourceObj.put("args", dbConfigVo.getConfig());
-                    returnDBUserObject.put(dbConfigVo.getDbSchema() + "." + accountVo.getAccountAlias(), dbResourceObj);
+            nodeObj.put("resourceId", dbCiEntityVo.getId());
+            nodeObj.put("nodeName", dbCiEntityVo.getName());
+            nodeObj.put("nodeType", dbCiEntityVo.getCiName());
+            nodeObj.put("username", dbConfigVo.getAccount());
+            nodeObj.put("password", dbConfigVo.getPasswordCipher());
+            List<AttrEntityVo> attrEntityList = dbCiEntityVo.getAttrEntityList();
+            for (AttrEntityVo attrEntityVo : attrEntityList) {
+                if (StringUtils.equals("ip", attrEntityVo.getAttrName())) {
+                    nodeObj.put("host", attrEntityVo.getValueList().get(0));
+                    continue;
                 }
+                if (StringUtils.equals("name", attrEntityVo.getAttrName())) {
+                    nodeObj.put("name", attrEntityVo.getValueList().get(0));
+                    continue;
+                }
+                if (StringUtils.equals("service_addr", attrEntityVo.getAttrName())) {
+                    nodeObj.put("serviceAddr", attrEntityVo.getValueList().get(0));
+                    continue;
+                }
+                if (StringUtils.equals("port", attrEntityVo.getAttrName())) {
+                    nodeObj.put("port", attrEntityVo.getValueList().get(0));
+                    continue;
+                }
+                dbResourceObj.put("node", nodeObj);
+                dbResourceObj.put("args", dbConfigVo.getConfig());
+                returnDBUserObject.put(dbConfigVo.getDbSchema(), dbResourceObj);
             }
         }
         return returnDBUserObject;
