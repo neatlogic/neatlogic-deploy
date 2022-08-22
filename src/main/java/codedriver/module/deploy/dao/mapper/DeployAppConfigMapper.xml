@@ -917,6 +917,7 @@
         <result column="configStr" property="configStr"/>
         <result column="accountId" property="accountId"/>
         <result column="account" property="account"/>
+        <result column="passwordCipher" property="passwordCipher"/>
     </resultMap>
 
     <select id="getAppConfigEnvDBConfigById"
