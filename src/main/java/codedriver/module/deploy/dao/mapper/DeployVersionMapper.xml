@@ -373,6 +373,31 @@
           and dv.app_module_id = #{appModuleId}
     </select>
 
+    <select id="getDeployVersionBySystemIdAndModuleIdAndVersionId"
+            resultType="codedriver.framework.deploy.dto.version.DeployVersionVo">
+        select dv.id,
+               dv.version,
+               dv.app_system_id as appSystemId,
+               dv.app_module_id as appModuleId,
+               dv.is_freeze     as isFreeze,
+               dv.repo_type     as repoType,
+               dv.repo          as repo,
+               dv.trunk         as trunk,
+               dv.branch        as branch,
+               dv.tag           as tag,
+               dv.tags_dir      as tagsDir,
+               dv.start_rev     as startRev,
+               dv.end_rev       as endRev,
+               dv.fcu,
+               dv.fcd,
+               dv.lcu,
+               dv.lcd
+        from deploy_version dv
+        where dv.id = #{versionId}
+          and dv.app_system_id = #{appSystemId}
+          and dv.app_module_id = #{appModuleId}
+    </select>
+
     <select id="getDeployVersionBuildNoListCount" resultType="java.lang.Integer">
         SELECT count(dvb.build_no)
         <include refid="searchDeployVersionBuildNo"></include>

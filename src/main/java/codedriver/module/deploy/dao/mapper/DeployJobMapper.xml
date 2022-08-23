@@ -9,17 +9,18 @@
 
     <select id="getDeployJobByJobId" resultType="codedriver.framework.deploy.dto.job.DeployJobVo">
         select a.id,
-               app_system_id as appSystemId,
+               a.app_system_id as appSystemId,
                b.name        as appSystemName,
-               app_module_id as appModuleId,
+               a.app_module_id as appModuleId,
                c.name        as appModuleName,
-               env_id        as envId,
+               a.env_id        as envId,
                d.name        as envName,
                a.scenario_id as scenarioId,
                e.name        as scenarioName,
-               version,
-               build_no      as buildNo,
-               runner_map_id as runnerMapId
+               a.version,
+               a.version_id    as versionId,
+               a.build_no      as buildNo,
+               a.runner_map_id as runnerMapId
         from deploy_job a
                  left join cmdb_cientity b ON a.app_system_id = b.id
                  left join cmdb_cientity c ON a.app_module_id = c.id
@@ -462,7 +463,8 @@
     </select>
 
     <insert id="insertDeployJob">
-        insert into deploy_job (`id`, `app_system_id`, `app_module_id`, `env_id`, `version`, `runner_map_id`,
+        insert into deploy_job (`id`, `app_system_id`, `app_module_id`, `env_id`, `version`, `version_id`,
+                                `runner_map_id`,
                                 `config_hash`,
                                 `scenario_id`,
                                 `build_no`)
@@ -471,6 +473,7 @@
                 #{appModuleId},
                 #{envId},
                 #{version},
+                #{versionId},
                 #{runnerMapId},
                 #{configHash},
                 #{scenarioId},
