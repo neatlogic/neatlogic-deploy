@@ -62,7 +62,7 @@ public class DeployJobSourceHandler extends AutoexecJobSourceHandlerBase {
                 result.put("envAbbrName",env.getAbbrName());
                 result.put("envName",env.getName());
             }
-            DeployVersionVo versionVo = deployVersionMapper.getDeployVersionBySystemIdAndModuleIdAndVersion(deployJobVo.getAppSystemId(),deployJobVo.getAppModuleId(),deployJobVo.getVersion());
+            DeployVersionVo versionVo = deployVersionMapper.getDeployVersionBySystemIdAndModuleIdAndVersionId(deployJobVo.getAppSystemId(),deployJobVo.getAppModuleId(),deployJobVo.getVersionId());
             if(versionVo != null) {
                 result.put("version", versionVo);
                 result.put("buildNo", deployVersionMapper.getDeployVersionBuildNoByVersionIdAndBuildNo(versionVo.getId(),deployJobVo.getBuildNo()));

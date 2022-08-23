@@ -347,6 +347,7 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
             if (deployVersionVo == null) {
                 throw new DeployVersionNotFoundException(deployJobVo.getVersion());
             }
+            deployJobVo.setVersionId(deployVersionVo.getId());
             //获取最新buildNo
             if (buildNo == -1) {
                 Integer maxBuildNo = deployVersionMapper.getDeployVersionMaxBuildNoByVersionIdLock(deployVersionVo.getId());

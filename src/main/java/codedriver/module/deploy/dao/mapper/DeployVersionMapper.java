@@ -43,6 +43,8 @@ public interface DeployVersionMapper {
 
     DeployVersionVo getDeployVersionBySystemIdAndModuleIdAndVersion(@Param("appSystemId") Long systemId, @Param("appModuleId") Long moduleId, @Param("version") String version);
 
+    DeployVersionVo getDeployVersionBySystemIdAndModuleIdAndVersionId(@Param("appSystemId") Long systemId, @Param("appModuleId") Long moduleId, @Param("versionId") Long versionId);
+
     DeployVersionBuildNoVo getDeployVersionBuildNoByVersionIdAndBuildNo(@Param("versionId") Long versionId, @Param("buildNo") Integer buildNo);
 
     DeployVersionEnvVo getDeployVersionEnvByVersionIdAndEnvId(@Param("versionId") Long versionId, @Param("envId") Long envId);
