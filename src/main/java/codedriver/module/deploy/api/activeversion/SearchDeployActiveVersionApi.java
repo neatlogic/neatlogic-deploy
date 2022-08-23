@@ -78,6 +78,7 @@ public class SearchDeployActiveVersionApi extends PrivateApiComponentBase {
         DeployResourceSearchVo searchVo = paramObj.toJavaObject(DeployResourceSearchVo.class);
         // 按系统分页
         Integer systemIdListCount = deployAppConfigMapper.getAppSystemIdListCount(searchVo);
+        searchVo.setRowNum(systemIdListCount);
         List<DeploySystemActiveVersionVo> result = new ArrayList<>();
         if (systemIdListCount > 0) {
             List<DeployAppSystemVo> systemList = deployAppConfigMapper.searchAppSystemList(searchVo);
