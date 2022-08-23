@@ -7,18 +7,16 @@ package codedriver.module.deploy.api.appconfig.env;
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.deploy.auth.DEPLOY_BASE;
-import codedriver.framework.deploy.dto.app.DeployAppConfigEnvDBConfigVo;
-import codedriver.framework.deploy.exception.DeployAppConfigDBSchemaActionIrregularException;
+import codedriver.framework.deploy.dto.app.DeployAppEnvAutoConfigKeyValueVo;
+import codedriver.framework.deploy.dto.app.DeployAppEnvAutoConfigVo;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
-import codedriver.framework.util.RegexUtils;
 import codedriver.module.deploy.dao.mapper.DeployAppConfigMapper;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.nacos.common.utils.CollectionUtils;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
@@ -29,7 +27,6 @@ import java.util.List;
  * @date 2022/8/22 16:38
  */
 @Service
-@Transactional
 @AuthAction(action = DEPLOY_BASE.class)
 @OperationType(type = OperationTypeEnum.OPERATE)
 public class SaveDeployAppConfigAutoConfigForAutoexecApi extends PrivateApiComponentBase {
@@ -40,6 +37,16 @@ public class SaveDeployAppConfigAutoConfigForAutoexecApi extends PrivateApiCompo
     @Override
     public String getName() {
         return "保存某个环境的AutoConfig配置的key";
+    }
+
+    @Override
+    public String getConfig() {
+        return null;
+    }
+
+    @Override
+    public String getToken() {
+        return "deploy/app/config/env/db/config/autoCfgKeys/save/forautoexec";
     }
 
     @Input({
@@ -59,37 +66,17 @@ public class SaveDeployAppConfigAutoConfigForAutoexecApi extends PrivateApiCompo
     })
     @Description(desc = "发布作业专用-保存某个环境的AutoConfig配置的key")
     @Override
-
-    public String getConfig() {
-        return null;
-    }
-
-    @Override
-    public String getToken() {
-        return "deploy/app/config/env/db/config/autoCfgKeys/save/forautoexec";
-    }
-
-    @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         JSONArray autoCfgKeyArray = paramObj.getJSONArray("autoCfgKeys");
         if (CollectionUtils.isEmpty(autoCfgKeyArray)) {
             return null;
         }
         List<String> autoCfgKeyList = autoCfgKeyArray.toJavaList(String.class);
-        List<String> dbSchemaIrregularList = new ArrayList<>();
-        List<DeployAppConfigEnvDBConfigVo> insertDbConfigVoList = new ArrayList<>();
+        List<DeployAppEnvAutoConfigKeyValueVo> insertAutoConfigKeyValueVoList = new ArrayList<>();
         for (String autoCfgKey : autoCfgKeyList) {
-            if (!RegexUtils.isMatch(autoCfgKey, RegexUtils.DB_SCHEMA)) {
-                dbSchemaIrregularList.add(autoCfgKey);
-            } else {
-                insertDbConfigVoList.add(new DeployAppConfigEnvDBConfigVo(paramObj.getLong("sysId"), paramObj.getLong("moduleId"), paramObj.getLong("envId"), autoCfgKey));
-            }
+            insertAutoConfigKeyValueVoList.add(new DeployAppEnvAutoConfigKeyValueVo(autoCfgKey));
         }
-        if (CollectionUtils.isNotEmpty(dbSchemaIrregularList)) {
-            throw new DeployAppConfigDBSchemaActionIrregularException(dbSchemaIrregularList);
-        }
-
-        deployAppConfigMapper.insertBatchAppConfigEnvDBConfig(insertDbConfigVoList);
+        deployAppConfigMapper.insertAppEnvAutoConfigNew(new DeployAppEnvAutoConfigVo(paramObj.getLong("sysId"), paramObj.getLong("moduleId"), paramObj.getLong("envId"), insertAutoConfigKeyValueVoList));
         return null;
     }
 }

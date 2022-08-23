@@ -42,6 +42,16 @@ public class SaveDeployAppConfigDbSchemaForAutoexecApi extends PrivateApiCompone
         return "保存某个环境的DBConfig配置的schema";
     }
 
+    @Override
+    public String getConfig() {
+        return null;
+    }
+
+    @Override
+    public String getToken() {
+        return "deploy/app/config/env/db/config/schemas/save/forautoexec";
+    }
+
     @Input({
             @Param(name = "runnerId", type = ApiParamType.LONG, desc = "Runner的ID"),
             @Param(name = "runnerGroup", type = ApiParamType.JSONOBJECT, desc = "runner组信息"),
@@ -58,17 +68,6 @@ public class SaveDeployAppConfigDbSchemaForAutoexecApi extends PrivateApiCompone
     @Output({
     })
     @Description(desc = "发布作业专用-保存某个环境的DBConfig配置的schema")
-    @Override
-
-    public String getConfig() {
-        return null;
-    }
-
-    @Override
-    public String getToken() {
-        return "deploy/app/config/env/db/config/schemas/save/forautoexec";
-    }
-
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         JSONArray dbSchemaArray = paramObj.getJSONArray("dbSchemas");
