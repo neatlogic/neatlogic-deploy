@@ -32,14 +32,14 @@ import java.util.List;
 @Transactional
 @AuthAction(action = DEPLOY_BASE.class)
 @OperationType(type = OperationTypeEnum.OPERATE)
-public class SaveDeployAppConfigDbSchemaForAutoexecApi extends PrivateApiComponentBase {
+public class SaveDeployAppConfigAutoConfigForAutoexecApi extends PrivateApiComponentBase {
 
     @Resource
     DeployAppConfigMapper deployAppConfigMapper;
 
     @Override
     public String getName() {
-        return "保存某个环境的DBConfig配置的schema";
+        return "保存某个环境的AutoConfig配置的key";
     }
 
     @Input({
@@ -53,11 +53,11 @@ public class SaveDeployAppConfigDbSchemaForAutoexecApi extends PrivateApiCompone
             @Param(name = "sysName", type = ApiParamType.STRING, desc = "应用名"),
             @Param(name = "moduleName", type = ApiParamType.STRING, desc = "模块名"),
             @Param(name = "envName", type = ApiParamType.STRING, desc = "环境名"),
-            @Param(name = "dbSchemas", type = ApiParamType.JSONARRAY, desc = "数据库schema列表（schema格式为：dbname.username）"),
+            @Param(name = "autoCfgKeys", type = ApiParamType.JSONARRAY, desc = "key列表"),
     })
     @Output({
     })
-    @Description(desc = "发布作业专用-保存某个环境的DBConfig配置的schema")
+    @Description(desc = "发布作业专用-保存某个环境的AutoConfig配置的key")
     @Override
 
     public String getConfig() {
@@ -66,23 +66,23 @@ public class SaveDeployAppConfigDbSchemaForAutoexecApi extends PrivateApiCompone
 
     @Override
     public String getToken() {
-        return "deploy/app/config/env/db/config/schemas/save/forautoexec";
+        return "deploy/app/config/env/db/config/autoCfgKeys/save/forautoexec";
     }
 
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
-        JSONArray dbSchemaArray = paramObj.getJSONArray("dbSchemas");
-        if (CollectionUtils.isEmpty(dbSchemaArray)) {
+        JSONArray autoCfgKeyArray = paramObj.getJSONArray("autoCfgKeys");
+        if (CollectionUtils.isEmpty(autoCfgKeyArray)) {
             return null;
         }
-        List<String> dbSchemaList = dbSchemaArray.toJavaList(String.class);
+        List<String> autoCfgKeyList = autoCfgKeyArray.toJavaList(String.class);
         List<String> dbSchemaIrregularList = new ArrayList<>();
         List<DeployAppConfigEnvDBConfigVo> insertDbConfigVoList = new ArrayList<>();
-        for (String dbSchema : dbSchemaList) {
-            if (!RegexUtils.isMatch(dbSchema, RegexUtils.DB_SCHEMA)) {
-                dbSchemaIrregularList.add(dbSchema);
+        for (String autoCfgKey : autoCfgKeyList) {
+            if (!RegexUtils.isMatch(autoCfgKey, RegexUtils.DB_SCHEMA)) {
+                dbSchemaIrregularList.add(autoCfgKey);
             } else {
-                insertDbConfigVoList.add(new DeployAppConfigEnvDBConfigVo(paramObj.getLong("sysId"), paramObj.getLong("moduleId"), paramObj.getLong("envId"), dbSchema));
+                insertDbConfigVoList.add(new DeployAppConfigEnvDBConfigVo(paramObj.getLong("sysId"), paramObj.getLong("moduleId"), paramObj.getLong("envId"), autoCfgKey));
             }
         }
         if (CollectionUtils.isNotEmpty(dbSchemaIrregularList)) {
