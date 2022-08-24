@@ -1,6 +1,6 @@
 package codedriver.module.deploy.service;
 
-import codedriver.framework.autoexec.exception.AutoexecJobRunnerGroupRunnerNotFoundException;
+import codedriver.framework.exception.runner.RunnerGroupRunnerNotFoundException;
 import codedriver.framework.cmdb.crossover.IAttrCrossoverMapper;
 import codedriver.framework.cmdb.crossover.ICiEntityCrossoverMapper;
 import codedriver.framework.cmdb.crossover.IRelCrossoverMapper;
@@ -86,7 +86,7 @@ public class DeployAppConfigServiceImpl implements DeployAppConfigService {
         }
         List<RunnerMapVo> runnerMapList = runnerGroupVo.getRunnerMapList();
         if (com.alibaba.nacos.common.utils.CollectionUtils.isEmpty(runnerMapList)) {
-            throw new AutoexecJobRunnerGroupRunnerNotFoundException(runnerGroupVo.getName() + ":" + runnerGroupVo.getId());
+            throw new RunnerGroupRunnerNotFoundException(runnerGroupVo.getName() + ":" + runnerGroupVo.getId());
         }
         return runnerMapList;
     }
