@@ -1182,6 +1182,7 @@
         where `app_system_id` = #{systemId}
           and `app_module_id` = #{moduleId}
           and `env_id` = #{envId}
+          and `value` IS NOT NULL
     </select>
 
     <select id="getDeployAppAuthorityActionList"
@@ -1322,8 +1323,19 @@
             #{appSystemId},#{appModuleId},#{envId},#{instanceId},#{keyValue.key},#{keyValue.value},#{lcd},#{lcu}
         </foreach>
         ON DUPLICATE KEY UPDATE `key` = VALUES(`key`),`value` = VALUES(`value`),`lcd`= VALUES(`lcd`),`lcu` =
-        VALUES(`lcu`);
+        VALUES(`lcu`)
     </insert>
+
+    <insert id="insertAppEnvAutoConfigNew">
+        INSERT INTO deploy_app_env_auto_config
+        (`app_system_id`,`app_module_id`,`env_id`,`instance_id`,`key`,`value`,`lcd`,`lcu`)
+        VALUES
+        <foreach collection="keyValueList" item="keyValue" separator="),(" open="(" close=")">
+            #{appSystemId},#{appModuleId},#{envId},#{instanceId},#{keyValue.key},#{keyValue.value},now(3),#{lcu}
+        </foreach>
+        ON DUPLICATE KEY UPDATE `key` = VALUES(`key`)
+    </insert>
+
     <insert id="insertAppConfig" parameterType="codedriver.framework.deploy.dto.app.DeployAppConfigVo">
         INSERT INTO `deploy_app_config` (`id`,
                                          `app_system_id`,
@@ -1400,6 +1412,25 @@
                 #{accountId},
                 #{configStr})
 
+    </insert>
+
+    <insert id="insertBatchAppConfigEnvDBConfig">
+        insert INTO
+        deploy_app_config_env_db (id, db_schema, app_system_id, app_module_id, env_id)
+        VALUES
+        <foreach collection="dbConfigVoList" item="dbConfigVo" separator=",">
+            (
+            #{dbConfigVo.id},
+            #{dbConfigVo.dbSchema},
+            #{dbConfigVo.appSystemId},
+            #{dbConfigVo.appModuleId},
+            #{dbConfigVo.envId}
+            )
+        </foreach>
+        ON DUPLICATE KEY UPDATE `db_schema` = VALUES ( db_schema ),
+        `app_system_id` = VALUES ( app_system_id ),
+        `app_module_id` = VALUES ( app_module_id ),
+        `env_id` = VALUES ( env_id )
     </insert>
 
     <update id="updateAppConfig" parameterType="codedriver.framework.deploy.dto.app.DeployAppConfigVo">

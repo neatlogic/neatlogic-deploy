@@ -99,6 +99,13 @@ public interface DeployAppConfigMapper {
 
     Integer insertAppEnvAutoConfig(DeployAppEnvAutoConfigVo appEnvAutoConfigVo);
 
+    /**
+     * 插入autoCfg时 DUPLICATE 只update key
+     *
+     * @param appEnvAutoConfigVo autoConfigVo
+     */
+    void insertAppEnvAutoConfigNew(DeployAppEnvAutoConfigVo appEnvAutoConfigVo);
+
     Integer insertAppConfig(DeployAppConfigVo deployAppConfigVo);
 
     Integer insertAppConfigDraft(DeployAppConfigVo deployAppConfigDraftVo);
@@ -108,6 +115,8 @@ public interface DeployAppConfigMapper {
     void insertAppConfigSystemFavorite(@Param("appSystemId") Long appSystemId, @Param("userUuid") String userUuid);
 
     void insertAppConfigEnvDBConfig(DeployAppConfigEnvDBConfigVo dbConfigVo);
+
+    void insertBatchAppConfigEnvDBConfig(@Param("dbConfigVoList") List<DeployAppConfigEnvDBConfigVo> dbConfigVoList);
 
     Integer updateAppConfig(DeployAppConfigVo deployAppConfigVo);
 

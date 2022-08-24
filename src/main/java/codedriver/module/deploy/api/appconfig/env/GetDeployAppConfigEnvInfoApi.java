@@ -127,7 +127,7 @@ public class GetDeployAppConfigEnvInfoApi extends PrivateApiComponentBase {
             List<Long> needDeleteDbConfigIdList = new ArrayList<>();
             //删除不存在的db的配置
             for (DeployAppConfigEnvDBConfigVo dbConfigVo : dbSchemaConfigVoMap.values()) {
-                if (deleteDbIdList.contains(dbConfigVo.getDbResourceId())) {
+                if (dbConfigVo.getDbResourceId() != null && deleteDbIdList.contains(dbConfigVo.getDbResourceId())) {
                     needDeleteDbConfigIdList.add(dbConfigVo.getId());
                     needDeleteDbSchemaList.add(dbConfigVo.getDbSchema());
                 }
