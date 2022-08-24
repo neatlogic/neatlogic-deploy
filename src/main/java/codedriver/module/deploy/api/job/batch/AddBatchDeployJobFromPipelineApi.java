@@ -11,14 +11,10 @@ import codedriver.framework.auth.core.AuthActionChecker;
 import codedriver.framework.autoexec.constvalue.JobStatus;
 import codedriver.framework.autoexec.constvalue.JobTriggerType;
 import codedriver.framework.autoexec.constvalue.ReviewStatus;
-import codedriver.framework.autoexec.crossover.IAutoexecJobCrossoverService;
-import codedriver.framework.autoexec.dto.combop.AutoexecCombopVo;
 import codedriver.framework.common.constvalue.ApiParamType;
-import codedriver.framework.crossover.CrossoverServiceFactory;
 import codedriver.framework.deploy.auth.BATCHDEPLOY_MODIFY;
 import codedriver.framework.deploy.auth.BATCHDEPLOY_VERIFY;
 import codedriver.framework.deploy.constvalue.JobSource;
-import codedriver.framework.deploy.dto.app.DeployPipelineConfigVo;
 import codedriver.framework.deploy.dto.job.DeployJobAuthVo;
 import codedriver.framework.deploy.dto.job.DeployJobVo;
 import codedriver.framework.deploy.dto.job.LaneGroupVo;
@@ -28,7 +24,6 @@ import codedriver.framework.deploy.dto.pipeline.PipelineJobTemplateVo;
 import codedriver.framework.deploy.dto.pipeline.PipelineLaneVo;
 import codedriver.framework.deploy.dto.pipeline.PipelineVo;
 import codedriver.framework.deploy.exception.DeployJobParamIrregularException;
-import codedriver.framework.deploy.exception.DeployPipelineConfigNotFoundException;
 import codedriver.framework.deploy.exception.DeployPipelineNotFoundException;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
@@ -36,7 +31,6 @@ import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.deploy.dao.mapper.DeployJobMapper;
 import codedriver.module.deploy.dao.mapper.PipelineMapper;
 import codedriver.module.deploy.service.DeployJobService;
-import codedriver.module.deploy.util.DeployPipelineConfigManager;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
@@ -132,18 +126,7 @@ public class AddBatchDeployJobFromPipelineApi extends PrivateApiComponentBase {
                                     jobVo.setScenarioId(jobTemplateVo.getScenarioId());
                                     jobVo.setEnvId(jobTemplateVo.getEnvId());
                                     jobVo.setVersionId(versionId);
-                                    DeployPipelineConfigVo deployPipelineConfigVo = DeployPipelineConfigManager.init(jobTemplateVo.getAppSystemId())
-                                            .withAppModuleId(jobTemplateVo.getAppModuleId())
-                                            .withEnvId(jobTemplateVo.getEnvId())
-                                            .getConfig();
-                                    if (deployPipelineConfigVo == null) {
-                                        throw new DeployPipelineConfigNotFoundException();
-                                    }
-                                    AutoexecCombopVo combopVo = new AutoexecCombopVo();
-                                    combopVo.setConfig(deployPipelineConfigVo.getAutoexecCombopConfigVo());
-                                    IAutoexecJobCrossoverService autoexecJobCrossoverService = CrossoverServiceFactory.getApi(IAutoexecJobCrossoverService.class);
-                                    autoexecJobCrossoverService.saveAutoexecCombopJob(combopVo, jobVo);
-
+                                    deployJobService.createJob(jobVo, true);
                                     deployJobMapper.insertGroupJob(groupVo.getId(), jobVo.getId(), k + 1);
                                     deployJobMapper.insertJobInvoke(deployJobVo.getId(), jobVo.getId(), JobSource.BATCHDEPLOY.getValue(), "deploy");
                                     jobVo.setParentId(deployJobVo.getId());

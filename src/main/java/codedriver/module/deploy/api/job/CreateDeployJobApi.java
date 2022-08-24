@@ -11,6 +11,8 @@ import codedriver.framework.batch.BatchRunner;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.dao.mapper.UserMapper;
 import codedriver.framework.deploy.auth.DEPLOY_BASE;
+import codedriver.framework.deploy.dto.job.DeployJobModuleVo;
+import codedriver.framework.deploy.dto.job.DeployJobVo;
 import codedriver.framework.deploy.exception.DeployVersionRedirectUrlCredentialUserNotFoundException;
 import codedriver.framework.dto.UserVo;
 import codedriver.framework.exception.core.ApiRuntimeException;
@@ -24,7 +26,6 @@ import codedriver.module.deploy.dao.mapper.DeployVersionMapper;
 import codedriver.module.deploy.service.DeployJobService;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -91,19 +92,16 @@ public class CreateDeployJobApi extends PrivateApiComponentBase {
             proxyToUrl(jsonObj);
         }
         JSONArray result = new JSONArray();
-        convertParam(jsonObj);
-        deployJobService.initDeployParam(jsonObj);
-        JSONArray moduleArray = jsonObj.getJSONArray("moduleList");
-        BatchRunner<Object> runner = new BatchRunner<>();
-        runner.execute(moduleArray, 3, module -> {
-            JSONObject moduleJson = JSONObject.parseObject(module.toString());
-            if (MapUtils.isNotEmpty(moduleJson)) {
+        DeployJobVo deployJobParam = JSONObject.toJavaObject(jsonObj, DeployJobVo.class);
+        deployJobService.initDeployParam(deployJobParam, false);
+        BatchRunner<DeployJobModuleVo> runner = new BatchRunner<>();
+        runner.execute(deployJobParam.getModuleList(), 3, module -> {
+            if (module != null) {
                 try {
-                    deployJobService.convertModule(jsonObj, moduleJson);
                     if (jsonObj.containsKey("triggerType")) {
-                        result.add(deployJobService.createScheduleJob(jsonObj));
+                        result.add(deployJobService.createScheduleJob(deployJobParam));
                     } else {
-                        result.add(deployJobService.createJob(jsonObj));
+                        result.add(deployJobService.createJob(deployJobParam));
                     }
                 } catch (Exception ex) {
                     logger.error(ex.getMessage(), ex);
@@ -122,17 +120,6 @@ public class CreateDeployJobApi extends PrivateApiComponentBase {
     @Override
     public String getToken() {
         return "/deploy/job/create";
-    }
-
-    /**
-     * 兼容波哥 autoexec 入参
-     *
-     * @param jsonObj 入参
-     */
-    private void convertParam(JSONObject jsonObj) {
-        if (jsonObj.containsKey("sysName")) {
-            jsonObj.put("appSystemName", jsonObj.getString("sysName"));
-        }
     }
 
     private void proxyToUrl(JSONObject jsonObj) throws Exception {

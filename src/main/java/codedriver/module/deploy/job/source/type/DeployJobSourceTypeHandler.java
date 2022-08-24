@@ -317,14 +317,12 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
     }
 
     @Override
-    public AutoexecCombopVo getAutoexecCombop(JSONObject paramJson) {
-        Long appSystemId = paramJson.getLong("appSystemId");
-        Long appModuleId = paramJson.getLong("appModuleId");
-        Long envId = paramJson.getLong("envId");
+    public AutoexecCombopVo getAutoexecCombop(AutoexecJobVo autoexecJobParam) {
+        DeployJobVo deployJobVo = (DeployJobVo) autoexecJobParam;
         //获取最终流水线
-        DeployPipelineConfigVo deployPipelineConfigVo = DeployPipelineConfigManager.init(appSystemId)
-                .withAppModuleId(appModuleId)
-                .withEnvId(envId)
+        DeployPipelineConfigVo deployPipelineConfigVo = DeployPipelineConfigManager.init(deployJobVo.getAppSystemId())
+                .withAppModuleId(deployJobVo.getAppModuleId())
+                .withEnvId(deployJobVo.getEnvId())
                 .getConfig();
         if (deployPipelineConfigVo == null) {
             throw new DeployPipelineConfigNotFoundException();
@@ -335,21 +333,18 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
     }
 
     @Override
-    public void updateInvokeJob(JSONObject paramJson, AutoexecJobVo jobVo) {
-        DeployJobVo deployJobVo = new DeployJobVo(paramJson);
-        deployJobVo.setId(jobVo.getId());
-        deployJobVo.setConfigHash(jobVo.getConfigHash());
+    public void updateInvokeJob(AutoexecJobVo jobVo) {
+        DeployJobVo deployJobVo = (DeployJobVo)jobVo;
         deployJobMapper.insertIgnoreDeployJobContent(new DeployJobContentVo(jobVo.getConfigStr()));
-        Integer buildNo = paramJson.getInteger("buildNo");
         //如果buildNo是-1，表示新建buildNo
-        if (buildNo != null) {
+        if (deployJobVo.getBuildNo() != null) {
             DeployVersionVo deployVersionVo = deployVersionMapper.getVersionByAppSystemIdAndAppModuleIdAndVersion(deployJobVo.getAppSystemId(), deployJobVo.getAppModuleId(), deployJobVo.getVersion());
             if (deployVersionVo == null) {
                 throw new DeployVersionNotFoundException(deployJobVo.getVersion());
             }
             deployJobVo.setVersionId(deployVersionVo.getId());
             //获取最新buildNo
-            if (buildNo == -1) {
+            if (deployJobVo.getBuildNo() == -1) {
                 Integer maxBuildNo = deployVersionMapper.getDeployVersionMaxBuildNoByVersionIdLock(deployVersionVo.getId());
                 if (maxBuildNo == null) {
                     deployJobVo.setBuildNo(1);
@@ -357,8 +352,8 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
                     deployJobVo.setBuildNo(maxBuildNo + 1);
                 }
                 deployVersionMapper.insertDeployVersionBuildNo(new DeployVersionBuildNoVo(deployVersionVo.getId(), deployJobVo.getBuildNo(), deployJobVo.getId(), BuildNoStatus.PENDING.getValue()));
-            } else if (buildNo > 0) {
-                deployJobVo.setBuildNo(buildNo);
+            } else if (deployJobVo.getBuildNo() > 0) {
+                deployJobVo.setBuildNo(deployJobVo.getBuildNo());
             }
             deployVersionMapper.insertDeployVersionBuildNo(new DeployVersionBuildNoVo(deployVersionVo.getId(), deployJobVo.getBuildNo(), deployJobVo.getId(), BuildNoStatus.PENDING.getValue()));
         }
