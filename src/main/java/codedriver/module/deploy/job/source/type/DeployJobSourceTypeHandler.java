@@ -18,8 +18,8 @@ import codedriver.framework.autoexec.dto.job.AutoexecJobPhaseVo;
 import codedriver.framework.autoexec.dto.job.AutoexecJobVo;
 import codedriver.framework.autoexec.dto.job.AutoexecSqlDetailVo;
 import codedriver.framework.autoexec.exception.AutoexecJobPhaseNotFoundException;
-import codedriver.framework.autoexec.exception.AutoexecJobRunnerGroupRunnerNotFoundException;
-import codedriver.framework.autoexec.exception.AutoexecJobRunnerHttpRequestException;
+import codedriver.framework.exception.runner.RunnerGroupRunnerNotFoundException;
+import codedriver.framework.exception.runner.RunnerHttpRequestException;
 import codedriver.framework.autoexec.job.source.type.AutoexecJobSourceTypeHandlerBase;
 import codedriver.framework.autoexec.util.AutoexecUtil;
 import codedriver.framework.cmdb.crossover.ICiEntityCrossoverMapper;
@@ -123,7 +123,7 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
         String result = HttpRequestUtil.download(url, "POST", UserContext.get().getResponse().getOutputStream()).setPayload(paramObj.toJSONString()).setAuthType(AuthenticateType.BUILDIN).sendRequest().getError();
 
         if (StringUtils.isNotBlank(result)) {
-            throw new AutoexecJobRunnerHttpRequestException(url + ":" + result);
+            throw new RunnerHttpRequestException(url + ":" + result);
         }
     }
 
@@ -301,10 +301,10 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
             }
             RunnerGroupVo groupVo = runnerMapper.getRunnerMapGroupById(appModuleRunnerGroup.getId());
             if (groupVo == null) {
-                throw new AutoexecJobRunnerGroupRunnerNotFoundException(appModuleRunnerGroup.getId().toString());
+                throw new RunnerGroupRunnerNotFoundException(appModuleRunnerGroup.getId().toString());
             }
             if (CollectionUtils.isEmpty(groupVo.getRunnerMapList())) {
-                throw new AutoexecJobRunnerGroupRunnerNotFoundException(groupVo.getName() + "(" + groupVo.getId() + ") ");
+                throw new RunnerGroupRunnerNotFoundException(groupVo.getName() + "(" + groupVo.getId() + ") ");
             }
             runnerMapVos = groupVo.getRunnerMapList();
         }
@@ -399,7 +399,7 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
             throw new DeployAppConfigModuleRunnerGroupNotFoundException(appSystem.getName() + "(" + deployJobVo.getAppSystemId() + ")", appModule.getName() + "(" + deployJobVo.getAppModuleId() + ")");
         }
         if (CollectionUtils.isEmpty(runnerGroupVo.getRunnerMapList())) {
-            throw new AutoexecJobRunnerGroupRunnerNotFoundException(runnerGroupVo.getName() + ":" + runnerGroupVo.getId());
+            throw new RunnerGroupRunnerNotFoundException(runnerGroupVo.getName() + ":" + runnerGroupVo.getId());
         }
         for (RunnerMapVo runnerMapVo : runnerGroupVo.getRunnerMapList()) {
             runnerMap.put(runnerMapVo.getRunnerMapId().toString(), runnerMapVo.getHost());

@@ -64,6 +64,8 @@ public class SaveBatchDeployJobApi extends PrivateApiComponentBase {
     @Input({@Param(name = "id", type = ApiParamType.LONG, desc = "作业id，不提供代表添加作业"),
             @Param(name = "name", type = ApiParamType.STRING, isRequired = true, desc = "作业名称"),
             @Param(name = "saveMode", type = ApiParamType.ENUM, rule = "save,commit", isRequired = true, desc = "暂存或提交"),
+            @Param(name = "triggerType", type = ApiParamType.ENUM, rule = "manual,auto", desc = "触发方式"),
+            @Param(name = "planStartTime", type = ApiParamType.LONG, desc = "计划开始时间"),
             @Param(name = "laneList", type = ApiParamType.JSONARRAY, desc = "通道列表"),
             @Param(name = "authList", type = ApiParamType.JSONARRAY, desc = "授权列表")})
     @Output({@Param(explode = DeployJobVo.class)})
