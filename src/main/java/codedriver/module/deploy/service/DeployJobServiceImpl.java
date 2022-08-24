@@ -158,7 +158,6 @@ public class DeployJobServiceImpl implements DeployJobService {
                 if (appModuleVo == null) {
                     throw new CiEntityNotFoundException(moduleVo.getAbbrName());
                 }
-                appModuleVo.setId(appModuleVo.getId());
             } else if (moduleVo.getId() != null) {
                 appModuleVo = iAppSystemMapper.getAppModuleById(moduleVo.getId(), TenantContext.get().getDataDbName());
                 if (appModuleVo == null) {
@@ -169,7 +168,7 @@ public class DeployJobServiceImpl implements DeployJobService {
             }
             deployJobParam.setAppModuleId(appModuleVo.getId());
             deployJobParam.setAppModuleName(appModuleVo.getName());
-            deployJobParam.setAppSystemAbbrName(appModuleVo.getAbbrName());
+            deployJobParam.setAppModuleAbbrName(appModuleVo.getAbbrName());
             deployJobParam.setBuildNo(moduleVo.getBuildNo());
             DeployVersionVo versionVo = null;
             if (StringUtils.isNotBlank(moduleVo.getVersion())) {
