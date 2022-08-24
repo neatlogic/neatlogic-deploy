@@ -1,6 +1,7 @@
 package codedriver.module.deploy.dao.mapper;
 
 import codedriver.framework.cmdb.dto.resourcecenter.ResourceVo;
+import codedriver.framework.cmdb.dto.resourcecenter.entity.AppEnvironmentVo;
 import codedriver.framework.deploy.dto.app.*;
 import codedriver.framework.dto.AuthenticationInfoVo;
 import codedriver.framework.dto.runner.RunnerGroupVo;
@@ -70,6 +71,8 @@ public interface DeployAppConfigMapper {
 
     List<Long> getAppModuleEnvAutoConfigInstanceIdList(@Param("searchVo") DeployAppEnvAutoConfigVo searchVo, @Param("schemaName") String schemaName);
 
+    List<Long> getHasConfigAuthoritySystemIdListByAppSystemIdList(List<Long> appSystemIdList);
+
     List<Long> getAppConfigEnvDBConfigResourceIdByAppSystemIdAndAppModuleIdAndEnvId(@Param("appSystemId") Long appSystemId, @Param("appModuleId") Long appModuleId, @Param("envId") Long envId);
 
     RunnerGroupVo getAppModuleRunnerGroupByAppSystemIdAndModuleId(@Param("appSystemId") Long appSystemId, @Param("appModuleId") Long appModuleId);
@@ -90,6 +93,8 @@ public interface DeployAppConfigMapper {
 
     List<DeployAppModuleEnvVo> getDeployAppModuleEnvListByAppSystemId(@Param("appSystemId") Long appSystemId, @Param("schemaName") String schemaName);
 
+    List<AppEnvironmentVo> getDeployAppModuleEnvListByAppSystemIdAndModuleId(@Param("systemId") Long systemId, @Param("moduleId") Long moduleId, @Param("schemaName") String schemaName);
+
     Integer insertAppConfigAuthority(DeployAppConfigAuthorityVo deployAppConfigAuthorityVo);
 
     Integer insertAppModuleRunnerGroup(@Param("appSystemId") Long appSystemId, @Param("appModuleId") Long appModuleId, @Param("runnerGroupId") Long runnerGroupId);
@@ -97,6 +102,13 @@ public interface DeployAppConfigMapper {
     void insertAppModuleRunnerGroupList(@Param("runnerGroupVoList") List<DeployAppModuleRunnerGroupVo> runnerGroupVoList);
 
     Integer insertAppEnvAutoConfig(DeployAppEnvAutoConfigVo appEnvAutoConfigVo);
+
+    /**
+     * 插入autoCfg时 DUPLICATE 只update key
+     *
+     * @param appEnvAutoConfigVo autoConfigVo
+     */
+    void insertAppEnvAutoConfigNew(DeployAppEnvAutoConfigVo appEnvAutoConfigVo);
 
     Integer insertAppConfig(DeployAppConfigVo deployAppConfigVo);
 
@@ -108,11 +120,13 @@ public interface DeployAppConfigMapper {
 
     void insertAppConfigEnvDBConfig(DeployAppConfigEnvDBConfigVo dbConfigVo);
 
-    void insertAppConfigEnvDBConfigAccount(@Param("dbConfigId") Long dbConfigId, @Param("accountList") List<DeployAppConfigEnvDBConfigAccountVo> accountList);
+    void insertBatchAppConfigEnvDBConfig(@Param("dbConfigVoList") List<DeployAppConfigEnvDBConfigVo> dbConfigVoList);
 
     Integer updateAppConfig(DeployAppConfigVo deployAppConfigVo);
 
     Integer updateAppConfigDraft(DeployAppConfigVo deployAppConfigDraftVo);
+
+    void updateDeployAppConfigEnvDBConfig(DeployAppConfigEnvDBConfigVo dbConfigVo);
 
     void deleteAppConfigAuthorityByAppIdAndAuthUuidListAndLcd(@Param("appSystemId") Long appSystemId, @Param("authUuidList") List<String> authUuidList, @Param("lcd") Date nowTime);
 
@@ -138,9 +152,7 @@ public interface DeployAppConfigMapper {
      */
     int getAppConfigEnvInstanceCount(DeployAppConfigInstanceVo searchVo);
 
-    int checkDeployAppConfigEnvDBAliasNameIsRepeat(DeployAppConfigEnvDBConfigVo configVo);
-
-    int checkDeployAppConfigEnvDBExistsById(Long id);
+    int checkDeployAppConfigEnvDBSchemaIsRepeat(DeployAppConfigEnvDBConfigVo configVo);
 
     int getAppModuleCountBySystemIdAndEnvId(@Param("appSystemId") Long appSystemId, @Param("envId") Long envId, @Param("schemaName") String schemaName);
 
@@ -191,12 +203,6 @@ public interface DeployAppConfigMapper {
     void deleteAppConfigAuthorityByAppSystemId(Long appSystemId);
 
     void deleteAppModuleRunnerGroup(DeployAppConfigVo configVo);
-
-    void deleteAppConfigDBConfigAccountByDBConfigId(Long id);
-
-    void deleteAppConfigDBConfigAccountByDBConfigIdList(List<Long> idList);
-
-    void deleteAppConfigDBConfigAccount(DeployAppConfigEnvDBConfigVo appConfigEnvDBConfigVo);
 
     void deleteAppConfigDBConfig(DeployAppConfigEnvDBConfigVo appConfigEnvDBConfigVo);
 

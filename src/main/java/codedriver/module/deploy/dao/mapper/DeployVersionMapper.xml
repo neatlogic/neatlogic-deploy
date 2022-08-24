@@ -131,6 +131,7 @@
         <result column="appSystemName" property="appSystemName"/>
         <result column="appModuleId" property="appModuleId"/>
         <result column="appModuleName" property="appModuleName"/>
+        <result column="description" property="description"/>
         <result column="isFreeze" property="isFreeze"/>
         <result column="compileSuccessCount" property="compileSuccessCount"/>
         <result column="compileFailCount" property="compileFailCount"/>
@@ -179,6 +180,7 @@
         cci.name as appSystemName,
         dv.app_module_id as appModuleId,
         cce.name as appModuleName,
+        dv.description as description,
         dv.is_freeze as isFreeze,
         dvb.build_no as buildNo,
         dvb.status as buildNoStatus,
@@ -367,6 +369,31 @@
                dv.lcd
         from deploy_version dv
         where dv.version = #{version}
+          and dv.app_system_id = #{appSystemId}
+          and dv.app_module_id = #{appModuleId}
+    </select>
+
+    <select id="getDeployVersionBySystemIdAndModuleIdAndVersionId"
+            resultType="codedriver.framework.deploy.dto.version.DeployVersionVo">
+        select dv.id,
+               dv.version,
+               dv.app_system_id as appSystemId,
+               dv.app_module_id as appModuleId,
+               dv.is_freeze     as isFreeze,
+               dv.repo_type     as repoType,
+               dv.repo          as repo,
+               dv.trunk         as trunk,
+               dv.branch        as branch,
+               dv.tag           as tag,
+               dv.tags_dir      as tagsDir,
+               dv.start_rev     as startRev,
+               dv.end_rev       as endRev,
+               dv.fcu,
+               dv.fcd,
+               dv.lcu,
+               dv.lcd
+        from deploy_version dv
+        where dv.id = #{versionId}
           and dv.app_system_id = #{appSystemId}
           and dv.app_module_id = #{appModuleId}
     </select>
@@ -679,6 +706,7 @@
             version,
             app_system_id,
             app_module_id,
+            description,
             is_freeze,
             <if test="repoType != null and repoType != ''">
                 repo_type,
@@ -726,6 +754,7 @@
             #{version},
             #{appSystemId},
             #{appModuleId},
+            #{description},
             #{isFreeze},
             <if test="repoType != null and repoType != ''">
                 #{repoType},

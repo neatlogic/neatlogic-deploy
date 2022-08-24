@@ -6,17 +6,15 @@
 package codedriver.module.deploy.api.pipeline;
 
 import codedriver.framework.auth.core.AuthAction;
-import codedriver.framework.autoexec.dto.scenario.AutoexecScenarioVo;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.deploy.auth.DEPLOY_BASE;
-import codedriver.framework.deploy.dto.pipeline.PipelineGroupVo;
-import codedriver.framework.deploy.dto.pipeline.PipelineJobTemplateVo;
-import codedriver.framework.deploy.dto.pipeline.PipelineLaneVo;
-import codedriver.framework.deploy.dto.pipeline.PipelineVo;
+import codedriver.framework.deploy.dto.app.DeployPipelineConfigVo;
+import codedriver.framework.deploy.dto.pipeline.*;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.deploy.dao.mapper.PipelineMapper;
+import codedriver.module.deploy.util.DeployPipelineConfigManager;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
@@ -69,7 +67,12 @@ public class ListPipelineAppSystemModuleEnvScenarioApi extends PrivateApiCompone
                 }
             }
         }
-        return jobTemplateList.get();
+        List<PipelineJobTemplateVo> returnList = jobTemplateList.get();
+        for (PipelineJobTemplateVo job : returnList) {
+            DeployPipelineConfigVo config = DeployPipelineConfigManager.init(job.getAppSystemId()).withAppModuleId(job.getAppModuleId()).withEnvId(job.getEnvId()).isHasBuildOrDeployTypeTool(true).getConfig();
+
+        }
+        return returnList;
     }
 
     static class JobTemplateList {
@@ -79,12 +82,14 @@ public class ListPipelineAppSystemModuleEnvScenarioApi extends PrivateApiCompone
             PipelineJobTemplateVo existsJobVo = null;
             Optional<PipelineJobTemplateVo> op = jobTemplateList.stream().filter(d -> d.getAppSystemId().equals(jobTemplateVo.getAppSystemId())
                     && d.getAppModuleId().equals(jobTemplateVo.getAppModuleId())
-                    && d.getEnvId().equals(jobTemplateVo.getEnvId())).findFirst();
+            ).findFirst();
             existsJobVo = op.orElse(jobTemplateVo);
-            AutoexecScenarioVo scenarioVo = new AutoexecScenarioVo();
-            scenarioVo.setId(jobTemplateVo.getScenarioId());
-            scenarioVo.setName(jobTemplateVo.getScenarioName());
-            existsJobVo.addScenario(scenarioVo);
+            PipelineEnvScenarioVo envScenarioVo = new PipelineEnvScenarioVo();
+            envScenarioVo.setEnvId(jobTemplateVo.getEnvId());
+            envScenarioVo.setEnvName(jobTemplateVo.getEnvName());
+            envScenarioVo.setScenarioId(jobTemplateVo.getScenarioId());
+            envScenarioVo.setScenarioName(jobTemplateVo.getScenarioName());
+            existsJobVo.addEnvScenario(envScenarioVo);
             if (!op.isPresent()) {
                 jobTemplateList.add(existsJobVo);
             }

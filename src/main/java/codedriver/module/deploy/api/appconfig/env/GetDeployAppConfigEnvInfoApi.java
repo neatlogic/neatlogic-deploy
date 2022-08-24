@@ -109,8 +109,8 @@ public class GetDeployAppConfigEnvInfoApi extends PrivateApiComponentBase {
         if (CollectionUtils.isEmpty(appConfigEnvDBConfigList)) {
             return envInfo;
         }
-        Map<Long, DeployAppConfigEnvDBConfigVo> dbConfigMap = appConfigEnvDBConfigList.stream().collect(Collectors.toMap(DeployAppConfigEnvDBConfigVo::getDbResourceId, e->e));
-        envInfo.put("DBConfigList", dbConfigMap.values());
+        Map<String, DeployAppConfigEnvDBConfigVo> dbSchemaConfigVoMap = appConfigEnvDBConfigList.stream().collect(Collectors.toMap(DeployAppConfigEnvDBConfigVo::getDbSchema, e -> e));
+        envInfo.put("DBConfigList", dbSchemaConfigVoMap.values());
 
         //1、根据resourceId 查询现在仍存在的 配置项
         List<Long> deleteDbIdList = appConfigEnvDBConfigList.stream().map(DeployAppConfigEnvDBConfigVo::getDbResourceId).collect(Collectors.toList());
@@ -123,14 +123,22 @@ public class GetDeployAppConfigEnvInfoApi extends PrivateApiComponentBase {
 
         //3、删除发布残留的DBResourceId
         if (CollectionUtils.isNotEmpty(deleteDbIdList)) {
+            List<String> needDeleteDbSchemaList = new ArrayList<>();
             List<Long> needDeleteDbConfigIdList = new ArrayList<>();
-            for (Long oldDbId : deleteDbIdList) {
-                needDeleteDbConfigIdList.add(dbConfigMap.get(oldDbId).getId());
-                dbConfigMap.remove(oldDbId);
+            //删除不存在的db的配置
+            for (DeployAppConfigEnvDBConfigVo dbConfigVo : dbSchemaConfigVoMap.values()) {
+                if (dbConfigVo.getDbResourceId() != null && deleteDbIdList.contains(dbConfigVo.getDbResourceId())) {
+                    needDeleteDbConfigIdList.add(dbConfigVo.getId());
+                    needDeleteDbSchemaList.add(dbConfigVo.getDbSchema());
+                }
             }
             if (CollectionUtils.isNotEmpty(needDeleteDbConfigIdList)) {
                 deployAppConfigMapper.deleteAppConfigDBConfigByIdList(needDeleteDbConfigIdList);
-                deployAppConfigMapper.deleteAppConfigDBConfigAccountByDBConfigIdList(needDeleteDbConfigIdList);
+            }
+            if (CollectionUtils.isNotEmpty(needDeleteDbSchemaList)) {
+                for (String schema : needDeleteDbSchemaList) {
+                    dbSchemaConfigVoMap.remove(schema);
+                }
             }
         }
         return envInfo;

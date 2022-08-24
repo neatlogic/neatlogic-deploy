@@ -15,11 +15,11 @@ import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.framework.util.TableResultUtil;
 import codedriver.module.deploy.dao.mapper.DeployAppConfigMapper;
 import com.alibaba.fastjson.JSONObject;
-import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author longrf
@@ -35,7 +35,7 @@ public class SearchDeployAppConfigEnvDatabaseApi extends PrivateApiComponentBase
 
     @Override
     public String getName() {
-        return "查询发布应用配置DB库下的无模块无环境、无模块同环境、同模块无环境、同模块同环境且发布没配置的数据库";
+        return "查询发布应用配置DB库下的无模块无环境、无模块同环境、同模块无环境、同模块同环境的数据库";
     }
 
     @Override
@@ -61,26 +61,17 @@ public class SearchDeployAppConfigEnvDatabaseApi extends PrivateApiComponentBase
             @Param(name = "tbodyList", type = ApiParamType.JSONARRAY, explode = ResourceVo[].class, desc = "数据库资产列表"),
             @Param(explode = BasePageVo.class)
     })
-    @Description(desc = "查询发布应用配置DB库下的无模块无环境、无模块同环境、同模块无环境、同模块同环境且发布没配置的数据库")
+    @Description(desc = "查询发布应用配置DB库下的无模块无环境、无模块同环境、同模块无环境、同模块同环境的数据库")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         DeployResourceSearchVo searchVo = paramObj.toJavaObject(DeployResourceSearchVo.class);
-
         List<ResourceVo> deployDBResourceVoList = new ArrayList<>();
-
-        if (CollectionUtils.isEmpty(paramObj.getJSONArray("defaultValue"))) {
-            //查询当前模块的环境且发布已配置的数据库
-            List<Long> DBResourceIdList = deployAppConfigMapper.getAppConfigEnvDBConfigResourceIdByAppSystemIdAndAppModuleIdAndEnvId(searchVo.getAppSystemId(), searchVo.getAppModuleId(), searchVo.getEnvId());
-            if (CollectionUtils.isNotEmpty(DBResourceIdList)) {
-                searchVo.setNotInIdList(DBResourceIdList);
-            }
-        }
         int count = deployAppConfigMapper.getAppConfigEnvDatabaseCount(searchVo, TenantContext.get().getDataDbName());
         if (count > 0) {
             searchVo.setRowNum(count);
             List<Long> databaseIdList = deployAppConfigMapper.getAppConfigEnvDatabaseResourceIdList(searchVo, TenantContext.get().getDataDbName());
             IResourceCrossoverMapper resourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
-            deployDBResourceVoList=resourceCrossoverMapper.getResourceListByIdList(databaseIdList, TenantContext.get().getDataDbName());
+            deployDBResourceVoList = resourceCrossoverMapper.getResourceListByIdList(databaseIdList, TenantContext.get().getDataDbName());
         }
         return TableResultUtil.getResult(deployDBResourceVoList, searchVo);
     }
