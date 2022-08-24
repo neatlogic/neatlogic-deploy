@@ -889,6 +889,22 @@
         FROM `deploy_app_config`
         WHERE `app_system_id` = #{appSystemId}
     </select>
+
+    <select id="getAppConfigListByAppSystemIdAndAppModuleId"
+            resultType="codedriver.framework.deploy.dto.app.DeployAppConfigVo" useCache="false">
+        SELECT `id`,
+               `app_system_id` as appSystemId,
+               `app_module_id` as appModuleId,
+               `env_id`        as envId,
+               `config`        as configStr,
+               `fcd`,
+               `fcu`,
+               `lcd`,
+               `lcu`
+        FROM `deploy_app_config`
+        WHERE `app_system_id` = #{appSystemId}
+        AND `app_module_id` = #{appSystemId}
+    </select>
     <select id="getAppConfigByAppSystemIdAndAppModuleIdAndEnvId"
             resultType="codedriver.framework.deploy.dto.app.DeployAppConfigVo" useCache="false">
         SELECT `app_system_id` as appSystemId,
@@ -1067,10 +1083,6 @@
         <result column="abbr_name" property="abbrName"/>
     </resultMap>
 
-    <select id="getAppModuleListByIdList" resultMap="AppModuleMap" useCache="false">
-        ${sql}
-    </select>
-
     <select id="getAppConfigAppSystemIdListByAppSystemIdList" parameterType="java.lang.Long"
             resultType="java.lang.Long" useCache="false">
         SELECT
@@ -1128,6 +1140,16 @@
             WHERE dace.app_system_id = #{appSystemId}
               AND dace.env_id = #{envId}
         )
+    </select>
+
+    <select id="getDeployHasNotConfigAppModuleListByAppSystemId"
+            resultType="codedriver.framework.deploy.dto.app.DeployAppModuleVo" useCache="false">
+        SELECT saa.app_module_id        as id,
+               saa.app_module_name      as name,
+               saa.app_module_abbr_name as abbrName
+        FROM ${schemaName}.scence_appsystem_appmodule saa
+                 join deploy_app_config dac on dac.app_system_id = saa.id and dac.app_module_id = saa.app_module_id
+        WHERE saa.id = #{appSystemId}
     </select>
 
     <select id="getAppModuleCountBySystemIdAndEnvId" resultType="java.lang.Integer" useCache="false">

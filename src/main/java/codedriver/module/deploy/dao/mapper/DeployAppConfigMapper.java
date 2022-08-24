@@ -51,6 +51,8 @@ public interface DeployAppConfigMapper {
 
     List<DeployAppConfigVo> getAppConfigListByAppSystemId(Long appSystemId);
 
+    List<DeployAppConfigVo> getAppConfigListByAppSystemIdAndAppModuleId(@Param("appSystemId") Long appSystemId, @Param("appModuleId") Long appModuleId);
+
     DeployAppConfigVo getAppConfigDraft(DeployAppConfigVo deployAppConfigDraftVo);
 
     List<DeployAppConfigInstanceVo> searchAppConfigEnvInstanceList(DeployAppConfigInstanceVo searchVo);
@@ -167,9 +169,9 @@ public interface DeployAppConfigMapper {
 
     List<ResourceVo> getAppConfigEnvDatabaseResourceListByIdList(String sql);
 
-    List<DeployAppModuleVo> getAppModuleListByIdList(String sql);
-
     List<DeployAppModuleVo> getAppModuleListBySystemIdAndEnvId(@Param("appSystemId") Long appSystemId, @Param("envId") Long envId, @Param("schemaName") String schemaName);
+
+    List<DeployAppModuleVo> getDeployHasNotConfigAppModuleListByAppSystemId(@Param("appSystemId") Long appSystemId, @Param("schemaName") String schemaName);
 
     List<DeployAppConfigAuthorityActionVo> getDeployAppAuthorityActionList(DeployAppAuthCheckVo deployAppAuthCheckVo);
 
