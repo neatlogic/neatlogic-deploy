@@ -230,48 +230,6 @@
         </collection>
     </resultMap>
 
-    <select id="getDeployAppSystemListIncludeEnvIdListByAppSystemIdList"
-            resultMap="appConfigSystemIncludeEnvIdListMap" useCache="false">
-        (
-        SELECT
-        a.app_system_id as appSystemId,
-        a.`env_id` AS envId
-        FROM ${schemaName}.`scence_appinstance_env_appmodule_appsystem` a
-        <where>
-            a.`env_id` is not null
-            <choose>
-                <when test="appSystemIdList != null and appSystemIdList.size() > 0">
-                    AND a.`app_system_id` in
-                    <foreach collection="appSystemIdList" open="(" close=")" separator="," item="appSystemId">
-                        #{appSystemId}
-                    </foreach>
-                </when>
-                <otherwise>
-                    and a.`app_system_id` is not null
-                </otherwise>
-            </choose>
-            and a.`app_module_id` is not null
-        </where>
-        ) UNION
-        (
-        SELECT
-        dace.app_system_id as appSystemId,
-        cc.id AS envId
-        FROM
-        deploy_app_config_env dace
-        JOIN cmdb_cientity cc ON cc.id = dace.env_id
-        JOIN cmdb_cientity cce ON cce.id = dace.app_module_id
-        <where>
-            <if test="appSystemIdList != null and appSystemIdList.size() > 0">
-                AND dace.app_system_id in
-                <foreach collection="appSystemIdList" open="(" close=")" separator="," item="appSystemId">
-                    #{appSystemId}
-                </foreach>
-            </if>
-        </where>
-        )
-    </select>
-
     <select id="getViewableAppSystemIdList" resultType="java.lang.Long" useCache="false">
         SELECT
         `app_system_id`
