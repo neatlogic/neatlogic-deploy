@@ -205,13 +205,6 @@ public class DeployAppAuthChecker {
             return returnMap;
         }
 
-        //批量获取系统的环境列表
-        List<DeployAppSystemVo> appSystemVoListIncludeEnvIdList = checker.deployAppConfigMapper.getDeployAppSystemListIncludeEnvIdListByAppSystemIdList(new ArrayList<>(typeActionSetMap.keySet()), TenantContext.get().getDataDbName());
-        Map<Long, List<Long>> appSystemIdEnvIdListMap = new HashMap<>();
-        if (CollectionUtils.isNotEmpty(appSystemVoListIncludeEnvIdList)) {
-            appSystemIdEnvIdListMap = appSystemVoListIncludeEnvIdList.stream().collect(Collectors.toMap(DeployAppSystemVo::getId, DeployAppSystemVo::getEnvIdList));
-        }
-
         /*将其分类为有特权和无特权（发布管理员权限和没有配置过的系统）两种，有特权直接拼接需要验权的权限列表到returnMap里，无特权的用sql语句进行批量验权，再拼接数据到returnMap里*/
 
         //1、查询系统信息列表
