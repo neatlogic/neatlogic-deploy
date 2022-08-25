@@ -129,7 +129,7 @@ public class AddBatchDeployJobFromPipelineApi extends PrivateApiComponentBase {
                                     jobVo.setVersionId(versionId);
                                     deployJobService.createBatchJob(jobVo);
                                     deployJobMapper.insertGroupJob(groupVo.getId(), jobVo.getId(), k + 1);
-                                    deployJobMapper.insertJobInvoke(deployJobVo.getId(), jobVo.getId(), JobSource.BATCHDEPLOY.getValue(), "deploy");
+                                    deployJobMapper.insertJobInvoke(deployJobVo.getId(), jobVo.getId(), JobSource.BATCHDEPLOY.getValue());
                                     jobVo.setParentId(deployJobVo.getId());
                                     deployJobMapper.updateAutoExecJobParentIdById(jobVo);
                                 }
@@ -153,7 +153,7 @@ public class AddBatchDeployJobFromPipelineApi extends PrivateApiComponentBase {
         }
 
         deployJobMapper.insertAutoExecJob(deployJobVo);
-
+        deployJobMapper.insertJobInvoke(deployJobVo.getId(), pipelineId, JobSource.PIPELINE.getValue());
         if (CollectionUtils.isNotEmpty(deployJobVo.getAuthList())) {
             for (DeployJobAuthVo authVo : deployJobVo.getAuthList()) {
                 authVo.setJobId(deployJobVo.getId());

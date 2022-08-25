@@ -65,12 +65,7 @@ public class ListPipelineAppSystemModuleEnvScenarioApi extends PrivateApiCompone
                 }
             }
         }
-        List<PipelineJobTemplateVo> returnList = jobTemplateList.get();
-        for (PipelineJobTemplateVo job : returnList) {
-            // DeployPipelineConfigVo config = DeployPipelineConfigManager.init(job.getAppSystemId()).withAppModuleId(job.getAppModuleId()).withEnvId(job.getEnvId()).isHasBuildOrDeployTypeTool(true).getConfig();
-
-        }
-        return returnList;
+        return jobTemplateList.get();
     }
 
     static class JobTemplateList {
