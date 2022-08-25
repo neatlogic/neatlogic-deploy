@@ -288,7 +288,7 @@ public class DeployAppAuthChecker {
                                 }
                             }
                         } else if (StringUtils.equals(DeployAppConfigActionType.SCENARIO.getValue(), actionVo.getType())) {
-                            if (CollectionUtils.isNotEmpty(envIdList)) {
+                            if (CollectionUtils.isNotEmpty(scenarioIdList)) {
                                 for (Long scenarioId : scenarioIdList) {
                                     returnActionList.add(scenarioId.toString());
                                 }
