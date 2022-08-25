@@ -46,7 +46,7 @@ public class SaveDeployAppConfigAutoConfigForAutoexecApi extends PrivateApiCompo
 
     @Override
     public String getToken() {
-        return "deploy/app/config/env/db/config/autoCfgKeys/save/forautoexec";
+        return "deploy/app/config/env/autoCfgKeys/save/forautoexec";
     }
 
     @Input({

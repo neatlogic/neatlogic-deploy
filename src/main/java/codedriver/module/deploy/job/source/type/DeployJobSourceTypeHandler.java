@@ -18,8 +18,8 @@ import codedriver.framework.autoexec.dto.job.AutoexecJobPhaseVo;
 import codedriver.framework.autoexec.dto.job.AutoexecJobVo;
 import codedriver.framework.autoexec.dto.job.AutoexecSqlDetailVo;
 import codedriver.framework.autoexec.exception.AutoexecJobPhaseNotFoundException;
-import codedriver.framework.autoexec.exception.AutoexecJobRunnerGroupRunnerNotFoundException;
-import codedriver.framework.autoexec.exception.AutoexecJobRunnerHttpRequestException;
+import codedriver.framework.exception.runner.RunnerGroupRunnerNotFoundException;
+import codedriver.framework.exception.runner.RunnerHttpRequestException;
 import codedriver.framework.autoexec.job.source.type.AutoexecJobSourceTypeHandlerBase;
 import codedriver.framework.autoexec.util.AutoexecUtil;
 import codedriver.framework.cmdb.crossover.ICiEntityCrossoverMapper;
@@ -123,7 +123,7 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
         String result = HttpRequestUtil.download(url, "POST", UserContext.get().getResponse().getOutputStream()).setPayload(paramObj.toJSONString()).setAuthType(AuthenticateType.BUILDIN).sendRequest().getError();
 
         if (StringUtils.isNotBlank(result)) {
-            throw new AutoexecJobRunnerHttpRequestException(url + ":" + result);
+            throw new RunnerHttpRequestException(url + ":" + result);
         }
     }
 
@@ -301,10 +301,10 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
             }
             RunnerGroupVo groupVo = runnerMapper.getRunnerMapGroupById(appModuleRunnerGroup.getId());
             if (groupVo == null) {
-                throw new AutoexecJobRunnerGroupRunnerNotFoundException(appModuleRunnerGroup.getId().toString());
+                throw new RunnerGroupRunnerNotFoundException(appModuleRunnerGroup.getId().toString());
             }
             if (CollectionUtils.isEmpty(groupVo.getRunnerMapList())) {
-                throw new AutoexecJobRunnerGroupRunnerNotFoundException(groupVo.getName() + "(" + groupVo.getId() + ") ");
+                throw new RunnerGroupRunnerNotFoundException(groupVo.getName() + "(" + groupVo.getId() + ") ");
             }
             runnerMapVos = groupVo.getRunnerMapList();
         }
@@ -317,14 +317,12 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
     }
 
     @Override
-    public AutoexecCombopVo getAutoexecCombop(JSONObject paramJson) {
-        Long appSystemId = paramJson.getLong("appSystemId");
-        Long appModuleId = paramJson.getLong("appModuleId");
-        Long envId = paramJson.getLong("envId");
+    public AutoexecCombopVo getAutoexecCombop(AutoexecJobVo autoexecJobParam) {
+        DeployJobVo deployJobVo = (DeployJobVo) autoexecJobParam;
         //获取最终流水线
-        DeployPipelineConfigVo deployPipelineConfigVo = DeployPipelineConfigManager.init(appSystemId)
-                .withAppModuleId(appModuleId)
-                .withEnvId(envId)
+        DeployPipelineConfigVo deployPipelineConfigVo = DeployPipelineConfigManager.init(deployJobVo.getAppSystemId())
+                .withAppModuleId(deployJobVo.getAppModuleId())
+                .withEnvId(deployJobVo.getEnvId())
                 .getConfig();
         if (deployPipelineConfigVo == null) {
             throw new DeployPipelineConfigNotFoundException();
@@ -335,21 +333,18 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
     }
 
     @Override
-    public void updateInvokeJob(JSONObject paramJson, AutoexecJobVo jobVo) {
-        DeployJobVo deployJobVo = new DeployJobVo(paramJson);
-        deployJobVo.setId(jobVo.getId());
-        deployJobVo.setConfigHash(jobVo.getConfigHash());
+    public void updateInvokeJob(AutoexecJobVo jobVo) {
+        DeployJobVo deployJobVo = (DeployJobVo)jobVo;
         deployJobMapper.insertIgnoreDeployJobContent(new DeployJobContentVo(jobVo.getConfigStr()));
-        Integer buildNo = paramJson.getInteger("buildNo");
         //如果buildNo是-1，表示新建buildNo
-        if (buildNo != null) {
+        if (deployJobVo.getBuildNo() != null) {
             DeployVersionVo deployVersionVo = deployVersionMapper.getVersionByAppSystemIdAndAppModuleIdAndVersion(deployJobVo.getAppSystemId(), deployJobVo.getAppModuleId(), deployJobVo.getVersion());
             if (deployVersionVo == null) {
                 throw new DeployVersionNotFoundException(deployJobVo.getVersion());
             }
             deployJobVo.setVersionId(deployVersionVo.getId());
             //获取最新buildNo
-            if (buildNo == -1) {
+            if (deployJobVo.getBuildNo() == -1) {
                 Integer maxBuildNo = deployVersionMapper.getDeployVersionMaxBuildNoByVersionIdLock(deployVersionVo.getId());
                 if (maxBuildNo == null) {
                     deployJobVo.setBuildNo(1);
@@ -357,8 +352,8 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
                     deployJobVo.setBuildNo(maxBuildNo + 1);
                 }
                 deployVersionMapper.insertDeployVersionBuildNo(new DeployVersionBuildNoVo(deployVersionVo.getId(), deployJobVo.getBuildNo(), deployJobVo.getId(), BuildNoStatus.PENDING.getValue()));
-            } else if (buildNo > 0) {
-                deployJobVo.setBuildNo(buildNo);
+            } else if (deployJobVo.getBuildNo() > 0) {
+                deployJobVo.setBuildNo(deployJobVo.getBuildNo());
             }
             deployVersionMapper.insertDeployVersionBuildNo(new DeployVersionBuildNoVo(deployVersionVo.getId(), deployJobVo.getBuildNo(), deployJobVo.getId(), BuildNoStatus.PENDING.getValue()));
         }
@@ -399,7 +394,7 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
             throw new DeployAppConfigModuleRunnerGroupNotFoundException(appSystem.getName() + "(" + deployJobVo.getAppSystemId() + ")", appModule.getName() + "(" + deployJobVo.getAppModuleId() + ")");
         }
         if (CollectionUtils.isEmpty(runnerGroupVo.getRunnerMapList())) {
-            throw new AutoexecJobRunnerGroupRunnerNotFoundException(runnerGroupVo.getName() + ":" + runnerGroupVo.getId());
+            throw new RunnerGroupRunnerNotFoundException(runnerGroupVo.getName() + ":" + runnerGroupVo.getId());
         }
         for (RunnerMapVo runnerMapVo : runnerGroupVo.getRunnerMapList()) {
             runnerMap.put(runnerMapVo.getRunnerMapId().toString(), runnerMapVo.getHost());

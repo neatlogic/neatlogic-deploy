@@ -17,33 +17,49 @@ public interface DeployJobService {
     /**
      * 校验&&补充作业参数
      *
-     * @param jsonObj 入参
+     * @param deployJobParam 入参
+     * @param isBatch        是否批量
      */
-    void initDeployParam(JSONObject jsonObj);
+    void initDeployParam(DeployJobVo deployJobParam, Boolean isBatch);
 
     /**
      * 转为自动化通用格式
      *
-     * @param jsonObj    入参
-     * @param moduleJson 模块入参
+     * @param deployJobParam 入参
      */
-    void convertModule(JSONObject jsonObj, JSONObject moduleJson);
+    void convertModuleList(DeployJobVo deployJobParam);
+
+    /**
+     * 转为自动化通用格式
+     *
+     * @param deployJobParam 入参
+     */
+    void convertSingleModule(DeployJobVo deployJobParam);
 
     /**
      * 创建发布作业
      *
-     * @param jsonObj 作业入参
+     * @param autoexecJobParam 作业入参
+     * @param isBatch          是否批量
      * @return result
      */
-    JSONObject createJob(JSONObject jsonObj) throws Exception;
+    JSONObject createJob(DeployJobVo autoexecJobParam, Boolean isBatch) throws Exception;
 
 
     /**
-     * 创建定时发布作业
-     * @param jsonObj 入参
+     * 创建发布作业
+     *
+     * @param autoexecJobParam 作业入参
      * @return result
      */
-    JSONObject createScheduleJob(JSONObject jsonObj);
+    JSONObject createJob(DeployJobVo autoexecJobParam) throws Exception;
+    /**
+     * 创建定时发布作业
+     *
+     * @param deployJobVo 入参
+     * @return result
+     */
+    JSONObject createScheduleJob(DeployJobVo deployJobVo);
 
 
     /**

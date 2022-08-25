@@ -487,14 +487,16 @@
                                     `source`,
                                     `exec_user`,
                                     `trigger_type`,
-                                    `review_status`)
+                                    `review_status`,
+                                    `plan_start_time`)
         VALUES (#{id},
                 #{name},
                 #{status},
                 #{source},
                 #{execUser},
                 #{triggerType},
-                #{reviewStatus})
+                #{reviewStatus},
+                #{planStartTime})
     </insert>
 
     <insert id="insertIgnoreDeployJobContent"
@@ -553,11 +555,12 @@
 
     <update id="updateAutoExecJob" parameterType="codedriver.framework.deploy.dto.job.DeployJobVo">
         UPDATE `autoexec_job`
-        SET name          = #{name},
-            status        = #{status},
-            exec_user     = #{execUser},
-            trigger_type  = #{triggerType},
-            review_status = #{reviewStatus}
+        SET name            = #{name},
+            status          = #{status},
+            exec_user       = #{execUser},
+            trigger_type    = #{triggerType},
+            plan_start_time = #{planStartTime},
+            review_status   = #{reviewStatus}
         WHERE id = #{id}
     </update>
 

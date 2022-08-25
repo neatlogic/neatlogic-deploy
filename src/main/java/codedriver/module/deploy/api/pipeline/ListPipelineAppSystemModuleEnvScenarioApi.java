@@ -8,13 +8,11 @@ package codedriver.module.deploy.api.pipeline;
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.deploy.auth.DEPLOY_BASE;
-import codedriver.framework.deploy.dto.app.DeployPipelineConfigVo;
 import codedriver.framework.deploy.dto.pipeline.*;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.deploy.dao.mapper.PipelineMapper;
-import codedriver.module.deploy.util.DeployPipelineConfigManager;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
@@ -69,7 +67,7 @@ public class ListPipelineAppSystemModuleEnvScenarioApi extends PrivateApiCompone
         }
         List<PipelineJobTemplateVo> returnList = jobTemplateList.get();
         for (PipelineJobTemplateVo job : returnList) {
-            DeployPipelineConfigVo config = DeployPipelineConfigManager.init(job.getAppSystemId()).withAppModuleId(job.getAppModuleId()).withEnvId(job.getEnvId()).isHasBuildOrDeployTypeTool(true).getConfig();
+            // DeployPipelineConfigVo config = DeployPipelineConfigManager.init(job.getAppSystemId()).withAppModuleId(job.getAppModuleId()).withEnvId(job.getEnvId()).isHasBuildOrDeployTypeTool(true).getConfig();
 
         }
         return returnList;
