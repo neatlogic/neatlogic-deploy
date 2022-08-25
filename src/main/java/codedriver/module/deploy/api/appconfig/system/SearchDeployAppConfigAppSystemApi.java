@@ -92,7 +92,7 @@ public class SearchDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
                 returnAppSystemList = deployAppConfigMapper.getAppSystemListByIdList(appSystemIdList, TenantContext.get().getDataDbName(), UserContext.get().getUserUuid());
             }
 
-            /*补充系统是否有模块、是否有环境,补充模块是否配置、是否有环境、以及系统的权限列表*/
+            /*补充系统是否有模块、是否有环境、是否有配置权限 ,补充模块是否配置、是否有环境*/
             TenantContext.get().switchDataDatabase();
             IResourceCrossoverMapper resourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
             List<Long> hasModuleAppSystemIdList = resourceCrossoverMapper.getHasModuleAppSystemIdListByAppSystemIdList(appSystemIdList);

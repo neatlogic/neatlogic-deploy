@@ -175,7 +175,10 @@ public class DeployAppAuthChecker {
      * @return 拥有的权限列表
      */
     private static Set<String> check(Long appSystemId, List<String> typeActionList) {
-        Set<String> returnActionSet = new HashSet<>();
+
+        if (appSystemId == null || CollectionUtils.isEmpty(typeActionList)) {
+            return new HashSet<>();
+        }
 
         /*发布管理员拥有所有权限*/
         if (AuthActionChecker.check(DEPLOY_MODIFY.class)) {
@@ -238,6 +241,7 @@ public class DeployAppAuthChecker {
      */
     private static Set<String> getHasAuthoritySet(List<String> needCheckTypeActionList, List<DeployAppConfigAuthorityVo> nowAppSystemAuthList) {
         Set<String> returnActionSet = new HashSet<>();
+
 
         /*发布管理员拥有所有权限*/
         if (AuthActionChecker.check(DEPLOY_MODIFY.class)) {
