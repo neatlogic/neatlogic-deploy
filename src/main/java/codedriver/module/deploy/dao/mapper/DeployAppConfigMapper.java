@@ -1,6 +1,5 @@
 package codedriver.module.deploy.dao.mapper;
 
-import codedriver.framework.cmdb.dto.resourcecenter.ResourceVo;
 import codedriver.framework.cmdb.dto.resourcecenter.entity.AppEnvironmentVo;
 import codedriver.framework.deploy.dto.app.*;
 import codedriver.framework.dto.AuthenticationInfoVo;
@@ -30,8 +29,6 @@ public interface DeployAppConfigMapper {
     List<DeployAppSystemVo> getAppSystemListByUserUuid(@Param("userUuid") String userUuid, @Param("searchVo") DeployResourceSearchVo searchVo);
 
     List<DeployAppSystemVo> getDeployAppSystemListIncludeEnvIdListByAppSystemIdList(@Param("appSystemIdList") List<Long> appSystemIdList, @Param("schemaName") String schemaName);
-
-    DeployAppSystemVo getDeployJobCreateBeforeConditionInfo(Long appSystemId);
 
     Set<Long> getViewableAppSystemIdList(AuthenticationInfoVo authenticationInfoVo);
 
@@ -175,10 +172,6 @@ public interface DeployAppConfigMapper {
     List<Long> getDeployAppEnvIdListByAppSystemId(@Param("appSystemId") Long appSystemId, @Param("schemaName") String schemaName);
 
     List<Long> getDeployAppHasAuthorityAppSystemIdListByAppSystemIdList(@Param("appSystemIdSet") Set<Long> appSystemIdSet);
-
-    List<ResourceVo> getAppConfigEnvDatabaseResourceListByIdList(String sql);
-
-    List<DeployAppModuleVo> getAppModuleListByIdList(String sql);
 
     List<DeployAppModuleVo> getAppModuleListBySystemIdAndEnvId(@Param("appSystemId") Long appSystemId, @Param("envId") Long envId, @Param("schemaName") String schemaName);
 

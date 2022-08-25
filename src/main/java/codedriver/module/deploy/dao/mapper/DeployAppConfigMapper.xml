@@ -41,22 +41,22 @@
                 daca.action_type = 'operation'
                 AND daca.action IN
                 ('all'
-                <if test="searchVo.authorityActionList != null and searchVo.authorityActionList.size() > 0">
-                    ,
+                <if test="searchVo.authorityActionList != null and searchVo.authorityActionList.size() > 0">,
                     <foreach collection="searchVo.authorityActionList" item="item" separator=",">
                         #{item}
                     </foreach>
                 </if>
                 )
                 AND daca.auth_uuid IN
-                ('alluser'
-                <if test="searchVo.authUuidList != null and searchVo.authUuidList.size() > 0">,
+                (
+                'alluser'
+                <if test="searchVo.authUuidList != null and searchVo.authUuidList.size() > 0">
+                    ,
                     <foreach collection="searchVo.authUuidList" item="item" separator=",">
                         #{item}
                     </foreach>
                 </if>
-                )
-                ,
+                ),
                 1 = 1)
             </if>
             <choose>
@@ -892,25 +892,27 @@
             AND IF(
             daca.app_system_id > 0,
             daca.action_type = 'operation'
-            <if test="authorityActionList != null and authorityActionList.size() > 0">
-                AND daca.action IN
-                ('all'
+            AND daca.action IN
+            ('all'
+            <if test="authorityActionList != null and authorityActionList.size() > 0">,
                 <foreach collection="authorityActionList" item="item" separator=",">
                     #{item}
                 </foreach>
-                )
             </if>
+            )
+            AND daca.auth_uuid IN
+            (
+            'alluser'
             <if test="authUuidList != null and authUuidList.size() > 0">
-                AND daca.auth_uuid IN
-                ('alluser'
+                ,
                 <foreach collection="authUuidList" item="item" separator=",">
                     #{item}
                 </foreach>
-                )
             </if>
-            ,
+            ),
             1 = 1)
         </if>
+
     </sql>
 
     <select id="getCiEntityIdListCount" resultType="java.lang.Integer" useCache="false">
@@ -1116,19 +1118,11 @@
         )
     </select>
 
-    <select id="getAppConfigEnvDatabaseResourceListByIdList" resultMap="DatabaseResourceMap" useCache="false">
-        ${sql}
-    </select>
-
     <resultMap id="AppModuleMap" type="codedriver.framework.deploy.dto.app.DeployAppModuleVo">
         <id column="id" property="id"/>
         <result column="name" property="name"/>
         <result column="abbr_name" property="abbrName"/>
     </resultMap>
-
-    <select id="getAppModuleListByIdList" resultMap="AppModuleMap" useCache="false">
-        ${sql}
-    </select>
 
     <select id="getAppConfigAppSystemIdListByAppSystemIdList" parameterType="java.lang.Long"
             resultType="java.lang.Long" useCache="false">
@@ -1351,17 +1345,6 @@
             #{appSystemId}
         </foreach>
     </select>
-
-    <select id="getDeployJobCreateBeforeConditionInfo"
-            resultType="codedriver.framework.deploy.dto.app.DeployAppSystemVo" useCache="false">
-        SELECT DISTINCT saa.id,
-                        IF(saa.app_module_id IS NULL, 0, 1) AS isHasModule,
-                        IF(dac.config IS NULL, 0, 1)        AS isConfig
-        FROM codedriver_develop_data.`scence_appsystem_appmodule` saa
-                 LEFT JOIN deploy_app_config dac ON saa.id = dac.app_system_id
-        where saa.id = #{appSystemId}
-    </select>
-
 
     <insert id="insertAppConfigAuthority">
         INSERT INTO `deploy_app_config_authority` (`app_system_id`,
