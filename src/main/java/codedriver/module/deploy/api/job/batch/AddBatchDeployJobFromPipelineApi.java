@@ -112,6 +112,7 @@ public class AddBatchDeployJobFromPipelineApi extends PrivateApiComponentBase {
                     for (int j = 0; j < pipelineLaneVo.getGroupList().size(); j++) {
                         PipelineGroupVo pipelineGroupVo = pipelineLaneVo.getGroupList().get(j);
                         LaneGroupVo groupVo = new LaneGroupVo();
+                        groupVo.setNeedWait(pipelineGroupVo.getNeedWait());
                         boolean hasGroupJob = false;
                         if (CollectionUtils.isNotEmpty(pipelineGroupVo.getJobTemplateList())) {
                             for (int k = 0; k < pipelineGroupVo.getJobTemplateList().size(); k++) {
