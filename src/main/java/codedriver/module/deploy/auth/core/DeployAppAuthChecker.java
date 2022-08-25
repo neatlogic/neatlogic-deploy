@@ -233,11 +233,11 @@ public class DeployAppAuthChecker {
     }
 
     /**
-     * 获取当前登录人拥有此环境的权限列表
+     * 获取鉴权成功的列表
      *
      * @param needCheckTypeActionList 需要鉴权的权限列表 会有权限类型前缀 比如operation#view
      * @param nowAppSystemAuthList    当前系统已配置的权限列表
-     * @return 当前登录人拥有此环境的权限列表
+     * @return 鉴权成功的列表
      */
     private static Set<String> getHasAuthoritySet(List<String> needCheckTypeActionList, List<DeployAppConfigAuthorityVo> nowAppSystemAuthList) {
         Set<String> returnActionSet = new HashSet<>();
