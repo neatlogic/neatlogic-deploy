@@ -8,28 +8,29 @@ package codedriver.module.deploy.api.appconfig.system;
 import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.auth.core.AuthAction;
-import codedriver.framework.autoexec.dto.combop.AutoexecCombopScenarioVo;
 import codedriver.framework.cmdb.crossover.IResourceCrossoverMapper;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.dto.BasePageVo;
 import codedriver.framework.crossover.CrossoverServiceFactory;
 import codedriver.framework.deploy.auth.DEPLOY_BASE;
-import codedriver.framework.deploy.constvalue.DeployAppConfigAction;
-import codedriver.framework.deploy.constvalue.DeployAppConfigActionType;
-import codedriver.framework.deploy.dto.app.*;
+import codedriver.framework.deploy.dto.app.DeployAppModuleVo;
+import codedriver.framework.deploy.dto.app.DeployAppSystemVo;
+import codedriver.framework.deploy.dto.app.DeployResourceSearchVo;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.framework.util.TableResultUtil;
 import codedriver.module.deploy.dao.mapper.DeployAppConfigMapper;
-import codedriver.module.deploy.util.DeployPipelineConfigManager;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -129,68 +130,6 @@ public class SearchDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
                         }
                         appModuleVo.setIsConfig(isHasConfig);
                     }
-                }
-
-                 /* 拼接权限数据结构：
-                    1、循环权限类型，将可能拥有一个类型所有权限的类型优先拼接
-                    2、循环已有权限，将其余散存的权限拼接
-                 */
-                if (CollectionUtils.isNotEmpty(returnSystemVo.getAuthActionVoList())) {
-                    List<String> authActionStringList = new ArrayList<>();
-                    if (CollectionUtils.isNotEmpty(returnSystemVo.getAuthActionVoList())) {
-
-                        // map<权限类型，权限列表>
-                        Map<String, List<DeployAppConfigAuthorityActionVo>> authTypeAuthActionListMap = returnSystemVo.getAuthActionVoList().stream().collect(Collectors.groupingBy(DeployAppConfigAuthorityActionVo::getType));
-                        List<String> allActionTypeList = new ArrayList<>();
-
-                        //循环权限类型
-                        for (String actionType : DeployAppConfigActionType.getValueList()) {
-                            List<DeployAppConfigAuthorityActionVo> actionTypeActionVoList = authTypeAuthActionListMap.get(actionType);
-                            if (CollectionUtils.isEmpty(actionTypeActionVoList)) {
-                                continue;
-                            }
-
-                            //拥有当前类型的所有权限
-                            if (CollectionUtils.isNotEmpty(actionTypeActionVoList.stream().filter(e -> StringUtils.equals(e.getAction(), "all")).collect(Collectors.toList()))) {
-
-                                allActionTypeList.add(actionType);
-                                if (StringUtils.equals(actionType, DeployAppConfigActionType.OPERATION.getValue())) {
-                                    for (String operationString : DeployAppConfigAction.getValueList()) {
-                                        authActionStringList.add(DeployAppConfigActionType.OPERATION.getValue() + "#" + operationString);
-                                    }
-                                } else if (StringUtils.equals(actionType, DeployAppConfigActionType.ENV.getValue())) {
-                                    List<Long> envIdList = appSystemIdEnvIdListMap.get(returnSystemVo.getId());
-                                    if (CollectionUtils.isNotEmpty(envIdList)) {
-                                        for (Long envId : envIdList) {
-                                            authActionStringList.add(DeployAppConfigActionType.ENV.getValue() + "#" + envId.toString());
-                                        }
-                                    }
-                                } else if (StringUtils.equals(actionType, DeployAppConfigActionType.SCENARIO.getValue())) {
-                                    DeployPipelineConfigVo pipelineConfigVo = DeployPipelineConfigManager.init(returnSystemVo.getId()).getConfig();
-                                    if (pipelineConfigVo == null) {
-                                        continue;
-                                    }
-                                    for (AutoexecCombopScenarioVo scenarioVo : pipelineConfigVo.getScenarioList()) {
-                                        authActionStringList.add(DeployAppConfigActionType.SCENARIO.getValue() + "#" + scenarioVo.getScenarioId().toString());
-                                    }
-                                }
-                            }
-                        }
-
-                        //循环拥有的权限，将其余散存的权限拼接
-                        for (DeployAppConfigAuthorityActionVo actionVo : returnSystemVo.getAuthActionVoList()) {
-                            if (!allActionTypeList.contains(actionVo.getType())) {
-                                if (StringUtils.equals(actionVo.getType(), DeployAppConfigActionType.OPERATION.getValue())) {
-                                    authActionStringList.add(DeployAppConfigActionType.OPERATION.getValue() + "#" + actionVo.getAction());
-                                } else if (StringUtils.equals(actionVo.getType(), DeployAppConfigActionType.ENV.getValue())) {
-                                    authActionStringList.add(DeployAppConfigActionType.ENV.getValue() + "#" + actionVo.getAction());
-                                } else if (StringUtils.equals(actionVo.getType(), DeployAppConfigActionType.SCENARIO.getValue())) {
-                                    authActionStringList.add(DeployAppConfigActionType.SCENARIO.getValue() + "#" + actionVo.getAction());
-                                }
-                            }
-                        }
-                    }
-                    returnSystemVo.setAuthActionSet(new HashSet<>(authActionStringList));
                 }
             }
         }
