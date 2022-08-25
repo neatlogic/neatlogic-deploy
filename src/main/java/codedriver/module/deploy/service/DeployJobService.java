@@ -37,13 +37,12 @@ public interface DeployJobService {
     void convertSingleModule(DeployJobVo deployJobParam);
 
     /**
-     * 创建发布作业
+     * 创建超级流水线发布作业
      *
      * @param autoexecJobParam 作业入参
-     * @param isBatch          是否批量
      * @return result
      */
-    JSONObject createJob(DeployJobVo autoexecJobParam, Boolean isBatch) throws Exception;
+    JSONObject createBatchJob(DeployJobVo autoexecJobParam) throws Exception;
 
 
     /**
