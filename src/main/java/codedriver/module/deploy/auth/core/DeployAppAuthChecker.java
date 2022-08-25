@@ -249,7 +249,7 @@ public class DeployAppAuthChecker {
         }
 
         /*如果当前系统没有配置权限，则所有人均拥有所有权限*/
-        if (CollectionUtils.isNotEmpty(nowAppSystemAuthList) && nowAppSystemAuthList.size() == 1 && Objects.isNull(nowAppSystemAuthList.get(0).getAuthUuid())) {
+        if (CollectionUtils.isEmpty(nowAppSystemAuthList)) {
             return DeployAppConfigActionType.getActionList(needCheckTypeActionList);
         }
 
@@ -262,8 +262,8 @@ public class DeployAppAuthChecker {
                     if (StringUtils.equals(actionVo.getAction(), "all")) {
                         returnActionSet.addAll(DeployAppConfigActionType.getActionList(needCheckTypeActionList.stream().filter(e -> e.startsWith(actionVo.getType())).collect(Collectors.toList())));
 
-                    } else if (needCheckTypeActionList.contains(actionVo.getAction())) {
-                        returnActionSet.add(DeployAppConfigActionType.getAction(actionVo.getAction()));
+                    } else if (needCheckTypeActionList.contains(actionVo.getType() + "#" + actionVo.getAction())) {
+                        returnActionSet.add(actionVo.getAction());
 
                     }
                 }

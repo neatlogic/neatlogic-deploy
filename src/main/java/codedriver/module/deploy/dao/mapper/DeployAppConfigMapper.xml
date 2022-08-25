@@ -223,13 +223,6 @@
         limit #{searchVo.startNum}, #{searchVo.pageSize}
     </select>
 
-    <resultMap id="appConfigSystemIncludeEnvIdListMap" type="codedriver.framework.deploy.dto.app.DeployAppSystemVo">
-        <result column="appSystemId" property="id"/>
-        <collection property="envIdList" ofType="java.lang.Long">
-            <id column="envId"/>
-        </collection>
-    </resultMap>
-
     <select id="getViewableAppSystemIdList" resultType="java.lang.Long" useCache="false">
         SELECT
         `app_system_id`
@@ -870,7 +863,6 @@
             ),
             1 = 1)
         </if>
-
     </sql>
 
     <select id="getCiEntityIdListCount" resultType="java.lang.Integer" useCache="false">
