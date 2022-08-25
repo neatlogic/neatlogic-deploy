@@ -260,7 +260,7 @@ public class DeployAppAuthChecker {
      * @return 当前登录人拥有此环境的权限列表
      */
     private static Set<String> getHasAuthoritySet(Long appSystemId, List<Long> envIdList, List<Long> scenarioIdList, List<DeployAppConfigAuthorityVo> nowAppSystemAuthList) {
-        Set<String> returnActionList = new HashSet<>();
+        Set<String> returnActionSet = new HashSet<>();
 
         /*发布管理员拥有所有权限*/
         if (AuthActionChecker.check(DEPLOY_MODIFY.class)) {
@@ -280,27 +280,27 @@ public class DeployAppAuthChecker {
                 for (DeployAppConfigAuthorityActionVo actionVo : authVo.getActionList()) {
                     if (StringUtils.equals(actionVo.getAction(), "all")) {
                         if (StringUtils.equals(DeployAppConfigActionType.OPERATION.getValue(), actionVo.getType())) {
-                            returnActionList.addAll(DeployAppConfigAction.getValueList());
+                            returnActionSet.addAll(DeployAppConfigAction.getValueList());
                         } else if (StringUtils.equals(DeployAppConfigActionType.ENV.getValue(), actionVo.getType())) {
                             if (CollectionUtils.isNotEmpty(envIdList)) {
                                 for (Long envId : envIdList) {
-                                    returnActionList.add(envId.toString());
+                                    returnActionSet.add(envId.toString());
                                 }
                             }
                         } else if (StringUtils.equals(DeployAppConfigActionType.SCENARIO.getValue(), actionVo.getType())) {
                             if (CollectionUtils.isNotEmpty(scenarioIdList)) {
                                 for (Long scenarioId : scenarioIdList) {
-                                    returnActionList.add(scenarioId.toString());
+                                    returnActionSet.add(scenarioId.toString());
                                 }
                             }
                         }
                     } else {
-                        returnActionList.add(actionVo.getAction());
+                        returnActionSet.add(actionVo.getAction());
                     }
                 }
             }
         }
-        return returnActionList;
+        return returnActionSet;
     }
 
     /**
