@@ -2,7 +2,7 @@ package codedriver.module.deploy.api.version;
 
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.common.constvalue.ApiParamType;
-import codedriver.framework.deploy.auth.DEPLOY_MODIFY;
+import codedriver.framework.deploy.auth.DEPLOY_BASE;
 import codedriver.framework.deploy.constvalue.DeployAppConfigAction;
 import codedriver.framework.deploy.dto.version.DeployVersionVo;
 import codedriver.framework.deploy.exception.DeployVersionNotFoundException;
@@ -24,7 +24,7 @@ import javax.annotation.Resource;
  * @date 2022/6/13 7:04 下午
  */
 @Service
-@AuthAction(action = DEPLOY_MODIFY.class)
+@AuthAction(action = DEPLOY_BASE.class)
 @OperationType(type = OperationTypeEnum.UPDATE)
 public class UnFreezeDeployVersionApi extends PrivateApiComponentBase {
 

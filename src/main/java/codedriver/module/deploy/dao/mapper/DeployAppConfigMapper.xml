@@ -39,14 +39,23 @@
                 AND IF(
                 daca.app_system_id > 0,
                 daca.action_type = 'operation'
+                AND daca.action IN
+                ('all'
                 <if test="searchVo.authorityActionList != null and searchVo.authorityActionList.size() > 0">
-                    AND daca.action IN
-                    ('all'
+                    ,
                     <foreach collection="searchVo.authorityActionList" item="item" separator=",">
                         #{item}
                     </foreach>
-                    )
                 </if>
+                )
+                AND daca.auth_uuid IN
+                ('alluser'
+                <if test="searchVo.authUuidList != null and searchVo.authUuidList.size() > 0">,
+                    <foreach collection="searchVo.authUuidList" item="item" separator=",">
+                        #{item}
+                    </foreach>
+                </if>
+                )
                 ,
                 1 = 1)
             </if>
@@ -103,15 +112,10 @@
             <result column="appModuleName" property="name"/>
             <result column="appModuleNameAbbrName" property="abbrName"/>
         </collection>
-        <collection property="authList" ofType="codedriver.framework.deploy.dto.app.DeployAppConfigAuthorityVo">
-            <id column="appSystemId" property="appSystemId"/>
-            <result column="authType" property="authType"/>
-            <result column="authUuid" property="authUuid"/>
-            <collection property="actionList"
-                        ofType="codedriver.framework.deploy.dto.app.DeployAppConfigAuthorityActionVo">
-                <result column="authAction" property="action"/>
-                <result column="authActionType" property="type"/>
-            </collection>
+        <collection property="authActionVoList"
+                    ofType="codedriver.framework.deploy.dto.app.DeployAppConfigAuthorityActionVo">
+            <result column="authAction" property="action"/>
+            <result column="authActionType" property="type"/>
         </collection>
     </resultMap>
 
@@ -522,17 +526,19 @@
 
     <select id="getDeployAppModuleEnvListByAppSystemIdAndModuleId"
             resultType="codedriver.framework.cmdb.dto.resourcecenter.entity.AppEnvironmentVo" useCache="false">
-        SELECT a.`env_id`        AS envId,
-               a.`env_name`      AS envName
+        SELECT a.`env_id`   AS envId,
+               a.`env_name` AS envName
         FROM ${schemaName}.`scence_appinstance_env_appmodule_appsystem` a
         where a.`env_id` is not null
-          and a.`app_system_id` = #{systemId} and a.`app_module_id` = #{moduleId}
+          and a.`app_system_id` = #{systemId}
+          and a.`app_module_id` = #{moduleId}
         UNION
-        SELECT cc.id              AS envId,
-               cc.name            AS envName
+        SELECT cc.id   AS envId,
+               cc.name AS envName
         FROM deploy_app_config_env dace
                  JOIN cmdb_cientity cc ON cc.id = dace.env_id
-        where dace.app_system_id = #{systemId} and dace.app_module_id = #{moduleId}
+        where dace.app_system_id = #{systemId}
+          and dace.app_module_id = #{moduleId}
     </select>
 
     <select id="getDeployAppHasNotEnvListByAppSystemIdAndModuleIdList"
@@ -890,6 +896,14 @@
                 AND daca.action IN
                 ('all'
                 <foreach collection="authorityActionList" item="item" separator=",">
+                    #{item}
+                </foreach>
+                )
+            </if>
+            <if test="authUuidList != null and authUuidList.size() > 0">
+                AND daca.auth_uuid IN
+                ('alluser'
+                <foreach collection="authUuidList" item="item" separator=",">
                     #{item}
                 </foreach>
                 )
@@ -1291,7 +1305,30 @@
         </where>
     </select>
 
-    <select id="getBatchAppConfigAuthorityListByAppSystemIdList" resultMap="appConfigSystemMap" useCache="false">
+    <resultMap id="appConfigSystemMapNew" type="codedriver.framework.deploy.dto.app.DeployAppSystemVo">
+        <result column="appSystemId" property="id"/>
+        <result column="appSystemName" property="name"/>
+        <result column="appSystemNameAbbrName" property="abbrName"/>
+        <result column="isFavorite" property="isFavorite"/>
+        <result column="isConfig" property="isConfig"/>
+        <result column="isConfigAuthority" property="isConfigAuthority"/>
+        <collection property="appModuleList" ofType="codedriver.framework.deploy.dto.app.DeployAppModuleVo">
+            <id column="appModuleId" property="id"/>
+            <result column="appModuleName" property="name"/>
+            <result column="appModuleNameAbbrName" property="abbrName"/>
+        </collection>
+        <collection property="authList" ofType="codedriver.framework.deploy.dto.app.DeployAppConfigAuthorityVo">
+            <result column="authType" property="authType"/>
+            <result column="authUuid" property="authUuid"/>
+            <collection property="actionList"
+                        ofType="codedriver.framework.deploy.dto.app.DeployAppConfigAuthorityActionVo">
+                <result column="authAction" property="action"/>
+                <result column="authActionType" property="type"/>
+            </collection>
+        </collection>
+    </resultMap>
+
+    <select id="getBatchAppConfigAuthorityListByAppSystemIdList" resultMap="appConfigSystemMapNew" useCache="false">
         select a.id as appSystemId,
         b.auth_uuid as authUuid ,
         b.auth_type as authType,

@@ -14,7 +14,10 @@ import codedriver.framework.deploy.auth.DEPLOY_BASE;
 import codedriver.framework.deploy.auth.DEPLOY_MODIFY;
 import codedriver.framework.deploy.constvalue.DeployAppConfigAction;
 import codedriver.framework.deploy.constvalue.DeployAppConfigActionType;
-import codedriver.framework.deploy.dto.app.*;
+import codedriver.framework.deploy.dto.app.DeployAppConfigAuthorityActionVo;
+import codedriver.framework.deploy.dto.app.DeployAppConfigAuthorityVo;
+import codedriver.framework.deploy.dto.app.DeployAppEnvironmentVo;
+import codedriver.framework.deploy.dto.app.DeployPipelineConfigVo;
 import codedriver.framework.deploy.exception.DeployAppConfigNotFoundException;
 import codedriver.framework.dto.AuthenticationInfoVo;
 import codedriver.framework.restful.annotation.*;
@@ -25,7 +28,6 @@ import codedriver.module.deploy.util.DeployPipelineConfigManager;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
@@ -33,7 +35,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-@Service
+
+@Deprecated
 @AuthAction(action = DEPLOY_BASE.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
 public class GetDeployAppConfigAuthorityApi extends PrivateApiComponentBase {
@@ -67,8 +70,6 @@ public class GetDeployAppConfigAuthorityApi extends PrivateApiComponentBase {
         Long appSystemId = paramObj.getLong("appSystemId");
         JSONObject returnObj = new JSONObject();
         List<String> operationAuthList = new ArrayList<>();
-        List<String> envAuthList = new ArrayList<>();
-        List<String> scenarioAuthList = new ArrayList<>();
 
         if (appSystemId != null) {
 
@@ -114,7 +115,7 @@ public class GetDeployAppConfigAuthorityApi extends PrivateApiComponentBase {
                             List<DeployAppEnvironmentVo> envVoList = deployAppConfigMapper.getDeployAppEnvListByAppSystemIdAndModuleIdList(appSystemId, new ArrayList<>(), TenantContext.get().getDataDbName());
                             if (CollectionUtils.isNotEmpty(envVoList)) {
                                 for (DeployAppEnvironmentVo envVo : envVoList) {
-                                    envAuthList.add(envVo.getId().toString());
+                                    operationAuthList.add(envVo.getId().toString());
                                 }
                             }
                         } else if (StringUtils.equals(actionType, DeployAppConfigActionType.SCENARIO.getValue())) {
@@ -123,7 +124,7 @@ public class GetDeployAppConfigAuthorityApi extends PrivateApiComponentBase {
                                 continue;
                             }
                             for (AutoexecCombopScenarioVo scenarioVo : pipelineConfigVo.getScenarioList()) {
-                                scenarioAuthList.add(scenarioVo.getScenarioId().toString());
+                                operationAuthList.add(scenarioVo.getScenarioId().toString());
                             }
                         }
                     }
@@ -134,17 +135,15 @@ public class GetDeployAppConfigAuthorityApi extends PrivateApiComponentBase {
                         if (StringUtils.equals(actionVo.getType(), DeployAppConfigActionType.OPERATION.getValue())) {
                             operationAuthList.add(actionVo.getAction());
                         } else if (StringUtils.equals(actionVo.getType(), DeployAppConfigActionType.ENV.getValue())) {
-                            envAuthList.add(actionVo.getAction());
+                            operationAuthList.add(actionVo.getAction());
                         } else if (StringUtils.equals(actionVo.getType(), DeployAppConfigActionType.SCENARIO.getValue())) {
-                            scenarioAuthList.add(actionVo.getAction());
+                            operationAuthList.add(actionVo.getAction());
                         }
                     }
                 }
             }
         }
         returnObj.put("operationAuthList", operationAuthList);
-        returnObj.put("envAuthList", envAuthList);
-        returnObj.put("scenarioAuthList", scenarioAuthList);
         return returnObj;
     }
 
