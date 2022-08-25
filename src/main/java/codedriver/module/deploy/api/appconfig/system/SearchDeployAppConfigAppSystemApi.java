@@ -28,9 +28,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -100,13 +98,6 @@ public class SearchDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
             List<Long> hasModuleAppSystemIdList = resourceCrossoverMapper.getHasModuleAppSystemIdListByAppSystemIdList(appSystemIdList);
             TenantContext.get().switchDefaultDatabase();
             List<Long> hasEnvAppSystemIdList = deployAppConfigMapper.getHasEnvAppSystemIdListByAppSystemIdList(appSystemIdList, TenantContext.get().getDataDbName());
-
-            //批量获取系统的环境列表
-            List<DeployAppSystemVo> appSystemVoListIncludeEnvIdList = deployAppConfigMapper.getDeployAppSystemListIncludeEnvIdListByAppSystemIdList(appSystemIdList, TenantContext.get().getDataDbName());
-            Map<Long, List<Long>> appSystemIdEnvIdListMap = new HashMap<>();
-            if (CollectionUtils.isNotEmpty(appSystemVoListIncludeEnvIdList)) {
-                appSystemIdEnvIdListMap = appSystemVoListIncludeEnvIdList.stream().collect(Collectors.toMap(DeployAppSystemVo::getId, DeployAppSystemVo::getEnvIdList));
-            }
 
             for (DeployAppSystemVo returnSystemVo : returnAppSystemList) {
                 //补充系统是否有模块、是否有环境、是否有配置权限
