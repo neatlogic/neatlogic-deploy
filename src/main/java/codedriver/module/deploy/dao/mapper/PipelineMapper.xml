@@ -259,6 +259,12 @@
                 #{sort})
     </insert>
 
+    <delete id="deletePipelineById" parameterType="java.lang.Long">
+        DELETE
+        FROM `deploy_pipeline`
+        WHERE id = #{value}
+    </delete>
+
     <delete id="deletePipelineAuthByPipelineId" parameterType="java.lang.Long">
         DELETE
         FROM `deploy_pipeline_auth`

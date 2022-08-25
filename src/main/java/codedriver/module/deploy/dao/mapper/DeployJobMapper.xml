@@ -527,7 +527,7 @@
 
     <insert id="insertJobInvoke">
         INSERT INTO `autoexec_job_invoke` (`job_id`, `invoke_id`, `source`, `type`)
-        VALUES (#{jobId}, #{invokeId}, #{source}, #{type})
+        VALUES (#{jobId}, #{invokeId}, #{source}, 'deploy')
     </insert>
 
     <update id="updateDeployJobReviewStatusById" parameterType="codedriver.framework.deploy.dto.job.DeployJobVo">
