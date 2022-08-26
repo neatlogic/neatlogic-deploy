@@ -77,7 +77,8 @@
         </if>
     </select>
 
-    <select id="searchAppSystemList" resultType="codedriver.framework.deploy.dto.app.DeployAppSystemVo" useCache="false">
+    <select id="searchAppSystemList" resultType="codedriver.framework.deploy.dto.app.DeployAppSystemVo"
+            useCache="false">
         SELECT DISTINCT `id`, `abbr_name` as abbrName, `name`
         FROM ${schemaName}.`scence_appsystem_appmodule`
         <where>
@@ -105,10 +106,16 @@
         <result column="appSystemNameAbbrName" property="abbrName"/>
         <result column="isFavorite" property="isFavorite"/>
         <result column="isConfig" property="isConfig"/>
+        <result column="isConfigAuthority" property="isConfigAuthority"/>
         <collection property="appModuleList" ofType="codedriver.framework.deploy.dto.app.DeployAppModuleVo">
             <id column="appModuleId" property="id"/>
             <result column="appModuleName" property="name"/>
             <result column="appModuleNameAbbrName" property="abbrName"/>
+        </collection>
+        <collection property="authActionVoList"
+                    ofType="codedriver.framework.deploy.dto.app.DeployAppConfigAuthorityActionVo">
+            <result column="authAction" property="action"/>
+            <result column="authActionType" property="type"/>
         </collection>
     </resultMap>
 
@@ -121,10 +128,16 @@
         saa.`app_module_name` as appModuleName,
         saa.`app_module_abbr_name` as appModuleNameAbbrName,
         if(dacu.user_uuid is null,0,1) as isFavorite,
-        if(dac.config is null,0,1) as isConfig
+        if(dac.config is null,0,1) as isConfig,
+        if( daca.app_system_id IS NULL, 0, 1 ) AS isConfigAuthority,
+        daca.auth_type as authType,
+        daca.auth_uuid as authUuid,
+        daca.`action` as authAction,
+        daca.action_type authActionType
         from ${schemaName}.`scence_appsystem_appmodule` saa
         left join deploy_app_config_user dacu on saa.id = dacu.app_system_id and dacu.user_uuid = #{userUuid}
         left join deploy_app_config dac on saa.id = dac.app_system_id and dac.app_module_id = 0 and dac.env_id = 0
+        LEFT JOIN deploy_app_config_authority daca ON daca.app_system_id = saa.id
         where saa.id in
         <foreach collection="idList" item="id" open="(" close=")" separator=",">
             #{id}
@@ -134,16 +147,22 @@
         CONVERT(saa.app_module_abbr_name USING gbk) COLLATE gbk_chinese_ci ASC
     </select>
 
-    <select id="getAppSystemListByIdList" resultType="codedriver.framework.deploy.dto.app.DeployAppSystemVo" useCache="false">
+    <select id="getAppSystemListByIdList" resultMap="appConfigSystemMap" useCache="false">
         select
-        sa.id as id,
-        sa.`name` as name,
-        sa.`abbr_name` as abbrName,
+        sa.id as appSystemId,
+        sa.`name` as appSystemName,
+        sa.`abbr_name` as appSystemNameAbbrName,
         if(dacu.user_uuid is null,0,1) as isFavorite,
-        if(dac.config is null,0,1) as isConfig
+        if(dac.config is null,0,1) as isConfig,
+        if( daca.app_system_id IS NULL, 0, 1 ) AS isConfigAuthority,
+        daca.auth_type as authType,
+        daca.auth_uuid as authUuid,
+        daca.`action` as authAction,
+        daca.action_type authActionType
         from ${schemaName}.`scence_appsystem` sa
         left join deploy_app_config_user dacu on sa.id = dacu.app_system_id and dacu.user_uuid = #{userUuid}
         left join deploy_app_config dac on sa.id = dac.app_system_id and dac.app_module_id = 0 and dac.env_id = 0
+        LEFT JOIN deploy_app_config_authority daca ON daca.app_system_id = sa.id
         where sa.id in
         <foreach collection="idList" item="id" open="(" close=")" separator=",">
             #{id}
@@ -237,7 +256,8 @@
         <include refid="appConfigAuthorityWhere"/>
     </select>
 
-    <select id="getAppConfigAuthorityList" resultType="codedriver.framework.deploy.dto.app.DeployAppConfigAuthorityVo" useCache="false">
+    <select id="getAppConfigAuthorityList" resultType="codedriver.framework.deploy.dto.app.DeployAppConfigAuthorityVo"
+            useCache="false">
         select distinct `app_system_id` as appSystemId,`auth_type` as authType,`auth_uuid` as authUuid
         from deploy_app_config_authority
         <include refid="appConfigAuthorityWhere"/>
@@ -284,23 +304,10 @@
     </select>
 
     <select id="getAppConfigAuthorityListByAppSystemId"
-            resultType="codedriver.framework.deploy.dto.app.DeployAppConfigAuthorityVo" useCache="false">
-        select app_system_id AS appSystemId,
-               auth_type     AS authType,
-               auth_uuid     AS authUuid,
-               `action`,
-               action_type   AS authorityActionType
+            resultMap="appConfigAuthorityMap" useCache="false">
+        select app_system_id, auth_type, auth_uuid, `action`, action_type
         from deploy_app_config_authority
         where app_system_id = #{value}
-    </select>
-
-    <select id="getHasConfigAuthoritySystemIdListByAppSystemIdList" resultType="java.lang.Long" useCache="false">
-        select app_system_id
-        from deploy_app_config_authority
-        where app_system_id in
-        <foreach collection="list" item="id" open="(" separator="," close=")">
-            #{id}
-        </foreach>
     </select>
 
     <select id="getAppConfig" parameterType="codedriver.framework.deploy.dto.app.DeployAppConfigVo"
@@ -470,17 +477,19 @@
 
     <select id="getDeployAppModuleEnvListByAppSystemIdAndModuleId"
             resultType="codedriver.framework.cmdb.dto.resourcecenter.entity.AppEnvironmentVo" useCache="false">
-        SELECT a.`env_id`        AS envId,
-               a.`env_name`      AS envName
+        SELECT a.`env_id`   AS envId,
+               a.`env_name` AS envName
         FROM ${schemaName}.`scence_appinstance_env_appmodule_appsystem` a
         where a.`env_id` is not null
-          and a.`app_system_id` = #{systemId} and a.`app_module_id` = #{moduleId}
+          and a.`app_system_id` = #{systemId}
+          and a.`app_module_id` = #{moduleId}
         UNION
-        SELECT cc.id              AS envId,
-               cc.name            AS envName
+        SELECT cc.id   AS envId,
+               cc.name AS envName
         FROM deploy_app_config_env dace
                  JOIN cmdb_cientity cc ON cc.id = dace.env_id
-        where dace.app_system_id = #{systemId} and dace.app_module_id = #{moduleId}
+        where dace.app_system_id = #{systemId}
+          and dace.app_module_id = #{moduleId}
     </select>
 
     <select id="getDeployAppHasNotEnvListByAppSystemIdAndModuleIdList"
@@ -701,11 +710,11 @@
             resultType="long" useCache="false">
         SELECT distinct damrg.app_module_id
         FROM deploy_app_module_runner_group damrg
-                 JOIN runnergroup rg ON rg.id = damrg.runner_group_id
-                  JOIN runnergroup_runner rgr ON rg.`id` = rgr.`runnergroup_id`
-                  JOIN runner r ON r.`id` = rgr.`runner_id`
+        JOIN runnergroup rg ON rg.id = damrg.runner_group_id
+        JOIN runnergroup_runner rgr ON rg.`id` = rgr.`runnergroup_id`
+        JOIN runner r ON r.`id` = rgr.`runner_id`
         WHERE damrg.app_system_id = #{appSystemId}
-          AND damrg.app_module_id in
+        AND damrg.app_module_id in
         <foreach collection="appModuleIdList" item="appModuleId" separator="," open="(" close=")">
             #{appModuleId}
         </foreach>
@@ -994,7 +1003,8 @@
         <result column="port" property="port"/>
     </resultMap>
 
-    <select id="getAppConfigEnvDatabaseCount" parameterType="java.lang.String" resultType="java.lang.Integer" useCache="false">
+    <select id="getAppConfigEnvDatabaseCount" parameterType="java.lang.String" resultType="java.lang.Integer"
+            useCache="false">
         SELECT count(a.id)
         <include refid="searchDatabase"></include>
     </select>
@@ -1020,7 +1030,8 @@
         </where>
     </sql>
 
-    <select id="getAppConfigEnvDatabaseResourceIdList" parameterType="java.lang.String" resultType="java.lang.Long" useCache="false">
+    <select id="getAppConfigEnvDatabaseResourceIdList" parameterType="java.lang.String" resultType="java.lang.Long"
+            useCache="false">
         SELECT a.id
         <include refid="searchDatabase"></include>
         <if test="searchVo.needPage">
@@ -1057,19 +1068,11 @@
         )
     </select>
 
-    <select id="getAppConfigEnvDatabaseResourceListByIdList" resultMap="DatabaseResourceMap" useCache="false">
-        ${sql}
-    </select>
-
     <resultMap id="AppModuleMap" type="codedriver.framework.deploy.dto.app.DeployAppModuleVo">
         <id column="id" property="id"/>
         <result column="name" property="name"/>
         <result column="abbr_name" property="abbrName"/>
     </resultMap>
-
-    <select id="getAppModuleListByIdList" resultMap="AppModuleMap" useCache="false">
-        ${sql}
-    </select>
 
     <select id="getAppConfigAppSystemIdListByAppSystemIdList" parameterType="java.lang.Long"
             resultType="java.lang.Long" useCache="false">
@@ -1244,6 +1247,43 @@
                 ))
             </foreach>
         </where>
+    </select>
+
+    <resultMap id="appConfigSystemMapNew" type="codedriver.framework.deploy.dto.app.DeployAppSystemVo">
+        <result column="appSystemId" property="id"/>
+        <result column="appSystemName" property="name"/>
+        <result column="appSystemNameAbbrName" property="abbrName"/>
+        <result column="isFavorite" property="isFavorite"/>
+        <result column="isConfig" property="isConfig"/>
+        <result column="isConfigAuthority" property="isConfigAuthority"/>
+        <collection property="appModuleList" ofType="codedriver.framework.deploy.dto.app.DeployAppModuleVo">
+            <id column="appModuleId" property="id"/>
+            <result column="appModuleName" property="name"/>
+            <result column="appModuleNameAbbrName" property="abbrName"/>
+        </collection>
+        <collection property="authList" ofType="codedriver.framework.deploy.dto.app.DeployAppConfigAuthorityVo">
+            <result column="authType" property="authType"/>
+            <result column="authUuid" property="authUuid"/>
+            <collection property="actionList"
+                        ofType="codedriver.framework.deploy.dto.app.DeployAppConfigAuthorityActionVo">
+                <result column="authAction" property="action"/>
+                <result column="authActionType" property="type"/>
+            </collection>
+        </collection>
+    </resultMap>
+
+    <select id="getBatchAppConfigAuthorityListByAppSystemIdList" resultMap="appConfigSystemMapNew" useCache="false">
+        select a.id as appSystemId,
+        b.auth_uuid as authUuid ,
+        b.auth_type as authType,
+        b.`action` as authAction,
+        b.action_type as authActionType
+        FROM ${schemaName}.`scence_appsystem_appmodule` a
+        left join deploy_app_config_authority b on a.id =b.app_system_id
+        where a.id in
+        <foreach collection="appSystemIdList" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
     </select>
 
     <select id="getDeployAppHasAuthorityAppSystemIdListByAppSystemIdList" resultType="java.lang.Long" useCache="false">
