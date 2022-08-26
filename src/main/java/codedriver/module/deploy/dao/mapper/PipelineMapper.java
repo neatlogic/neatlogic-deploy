@@ -36,6 +36,8 @@ public interface PipelineMapper {
 
     void insertPipelineJobTemplate(PipelineJobTemplateVo pipelineJobTemplateVo);
 
+    void deletePipelineById(Long pipelineId);
+
     void deletePipelineAuthByPipelineId(Long pipelineId);
 
     void deleteLaneGroupJobTemplateByPipelineId(Long pipelineId);

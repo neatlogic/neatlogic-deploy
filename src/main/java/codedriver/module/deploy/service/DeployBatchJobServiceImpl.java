@@ -258,6 +258,9 @@ public class DeployBatchJobServiceImpl implements DeployBatchJobService, IDeploy
                 if (groupVo.getIsGroupRun() == 0) {
                     groupStatus = nextGroupId == null ? groupStatus : JobPhaseStatus.WAIT_INPUT.getValue();
                 }
+                if(groupStatus.equalsIgnoreCase(JobStatus.FAILED.getValue())){
+                    deployBatchJobMapper.updateBatchJobStatusByGroupId(groupVo.getId(),JobStatus.FAILED.getValue());
+                }
             }
             groupVo.setStatus(groupStatus);
             deployBatchJobMapper.updateGroupStatus(groupVo);
@@ -314,6 +317,4 @@ public class DeployBatchJobServiceImpl implements DeployBatchJobService, IDeploy
             }
         }
     }
-
-
 }

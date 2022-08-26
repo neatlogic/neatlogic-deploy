@@ -88,7 +88,7 @@ public class DeployJobServiceImpl implements DeployJobService {
         ICiEntityCrossoverMapper iCiEntityCrossoverMapper = CrossoverServiceFactory.getApi(ICiEntityCrossoverMapper.class);
         IAppSystemMapper iAppSystemMapper = CrossoverServiceFactory.getApi(IAppSystemMapper.class);
         if (StringUtils.isNotBlank(deployJobParam.getAppSystemName())) {
-            AppSystemVo appSystem = iAppSystemMapper.getAppSystemByAbbrName(deployJobParam.getAppSystemName(), TenantContext.get().getDataDbName());
+            AppSystemVo appSystem = iAppSystemMapper.getAppSystemByAbbrName(deployJobParam.getAppSystemAbbrName(), TenantContext.get().getDataDbName());
             if (appSystem == null) {
                 throw new CiEntityNotFoundException(deployJobParam.getAppSystemName());
             }
@@ -228,7 +228,7 @@ public class DeployJobServiceImpl implements DeployJobService {
             throw new CiEntityNotFoundException(deployJobParam.getAppModuleId());
         }
         deployJobParam.setAppModuleName(appModuleVo.getName());
-        deployJobParam.setAppSystemAbbrName(appModuleVo.getAbbrName());
+        deployJobParam.setAppModuleAbbrName(appModuleVo.getAbbrName());
         if (deployJobParam.getVersionId() != null) {
             DeployVersionVo versionVo = deployVersionMapper.getDeployVersionBySystemIdAndModuleIdAndVersionId(deployJobParam.getAppSystemId(), deployJobParam.getAppModuleId(), deployJobParam.getVersionId());
             if (versionVo == null) {
@@ -262,9 +262,15 @@ public class DeployJobServiceImpl implements DeployJobService {
     }
 
     @Override
-    public JSONObject createJob(DeployJobVo deployJobParam, Boolean isBatch) throws Exception {
+    public JSONObject createBatchJob(DeployJobVo deployJobParam) {
         initDeployParam(deployJobParam, true);
-        return createJob(deployJobParam);
+        JSONObject resultJson = new JSONObject();
+        IAutoexecJobActionCrossoverService autoexecJobActionCrossoverService = CrossoverServiceFactory.getApi(IAutoexecJobActionCrossoverService.class);
+        autoexecJobActionCrossoverService.validateAndCreateJobFromCombop(deployJobParam);
+        resultJson.put("jobId", deployJobParam.getId());
+        resultJson.put("appSystemName", deployJobParam.getAppSystemName());
+        resultJson.put("appModuleName", deployJobParam.getAppModuleName());
+        return resultJson;
     }
 
     @Override

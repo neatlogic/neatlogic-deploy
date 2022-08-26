@@ -6,7 +6,6 @@
 package codedriver.module.deploy.dao.mapper;
 
 import codedriver.framework.deploy.dto.job.*;
-import codedriver.framework.deploy.dto.version.DeployVersionBuildNoVo;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
@@ -68,7 +67,7 @@ public interface DeployJobMapper {
 
     void insertGroupJob(@Param("groupId") Long groupId, @Param("jobId") Long jobId, @Param("sort") Integer sort);
 
-    void insertJobInvoke(@Param("jobId") Long jobId, @Param("invokeId") Long invokeId, @Param("source") String source, @Param("type") String type);
+    void insertJobInvoke(@Param("jobId") Long jobId, @Param("invokeId") Long invokeId, @Param("source") String source);
 
     void updateAutoExecJob(DeployJobVo deployJobVo);
 

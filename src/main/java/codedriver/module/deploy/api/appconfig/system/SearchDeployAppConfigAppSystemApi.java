@@ -82,7 +82,6 @@ public class SearchDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
         if (count > 0) {
             searchVo.setRowNum(count);
 
-            //查询包含关键字的 returnAppSystemList
             List<Long> appSystemIdList = deployAppConfigMapper.getAppSystemIdList(searchVo, UserContext.get().getUserUuid());
             if (CollectionUtils.isEmpty(appSystemIdList)) {
                 return TableResultUtil.getResult(returnAppSystemList, searchVo);
@@ -92,6 +91,7 @@ public class SearchDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
             } else {
                 returnAppSystemList = deployAppConfigMapper.getAppSystemListByIdList(appSystemIdList, TenantContext.get().getDataDbName(), UserContext.get().getUserUuid());
             }
+
             /*补充系统是否有模块、是否有环境、是否有配置权限 ,补充模块是否配置、是否有环境*/
             TenantContext.get().switchDataDatabase();
             IResourceCrossoverMapper resourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
@@ -99,7 +99,6 @@ public class SearchDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
             TenantContext.get().switchDefaultDatabase();
             List<Long> hasEnvAppSystemIdList = deployAppConfigMapper.getHasEnvAppSystemIdListByAppSystemIdList(appSystemIdList, TenantContext.get().getDataDbName());
 
-            List<Long> hasConfigAuthoritySystemIdList = deployAppConfigMapper.getHasConfigAuthoritySystemIdListByAppSystemIdList(appSystemIdList);
             for (DeployAppSystemVo returnSystemVo : returnAppSystemList) {
                 //补充系统是否有模块、是否有环境、是否有配置权限
                 if (hasModuleAppSystemIdList.contains(returnSystemVo.getId())) {
@@ -107,9 +106,6 @@ public class SearchDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
                 }
                 if (hasEnvAppSystemIdList.contains(returnSystemVo.getId())) {
                     returnSystemVo.setIsHasEnv(1);
-                }
-                if (hasConfigAuthoritySystemIdList.contains(returnSystemVo.getId())) {
-                    returnSystemVo.setIsConfigAuthority(1);
                 }
 
                 //补充模块是否配置、是否有环境

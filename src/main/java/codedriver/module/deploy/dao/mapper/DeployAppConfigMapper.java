@@ -1,6 +1,5 @@
 package codedriver.module.deploy.dao.mapper;
 
-import codedriver.framework.cmdb.dto.resourcecenter.ResourceVo;
 import codedriver.framework.cmdb.dto.resourcecenter.entity.AppEnvironmentVo;
 import codedriver.framework.deploy.dto.app.*;
 import codedriver.framework.dto.AuthenticationInfoVo;
@@ -68,8 +67,6 @@ public interface DeployAppConfigMapper {
     List<Long> getHasEnvAppModuleIdListByAppSystemIdAndModuleIdList(@Param("appSystemId") Long appSystemId, @Param("appModuleIdList") List<Long> appModuleIdList, @Param("schemaName") String schemaName);
 
     List<Long> getAppModuleEnvAutoConfigInstanceIdList(@Param("searchVo") DeployAppEnvAutoConfigVo searchVo, @Param("schemaName") String schemaName);
-
-    List<Long> getHasConfigAuthoritySystemIdListByAppSystemIdList(List<Long> appSystemIdList);
 
     RunnerGroupVo getAppModuleRunnerGroupByAppSystemIdAndModuleId(@Param("appSystemId") Long appSystemId, @Param("appModuleId") Long appModuleId);
 
@@ -184,8 +181,6 @@ public interface DeployAppConfigMapper {
 
     List<Long> getDeployAppHasAuthorityAppSystemIdListByAppSystemIdList(@Param("appSystemIdSet") Set<Long> appSystemIdSet);
 
-    List<ResourceVo> getAppConfigEnvDatabaseResourceListByIdList(String sql);
-
     List<DeployAppModuleVo> getAppModuleListBySystemIdAndEnvId(@Param("appSystemId") Long appSystemId, @Param("envId") Long envId, @Param("schemaName") String schemaName);
 
     List<DeployAppModuleVo> getDeployHasNotConfigAppModuleListByAppSystemId(@Param("appSystemId") Long appSystemId, @Param("schemaName") String schemaName);
@@ -195,6 +190,8 @@ public interface DeployAppConfigMapper {
     List<DeployAppConfigAuthorityActionVo> getDeployAppAllAuthorityActionListByAppSystemIdAndAuthUuidList(@Param("appSystemId") Long appSystemId, @Param("authUuidList") List<String> authUuidList);
 
     List<DeployAppAuthCheckVo> getBatchDeployAppAuthorityActionList(List<DeployAppAuthCheckVo> deployAppAuthCheckVoList);
+
+    List<DeployAppSystemVo> getBatchAppConfigAuthorityListByAppSystemIdList(@Param("appSystemIdList") List<Long> appSystemIdList, @Param("schemaName") String schemaName);
 
     void deleteAppConfigSystemFavoriteByAppSystemIdAndUserUuid(@Param("appSystemId") Long appSystemId, @Param("userUuid") String userUuid);
 
