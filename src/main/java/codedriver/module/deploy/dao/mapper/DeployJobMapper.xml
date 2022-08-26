@@ -10,13 +10,13 @@
     <select id="getDeployJobByJobId" resultType="codedriver.framework.deploy.dto.job.DeployJobVo">
         select a.id,
                a.app_system_id as appSystemId,
-               b.name        as appSystemName,
+               b.name          as appSystemName,
                a.app_module_id as appModuleId,
-               c.name        as appModuleName,
+               c.name          as appModuleName,
                a.env_id        as envId,
-               d.name        as envName,
-               a.scenario_id as scenarioId,
-               e.name        as scenarioName,
+               d.name          as envName,
+               a.scenario_id   as scenarioId,
+               e.name          as scenarioName,
                a.version,
                a.version_id    as versionId,
                a.build_no      as buildNo,
@@ -60,6 +60,10 @@
             <foreach collection="invokeIdList" open="(" item="invokeId" close=")" separator=",">
                 #{invokeId}
             </foreach>
+        </if>
+        <if test="pipelineId != null">
+            JOIN `autoexec_job_invoke` aji_pipeline ON aj.`id` = aji_pipeline.`job_id` AND aji_pipeline.`invoke_id` =
+            #{pipelineId} AND aji_pipeline.`source` = 'pipeline'
         </if>
         <if test="isHasAllAuthority == 0">
             LEFT JOIN deploy_job dj ON dj.id = aj.id

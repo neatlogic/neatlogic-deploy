@@ -19,10 +19,7 @@ import codedriver.framework.deploy.dto.job.DeployJobAuthVo;
 import codedriver.framework.deploy.dto.job.DeployJobVo;
 import codedriver.framework.deploy.dto.job.LaneGroupVo;
 import codedriver.framework.deploy.dto.job.LaneVo;
-import codedriver.framework.deploy.dto.pipeline.PipelineGroupVo;
-import codedriver.framework.deploy.dto.pipeline.PipelineJobTemplateVo;
-import codedriver.framework.deploy.dto.pipeline.PipelineLaneVo;
-import codedriver.framework.deploy.dto.pipeline.PipelineVo;
+import codedriver.framework.deploy.dto.pipeline.*;
 import codedriver.framework.deploy.exception.DeployJobParamIrregularException;
 import codedriver.framework.deploy.exception.DeployPipelineNotFoundException;
 import codedriver.framework.restful.annotation.*;
@@ -71,7 +68,9 @@ public class AddBatchDeployJobFromPipelineApi extends PrivateApiComponentBase {
 
     @Input({@Param(name = "pipelineId", type = ApiParamType.LONG, isRequired = true, desc = "超级流水线id"),
             @Param(name = "name", type = ApiParamType.STRING, isRequired = true, desc = "作业名称"),
-            @Param(name = "appSystemModuleVersionList", type = ApiParamType.JSONARRAY, isRequired = true, desc = "选中的系统模块和版本，数组对象需要包含appSystemId,appModuleId和versionId三个字段"), @Param(name = "triggerType", type = ApiParamType.ENUM, rule = "manual,auto", desc = "触发方式"), @Param(name = "planStartTime", type = ApiParamType.LONG, desc = "计划开始时间")})
+            @Param(name = "appSystemModuleVersionList", type = ApiParamType.JSONARRAY, isRequired = true, desc = "选中的系统模块和版本，数组对象需要包含appSystemId,appModuleId和versionId三个字段"),
+            @Param(name = "triggerType", type = ApiParamType.ENUM, rule = "manual,auto", desc = "触发方式"),
+            @Param(name = "planStartTime", type = ApiParamType.LONG, desc = "计划开始时间")})
     @Output({@Param(explode = DeployJobVo.class)})
     @ResubmitInterval(3)
     @Description(desc = "通过超级流水线添加批量发布作业接口")
@@ -154,10 +153,13 @@ public class AddBatchDeployJobFromPipelineApi extends PrivateApiComponentBase {
 
         deployJobMapper.insertAutoExecJob(deployJobVo);
         deployJobMapper.insertJobInvoke(deployJobVo.getId(), pipelineId, JobSource.PIPELINE.getValue());
-        if (CollectionUtils.isNotEmpty(deployJobVo.getAuthList())) {
-            for (DeployJobAuthVo authVo : deployJobVo.getAuthList()) {
-                authVo.setJobId(deployJobVo.getId());
-                deployJobMapper.insertDeployJobAuth(authVo);
+        if (CollectionUtils.isNotEmpty(pipelineVo.getAuthList())) {
+            for (PipelineAuthVo authVo : pipelineVo.getAuthList()) {
+                DeployJobAuthVo deployAuthVo = new DeployJobAuthVo();
+                deployAuthVo.setJobId(deployJobVo.getId());
+                deployAuthVo.setAuthUuid(authVo.getAuthUuid());
+                deployAuthVo.setType(authVo.getType());
+                deployJobMapper.insertDeployJobAuth(deployAuthVo);
             }
         }
         return deployJobMapper.getBatchDeployJobById(deployJobVo.getId());
@@ -167,9 +169,7 @@ public class AddBatchDeployJobFromPipelineApi extends PrivateApiComponentBase {
     static Long getVersionId(JSONArray appSystemModuleVersionList, PipelineJobTemplateVo jobTemplateVo) {
         for (int i = 0; i < appSystemModuleVersionList.size(); i++) {
             JSONObject dataObj = appSystemModuleVersionList.getJSONObject(i);
-            if (dataObj.getLong("appSystemId").equals(jobTemplateVo.getAppSystemId())
-                    && dataObj.getLong("appModuleId").equals(jobTemplateVo.getAppModuleId())
-            ) {
+            if (dataObj.getLong("appSystemId").equals(jobTemplateVo.getAppSystemId()) && dataObj.getLong("appModuleId").equals(jobTemplateVo.getAppModuleId())) {
                 return dataObj.getLong("versionId");
             }
         }
