@@ -46,7 +46,7 @@ public class DeployAppConfigServiceImpl implements DeployAppConfigService {
         }
 
         //删除系统、模块时才会删除runner组
-        if (!(configVo.getAppSystemId() != 0L && configVo.getAppSystemId() != 0L && configVo.getEnvId() != 0L)) {
+        if (!(configVo.getAppSystemId() != 0L && configVo.getAppModuleId() != 0L)) {
             deployAppConfigMapper.deleteAppModuleRunnerGroup(configVo);
         }
 

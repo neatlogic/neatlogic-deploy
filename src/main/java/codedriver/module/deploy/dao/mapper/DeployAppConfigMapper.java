@@ -89,7 +89,11 @@ public interface DeployAppConfigMapper {
 
     List<DeployAppModuleEnvVo> getDeployAppModuleEnvListByAppSystemId(@Param("appSystemId") Long appSystemId, @Param("schemaName") String schemaName);
 
+    List<DeployAppModuleEnvVo> getDeployAppModuleEnvListByAppSystemIdAndAppModuleIdList(@Param("appSystemId") Long appSystemId, @Param("appModuleIdList") List<Long> appModuleIdList, @Param("schemaName") String schemaName);
+
     List<AppEnvironmentVo> getDeployAppModuleEnvListByAppSystemIdAndModuleId(@Param("systemId") Long systemId, @Param("moduleId") Long moduleId, @Param("schemaName") String schemaName);
+
+    List<DeployAppEnvironmentVo> getAppConfigEnvDBCSchemaListAndAutoCfgKeyListByAppSystemIdAndAppModuleIdAndEnvId(@Param("appSystemId") Long appSystemId, @Param("appModuleId") Long appModuleId, @Param("envIdList") List<Long> envIdList);
 
     Integer insertAppConfigAuthority(DeployAppConfigAuthorityVo deployAppConfigAuthorityVo);
 
@@ -106,7 +110,11 @@ public interface DeployAppConfigMapper {
      */
     void insertAppEnvAutoConfigNew(DeployAppEnvAutoConfigVo appEnvAutoConfigVo);
 
+    void insertBatchAppEnvAutoConfig(@Param("appEnvAutoConfigVoList") List<DeployAppEnvAutoConfigVo> appEnvAutoConfigVoList);
+
     Integer insertAppConfig(DeployAppConfigVo deployAppConfigVo);
+
+    void insertBatchAppConfig(@Param("configList") List<DeployAppConfigVo> configList);
 
     Integer insertAppConfigDraft(DeployAppConfigVo deployAppConfigDraftVo);
 
