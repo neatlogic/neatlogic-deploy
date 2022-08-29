@@ -187,6 +187,7 @@
         dsd.resource_id AS resourceId,
         r.`host` AS runnerHost,
         r.`port` AS runnerPort,
+        r.`url` AS runnerUrl,
         dsd.`node_name` AS nodeName
         <include refid="searchDeploySql"></include>
         ORDER BY dsd.`sort` ASC, CONVERT( dsd.sql_file USING gbk) COLLATE gbk_chinese_ci ASC
