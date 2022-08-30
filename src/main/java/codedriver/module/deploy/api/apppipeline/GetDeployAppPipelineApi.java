@@ -63,6 +63,7 @@ public class GetDeployAppPipelineApi extends PrivateApiComponentBase {
             throw new AppSystemNotFoundException(searchVo.getAppSystemId());
         }
         searchVo.setAppSystemName(appSystem.getName());
+        searchVo.setAppSystemAbbrName(appSystem.getAbbrName());
         Long appModuleId = searchVo.getAppModuleId();
         if (appModuleId != null && appModuleId != 0) {
             ResourceVo appModule = resourceCrossoverMapper.getAppModuleById(appModuleId, schemaName);
@@ -70,6 +71,7 @@ public class GetDeployAppPipelineApi extends PrivateApiComponentBase {
                 throw new AppModuleNotFoundException(appModuleId);
             }
             searchVo.setAppModuleName(appModule.getName());
+            searchVo.setAppModuleAbbrName(appModule.getAbbrName());
         }
         Long envId = searchVo.getEnvId();
         if (envId != null && envId != 0) {
