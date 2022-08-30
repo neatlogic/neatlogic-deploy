@@ -90,7 +90,9 @@ public interface DeployAppConfigMapper {
 
     List<AppEnvironmentVo> getDeployAppModuleEnvListByAppSystemIdAndModuleId(@Param("systemId") Long systemId, @Param("moduleId") Long moduleId, @Param("schemaName") String schemaName);
 
-    List<DeployAppEnvironmentVo> getAppConfigEnvDBCSchemaListAndAutoCfgKeyListByAppSystemIdAndAppModuleIdAndEnvId(@Param("appSystemId") Long appSystemId, @Param("appModuleId") Long appModuleId, @Param("envIdList") List<Long> envIdList);
+    DeployAppEnvironmentVo getAppConfigEnvIncludeDBCSchemaListAndAutoCfgKeyListByAppSystemIdAndAppModuleIdAndEnvId(@Param("appSystemId") Long appSystemId, @Param("appModuleId") Long appModuleId, @Param("envId") Long envId, @Param("schemaName") String schemaName);
+
+    List<DeployAppEnvironmentVo> getAppConfigEnvListIncludeDBCSchemaListAndAutoCfgKeyListByAppSystemIdAndAppModuleIdAndEnvId(@Param("appSystemId") Long appSystemId, @Param("appModuleId") Long appModuleId, @Param("envIdList") List<Long> envIdList, @Param("schemaName") String schemaName);
 
     Integer insertAppConfigAuthority(DeployAppConfigAuthorityVo deployAppConfigAuthorityVo);
 
@@ -183,7 +185,9 @@ public interface DeployAppConfigMapper {
 
     List<DeployAppModuleVo> getAppModuleListBySystemIdAndEnvId(@Param("appSystemId") Long appSystemId, @Param("envId") Long envId, @Param("schemaName") String schemaName);
 
-    List<DeployAppModuleVo> getDeployHasNotConfigAppModuleListByAppSystemId(@Param("appSystemId") Long appSystemId, @Param("schemaName") String schemaName);
+    List<DeployAppModuleVo> getDeployHasNotConfigAppModuleListByAppSystemIdAndAppModuleId(@Param("appSystemId") Long appSystemId, @Param("appModuleId") Long appModuleId, @Param("schemaName") String schemaName);
+
+    List<DeployAppEnvironmentVo> getDeployHasNotConfigAppEnvListByAppSystemIdAndAppModuleIdAndEnvId(@Param("appSystemId") Long appSystemId, @Param("appModuleId") Long appModuleId, @Param("envId") Long envId, @Param("schemaName") String schemaName);
 
     List<DeployAppConfigAuthorityActionVo> getDeployAppAuthorityActionList(DeployAppAuthCheckVo deployAppAuthCheckVo);
 

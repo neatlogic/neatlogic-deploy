@@ -33,6 +33,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -121,7 +122,7 @@ public class SaveDeployAppConfigAppModuleApi extends PrivateApiComponentBase {
 
             /*新增应用系统（配置项）*/
             //1、构建事务vo，并添加属性值
-            paramObj.put("needUpdateRelList", new JSONArray(Arrays.asList("APP")));
+            paramObj.put("needUpdateRelList", new JSONArray(Collections.singletonList("APP")));
             ciEntityTransactionVo = new CiEntityTransactionVo();
             deployAppConfigService.addAttrEntityDataAndRelEntityData(ciEntityTransactionVo, paramObj);
 

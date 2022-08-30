@@ -2,13 +2,13 @@
  * Copyright(c) 2022 TechSure Co., Ltd. All Rights Reserved.
  * 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
  */
-package codedriver.module.deploy.api.appconfig.system;
+package codedriver.module.deploy.api.appconfig.env;
 
 import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.deploy.auth.DEPLOY_BASE;
-import codedriver.framework.deploy.dto.app.DeployAppModuleVo;
+import codedriver.framework.deploy.dto.app.DeployAppEnvironmentVo;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
@@ -25,14 +25,14 @@ import javax.annotation.Resource;
 @Service
 @AuthAction(action = DEPLOY_BASE.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
-public class ListDeployAppConfigHasNotConfigModuleApi extends PrivateApiComponentBase {
+public class ListDeployAppConfigHasNotConfigEnvApi extends PrivateApiComponentBase {
 
     @Resource
     private DeployAppConfigMapper deployAppConfigMapper;
 
     @Override
     public String getName() {
-        return "获取没有继承应用配置的模块列表";
+        return "获取没有继承应用配置的环境列表";
     }
 
     @Override
@@ -42,18 +42,20 @@ public class ListDeployAppConfigHasNotConfigModuleApi extends PrivateApiComponen
 
     @Override
     public String getToken() {
-        return "deploy/app/config/has/not/config/module/list";
+        return "deploy/app/config/has/not/config/env/list";
     }
 
     @Input({
-            @Param(name = "appSystemId", type = ApiParamType.LONG, desc = "应用系统id")
+            @Param(name = "appSystemId", type = ApiParamType.LONG, desc = "应用系统id"),
+            @Param(name = "appModuleId", type = ApiParamType.LONG, desc = "应用模块id"),
+            @Param(name = "envId", type = ApiParamType.LONG, desc = "环境id")
     })
     @Output({
-            @Param(explode = DeployAppModuleVo[].class, desc = "发布应用配置的应用系统模块列表")
+            @Param(explode = DeployAppEnvironmentVo[].class, desc = "没有继承应用配置的环境列表")
     })
-    @Description(desc = "获取没有继承应用配置的模块列表(复制模块配置时的模块下拉)")
+    @Description(desc = "获取没有继承应用配置的环境列表(复制配置到现有环境时的环境下拉)")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
-        return deployAppConfigMapper.getDeployHasNotConfigAppModuleListByAppSystemId(paramObj.getLong("appSystemId"), TenantContext.get().getDataDbName());
+        return deployAppConfigMapper.getDeployHasNotConfigAppEnvListByAppSystemIdAndAppModuleIdAndEnvId(paramObj.getLong("appSystemId"), paramObj.getLong("appModuleId"), paramObj.getLong("envId"), TenantContext.get().getDataDbName());
     }
 }
