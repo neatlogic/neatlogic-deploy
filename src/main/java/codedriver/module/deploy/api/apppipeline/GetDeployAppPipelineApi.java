@@ -62,14 +62,14 @@ public class GetDeployAppPipelineApi extends PrivateApiComponentBase {
         if (appSystem == null) {
             throw new AppSystemNotFoundException(searchVo.getAppSystemId());
         }
-        searchVo.setAppSystemName(appSystem.getName());
+        searchVo.setAppSystemName(appSystem.getAbbrName());
         Long appModuleId = searchVo.getAppModuleId();
         if (appModuleId != null && appModuleId != 0) {
             ResourceVo appModule = resourceCrossoverMapper.getAppModuleById(appModuleId, schemaName);
             if (appModule == null) {
                 throw new AppModuleNotFoundException(appModuleId);
             }
-            searchVo.setAppModuleName(appModule.getName());
+            searchVo.setAppModuleName(appModule.getAbbrName());
         }
         Long envId = searchVo.getEnvId();
         if (envId != null && envId != 0) {
