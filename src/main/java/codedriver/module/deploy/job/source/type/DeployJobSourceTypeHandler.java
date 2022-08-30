@@ -11,7 +11,6 @@ import codedriver.framework.auth.core.AuthActionChecker;
 import codedriver.framework.autoexec.constvalue.ExecMode;
 import codedriver.framework.autoexec.constvalue.JobNodeStatus;
 import codedriver.framework.autoexec.dao.mapper.AutoexecJobMapper;
-import codedriver.framework.autoexec.dto.INodeDetail;
 import codedriver.framework.autoexec.dto.ISqlNodeDetail;
 import codedriver.framework.autoexec.dto.combop.AutoexecCombopPhaseVo;
 import codedriver.framework.autoexec.dto.combop.AutoexecCombopVo;
@@ -143,16 +142,6 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
         }
         jobVo.setExecuteJobNodeVoList(deploySqlMapper.getDeployJobPhaseNodeListBySqlIdList(resetSqlIdList));
         deploySqlMapper.resetDeploySqlStatusBySqlIdList(resetSqlIdList);
-    }
-
-    @Override
-    public int searchJobPhaseNodeCount(AutoexecJobPhaseNodeVo jobPhaseNodeVo) {
-        return 0;
-    }
-
-    @Override
-    public List<? extends INodeDetail> searchJobPhaseNodeForExport(AutoexecJobPhaseNodeVo jobPhaseNodeVo) {
-        return null;
     }
 
     @Override
