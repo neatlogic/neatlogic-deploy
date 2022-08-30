@@ -84,9 +84,6 @@ public class CopyDeployAppConfigEnvConfigApi extends PrivateApiComponentBase {
 
         //校验编辑配置的操作权限、环境权限操作
         deployAppAuthorityService.checkOperationAuth(appSystemId, DeployAppConfigAction.EDIT);
-        List<Long> checkAuthEnvIdList = new ArrayList<>(toEnvIdList);
-        checkAuthEnvIdList.add(fromEnvId);
-        deployAppAuthorityService.checkEnvAuthList(appSystemId, checkAuthEnvIdList);
 
         //来源环境层独有一份配置
         boolean hasFromEnvConfig = deployAppConfigMapper.getAppConfigByAppSystemIdAndAppModuleIdAndEnvId(appSystemId, appModuleId, fromEnvId) != null;

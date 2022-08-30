@@ -74,7 +74,7 @@ public class CopyDeployAppConfigModuleConfigApi extends PrivateApiComponentBase 
             @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "应用系统id"),
             @Param(name = "fromAppModuleId", type = ApiParamType.LONG, isRequired = true, desc = "来源模块id"),
             @Param(name = "toAppModuleIdList", type = ApiParamType.JSONARRAY, desc = "目标模块id列表"),
-            @Param(name = "abbrName", type = ApiParamType.STRING, isRequired = true, desc = "简称(复制配置，并新建模块时使用)"),
+            @Param(name = "abbrName", type = ApiParamType.STRING, desc = "简称(复制配置，并新建模块时使用)"),
             @Param(name = "name", type = ApiParamType.STRING, desc = "名称(复制配置，并新建模块时使用)"),
             @Param(name = "stateIdList", type = ApiParamType.JSONARRAY, desc = "状态(复制配置，并新建模块时使用)"),
             @Param(name = "ownerIdList", type = ApiParamType.JSONARRAY, desc = "负责人(复制配置，并新建模块时使用)"),
@@ -288,6 +288,7 @@ public class CopyDeployAppConfigModuleConfigApi extends PrivateApiComponentBase 
                 deployAppConfigMapper.insertAppConfigEnv(appSystemId, toAppModuleId, envIdList);
                 copyDbSchemaListAndAutoCfgKeyList(appSystemId, fromAppModuleId, toAppModuleId, envIdList);
             }
+            return toAppModuleId;
         }
         return null;
     }

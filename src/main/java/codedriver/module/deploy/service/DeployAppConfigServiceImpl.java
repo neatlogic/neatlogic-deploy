@@ -1,8 +1,5 @@
 package codedriver.module.deploy.service;
 
-import codedriver.framework.asynchronization.threadlocal.TenantContext;
-import codedriver.framework.deploy.dto.app.*;
-import codedriver.framework.exception.runner.RunnerGroupRunnerNotFoundException;
 import codedriver.framework.cmdb.crossover.IAttrCrossoverMapper;
 import codedriver.framework.cmdb.crossover.ICiEntityCrossoverMapper;
 import codedriver.framework.cmdb.crossover.IRelCrossoverMapper;
@@ -12,9 +9,12 @@ import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
 import codedriver.framework.cmdb.dto.transaction.CiEntityTransactionVo;
 import codedriver.framework.cmdb.exception.cientity.CiEntityNotFoundException;
 import codedriver.framework.crossover.CrossoverServiceFactory;
+import codedriver.framework.deploy.dto.app.DeployAppConfigEnvDBConfigVo;
+import codedriver.framework.deploy.dto.app.DeployAppConfigVo;
 import codedriver.framework.deploy.exception.DeployAppConfigModuleRunnerGroupNotFoundException;
 import codedriver.framework.dto.runner.RunnerGroupVo;
 import codedriver.framework.dto.runner.RunnerMapVo;
+import codedriver.framework.exception.runner.RunnerGroupRunnerNotFoundException;
 import codedriver.module.deploy.dao.mapper.DeployAppConfigMapper;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
@@ -23,7 +23,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -47,7 +46,7 @@ public class DeployAppConfigServiceImpl implements DeployAppConfigService {
         }
 
         //删除系统、模块时才会删除runner组
-        if (!(configVo.getAppSystemId() != 0L && configVo.getAppModuleId() != 0L)) {
+        if ((configVo.getAppSystemId() != 0L && configVo.getAppModuleId() == 0L && configVo.getEnvId() == 0L) || (configVo.getAppSystemId() != 0L && configVo.getAppModuleId() != 0L)) {
             deployAppConfigMapper.deleteAppModuleRunnerGroup(configVo);
         }
 
