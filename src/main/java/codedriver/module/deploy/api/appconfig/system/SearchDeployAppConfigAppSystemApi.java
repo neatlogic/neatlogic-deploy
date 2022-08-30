@@ -13,9 +13,12 @@ import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.dto.BasePageVo;
 import codedriver.framework.crossover.CrossoverServiceFactory;
 import codedriver.framework.deploy.auth.DEPLOY_BASE;
+import codedriver.framework.deploy.constvalue.JobSourceType;
 import codedriver.framework.deploy.dto.app.DeployAppModuleVo;
 import codedriver.framework.deploy.dto.app.DeployAppSystemVo;
 import codedriver.framework.deploy.dto.app.DeployResourceSearchVo;
+import codedriver.framework.dto.globallock.GlobalLockVo;
+import codedriver.framework.globallock.dao.mapper.GlobalLockMapper;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
@@ -28,7 +31,9 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -42,6 +47,9 @@ public class SearchDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
 
     @Resource
     private DeployAppConfigMapper deployAppConfigMapper;
+
+    @Resource
+    private GlobalLockMapper globalLockMapper;
 
     @Override
     public String getToken() {
@@ -92,13 +100,18 @@ public class SearchDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
                 returnAppSystemList = deployAppConfigMapper.getAppSystemListByIdList(appSystemIdList, TenantContext.get().getDataDbName(), UserContext.get().getUserUuid());
             }
 
-            /*补充系统是否有模块、是否有环境、是否有配置权限 ,补充模块是否配置、是否有环境*/
+            /*补充系统是否有模块、是否有环境、是否有配置权限 ,补充模块是否配置、是否有环境、是否含有资源锁*/
             TenantContext.get().switchDataDatabase();
             IResourceCrossoverMapper resourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
             List<Long> hasModuleAppSystemIdList = resourceCrossoverMapper.getHasModuleAppSystemIdListByAppSystemIdList(appSystemIdList);
             TenantContext.get().switchDefaultDatabase();
             List<Long> hasEnvAppSystemIdList = deployAppConfigMapper.getHasEnvAppSystemIdListByAppSystemIdList(appSystemIdList, TenantContext.get().getDataDbName());
 
+            Set<String> globalLockKeySet = new HashSet<>();
+            List<GlobalLockVo> globalLockVoList = globalLockMapper.getLockListByKeyListAndHandler(appSystemIdList.stream().map(Object::toString).collect(Collectors.toList()), JobSourceType.DEPLOY.getValue());
+            if(CollectionUtils.isNotEmpty(globalLockVoList)){
+                globalLockKeySet = globalLockVoList.stream().map(GlobalLockVo::getKey).collect(Collectors.toSet());
+            }
             for (DeployAppSystemVo returnSystemVo : returnAppSystemList) {
                 //补充系统是否有模块、是否有环境、是否有配置权限
                 if (hasModuleAppSystemIdList.contains(returnSystemVo.getId())) {
@@ -121,6 +134,11 @@ public class SearchDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
                         }
                         appModuleVo.setIsConfig(isHasConfig);
                     }
+                }
+
+                //补充isHasResourceLock
+                if(globalLockKeySet.stream().anyMatch(o->o.contains(returnSystemVo.getId().toString()))){
+                    returnSystemVo.setIsHasResourceLock(1);
                 }
             }
         }
