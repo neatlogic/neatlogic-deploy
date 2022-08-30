@@ -465,7 +465,6 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
                 jobVo.setIsCanExecute(1);
             } else {
                 jobVo.setIsCanTakeOver(1);
-                jobVo.setIsCanTakeOver(1);
             }
         }
     }
