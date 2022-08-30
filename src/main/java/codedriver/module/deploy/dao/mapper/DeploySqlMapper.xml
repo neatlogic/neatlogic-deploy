@@ -86,7 +86,7 @@
                 #{sqlId})
     </insert>
 
-    <select id="getDeploySqlDetail" resultType="codedriver.framework.deploy.dto.sql.DeploySqlDetailVo">
+    <select id="getDeploySqlDetail" resultType="codedriver.framework.deploy.dto.sql.DeploySqlNodeDetailVo">
         SELECT dsd.id,
                dsd.`md5`,
                dsd.`status`,
@@ -105,7 +105,7 @@
     </select>
 
     <select id="getDeploySqlDetailList"
-            resultType="codedriver.framework.deploy.dto.sql.DeploySqlDetailVo">
+            resultType="codedriver.framework.deploy.dto.sql.DeploySqlNodeDetailVo">
         SELECT dsd.`id`,
         dsd.`md5`,
         dsd.`status`,
@@ -140,8 +140,8 @@
         </foreach>
     </select>
 
-    <select id="getAllDeploySqlDetailList" parameterType="codedriver.framework.deploy.dto.sql.DeploySqlDetailVo"
-            resultType="codedriver.framework.deploy.dto.sql.DeploySqlDetailVo">
+    <select id="getAllDeploySqlDetailList" parameterType="codedriver.framework.deploy.dto.sql.DeploySqlNodeDetailVo"
+            resultType="codedriver.framework.deploy.dto.sql.DeploySqlNodeDetailVo">
         SELECT dsd.`id`,
                dsd.`md5`,
                dsd.`status`,
@@ -169,7 +169,7 @@
         <include refid="searchDeploySql"></include>
     </select>
 
-    <select id="searchDeploySql" resultType="codedriver.framework.deploy.dto.sql.DeploySqlDetailVo">
+    <select id="searchDeploySql" resultType="codedriver.framework.deploy.dto.sql.DeploySqlNodeDetailVo">
         SELECT
         dsd.id,
         dsd.status,
@@ -213,7 +213,7 @@
           AND job_phase_name = #{phaseName}
     </select>
 
-    <select id="getDeployJobSqlDetailById" resultType="codedriver.framework.deploy.dto.sql.DeploySqlDetailVo">
+    <select id="getDeployJobSqlDetailById" resultType="codedriver.framework.deploy.dto.sql.DeploySqlNodeDetailVo">
         SELECT dsd.`id`,
                dsd.`md5`,
                dsd.`status`,
@@ -255,7 +255,7 @@
         </foreach>
     </select>
     <select id="getDeployJobSqlDetailByExceptStatusListAndRunnerMapId"
-            resultType="codedriver.framework.deploy.dto.sql.DeploySqlDetailVo">
+            resultType="codedriver.framework.deploy.dto.sql.DeploySqlNodeDetailVo">
         SELECT
         dsd.`host`,
         dsd.`port`,
