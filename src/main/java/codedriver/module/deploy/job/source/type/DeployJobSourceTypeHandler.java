@@ -11,6 +11,8 @@ import codedriver.framework.auth.core.AuthActionChecker;
 import codedriver.framework.autoexec.constvalue.ExecMode;
 import codedriver.framework.autoexec.constvalue.JobNodeStatus;
 import codedriver.framework.autoexec.dao.mapper.AutoexecJobMapper;
+import codedriver.framework.autoexec.dto.INodeDetail;
+import codedriver.framework.autoexec.dto.ISqlNodeDetail;
 import codedriver.framework.autoexec.dto.combop.AutoexecCombopPhaseVo;
 import codedriver.framework.autoexec.dto.combop.AutoexecCombopVo;
 import codedriver.framework.autoexec.dto.job.AutoexecJobPhaseNodeVo;
@@ -144,6 +146,22 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
     }
 
     @Override
+    public int searchJobPhaseNodeCount(AutoexecJobPhaseNodeVo jobPhaseNodeVo) {
+        return 0;
+    }
+
+    @Override
+    public List<? extends INodeDetail> searchJobPhaseNodeForExport(AutoexecJobPhaseNodeVo jobPhaseNodeVo) {
+        return null;
+    }
+
+    @Override
+    public int searchJobPhaseSqlCount(AutoexecJobPhaseNodeVo jobPhaseNodeVo) {
+        jobPhaseNodeVo.setJobPhaseName(autoexecJobMapper.getJobPhaseByPhaseId(jobPhaseNodeVo.getJobPhaseId()).getName());
+        return deploySqlMapper.searchDeploySqlCount(jobPhaseNodeVo);
+    }
+
+    @Override
     public JSONObject searchJobPhaseSql(AutoexecJobPhaseNodeVo jobPhaseNodeVo) {
         List<DeploySqlNodeDetailVo> returnList = new ArrayList<>();
         jobPhaseNodeVo.setJobPhaseName(autoexecJobMapper.getJobPhaseByPhaseId(jobPhaseNodeVo.getJobPhaseId()).getName());
@@ -153,6 +171,17 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
             returnList = deploySqlMapper.searchDeploySql(jobPhaseNodeVo);
         }
         return TableResultUtil.getResult(returnList, jobPhaseNodeVo);
+    }
+
+    @Override
+    public List<ISqlNodeDetail> searchJobPhaseSqlForExport(AutoexecJobPhaseNodeVo jobPhaseNodeVo) {
+        List<ISqlNodeDetail> result = new ArrayList<>();
+        jobPhaseNodeVo.setJobPhaseName(autoexecJobMapper.getJobPhaseByPhaseId(jobPhaseNodeVo.getJobPhaseId()).getName());
+        List<DeploySqlNodeDetailVo> list = deploySqlMapper.searchDeploySql(jobPhaseNodeVo);
+        if (list.size() > 0) {
+            list.forEach(o -> result.add(o));
+        }
+        return result;
     }
 
     @Override
