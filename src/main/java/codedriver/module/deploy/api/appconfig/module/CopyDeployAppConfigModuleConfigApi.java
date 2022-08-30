@@ -18,6 +18,7 @@ import codedriver.framework.crossover.CrossoverServiceFactory;
 import codedriver.framework.deploy.auth.DEPLOY_BASE;
 import codedriver.framework.deploy.constvalue.DeployAppConfigAction;
 import codedriver.framework.deploy.dto.app.*;
+import codedriver.framework.deploy.exception.DeployAppConfigNotFoundException;
 import codedriver.framework.dto.runner.RunnerGroupVo;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
@@ -78,7 +79,7 @@ public class CopyDeployAppConfigModuleConfigApi extends PrivateApiComponentBase 
             @Param(name = "name", type = ApiParamType.STRING, desc = "名称(复制配置，并新建模块时使用)"),
             @Param(name = "stateIdList", type = ApiParamType.JSONARRAY, desc = "状态(复制配置，并新建模块时使用)"),
             @Param(name = "ownerIdList", type = ApiParamType.JSONARRAY, desc = "负责人(复制配置，并新建模块时使用)"),
-            @Param(name = "maintenanceWindow", type = ApiParamType.STRING, desc = "维护窗口(复制配置，并新建模块时使用)"),
+            @Param(name = "maintenanceWindow", type = ApiParamType.JSONARRAY, desc = "维护窗口(复制配置，并新建模块时使用)"),
             @Param(name = "description", type = ApiParamType.STRING, desc = "备注(复制配置，并新建模块时使用)"),
     })
     @Output({
@@ -94,115 +95,90 @@ public class CopyDeployAppConfigModuleConfigApi extends PrivateApiComponentBase 
         Long fromAppModuleId = paramObj.getLong("fromAppModuleId");
         JSONArray toAppModuleIdArray = paramObj.getJSONArray("toAppModuleIdList");
 
+        //获取当前系统下的所有配置 appConfigVoList
         List<DeployAppConfigVo> appConfigVoList = deployAppConfigMapper.getAppConfigListByAppSystemId(appSystemId);
+        if (CollectionUtils.isEmpty(appConfigVoList)) {
+            throw new DeployAppConfigNotFoundException(appSystemId);
+        }
+        List<Long> fromModuleHasConfigEnvIdList = new ArrayList<>();
+        Map<Long, List<DeployAppConfigVo>> appModuleIdConfigListMap = appConfigVoList.stream().collect(Collectors.groupingBy(DeployAppConfigVo::getAppModuleId));
+        if (CollectionUtils.isNotEmpty(appModuleIdConfigListMap.get(fromAppModuleId))) {
+            fromModuleHasConfigEnvIdList = appModuleIdConfigListMap.get(fromAppModuleId).stream().map(DeployAppConfigVo::getEnvId).collect(Collectors.toList());
+        }
+
         if (CollectionUtils.isNotEmpty(toAppModuleIdArray)) {
             List<Long> toAppModuleIdList = toAppModuleIdArray.toJavaList(Long.class);
-            if (CollectionUtils.isEmpty(appConfigVoList)) {
-                return null;
+
+            List<Long> allParamModuleIdList = new ArrayList<>();
+            allParamModuleIdList.add(fromAppModuleId);
+            allParamModuleIdList.addAll(toAppModuleIdList);
+            List<DeployAppModuleEnvVo> appModuleEnvVoList = deployAppConfigMapper.getDeployAppModuleEnvListByAppSystemIdAndAppModuleIdList(appSystemId, allParamModuleIdList, TenantContext.get().getDataDbName());
+            Map<Long, List<Long>> appModuleEnvListMap = appModuleEnvVoList.stream().collect(Collectors.toMap(DeployAppModuleEnvVo::getId, DeployAppModuleEnvVo::getEnvIdList));
+            List<Long> fromModuleEnvIdList = new ArrayList<>();
+            if (CollectionUtils.isNotEmpty(appModuleEnvListMap.get(fromAppModuleId))) {
+                fromModuleEnvIdList = appModuleEnvListMap.get(fromAppModuleId);
             }
 
+            List<DeployAppConfigVo> insertConfigList = new ArrayList<>();
+
             for (Long toModuleId : toAppModuleIdList) {
-                List<DeployAppConfigVo> insertConfigList = new ArrayList<>();
-                //将有单独配置的模块、环境找出来
-                boolean hasFromModuleConfig = false;
-                boolean hasToModuleConfig = false;
-                List<Long> fromModuleHasConfigEnvIdList = new ArrayList<>();
+
+                //目标模块下有独一份配置的环境列表
                 List<Long> toModuleHasConfigEnvIdList = new ArrayList<>();
-                for (DeployAppConfigVo appConfigVo : appConfigVoList) {
-                    if (appConfigVo.getAppModuleId() == 0L) {
-                        //应用层配置
-                        continue;
-                    }
-                    if (Objects.equals(fromAppModuleId, appConfigVo.getAppModuleId())) {
-                        if (appConfigVo.getEnvId() == 0L) {
-                            //模块层独有一份配置
-                            hasFromModuleConfig = true;
-                        } else {
-                            //环境层独有一份配置
-                            fromModuleHasConfigEnvIdList.add(appConfigVo.getEnvId());
-                        }
-                    } else if (Objects.equals(toModuleId, appConfigVo.getAppModuleId())) {
-                        if (appConfigVo.getEnvId() == 0L) {
-                            //模块层独有一份配置
-                            hasToModuleConfig = true;
-                        } else {
-                            //环境层独有一份配置
-                            toModuleHasConfigEnvIdList.add(appConfigVo.getEnvId());
-                        }
-                    }
+                if (CollectionUtils.isNotEmpty(appModuleIdConfigListMap.get(toModuleId))) {
+                    toModuleHasConfigEnvIdList = appModuleIdConfigListMap.get(toModuleId).stream().map(DeployAppConfigVo::getEnvId).collect(Collectors.toList());
                 }
 
                 //1、复制模块配置
-                if (hasFromModuleConfig) {
+                if (fromModuleHasConfigEnvIdList.contains(0L)) {
                     //新增模块配置，后面统一新增配置，insert时会duplicate
                     insertConfigList.add(new DeployAppConfigVo(appSystemId, toModuleId, DeployPipelineConfigManager.init(appSystemId).withAppModuleId(fromAppModuleId).getConfig()));
-                } else if (hasToModuleConfig) {
-                    //删除全有的配置
+                } else if (toModuleHasConfigEnvIdList.contains(0L)) {
+                    //删除原有的配置
                     deployAppConfigMapper.deleteAppConfig(new DeployAppConfigVo(appSystemId, toModuleId));
                 }
 
                 //2、复制模块下的环境配置
-                List<DeployAppModuleEnvVo> appModuleEnvVoList = deployAppConfigMapper.getDeployAppModuleEnvListByAppSystemIdAndAppModuleIdList(appSystemId, Arrays.asList(fromAppModuleId, toModuleId), TenantContext.get().getDataDbName());
-                Map<Long, List<Long>> appModuleEnvListMap = appModuleEnvVoList.stream().collect(Collectors.toMap(DeployAppModuleEnvVo::getId, DeployAppModuleEnvVo::getEnvIdList));
-                List<Long> fromModuleEnvIdList = new ArrayList<>();
-                if (CollectionUtils.isNotEmpty(appModuleEnvListMap.get(fromAppModuleId))) {
-                    fromModuleEnvIdList = appModuleEnvListMap.get(fromAppModuleId);
-                }
                 //只有于来源模块拥有环境，才需要复制环境相关配置
                 if (CollectionUtils.isNotEmpty(fromModuleEnvIdList)) {
                     List<Long> needAddEnvIdList = new ArrayList<>();
-                    List<Long> sameAddEnvIdList = new ArrayList<>();
                     List<Long> toModuleEnvIdList = new ArrayList<>();
 
                     //如果目标模块下有环境，则做差集，求出需要新增的环境
                     if (CollectionUtils.isNotEmpty(appModuleEnvListMap.get(toModuleId))) {
                         toModuleEnvIdList = appModuleEnvListMap.get(toModuleId);
-                        List<Long> finalToModuleEnvIdList = toModuleEnvIdList;
-                        needAddEnvIdList = fromModuleEnvIdList.stream().filter(e -> !finalToModuleEnvIdList.contains(e)).collect(Collectors.toList());
-                        sameAddEnvIdList = fromModuleEnvIdList.stream().filter(finalToModuleEnvIdList::contains).collect(Collectors.toList());
-                    } else {
-                        needAddEnvIdList = fromModuleEnvIdList;
                     }
 
-                    //循环需要新增的环境，在目标模块下新增环境
+                    for (Long fromEnvId : fromModuleEnvIdList) {
+
+                        //如果目标模块下没有此环境，则新增
+                        if (!toModuleEnvIdList.contains(fromEnvId)) {
+                            needAddEnvIdList.add(fromEnvId);
+                        }
+
+                        //如果来源模块的环境有独一份配置，则复制
+                        if (fromModuleHasConfigEnvIdList.contains(fromEnvId)) {
+                            //新增配置，insert是会duplicate
+                            insertConfigList.add(new DeployAppConfigVo(appSystemId, toModuleId, fromEnvId, DeployPipelineConfigManager.init(appSystemId).withAppModuleId(fromAppModuleId).withEnvId(fromEnvId).getConfig()));
+                        } else if (toModuleHasConfigEnvIdList.contains(fromEnvId)) {
+                            //如果来源模块的当前环境没有独一份的配置，而目标模块的当前配置有独一份配置，则需要删除此配置
+                            deployAppConfigMapper.deleteAppConfig(new DeployAppConfigVo(appSystemId, toModuleId, fromEnvId));
+                        }
+
+                        //删除dbConfig和autoConfig（有相同的环境才需要删除）
+                        if (toModuleHasConfigEnvIdList.contains(fromEnvId)) {
+                            deployAppConfigMapper.deleteAppEnvAutoConfigByAppSystemIdAndAppModuleIdAndEnvId(appSystemId, toModuleId, fromEnvId);
+                            deployAppConfigMapper.deleteAppConfigDBConfig(new DeployAppConfigEnvDBConfigVo(appSystemId, toModuleId, fromEnvId));
+                        }
+                    }
+
                     if (CollectionUtils.isNotEmpty(needAddEnvIdList)) {
                         //给目标模块新增Deploy环境
                         deployAppConfigMapper.insertAppConfigEnv(appSystemId, toModuleId, needAddEnvIdList);
-                        for (Long needAddEnvId : needAddEnvIdList) {
-                            //新增环境配置
-                            if (fromModuleHasConfigEnvIdList.contains(needAddEnvId)) {
-                                //新增环境配置，后面统一新增配置，insert时会duplicate
-                                insertConfigList.add(new DeployAppConfigVo(appSystemId, toModuleId, needAddEnvId, DeployPipelineConfigManager.init(appSystemId).withAppModuleId(fromAppModuleId).withEnvId(needAddEnvId).getConfig()));
-                            }
-                        }
-                    }
-
-                    //循环相同的环境
-                    if (CollectionUtils.isNotEmpty(sameAddEnvIdList)) {
-                        for (Long sameEnvId : sameAddEnvIdList) {
-                            if (fromModuleHasConfigEnvIdList.contains(sameEnvId)) {
-                                //新增配置，insert是会duplicate
-                                insertConfigList.add(new DeployAppConfigVo(appSystemId, toModuleId, sameEnvId, DeployPipelineConfigManager.init(appSystemId).withAppModuleId(fromAppModuleId).withEnvId(sameEnvId).getConfig()));
-                            } else if (toModuleHasConfigEnvIdList.contains(sameEnvId)) {
-                                //如果来源模块的当前环境没有独一份的配置，而目标模块的当前配置有独一份配置，则需要删除此配置
-                                deployAppConfigMapper.deleteAppConfig(new DeployAppConfigVo(appSystemId, toModuleId, sameEnvId));
-                            }
-                            //删除dbConfig和autoConfig（有相同的环境才需要删除）
-                            deployAppConfigMapper.deleteAppEnvAutoConfigByAppSystemIdAndAppModuleIdAndEnvId(appSystemId, toModuleId, sameEnvId);
-                            deployAppConfigMapper.deleteAppConfigDBConfig(new DeployAppConfigEnvDBConfigVo(appSystemId, toModuleId, sameEnvId));
-                        }
                     }
 
                     //复制环境层dbSchema和autoCfgKey配置
-                    List<Long> needAddEnvDBAndAutoCfgEnvIdList = new ArrayList<>();
-                    needAddEnvDBAndAutoCfgEnvIdList.addAll(needAddEnvIdList);
-                    needAddEnvDBAndAutoCfgEnvIdList.addAll(sameAddEnvIdList);
-                    copyDbSchemaListAndAutoCfgKeyList(appSystemId, fromAppModuleId, toModuleId, needAddEnvDBAndAutoCfgEnvIdList);
-                }
-
-                //新增或者update流水线配置
-                if (CollectionUtils.isNotEmpty(insertConfigList)) {
-                    deployAppConfigMapper.insertBatchAppConfig(insertConfigList);
+                    copyDbSchemaListAndAutoCfgKeyList(appSystemId, fromAppModuleId, toModuleId, fromModuleEnvIdList);
                 }
 
                 //复制模块层runnerGroup信息
@@ -212,7 +188,10 @@ public class CopyDeployAppConfigModuleConfigApi extends PrivateApiComponentBase 
                     deployAppConfigMapper.insertAppModuleRunnerGroup(appSystemId, toModuleId, fromModuleRunnerGroup.getId());
                 }
             }
-
+            //新增或者update流水线配置
+            if (CollectionUtils.isNotEmpty(insertConfigList)) {
+                deployAppConfigMapper.insertBatchAppConfig(insertConfigList);
+            }
         } else {
 
             /*新增应用系统（配置项）*/
@@ -254,23 +233,15 @@ public class CopyDeployAppConfigModuleConfigApi extends PrivateApiComponentBase 
             Long toAppModuleId = ciEntityTransactionVo.getCiEntityId();
 
             //复制配置
-
             List<DeployAppConfigVo> insertConfigList = new ArrayList<>();
-            //将有单独配置找出来 insertConfigList
-            for (DeployAppConfigVo appConfigVo : appConfigVoList) {
-                if (appConfigVo.getAppModuleId() == 0L) {
-                    //应用层配置
-                    continue;
+
+            for (Long envId : fromModuleHasConfigEnvIdList) {
+                if (envId == 0L) {
+                    //模块层独有一份配置
+                    insertConfigList.add(new DeployAppConfigVo(appSystemId, toAppModuleId, DeployPipelineConfigManager.init(appSystemId).withAppModuleId(fromAppModuleId).getConfig()));
                 }
-                if (Objects.equals(fromAppModuleId, appConfigVo.getAppModuleId())) {
-                    if (appConfigVo.getEnvId() == 0L) {
-                        //模块层独有一份配置
-                        insertConfigList.add(new DeployAppConfigVo(appSystemId, toAppModuleId, DeployPipelineConfigManager.init(appSystemId).withAppModuleId(fromAppModuleId).getConfig()));
-                    } else {
-                        //环境层独有一份配置
-                        insertConfigList.add(new DeployAppConfigVo(appSystemId, toAppModuleId, appConfigVo.getEnvId(), DeployPipelineConfigManager.init(appSystemId).withAppModuleId(fromAppModuleId).withEnvId(appConfigVo.getEnvId()).getConfig()));
-                    }
-                }
+                //环境层独有一份配置
+                insertConfigList.add(new DeployAppConfigVo(appSystemId, toAppModuleId, envId, DeployPipelineConfigManager.init(appSystemId).withAppModuleId(fromAppModuleId).withEnvId(envId).getConfig()));
             }
 
             //新增或者update流水线配置
@@ -292,9 +263,6 @@ public class CopyDeployAppConfigModuleConfigApi extends PrivateApiComponentBase 
         }
         return null;
     }
-
-
-
 
     /**
      * 复制dbSchemas和autoCfgKeys配置
