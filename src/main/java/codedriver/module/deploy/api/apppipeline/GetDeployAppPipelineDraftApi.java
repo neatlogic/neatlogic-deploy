@@ -62,7 +62,8 @@ public class GetDeployAppPipelineDraftApi extends PrivateApiComponentBase {
         if (appSystem == null) {
             throw new AppSystemNotFoundException(searchVo.getAppSystemId());
         }
-        searchVo.setAppSystemName(appSystem.getAbbrName());
+        searchVo.setAppSystemName(appSystem.getName());
+        searchVo.setAppSystemAbbrName(appSystem.getAbbrName());
         boolean isAppSystemDraft = true;
         boolean isAppModuleDraft = false;
         boolean isEnvDraft = false;
@@ -72,7 +73,8 @@ public class GetDeployAppPipelineDraftApi extends PrivateApiComponentBase {
             if (appModule == null) {
                 throw new AppModuleNotFoundException(appModuleId);
             }
-            searchVo.setAppModuleName(appModule.getAbbrName());
+            searchVo.setAppModuleName(appModule.getName());
+            searchVo.setAppModuleAbbrName(appModule.getAbbrName());
             isAppSystemDraft = false;
             isAppModuleDraft = true;
         }

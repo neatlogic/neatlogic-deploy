@@ -66,14 +66,16 @@ public class ListDeployAppPipelineProfileApi extends PrivateApiComponentBase {
         if (appSystem == null) {
             throw new AppSystemNotFoundException(searchVo.getAppSystemId());
         }
-        searchVo.setAppSystemName(appSystem.getAbbrName());
+        searchVo.setAppSystemName(appSystem.getName());
+        searchVo.setAppSystemAbbrName(appSystem.getAbbrName());
         Long appModuleId = searchVo.getAppModuleId();
         if (appModuleId != null && appModuleId != 0) {
             ResourceVo appModule = resourceCrossoverMapper.getAppModuleById(appModuleId, schemaName);
             if (appModule == null) {
                 throw new AppModuleNotFoundException(appModuleId);
             }
-            searchVo.setAppModuleName(appModule.getAbbrName());
+            searchVo.setAppModuleName(appModule.getName());
+            searchVo.setAppModuleAbbrName(appModule.getAbbrName());
         }
         Long envId = searchVo.getEnvId();
         if (envId != null && envId != 0) {
