@@ -99,7 +99,11 @@ public class GetDeployAppConfigAppModuleApi extends PrivateApiComponentBase {
                 }
                 //维护窗口
                 if (StringUtils.equals(attrEntityVo.getAttrName(), "maintenance_window")) {
-                    appModuleVo.setMaintenanceWindow(String.valueOf(attrEntityVo.getValueList().get(0)));
+                    JSONArray ownerIdArray = attrEntityVo.getValueList();
+                    if (CollectionUtils.isNotEmpty(ownerIdArray)) {
+                        List<String> ownerIdList = ownerIdArray.toJavaList(String.class);
+                        appModuleVo.setMaintenanceWindow(ownerIdList);
+                    }
                     continue;
                 }
                 //备注

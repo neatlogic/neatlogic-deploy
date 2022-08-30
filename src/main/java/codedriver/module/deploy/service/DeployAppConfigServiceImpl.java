@@ -147,6 +147,10 @@ public class DeployAppConfigServiceImpl implements DeployAppConfigService {
             }
             if (StringUtils.equals(attrVo.getName(), "state") || StringUtils.equals(attrVo.getName(), "owner")) {
                 ciEntityTransactionVo.addAttrEntityData(attrVo, CollectionUtils.isNotEmpty(paramObj.getJSONArray(attrParam)) ? paramObj.getJSONArray(attrParam) : new JSONArray());
+            } else if (StringUtils.equals(attrVo.getName(), "maintenance_window") ){
+                JSONArray jsonArray = paramObj.getJSONArray(attrParam);
+                String maintenanceWindowStr = jsonArray.getString(0);
+                ciEntityTransactionVo.addAttrEntityData(attrVo, CollectionUtils.isNotEmpty(paramObj.getJSONArray(attrParam)) ? maintenanceWindowStr : new JSONArray());
             } else {
                 ciEntityTransactionVo.addAttrEntityData(attrVo, paramObj.getString(attrParam) != null ? paramObj.getString(attrParam) : "");
             }
