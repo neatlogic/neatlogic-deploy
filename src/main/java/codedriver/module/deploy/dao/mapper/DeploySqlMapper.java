@@ -2,7 +2,7 @@ package codedriver.module.deploy.dao.mapper;
 
 import codedriver.framework.autoexec.dto.job.AutoexecJobPhaseNodeVo;
 import codedriver.framework.deploy.crossover.IDeploySqlCrossoverMapper;
-import codedriver.framework.deploy.dto.sql.DeploySqlDetailVo;
+import codedriver.framework.deploy.dto.sql.DeploySqlNodeDetailVo;
 import codedriver.framework.deploy.dto.sql.DeploySqlJobPhaseVo;
 import org.apache.ibatis.annotations.Param;
 
@@ -14,19 +14,19 @@ import java.util.List;
  */
 public interface DeploySqlMapper extends IDeploySqlCrossoverMapper {
 
-    DeploySqlDetailVo getDeploySqlDetail(DeploySqlDetailVo deploySqlDetailVo);
+    DeploySqlNodeDetailVo getDeploySqlDetail(DeploySqlNodeDetailVo deploySqlDetailVo);
 
     int searchDeploySqlCount(AutoexecJobPhaseNodeVo jobPhaseNodeVo);
 
-    List<DeploySqlDetailVo> searchDeploySql(AutoexecJobPhaseNodeVo jobPhaseNodeVo);
+    List<DeploySqlNodeDetailVo> searchDeploySql(AutoexecJobPhaseNodeVo jobPhaseNodeVo);
 
-    List<DeploySqlDetailVo> getDeploySqlDetailList(@Param("sqlFileDetailVoList") List<DeploySqlDetailVo> sqlFileDetailVoList);
+    List<DeploySqlNodeDetailVo> getDeploySqlDetailList(@Param("sqlFileDetailVoList") List<DeploySqlNodeDetailVo> sqlFileDetailVoList);
 
-    List<DeploySqlDetailVo> getAllDeploySqlDetailList(DeploySqlDetailVo deployVersionSql);
+    List<DeploySqlNodeDetailVo> getAllDeploySqlDetailList(DeploySqlNodeDetailVo deployVersionSql);
 
-    List<DeploySqlDetailVo> getDeployJobSqlDetailByExceptStatusListAndRunnerMapId(@Param("jobId")Long jobId, @Param("jobPhaseName") String name, @Param("statusList") List<String> statusList, @Param("runnerMapId") Long runnerMapId);
+    List<DeploySqlNodeDetailVo> getDeployJobSqlDetailByExceptStatusListAndRunnerMapId(@Param("jobId")Long jobId, @Param("jobPhaseName") String name, @Param("statusList") List<String> statusList, @Param("runnerMapId") Long runnerMapId);
 
-    DeploySqlDetailVo getDeployJobSqlDetailById(Long id);
+    DeploySqlNodeDetailVo getDeployJobSqlDetailById(Long id);
 
     List<Long> getDeployJobSqlIdListByJobIdAndJobPhaseNameList(@Param("jobId") Long jobId, @Param("jobPhaseNameList") List<String> jobPhaseNameList);
 
@@ -40,9 +40,9 @@ public interface DeploySqlMapper extends IDeploySqlCrossoverMapper {
 
     void updateDeploySqlSortList(@Param("needDeleteSqlIdList") List<Long> needDeleteSqlIdList, @Param("jobId") Long jobId, @Param("phaseId") Long phaseId);
 
-    void updateDeploySqlDetail(DeploySqlDetailVo deploySqlDetailVo);
+    void updateDeploySqlDetail(DeploySqlNodeDetailVo deploySqlDetailVo);
 
-    void insertDeploySqlDetail(@Param("sqlVo") DeploySqlDetailVo paramDeploySqlVo, @Param("sysId") Long sysId, @Param("envId") Long envId, @Param("moduleId") Long moduleId, @Param("version") String version, @Param("runnerId") Long runnerId);
+    void insertDeploySqlDetail(@Param("sqlVo") DeploySqlNodeDetailVo paramDeploySqlVo, @Param("sysId") Long sysId, @Param("envId") Long envId, @Param("moduleId") Long moduleId, @Param("version") String version, @Param("runnerId") Long runnerId);
 
     void insertDeploySql(DeploySqlJobPhaseVo deploySqlVo);
 

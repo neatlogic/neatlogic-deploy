@@ -11,15 +11,14 @@ import codedriver.framework.auth.core.AuthActionChecker;
 import codedriver.framework.autoexec.constvalue.ExecMode;
 import codedriver.framework.autoexec.constvalue.JobNodeStatus;
 import codedriver.framework.autoexec.dao.mapper.AutoexecJobMapper;
+import codedriver.framework.autoexec.dto.ISqlNodeDetail;
 import codedriver.framework.autoexec.dto.combop.AutoexecCombopPhaseVo;
 import codedriver.framework.autoexec.dto.combop.AutoexecCombopVo;
 import codedriver.framework.autoexec.dto.job.AutoexecJobPhaseNodeVo;
 import codedriver.framework.autoexec.dto.job.AutoexecJobPhaseVo;
 import codedriver.framework.autoexec.dto.job.AutoexecJobVo;
-import codedriver.framework.autoexec.dto.job.AutoexecSqlDetailVo;
+import codedriver.framework.autoexec.dto.job.AutoexecSqlNodeDetailVo;
 import codedriver.framework.autoexec.exception.AutoexecJobPhaseNotFoundException;
-import codedriver.framework.exception.runner.RunnerGroupRunnerNotFoundException;
-import codedriver.framework.exception.runner.RunnerHttpRequestException;
 import codedriver.framework.autoexec.job.source.type.AutoexecJobSourceTypeHandlerBase;
 import codedriver.framework.autoexec.util.AutoexecUtil;
 import codedriver.framework.cmdb.crossover.ICiEntityCrossoverMapper;
@@ -36,8 +35,8 @@ import codedriver.framework.deploy.constvalue.JobSourceType;
 import codedriver.framework.deploy.dto.app.DeployPipelineConfigVo;
 import codedriver.framework.deploy.dto.job.DeployJobContentVo;
 import codedriver.framework.deploy.dto.job.DeployJobVo;
-import codedriver.framework.deploy.dto.sql.DeploySqlDetailVo;
 import codedriver.framework.deploy.dto.sql.DeploySqlJobPhaseVo;
+import codedriver.framework.deploy.dto.sql.DeploySqlNodeDetailVo;
 import codedriver.framework.deploy.dto.version.DeployVersionBuildNoVo;
 import codedriver.framework.deploy.dto.version.DeployVersionVo;
 import codedriver.framework.deploy.exception.DeployAppConfigModuleRunnerGroupNotFoundException;
@@ -46,6 +45,8 @@ import codedriver.framework.deploy.exception.DeployPipelineConfigNotFoundExcepti
 import codedriver.framework.deploy.exception.DeployVersionNotFoundException;
 import codedriver.framework.dto.runner.RunnerGroupVo;
 import codedriver.framework.dto.runner.RunnerMapVo;
+import codedriver.framework.exception.runner.RunnerGroupRunnerNotFoundException;
+import codedriver.framework.exception.runner.RunnerHttpRequestException;
 import codedriver.framework.exception.runner.RunnerNotFoundByRunnerMapIdException;
 import codedriver.framework.exception.type.ParamIrregularException;
 import codedriver.framework.integration.authentication.enums.AuthenticateType;
@@ -144,8 +145,14 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
     }
 
     @Override
+    public int searchJobPhaseSqlCount(AutoexecJobPhaseNodeVo jobPhaseNodeVo) {
+        jobPhaseNodeVo.setJobPhaseName(autoexecJobMapper.getJobPhaseByPhaseId(jobPhaseNodeVo.getJobPhaseId()).getName());
+        return deploySqlMapper.searchDeploySqlCount(jobPhaseNodeVo);
+    }
+
+    @Override
     public JSONObject searchJobPhaseSql(AutoexecJobPhaseNodeVo jobPhaseNodeVo) {
-        List<DeploySqlDetailVo> returnList = new ArrayList<>();
+        List<DeploySqlNodeDetailVo> returnList = new ArrayList<>();
         jobPhaseNodeVo.setJobPhaseName(autoexecJobMapper.getJobPhaseByPhaseId(jobPhaseNodeVo.getJobPhaseId()).getName());
         int sqlCount = deploySqlMapper.searchDeploySqlCount(jobPhaseNodeVo);
         if (sqlCount > 0) {
@@ -153,6 +160,17 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
             returnList = deploySqlMapper.searchDeploySql(jobPhaseNodeVo);
         }
         return TableResultUtil.getResult(returnList, jobPhaseNodeVo);
+    }
+
+    @Override
+    public List<ISqlNodeDetail> searchJobPhaseSqlForExport(AutoexecJobPhaseNodeVo jobPhaseNodeVo) {
+        List<ISqlNodeDetail> result = new ArrayList<>();
+        jobPhaseNodeVo.setJobPhaseName(autoexecJobMapper.getJobPhaseByPhaseId(jobPhaseNodeVo.getJobPhaseId()).getName());
+        List<DeploySqlNodeDetailVo> list = deploySqlMapper.searchDeploySql(jobPhaseNodeVo);
+        if (list.size() > 0) {
+            list.forEach(o -> result.add(o));
+        }
+        return result;
     }
 
     @Override
@@ -168,32 +186,32 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
         Long jobId = paramObj.getLong("jobId");
         JSONArray paramSqlVoArray = paramObj.getJSONArray("sqlInfoList");
 
-        List<DeploySqlDetailVo> oldDeploySqlList = deploySqlMapper.getAllDeploySqlDetailList(new DeploySqlDetailVo(paramObj.getLong("sysId"), paramObj.getLong("moduleId"), paramObj.getLong("envId"), paramObj.getString("version")));
+        List<DeploySqlNodeDetailVo> oldDeploySqlList = deploySqlMapper.getAllDeploySqlDetailList(new DeploySqlNodeDetailVo(paramObj.getLong("sysId"), paramObj.getLong("moduleId"), paramObj.getLong("envId"), paramObj.getString("version")));
 
-        Map<String, DeploySqlDetailVo> jobPhaseAndSqlDetailMap = new HashMap<>();
-        Map<String, DeploySqlDetailVo> sqlDetailMap = new HashMap<>();
+        Map<String, DeploySqlNodeDetailVo> jobPhaseAndSqlDetailMap = new HashMap<>();
+        Map<String, DeploySqlNodeDetailVo> sqlDetailMap = new HashMap<>();
         List<Long> needDeleteSqlIdList = new ArrayList<>();
         if (CollectionUtils.isNotEmpty(oldDeploySqlList)) {
             jobPhaseAndSqlDetailMap = oldDeploySqlList.stream().collect(Collectors.toMap(e -> e.getJobId().toString() + e.getPhaseName() + e.getResourceId().toString() + e.getSqlFile(), e -> e));
-            for (DeploySqlDetailVo detailVo : oldDeploySqlList) {
+            for (DeploySqlNodeDetailVo detailVo : oldDeploySqlList) {
                 sqlDetailMap.putIfAbsent(detailVo.getResourceId().toString() + detailVo.getSqlFile(), detailVo);
             }
-            needDeleteSqlIdList = oldDeploySqlList.stream().map(DeploySqlDetailVo::getId).collect(Collectors.toList());
+            needDeleteSqlIdList = oldDeploySqlList.stream().map(DeploySqlNodeDetailVo::getId).collect(Collectors.toList());
         }
-        List<DeploySqlDetailVo> insertSqlDetailList = new ArrayList<>();
-        List<DeploySqlDetailVo> updateSqlList = new ArrayList<>();
+        List<DeploySqlNodeDetailVo> insertSqlDetailList = new ArrayList<>();
+        List<DeploySqlNodeDetailVo> updateSqlList = new ArrayList<>();
         List<Long> insertSqlIdList = new ArrayList<>();
 
         if (CollectionUtils.isNotEmpty(paramSqlVoArray)) {
-            List<DeploySqlDetailVo> sqlDetailVoList = paramSqlVoArray.toJavaList(DeploySqlDetailVo.class);
+            List<DeploySqlNodeDetailVo> sqlDetailVoList = paramSqlVoArray.toJavaList(DeploySqlNodeDetailVo.class);
             for (int i = 0; i < sqlDetailVoList.size(); i++) {
 
-                DeploySqlDetailVo newSqlVo = sqlDetailVoList.get(i);
+                DeploySqlNodeDetailVo newSqlVo = sqlDetailVoList.get(i);
                 newSqlVo.setSort(i);
-                DeploySqlDetailVo oldSqlVo = jobPhaseAndSqlDetailMap.get(jobId.toString() + targetPhaseVo.getName() + newSqlVo.getResourceId().toString() + newSqlVo.getSqlFile());
+                DeploySqlNodeDetailVo oldSqlVo = jobPhaseAndSqlDetailMap.get(jobId.toString() + targetPhaseVo.getName() + newSqlVo.getResourceId().toString() + newSqlVo.getSqlFile());
                 //不存在则新增
                 if (oldSqlVo == null) {
-                    DeploySqlDetailVo deploySqlDetailVo = sqlDetailMap.get(newSqlVo.getResourceId().toString() + newSqlVo.getSqlFile());
+                    DeploySqlNodeDetailVo deploySqlDetailVo = sqlDetailMap.get(newSqlVo.getResourceId().toString() + newSqlVo.getSqlFile());
                     if (deploySqlDetailVo != null) {
                         newSqlVo.setId(deploySqlDetailVo.getId());
                         updateSqlList.add(newSqlVo);
@@ -218,7 +236,7 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
             deploySqlMapper.updateDeploySqlIsDeleteByIdList(needDeleteSqlIdList);
         }
         if (CollectionUtils.isNotEmpty(insertSqlDetailList)) {
-            for (DeploySqlDetailVo insertSqlVo : insertSqlDetailList) {
+            for (DeploySqlNodeDetailVo insertSqlVo : insertSqlDetailList) {
                 deploySqlMapper.insertDeploySql(new DeploySqlJobPhaseVo(paramObj.getLong("jobId"), paramObj.getString("targetPhaseName"), targetPhaseVo.getId(), insertSqlVo.getId()));
                 deploySqlMapper.insertDeploySqlDetail(insertSqlVo, paramObj.getLong("sysId"), paramObj.getLong("envId"), paramObj.getLong("moduleId"), paramObj.getString("version"), paramObj.getLong("runnerId"));
             }
@@ -229,7 +247,7 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
             }
         }
         if (CollectionUtils.isNotEmpty(updateSqlList)) {
-            for (DeploySqlDetailVo sqlDetailVo : updateSqlList) {
+            for (DeploySqlNodeDetailVo sqlDetailVo : updateSqlList) {
                 deploySqlMapper.updateDeploySqlDetail(sqlDetailVo);
             }
         }
@@ -237,8 +255,8 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
 
     @Override
     public void updateSqlStatus(JSONObject paramObj) {
-        DeploySqlDetailVo paramDeploySqlVo = new DeploySqlDetailVo(paramObj.getJSONObject("sqlStatus"));
-        DeploySqlDetailVo oldDeploySqlVo = deploySqlMapper.getDeploySqlDetail(new DeploySqlDetailVo(paramObj.getLong("sysId"), paramObj.getLong("envId"), paramObj.getLong("moduleId"), paramObj.getString("version"), paramDeploySqlVo.getSqlFile(), paramObj.getLong("jobId"), paramObj.getString("phaseName"), paramDeploySqlVo.getResourceId()));
+        DeploySqlNodeDetailVo paramDeploySqlVo = new DeploySqlNodeDetailVo(paramObj.getJSONObject("sqlStatus"));
+        DeploySqlNodeDetailVo oldDeploySqlVo = deploySqlMapper.getDeploySqlDetail(new DeploySqlNodeDetailVo(paramObj.getLong("sysId"), paramObj.getLong("envId"), paramObj.getLong("moduleId"), paramObj.getString("version"), paramDeploySqlVo.getSqlFile(), paramObj.getLong("jobId"), paramObj.getString("phaseName"), paramDeploySqlVo.getResourceId()));
         if (oldDeploySqlVo != null) {
             paramDeploySqlVo.setId(oldDeploySqlVo.getId());
             deploySqlMapper.updateDeploySqlDetail(paramDeploySqlVo);
@@ -253,15 +271,15 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
     }
 
     @Override
-    public AutoexecSqlDetailVo getSqlDetail(AutoexecJobVo jobVo) {
+    public AutoexecSqlNodeDetailVo getSqlDetail(AutoexecJobVo jobVo) {
         Long sqlId = jobVo.getActionParam().getLong("nodeId");
         if (sqlId == null) {
             throw new ParamIrregularException("nodeId");
         }
-        DeploySqlDetailVo deploySqlDetailVo = deploySqlMapper.getDeployJobSqlDetailById(sqlId);
-        AutoexecSqlDetailVo autoexecSqlDetailVo = null;
+        DeploySqlNodeDetailVo deploySqlDetailVo = deploySqlMapper.getDeployJobSqlDetailById(sqlId);
+        AutoexecSqlNodeDetailVo autoexecSqlDetailVo = null;
         if (deploySqlDetailVo != null) {
-            autoexecSqlDetailVo = new AutoexecSqlDetailVo();
+            autoexecSqlDetailVo = new AutoexecSqlNodeDetailVo();
             autoexecSqlDetailVo.setJobId(jobVo.getId());
             autoexecSqlDetailVo.setRunnerId(deploySqlDetailVo.getRunnerId());
             autoexecSqlDetailVo.setPhaseName(jobVo.getCurrentPhase().getName());
@@ -334,7 +352,7 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
 
     @Override
     public void updateInvokeJob(AutoexecJobVo jobVo) {
-        DeployJobVo deployJobVo = (DeployJobVo)jobVo;
+        DeployJobVo deployJobVo = (DeployJobVo) jobVo;
         deployJobMapper.insertIgnoreDeployJobContent(new DeployJobContentVo(jobVo.getConfigStr()));
         //如果buildNo是-1，表示新建buildNo
         if (deployJobVo.getBuildNo() != null) {
@@ -369,7 +387,7 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
 
     @Override
     public boolean getIsCanUpdatePhaseRunner(AutoexecJobPhaseVo jobPhaseVo, Long runnerMapId) {
-        List<DeploySqlDetailVo> deploySqlDetailVos = deploySqlMapper.getDeployJobSqlDetailByExceptStatusListAndRunnerMapId(jobPhaseVo.getJobId(), jobPhaseVo.getName(), Arrays.asList(JobNodeStatus.SUCCEED.getValue(), JobNodeStatus.IGNORED.getValue()), runnerMapId);
+        List<DeploySqlNodeDetailVo> deploySqlDetailVos = deploySqlMapper.getDeployJobSqlDetailByExceptStatusListAndRunnerMapId(jobPhaseVo.getJobId(), jobPhaseVo.getName(), Arrays.asList(JobNodeStatus.SUCCEED.getValue(), JobNodeStatus.IGNORED.getValue()), runnerMapId);
         return deploySqlDetailVos.size() == 0;
     }
 
