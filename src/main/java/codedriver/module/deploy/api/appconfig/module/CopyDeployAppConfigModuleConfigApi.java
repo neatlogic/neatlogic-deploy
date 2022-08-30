@@ -134,7 +134,7 @@ public class CopyDeployAppConfigModuleConfigApi extends PrivateApiComponentBase 
                     //新增模块配置，后面统一新增配置，insert时会duplicate
                     insertConfigList.add(new DeployAppConfigVo(appSystemId, toModuleId, DeployPipelineConfigManager.init(appSystemId).withAppModuleId(fromAppModuleId).getConfig()));
                 } else if (toModuleHasConfigEnvIdList.contains(0L)) {
-                    //删除原有的配置
+                    //删除原有的配置(虽然前端已经有接口控制只能选没有独一份配置的模块，但是防止单独调接口，做多一次删除动作)
                     deployAppConfigMapper.deleteAppConfig(new DeployAppConfigVo(appSystemId, toModuleId));
                 }
 

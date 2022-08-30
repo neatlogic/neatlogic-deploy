@@ -98,6 +98,7 @@ public class CopyDeployAppConfigEnvConfigApi extends PrivateApiComponentBase {
             if (hasFromEnvConfig) {
                 insertConfigList.add(new DeployAppConfigVo(appSystemId, appModuleId, envId, fromEnvConfigVo));
             } else {
+                //删除原有的配置(虽然前端已经有接口控制只能选没有独一份配置的环境，但是防止单独调接口，做多一次删除动作)
                 deployAppConfigMapper.deleteAppConfig(new DeployAppConfigVo(appSystemId, appModuleId, envId));
             }
         }
