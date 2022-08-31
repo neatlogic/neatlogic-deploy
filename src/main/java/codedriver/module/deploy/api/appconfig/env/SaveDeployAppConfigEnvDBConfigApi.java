@@ -27,7 +27,6 @@ import codedriver.module.deploy.dao.mapper.DeployAppConfigMapper;
 import codedriver.module.deploy.service.DeployAppAuthorityService;
 import codedriver.module.deploy.service.DeployAppConfigService;
 import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -125,11 +124,8 @@ public class SaveDeployAppConfigEnvDBConfigApi extends PrivateApiComponentBase {
         ICiEntityCrossoverService ciEntityService = CrossoverServiceFactory.getApi(ICiEntityCrossoverService.class);
         CiEntityVo DBCiEntityInfo = ciEntityService.getCiEntityById(DBCiEntityVo.getCiId(), DBCiEntityVo.getId());
         CiEntityTransactionVo ciEntityTransactionVo = new CiEntityTransactionVo(DBCiEntityInfo);
-        paramObj.put("ciId", DBCiEntityInfo.getCiId());
-        paramObj.put("needUpdateAttrList", new JSONArray(Collections.singletonList("app_environment")));
-        paramObj.put("needUpdateRelList", new JSONArray(Collections.singletonList("APPComponent")));
         ciEntityTransactionVo.setAttrEntityData(DBCiEntityInfo.getAttrEntityData());
-        deployAppConfigService.addAttrEntityDataAndRelEntityData(ciEntityTransactionVo, paramObj);
+        deployAppConfigService.addAttrEntityDataAndRelEntityData(ciEntityTransactionVo, DBCiEntityInfo.getCiId(), paramObj, Collections.singletonList("app_environment"), Collections.singletonList("APPComponent"));
 
         //保存
         ciEntityTransactionVo.setAction(TransactionActionType.UPDATE.getValue());

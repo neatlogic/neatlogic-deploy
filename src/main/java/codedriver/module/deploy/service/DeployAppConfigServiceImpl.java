@@ -1,20 +1,22 @@
 package codedriver.module.deploy.service;
 
-import codedriver.framework.exception.runner.RunnerGroupRunnerNotFoundException;
-import codedriver.framework.cmdb.crossover.IAttrCrossoverMapper;
-import codedriver.framework.cmdb.crossover.ICiEntityCrossoverMapper;
-import codedriver.framework.cmdb.crossover.IRelCrossoverMapper;
+import codedriver.framework.cmdb.crossover.*;
 import codedriver.framework.cmdb.dto.ci.AttrVo;
+import codedriver.framework.cmdb.dto.ci.CiVo;
 import codedriver.framework.cmdb.dto.ci.RelVo;
 import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
 import codedriver.framework.cmdb.dto.transaction.CiEntityTransactionVo;
+import codedriver.framework.cmdb.enums.EditModeType;
+import codedriver.framework.cmdb.enums.TransactionActionType;
 import codedriver.framework.cmdb.exception.cientity.CiEntityNotFoundException;
 import codedriver.framework.crossover.CrossoverServiceFactory;
 import codedriver.framework.deploy.dto.app.DeployAppConfigEnvDBConfigVo;
 import codedriver.framework.deploy.dto.app.DeployAppConfigVo;
+import codedriver.framework.deploy.dto.app.DeployAppModuleVo;
 import codedriver.framework.deploy.exception.DeployAppConfigModuleRunnerGroupNotFoundException;
 import codedriver.framework.dto.runner.RunnerGroupVo;
 import codedriver.framework.dto.runner.RunnerMapVo;
+import codedriver.framework.exception.runner.RunnerGroupRunnerNotFoundException;
 import codedriver.module.deploy.dao.mapper.DeployAppConfigMapper;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
@@ -23,9 +25,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author longrf
@@ -57,14 +57,14 @@ public class DeployAppConfigServiceImpl implements DeployAppConfigService {
     }
 
     @Override
-    public void addAttrEntityDataAndRelEntityData(CiEntityTransactionVo ciEntityTransactionVo, JSONObject paramObj) {
+    public void addAttrEntityDataAndRelEntityData(CiEntityTransactionVo ciEntityTransactionVo, Long ciId, JSONObject attrAndRelObj, List<String> needUpdateAttrList, List<String> needUpdateRelList) {
 
         //添加属性
-        addAttrEntityData(ciEntityTransactionVo, paramObj);
+        addAttrEntityData(ciEntityTransactionVo, attrAndRelObj, needUpdateAttrList, ciId);
         //添加关系
-        addRelEntityData(ciEntityTransactionVo, paramObj);
+        addRelEntityData(ciEntityTransactionVo, attrAndRelObj, needUpdateRelList, ciId);
         //设置基础信息
-        ciEntityTransactionVo.setCiId(paramObj.getLong("ciId"));
+        ciEntityTransactionVo.setCiId(ciId);
         ciEntityTransactionVo.setAllowCommit(true);
         ciEntityTransactionVo.setDescription(null);
     }
@@ -91,30 +91,96 @@ public class DeployAppConfigServiceImpl implements DeployAppConfigService {
         return runnerMapList;
     }
 
+    @Override
+    public Long saveDeployAppModule(DeployAppModuleVo deployAppModuleVo, int isAdd) {
+        //校验应用系统id是否存在
+        ICiEntityCrossoverMapper iCiEntityCrossoverMapper = CrossoverServiceFactory.getApi(ICiEntityCrossoverMapper.class);
+        CiEntityVo appSystemCiEntity = iCiEntityCrossoverMapper.getCiEntityBaseInfoById(deployAppModuleVo.getAppSystemId());
+        if (appSystemCiEntity == null) {
+            throw new CiEntityNotFoundException(deployAppModuleVo.getAppSystemId());
+        }
+
+        Long appModuleId = deployAppModuleVo.getId();
+
+        JSONObject paramObj = new JSONObject();
+        paramObj.put("stateIdList", deployAppModuleVo.getStateIdList());
+        paramObj.put("ownerIdList", deployAppModuleVo.getOwnerIdList());
+        paramObj.put("abbrName", deployAppModuleVo.getAbbrName());
+        paramObj.put("name", deployAppModuleVo.getName());
+        paramObj.put("maintenanceWindow", deployAppModuleVo.getMaintenanceWindow());
+        paramObj.put("description", deployAppModuleVo.getDescription());
+        paramObj.put("appSystemId", deployAppModuleVo.getAppSystemId());
+
+        //定义需要插入的字段
+        List<String> needUpdateAttrList = Arrays.asList("state", "name", "owner", "abbrName", "maintenance_window", "description");
+        //获取应用模块的模型id
+        ICiCrossoverMapper ciCrossoverMapper = CrossoverServiceFactory.getApi(ICiCrossoverMapper.class);
+        CiVo moduleCiVo = ciCrossoverMapper.getCiByName("APPComponent");
+
+        //保存
+        ICiEntityCrossoverService ciEntityService = CrossoverServiceFactory.getApi(ICiEntityCrossoverService.class);
+        CiEntityTransactionVo ciEntityTransactionVo = null;
+        if (isAdd == 1) {
+
+            /*新增应用模块（配置项）*/
+            //1、构建事务vo，并添加属性值
+            paramObj.put("needUpdateRelList", new JSONArray(Collections.singletonList("APP")));
+            ciEntityTransactionVo = new CiEntityTransactionVo();
+            addAttrEntityDataAndRelEntityData(ciEntityTransactionVo, ciCrossoverMapper.getCiByName("APPComponent").getId(), paramObj, Arrays.asList("state", "name", "owner", "abbrName", "maintenance_window", "description"), Collections.singletonList("APP"));
+
+            //2、设置事务vo信息
+            ciEntityTransactionVo.setEditMode(EditModeType.PARTIAL.getValue());
+            ciEntityTransactionVo.setAction(TransactionActionType.INSERT.getValue());
+        } else {
+
+            CiEntityVo moduleCiEntityInfo = ciEntityService.getCiEntityById(moduleCiVo.getId(), appModuleId);
+            if (moduleCiEntityInfo == null) {
+                throw new CiEntityNotFoundException(appModuleId);
+            }
+
+            /*编辑应用模块（配置项）*/
+            //1、构建事务vo，并添加属性值
+            ciEntityTransactionVo = new CiEntityTransactionVo(moduleCiEntityInfo);
+            ciEntityTransactionVo.setAttrEntityData(moduleCiEntityInfo.getAttrEntityData());
+            addAttrEntityDataAndRelEntityData(ciEntityTransactionVo, moduleCiVo.getId(), paramObj, needUpdateAttrList, new ArrayList<>());
+
+            //2、设置事务vo信息
+            ciEntityTransactionVo.setAction(TransactionActionType.UPDATE.getValue());
+            ciEntityTransactionVo.setEditMode(EditModeType.PARTIAL.getValue());
+        }
+        //3、保存模块（配置项）
+        List<CiEntityTransactionVo> ciEntityTransactionList = new ArrayList<>();
+        ciEntityTransactionList.add(ciEntityTransactionVo);
+        ciEntityService.saveCiEntity(ciEntityTransactionList);
+        return ciEntityTransactionVo.getCiEntityId();
+    }
+
     /**
-     * 添加关系
+     * 添加属性
      *
      * @param ciEntityTransactionVo 配置项
-     * @param paramObj              入参
+     * @param attrAndRelObj         属性信息Obj
+     * @param needUpdateRelList     需要更新的关系列表
+     * @param ciId                  模型id
      */
-    private void addRelEntityData(CiEntityTransactionVo ciEntityTransactionVo, JSONObject paramObj) {
+    private void addRelEntityData(CiEntityTransactionVo ciEntityTransactionVo, JSONObject attrAndRelObj, List<String> needUpdateRelList, Long ciId) {
 
-        if (CollectionUtils.isEmpty(paramObj.getJSONArray("needUpdateRelList"))) {
+        if (CollectionUtils.isEmpty(needUpdateRelList)) {
             return;
         }
 
         IRelCrossoverMapper relCrossoverMapper = CrossoverServiceFactory.getApi(IRelCrossoverMapper.class);
-        List<RelVo> relVoList = relCrossoverMapper.getRelByCiId(paramObj.getLong("ciId"));
+        List<RelVo> relVoList = relCrossoverMapper.getRelByCiId(ciId);
         ICiEntityCrossoverMapper iCiEntityCrossoverMapper = CrossoverServiceFactory.getApi(ICiEntityCrossoverMapper.class);
 
         for (RelVo relVo : relVoList) {
-            if (!paramObj.getJSONArray("needUpdateRelList").contains(relVo.getFromCiName())) {
+            if (!needUpdateRelList.contains(relVo.getFromCiName())) {
                 continue;
             }
             if (StringUtils.isBlank(getRelMap().get(relVo.getFromCiName()))) {
                 continue;
             }
-            CiEntityVo relCiEntity = iCiEntityCrossoverMapper.getCiEntityBaseInfoById(paramObj.getLong(getRelMap().get(relVo.getFromCiName())));
+            CiEntityVo relCiEntity = iCiEntityCrossoverMapper.getCiEntityBaseInfoById(attrAndRelObj.getLong(getRelMap().get(relVo.getFromCiName())));
             if (relCiEntity == null) {
                 continue;
             }
@@ -126,19 +192,21 @@ public class DeployAppConfigServiceImpl implements DeployAppConfigService {
      * 添加属性
      *
      * @param ciEntityTransactionVo 配置项
-     * @param paramObj              入参
+     * @param attrAndRelObj         属性信息Obj
+     * @param needUpdateAttrList    需要更新的属性列表
+     * @param ciId                  模型id
      */
-    void addAttrEntityData(CiEntityTransactionVo ciEntityTransactionVo, JSONObject paramObj) {
+    void addAttrEntityData(CiEntityTransactionVo ciEntityTransactionVo, JSONObject attrAndRelObj, List<String> needUpdateAttrList, Long ciId) {
 
-        if (CollectionUtils.isEmpty(paramObj.getJSONArray("needUpdateAttrList"))) {
+        if (CollectionUtils.isEmpty(needUpdateAttrList)) {
             return;
         }
 
         IAttrCrossoverMapper attrCrossoverMapper = CrossoverServiceFactory.getApi(IAttrCrossoverMapper.class);
-        List<AttrVo> attrVoList = attrCrossoverMapper.getAttrByCiId(paramObj.getLong("ciId"));
+        List<AttrVo> attrVoList = attrCrossoverMapper.getAttrByCiId(ciId);
 
         for (AttrVo attrVo : attrVoList) {
-            if (!paramObj.getJSONArray("needUpdateAttrList").contains(attrVo.getName())) {
+            if (!needUpdateAttrList.contains(attrVo.getName())) {
                 continue;
             }
             String attrParam = getAttrMap().get(attrVo.getName());
@@ -146,9 +214,16 @@ public class DeployAppConfigServiceImpl implements DeployAppConfigService {
                 continue;
             }
             if (StringUtils.equals(attrVo.getName(), "state") || StringUtils.equals(attrVo.getName(), "owner")) {
-                ciEntityTransactionVo.addAttrEntityData(attrVo, CollectionUtils.isNotEmpty(paramObj.getJSONArray(attrParam)) ? paramObj.getJSONArray(attrParam) : new JSONArray());
+                ciEntityTransactionVo.addAttrEntityData(attrVo, CollectionUtils.isNotEmpty(attrAndRelObj.getJSONArray(attrParam)) ? attrAndRelObj.getJSONArray(attrParam) : new JSONArray());
+            } else if (StringUtils.equals(attrVo.getName(), "maintenance_window")) {
+                JSONArray jsonArray = attrAndRelObj.getJSONArray(attrParam);
+                String maintenanceWindowStr = StringUtils.EMPTY;
+                if (CollectionUtils.isNotEmpty(jsonArray)) {
+                    maintenanceWindowStr = jsonArray.getString(0);
+                }
+                ciEntityTransactionVo.addAttrEntityData(attrVo, maintenanceWindowStr);
             } else {
-                ciEntityTransactionVo.addAttrEntityData(attrVo, paramObj.getString(attrParam) != null ? paramObj.getString(attrParam) : "");
+                ciEntityTransactionVo.addAttrEntityData(attrVo, attrAndRelObj.getString(attrParam) != null ? attrAndRelObj.getString(attrParam) : "");
             }
         }
     }
