@@ -312,7 +312,7 @@ public class DownloadDeployAppBuildApi extends PrivateBinaryStreamApiComponentBa
             logger.error(ex.getMessage(), ex);
         } finally {
             // 释放锁
-            handler.cancelLock(lockId, null);
+            handler.unLock(lockId, null);
         }
         if (httpRequestUtil != null) {
             int responseCode = httpRequestUtil.getResponseCode();
