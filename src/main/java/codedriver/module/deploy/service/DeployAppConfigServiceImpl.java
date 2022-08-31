@@ -113,7 +113,7 @@ public class DeployAppConfigServiceImpl implements DeployAppConfigService {
 
         //定义需要插入的字段
         List<String> needUpdateAttrList = Arrays.asList("state", "name", "owner", "abbrName", "maintenance_window", "description");
-        //获取应用系统的模型id
+        //获取应用模块的模型id
         ICiCrossoverMapper ciCrossoverMapper = CrossoverServiceFactory.getApi(ICiCrossoverMapper.class);
         CiVo moduleCiVo = ciCrossoverMapper.getCiByName("APPComponent");
 
@@ -122,7 +122,7 @@ public class DeployAppConfigServiceImpl implements DeployAppConfigService {
         CiEntityTransactionVo ciEntityTransactionVo = null;
         if (isAdd == 1) {
 
-            /*新增应用系统（配置项）*/
+            /*新增应用模块（配置项）*/
             //1、构建事务vo，并添加属性值
             paramObj.put("needUpdateRelList", new JSONArray(Collections.singletonList("APP")));
             ciEntityTransactionVo = new CiEntityTransactionVo();
@@ -138,7 +138,7 @@ public class DeployAppConfigServiceImpl implements DeployAppConfigService {
                 throw new CiEntityNotFoundException(appModuleId);
             }
 
-            /*编辑应用系统（配置项）*/
+            /*编辑应用模块（配置项）*/
             //1、构建事务vo，并添加属性值
             ciEntityTransactionVo = new CiEntityTransactionVo(moduleCiEntityInfo);
             ciEntityTransactionVo.setAttrEntityData(moduleCiEntityInfo.getAttrEntityData());
@@ -148,7 +148,7 @@ public class DeployAppConfigServiceImpl implements DeployAppConfigService {
             ciEntityTransactionVo.setAction(TransactionActionType.UPDATE.getValue());
             ciEntityTransactionVo.setEditMode(EditModeType.PARTIAL.getValue());
         }
-        //3、保存系统（配置项）
+        //3、保存模块（配置项）
         List<CiEntityTransactionVo> ciEntityTransactionList = new ArrayList<>();
         ciEntityTransactionList.add(ciEntityTransactionVo);
         ciEntityService.saveCiEntity(ciEntityTransactionList);
