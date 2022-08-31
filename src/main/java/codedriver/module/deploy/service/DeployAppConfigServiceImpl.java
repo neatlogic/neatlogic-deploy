@@ -156,12 +156,14 @@ public class DeployAppConfigServiceImpl implements DeployAppConfigService {
     }
 
     /**
-     * 添加关系
+     * 添加属性
      *
      * @param ciEntityTransactionVo 配置项
-     * @param paramObj              入参
+     * @param attrAndRelObj         属性信息Obj
+     * @param needUpdateRelList     需要更新的关系列表
+     * @param ciId                  模型id
      */
-    private void addRelEntityData(CiEntityTransactionVo ciEntityTransactionVo, JSONObject paramObj, List<String> needUpdateRelList, Long ciId) {
+    private void addRelEntityData(CiEntityTransactionVo ciEntityTransactionVo, JSONObject attrAndRelObj, List<String> needUpdateRelList, Long ciId) {
 
         if (CollectionUtils.isEmpty(needUpdateRelList)) {
             return;
@@ -178,7 +180,7 @@ public class DeployAppConfigServiceImpl implements DeployAppConfigService {
             if (StringUtils.isBlank(getRelMap().get(relVo.getFromCiName()))) {
                 continue;
             }
-            CiEntityVo relCiEntity = iCiEntityCrossoverMapper.getCiEntityBaseInfoById(paramObj.getLong(getRelMap().get(relVo.getFromCiName())));
+            CiEntityVo relCiEntity = iCiEntityCrossoverMapper.getCiEntityBaseInfoById(attrAndRelObj.getLong(getRelMap().get(relVo.getFromCiName())));
             if (relCiEntity == null) {
                 continue;
             }
@@ -190,9 +192,11 @@ public class DeployAppConfigServiceImpl implements DeployAppConfigService {
      * 添加属性
      *
      * @param ciEntityTransactionVo 配置项
-     * @param paramObj              入参
+     * @param attrAndRelObj         属性信息Obj
+     * @param needUpdateAttrList    需要更新的属性列表
+     * @param ciId                  模型id
      */
-    void addAttrEntityData(CiEntityTransactionVo ciEntityTransactionVo, JSONObject paramObj, List<String> needUpdateAttrList, Long ciId) {
+    void addAttrEntityData(CiEntityTransactionVo ciEntityTransactionVo, JSONObject attrAndRelObj, List<String> needUpdateAttrList, Long ciId) {
 
         if (CollectionUtils.isEmpty(needUpdateAttrList)) {
             return;
@@ -210,16 +214,16 @@ public class DeployAppConfigServiceImpl implements DeployAppConfigService {
                 continue;
             }
             if (StringUtils.equals(attrVo.getName(), "state") || StringUtils.equals(attrVo.getName(), "owner")) {
-                ciEntityTransactionVo.addAttrEntityData(attrVo, CollectionUtils.isNotEmpty(paramObj.getJSONArray(attrParam)) ? paramObj.getJSONArray(attrParam) : new JSONArray());
+                ciEntityTransactionVo.addAttrEntityData(attrVo, CollectionUtils.isNotEmpty(attrAndRelObj.getJSONArray(attrParam)) ? attrAndRelObj.getJSONArray(attrParam) : new JSONArray());
             } else if (StringUtils.equals(attrVo.getName(), "maintenance_window")) {
-                JSONArray jsonArray = paramObj.getJSONArray(attrParam);
+                JSONArray jsonArray = attrAndRelObj.getJSONArray(attrParam);
                 String maintenanceWindowStr = StringUtils.EMPTY;
                 if (CollectionUtils.isNotEmpty(jsonArray)) {
                     maintenanceWindowStr = jsonArray.getString(0);
                 }
                 ciEntityTransactionVo.addAttrEntityData(attrVo, maintenanceWindowStr);
             } else {
-                ciEntityTransactionVo.addAttrEntityData(attrVo, paramObj.getString(attrParam) != null ? paramObj.getString(attrParam) : "");
+                ciEntityTransactionVo.addAttrEntityData(attrVo, attrAndRelObj.getString(attrParam) != null ? attrAndRelObj.getString(attrParam) : "");
             }
         }
     }
