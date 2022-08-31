@@ -25,7 +25,7 @@ import javax.annotation.Resource;
 @Service
 @AuthAction(action = DEPLOY_BASE.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
-public class ListDeployAppConfigHasNotConfigModuleApi extends PrivateApiComponentBase {
+public class ListDeployAppConfigWithoutConfigModuleApi extends PrivateApiComponentBase {
 
     @Resource
     private DeployAppConfigMapper deployAppConfigMapper;
@@ -42,7 +42,7 @@ public class ListDeployAppConfigHasNotConfigModuleApi extends PrivateApiComponen
 
     @Override
     public String getToken() {
-        return "deploy/app/config/has/not/config/module/list";
+        return "deploy/app/config/without/config/module/list";
     }
 
     @Input({

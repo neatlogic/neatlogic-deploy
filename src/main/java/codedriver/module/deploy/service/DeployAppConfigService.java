@@ -26,7 +26,7 @@ public interface DeployAppConfigService {
      * @param ciEntityTransactionVo 配置项
      * @param paramObj              入参
      */
-    void addAttrEntityDataAndRelEntityData(CiEntityTransactionVo ciEntityTransactionVo, JSONObject paramObj);
+    void addAttrEntityDataAndRelEntityData(CiEntityTransactionVo ciEntityTransactionVo, Long ciId, JSONObject paramObj, List<String> needUpdateAttrList, List<String> needUpdateRelList);
 
     /**
      * 根据应用模块ID获取runner组

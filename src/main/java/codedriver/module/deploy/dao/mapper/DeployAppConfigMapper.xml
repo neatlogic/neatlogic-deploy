@@ -535,45 +535,6 @@
         </collection>
     </resultMap>
 
-    <select id="getAppConfigEnvIncludeDBCSchemaListAndAutoCfgKeyListByAppSystemIdAndAppModuleIdAndEnvId"
-            resultMap="appEnvIncludeSchemaListAndAutoCfgKeyListMap" useCache="false">
-        SELECT a.app_system_id as appSystemId,
-        a.app_module_id as appModuleId,
-        a.env_id as envId,
-        daced.db_schema as dbSchema,
-        daced.config as configStr,
-        daeac.key,
-        daeac.value
-        FROM ${schemaName}.`scence_appinstance_env_appmodule_appsystem` a
-        LEFT JOIN deploy_app_config_env_db daced
-        on a.app_system_id = daced.app_system_id and a.app_module_id = daced.app_module_id and a.env_id = daced.env_id
-        LEFT JOIN deploy_app_env_auto_config daeac
-        on a.app_system_id = daeac.app_system_id and a.app_module_id = daeac.app_module_id and a.env_id = daeac.env_id
-        and daeac.instance_id = 0
-        WHERE a.app_system_id = #{appSystemId}
-        AND a.app_module_id = #{appModuleId}
-        AND a.env_id = #{envId}
-        UNION
-        SELECT dace.app_system_id as appSystemId,
-        dace.app_module_id as appModuleId,
-        dace.env_id as envId,
-        daced.db_schema as dbSchema,
-        daced.config as configStr,
-        daeac.key,
-        daeac.value
-        FROM deploy_app_config_env dace
-        LEFT JOIN deploy_app_config_env_db daced
-        on dace.app_system_id = daced.app_system_id and dace.app_module_id = daced.app_module_id and dace.env_id =
-        daced.env_id
-        LEFT JOIN deploy_app_env_auto_config daeac
-        on dace.app_system_id = daeac.app_system_id and dace.app_module_id = daeac.app_module_id and dace.env_id =
-        daeac.env_id
-        and daeac.instance_id = 0
-        WHERE dace.app_system_id = #{appSystemId}
-        AND dace.app_module_id = #{appModuleId}
-        AND dace.env_id = #{envId}
-    </select>
-
     <select id="getAppConfigEnvListIncludeDBCSchemaListAndAutoCfgKeyListByAppSystemIdAndAppModuleIdAndEnvId"
             resultMap="appEnvIncludeSchemaListAndAutoCfgKeyListMap" useCache="false">
         SELECT a.app_system_id as appSystemId,

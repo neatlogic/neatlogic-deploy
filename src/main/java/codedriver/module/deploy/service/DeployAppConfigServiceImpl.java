@@ -57,14 +57,14 @@ public class DeployAppConfigServiceImpl implements DeployAppConfigService {
     }
 
     @Override
-    public void addAttrEntityDataAndRelEntityData(CiEntityTransactionVo ciEntityTransactionVo, JSONObject paramObj) {
+    public void addAttrEntityDataAndRelEntityData(CiEntityTransactionVo ciEntityTransactionVo, Long ciId, JSONObject attrAndRelObj, List<String> needUpdateAttrList, List<String> needUpdateRelList) {
 
         //添加属性
-        addAttrEntityData(ciEntityTransactionVo, paramObj);
+        addAttrEntityData(ciEntityTransactionVo, attrAndRelObj, needUpdateAttrList, ciId);
         //添加关系
-        addRelEntityData(ciEntityTransactionVo, paramObj);
+        addRelEntityData(ciEntityTransactionVo, attrAndRelObj, needUpdateRelList, ciId);
         //设置基础信息
-        ciEntityTransactionVo.setCiId(paramObj.getLong("ciId"));
+        ciEntityTransactionVo.setCiId(ciId);
         ciEntityTransactionVo.setAllowCommit(true);
         ciEntityTransactionVo.setDescription(null);
     }
@@ -97,18 +97,18 @@ public class DeployAppConfigServiceImpl implements DeployAppConfigService {
      * @param ciEntityTransactionVo 配置项
      * @param paramObj              入参
      */
-    private void addRelEntityData(CiEntityTransactionVo ciEntityTransactionVo, JSONObject paramObj) {
+    private void addRelEntityData(CiEntityTransactionVo ciEntityTransactionVo, JSONObject paramObj, List<String> needUpdateRelList, Long ciId) {
 
-        if (CollectionUtils.isEmpty(paramObj.getJSONArray("needUpdateRelList"))) {
+        if (CollectionUtils.isEmpty(needUpdateRelList)) {
             return;
         }
 
         IRelCrossoverMapper relCrossoverMapper = CrossoverServiceFactory.getApi(IRelCrossoverMapper.class);
-        List<RelVo> relVoList = relCrossoverMapper.getRelByCiId(paramObj.getLong("ciId"));
+        List<RelVo> relVoList = relCrossoverMapper.getRelByCiId(ciId);
         ICiEntityCrossoverMapper iCiEntityCrossoverMapper = CrossoverServiceFactory.getApi(ICiEntityCrossoverMapper.class);
 
         for (RelVo relVo : relVoList) {
-            if (!paramObj.getJSONArray("needUpdateRelList").contains(relVo.getFromCiName())) {
+            if (!needUpdateRelList.contains(relVo.getFromCiName())) {
                 continue;
             }
             if (StringUtils.isBlank(getRelMap().get(relVo.getFromCiName()))) {
@@ -128,17 +128,17 @@ public class DeployAppConfigServiceImpl implements DeployAppConfigService {
      * @param ciEntityTransactionVo 配置项
      * @param paramObj              入参
      */
-    void addAttrEntityData(CiEntityTransactionVo ciEntityTransactionVo, JSONObject paramObj) {
+    void addAttrEntityData(CiEntityTransactionVo ciEntityTransactionVo, JSONObject paramObj, List<String> needUpdateAttrList, Long ciId) {
 
-        if (CollectionUtils.isEmpty(paramObj.getJSONArray("needUpdateAttrList"))) {
+        if (CollectionUtils.isEmpty(needUpdateAttrList)) {
             return;
         }
 
         IAttrCrossoverMapper attrCrossoverMapper = CrossoverServiceFactory.getApi(IAttrCrossoverMapper.class);
-        List<AttrVo> attrVoList = attrCrossoverMapper.getAttrByCiId(paramObj.getLong("ciId"));
+        List<AttrVo> attrVoList = attrCrossoverMapper.getAttrByCiId(ciId);
 
         for (AttrVo attrVo : attrVoList) {
-            if (!paramObj.getJSONArray("needUpdateAttrList").contains(attrVo.getName())) {
+            if (!needUpdateAttrList.contains(attrVo.getName())) {
                 continue;
             }
             String attrParam = getAttrMap().get(attrVo.getName());

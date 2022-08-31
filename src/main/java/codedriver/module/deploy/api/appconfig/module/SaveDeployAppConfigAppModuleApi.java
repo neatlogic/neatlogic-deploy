@@ -109,11 +109,10 @@ public class SaveDeployAppConfigAppModuleApi extends PrivateApiComponentBase {
         paramObj.put("ownerIdList", ownerIdList);
 
         //定义需要插入的字段
-        paramObj.put("needUpdateAttrList", new JSONArray(Arrays.asList("state", "name", "owner", "abbrName", "maintenance_window", "description")));
+        List<String> needUpdateAttrList = Arrays.asList("state", "name", "owner", "abbrName", "maintenance_window", "description");
         //获取应用系统的模型id
         ICiCrossoverMapper ciCrossoverMapper = CrossoverServiceFactory.getApi(ICiCrossoverMapper.class);
         CiVo moduleCiVo = ciCrossoverMapper.getCiByName("APPComponent");
-        paramObj.put("ciId", moduleCiVo.getId());
 
         //保存
         ICiEntityCrossoverService ciEntityService = CrossoverServiceFactory.getApi(ICiEntityCrossoverService.class);
@@ -124,7 +123,7 @@ public class SaveDeployAppConfigAppModuleApi extends PrivateApiComponentBase {
             //1、构建事务vo，并添加属性值
             paramObj.put("needUpdateRelList", new JSONArray(Collections.singletonList("APP")));
             ciEntityTransactionVo = new CiEntityTransactionVo();
-            deployAppConfigService.addAttrEntityDataAndRelEntityData(ciEntityTransactionVo, paramObj);
+            deployAppConfigService.addAttrEntityDataAndRelEntityData(ciEntityTransactionVo, ciCrossoverMapper.getCiByName("APPComponent").getId(), paramObj, Arrays.asList("state", "name", "owner", "abbrName", "maintenance_window", "description"), Collections.singletonList("APP"));
 
             //2、设置事务vo信息
             ciEntityTransactionVo.setEditMode(EditModeType.PARTIAL.getValue());
@@ -140,7 +139,7 @@ public class SaveDeployAppConfigAppModuleApi extends PrivateApiComponentBase {
             //1、构建事务vo，并添加属性值
             ciEntityTransactionVo = new CiEntityTransactionVo(moduleCiEntityInfo);
             ciEntityTransactionVo.setAttrEntityData(moduleCiEntityInfo.getAttrEntityData());
-            deployAppConfigService.addAttrEntityDataAndRelEntityData(ciEntityTransactionVo, paramObj);
+            deployAppConfigService.addAttrEntityDataAndRelEntityData(ciEntityTransactionVo, moduleCiVo.getId(), paramObj, needUpdateAttrList, new ArrayList<>());
 
             //2、设置事务vo信息
             ciEntityTransactionVo.setAction(TransactionActionType.UPDATE.getValue());

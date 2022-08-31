@@ -8,7 +8,6 @@ import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.cmdb.crossover.ICiCrossoverMapper;
 import codedriver.framework.cmdb.crossover.ICiEntityCrossoverService;
-import codedriver.framework.cmdb.dto.ci.CiVo;
 import codedriver.framework.cmdb.dto.resourcecenter.entity.AppEnvironmentVo;
 import codedriver.framework.cmdb.dto.transaction.CiEntityTransactionVo;
 import codedriver.framework.cmdb.enums.EditModeType;
@@ -81,6 +80,7 @@ public class CopyDeployAppConfigModuleConfigApi extends PrivateApiComponentBase 
             @Param(name = "ownerIdList", type = ApiParamType.JSONARRAY, desc = "负责人(复制配置，并新建模块时使用)"),
             @Param(name = "maintenanceWindow", type = ApiParamType.JSONARRAY, desc = "维护窗口(复制配置，并新建模块时使用)"),
             @Param(name = "description", type = ApiParamType.STRING, desc = "备注(复制配置，并新建模块时使用)"),
+            @Param(name = "isAdd", type = ApiParamType.INTEGER, isRequired = true, desc = "是否新增(0:现有，1:新增)")
     })
     @Output({
     })
@@ -106,7 +106,7 @@ public class CopyDeployAppConfigModuleConfigApi extends PrivateApiComponentBase 
             fromModuleHasConfigEnvIdList = appModuleIdConfigListMap.get(fromAppModuleId).stream().map(DeployAppConfigVo::getEnvId).collect(Collectors.toList());
         }
 
-        if (CollectionUtils.isNotEmpty(toAppModuleIdArray)) {
+        if (paramObj.getInteger("isAdd") == 0) {
             List<Long> toAppModuleIdList = toAppModuleIdArray.toJavaList(Long.class);
 
             List<Long> allParamModuleIdList = new ArrayList<>();
@@ -119,7 +119,7 @@ public class CopyDeployAppConfigModuleConfigApi extends PrivateApiComponentBase 
                 fromModuleEnvIdList = appModuleEnvListMap.get(fromAppModuleId);
             }
 
-            List<DeployAppConfigVo> insertConfigList = new ArrayList<>();
+            List<DeployAppConfigVo> insertAppConfigList = new ArrayList<>();
 
             for (Long toModuleId : toAppModuleIdList) {
 
@@ -132,14 +132,14 @@ public class CopyDeployAppConfigModuleConfigApi extends PrivateApiComponentBase 
                 //1、复制模块配置
                 if (fromModuleHasConfigEnvIdList.contains(0L)) {
                     //新增模块配置，后面统一新增配置，insert时会duplicate
-                    insertConfigList.add(new DeployAppConfigVo(appSystemId, toModuleId, DeployPipelineConfigManager.init(appSystemId).withAppModuleId(fromAppModuleId).getConfig()));
+                    insertAppConfigList.add(new DeployAppConfigVo(appSystemId, toModuleId, DeployPipelineConfigManager.init(appSystemId).withAppModuleId(fromAppModuleId).getConfig()));
                 } else if (toModuleHasConfigEnvIdList.contains(0L)) {
                     //删除原有的配置(虽然前端已经有接口控制只能选没有独一份配置的模块，但是防止单独调接口，做多一次删除动作)
                     deployAppConfigMapper.deleteAppConfig(new DeployAppConfigVo(appSystemId, toModuleId));
                 }
 
                 //2、复制模块下的环境配置
-                //只有于来源模块拥有环境，才需要复制环境相关配置
+                //只有当来源模块拥有环境时，才需要复制环境相关配置
                 if (CollectionUtils.isNotEmpty(fromModuleEnvIdList)) {
                     List<Long> needAddEnvIdList = new ArrayList<>();
                     List<Long> toModuleEnvIdList = new ArrayList<>();
@@ -159,7 +159,7 @@ public class CopyDeployAppConfigModuleConfigApi extends PrivateApiComponentBase 
                         //如果来源模块的环境有独一份配置，则复制
                         if (fromModuleHasConfigEnvIdList.contains(fromEnvId)) {
                             //新增配置，insert是会duplicate
-                            insertConfigList.add(new DeployAppConfigVo(appSystemId, toModuleId, fromEnvId, DeployPipelineConfigManager.init(appSystemId).withAppModuleId(fromAppModuleId).withEnvId(fromEnvId).getConfig()));
+                            insertAppConfigList.add(new DeployAppConfigVo(appSystemId, toModuleId, fromEnvId, DeployPipelineConfigManager.init(appSystemId).withAppModuleId(fromAppModuleId).withEnvId(fromEnvId).getConfig()));
                         } else if (toModuleHasConfigEnvIdList.contains(fromEnvId)) {
                             //如果来源模块的当前环境没有独一份的配置，而目标模块的当前配置有独一份配置，则需要删除此配置
                             deployAppConfigMapper.deleteAppConfig(new DeployAppConfigVo(appSystemId, toModuleId, fromEnvId));
@@ -189,8 +189,8 @@ public class CopyDeployAppConfigModuleConfigApi extends PrivateApiComponentBase 
                 }
             }
             //新增或者update流水线配置
-            if (CollectionUtils.isNotEmpty(insertConfigList)) {
-                deployAppConfigMapper.insertBatchAppConfig(insertConfigList);
+            if (CollectionUtils.isNotEmpty(insertAppConfigList)) {
+                deployAppConfigMapper.insertBatchAppConfig(insertAppConfigList);
             }
         } else {
 
@@ -210,15 +210,10 @@ public class CopyDeployAppConfigModuleConfigApi extends PrivateApiComponentBase 
             paramObj.put("stateIdList", stateIdList);
             paramObj.put("ownerIdList", ownerIdList);
 
-            //定义需要插入的字段
-            paramObj.put("needUpdateAttrList", new JSONArray(Arrays.asList("state", "name", "owner", "abbrName", "maintenance_window", "description")));
             //获取应用系统的模型id
             ICiCrossoverMapper ciCrossoverMapper = CrossoverServiceFactory.getApi(ICiCrossoverMapper.class);
-            CiVo moduleCiVo = ciCrossoverMapper.getCiByName("APPComponent");
-            paramObj.put("ciId", moduleCiVo.getId());
-            paramObj.put("needUpdateRelList", new JSONArray(Collections.singletonList("APP")));
             CiEntityTransactionVo ciEntityTransactionVo = new CiEntityTransactionVo();
-            deployAppConfigService.addAttrEntityDataAndRelEntityData(ciEntityTransactionVo, paramObj);
+            deployAppConfigService.addAttrEntityDataAndRelEntityData(ciEntityTransactionVo, ciCrossoverMapper.getCiByName("APPComponent").getId(), paramObj, Arrays.asList("state", "name", "owner", "abbrName", "maintenance_window", "description"), Collections.singletonList("APP"));
 
             //2、设置事务vo信息
             ciEntityTransactionVo.setEditMode(EditModeType.PARTIAL.getValue());

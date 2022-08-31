@@ -101,11 +101,10 @@ public class SaveDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
         paramObj.put("ownerIdList", ownerIdList);
 
         //定义需要插入的字段
-        paramObj.put("needUpdateAttrList", new JSONArray(Arrays.asList("state", "name", "owner", "abbrName", "maintenance_window", "description")));
+        List<String> needUpdateAttrList = Arrays.asList("state", "name", "owner", "abbrName", "maintenance_window", "description");
         //获取应用系统的模型id
         ICiCrossoverMapper ciCrossoverMapper = CrossoverServiceFactory.getApi(ICiCrossoverMapper.class);
         CiVo appCiVo = ciCrossoverMapper.getCiByName("APP");
-        paramObj.put("ciId", appCiVo.getId());
 
         //保存
         ICiEntityCrossoverService ciEntityService = CrossoverServiceFactory.getApi(ICiEntityCrossoverService.class);
@@ -115,7 +114,7 @@ public class SaveDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
             /*新增应用系统（配置项）*/
             //1、构建事务vo，并添加属性值
             ciEntityTransactionVo = new CiEntityTransactionVo();
-            deployAppConfigService.addAttrEntityDataAndRelEntityData(ciEntityTransactionVo, paramObj);
+            deployAppConfigService.addAttrEntityDataAndRelEntityData(ciEntityTransactionVo, appCiVo.getId(), paramObj, needUpdateAttrList, new ArrayList<>());
 
             //2、设置事务vo信息
             ciEntityTransactionVo.setEditMode(EditModeType.PARTIAL.getValue());
@@ -131,7 +130,7 @@ public class SaveDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
 
             ciEntityTransactionVo = new CiEntityTransactionVo(systemCiEntityInfo);
             ciEntityTransactionVo.setAttrEntityData(systemCiEntityInfo.getAttrEntityData());
-            deployAppConfigService.addAttrEntityDataAndRelEntityData(ciEntityTransactionVo, paramObj);
+            deployAppConfigService.addAttrEntityDataAndRelEntityData(ciEntityTransactionVo, appCiVo.getId(), paramObj, needUpdateAttrList, new ArrayList<>());
 
             //2、设置事务vo信息
             ciEntityTransactionVo.setAction(TransactionActionType.UPDATE.getValue());

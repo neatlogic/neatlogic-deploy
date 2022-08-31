@@ -25,7 +25,7 @@ import javax.annotation.Resource;
 @Service
 @AuthAction(action = DEPLOY_BASE.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
-public class ListDeployAppConfigHasNotConfigEnvApi extends PrivateApiComponentBase {
+public class ListDeployAppConfigWithoutConfigEnvApi extends PrivateApiComponentBase {
 
     @Resource
     private DeployAppConfigMapper deployAppConfigMapper;
@@ -42,7 +42,7 @@ public class ListDeployAppConfigHasNotConfigEnvApi extends PrivateApiComponentBa
 
     @Override
     public String getToken() {
-        return "deploy/app/config/has/not/config/env/list";
+        return "deploy/app/config/without/config/env/list";
     }
 
     @Input({

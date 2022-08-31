@@ -93,17 +93,17 @@ public class CopyDeployAppConfigEnvConfigApi extends PrivateApiComponentBase {
         if (fromEnvConfigVo == null) {
             throw new DeployAppConfigNotFoundException(appModuleId);
         }
-        List<DeployAppConfigVo> insertConfigList = new ArrayList<>();
+        List<DeployAppConfigVo> insertAppConfigList = new ArrayList<>();
         for (Long envId : toEnvIdList) {
             if (hasFromEnvConfig) {
-                insertConfigList.add(new DeployAppConfigVo(appSystemId, appModuleId, envId, fromEnvConfigVo));
+                insertAppConfigList.add(new DeployAppConfigVo(appSystemId, appModuleId, envId, fromEnvConfigVo));
             } else {
                 //删除原有的配置(虽然前端已经有接口控制只能选没有独一份配置的环境，但是防止单独调接口，做多一次删除动作)
                 deployAppConfigMapper.deleteAppConfig(new DeployAppConfigVo(appSystemId, appModuleId, envId));
             }
         }
-        if (CollectionUtils.isNotEmpty(insertConfigList)) {
-            deployAppConfigMapper.insertBatchAppConfig(insertConfigList);
+        if (CollectionUtils.isNotEmpty(insertAppConfigList)) {
+            deployAppConfigMapper.insertBatchAppConfig(insertAppConfigList);
         }
 
         //新增环境
@@ -131,7 +131,11 @@ public class CopyDeployAppConfigEnvConfigApi extends PrivateApiComponentBase {
             return;
         }
 
-        DeployAppEnvironmentVo envInfoVo = deployAppConfigMapper.getAppConfigEnvIncludeDBCSchemaListAndAutoCfgKeyListByAppSystemIdAndAppModuleIdAndEnvId(appSystemId, appModuleId, fromEnvId, TenantContext.get().getDataDbName());
+        List<DeployAppEnvironmentVo> envInfoVoList = deployAppConfigMapper.getAppConfigEnvListIncludeDBCSchemaListAndAutoCfgKeyListByAppSystemIdAndAppModuleIdAndEnvId(appSystemId, appModuleId, Collections.singletonList(fromEnvId), TenantContext.get().getDataDbName());
+        if (CollectionUtils.isEmpty(envInfoVoList)) {
+            return;
+        }
+        DeployAppEnvironmentVo envInfoVo = envInfoVoList.get(0);
         if (envInfoVo == null) {
             return;
         }
