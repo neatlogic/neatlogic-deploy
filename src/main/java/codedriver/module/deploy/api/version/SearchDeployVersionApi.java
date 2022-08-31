@@ -74,7 +74,7 @@ public class SearchDeployVersionApi extends PrivateApiComponentBase {
             paramVersionVo.setRowNum(count);
             List<Long> idList = deployVersionMapper.getDeployVersionIdList(paramVersionVo);
             if (CollectionUtils.isNotEmpty(idList)) {
-                returnVersionList = deployVersionMapper.getDeployVersionByIdList(idList);
+                returnVersionList = deployVersionMapper.getDeployVersionByIdList(idList, TenantContext.get().getDataDbName());
                 List<DeployVersionVo> versionVoListIncludeEnvList = deployVersionMapper.getDeployVersionIncludeEnvListByVersionIdList(idList, TenantContext.get().getDataDbName());
                 Map<Long, List<DeployVersionEnvVo>> allEnvListMap = versionVoListIncludeEnvList.stream().collect(Collectors.toMap(DeployVersionVo::getId, DeployVersionVo::getEnvList));
                 //补充版本的环境
