@@ -6,14 +6,8 @@ package codedriver.module.deploy.api.appconfig.module;
 
 import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.auth.core.AuthAction;
-import codedriver.framework.cmdb.crossover.ICiCrossoverMapper;
-import codedriver.framework.cmdb.crossover.ICiEntityCrossoverService;
 import codedriver.framework.cmdb.dto.resourcecenter.entity.AppEnvironmentVo;
-import codedriver.framework.cmdb.dto.transaction.CiEntityTransactionVo;
-import codedriver.framework.cmdb.enums.EditModeType;
-import codedriver.framework.cmdb.enums.TransactionActionType;
 import codedriver.framework.common.constvalue.ApiParamType;
-import codedriver.framework.crossover.CrossoverServiceFactory;
 import codedriver.framework.deploy.auth.DEPLOY_BASE;
 import codedriver.framework.deploy.constvalue.DeployAppConfigAction;
 import codedriver.framework.deploy.dto.app.*;
@@ -33,7 +27,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -194,38 +191,7 @@ public class CopyDeployAppConfigModuleConfigApi extends PrivateApiComponentBase 
             }
         } else {
 
-            /*新增应用系统（配置项）*/
-            //1、构建事务vo，并添加属性值
-            List<Long> stateIdList = new ArrayList<>();
-            List<Long> ownerIdList = new ArrayList<>();
-            //构建数据结构
-            JSONArray stateIdArray = paramObj.getJSONArray("stateIdList");
-            if (CollectionUtils.isNotEmpty(stateIdArray)) {
-                stateIdList = stateIdArray.toJavaList(Long.class);
-            }
-            JSONArray ownerIdArray = paramObj.getJSONArray("ownerIdList");
-            if (CollectionUtils.isNotEmpty(ownerIdArray)) {
-                ownerIdList = ownerIdArray.toJavaList(Long.class);
-            }
-            paramObj.put("stateIdList", stateIdList);
-            paramObj.put("ownerIdList", ownerIdList);
-
-            //获取应用系统的模型id
-            ICiCrossoverMapper ciCrossoverMapper = CrossoverServiceFactory.getApi(ICiCrossoverMapper.class);
-            CiEntityTransactionVo ciEntityTransactionVo = new CiEntityTransactionVo();
-            deployAppConfigService.addAttrEntityDataAndRelEntityData(ciEntityTransactionVo, ciCrossoverMapper.getCiByName("APPComponent").getId(), paramObj, Arrays.asList("state", "name", "owner", "abbrName", "maintenance_window", "description"), Collections.singletonList("APP"));
-
-            //2、设置事务vo信息
-            ciEntityTransactionVo.setEditMode(EditModeType.PARTIAL.getValue());
-            ciEntityTransactionVo.setAction(TransactionActionType.INSERT.getValue());
-
-            //3、保存系统（配置项）
-            List<CiEntityTransactionVo> ciEntityTransactionList = new ArrayList<>();
-            ciEntityTransactionList.add(ciEntityTransactionVo);
-            ICiEntityCrossoverService ciEntityService = CrossoverServiceFactory.getApi(ICiEntityCrossoverService.class);
-            ciEntityService.saveCiEntity(ciEntityTransactionList);
-
-            Long toAppModuleId = ciEntityTransactionVo.getCiEntityId();
+            Long toAppModuleId = deployAppConfigService.saveDeployAppModule(paramObj.toJavaObject(DeployAppModuleVo.class), 1);
 
             //复制配置
             List<DeployAppConfigVo> insertConfigList = new ArrayList<>();

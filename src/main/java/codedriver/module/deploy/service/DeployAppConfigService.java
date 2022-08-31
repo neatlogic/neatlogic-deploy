@@ -2,6 +2,7 @@ package codedriver.module.deploy.service;
 
 import codedriver.framework.cmdb.dto.transaction.CiEntityTransactionVo;
 import codedriver.framework.deploy.dto.app.DeployAppConfigVo;
+import codedriver.framework.deploy.dto.app.DeployAppModuleVo;
 import codedriver.framework.dto.runner.RunnerMapVo;
 import com.alibaba.fastjson.JSONObject;
 
@@ -37,4 +38,5 @@ public interface DeployAppConfigService {
      */
     List<RunnerMapVo> getAppModuleRunnerGroupByAppSystemIdAndModuleId(Long appSystemId, Long appModuleId);
 
+    Long saveDeployAppModule(DeployAppModuleVo deployAppModuleVo, int isAdd);
 }

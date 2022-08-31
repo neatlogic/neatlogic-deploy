@@ -1,16 +1,18 @@
 package codedriver.module.deploy.service;
 
-import codedriver.framework.cmdb.crossover.IAttrCrossoverMapper;
-import codedriver.framework.cmdb.crossover.ICiEntityCrossoverMapper;
-import codedriver.framework.cmdb.crossover.IRelCrossoverMapper;
+import codedriver.framework.cmdb.crossover.*;
 import codedriver.framework.cmdb.dto.ci.AttrVo;
+import codedriver.framework.cmdb.dto.ci.CiVo;
 import codedriver.framework.cmdb.dto.ci.RelVo;
 import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
 import codedriver.framework.cmdb.dto.transaction.CiEntityTransactionVo;
+import codedriver.framework.cmdb.enums.EditModeType;
+import codedriver.framework.cmdb.enums.TransactionActionType;
 import codedriver.framework.cmdb.exception.cientity.CiEntityNotFoundException;
 import codedriver.framework.crossover.CrossoverServiceFactory;
 import codedriver.framework.deploy.dto.app.DeployAppConfigEnvDBConfigVo;
 import codedriver.framework.deploy.dto.app.DeployAppConfigVo;
+import codedriver.framework.deploy.dto.app.DeployAppModuleVo;
 import codedriver.framework.deploy.exception.DeployAppConfigModuleRunnerGroupNotFoundException;
 import codedriver.framework.dto.runner.RunnerGroupVo;
 import codedriver.framework.dto.runner.RunnerMapVo;
@@ -23,9 +25,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author longrf
@@ -89,6 +89,70 @@ public class DeployAppConfigServiceImpl implements DeployAppConfigService {
             throw new RunnerGroupRunnerNotFoundException(runnerGroupVo.getName() + ":" + runnerGroupVo.getId());
         }
         return runnerMapList;
+    }
+
+    @Override
+    public Long saveDeployAppModule(DeployAppModuleVo deployAppModuleVo, int isAdd) {
+        //校验应用系统id是否存在
+        ICiEntityCrossoverMapper iCiEntityCrossoverMapper = CrossoverServiceFactory.getApi(ICiEntityCrossoverMapper.class);
+        CiEntityVo appSystemCiEntity = iCiEntityCrossoverMapper.getCiEntityBaseInfoById(deployAppModuleVo.getAppSystemId());
+        if (appSystemCiEntity == null) {
+            throw new CiEntityNotFoundException(deployAppModuleVo.getAppSystemId());
+        }
+
+        Long appModuleId = deployAppModuleVo.getId();
+
+        JSONObject paramObj = new JSONObject();
+        paramObj.put("stateIdList", deployAppModuleVo.getStateIdList());
+        paramObj.put("ownerIdList", deployAppModuleVo.getOwnerIdList());
+        paramObj.put("abbrName", deployAppModuleVo.getAbbrName());
+        paramObj.put("name", deployAppModuleVo.getName());
+        paramObj.put("maintenanceWindow", deployAppModuleVo.getMaintenanceWindow());
+        paramObj.put("description", deployAppModuleVo.getDescription());
+        paramObj.put("appSystemId", deployAppModuleVo.getAppSystemId());
+
+        //定义需要插入的字段
+        List<String> needUpdateAttrList = Arrays.asList("state", "name", "owner", "abbrName", "maintenance_window", "description");
+        //获取应用系统的模型id
+        ICiCrossoverMapper ciCrossoverMapper = CrossoverServiceFactory.getApi(ICiCrossoverMapper.class);
+        CiVo moduleCiVo = ciCrossoverMapper.getCiByName("APPComponent");
+
+        //保存
+        ICiEntityCrossoverService ciEntityService = CrossoverServiceFactory.getApi(ICiEntityCrossoverService.class);
+        CiEntityTransactionVo ciEntityTransactionVo = null;
+        if (isAdd == 1) {
+
+            /*新增应用系统（配置项）*/
+            //1、构建事务vo，并添加属性值
+            paramObj.put("needUpdateRelList", new JSONArray(Collections.singletonList("APP")));
+            ciEntityTransactionVo = new CiEntityTransactionVo();
+            addAttrEntityDataAndRelEntityData(ciEntityTransactionVo, ciCrossoverMapper.getCiByName("APPComponent").getId(), paramObj, Arrays.asList("state", "name", "owner", "abbrName", "maintenance_window", "description"), Collections.singletonList("APP"));
+
+            //2、设置事务vo信息
+            ciEntityTransactionVo.setEditMode(EditModeType.PARTIAL.getValue());
+            ciEntityTransactionVo.setAction(TransactionActionType.INSERT.getValue());
+        } else {
+
+            CiEntityVo moduleCiEntityInfo = ciEntityService.getCiEntityById(moduleCiVo.getId(), appModuleId);
+            if (moduleCiEntityInfo == null) {
+                throw new CiEntityNotFoundException(appModuleId);
+            }
+
+            /*编辑应用系统（配置项）*/
+            //1、构建事务vo，并添加属性值
+            ciEntityTransactionVo = new CiEntityTransactionVo(moduleCiEntityInfo);
+            ciEntityTransactionVo.setAttrEntityData(moduleCiEntityInfo.getAttrEntityData());
+            addAttrEntityDataAndRelEntityData(ciEntityTransactionVo, moduleCiVo.getId(), paramObj, needUpdateAttrList, new ArrayList<>());
+
+            //2、设置事务vo信息
+            ciEntityTransactionVo.setAction(TransactionActionType.UPDATE.getValue());
+            ciEntityTransactionVo.setEditMode(EditModeType.PARTIAL.getValue());
+        }
+        //3、保存系统（配置项）
+        List<CiEntityTransactionVo> ciEntityTransactionList = new ArrayList<>();
+        ciEntityTransactionList.add(ciEntityTransactionVo);
+        ciEntityService.saveCiEntity(ciEntityTransactionList);
+        return ciEntityTransactionVo.getCiEntityId();
     }
 
     /**
