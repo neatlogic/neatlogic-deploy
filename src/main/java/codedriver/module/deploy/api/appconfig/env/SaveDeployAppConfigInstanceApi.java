@@ -141,7 +141,7 @@ public class SaveDeployAppConfigInstanceApi extends PrivateApiComponentBase {
             CiEntityTransactionVo ciEntityTransactionVo = new CiEntityTransactionVo();
 
             //添加环境属性、模块关系
-            deployAppConfigService.addAttrEntityDataAndRelEntityData(ciEntityTransactionVo, paramCiVo.getId(), paramObj, Arrays.asList("name", "ip", "port", "maintenance_window", "app_environment"), new ArrayList<>());
+            deployAppConfigService.addAttrEntityDataAndRelEntityData(ciEntityTransactionVo, paramCiVo.getId(), paramObj, Arrays.asList("name", "ip", "port", "maintenance_window", "app_environment"), Collections.singletonList("APPComponent"));
 
             ciEntityTransactionVo.setEditMode(EditModeType.PARTIAL.getValue());
             ciEntityTransactionVo.setAction(TransactionActionType.INSERT.getValue());
