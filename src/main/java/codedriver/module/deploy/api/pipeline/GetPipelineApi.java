@@ -14,7 +14,6 @@ import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.deploy.dao.mapper.PipelineMapper;
-import codedriver.module.deploy.service.PipelineService;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.stereotype.Service;
 
@@ -26,9 +25,6 @@ import javax.annotation.Resource;
 public class GetPipelineApi extends PrivateApiComponentBase {
     @Resource
     private PipelineMapper pipelineMapper;
-
-    @Resource
-    private PipelineService pipelineService;
 
     @Override
     public String getName() {
