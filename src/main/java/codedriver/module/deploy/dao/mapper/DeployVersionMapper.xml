@@ -129,8 +129,10 @@
         <result column="version" property="version"/>
         <result column="appSystemId" property="appSystemId"/>
         <result column="appSystemName" property="appSystemName"/>
+        <result column="appSystemAbbrName" property="appSystemAbbrName"/>
         <result column="appModuleId" property="appModuleId"/>
         <result column="appModuleName" property="appModuleName"/>
+        <result column="appModuleAbbrName" property="appModuleAbbrName"/>
         <result column="description" property="description"/>
         <result column="isFreeze" property="isFreeze"/>
         <result column="compileSuccessCount" property="compileSuccessCount"/>
@@ -177,9 +179,11 @@
         dv.id,
         dv.version,
         dv.app_system_id as appSystemId,
-        cci.name as appSystemName,
+        a.name as appSystemName,
+        a.abbr_name as appSystemAbbrName,
         dv.app_module_id as appModuleId,
-        cce.name as appModuleName,
+        a.app_module_name as appModuleName,
+        a.app_module_abbr_name as appModuleAbbrName,
         dv.description as description,
         dv.is_freeze as isFreeze,
         dvb.build_no as buildNo,
@@ -196,12 +200,12 @@
         dv.lcu,
         dv.lcd
         from deploy_version dv
+        left join @{DATA_SCHEMA}.scence_appsystem_appmodule a on a.id = dv.app_system_id and a.app_module_id = dv.app_module_id
         left join deploy_version_buildno dvb on dvb.version_id = dv.id
         left join deploy_version_env dve on dve.version_id = dv.id
-        left join cmdb_cientity cc on cc.id = dve.env_id left join cmdb_cientity cci on cci.id = dv.app_system_id
-        left join cmdb_cientity cce on cce.id = dv.app_module_id
+        left join cmdb_cientity cc on cc.id = dve.env_id
         where dv.id IN
-        <foreach collection="list" item="id" open="(" separator="," close=")">
+        <foreach collection="idList" item="id" open="(" separator="," close=")">
             #{id}
         </foreach>
         ORDER BY dv.fcd DESC, dvb.compile_start_time DESC,dvb.build_no DESC

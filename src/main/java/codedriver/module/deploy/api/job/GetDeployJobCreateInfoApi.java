@@ -7,10 +7,10 @@ package codedriver.module.deploy.api.job;
 
 import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.auth.core.AuthAction;
-import codedriver.framework.cmdb.crossover.ICiEntityCrossoverMapper;
+import codedriver.framework.cmdb.crossover.IAppSystemMapper;
 import codedriver.framework.cmdb.crossover.IResourceCrossoverMapper;
-import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
 import codedriver.framework.cmdb.dto.resourcecenter.ResourceVo;
+import codedriver.framework.cmdb.dto.resourcecenter.entity.AppSystemVo;
 import codedriver.framework.cmdb.exception.cientity.CiEntityNotFoundException;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.crossover.CrossoverServiceFactory;
@@ -69,25 +69,26 @@ public class GetDeployJobCreateInfoApi extends PrivateApiComponentBase {
         Long appSystemId = jsonObj.getLong("appSystemId");
         Long appModuleId = jsonObj.getLong("appModuleId") == null ? 0L : jsonObj.getLong("appModuleId");
 
-        //查询系统名称
-        ICiEntityCrossoverMapper ciEntityCrossoverMapper = CrossoverServiceFactory.getApi(ICiEntityCrossoverMapper.class);
-        CiEntityVo appSystemCiEntityVo = ciEntityCrossoverMapper.getCiEntityBaseInfoById(appSystemId);
-        if (appSystemCiEntityVo == null) {
+        //查询系统名称、简称
+        IAppSystemMapper iAppSystemMapper = CrossoverServiceFactory.getApi(IAppSystemMapper.class);
+        AppSystemVo appSystemVo = iAppSystemMapper.getAppSystemById(appSystemId, TenantContext.get().getDataDbName());
+        if (appSystemVo == null) {
             throw new CiEntityNotFoundException(appSystemId);
         }
-        result.put("appSystemName", appSystemCiEntityVo.getName());
+        result.put("appSystemName", appSystemVo.getName());
+        result.put("appSystemAbbrName", appSystemVo.getAbbrName());
 
         //判断是否有配流水线
         List<DeployAppConfigVo> appConfigVoList = deployAppConfigMapper.getAppConfigListByAppSystemId(appSystemId);
         if (CollectionUtils.isEmpty(appConfigVoList)) {
-            throw new DeployAppConfigNotFoundException(appSystemCiEntityVo);
+            throw new DeployAppConfigNotFoundException(appSystemId);
         }
         //场景
         DeployPipelineConfigVo pipelineConfigVo = DeployPipelineConfigManager.init(appSystemId)
                 .withAppModuleId(appModuleId)
                 .getConfig();
         if (pipelineConfigVo == null) {
-            throw new DeployAppConfigNotFoundException(appSystemCiEntityVo);
+            throw new DeployAppConfigNotFoundException(appSystemId);
         }
         result.put("scenarioList", pipelineConfigVo.getScenarioList());
         result.put("defaultScenarioId", pipelineConfigVo.getDefaultScenarioId());

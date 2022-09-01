@@ -101,7 +101,9 @@
                     <result column="jobTemplateModuleId" property="appModuleId"/>
                     <result column="jobTemplateEnvId" property="envId"/>
                     <result column="jobTemplateAppName" property="appSystemName"/>
+                    <result column="jobTemplateAppAbbrName" property="appSystemAbbrName"/>
                     <result column="jobTemplateModuleName" property="appModuleName"/>
+                    <result column="jobTemplateModuleAbbrName" property="appModuleAbbrName"/>
                     <result column="jobTemplateEnvName" property="envName"/>
                     <result column="jobTemplateScenarioId" property="scenarioId"/>
                     <result column="jobTemplateScenarioName" property="scenarioName"/>
@@ -135,8 +137,10 @@
                aes.name          as jobTemplateScenarioName,
                dpj.round_count   as jobTemplateRoundCount,
                dpj.config        as jobTemplateConfigStr,
-               ciapp.`name`      as jobTemplateAppName,
-               cimodule.`name`   as jobTemplateModuleName,
+               saa.`name` AS jobTemplateAppName,
+               saa.`abbr_name` AS jobTemplateAppAbbrName,
+               saa.`app_module_name` AS jobTemplateModuleName,
+               saa.`app_module_abbr_name` AS jobTemplateModuleAbbrName,
                cienv.`name`      as jobTemplateEnvName,
                dpa.auth_uuid     as authUuid,
                dpa.type          as authType
@@ -144,9 +148,8 @@
                  LEFT JOIN deploy_pipeline_lane AS dpl ON dp.id = dpl.pipeline_id
                  LEFT JOIN deploy_pipeline_group AS dpg ON dpl.id = dpg.lane_id
                  LEFT JOIN deploy_pipeline_jobtemplate AS dpj ON dpg.id = dpj.group_id
-                 LEFT JOIN cmdb_cientity AS ciapp ON dpj.app_system_id = ciapp.id
-                 LEFT JOIN cmdb_cientity AS cimodule ON dpj.app_module_id = cimodule.id
                  LEFT JOIN cmdb_cientity AS cienv ON dpj.env_id = cienv.id
+                 LEFT JOIN  @{DATA_SCHEMA}.scence_appsystem_appmodule AS saa ON saa.id = dpj.app_system_id AND saa.app_module_id = dpj.app_module_id
                  LEFT JOIN deploy_pipeline_auth AS dpa ON dp.id = dpa.pipeline_id
                  LEFT JOIN autoexec_scenario aes ON dpj.scenario_id = aes.id
         where dp.id = #{value}
