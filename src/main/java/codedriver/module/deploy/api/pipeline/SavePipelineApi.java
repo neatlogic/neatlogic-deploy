@@ -5,7 +5,6 @@
 
 package codedriver.module.deploy.api.pipeline;
 
-import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.common.constvalue.ApiParamType;
@@ -55,7 +54,7 @@ public class SavePipelineApi extends PrivateApiComponentBase {
     public Object myDoService(JSONObject jsonObj) throws Exception {
         Long id = jsonObj.getLong("id");
         if (id != null) {
-            PipelineVo pipelineVo = pipelineMapper.getPipelineById(id, TenantContext.get().getDataDbName());
+            PipelineVo pipelineVo = pipelineMapper.getPipelineById(id);
             if (pipelineVo == null) {
                 throw new DeployPipelineNotFoundException(id);
             }
@@ -106,7 +105,7 @@ public class SavePipelineApi extends PrivateApiComponentBase {
                 pipelineMapper.insertPipelineAuth(authVo);
             }
         }
-        return pipelineMapper.getPipelineById(pipelineVo.getId(), TenantContext.get().getDataDbName());
+        return pipelineMapper.getPipelineById(pipelineVo.getId());
     }
 
 }

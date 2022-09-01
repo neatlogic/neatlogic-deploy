@@ -5,7 +5,6 @@
 
 package codedriver.module.deploy.api.job.batch;
 
-import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.autoexec.constvalue.ReviewStatus;
@@ -55,7 +54,7 @@ public class UpdateBatchDeployJobReviewStatusApi extends PrivateApiComponentBase
         DeployJobVo deployJobVo = JSONObject.toJavaObject(jsonObj, DeployJobVo.class);
         deployJobVo.setReviewer(UserContext.get().getUserUuid(true));
         deployJobMapper.updateDeployJobReviewStatusById(deployJobVo);
-        return deployJobMapper.getBatchDeployJobById(deployJobVo.getId(), TenantContext.get().getDataDbName());
+        return deployJobMapper.getBatchDeployJobById(deployJobVo.getId());
     }
 
 }

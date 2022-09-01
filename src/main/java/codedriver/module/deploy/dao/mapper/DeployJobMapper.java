@@ -22,7 +22,7 @@ public interface DeployJobMapper {
 
     int searchDeployJobCount(DeployJobVo deployJobVo);
 
-    List<DeployJobVo> searchDeployJob(@Param("deployJobVo") DeployJobVo deployJobVo, @Param("schemaName") String schemaName);
+    List<DeployJobVo> searchDeployJob(DeployJobVo deployJobVo);
 
     List<Long> getJobIdListByParentId(Long parentId);
 
@@ -43,7 +43,7 @@ public interface DeployJobMapper {
 
     DeployJobContentVo getDeployJobContentLock(String contentHash);
 
-    DeployJobVo getBatchDeployJobById(@Param("id") Long id, @Param("schemaName") String schemaName);
+    DeployJobVo getBatchDeployJobById(Long id);
 
     DeployJobVo getJobBaseInfoById(Long id);
 

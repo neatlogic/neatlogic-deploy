@@ -5,7 +5,6 @@
 
 package codedriver.module.deploy.api.job.batch;
 
-import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.deploy.auth.DEPLOY_BASE;
@@ -48,7 +47,7 @@ public class GetBatchDeployJobApi extends PrivateApiComponentBase {
     @Description(desc = "获取单个批量作业信息接口")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
-        DeployJobVo deployJobVo = deployJobMapper.getBatchDeployJobById(jsonObj.getLong("id"), TenantContext.get().getDataDbName());
+        DeployJobVo deployJobVo = deployJobMapper.getBatchDeployJobById(jsonObj.getLong("id"));
         deployJobVo.setIsCanExecute(BatchDeployAuthChecker.isCanExecute(deployJobVo) ? 1 : 0);
         deployJobVo.setIsCanTakeOver(BatchDeployAuthChecker.isCanTakeOver(deployJobVo) ? 1 : 0);
         deployJobVo.setIsCanEdit(BatchDeployAuthChecker.isCanEdit(deployJobVo) ? 1 : 0);

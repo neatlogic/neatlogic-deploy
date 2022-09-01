@@ -149,10 +149,10 @@
                  LEFT JOIN deploy_pipeline_group AS dpg ON dpl.id = dpg.lane_id
                  LEFT JOIN deploy_pipeline_jobtemplate AS dpj ON dpg.id = dpj.group_id
                  LEFT JOIN cmdb_cientity AS cienv ON dpj.env_id = cienv.id
-                 LEFT JOIN  ${schemaName}.scence_appsystem_appmodule AS saa ON saa.id = dpj.app_system_id AND saa.app_module_id = dpj.app_module_id
+                 LEFT JOIN  @{DATA_SCHEMA}.scence_appsystem_appmodule AS saa ON saa.id = dpj.app_system_id AND saa.app_module_id = dpj.app_module_id
                  LEFT JOIN deploy_pipeline_auth AS dpa ON dp.id = dpa.pipeline_id
                  LEFT JOIN autoexec_scenario aes ON dpj.scenario_id = aes.id
-        where dp.id = #{id}
+        where dp.id = #{value}
         order by dpl.sort, dpg.sort, dpj.sort
     </select>
 

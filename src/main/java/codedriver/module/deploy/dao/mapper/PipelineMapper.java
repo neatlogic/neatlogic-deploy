@@ -6,7 +6,6 @@
 package codedriver.module.deploy.dao.mapper;
 
 import codedriver.framework.deploy.dto.pipeline.*;
-import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
@@ -21,7 +20,7 @@ public interface PipelineMapper {
 
     int searchJobTemplateCount(PipelineJobTemplateVo jobTemplateVo);
 
-    PipelineVo getPipelineById(@Param("id") Long id, @Param("schemaName") String schemaName);
+    PipelineVo getPipelineById(Long id);
 
     void updatePipeline(PipelineVo pipelineVo);
 

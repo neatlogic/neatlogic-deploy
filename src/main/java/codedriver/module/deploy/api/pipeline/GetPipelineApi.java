@@ -5,7 +5,6 @@
 
 package codedriver.module.deploy.api.pipeline;
 
-import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.deploy.auth.DEPLOY_BASE;
@@ -47,7 +46,7 @@ public class GetPipelineApi extends PrivateApiComponentBase {
     @Description(desc = "获取超级流水线详细信息接口")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
-        return pipelineMapper.getPipelineById(jsonObj.getLong("id"), TenantContext.get().getDataDbName());
+        return pipelineMapper.getPipelineById(jsonObj.getLong("id"));
     }
 
 }

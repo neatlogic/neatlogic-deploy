@@ -78,7 +78,7 @@ public class DeployJobServiceImpl implements DeployJobService {
             deployJobVo.setIdList(idList);
         }
         if (CollectionUtils.isNotEmpty(deployJobVo.getIdList())) {
-            return deployJobMapper.searchDeployJob(deployJobVo, TenantContext.get().getDataDbName());
+            return deployJobMapper.searchDeployJob(deployJobVo);
         }
         return null;
     }
