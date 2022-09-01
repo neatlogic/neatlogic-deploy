@@ -52,7 +52,6 @@ public interface DeployJobService {
      * @return result
      */
     JSONObject createJob(DeployJobVo autoexecJobParam) throws Exception;
-
     /**
      * 创建定时发布作业
      *
@@ -69,4 +68,6 @@ public interface DeployJobService {
      * @return 来源id
      */
     Long getOperationId(JSONObject jsonObj);
+
+
 }
