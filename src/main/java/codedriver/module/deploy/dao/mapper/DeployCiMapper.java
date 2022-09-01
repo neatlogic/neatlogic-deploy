@@ -6,5 +6,7 @@ public interface DeployCiMapper {
 
     int checkDeployCiIsRepeat(DeployCiVo vo);
 
+    DeployCiVo getDeployCiById(Long id);
+
     int insertDeployCi(DeployCiVo vo);
 }

@@ -11,6 +11,25 @@
         select count(1) from deploy_ci where `id` != #{id} and `name` = #{name}
     </select>
 
+    <select id="getDeployCiById" parameterType="java.lang.Long" resultType="codedriver.framework.deploy.dto.ci.DeployCiVo">
+        select `id`,
+               `name`,
+               `is_active` as isActive,
+               `app_system_id` as appSystemId,
+               `app_module_id` as appModuleId,
+               `repo_type` as repoType,
+               `repo_server_address` as repoServerAddress,
+               `repo_name` as repoName,
+               `branches` as branchesStr,
+               `event`,
+               `action`,
+               `trigger_type` as triggerType,
+               `trigger_time` as triggerTime,
+               `version_rule` as versionRuleStr,
+               `config` as configStr
+        from deploy_ci where `id` = #{value}
+    </select>
+
     <insert id="insertDeployCi" parameterType="codedriver.framework.deploy.dto.ci.DeployCiVo">
         insert into deploy_ci (
             `id`,
