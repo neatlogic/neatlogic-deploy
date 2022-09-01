@@ -200,7 +200,7 @@
         dv.lcu,
         dv.lcd
         from deploy_version dv
-        left join ${schemaName}.scence_appsystem_appmodule a on a.id = dv.app_system_id and a.app_module_id = dv.app_module_id
+        left join @{DATA_SCHEMA}.scence_appsystem_appmodule a on a.id = dv.app_system_id and a.app_module_id = dv.app_module_id
         left join deploy_version_buildno dvb on dvb.version_id = dv.id
         left join deploy_version_env dve on dve.version_id = dv.id
         left join cmdb_cientity cc on cc.id = dve.env_id

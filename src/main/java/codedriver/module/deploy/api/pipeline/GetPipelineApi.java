@@ -25,6 +25,7 @@ public class GetPipelineApi extends PrivateApiComponentBase {
     @Resource
     private PipelineMapper pipelineMapper;
 
+
     @Override
     public String getName() {
         return "获取超级流水线详细信息";
