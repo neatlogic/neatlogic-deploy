@@ -2,6 +2,7 @@ package codedriver.module.deploy.service;
 
 import codedriver.framework.cmdb.dto.transaction.CiEntityTransactionVo;
 import codedriver.framework.deploy.dto.app.DeployAppConfigVo;
+import codedriver.framework.deploy.dto.app.DeployAppModuleVo;
 import codedriver.framework.dto.runner.RunnerMapVo;
 import com.alibaba.fastjson.JSONObject;
 
@@ -21,12 +22,15 @@ public interface DeployAppConfigService {
     void deleteAppConfig(DeployAppConfigVo configVo);
 
     /**
-     * 添加环境属性、模块关系
+     * 添加环境等属性、模块等关系
      *
      * @param ciEntityTransactionVo 配置项
-     * @param paramObj              入参
+     * @param ciId                  模型id
+     * @param attrAndRelObj         属性关系Obj
+     * @param needUpdateAttrList    需要更新的属性列表
+     * @param needUpdateRelList     需要更新的关系列表
      */
-    void addAttrEntityDataAndRelEntityData(CiEntityTransactionVo ciEntityTransactionVo, JSONObject paramObj);
+    void addAttrEntityDataAndRelEntityData(CiEntityTransactionVo ciEntityTransactionVo, Long ciId, JSONObject attrAndRelObj, List<String> needUpdateAttrList, List<String> needUpdateRelList);
 
     /**
      * 根据应用模块ID获取runner组
@@ -37,4 +41,12 @@ public interface DeployAppConfigService {
      */
     List<RunnerMapVo> getAppModuleRunnerGroupByAppSystemIdAndModuleId(Long appSystemId, Long appModuleId);
 
+    /**
+     * 保存发布模块配置项信息
+     *
+     * @param deployAppModuleVo 模块信息
+     * @param isAdd             是否新增 1：新增
+     * @return 模块id
+     */
+    Long saveDeployAppModule(DeployAppModuleVo deployAppModuleVo, int isAdd);
 }

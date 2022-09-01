@@ -143,7 +143,7 @@ public class DownloadFileApi extends PrivateBinaryStreamApiComponentBase {
         } finally {
             // 释放锁
             if (lockId != null) {
-                handler.cancelLock(lockId, null);
+                handler.unLock(lockId, null);
             }
         }
         if (httpRequestUtil != null) {

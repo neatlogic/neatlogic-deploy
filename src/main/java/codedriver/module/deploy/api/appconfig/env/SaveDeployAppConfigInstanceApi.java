@@ -32,6 +32,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -99,8 +100,6 @@ public class SaveDeployAppConfigInstanceApi extends PrivateApiComponentBase {
             throw new CiEntityNotFoundException(paramObj.getLong("envId"));
         }
 
-        paramObj.put("needUpdateRelList", new JSONArray(Arrays.asList("APPComponent")));
-
         //实例挂环境
         JSONArray instanceIdArray = paramObj.getJSONArray("instanceIdList");
         if (CollectionUtils.isNotEmpty(instanceIdArray)) {
@@ -120,9 +119,8 @@ public class SaveDeployAppConfigInstanceApi extends PrivateApiComponentBase {
                 ciEntityTransactionVo.setAttrEntityData(attrEntityData);
 
                 //添加环境属性、模块关系
-                paramObj.put("ciId", instanceCiEntity.getCiId());
-                paramObj.put("needUpdateAttrList", new JSONArray(Arrays.asList("app_environment")));
-                deployAppConfigService.addAttrEntityDataAndRelEntityData(ciEntityTransactionVo, paramObj);
+                deployAppConfigService.addAttrEntityDataAndRelEntityData(ciEntityTransactionVo, instanceCiEntity.getCiId(), paramObj, Collections.singletonList("app_environment"), Collections.singletonList("APPComponent"));
+
 
                 //设置基础信息
                 ciEntityTransactionVo.setAction(TransactionActionType.UPDATE.getValue());
@@ -143,8 +141,7 @@ public class SaveDeployAppConfigInstanceApi extends PrivateApiComponentBase {
             CiEntityTransactionVo ciEntityTransactionVo = new CiEntityTransactionVo();
 
             //添加环境属性、模块关系
-            paramObj.put("needUpdateAttrList", new JSONArray(Arrays.asList("name", "ip", "port", "maintenance_window", "app_environment")));
-            deployAppConfigService.addAttrEntityDataAndRelEntityData(ciEntityTransactionVo, paramObj);
+            deployAppConfigService.addAttrEntityDataAndRelEntityData(ciEntityTransactionVo, paramCiVo.getId(), paramObj, Arrays.asList("name", "ip", "port", "maintenance_window", "app_environment"), Collections.singletonList("APPComponent"));
 
             ciEntityTransactionVo.setEditMode(EditModeType.PARTIAL.getValue());
             ciEntityTransactionVo.setAction(TransactionActionType.INSERT.getValue());

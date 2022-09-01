@@ -475,21 +475,109 @@
         where dace.app_system_id = #{appSystemId}
     </select>
 
-    <select id="getDeployAppModuleEnvListByAppSystemIdAndModuleId"
-            resultType="codedriver.framework.cmdb.dto.resourcecenter.entity.AppEnvironmentVo" useCache="false">
-        SELECT a.`env_id`   AS envId,
-               a.`env_name` AS envName
+    <resultMap id="appModuleIncludeEnvIdListMap" type="codedriver.framework.deploy.dto.app.DeployAppModuleEnvVo">
+        <result column="appModuleId" property="id"/>
+        <collection property="envIdList" ofType="java.lang.Long">
+            <id column="envId"/>
+        </collection>
+    </resultMap>
+
+    <select id="getDeployAppModuleEnvListByAppSystemIdAndAppModuleIdList"
+            resultMap="appModuleIncludeEnvIdListMap" useCache="false">
+        SELECT a.`env_id` AS envId,
+        a.`app_module_id` AS appModuleId
         FROM ${schemaName}.`scence_appinstance_env_appmodule_appsystem` a
         where a.`env_id` is not null
-          and a.`app_system_id` = #{systemId}
-          and a.`app_module_id` = #{moduleId}
+        and a.`app_system_id` = #{appSystemId}
+        and a.app_module_id in
+        <foreach collection="appModuleIdList" separator="," item="appModuleId" open="(" close=")">
+            #{appModuleId}
+        </foreach>
         UNION
-        SELECT cc.id   AS envId,
-               cc.name AS envName
+        SELECT cc.id AS envId,
+        dace.app_module_id AS appModuleId
         FROM deploy_app_config_env dace
-                 JOIN cmdb_cientity cc ON cc.id = dace.env_id
+        JOIN cmdb_cientity cc ON cc.id = dace.env_id
+        where dace.app_system_id = #{appSystemId}
+        and dace.app_module_id in
+        <foreach collection="appModuleIdList" separator="," item="appModuleId" open="(" close=")">
+            #{appModuleId}
+        </foreach>
+    </select>
+
+    <select id="getDeployAppModuleEnvListByAppSystemIdAndModuleId"
+            resultType="codedriver.framework.cmdb.dto.resourcecenter.entity.AppEnvironmentVo" useCache="false">
+        SELECT a.`env_id` AS envId,
+        a.`env_name` AS envName
+        FROM ${schemaName}.`scence_appinstance_env_appmodule_appsystem` a
+        where a.`env_id` is not null
+        and a.`app_system_id` = #{systemId}
+        and a.`app_module_id` = #{moduleId}
+        UNION
+        SELECT cc.id AS envId,
+        cc.name AS envName
+        FROM deploy_app_config_env dace
+        JOIN cmdb_cientity cc ON cc.id = dace.env_id
         where dace.app_system_id = #{systemId}
           and dace.app_module_id = #{moduleId}
+    </select>
+
+    <resultMap id="appEnvIncludeSchemaListAndAutoCfgKeyListMap" type="codedriver.framework.deploy.dto.app.DeployAppEnvironmentVo">
+        <result column="envId" property="id"/>
+        <result column="envName" property="name"/>
+        <collection property="dbSchemaList" ofType="codedriver.framework.deploy.dto.app.DeployAppConfigEnvDBConfigVo">
+            <result column="dbSchema" property="dbSchema"/>
+            <result column="configStr" property="configStr"/>
+        </collection>
+        <collection property="autoCfgKeyValueList" ofType="codedriver.framework.deploy.dto.app.DeployAppEnvAutoConfigKeyValueVo">
+            <result column="key" property="key"/>
+            <result column="value" property="value"/>
+        </collection>
+    </resultMap>
+
+    <select id="getAppConfigEnvListIncludeDBCSchemaListAndAutoCfgKeyListByAppSystemIdAndAppModuleIdAndEnvId"
+            resultMap="appEnvIncludeSchemaListAndAutoCfgKeyListMap" useCache="false">
+        SELECT a.app_system_id as appSystemId,
+        a.app_module_id as appModuleId,
+        a.env_id as envId,
+        daced.db_schema as dbSchema,
+        daced.config as configStr,
+        daeac.key,
+        daeac.value
+        FROM ${schemaName}.`scence_appinstance_env_appmodule_appsystem` a
+        LEFT JOIN deploy_app_config_env_db daced
+        on a.app_system_id = daced.app_system_id and a.app_module_id = daced.app_module_id and a.env_id = daced.env_id
+        LEFT JOIN deploy_app_env_auto_config daeac
+        on a.app_system_id = daeac.app_system_id and a.app_module_id = daeac.app_module_id and a.env_id = daeac.env_id
+        and daeac.instance_id = 0
+        WHERE a.app_system_id = #{appSystemId}
+        AND a.app_module_id = #{appModuleId}
+        AND a.env_id in
+        <foreach collection="envIdList" separator="," item="envId" open="(" close=")">
+            #{envId}
+        </foreach>
+        UNION
+        SELECT dace.app_system_id as appSystemId,
+        dace.app_module_id as appModuleId,
+        dace.env_id as envId,
+        daced.db_schema as dbSchema,
+        daced.config as configStr,
+        daeac.key,
+        daeac.value
+        FROM deploy_app_config_env dace
+        LEFT JOIN deploy_app_config_env_db daced
+        on dace.app_system_id = daced.app_system_id and dace.app_module_id = daced.app_module_id and dace.env_id =
+        daced.env_id
+        LEFT JOIN deploy_app_env_auto_config daeac
+        on dace.app_system_id = daeac.app_system_id and dace.app_module_id = daeac.app_module_id and dace.env_id =
+        daeac.env_id
+        and daeac.instance_id = 0
+        WHERE dace.app_system_id = #{appSystemId}
+        AND dace.app_module_id = #{appModuleId}
+        AND dace.env_id in
+        <foreach collection="envIdList" separator="," item="envId" open="(" close=")">
+            #{envId}
+        </foreach>
     </select>
 
     <select id="getDeployAppHasNotEnvListByAppSystemIdAndModuleIdList"
@@ -898,6 +986,22 @@
         FROM `deploy_app_config`
         WHERE `app_system_id` = #{appSystemId}
     </select>
+
+    <select id="getAppConfigListByAppSystemIdAndAppModuleId"
+            resultType="codedriver.framework.deploy.dto.app.DeployAppConfigVo" useCache="false">
+        SELECT `id`,
+               `app_system_id` as appSystemId,
+               `app_module_id` as appModuleId,
+               `env_id`        as envId,
+               `config`        as configStr,
+               `fcd`,
+               `fcu`,
+               `lcd`,
+               `lcu`
+        FROM `deploy_app_config`
+        WHERE `app_system_id` = #{appSystemId}
+        AND `app_module_id` = #{appSystemId}
+    </select>
     <select id="getAppConfigByAppSystemIdAndAppModuleIdAndEnvId"
             resultType="codedriver.framework.deploy.dto.app.DeployAppConfigVo" useCache="false">
         SELECT `app_system_id` as appSystemId,
@@ -1133,6 +1237,51 @@
         )
     </select>
 
+    <select id="getDeployHasNotConfigAppModuleListByAppSystemIdAndAppModuleId"
+            resultType="codedriver.framework.deploy.dto.app.DeployAppModuleVo" useCache="false">
+        SELECT saa.app_module_id        AS id,
+               saa.app_module_name      AS NAME,
+               saa.app_module_abbr_name AS abbrName
+        FROM ${schemaName}.scence_appsystem_appmodule saa
+        WHERE saa.app_module_id NOT IN
+              (SELECT dac.app_module_id
+               FROM ${schemaName}.scence_appsystem_appmodule sa
+                        JOIN deploy_app_config dac ON dac.app_system_id = sa.id
+                   AND dac.app_module_id = sa.app_module_id
+               WHERE sa.id = #{appSystemId})
+          AND saa.id = #{appSystemId}
+          AND saa.app_module_id != #{appModuleId}
+    </select>
+
+    <select id="getDeployHasNotConfigAppEnvListByAppSystemIdAndAppModuleIdAndEnvId"
+            resultType="codedriver.framework.deploy.dto.app.DeployAppEnvironmentVo" useCache="false">
+        select a.id, a.name
+        from ((
+                  SELECT a.`env_id`   AS id,
+                         a.`env_name` AS name
+                  FROM ${schemaName}.`scence_appinstance_env_appmodule_appsystem` a
+                  where a.`env_id` is not null
+                    AND a.`app_system_id` = #{appSystemId}
+                    and a.`app_module_id` = #{appModuleId}
+                    and a.`env_id` != #{envId}
+              )
+              UNION
+              (
+                  SELECT cc.id   AS envId,
+                         cc.name AS envName
+                  FROM deploy_app_config_env dace
+                           JOIN cmdb_cientity cc ON cc.id = dace.env_id
+                  where dace.app_system_id = #{appSystemId}
+                    and dace.app_module_id = #{appModuleId}
+                    and dace.env_id != #{envId}
+              )) a
+        where a.id not in (select dac.env_id
+                           from deploy_app_config dac
+                           where dac.app_system_id = #{appSystemId}
+                             and dac.app_module_id = #{appModuleId}
+        )
+    </select>
+
     <select id="getAppModuleCountBySystemIdAndEnvId" resultType="java.lang.Integer" useCache="false">
         select count(a.app_module_id)
         from ((SELECT sieaa.app_module_id
@@ -1354,6 +1503,18 @@
         ON DUPLICATE KEY UPDATE `key` = VALUES(`key`)
     </insert>
 
+    <insert id="insertBatchAppEnvAutoConfig">
+        INSERT INTO deploy_app_env_auto_config
+        (`app_system_id`,`app_module_id`,`env_id`,`instance_id`,`key`,`value`,`lcd`,`lcu`)
+        VALUES
+        <foreach collection="appEnvAutoConfigVoList" item="vo" separator=",">
+            <foreach collection="vo.keyValueList" item="keyValue" separator="),(" open="(" close=")">
+                #{vo.appSystemId},#{vo.appModuleId},#{vo.envId},#{vo.instanceId},#{keyValue.key},#{keyValue.value},now(3),#{vo.lcu}
+            </foreach>
+        </foreach>
+        ON DUPLICATE KEY UPDATE `key` = VALUES(`key`)
+    </insert>
+
     <insert id="insertAppConfig" parameterType="codedriver.framework.deploy.dto.app.DeployAppConfigVo">
         INSERT INTO `deploy_app_config` (`id`,
                                          `app_system_id`,
@@ -1373,6 +1534,31 @@
                 #{fcu},
                 NOW(3),
                 #{fcu})
+    </insert>
+
+    <insert id="insertBatchAppConfig" parameterType="codedriver.framework.deploy.dto.app.DeployAppConfigVo">
+        INSERT INTO `deploy_app_config` (`id`,
+        `app_system_id`,
+        `app_module_id`,
+        `env_id`,
+        `config`,
+        `fcd`,
+        `fcu`,
+        `lcd`,
+        `lcu`)
+        VALUES
+        <foreach collection="configList" item="vo" separator=",">
+            (#{vo.id},
+            #{vo.appSystemId},
+            #{vo.appModuleId},
+            #{vo.envId},
+            #{vo.configStr},
+            NOW(3),
+            #{vo.fcu},
+            NOW(3),
+            #{vo.fcu})
+        </foreach>
+        ON DUPLICATE KEY UPDATE `config` = VALUES ( config )
     </insert>
 
     <insert id="insertAppConfigDraft" parameterType="codedriver.framework.deploy.dto.app.DeployAppConfigVo">
@@ -1417,7 +1603,7 @@
     </insert>
 
     <insert id="insertAppConfigEnvDBConfig"
-            parameterType="codedriver.framework.deploy.dto.app.DeployAppConfigEnvDBConfigAccountVo">
+            parameterType="codedriver.framework.deploy.dto.app.DeployAppConfigEnvDBConfigVo">
         INSERT INTO deploy_app_config_env_db (id, db_schema, app_system_id, app_module_id, env_id, db_resource_id,
                                               account_id,
                                               config)
@@ -1434,7 +1620,7 @@
 
     <insert id="insertBatchAppConfigEnvDBConfig">
         insert INTO
-        deploy_app_config_env_db (id, db_schema, app_system_id, app_module_id, env_id)
+        deploy_app_config_env_db (id, db_schema, app_system_id, app_module_id, env_id, config)
         VALUES
         <foreach collection="dbConfigVoList" item="dbConfigVo" separator=",">
             (
@@ -1442,13 +1628,15 @@
             #{dbConfigVo.dbSchema},
             #{dbConfigVo.appSystemId},
             #{dbConfigVo.appModuleId},
-            #{dbConfigVo.envId}
+            #{dbConfigVo.envId},
+            #{dbConfigVo.configStr}
             )
         </foreach>
         ON DUPLICATE KEY UPDATE `db_schema` = VALUES ( db_schema ),
         `app_system_id` = VALUES ( app_system_id ),
         `app_module_id` = VALUES ( app_module_id ),
-        `env_id` = VALUES ( env_id )
+        `env_id` = VALUES ( env_id ),
+        `config` = VALUES ( config )
     </insert>
 
     <update id="updateAppConfig" parameterType="codedriver.framework.deploy.dto.app.DeployAppConfigVo">
