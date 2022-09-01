@@ -14,6 +14,7 @@ public interface PipelineService {
 
     List<PipelineVo> searchPipeline(PipelineVo pipelineVo);
 
-
     List<PipelineJobTemplateVo> searchPipelineJobTemplate(PipelineJobTemplateVo pipelineJobTemplateVo);
+
+    void setDeployPipelineJobTemplateAppSystemNameAndAppModuleName(List<PipelineJobTemplateVo> pipelineJobTemplateVoList);
 }

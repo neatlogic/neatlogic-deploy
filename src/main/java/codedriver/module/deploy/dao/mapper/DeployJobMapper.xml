@@ -200,9 +200,7 @@
         aj.`review_status` as reviewStatus,
         aj.`review_time` as reviewTime,
         a.`app_system_id` as appSystemId,
-        b.`name` as appSystemName,
         a.`app_module_id` as appModuleId,
-        c.`name` as appModuleName,
         a.`env_id` as envId,
         d.`name` as envName,
         a.`version`,
@@ -210,8 +208,6 @@
         FROM
         `autoexec_job` aj
         left join deploy_job a on aj.id = a.id
-        left join cmdb_cientity b ON a.app_system_id = b.id
-        left join cmdb_cientity c ON a.app_module_id = c.id
         left join cmdb_cientity d ON a.env_id = d.id
         left join autoexec_scenario e on a.scenario_id = e.id
         WHERE aj.`id` in

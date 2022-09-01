@@ -9,15 +9,20 @@ import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.deploy.auth.DEPLOY_BASE;
 import codedriver.framework.deploy.dto.job.DeployJobVo;
+import codedriver.framework.deploy.dto.job.LaneGroupVo;
+import codedriver.framework.deploy.dto.job.LaneVo;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.deploy.auth.core.BatchDeployAuthChecker;
 import codedriver.module.deploy.dao.mapper.DeployJobMapper;
+import codedriver.module.deploy.service.DeployJobService;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author lvzk
@@ -31,6 +36,9 @@ public class GetBatchDeployJobApi extends PrivateApiComponentBase {
 
     @Resource
     DeployJobMapper deployJobMapper;
+
+    @Resource
+    DeployJobService deployJobService;
 
     @Override
     public String getName() {
@@ -48,7 +56,16 @@ public class GetBatchDeployJobApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         DeployJobVo deployJobVo = deployJobMapper.getBatchDeployJobById(jsonObj.getLong("id"));
-        //TODO 补简称系统模块的简称
+
+        // 补充系统模块的名称、简称
+        List<DeployJobVo> allJobList = new ArrayList<>();
+        for (LaneVo laneVo : deployJobVo.getLaneList()) {
+            for (LaneGroupVo laneGroupVo : laneVo.getGroupList()) {
+                allJobList.addAll(laneGroupVo.getJobList());
+            }
+        }
+        deployJobService.setDeployJobAppSystemNameAndAppModuleName(allJobList);
+
         deployJobVo.setIsCanExecute(BatchDeployAuthChecker.isCanExecute(deployJobVo) ? 1 : 0);
         deployJobVo.setIsCanTakeOver(BatchDeployAuthChecker.isCanTakeOver(deployJobVo) ? 1 : 0);
         deployJobVo.setIsCanEdit(BatchDeployAuthChecker.isCanEdit(deployJobVo) ? 1 : 0);

@@ -52,6 +52,7 @@ public interface DeployJobService {
      * @return result
      */
     JSONObject createJob(DeployJobVo autoexecJobParam) throws Exception;
+
     /**
      * 创建定时发布作业
      *
@@ -69,5 +70,10 @@ public interface DeployJobService {
      */
     Long getOperationId(JSONObject jsonObj);
 
-
+    /**
+     * 补充作业对应的系统模块名称、简称
+     *
+     * @param deployJobList 作业列表
+     */
+    void setDeployJobAppSystemNameAndAppModuleName(List<DeployJobVo> deployJobList);
 }
