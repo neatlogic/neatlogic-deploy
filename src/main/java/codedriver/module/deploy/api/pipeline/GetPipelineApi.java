@@ -5,12 +5,10 @@
 
 package codedriver.module.deploy.api.pipeline;
 
+import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.deploy.auth.DEPLOY_BASE;
-import codedriver.framework.deploy.dto.pipeline.PipelineGroupVo;
-import codedriver.framework.deploy.dto.pipeline.PipelineJobTemplateVo;
-import codedriver.framework.deploy.dto.pipeline.PipelineLaneVo;
 import codedriver.framework.deploy.dto.pipeline.PipelineVo;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
@@ -21,8 +19,6 @@ import com.alibaba.fastjson.JSONObject;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.List;
 
 @Service
 @AuthAction(action = DEPLOY_BASE.class)
@@ -55,16 +51,7 @@ public class GetPipelineApi extends PrivateApiComponentBase {
     @Description(desc = "获取超级流水线详细信息接口")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
-        PipelineVo pipelineVo = pipelineMapper.getPipelineById(jsonObj.getLong("id"));
-        // 补充系统模块的名称、简称
-        List<PipelineJobTemplateVo> pipelineJobTemplateVoList = new ArrayList<>();
-        for (PipelineLaneVo pipelineLaneVo : pipelineVo.getLaneList()) {
-            for (PipelineGroupVo pipelineGroupVo : pipelineLaneVo.getGroupList()) {
-                pipelineJobTemplateVoList.addAll(pipelineGroupVo.getJobTemplateList());
-            }
-        }
-        pipelineService.setDeployPipelineJobTemplateAppSystemNameAndAppModuleName(pipelineJobTemplateVoList);
-        return pipelineVo;
+        return pipelineMapper.getPipelineById(jsonObj.getLong("id"), TenantContext.get().getDataDbName());
     }
 
 }

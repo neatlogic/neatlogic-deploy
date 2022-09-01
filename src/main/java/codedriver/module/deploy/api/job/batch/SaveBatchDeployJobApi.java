@@ -5,6 +5,7 @@
 
 package codedriver.module.deploy.api.job.batch;
 
+import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.auth.core.AuthActionChecker;
@@ -75,7 +76,7 @@ public class SaveBatchDeployJobApi extends PrivateApiComponentBase {
     public Object myDoService(JSONObject jsonObj) throws Exception {
         Long id = jsonObj.getLong("id");
         if (id != null) {
-            DeployJobVo deployJobVo = deployJobMapper.getBatchDeployJobById(id);
+            DeployJobVo deployJobVo = deployJobMapper.getBatchDeployJobById(id, TenantContext.get().getDataDbName());
             if (deployJobVo == null) {
                 throw new DeployBatchJobNotFoundException(id);
             }
@@ -153,7 +154,7 @@ public class SaveBatchDeployJobApi extends PrivateApiComponentBase {
                 deployJobMapper.insertDeployJobAuth(authVo);
             }
         }
-        return deployJobMapper.getBatchDeployJobById(deployJobVo.getId());
+        return deployJobMapper.getBatchDeployJobById(deployJobVo.getId(), TenantContext.get().getDataDbName());
     }
 
 }

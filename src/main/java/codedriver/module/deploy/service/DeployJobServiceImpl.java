@@ -78,10 +78,7 @@ public class DeployJobServiceImpl implements DeployJobService {
             deployJobVo.setIdList(idList);
         }
         if (CollectionUtils.isNotEmpty(deployJobVo.getIdList())) {
-            List<DeployJobVo> deployJobList = deployJobMapper.searchDeployJob(deployJobVo);
-            //补充系统模块的名称、简称
-            setDeployJobAppSystemNameAndAppModuleName(deployJobList);
-            return deployJobList;
+            return deployJobMapper.searchDeployJob(deployJobVo, TenantContext.get().getDataDbName());
         }
         return null;
     }
@@ -333,32 +330,5 @@ public class DeployJobServiceImpl implements DeployJobService {
             throw new DeployAppConfigNotFoundException(appModuleId);
         }
         return operationId;
-    }
-
-    @Override
-    public void setDeployJobAppSystemNameAndAppModuleName(List<DeployJobVo> deployJobList) {
-
-        IResourceCrossoverMapper iResourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
-        TenantContext.get().switchDataDatabase();
-        List<ResourceVo> appSystemResourceList = iResourceCrossoverMapper.searchAppSystemListByIdList(new ArrayList<>(deployJobList.stream().map(DeployJobVo::getAppSystemId).collect(Collectors.toSet())));
-        List<ResourceVo> appModuleResourceList = iResourceCrossoverMapper.getAppModuleListByIdListSimple(new ArrayList<>(deployJobList.stream().map(DeployJobVo::getAppModuleId).collect(Collectors.toSet())));
-        TenantContext.get().switchDefaultDatabase();
-        Map<Long, ResourceVo> appSystemResourceMap = appSystemResourceList.stream().collect(Collectors.toMap(ResourceVo::getId, e -> e));
-        Map<Long, ResourceVo> appModuleResourceMap = appModuleResourceList.stream().collect(Collectors.toMap(ResourceVo::getId, e -> e));
-        for (DeployJobVo jobVo : deployJobList) {
-            if (StringUtils.equals(jobVo.getSource(), JobSource.BATCHDEPLOY.getValue())) {
-                continue;
-            }
-            ResourceVo appSystemResourceVo = appSystemResourceMap.get(jobVo.getAppSystemId());
-            if (appSystemResourceVo != null) {
-                jobVo.setAppSystemName(appSystemResourceVo.getName());
-                jobVo.setAppSystemAbbrName(appSystemResourceVo.getAbbrName());
-            }
-            ResourceVo appModuleResourceVo = appModuleResourceMap.get(jobVo.getAppModuleId());
-            if (appModuleResourceVo != null) {
-                jobVo.setAppModuleName(appModuleResourceVo.getName());
-                jobVo.setAppModuleAbbrName(appModuleResourceVo.getAbbrName());
-            }
-        }
     }
 }

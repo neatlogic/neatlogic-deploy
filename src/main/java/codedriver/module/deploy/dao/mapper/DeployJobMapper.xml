@@ -200,7 +200,11 @@
         aj.`review_status` as reviewStatus,
         aj.`review_time` as reviewTime,
         a.`app_system_id` as appSystemId,
+        saa.`name` as appSystemName,
+        saa.`abbr_name` as appSystemAbbrName,
         a.`app_module_id` as appModuleId,
+        saa.`app_module_name` as appModuleName,
+        saa.`app_module_abbr_name` as appModuleAbbrName,
         a.`env_id` as envId,
         d.`name` as envName,
         a.`version`,
@@ -208,10 +212,11 @@
         FROM
         `autoexec_job` aj
         left join deploy_job a on aj.id = a.id
+        left join ${schemaName}.scence_appsystem_appmodule saa on saa.id = a.app_system_id AND saa.app_module_id = a.app_module_id
         left join cmdb_cientity d ON a.env_id = d.id
         left join autoexec_scenario e on a.scenario_id = e.id
         WHERE aj.`id` in
-        <foreach collection="idList" item="jobId" open="(" close=")" separator=",">
+        <foreach collection="deployJobVo.idList" item="jobId" open="(" close=")" separator=",">
             #{jobId}
         </foreach>
         order by aj.`id` desc
@@ -318,8 +323,10 @@
                     <result column="jobVersion" property="version"/>
                     <result column="jobAppSystemId" property="appSystemId"/>
                     <result column="jobAppSystemName" property="appSystemName"/>
+                    <result column="jobAppSystemAbbrName" property="appSystemAbbrName"/>
                     <result column="jobAppModuleId" property="appModuleId"/>
                     <result column="jobAppModuleName" property="appModuleName"/>
+                    <result column="jobAppModuleAbbrName" property="appModuleAbbrName"/>
                     <result column="jobEnvId" property="envId"/>
                     <result column="jobEnvName" property="envName"/>
                     <collection property="phaseList" ofType="codedriver.framework.autoexec.dto.job.AutoexecJobPhaseVo">
@@ -376,10 +383,12 @@
                e.source          as jobSource,
                e.trigger_type    as jobTriggerType,
                f.`app_system_id` as jobAppSystemId,
-               g.`name`          as jobAppSystemName,
-               f.`app_module_id` as jobAppModuleId,
-               f.`version`       AS jobVersion,
-               h.`name`          as jobAppModuleName,
+               saa.`name` AS jobAppSystemName,
+               saa.`abbr_name` AS jobAppSystemAbbrName,
+               f.`app_module_id` AS jobAppModuleId,
+               f.`version` AS jobVersion,
+               saa.`app_module_name` AS jobAppModuleName,
+               saa.`app_module_abbr_name` AS jobAppModuleAbbrName,
                f.`env_id`        as jobEnvId,
                i.`name`          as jobEnvName,
                j.`sort`          AS jobGroupSort,
@@ -395,13 +404,12 @@
                  LEFT JOIN deploy_job_lane_group_job AS d ON c.id = d.group_id
                  LEFT JOIN autoexec_job e ON d.job_id = e.id
                  LEFT JOIN deploy_job f ON e.id = f.id
-                 LEFT JOIN cmdb_cientity g ON f.app_system_id = g.id
-                 LEFT JOIN cmdb_cientity h ON f.app_module_id = h.id
+                 LEFT JOIN  ${schemaName}.scence_appsystem_appmodule AS saa ON saa.id = f.app_system_id AND saa.app_module_id = f.app_module_id
                  LEFT JOIN cmdb_cientity i ON f.env_id = i.id
                  LEFT JOIN autoexec_job_group j ON e.id = j.job_id
                  LEFT JOIN autoexec_job_phase k ON j.id = k.group_id
                  LEFT JOIN deploy_job_auth l ON a.id = l.job_id
-        where a.id = #{value}
+        where a.id = #{id}
         order by laneSort, groupSort, jobSort, jobGroupSort, jobPhaseSort, jobPhaseName
     </select>
 

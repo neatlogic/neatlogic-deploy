@@ -5,6 +5,7 @@
 
 package codedriver.module.deploy.api.pipeline;
 
+import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.deploy.auth.DEPLOY_BASE;
@@ -54,7 +55,7 @@ public class ListPipelineAppSystemModuleEnvScenarioApi extends PrivateApiCompone
     @Description(desc = "获取超级流水线应用模块环境列表接口")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
-        PipelineVo pipelineVo = pipelineMapper.getPipelineById(jsonObj.getLong("id"));
+        PipelineVo pipelineVo = pipelineMapper.getPipelineById(jsonObj.getLong("id"), TenantContext.get().getDataDbName());
         JobTemplateList jobTemplateList = new JobTemplateList();
         if (CollectionUtils.isNotEmpty(pipelineVo.getLaneList())) {
             for (PipelineLaneVo laneVo : pipelineVo.getLaneList()) {
@@ -69,7 +70,6 @@ public class ListPipelineAppSystemModuleEnvScenarioApi extends PrivateApiCompone
                 }
             }
         }
-        pipelineService.setDeployPipelineJobTemplateAppSystemNameAndAppModuleName(jobTemplateList.get());
         return jobTemplateList.get();
     }
 

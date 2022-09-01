@@ -5,6 +5,7 @@
 
 package codedriver.module.deploy.api.job.batch;
 
+import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.auth.core.AuthActionChecker;
@@ -81,7 +82,7 @@ public class AddBatchDeployJobFromPipelineApi extends PrivateApiComponentBase {
             throw new DeployJobParamIrregularException("应用模块版本列表");
         }
         Long pipelineId = jsonObj.getLong("pipelineId");
-        PipelineVo pipelineVo = pipelineMapper.getPipelineById(pipelineId);
+        PipelineVo pipelineVo = pipelineMapper.getPipelineById(pipelineId, TenantContext.get().getDataDbName());
         if (pipelineVo == null) {
             throw new DeployPipelineNotFoundException(pipelineId);
         }
@@ -162,7 +163,7 @@ public class AddBatchDeployJobFromPipelineApi extends PrivateApiComponentBase {
                 deployJobMapper.insertDeployJobAuth(deployAuthVo);
             }
         }
-        return deployJobMapper.getBatchDeployJobById(deployJobVo.getId());
+        return deployJobMapper.getBatchDeployJobById(deployJobVo.getId(), TenantContext.get().getDataDbName());
     }
 
 
