@@ -76,6 +76,21 @@
         order by a.`lcd` desc
     </select>
 
+    <select id="searchDeployCiAuditCount" parameterType="codedriver.framework.deploy.dto.ci.DeployCiAuditVo" resultType="java.lang.Integer">
+        select count(1) from deploy_ci_audit
+    </select>
+
+    <select id="searchDeployCiAudit" parameterType="codedriver.framework.deploy.dto.ci.DeployCiAuditVo" resultType="codedriver.framework.deploy.dto.ci.DeployCiAuditVo">
+        select `id`,
+               `commit_id`,
+               `action`,
+               `status`,
+               `job_id`,
+               `fcd`
+        from deploy_ci_audit a
+        LIMIT #{startNum}, #{pageSize}
+    </select>
+
     <insert id="insertDeployCi" parameterType="codedriver.framework.deploy.dto.ci.DeployCiVo">
         insert into deploy_ci (
             `id`,
@@ -134,6 +149,24 @@
             `config` = #{configStr},
             `lcu` = #{lcu},
             `lcd` = now(3)
+    </insert>
+
+    <insert id="insertDeployCiJobAudit" parameterType="codedriver.framework.deploy.dto.ci.DeployCiAuditVo">
+        insert into deploy_ci_audit (
+            `id`,
+            `commit_id`,
+            `action`,
+            `status`,
+            `job_id`,
+            `fcd`,
+        ) values (
+            #{id},
+            #{commitId},
+            #{action},
+            #{status},
+            #{jobId},
+            now(3)
+        )
     </insert>
 
 </mapper>
