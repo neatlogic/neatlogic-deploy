@@ -7,12 +7,18 @@ package codedriver.module.deploy.globallock;
 
 import codedriver.framework.autoexec.dao.mapper.AutoexecJobMapper;
 import codedriver.framework.autoexec.dto.job.AutoexecJobVo;
+import codedriver.framework.dao.mapper.runner.RunnerMapper;
 import codedriver.framework.deploy.constvalue.JobSourceType;
 import codedriver.framework.dto.globallock.GlobalLockVo;
+import codedriver.framework.dto.runner.RunnerMapVo;
 import codedriver.framework.exception.core.ApiRuntimeException;
+import codedriver.framework.exception.runner.RunnerHttpRequestException;
+import codedriver.framework.exception.runner.RunnerNotFoundByRunnerMapIdException;
 import codedriver.framework.exception.type.ParamIrregularException;
 import codedriver.framework.globallock.GlobalLockManager;
 import codedriver.framework.globallock.core.GlobalLockHandlerBase;
+import codedriver.framework.integration.authentication.enums.AuthenticateType;
+import codedriver.framework.util.HttpRequestUtil;
 import codedriver.framework.util.TableResultUtil;
 import codedriver.framework.util.TimeUtil;
 import com.alibaba.fastjson.JSONArray;
@@ -29,6 +35,8 @@ import java.util.stream.Collectors;
 public class DeployGlobalLockHandler extends GlobalLockHandlerBase {
     @Resource
     AutoexecJobMapper autoexecJobMapper;
+    @Resource
+    RunnerMapper runnerMapper;
 
     @Override
     public String getHandler() {
@@ -137,9 +145,32 @@ public class DeployGlobalLockHandler extends GlobalLockHandlerBase {
             if (data.getInteger("isLock") == 1) {
                 data.put("lockCostTime", TimeUtil.millisecondsTransferMaxTimeUnit(System.currentTimeMillis() - data.getLong("fcd")));
             }
-            data.put("lockTarget",data.getJSONObject("handlerParam").getString("lockTarget"));
+            data.put("lockTarget", data.getJSONObject("handlerParam").getString("lockTarget"));
         }
         return result;
+    }
+
+    @Override
+    public void myDoNotify(GlobalLockVo globalLockVo, JSONObject paramJson) {
+        Long jobId = globalLockVo.getHandlerParam().getLong("jobId");
+        Long runnerMapId = globalLockVo.getHandlerParam().getLong("runnerId");
+        RunnerMapVo runnerVo = runnerMapper.getRunnerMapByRunnerMapId(runnerMapId);
+        if (runnerVo == null) {
+            throw new RunnerNotFoundByRunnerMapIdException(runnerMapId);
+        }
+        JSONObject jsonObj = new JSONObject();
+        jsonObj.put("jobId",jobId);
+        JSONObject informParam = new JSONObject();
+        informParam.put("action","globalLockNotify");
+        jsonObj.put("informParam",informParam);
+        String url = String.format("%s/api/rest/job/phase/socket/write", runnerVo.getUrl());
+        String result = HttpRequestUtil.post(url)
+                .setPayload(jsonObj.toJSONString()).setAuthType(AuthenticateType.BUILDIN).setConnectTimeout(5000).setReadTimeout(5000)
+                .sendRequest().getError();
+        if (StringUtils.isNotBlank(result)) {
+            throw new RunnerHttpRequestException(url + ":" + result);
+        }
+
     }
 
 }
