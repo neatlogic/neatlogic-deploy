@@ -58,7 +58,7 @@ public class SaveDeployCiApi extends PrivateApiComponentBase {
             @Param(name = "repoType", member = RepoType.class, desc = "仓库类型", type = ApiParamType.ENUM, isRequired = true),
             @Param(name = "repoServerAddress", maxLength = 50, desc = "仓库服务器地址", type = ApiParamType.STRING, isRequired = true),
             @Param(name = "repoName", maxLength = 50, rule = RegexUtils.NAME, desc = "仓库名称", type = ApiParamType.REGEX, isRequired = true),
-            @Param(name = "branches", desc = "分支", type = ApiParamType.JSONARRAY),
+            @Param(name = "branchFilter", desc = "分支", type = ApiParamType.STRING),
             @Param(name = "event", member = RepoEvent.class, desc = "事件", type = ApiParamType.ENUM, isRequired = true),
             @Param(name = "action", member = CiJobType.class, desc = "动作类型", type = ApiParamType.ENUM, isRequired = true),
             @Param(name = "triggerType", member = CiTriggerType.class, desc = "触发类型", type = ApiParamType.ENUM, isRequired = true),
@@ -69,6 +69,7 @@ public class SaveDeployCiApi extends PrivateApiComponentBase {
     @Description(desc = "保存持续集成配置")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
+        // todo 暂不清楚gitlab是否支持多分支名过滤
         DeployCiVo deployCiVo = paramObj.toJavaObject(DeployCiVo.class);
         if (deployCiMapper.checkDeployCiIsRepeat(deployCiVo) > 0) {
             throw new DeployCiIsRepeatException(deployCiVo.getName());
@@ -82,6 +83,7 @@ public class SaveDeployCiApi extends PrivateApiComponentBase {
         }
         deployCiMapper.insertDeployCi(deployCiVo);
         // todo 生成webhook
+
         return null;
     }
 
