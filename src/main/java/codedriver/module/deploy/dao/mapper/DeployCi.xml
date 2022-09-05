@@ -169,4 +169,12 @@
         )
     </insert>
 
+    <delete id="deleteDeployCiById" parameterType="java.lang.Long">
+        delete from deploy_ci where id = #{value}
+    </delete>
+
+    <delete id="deleteDeployCiAuditByCiId" parameterType="java.lang.Long">
+        delete from deploy_ci_audit where ci_id = #{value}
+    </delete>
+
 </mapper>

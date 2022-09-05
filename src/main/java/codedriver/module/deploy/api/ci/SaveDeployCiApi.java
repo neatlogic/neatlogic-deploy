@@ -81,6 +81,7 @@ public class SaveDeployCiApi extends PrivateApiComponentBase {
             throw new CiEntityNotFoundException(deployCiVo.getAppModuleId());
         }
         deployCiMapper.insertDeployCi(deployCiVo);
+        // todo 生成webhook
         return null;
     }
 

@@ -24,4 +24,8 @@ public interface DeployCiMapper {
     int insertDeployCi(DeployCiVo vo);
 
     int insertDeployCiJobAudit(DeployCiAuditVo vo);
+
+    int deleteDeployCiById(Long id);
+
+    int deleteDeployCiAuditByCiId(Long id);
 }
