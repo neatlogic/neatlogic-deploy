@@ -48,7 +48,7 @@ public class SearchDeployCiApi extends PrivateApiComponentBase {
             @Param(name = "currentPage", desc = "当前页", type = ApiParamType.INTEGER),
             @Param(name = "pageSize", desc = "每页最大数", type = ApiParamType.INTEGER)
     })
-    @Description(desc = "保存持续集成配置")
+    @Description(desc = "查询持续集成配置")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         DeployCiVo deployCiVo = paramObj.toJavaObject(DeployCiVo.class);
