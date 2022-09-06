@@ -6,10 +6,10 @@ import codedriver.framework.cmdb.exception.cientity.CiEntityNotFoundException;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.crossover.CrossoverServiceFactory;
 import codedriver.framework.deploy.auth.DEPLOY_MODIFY;
-import codedriver.framework.deploy.constvalue.CiJobType;
-import codedriver.framework.deploy.constvalue.CiTriggerType;
-import codedriver.framework.deploy.constvalue.RepoEvent;
-import codedriver.framework.deploy.constvalue.RepoType;
+import codedriver.framework.deploy.constvalue.DeployCiActionType;
+import codedriver.framework.deploy.constvalue.DeployCiTriggerType;
+import codedriver.framework.deploy.constvalue.DeployCiRepoEvent;
+import codedriver.framework.deploy.constvalue.DeployCiRepoType;
 import codedriver.framework.deploy.dto.ci.DeployCiVo;
 import codedriver.framework.deploy.exception.DeployCiIsRepeatException;
 import codedriver.framework.dto.FieldValidResultVo;
@@ -55,13 +55,13 @@ public class SaveDeployCiApi extends PrivateApiComponentBase {
             @Param(name = "name", desc = "名称", rule = RegexUtils.NAME, maxLength = 50, type = ApiParamType.REGEX, isRequired = true),
             @Param(name = "appSystemId", desc = "应用ID", type = ApiParamType.LONG, isRequired = true),
             @Param(name = "appModuleId", desc = "模块ID", type = ApiParamType.LONG, isRequired = true),
-            @Param(name = "repoType", member = RepoType.class, desc = "仓库类型", type = ApiParamType.ENUM, isRequired = true),
+            @Param(name = "repoType", member = DeployCiRepoType.class, desc = "仓库类型", type = ApiParamType.ENUM, isRequired = true),
             @Param(name = "repoServerAddress", maxLength = 50, desc = "仓库服务器地址", type = ApiParamType.STRING, isRequired = true),
             @Param(name = "repoName", maxLength = 50, rule = RegexUtils.NAME, desc = "仓库名称", type = ApiParamType.REGEX, isRequired = true),
             @Param(name = "branchFilter", desc = "分支", type = ApiParamType.STRING),
-            @Param(name = "event", member = RepoEvent.class, desc = "事件", type = ApiParamType.ENUM, isRequired = true),
-            @Param(name = "action", member = CiJobType.class, desc = "动作类型", type = ApiParamType.ENUM, isRequired = true),
-            @Param(name = "triggerType", member = CiTriggerType.class, desc = "触发类型", type = ApiParamType.ENUM, isRequired = true),
+            @Param(name = "event", member = DeployCiRepoEvent.class, desc = "事件", type = ApiParamType.ENUM, isRequired = true),
+            @Param(name = "action", member = DeployCiActionType.class, desc = "动作类型", type = ApiParamType.ENUM, isRequired = true),
+            @Param(name = "triggerType", member = DeployCiTriggerType.class, desc = "触发类型", type = ApiParamType.ENUM, isRequired = true),
             @Param(name = "triggerTime", desc = "触发时间", type = ApiParamType.STRING),
             @Param(name = "versionRule", desc = "版本号规则", type = ApiParamType.JSONOBJECT),
             @Param(name = "config", desc = "配置", type = ApiParamType.JSONOBJECT),

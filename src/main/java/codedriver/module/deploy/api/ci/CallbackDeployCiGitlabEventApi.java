@@ -18,7 +18,7 @@ import javax.annotation.Resource;
 @Service
 @AuthAction(action = DEPLOY_BASE.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
-public class DeployCiGitlabEventCallbackApi extends PrivateApiComponentBase {
+public class CallbackDeployCiGitlabEventApi extends PrivateApiComponentBase {
 
     @Resource
     DeployCiMapper deployCiMapper;
