@@ -5,10 +5,12 @@
 
 package codedriver.module.deploy.api.job.batch;
 
+import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.auth.core.AuthActionChecker;
 import codedriver.framework.autoexec.constvalue.JobStatus;
+import codedriver.framework.autoexec.constvalue.JobTriggerType;
 import codedriver.framework.autoexec.constvalue.ReviewStatus;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.deploy.auth.BATCHDEPLOY_MODIFY;
@@ -21,10 +23,16 @@ import codedriver.framework.deploy.dto.job.LaneVo;
 import codedriver.framework.deploy.exception.DeployBatchJobCannotEditException;
 import codedriver.framework.deploy.exception.DeployBatchJobNotFoundException;
 import codedriver.framework.deploy.exception.DeployJobHasParentException;
+import codedriver.framework.exception.type.ParamIrregularException;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
+import codedriver.framework.scheduler.core.IJob;
+import codedriver.framework.scheduler.core.SchedulerManager;
+import codedriver.framework.scheduler.dto.JobObject;
+import codedriver.framework.scheduler.exception.ScheduleHandlerNotFoundException;
 import codedriver.module.deploy.dao.mapper.DeployJobMapper;
+import codedriver.module.deploy.schedule.plugin.DeployBatchJobAutoFireJob;
 import codedriver.module.deploy.service.DeployJobService;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
@@ -90,7 +98,11 @@ public class SaveBatchDeployJobApi extends PrivateApiComponentBase {
             deployJobVo.setStatus(JobStatus.SAVED.getValue());
             deployJobVo.setReviewStatus(null);
         } else {
-            deployJobVo.setStatus(JobStatus.PENDING.getValue());
+            if (Objects.equals(deployJobVo.getTriggerType(), JobTriggerType.AUTO.getValue())){
+                deployJobVo.setStatus(JobStatus.READY.getValue());
+            }else{
+                deployJobVo.setStatus(JobStatus.PENDING.getValue());
+            }
             if (!AuthActionChecker.check(BATCHDEPLOY_VERIFY.class)) {
                 deployJobVo.setReviewStatus(ReviewStatus.WAITING.getValue());
             } else {
@@ -152,6 +164,18 @@ public class SaveBatchDeployJobApi extends PrivateApiComponentBase {
                 authVo.setJobId(deployJobVo.getId());
                 deployJobMapper.insertDeployJobAuth(authVo);
             }
+        }
+        //补充定时执行逻辑
+        if (saveMode.equals("commit") && Objects.equals(deployJobVo.getTriggerType(), JobTriggerType.AUTO.getValue())) {
+            if (!jsonObj.containsKey("planStartTime")) {
+                throw new ParamIrregularException("planStartTime");
+            }
+            IJob jobHandler = SchedulerManager.getHandler(DeployBatchJobAutoFireJob.class.getName());
+            if (jobHandler == null) {
+                throw new ScheduleHandlerNotFoundException(DeployBatchJobAutoFireJob.class.getName());
+            }
+            JobObject.Builder jobObjectBuilder = new JobObject.Builder(deployJobVo.getId().toString(), jobHandler.getGroupName(), jobHandler.getClassName(), TenantContext.get().getTenantUuid());
+            jobHandler.reloadJob(jobObjectBuilder.build());
         }
         return deployJobMapper.getBatchDeployJobById(deployJobVo.getId());
     }

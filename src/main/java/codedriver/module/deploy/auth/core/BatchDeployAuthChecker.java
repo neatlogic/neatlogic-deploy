@@ -75,7 +75,7 @@ public class BatchDeployAuthChecker {
     public static boolean isCanEdit(DeployJobVo deployJobVo) {
         if (!Objects.equals(JobStatus.CHECKED.getValue(), deployJobVo.getStatus())) {
             if (!Objects.equals(deployJobVo.getReviewStatus(), ReviewStatus.WAITING.getValue())) {
-                return Arrays.asList(JobStatus.PENDING.getValue(), JobStatus.SAVED.getValue(), JobStatus.COMPLETED.getValue(), JobStatus.FAILED.getValue()).contains(deployJobVo.getStatus())
+                return Arrays.asList(JobStatus.READY.getValue(),JobStatus.PENDING.getValue(), JobStatus.SAVED.getValue(), JobStatus.COMPLETED.getValue(), JobStatus.FAILED.getValue()).contains(deployJobVo.getStatus())
                         && (AuthActionChecker.checkByUserUuid(UserContext.get().getUserUuid(true), BATCHDEPLOY_MODIFY.class.getSimpleName()) || Objects.equals(deployJobVo.getExecUser(), UserContext.get().getUserUuid(true)));
             }
         }

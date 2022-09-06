@@ -10,7 +10,6 @@ import codedriver.framework.autoexec.constvalue.AutoexecFromType;
 import codedriver.framework.autoexec.dto.combop.AutoexecCombopPhaseConfigVo;
 import codedriver.framework.autoexec.dto.combop.AutoexecCombopPhaseOperationConfigVo;
 import codedriver.framework.autoexec.dto.combop.AutoexecCombopPhaseOperationVo;
-import codedriver.framework.autoexec.dto.combop.AutoexecCombopPhaseVo;
 import codedriver.framework.cmdb.crossover.ICiEntityCrossoverMapper;
 import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
 import codedriver.framework.crossover.CrossoverServiceFactory;
@@ -128,7 +127,7 @@ public class AutoexecProfile2DeployAppPipelinePhaseOperationDependencyHandler ex
                 StringBuilder stringBuilder = new StringBuilder();
                 stringBuilder.append("/");
                 stringBuilder.append(TenantContext.get().getTenantUuid());
-                stringBuilder.append("/deploy.html#/application-config-manage?appSystemId=${DATA.appSystemId}");
+                stringBuilder.append("/deploy.html#/application-config-pipeline-detail?appSystemId=${DATA.appSystemId}");
                 JSONObject dependencyInfoConfig = new JSONObject();
                 dependencyInfoConfig.put("appSystemId", appSystemId);
                 if (moduleId != null && moduleId != 0L) {
