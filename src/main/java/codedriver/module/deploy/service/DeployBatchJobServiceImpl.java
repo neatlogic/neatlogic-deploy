@@ -5,10 +5,12 @@
 
 package codedriver.module.deploy.service;
 
+import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.autoexec.constvalue.JobAction;
 import codedriver.framework.autoexec.constvalue.JobPhaseStatus;
 import codedriver.framework.autoexec.constvalue.JobStatus;
+import codedriver.framework.autoexec.constvalue.JobTriggerType;
 import codedriver.framework.autoexec.dao.mapper.AutoexecJobMapper;
 import codedriver.framework.autoexec.dto.job.AutoexecJobVo;
 import codedriver.framework.autoexec.job.action.core.AutoexecJobActionHandlerFactory;
@@ -19,9 +21,14 @@ import codedriver.framework.deploy.dto.job.LaneGroupVo;
 import codedriver.framework.deploy.dto.job.LaneVo;
 import codedriver.framework.deploy.exception.*;
 import codedriver.framework.exception.core.ApiRuntimeException;
+import codedriver.framework.scheduler.core.IJob;
+import codedriver.framework.scheduler.core.SchedulerManager;
+import codedriver.framework.scheduler.dto.JobObject;
+import codedriver.framework.scheduler.exception.ScheduleHandlerNotFoundException;
 import codedriver.module.deploy.auth.core.BatchDeployAuthChecker;
 import codedriver.module.deploy.dao.mapper.DeployBatchJobMapper;
 import codedriver.module.deploy.dao.mapper.DeployJobMapper;
+import codedriver.module.deploy.schedule.plugin.DeployBatchJobAutoFireJob;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
@@ -43,6 +50,8 @@ public class DeployBatchJobServiceImpl implements DeployBatchJobService, IDeploy
     AutoexecJobMapper autoexecJobMapper;
     @Resource
     DeployBatchJobMapper deployBatchJobMapper;
+    @Resource
+    SchedulerManager schedulerManager;
 
     @Override
     public void fireBatch(Long batchJobId, String batchJobAction, String jobAction) {
@@ -73,6 +82,17 @@ public class DeployBatchJobServiceImpl implements DeployBatchJobService, IDeploy
             deployBatchJobMapper.updateLaneStatus(laneVo.getId(), JobStatus.RUNNING.getValue());
             deployBatchJobMapper.updateGroupStatusByLaneId(laneVo.getId(), JobStatus.PENDING.getValue());
             fireLaneGroup(fireGroupId, batchJobAction, jobAction, new JSONObject());
+        }
+        //判断作业是否已经存在，存在则unload
+        if (Objects.equals(batchJobVo.getTriggerType(), JobTriggerType.AUTO.getValue())) {
+            IJob jobHandler = SchedulerManager.getHandler(DeployBatchJobAutoFireJob.class.getName());
+            if (jobHandler == null) {
+                throw new ScheduleHandlerNotFoundException(DeployBatchJobAutoFireJob.class.getName());
+            }
+            if (schedulerManager.checkJobIsExists(batchJobVo.getId().toString(), jobHandler.getGroupName())) {
+                JobObject.Builder jobObjectBuilder = new JobObject.Builder(batchJobVo.getId().toString(), jobHandler.getGroupName(), jobHandler.getClassName(), TenantContext.get().getTenantUuid());
+                schedulerManager.unloadJob(jobObjectBuilder.build());
+            }
         }
     }
 
@@ -258,8 +278,8 @@ public class DeployBatchJobServiceImpl implements DeployBatchJobService, IDeploy
                 if (groupVo.getIsGroupRun() == 0) {
                     groupStatus = nextGroupId == null ? groupStatus : JobPhaseStatus.WAIT_INPUT.getValue();
                 }
-                if(groupStatus.equalsIgnoreCase(JobStatus.FAILED.getValue())){
-                    deployBatchJobMapper.updateBatchJobStatusByGroupId(groupVo.getId(),JobStatus.FAILED.getValue());
+                if (groupStatus.equalsIgnoreCase(JobStatus.FAILED.getValue())) {
+                    deployBatchJobMapper.updateBatchJobStatusByGroupId(groupVo.getId(), JobStatus.FAILED.getValue());
                 }
             }
             groupVo.setStatus(groupStatus);
