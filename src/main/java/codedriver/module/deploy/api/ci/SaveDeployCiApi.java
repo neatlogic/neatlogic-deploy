@@ -69,7 +69,6 @@ public class SaveDeployCiApi extends PrivateApiComponentBase {
     @Description(desc = "保存持续集成配置")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
-        // todo 暂不清楚gitlab是否支持多分支名过滤
         DeployCiVo deployCiVo = paramObj.toJavaObject(DeployCiVo.class);
         if (deployCiMapper.checkDeployCiIsRepeat(deployCiVo) > 0) {
             throw new DeployCiIsRepeatException(deployCiVo.getName());
@@ -83,7 +82,6 @@ public class SaveDeployCiApi extends PrivateApiComponentBase {
         }
         deployCiMapper.insertDeployCi(deployCiVo);
         // todo 生成webhook
-
         return null;
     }
 
