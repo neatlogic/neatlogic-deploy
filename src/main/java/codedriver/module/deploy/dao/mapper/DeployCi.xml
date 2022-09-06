@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright(c) 2022 TechSureCo.,Ltd.AllRightsReserved.
+  ~ 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
+  -->
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="codedriver.module.deploy.dao.mapper.DeployCiMapper">
+
+    <select id="checkDeployCiIsRepeat" parameterType="codedriver.framework.deploy.dto.ci.DeployCiVo" resultType="java.lang.Integer">
+        select count(1) from deploy_ci where `id` != #{id} and `name` = #{name}
+    </select>
+
+    <select id="getDeployCiById" parameterType="java.lang.Long" resultType="codedriver.framework.deploy.dto.ci.DeployCiVo">
+        select `id`,
+               `name`,
+               `is_active` as isActive,
+               `app_system_id` as appSystemId,
+               `app_module_id` as appModuleId,
+               `repo_type` as repoType,
+               `repo_server_address` as repoServerAddress,
+               `repo_name` as repoName,
+               `branch_filter` as branchFilter,
+               `event`,
+               `action`,
+               `trigger_type` as triggerType,
+               `trigger_time` as triggerTime,
+               `version_rule` as versionRuleStr,
+               `config` as configStr
+        from deploy_ci where `id` = #{value}
+    </select>
+
+    <sql id="searchDeploy">
+        from deploy_ci
+        <where>
+            app_system_id = #{appSystemId}
+            <if test="keyword != null and keyword != ''">
+                and `name` like CONCAT('%',#{keyword}, '%')
+            </if>
+        </where>
+    </sql>
+
+    <select id="searchDeployCiCount" parameterType="codedriver.framework.deploy.dto.ci.DeployCiVo" resultType="java.lang.Integer">
+        select count(1)
+        <include refid="searchDeploy"/>
+    </select>
+
+    <select id="searchDeployCiIdList" parameterType="codedriver.framework.deploy.dto.ci.DeployCiVo" resultType="java.lang.Long">
+        select `id`
+        <include refid="searchDeploy"/>
+        LIMIT #{startNum}, #{pageSize}
+    </select>
+
+    <select id="getDeployCiListByIdList" parameterType="java.util.List" resultType="codedriver.framework.deploy.dto.ci.DeployCiVo">
+        select a.`id`,
+               a.`name`,
+               a.`is_active` as isActive,
+               a.`app_system_id` as appSystemId,
+               a.`app_module_id` as appModuleId,
+               a.`repo_type` as repoType,
+               a.`repo_server_address` as repoServerAddress,
+               a.`repo_name` as repoName,
+               a.`branch_filter` as branchFilter,
+               a.`event`,
+               a.`action`,
+               a.`lcu`,
+               a.`lcd`,
+               b.`app_module_name` as appModuleName,
+               b.`app_module_abbr_name` as appModuleAbbrName
+        from deploy_ci a left join @{DATA_SCHEMA}.scence_appsystem_appmodule b
+        on a.`app_system_id` = b.id
+        where a.`id` in
+        <foreach collection="list" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+        order by a.`lcd` desc
+    </select>
+
+    <select id="searchDeployCiAuditCount" parameterType="codedriver.framework.deploy.dto.ci.DeployCiAuditVo" resultType="java.lang.Integer">
+        select count(1) from deploy_ci_audit
+    </select>
+
+    <select id="searchDeployCiAudit" parameterType="codedriver.framework.deploy.dto.ci.DeployCiAuditVo" resultType="codedriver.framework.deploy.dto.ci.DeployCiAuditVo">
+        select `id`,
+               `commit_id`,
+               `action`,
+               `status`,
+               `job_id`,
+               `fcd`
+        from deploy_ci_audit a
+        LIMIT #{startNum}, #{pageSize}
+    </select>
+
+    <insert id="insertDeployCi" parameterType="codedriver.framework.deploy.dto.ci.DeployCiVo">
+        insert into deploy_ci (
+            `id`,
+            `name`,
+            `is_active`,
+            `app_system_id`,
+            `app_module_id`,
+            `repo_type`,
+            `repo_server_address`,
+            `repo_name`,
+            `branch_filter`,
+            `event`,
+            `action`,
+            `trigger_type`,
+            `trigger_time`,
+            `version_rule`,
+            `config`,
+            `fcu`,
+            `fcd`,
+            `lcu`,
+            `lcd`
+        ) values (
+            #{id},
+            #{name},
+            #{isActive},
+            #{appSystemId},
+            #{appModuleId},
+            #{repoType},
+            #{repoServerAddress},
+            #{repoName},
+            #{branchFilter},
+            #{event},
+            #{action},
+            #{triggerType},
+            #{triggerTime},
+            #{versionRuleStr},
+            #{configStr},
+            #{fcu},
+            now(3),
+            #{lcu},
+            now(3)
+        ) ON DUPLICATE KEY UPDATE
+            `name` = #{name},
+            `is_active` = #{isActive},
+            `app_system_id` = #{appSystemId},
+            `app_module_id` = #{appModuleId},
+            `repo_type` = #{repoType},
+            `repo_server_address` = #{repoServerAddress},
+            `repo_name` = #{repoName},
+            `branch_filter` = #{branchFilter},
+            `event` = #{event},
+            `action` = #{action},
+            `trigger_type` = #{triggerType},
+            `trigger_time` = #{triggerTime},
+            `version_rule` = #{versionRuleStr},
+            `config` = #{configStr},
+            `lcu` = #{lcu},
+            `lcd` = now(3)
+    </insert>
+
+    <insert id="insertDeployCiJobAudit" parameterType="codedriver.framework.deploy.dto.ci.DeployCiAuditVo">
+        insert into deploy_ci_audit (
+            `id`,
+            `commit_id`,
+            `action`,
+            `status`,
+            `job_id`,
+            `fcd`,
+        ) values (
+            #{id},
+            #{commitId},
+            #{action},
+            #{status},
+            #{jobId},
+            now(3)
+        )
+    </insert>
+
+    <delete id="deleteDeployCiById" parameterType="java.lang.Long">
+        delete from deploy_ci where id = #{value}
+    </delete>
+
+    <delete id="deleteDeployCiAuditByCiId" parameterType="java.lang.Long">
+        delete from deploy_ci_audit where ci_id = #{value}
+    </delete>
+
+</mapper>
