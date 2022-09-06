@@ -10,23 +10,24 @@
     <select id="getJobTemplateById" parameterType="java.lang.Long"
             resultType="codedriver.framework.deploy.dto.pipeline.PipelineJobTemplateVo">
         SELECT dpj.id,
-               dpj.group_id      as groupId,
-               dpj.app_system_id as appSystemId,
-               dpj.app_module_id as appModuleId,
-               dpj.scenario_id   as scenarioId,
-               dpj.round_count   as roundCount,
-               dpj.env_id        as envId,
-               dpj.config        as configStr,
-               dpj.sort          as sort,
-               ciapp.`name`      as appSystemName,
-               cienv.`name`      as envName,
-               cimodule.`name`   as appModuleName,
-               aes.`name`        as scenarioName
+               dpj.group_id               as groupId,
+               dpj.app_system_id          as appSystemId,
+               dpj.app_module_id          as appModuleId,
+               dpj.scenario_id            as scenarioId,
+               dpj.round_count            as roundCount,
+               dpj.env_id                 as envId,
+               dpj.config                 as configStr,
+               dpj.sort                   as sort,
+               saa.`name`                 as appSystemName,
+               saa.`abbr_name`            as appSystemAbbrName,
+               cienv.`name`               as envName,
+               saa.`app_module_name`      as appModuleName,
+               saa.`app_module_abbr_name` as appModuleAbbrName,
+               aes.`name`                 as scenarioName
         FROM deploy_pipeline_jobtemplate AS dpj
-                 LEFT JOIN cmdb_cientity AS ciapp ON dpj.app_system_id = ciapp.id
-                 LEFT JOIN cmdb_cientity AS cimodule ON dpj.app_module_id = cimodule.id
-                 LEFT JOIN cmdb_cientity AS cienv ON dpj.env_id = cienv.id
-                 LEFT JOIN autoexec_scenario aes ON dpj.scenario_id = aes.id
+            LEFT JOIN @{DATA_SCHEMA}.scence_appsystem_appmodule AS saa ON saa.id = dpj.app_system_id AND saa.app_module_id = dpj.app_module_id
+            LEFT JOIN cmdb_cientity AS cienv ON dpj.env_id = cienv.id
+            LEFT JOIN autoexec_scenario aes ON dpj.scenario_id = aes.id
         WHERE dpj.id = #{value}
     </select>
 
