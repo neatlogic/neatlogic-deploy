@@ -77,7 +77,7 @@
     </select>
 
     <select id="searchDeployCiAuditCount" parameterType="codedriver.framework.deploy.dto.ci.DeployCiAuditVo" resultType="java.lang.Integer">
-        select count(1) from deploy_ci_audit
+        select count(1) from deploy_ci_audit where ci_id = #{ciId}
     </select>
 
     <select id="searchDeployCiAudit" parameterType="codedriver.framework.deploy.dto.ci.DeployCiAuditVo" resultType="codedriver.framework.deploy.dto.ci.DeployCiAuditVo">
@@ -88,6 +88,7 @@
                `job_id`,
                `fcd`
         from deploy_ci_audit a
+        where ci_id = #{ciId}
         LIMIT #{startNum}, #{pageSize}
     </select>
 
