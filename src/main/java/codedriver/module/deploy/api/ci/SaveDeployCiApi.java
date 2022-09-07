@@ -97,40 +97,40 @@ public class SaveDeployCiApi extends PrivateApiComponentBase {
         }
         DeployCiVo ci = deployCiMapper.getDeployCiById(deployCiVo.getId());
         if (DeployCiRepoType.GITLAB.getValue().equals(deployCiVo.getRepoType())) {
-            RunnerGroupVo runnerGroupVo = deployAppConfigMapper.getAppModuleRunnerGroupByAppSystemIdAndModuleId(deployCiVo.getAppSystemId(), deployCiVo.getAppModuleId());
-            if (runnerGroupVo == null || CollectionUtils.isEmpty(runnerGroupVo.getRunnerList())) {
-                throw new DeployAppConfigModuleRunnerGroupNotFoundException(system.getName() + "(" + deployCiVo.getAppSystemId() + ")", module.getName() + "(" + deployCiVo.getAppModuleId() + ")");
-            }
-            List<RunnerVo> runnerList = runnerGroupVo.getRunnerList();
-            int runnerMapIndex = (int) (Math.random() * runnerList.size());
-            RunnerVo runnerVo = runnerList.get(runnerMapIndex);
-
-            String gitlabUsername = deployCiVo.getConfig().getString("gitlabUsername");
-            String gitlabPassword = deployCiVo.getConfig().getString("gitlabPassword");
-            if (StringUtils.isBlank(gitlabUsername) || StringUtils.isBlank(gitlabPassword)) {
-                throw new DeployCiGitlabAccountLostException();
-            }
-            JSONObject param = new JSONObject();
-            param.put("ciId", deployCiVo.getId());
-            if (ci != null) {
-                param.put("hookId", deployCiVo.getHookId());
-            }
-            param.put("repoServerAddress", deployCiVo.getRepoServerAddress());
-            param.put("repoName", deployCiVo.getRepoName());
-            param.put("branchFilter", deployCiVo.getBranchFilter());
-            param.put("event", deployCiVo.getEvent());
-            param.put("authMode", DeployCiGitlabAuthMode.ACCESS_TOKEN.getValue());
-            param.put("username", gitlabUsername);
-            param.put("password", gitlabPassword);
-            HttpRequestUtil request = HttpRequestUtil.post(runnerVo.getUrl() + "/deploy/ci/gitlabwebhook/save").setPayload(param.toJSONString()).sendRequest();
-            String error = request.getError();
-            JSONObject resultJson = request.getResultJson();
-            if (StringUtils.isNotBlank(error)) {
-                throw new DeployCiGitlabWebHookSaveFailedException();
-            }
-            if (ci == null) {
-                deployCiVo.setHookId(resultJson.getString("Return"));
-            }
+//            RunnerGroupVo runnerGroupVo = deployAppConfigMapper.getAppModuleRunnerGroupByAppSystemIdAndModuleId(deployCiVo.getAppSystemId(), deployCiVo.getAppModuleId());
+//            if (runnerGroupVo == null || CollectionUtils.isEmpty(runnerGroupVo.getRunnerList())) {
+//                throw new DeployAppConfigModuleRunnerGroupNotFoundException(system.getName() + "(" + deployCiVo.getAppSystemId() + ")", module.getName() + "(" + deployCiVo.getAppModuleId() + ")");
+//            }
+//            List<RunnerVo> runnerList = runnerGroupVo.getRunnerList();
+//            int runnerMapIndex = (int) (Math.random() * runnerList.size());
+//            RunnerVo runnerVo = runnerList.get(runnerMapIndex);
+//
+//            String gitlabUsername = deployCiVo.getConfig().getString("gitlabUsername");
+//            String gitlabPassword = deployCiVo.getConfig().getString("gitlabPassword");
+//            if (StringUtils.isBlank(gitlabUsername) || StringUtils.isBlank(gitlabPassword)) {
+//                throw new DeployCiGitlabAccountLostException();
+//            }
+//            JSONObject param = new JSONObject();
+//            param.put("ciId", deployCiVo.getId());
+//            if (ci != null) {
+//                param.put("hookId", deployCiVo.getHookId());
+//            }
+//            param.put("repoServerAddress", deployCiVo.getRepoServerAddress());
+//            param.put("repoName", deployCiVo.getRepoName());
+//            param.put("branchFilter", deployCiVo.getBranchFilter());
+//            param.put("event", deployCiVo.getEvent());
+//            param.put("authMode", DeployCiGitlabAuthMode.ACCESS_TOKEN.getValue());
+//            param.put("username", gitlabUsername);
+//            param.put("password", gitlabPassword);
+//            HttpRequestUtil request = HttpRequestUtil.post(runnerVo.getUrl() + "/deploy/ci/gitlabwebhook/save").setPayload(param.toJSONString()).sendRequest();
+//            String error = request.getError();
+//            JSONObject resultJson = request.getResultJson();
+//            if (StringUtils.isNotBlank(error)) {
+//                throw new DeployCiGitlabWebHookSaveFailedException();
+//            }
+//            if (ci == null) {
+//                deployCiVo.setHookId(resultJson.getString("Return"));
+//            }
         }
         deployCiMapper.insertDeployCi(deployCiVo);
         return null;
