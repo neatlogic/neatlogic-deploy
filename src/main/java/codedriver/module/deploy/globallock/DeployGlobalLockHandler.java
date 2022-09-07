@@ -159,10 +159,12 @@ public class DeployGlobalLockHandler extends GlobalLockHandlerBase {
             throw new RunnerNotFoundByRunnerMapIdException(runnerMapId);
         }
         JSONObject jsonObj = new JSONObject();
-        jsonObj.put("jobId",jobId);
+        jsonObj.put("jobId", jobId);
+        jsonObj.put("socketFileName", "client" + globalLockVo.getHandlerParam().getLong("pid"));
         JSONObject informParam = new JSONObject();
-        informParam.put("action","globalLockNotify");
-        jsonObj.put("informParam",informParam);
+        informParam.put("action", "globalLockNotify");
+        informParam.put("lockId", globalLockVo.getId());
+        jsonObj.put("informParam", informParam);
         String url = String.format("%s/api/rest/job/phase/socket/write", runnerVo.getUrl());
         String result = HttpRequestUtil.post(url)
                 .setPayload(jsonObj.toJSONString()).setAuthType(AuthenticateType.BUILDIN).setConnectTimeout(5000).setReadTimeout(5000)
