@@ -12,7 +12,7 @@ import javax.annotation.Resource;
 import java.util.List;
 
 @Service
-public class DeployCiServiceImp implements DeployCiService {
+public class DeployCiServiceImpl implements DeployCiService {
 
     @Resource
     DeployAppConfigMapper deployAppConfigMapper;

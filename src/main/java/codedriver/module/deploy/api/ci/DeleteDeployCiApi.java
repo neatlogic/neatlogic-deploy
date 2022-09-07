@@ -5,7 +5,6 @@ import codedriver.framework.cmdb.crossover.ICiEntityCrossoverMapper;
 import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
 import codedriver.framework.cmdb.exception.cientity.CiEntityNotFoundException;
 import codedriver.framework.common.constvalue.ApiParamType;
-import codedriver.framework.common.util.RC4Util;
 import codedriver.framework.crossover.CrossoverServiceFactory;
 import codedriver.framework.deploy.auth.DEPLOY_MODIFY;
 import codedriver.framework.deploy.constvalue.DeployCiGitlabAuthMode;
@@ -92,7 +91,7 @@ public class DeleteDeployCiApi extends PrivateApiComponentBase {
             param.put("repoName", ci.getRepoName());
             param.put("authMode", DeployCiGitlabAuthMode.ACCESS_TOKEN.getValue());
             param.put("username", gitlabUsername);
-            param.put("password", RC4Util.encrypt(gitlabPassword));
+            param.put("password", gitlabPassword);
             String url = runnerVo.getUrl() + "/api/rest/deploy/ci/gitlabwebhook/delete";
             HttpRequestUtil request = HttpRequestUtil.post(url).setPayload(param.toJSONString()).setAuthType(AuthenticateType.BUILDIN).sendRequest();
             String error = request.getError();

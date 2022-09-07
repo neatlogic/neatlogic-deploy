@@ -105,6 +105,8 @@ public class SaveDeployCiApi extends PrivateApiComponentBase {
             if (StringUtils.isBlank(gitlabUsername) || StringUtils.isBlank(gitlabPassword)) {
                 throw new DeployCiGitlabAccountLostException();
             }
+            gitlabPassword = RC4Util.encrypt(gitlabPassword);
+            deployCiVo.getConfig().put("gitlabPassword", gitlabPassword);
             JSONObject param = new JSONObject();
             param.put("ciId", deployCiVo.getId());
             if (ci != null) {
@@ -116,7 +118,7 @@ public class SaveDeployCiApi extends PrivateApiComponentBase {
             param.put("event", deployCiVo.getEvent());
             param.put("authMode", DeployCiGitlabAuthMode.ACCESS_TOKEN.getValue());
             param.put("username", gitlabUsername);
-            param.put("password", RC4Util.encrypt(gitlabPassword));
+            param.put("password", gitlabPassword);
             String url = runnerVo.getUrl() + "/api/rest/deploy/ci/gitlabwebhook/save";
             HttpRequestUtil request = HttpRequestUtil.post(url).setPayload(param.toJSONString()).setAuthType(AuthenticateType.BUILDIN).sendRequest();
             String error = request.getError();
