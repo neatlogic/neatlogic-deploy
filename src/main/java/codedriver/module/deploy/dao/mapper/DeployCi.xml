@@ -26,7 +26,8 @@
                `trigger_type` as triggerType,
                `trigger_time` as triggerTime,
                `version_rule` as versionRuleStr,
-               `config` as configStr
+               `config` as configStr,
+               `hook_id` as hookId
         from deploy_ci where `id` = #{value}
     </select>
 

@@ -10,12 +10,10 @@ import codedriver.framework.crossover.CrossoverServiceFactory;
 import codedriver.framework.deploy.auth.DEPLOY_MODIFY;
 import codedriver.framework.deploy.constvalue.*;
 import codedriver.framework.deploy.dto.ci.DeployCiVo;
-import codedriver.framework.deploy.exception.DeployAppConfigModuleRunnerGroupNotFoundException;
 import codedriver.framework.deploy.exception.DeployCiGitlabAccountLostException;
 import codedriver.framework.deploy.exception.DeployCiGitlabWebHookSaveFailedException;
 import codedriver.framework.deploy.exception.DeployCiIsRepeatException;
 import codedriver.framework.dto.FieldValidResultVo;
-import codedriver.framework.dto.runner.RunnerGroupVo;
 import codedriver.framework.dto.runner.RunnerVo;
 import codedriver.framework.integration.authentication.enums.AuthenticateType;
 import codedriver.framework.restful.annotation.Description;
@@ -27,16 +25,16 @@ import codedriver.framework.restful.core.IValid;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.framework.util.HttpRequestUtil;
 import codedriver.framework.util.RegexUtils;
-import codedriver.module.deploy.dao.mapper.DeployAppConfigMapper;
 import codedriver.module.deploy.dao.mapper.DeployCiMapper;
+import codedriver.module.deploy.service.DeployCiService;
 import com.alibaba.fastjson.JSONObject;
-import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.util.List;
 
 @Service
 @Transactional
@@ -44,11 +42,13 @@ import java.util.List;
 @OperationType(type = OperationTypeEnum.OPERATE)
 public class SaveDeployCiApi extends PrivateApiComponentBase {
 
+    Logger logger = LoggerFactory.getLogger(SaveDeployCiApi.class);
+
     @Resource
     DeployCiMapper deployCiMapper;
 
     @Resource
-    DeployAppConfigMapper deployAppConfigMapper;
+    DeployCiService deployCiService;
 
     @Override
     public String getName() {
@@ -99,13 +99,7 @@ public class SaveDeployCiApi extends PrivateApiComponentBase {
         }
         DeployCiVo ci = deployCiMapper.getDeployCiById(deployCiVo.getId());
         if (DeployCiRepoType.GITLAB.getValue().equals(deployCiVo.getRepoType())) {
-            RunnerGroupVo runnerGroupVo = deployAppConfigMapper.getAppModuleRunnerGroupByAppSystemIdAndModuleId(deployCiVo.getAppSystemId(), deployCiVo.getAppModuleId());
-            if (runnerGroupVo == null || CollectionUtils.isEmpty(runnerGroupVo.getRunnerList())) {
-                throw new DeployAppConfigModuleRunnerGroupNotFoundException(system.getName() + "(" + deployCiVo.getAppSystemId() + ")", module.getName() + "(" + deployCiVo.getAppModuleId() + ")");
-            }
-            List<RunnerVo> runnerList = runnerGroupVo.getRunnerList();
-            int runnerMapIndex = (int) (Math.random() * runnerList.size());
-            RunnerVo runnerVo = runnerList.get(runnerMapIndex);
+            RunnerVo runnerVo = deployCiService.getRandomRunnerBySystemIdAndModuleId(system, module);
             String gitlabUsername = deployCiVo.getConfig().getString("gitlabUsername");
             String gitlabPassword = deployCiVo.getConfig().getString("gitlabPassword");
             if (StringUtils.isBlank(gitlabUsername) || StringUtils.isBlank(gitlabPassword)) {
@@ -123,10 +117,12 @@ public class SaveDeployCiApi extends PrivateApiComponentBase {
             param.put("authMode", DeployCiGitlabAuthMode.ACCESS_TOKEN.getValue());
             param.put("username", gitlabUsername);
             param.put("password", RC4Util.encrypt(gitlabPassword));
-            HttpRequestUtil request = HttpRequestUtil.post(runnerVo.getUrl() + "/api/rest/deploy/ci/gitlabwebhook/save").setPayload(param.toJSONString()).setAuthType(AuthenticateType.BUILDIN).sendRequest();
+            String url = runnerVo.getUrl() + "/api/rest/deploy/ci/gitlabwebhook/save";
+            HttpRequestUtil request = HttpRequestUtil.post(url).setPayload(param.toJSONString()).setAuthType(AuthenticateType.BUILDIN).sendRequest();
             String error = request.getError();
             JSONObject resultJson = request.getResultJson();
             if (StringUtils.isNotBlank(error)) {
+                logger.error("Gitlab webhook save failed. Request url: {}; params: {}; error: {}", url, param.toJSONString(), error);
                 throw new DeployCiGitlabWebHookSaveFailedException();
             }
             if (ci == null) {
