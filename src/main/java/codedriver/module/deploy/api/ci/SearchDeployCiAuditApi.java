@@ -43,6 +43,7 @@ public class SearchDeployCiAuditApi extends PrivateApiComponentBase {
     }
 
     @Input({
+            @Param(name = "ciId", desc = "持续集成配置id", type = ApiParamType.LONG, isRequired = true),
             @Param(name = "currentPage", desc = "当前页", type = ApiParamType.INTEGER),
             @Param(name = "pageSize", desc = "每页最大数", type = ApiParamType.INTEGER)
     })
