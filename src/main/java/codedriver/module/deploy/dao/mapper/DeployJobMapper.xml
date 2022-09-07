@@ -329,6 +329,8 @@
                     <result column="jobAppModuleAbbrName" property="appModuleAbbrName"/>
                     <result column="jobEnvId" property="envId"/>
                     <result column="jobEnvName" property="envName"/>
+                    <result column="scenarioId" property="scenarioId"/>
+                    <result column="scenarioName" property="scenarioName"/>
                     <collection property="phaseList" ofType="codedriver.framework.autoexec.dto.job.AutoexecJobPhaseVo">
                         <id column="jobPhaseId" property="id"/>
                         <result column="jobPhaseName" property="name"/>
@@ -382,6 +384,8 @@
                e.end_time        as jobEndTime,
                e.source          as jobSource,
                e.trigger_type    as jobTriggerType,
+               f.`scenario_id`   as scenarioId,
+               m.`name`          as scenarioName,
                f.`app_system_id` as jobAppSystemId,
                saa.`name` AS jobAppSystemName,
                saa.`abbr_name` AS jobAppSystemAbbrName,
@@ -409,6 +413,7 @@
                  LEFT JOIN autoexec_job_group j ON e.id = j.job_id
                  LEFT JOIN autoexec_job_phase k ON j.id = k.group_id
                  LEFT JOIN deploy_job_auth l ON a.id = l.job_id
+                 LEFT JOIN autoexec_scenario m on f.scenario_id = m.id
         where a.id = #{value}
         order by laneSort, groupSort, jobSort, jobGroupSort, jobPhaseSort, jobPhaseName
     </select>
