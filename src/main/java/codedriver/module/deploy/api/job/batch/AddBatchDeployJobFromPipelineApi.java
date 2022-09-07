@@ -5,6 +5,7 @@
 
 package codedriver.module.deploy.api.job.batch;
 
+import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.auth.core.AuthActionChecker;
@@ -22,11 +23,17 @@ import codedriver.framework.deploy.dto.job.LaneVo;
 import codedriver.framework.deploy.dto.pipeline.*;
 import codedriver.framework.deploy.exception.DeployJobParamIrregularException;
 import codedriver.framework.deploy.exception.DeployPipelineNotFoundException;
+import codedriver.framework.exception.type.ParamIrregularException;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
+import codedriver.framework.scheduler.core.IJob;
+import codedriver.framework.scheduler.core.SchedulerManager;
+import codedriver.framework.scheduler.dto.JobObject;
+import codedriver.framework.scheduler.exception.ScheduleHandlerNotFoundException;
 import codedriver.module.deploy.dao.mapper.DeployJobMapper;
 import codedriver.module.deploy.dao.mapper.PipelineMapper;
+import codedriver.module.deploy.schedule.plugin.DeployBatchJobAutoFireJob;
 import codedriver.module.deploy.service.DeployJobService;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
@@ -35,6 +42,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.Objects;
 
 @Service
 @AuthAction(action = BATCHDEPLOY_MODIFY.class)
@@ -86,12 +94,13 @@ public class AddBatchDeployJobFromPipelineApi extends PrivateApiComponentBase {
             throw new DeployPipelineNotFoundException(pipelineId);
         }
         DeployJobVo deployJobVo = JSONObject.toJavaObject(jsonObj, DeployJobVo.class);
-        deployJobVo.setStatus(JobStatus.PENDING.getValue());
         if (deployJobVo.getTriggerType().equals(JobTriggerType.AUTO.getValue())) {
             if (deployJobVo.getPlanStartTime() == null) {
                 throw new DeployJobParamIrregularException("计划开始时间");
             }
+            deployJobVo.setStatus(JobStatus.READY.getValue());
         } else if (deployJobVo.getTriggerType().equals(JobTriggerType.MANUAL.getValue())) {
+            deployJobVo.setStatus(JobStatus.PENDING.getValue());
             deployJobVo.setPlanStartTime(null);
         }
         if (!AuthActionChecker.check(BATCHDEPLOY_VERIFY.class)) {
@@ -161,6 +170,19 @@ public class AddBatchDeployJobFromPipelineApi extends PrivateApiComponentBase {
                 deployAuthVo.setType(authVo.getType());
                 deployJobMapper.insertDeployJobAuth(deployAuthVo);
             }
+        }
+
+        //补充定时执行逻辑
+        if (Objects.equals(deployJobVo.getTriggerType(), JobTriggerType.AUTO.getValue())) {
+            if (!jsonObj.containsKey("planStartTime")) {
+                throw new ParamIrregularException("planStartTime");
+            }
+            IJob jobHandler = SchedulerManager.getHandler(DeployBatchJobAutoFireJob.class.getName());
+            if (jobHandler == null) {
+                throw new ScheduleHandlerNotFoundException(DeployBatchJobAutoFireJob.class.getName());
+            }
+            JobObject.Builder jobObjectBuilder = new JobObject.Builder(deployJobVo.getId().toString(), jobHandler.getGroupName(), jobHandler.getClassName(), TenantContext.get().getTenantUuid());
+            jobHandler.reloadJob(jobObjectBuilder.build());
         }
         return deployJobMapper.getBatchDeployJobById(deployJobVo.getId());
     }
