@@ -108,7 +108,7 @@ public class SaveDeployCiApi extends PrivateApiComponentBase {
             JSONObject param = new JSONObject();
             param.put("ciId", deployCiVo.getId());
             if (ci != null) {
-                param.put("hookId", deployCiVo.getHookId());
+                param.put("hookId", ci.getHookId());
             }
             param.put("repoServerAddress", deployCiVo.getRepoServerAddress());
             param.put("repoName", deployCiVo.getRepoName());
