@@ -1,0 +1,367 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright(c) 2021 TechSureCo.,Ltd.AllRightsReserved.
+  ~ 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
+  -->
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="codedriver.module.deploy.dao.mapper.DeployScheduleMapper">
+
+    <select id="getScheduleById" parameterType="java.lang.Long" resultType="codedriver.framework.deploy.dto.schedule.DeployScheduleVo">
+        SELECT
+            `id`,
+            `uuid`,
+            `name`,
+            `begin_time` AS beginTime,
+            `end_time` AS endTime,
+            `cron`,
+            `is_active` AS isActive,
+            `config` AS configStr,
+            `type`,
+            `fcd`,
+            `fcu`,
+            `lcd`,
+            `lcu`,
+            `app_system_id` AS appSystemId,
+            `app_module_id` AS appModuleId
+        FROM `deploy_schedule`
+        WHERE `id` = #{value}
+    </select>
+
+    <!--<select id="getPipelineScheduleById" parameterType="java.lang.Long" resultType="codedriver.framework.deploy.dto.schedule.DeployScheduleVo">
+        SELECT
+            `id`,
+            `uuid`,
+            `name`,
+            `begin_time` AS beginTime,
+            `end_time` AS endTime,
+            `cron`,
+            `is_active` AS isActive,
+            `config` AS configStr,
+            'pipeline' AS type,
+            `fcd`,
+            `fcu`,
+            `lcd`,
+            `lcu`,
+            `pipeline_id` AS pipelineId,
+            `pipeline_type` AS pipelineType
+        FROM `deploy_pipeline_schedule`
+        WHERE `id` = #{value}
+    </select>-->
+
+    <select id="checkScheduleNameIsExists" parameterType="codedriver.framework.deploy.dto.schedule.DeployScheduleVo" resultType="int">
+        SELECT COUNT(1) FROM `deploy_schedule` WHERE `name` = #{name} and `id` != #{id}
+    </select>
+
+    <!--<select id="checkPipelineScheduleNameIsExists" parameterType="codedriver.framework.deploy.dto.schedule.DeployScheduleVo" resultType="int">
+        SELECT COUNT(1) FROM `deploy_pipeline_schedule` WHERE `name` = #{name} and `id` != #{id}
+    </select>-->
+
+    <select id="getScheduleCount" parameterType="codedriver.framework.deploy.dto.schedule.DeployScheduleVo" resultType="int">
+        SELECT
+            COUNT(1)
+        FROM `deploy_schedule`
+        <where>
+            <if test="keyword != null and keyword != ''">
+                AND `name` LIKE concat('%', #{keyword}, '%')
+            </if>
+            <if test="isActive != null">
+                AND `is_active` = #{isActive}
+            </if>
+            <if test="appSystemId != null">
+                AND `app_system_id` = #{appSystemId}
+            </if>
+            <if test="appModuleId != null">
+                AND `app_module_id` = #{appModuleId}
+            </if>
+        </where>
+    </select>
+
+    <select id="getScheduleList" parameterType="codedriver.framework.deploy.dto.schedule.DeployScheduleVo" resultType="codedriver.framework.deploy.dto.schedule.DeployScheduleVo">
+        SELECT
+            `id`,
+            `uuid`,
+            `name`,
+            `begin_time` AS beginTime,
+            `end_time` AS endTime,
+            `cron`,
+            `is_active` AS isActive,
+            `config` AS configStr,
+            `type`,
+            `fcd`,
+            `fcu`,
+            `lcd`,
+            `lcu`,
+            `app_system_id` AS appSystemId,
+            `app_module_id` AS appModuleId
+        FROM `deploy_schedule`
+        <where>
+            <if test="keyword != null and keyword != ''">
+                AND `name` LIKE concat('%', #{keyword}, '%')
+            </if>
+            <if test="isActive != null">
+                AND `is_active` = #{isActive}
+            </if>
+            <if test="appSystemId != null">
+                AND `app_system_id` = #{appSystemId}
+            </if>
+            <if test="appModuleId != null">
+                AND `app_module_id` = #{appModuleId}
+            </if>
+        </where>
+    </select>
+
+    <select id="getScheduleListByIdList" parameterType="java.lang.Long" resultType="codedriver.framework.deploy.dto.schedule.DeployScheduleVo">
+        SELECT
+        `id`,
+        `uuid`,
+        `name`,
+        `begin_time` AS beginTime,
+        `end_time` AS endTime,
+        `cron`,
+        `is_active` AS isActive,
+        `config` AS configStr,
+        `type`,
+        `fcd`,
+        `fcu`,
+        `lcd`,
+        `lcu`,
+        `app_system_id` AS appSystemId,
+        `app_module_id` AS appModuleId
+        FROM `deploy_schedule`
+        WHERE `id` IN
+        <foreach collection="list" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
+
+    <!--<select id="getPipelineScheduleCount" parameterType="codedriver.framework.deploy.dto.schedule.DeployScheduleVo" resultType="int">
+        SELECT
+            COUNT(1)
+        FROM `deploy_pipeline_schedule`
+        <where>
+            <if test="keyword != null and keyword != ''">
+                AND `name` LIKE concat('%', #{keyword}, '%')
+            </if>
+            <if test="isActive != null">
+                AND `is_active` = #{isActive}
+            </if>
+        </where>
+    </select>-->
+
+    <!--<select id="getPipelineScheduleList" parameterType="codedriver.framework.deploy.dto.schedule.DeployScheduleVo" resultType="codedriver.framework.deploy.dto.schedule.DeployScheduleVo">
+        SELECT
+            `id`,
+            `uuid`,
+            `name`,
+            `begin_time` AS beginTime,
+            `end_time` AS endTime,
+            `cron`,
+            `is_active` AS isActive,
+            `config` AS configStr,
+            'pipeline' AS type,
+            `fcd`,
+            `fcu`,
+            `lcd`,
+            `lcu`,
+            `pipeline_id` AS pipelineId,
+            `pipeline_type` AS pipelineType
+        FROM `deploy_pipeline_schedule`
+        <where>
+            <if test="keyword != null and keyword != ''">
+                AND `name` LIKE concat('%', #{keyword}, '%')
+            </if>
+            <if test="isActive != null">
+                AND `is_active` = #{isActive}
+            </if>
+        </where>
+    </select>-->
+
+    <!--<select id="getPipelineScheduleByIdList" parameterType="java.lang.Long" resultType="codedriver.framework.deploy.dto.schedule.DeployScheduleVo">
+        SELECT
+            `id`,
+            `uuid`,
+            `name`,
+            `begin_time` AS beginTime,
+            `end_time` AS endTime,
+            `cron`,
+            `is_active` AS isActive,
+            `config` AS configStr,
+            'pipeline' AS type,
+            `fcd`,
+            `fcu`,
+            `lcd`,
+            `lcu`,
+            `pipeline_id` AS pipelineId,
+            `pipeline_type` AS pipelineType
+        FROM `deploy_pipeline_schedule`
+        WHERE `id` IN
+        <foreach collection="list" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>-->
+
+    <!--<select id="getMergeScheduleIdList" parameterType="codedriver.framework.deploy.dto.schedule.DeployScheduleVo" resultType="java.lang.Long">
+        select
+            a.`id`
+        FROM (
+            SELECT
+            `id`,
+            `lcd`
+            FROM `deploy_schedule`
+            <where>
+                <if test="keyword != null and keyword != ''">
+                    AND `name` LIKE concat('%', #{keyword}, '%')
+                </if>
+                <if test="isActive != null">
+                    AND `is_active` = #{isActive}
+                </if>
+                <if test="appSystemId != null">
+                    AND `app_system_id` = #{appSystemId}
+                </if>
+                <if test="appModuleId != null">
+                    AND `app_module_id` = #{appModuleId}
+                </if>
+            </where>
+            UNION ALL
+            SELECT
+            `id`,
+            `lcd`
+            FROM `deploy_pipeline_schedule`
+            <where>
+                <if test="keyword != null and keyword != ''">
+                    AND `name` LIKE concat('%', #{keyword}, '%')
+                </if>
+                <if test="isActive != null">
+                    AND `is_active` = #{isActive}
+                </if>
+            </where>
+            ORDER BY `lcd` DESC
+            LIMIT #{startNum}, #{pageSize}
+        ) a
+    </select>-->
+
+    <insert id="insertSchedule" parameterType="codedriver.framework.deploy.dto.schedule.DeployScheduleVo">
+        INSERT INTO `deploy_schedule` (
+            `id`,
+            `uuid`,
+            `name`,
+            `begin_time`,
+            `end_time`,
+            `cron`,
+            `is_active`,
+            `config`,
+            `fcd`,
+            `fcu`,
+            `lcd`,
+            `lcu`,
+            `type`,
+            `app_system_id`,
+            `app_module_id`,
+            `pipeline_id`,
+            `pipeline_type`
+        )
+        VALUES
+        (
+            #{id},
+            #{uuid},
+            #{name},
+            #{beginTime},
+            #{endTime},
+            #{cron},
+            #{isActive},
+            #{configStr},
+            NOW(3),
+            #{fcu},
+            NOW(3),
+            #{fcu},
+            #{type},
+            #{appSystemId},
+            #{appModuleId},
+            #{pipelineId},
+            #{pipelineType}
+        )
+    </insert>
+
+    <!--<insert id="insertPipelineSchedule" parameterType="codedriver.framework.deploy.dto.schedule.DeployScheduleVo">
+        INSERT INTO `deploy_pipeline_schedule` (
+            `id`,
+            `uuid`,
+            `name`,
+            `begin_time`,
+            `end_time`,
+            `cron`,
+            `is_active`,
+            `config`,
+            `fcd`,
+            `fcu`,
+            `lcd`,
+            `lcu`,
+            `pipeline_id`,
+            `pipeline_type`
+        )
+        VALUES
+        (
+            #{id},
+            #{uuid},
+            #{name},
+            #{beginTime},
+            #{endTime},
+            #{cron},
+            #{isActive},
+            #{configStr},
+            NOW(3),
+            #{fcu},
+            NOW(3),
+            #{fcu},
+            #{pipelineId},
+            #{pipelineType}
+        )
+    </insert>-->
+
+    <update id="updateSchedule" parameterType="codedriver.framework.deploy.dto.schedule.DeployScheduleVo">
+        UPDATE `deploy_schedule`
+        SET `name`               = #{name},
+            `begin_time`         = #{beginTime},
+            `end_time`           = #{endTime},
+            `cron`               = #{cron},
+            `is_active`          = #{isActive},
+            `config`             = #{configStr},
+            `lcd`                = NOW(3),
+            `lcu`                = #{lcu}
+        WHERE `id` = #{id}
+    </update>
+
+    <!--<update id="updatePipelineSchedule" parameterType="codedriver.framework.deploy.dto.schedule.DeployScheduleVo">
+        UPDATE `deploy_pipeline_schedule`
+        SET `name`               = #{name},
+            `begin_time`         = #{beginTime},
+            `end_time`           = #{endTime},
+            `cron`               = #{cron},
+            `is_active`          = #{isActive},
+            `config`             = #{configStr},
+            `lcd`                = NOW(3),
+            `lcu`                = #{lcu}
+        WHERE `id` = #{id}
+    </update>-->
+
+    <update id="updateScheduleIsActiveById" parameterType="java.lang.Long">
+        UPDATE `deploy_schedule`
+        SET `is_active` = 1-`is_active`
+        WHERE `id` = #{value}
+    </update>
+
+    <!--<update id="updatePipelineScheduleIsActiveById" parameterType="java.lang.Long">
+        UPDATE `deploy_pipeline_schedule`
+        SET `is_active` = 1-`is_active`
+        WHERE `id` = #{value}
+    </update>-->
+
+    <delete id="deleteScheduleById" parameterType="java.lang.Long">
+        DELETE FROM `deploy_schedule` WHERE `id` = #{value}
+    </delete>
+
+    <!--<delete id="deletePipelineScheduleById" parameterType="java.lang.Long">
+        DELETE FROM `deploy_pipeline_schedule` WHERE `id` = #{value}
+    </delete>-->
+</mapper>
