@@ -7,7 +7,6 @@ package codedriver.module.deploy.api.schedule;
 
 import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.auth.core.AuthAction;
-import codedriver.framework.autoexec.exception.AutoexecScheduleNotFoundException;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.deploy.auth.DEPLOY_BASE;
 import codedriver.framework.deploy.constvalue.PipelineType;

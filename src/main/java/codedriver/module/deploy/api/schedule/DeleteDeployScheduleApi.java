@@ -6,16 +6,9 @@
 package codedriver.module.deploy.api.schedule;
 
 import codedriver.framework.auth.core.AuthAction;
-import codedriver.framework.autoexec.dto.combop.ParamMappingVo;
-import codedriver.framework.autoexec.dto.node.AutoexecNodeVo;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.deploy.auth.DEPLOY_BASE;
-import codedriver.framework.deploy.constvalue.PipelineType;
-import codedriver.framework.deploy.constvalue.ScheduleType;
-import codedriver.framework.deploy.dto.job.DeployJobModuleVo;
-import codedriver.framework.deploy.dto.schedule.DeployScheduleConfigVo;
 import codedriver.framework.deploy.dto.schedule.DeployScheduleVo;
-import codedriver.framework.deploy.dto.version.DeploySystemModuleVersionVo;
 import codedriver.framework.deploy.exception.DeployScheduleNotFoundException;
 import codedriver.framework.restful.annotation.Description;
 import codedriver.framework.restful.annotation.Input;
@@ -29,9 +22,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
 
 @Service
 @AuthAction(action = DEPLOY_BASE.class)
