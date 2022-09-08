@@ -37,6 +37,9 @@ public class DeployAppConfigServiceImpl implements DeployAppConfigService {
     @Resource
     DeployAppConfigMapper deployAppConfigMapper;
 
+    @Resource
+    PipelineService pipelineService;
+
     @Override
     public void deleteAppConfig(DeployAppConfigVo configVo) {
 
@@ -46,8 +49,16 @@ public class DeployAppConfigServiceImpl implements DeployAppConfigService {
         }
 
         //删除系统、模块时才会删除runner组
-        if (!(configVo.getAppSystemId() != 0L && configVo.getAppSystemId() != 0L && configVo.getEnvId() != 0L)) {
+        if (!(configVo.getAppSystemId() != null && configVo.getAppSystemId() != 0L && configVo.getEnvId() != 0L)) {
             deployAppConfigMapper.deleteAppModuleRunnerGroup(configVo);
+        }
+
+        //删除阶段中操作工具对预置参数集和全局参数的引用关系
+        List<DeployAppConfigVo> deployAppConfigList = deployAppConfigMapper.getAppConfigList(configVo);
+        if (CollectionUtils.isNotEmpty(deployAppConfigList)) {
+            for (DeployAppConfigVo config : deployAppConfigList) {
+                pipelineService.deleteDependency(config);
+            }
         }
 
         deployAppConfigMapper.deleteAppConfig(configVo);

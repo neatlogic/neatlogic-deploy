@@ -5,6 +5,7 @@
 
 package codedriver.module.deploy.service;
 
+import codedriver.framework.deploy.dto.app.DeployAppConfigVo;
 import codedriver.framework.deploy.dto.pipeline.PipelineJobTemplateVo;
 import codedriver.framework.deploy.dto.pipeline.PipelineVo;
 
@@ -14,6 +15,7 @@ public interface PipelineService {
 
     List<PipelineVo> searchPipeline(PipelineVo pipelineVo);
 
-
     List<PipelineJobTemplateVo> searchPipelineJobTemplate(PipelineJobTemplateVo pipelineJobTemplateVo);
+
+     void deleteDependency(DeployAppConfigVo deployAppConfigVo);
 }
