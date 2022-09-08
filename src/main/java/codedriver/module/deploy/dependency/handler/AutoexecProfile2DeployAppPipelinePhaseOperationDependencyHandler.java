@@ -132,7 +132,7 @@ public class AutoexecProfile2DeployAppPipelinePhaseOperationDependencyHandler ex
                 dependencyInfoConfig.put("appSystemId", appSystemId);
                 if (moduleId != null && moduleId != 0L) {
                     dependencyInfoConfig.put("moduleId", moduleId);
-                    stringBuilder.append("&moduleId=${DATA.moduleId}");
+                    stringBuilder.append("&appModuleId=${DATA.moduleId}");
                     if (envId != null && envId != 0L) {
                         dependencyInfoConfig.put("envId", envId);
                         stringBuilder.append("&envId=${DATA.envId}");
