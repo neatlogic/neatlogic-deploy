@@ -5,6 +5,7 @@ import codedriver.framework.restful.annotation.Description;
 import codedriver.framework.restful.annotation.Input;
 import codedriver.framework.restful.annotation.OperationType;
 import codedriver.framework.restful.annotation.Param;
+import codedriver.framework.restful.constvalue.ApiAnonymousAccessSupportEnum;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.deploy.dao.mapper.DeployCiMapper;
@@ -36,8 +37,8 @@ public class CallbackDeployCiGitlabEventApi extends PrivateApiComponentBase {
     }
 
     @Override
-    public boolean supportAnonymousAccess() {
-        return true;
+    public ApiAnonymousAccessSupportEnum supportAnonymousAccess() {
+        return ApiAnonymousAccessSupportEnum.ANONYMOUS_ACCESS_WITHOUT_ENCRYPTION;
     }
 
     @Input({
