@@ -146,12 +146,12 @@ public class AutoexecGlobalParam2DeployAppPipelinePhaseOperationInputParamDepend
                         StringBuilder stringBuilder = new StringBuilder();
                         stringBuilder.append("/");
                         stringBuilder.append(TenantContext.get().getTenantUuid());
-                        stringBuilder.append("/deploy.html#/application-config-manage?appSystemId=${DATA.appSystemId}");
+                        stringBuilder.append("/deploy.html#/application-config-pipeline-detail?appSystemId=${DATA.appSystemId}");
                         JSONObject dependencyInfoConfig = new JSONObject();
                         dependencyInfoConfig.put("appSystemId", appSystemId);
                         if (moduleId != null && moduleId != 0L) {
                             dependencyInfoConfig.put("moduleId", moduleId);
-                            stringBuilder.append("&moduleId=${DATA.moduleId}");
+                            stringBuilder.append("&appModuleId=${DATA.moduleId}");
                             if (envId != null && envId != 0L) {
                                 dependencyInfoConfig.put("envId", envId);
                                 stringBuilder.append("&envId=${DATA.envId}");

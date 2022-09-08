@@ -29,6 +29,7 @@ import codedriver.module.deploy.dependency.handler.AutoexecGlobalParam2DeployApp
 import codedriver.module.deploy.dependency.handler.AutoexecGlobalParam2DeployAppPipelinePhaseOperationInputParamDependencyHandler;
 import codedriver.module.deploy.dependency.handler.AutoexecProfile2DeployAppPipelinePhaseOperationDependencyHandler;
 import codedriver.module.deploy.service.DeployAppAuthorityService;
+import codedriver.module.deploy.service.PipelineService;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
@@ -48,6 +49,9 @@ public class SaveDeployAppPipelineApi extends PrivateApiComponentBase {
 
     @Resource
     DeployAppAuthorityService deployAppAuthorityService;
+
+    @Resource
+    PipelineService pipelineService;
 
     @Override
     public String getName() {
@@ -124,7 +128,7 @@ public class SaveDeployAppPipelineApi extends PrivateApiComponentBase {
         autoexecCombopCrossoverService.verifyAutoexecCombopConfig(deployAppConfigVo.getConfig().getAutoexecCombopConfigVo(), false);
         deployAppConfigVo.setConfigStr(configStr);
         if (oldDeployAppConfigVo != null) {
-            deleteDependency(oldDeployAppConfigVo);
+            pipelineService.deleteDependency(oldDeployAppConfigVo);
             deployAppConfigVo.setLcu(UserContext.get().getUserUuid());
             deployAppConfigMapper.updateAppConfig(deployAppConfigVo);
             saveDependency(deployAppConfigVo);
@@ -359,73 +363,6 @@ public class SaveDeployAppPipelineApi extends PrivateApiComponentBase {
                     dependencyConfig.put("phaseId", combopPhaseVo.getId());
                     dependencyConfig.put("phaseName", combopPhaseVo.getName());
                     DependencyManager.insert(AutoexecGlobalParam2DeployAppPipelinePhaseOperationArgumentParamDependencyHandler.class, paramMappingVo.getValue(), phaseOperationVo.getId(), dependencyConfig);
-                }
-            }
-        }
-    }
-
-    /**
-     * 删除阶段中操作工具对预置参数集和全局参数的引用关系
-     * @param deployAppConfigVo
-     */
-    private void deleteDependency(DeployAppConfigVo deployAppConfigVo) {
-        DeployPipelineConfigVo config = deployAppConfigVo.getConfig();
-        if (config == null) {
-            return;
-        }
-        List<DeployPipelinePhaseVo> combopPhaseList = config.getCombopPhaseList();
-        if (CollectionUtils.isEmpty(combopPhaseList)) {
-            return;
-        }
-        Long moduleId = deployAppConfigVo.getAppModuleId();
-        for (DeployPipelinePhaseVo combopPhaseVo : combopPhaseList) {
-            if (combopPhaseVo == null) {
-                continue;
-            }
-            if (moduleId != null) {
-                //如果是模块层或环境层，没有重载，就不用保存依赖关系
-                Integer override = combopPhaseVo.getOverride();
-                if (Objects.equals(override, 0)) {
-                    continue;
-                }
-            }
-            AutoexecCombopPhaseConfigVo phaseConfig = combopPhaseVo.getConfig();
-            if (phaseConfig == null) {
-                continue;
-            }
-            List<AutoexecCombopPhaseOperationVo> phaseOperationList = phaseConfig.getPhaseOperationList();
-            if (CollectionUtils.isEmpty(phaseOperationList)) {
-                continue;
-            }
-            for (AutoexecCombopPhaseOperationVo phaseOperationVo : phaseOperationList) {
-                if (phaseOperationVo == null) {
-                    continue;
-                }
-                DependencyManager.delete(AutoexecProfile2DeployAppPipelinePhaseOperationDependencyHandler.class, phaseOperationVo.getId());
-                DependencyManager.delete(AutoexecGlobalParam2DeployAppPipelinePhaseOperationInputParamDependencyHandler.class, phaseOperationVo.getId());
-                DependencyManager.delete(AutoexecGlobalParam2DeployAppPipelinePhaseOperationArgumentParamDependencyHandler.class, phaseOperationVo.getId());
-                AutoexecCombopPhaseOperationConfigVo operationConfig = phaseOperationVo.getConfig();
-                List<AutoexecCombopPhaseOperationVo> ifList = operationConfig.getIfList();
-                if (CollectionUtils.isNotEmpty(ifList)) {
-                    for (AutoexecCombopPhaseOperationVo operationVo : ifList) {
-                        if (operationVo == null) {
-                            continue;
-                        }
-                        DependencyManager.delete(AutoexecProfile2DeployAppPipelinePhaseOperationDependencyHandler.class, operationVo.getId());
-                        DependencyManager.delete(AutoexecGlobalParam2DeployAppPipelinePhaseOperationInputParamDependencyHandler.class, operationVo.getId());
-                        DependencyManager.delete(AutoexecGlobalParam2DeployAppPipelinePhaseOperationArgumentParamDependencyHandler.class, operationVo.getId());
-                    }
-                }
-                List<AutoexecCombopPhaseOperationVo> elseList = operationConfig.getElseList();
-                if (CollectionUtils.isNotEmpty(elseList)) {
-                    for (AutoexecCombopPhaseOperationVo operationVo : elseList) {
-                        if (operationVo == null) {
-                            continue;
-                        }
-                        DependencyManager.delete(AutoexecProfile2DeployAppPipelinePhaseOperationDependencyHandler.class, operationVo.getId());
-                        DependencyManager.delete(AutoexecGlobalParam2DeployAppPipelinePhaseOperationInputParamDependencyHandler.class, operationVo.getId());
-                        DependencyManager.delete(AutoexecGlobalParam2DeployAppPipelinePhaseOperationArgumentParamDependencyHandler.class, operationVo.getId());
-                    }
                 }
             }
         }
