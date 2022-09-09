@@ -31,6 +31,7 @@ import codedriver.framework.dao.mapper.runner.RunnerMapper;
 import codedriver.framework.deploy.auth.BATCHDEPLOY_MODIFY;
 import codedriver.framework.deploy.auth.DEPLOY_MODIFY;
 import codedriver.framework.deploy.constvalue.BuildNoStatus;
+import codedriver.framework.deploy.constvalue.JobSource;
 import codedriver.framework.deploy.constvalue.JobSourceType;
 import codedriver.framework.deploy.dto.app.DeployPipelineConfigVo;
 import codedriver.framework.deploy.dto.job.DeployJobContentVo;
@@ -454,10 +455,12 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
         if (AuthActionChecker.checkByUserUuid(UserContext.get().getUserUuid(true), BATCHDEPLOY_MODIFY.class.getSimpleName())) {
             isHasAuth = true;
         } else {
-            DeployJobVo deployJobVo = deployJobMapper.getDeployJobByJobId(jobVo.getId());
-            Set<String> authSet = DeployAppAuthChecker.builder(deployJobVo.getAppSystemId()).addEnvAction(deployJobVo.getEnvId()).addScenarioAction(deployJobVo.getScenarioId()).check();
-            if (authSet.containsAll(Arrays.asList(deployJobVo.getEnvId().toString(), deployJobVo.getScenarioId().toString()))) {
-                isHasAuth = true;
+            if (!Objects.equals(jobVo.getSource(), JobSource.BATCHDEPLOY.getValue())) {
+                DeployJobVo deployJobVo = deployJobMapper.getDeployJobByJobId(jobVo.getId());
+                Set<String> authSet = DeployAppAuthChecker.builder(deployJobVo.getAppSystemId()).addEnvAction(deployJobVo.getEnvId()).addScenarioAction(deployJobVo.getScenarioId()).check();
+                if (authSet.containsAll(Arrays.asList(deployJobVo.getEnvId().toString(), deployJobVo.getScenarioId().toString()))) {
+                    isHasAuth = true;
+                }
             }
         }
         if (isHasAuth) {
