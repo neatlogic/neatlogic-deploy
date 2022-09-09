@@ -5,13 +5,21 @@
 
 package codedriver.module.deploy.api.schedule;
 
+import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.auth.core.AuthAction;
+import codedriver.framework.cmdb.crossover.IAppSystemMapper;
+import codedriver.framework.cmdb.dto.resourcecenter.entity.AppModuleVo;
+import codedriver.framework.cmdb.dto.resourcecenter.entity.AppSystemVo;
+import codedriver.framework.cmdb.exception.resourcecenter.AppModuleNotFoundException;
+import codedriver.framework.cmdb.exception.resourcecenter.AppSystemNotFoundException;
 import codedriver.framework.common.constvalue.ApiParamType;
+import codedriver.framework.crossover.CrossoverServiceFactory;
 import codedriver.framework.deploy.auth.DEPLOY_BASE;
 import codedriver.framework.deploy.constvalue.PipelineType;
 import codedriver.framework.deploy.constvalue.ScheduleType;
 import codedriver.framework.deploy.dto.schedule.DeployScheduleVo;
+import codedriver.framework.deploy.exception.DeployPipelineNotFoundException;
 import codedriver.framework.deploy.exception.DeployScheduleNameRepeatException;
 import codedriver.framework.deploy.exception.DeployScheduleNotFoundException;
 import codedriver.framework.dto.FieldValidResultVo;
@@ -19,8 +27,17 @@ import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.IValid;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
+import codedriver.framework.scheduler.core.IJob;
+import codedriver.framework.scheduler.core.SchedulerManager;
+import codedriver.framework.scheduler.dto.JobObject;
+import codedriver.framework.scheduler.exception.ScheduleHandlerNotFoundException;
+import codedriver.framework.scheduler.exception.ScheduleIllegalParameterException;
 import codedriver.module.deploy.dao.mapper.DeployScheduleMapper;
+import codedriver.module.deploy.dao.mapper.PipelineMapper;
+import codedriver.module.deploy.schedule.plugin.DeployJobScheduleJob;
 import com.alibaba.fastjson.JSONObject;
+import org.apache.commons.lang3.StringUtils;
+import org.quartz.CronExpression;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,6 +51,10 @@ public class SaveDeployScheduleApi extends PrivateApiComponentBase {
 
     @Resource
     private DeployScheduleMapper deployScheduleMapper;
+    @Resource
+    private PipelineMapper pipelineMapper;
+    @Resource
+    private SchedulerManager schedulerManager;
 
     @Override
     public String getToken() {
@@ -70,8 +91,49 @@ public class SaveDeployScheduleApi extends PrivateApiComponentBase {
     @Description(desc = "保存定时作业信息")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
+        IJob jobHandler = SchedulerManager.getHandler(DeployJobScheduleJob.class.getName());
+        if (jobHandler == null) {
+            throw new ScheduleHandlerNotFoundException(DeployJobScheduleJob.class.getName());
+        }
+        String tenantUuid = TenantContext.get().getTenantUuid();
         String userUuid = UserContext.get().getUserUuid(true);
+        String schemaName = TenantContext.get().getDataDbName();
         DeployScheduleVo scheduleVo = paramObj.toJavaObject(DeployScheduleVo.class);
+        String cron = scheduleVo.getCron();
+        if (!CronExpression.isValidExpression(cron)) {
+            throw new ScheduleIllegalParameterException(cron);
+        }
+        if (deployScheduleMapper.checkScheduleNameIsExists(scheduleVo) > 0) {
+            throw new DeployScheduleNameRepeatException(scheduleVo.getName());
+        }
+        IAppSystemMapper appSystemMapper = CrossoverServiceFactory.getApi(IAppSystemMapper.class);
+        String type = scheduleVo.getType();
+        if (type.equals(ScheduleType.GENERAL.getValue())) {
+            AppSystemVo appSystemVo = appSystemMapper.getAppSystemById(scheduleVo.getAppSystemId(), schemaName);
+            if (appSystemVo == null) {
+                throw new AppSystemNotFoundException(scheduleVo.getAppSystemId());
+            }
+            AppModuleVo appModuleVo = appSystemMapper.getAppModuleById(scheduleVo.getAppModuleId(), schemaName);
+            if (appModuleVo == null) {
+                throw new AppModuleNotFoundException(scheduleVo.getAppModuleId());
+            }
+        } else if (type.equals(ScheduleType.PIPELINE.getValue())) {
+            String pipelineType = scheduleVo.getPipelineType();
+            if (pipelineType.equals(PipelineType.APPSYSTEM.getValue())) {
+                // TODO 应用流水线功能还没实现
+            } else if (pipelineType.equals(PipelineType.GLOBAL.getValue())) {
+                String name = pipelineMapper.getPipelineNameById(scheduleVo.getPipelineId());
+                if (StringUtils.isBlank(name)) {
+                    throw new DeployPipelineNotFoundException(scheduleVo.getPipelineId());
+                }
+            }
+        }
+
+        JobObject jobObject = new JobObject.Builder(scheduleVo.getUuid(), jobHandler.getGroupName(), jobHandler.getClassName(), tenantUuid)
+                .withCron(scheduleVo.getCron()).withBeginTime(scheduleVo.getBeginTime())
+                .withEndTime(scheduleVo.getEndTime())
+                .setType("private")
+                .build();
         Long id = paramObj.getLong("id");
         if (id != null) {
             DeployScheduleVo oldScheduleVo = deployScheduleMapper.getScheduleById(id);
@@ -81,39 +143,15 @@ public class SaveDeployScheduleApi extends PrivateApiComponentBase {
             scheduleVo.setLcu(userUuid);
             scheduleVo.setUuid(oldScheduleVo.getUuid());
             deployScheduleMapper.updateSchedule(scheduleVo);
+            schedulerManager.unloadJob(jobObject);
         } else {
             scheduleVo.setFcu(userUuid);
             deployScheduleMapper.insertSchedule(scheduleVo);
         }
 
-//        String type = scheduleVo.getType();
-//        if (type.equals(ScheduleType.GENERAL.getValue())) {
-//            if (id != null) {
-//                DeployScheduleVo oldScheduleVo = deployScheduleMapper.getScheduleById(id);
-//                if (oldScheduleVo == null) {
-//                    throw new DeployScheduleNotFoundException(id);
-//                }
-//                scheduleVo.setLcu(userUuid);
-//                scheduleVo.setUuid(oldScheduleVo.getUuid());
-//                deployScheduleMapper.updateSchedule(scheduleVo);
-//            } else {
-//                scheduleVo.setFcu(userUuid);
-//                deployScheduleMapper.insertSchedule(scheduleVo);
-//            }
-//        } else if (type.equals(ScheduleType.PIPELINE.getValue())) {
-//            if (id != null) {
-//                DeployScheduleVo oldScheduleVo = deployScheduleMapper.getPipelineScheduleById(id);
-//                if (oldScheduleVo == null) {
-//                    throw new DeployScheduleNotFoundException(id);
-//                }
-//                scheduleVo.setLcu(userUuid);
-//                scheduleVo.setUuid(oldScheduleVo.getUuid());
-//                deployScheduleMapper.updatePipelineSchedule(scheduleVo);
-//            } else {
-//                scheduleVo.setFcu(userUuid);
-//                deployScheduleMapper.insertPipelineSchedule(scheduleVo);
-//            }
-//        }
+        if (scheduleVo.getIsActive().intValue() == 1) {
+            schedulerManager.loadJob(jobObject);
+        }
 
         JSONObject resultObj = new JSONObject();
         resultObj.put("id", scheduleVo.getId());

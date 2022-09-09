@@ -30,6 +30,29 @@
         WHERE `id` = #{value}
     </select>
 
+    <select id="getScheduleByUuid" parameterType="java.lang.String" resultType="codedriver.framework.deploy.dto.schedule.DeployScheduleVo">
+        SELECT
+            `id`,
+            `uuid`,
+            `name`,
+            `begin_time` AS beginTime,
+            `end_time` AS endTime,
+            `cron`,
+            `is_active` AS isActive,
+            `config` AS configStr,
+            `type`,
+            `fcd`,
+            `fcu`,
+            `lcd`,
+            `lcu`,
+            `app_system_id` AS appSystemId,
+            `app_module_id` AS appModuleId,
+            `pipeline_id` AS pipelineId,
+            `pipeline_type` AS pipelineType
+        FROM `deploy_schedule`
+        WHERE `uuid` = #{value}
+    </select>
+
     <!--<select id="getPipelineScheduleById" parameterType="java.lang.Long" resultType="codedriver.framework.deploy.dto.schedule.DeployScheduleVo">
         SELECT
             `id`,

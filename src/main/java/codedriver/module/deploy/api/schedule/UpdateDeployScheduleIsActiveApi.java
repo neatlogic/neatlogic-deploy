@@ -5,6 +5,7 @@
 
 package codedriver.module.deploy.api.schedule;
 
+import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.deploy.auth.DEPLOY_BASE;
@@ -13,7 +14,12 @@ import codedriver.framework.deploy.exception.DeployScheduleNotFoundException;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
+import codedriver.framework.scheduler.core.IJob;
+import codedriver.framework.scheduler.core.SchedulerManager;
+import codedriver.framework.scheduler.dto.JobObject;
+import codedriver.framework.scheduler.exception.ScheduleHandlerNotFoundException;
 import codedriver.module.deploy.dao.mapper.DeployScheduleMapper;
+import codedriver.module.deploy.schedule.plugin.DeployJobScheduleJob;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,6 +34,8 @@ public class UpdateDeployScheduleIsActiveApi extends PrivateApiComponentBase {
 
     @Resource
     private DeployScheduleMapper deployScheduleMapper;
+    @Resource
+    private SchedulerManager schedulerManager;
 
     @Override
     public String getToken() {
@@ -58,6 +66,21 @@ public class UpdateDeployScheduleIsActiveApi extends PrivateApiComponentBase {
         }
         deployScheduleMapper.updateScheduleIsActiveById(id);
         scheduleVo = deployScheduleMapper.getScheduleById(id);
+        IJob jobHandler = SchedulerManager.getHandler(DeployJobScheduleJob.class.getName());
+        if (jobHandler == null) {
+            throw new ScheduleHandlerNotFoundException(DeployJobScheduleJob.class.getName());
+        }
+        String tenantUuid = TenantContext.get().getTenantUuid();
+        JobObject jobObject = new JobObject.Builder(scheduleVo.getUuid(), jobHandler.getGroupName(), jobHandler.getClassName(), tenantUuid)
+                .withCron(scheduleVo.getCron()).withBeginTime(scheduleVo.getBeginTime())
+                .withEndTime(scheduleVo.getEndTime())
+                .setType("private")
+                .build();
+        if (scheduleVo.getIsActive().intValue() == 1) {
+            schedulerManager.loadJob(jobObject);
+        } else {
+            schedulerManager.unloadJob(jobObject);
+        }
         JSONObject resultObj = new JSONObject();
         resultObj.put("isActive", scheduleVo.getIsActive());
         return resultObj;

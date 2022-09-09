@@ -5,6 +5,7 @@
 
 package codedriver.module.deploy.api.schedule;
 
+import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.deploy.auth.DEPLOY_BASE;
@@ -16,7 +17,12 @@ import codedriver.framework.restful.annotation.OperationType;
 import codedriver.framework.restful.annotation.Param;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
+import codedriver.framework.scheduler.core.IJob;
+import codedriver.framework.scheduler.core.SchedulerManager;
+import codedriver.framework.scheduler.dto.JobObject;
+import codedriver.framework.scheduler.exception.ScheduleHandlerNotFoundException;
 import codedriver.module.deploy.dao.mapper.DeployScheduleMapper;
+import codedriver.module.deploy.schedule.plugin.DeployJobScheduleJob;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,6 +37,9 @@ public class DeleteDeployScheduleApi extends PrivateApiComponentBase {
 
     @Resource
     private DeployScheduleMapper deployScheduleMapper;
+
+    @Resource
+    private SchedulerManager schedulerManager;
 
     @Override
     public String getToken() {
@@ -58,6 +67,13 @@ public class DeleteDeployScheduleApi extends PrivateApiComponentBase {
         if (scheduleVo == null) {
             throw new DeployScheduleNotFoundException(id);
         }
+        String tenantUuid = TenantContext.get().getTenantUuid();
+        IJob jobHandler = SchedulerManager.getHandler(DeployJobScheduleJob.class.getName());
+        if (jobHandler == null) {
+            throw new ScheduleHandlerNotFoundException(DeployJobScheduleJob.class.getName());
+        }
+        JobObject jobObject = new JobObject.Builder(scheduleVo.getUuid(), jobHandler.getGroupName(), jobHandler.getClassName(), tenantUuid).build();
+        schedulerManager.unloadJob(jobObject);
         deployScheduleMapper.deleteScheduleById(id);
         return null;
     }

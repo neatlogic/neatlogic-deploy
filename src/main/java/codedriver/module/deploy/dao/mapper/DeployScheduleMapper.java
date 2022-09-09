@@ -12,6 +12,8 @@ import java.util.List;
 public interface DeployScheduleMapper {
     DeployScheduleVo getScheduleById(Long id);
 
+    DeployScheduleVo getScheduleByUuid(String uuid);
+
 //    DeployScheduleVo getPipelineScheduleById(Long id);
 
     int checkScheduleNameIsExists(DeployScheduleVo vo);
