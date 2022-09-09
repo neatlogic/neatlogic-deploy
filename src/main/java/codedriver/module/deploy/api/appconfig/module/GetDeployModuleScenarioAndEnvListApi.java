@@ -3,7 +3,7 @@
  * 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
  */
 
-package codedriver.module.deploy.api.job;
+package codedriver.module.deploy.api.appconfig.module;
 
 import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.auth.core.AuthAction;
@@ -27,19 +27,19 @@ import java.util.List;
 @Service
 @AuthAction(action = DEPLOY_BASE.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
-public class GetDeployCiJobCreateInfoApi extends PrivateApiComponentBase {
+public class GetDeployModuleScenarioAndEnvListApi extends PrivateApiComponentBase {
 
     @Resource
     DeployAppConfigMapper deployAppConfigMapper;
 
     @Override
     public String getToken() {
-        return "/deploy/ci/job/create/info/get";
+        return "/deploy/module/scenarioandenvlist/get";
     }
 
     @Override
     public String getName() {
-        return "获取创建发布CI作业初始化信息";
+        return "获取应用模块的场景与环境列表";
     }
 
     @Override
@@ -53,7 +53,7 @@ public class GetDeployCiJobCreateInfoApi extends PrivateApiComponentBase {
     })
     @Output({
     })
-    @Description(desc = "获取创建发布CI作业初始化信息")
+    @Description(desc = "获取应用模块的场景与环境列表")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         JSONObject result = new JSONObject();
