@@ -50,7 +50,7 @@ public interface DeployAppConfigMapper {
 
     List<DeployAppConfigVo> getAppConfigListByAppSystemId(Long appSystemId);
 
-    List<DeployAppConfigVo> getAppConfigListByAppSystemIdAndAppModuleId(@Param("appSystemId") Long appSystemId, @Param("appModuleId") Long appModuleId);
+    List<DeployAppConfigVo> getAppConfigList(DeployAppConfigVo configVo);
 
     DeployAppConfigVo getAppConfigDraft(DeployAppConfigVo deployAppConfigDraftVo);
 
