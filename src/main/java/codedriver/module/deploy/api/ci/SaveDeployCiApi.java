@@ -68,6 +68,7 @@ public class SaveDeployCiApi extends PrivateApiComponentBase {
     @Input({
             @Param(name = "id", desc = "id", type = ApiParamType.LONG),
             @Param(name = "name", desc = "名称", rule = RegexUtils.NAME, maxLength = 50, type = ApiParamType.REGEX, isRequired = true),
+            @Param(name = "isActive", desc = "是否激活", type = ApiParamType.ENUM, rule = "0,1", isRequired = true),
             @Param(name = "appSystemId", desc = "应用ID", type = ApiParamType.LONG, isRequired = true),
             @Param(name = "appModuleId", desc = "模块ID", type = ApiParamType.LONG, isRequired = true),
             @Param(name = "repoType", desc = "仓库类型", member = DeployCiRepoType.class, type = ApiParamType.ENUM, isRequired = true),
