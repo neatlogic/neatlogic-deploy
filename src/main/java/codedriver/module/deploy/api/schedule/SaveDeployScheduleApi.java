@@ -8,9 +8,15 @@ package codedriver.module.deploy.api.schedule;
 import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.auth.core.AuthAction;
+import codedriver.framework.autoexec.crossover.IAutoexecScenarioCrossoverMapper;
+import codedriver.framework.autoexec.dto.scenario.AutoexecScenarioVo;
+import codedriver.framework.autoexec.exception.AutoexecScenarioIsNotFoundException;
 import codedriver.framework.cmdb.crossover.IAppSystemMapper;
+import codedriver.framework.cmdb.crossover.IResourceCrossoverMapper;
+import codedriver.framework.cmdb.dto.resourcecenter.ResourceVo;
 import codedriver.framework.cmdb.dto.resourcecenter.entity.AppModuleVo;
 import codedriver.framework.cmdb.dto.resourcecenter.entity.AppSystemVo;
+import codedriver.framework.cmdb.exception.resourcecenter.AppEnvNotFoundException;
 import codedriver.framework.cmdb.exception.resourcecenter.AppModuleNotFoundException;
 import codedriver.framework.cmdb.exception.resourcecenter.AppSystemNotFoundException;
 import codedriver.framework.common.constvalue.ApiParamType;
@@ -18,11 +24,15 @@ import codedriver.framework.crossover.CrossoverServiceFactory;
 import codedriver.framework.deploy.auth.DEPLOY_BASE;
 import codedriver.framework.deploy.constvalue.PipelineType;
 import codedriver.framework.deploy.constvalue.ScheduleType;
+import codedriver.framework.deploy.dto.job.DeployJobModuleVo;
+import codedriver.framework.deploy.dto.schedule.DeployScheduleConfigVo;
 import codedriver.framework.deploy.dto.schedule.DeployScheduleVo;
+import codedriver.framework.deploy.dto.version.DeploySystemModuleVersionVo;
 import codedriver.framework.deploy.exception.DeployPipelineNotFoundException;
 import codedriver.framework.deploy.exception.DeployScheduleNameRepeatException;
 import codedriver.framework.deploy.exception.DeployScheduleNotFoundException;
 import codedriver.framework.dto.FieldValidResultVo;
+import codedriver.framework.exception.type.ParamNotExistsException;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.IValid;
@@ -36,12 +46,14 @@ import codedriver.module.deploy.dao.mapper.DeployScheduleMapper;
 import codedriver.module.deploy.dao.mapper.PipelineMapper;
 import codedriver.module.deploy.schedule.plugin.DeployJobScheduleJob;
 import com.alibaba.fastjson.JSONObject;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.quartz.CronExpression;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.List;
 
 @Service
 @AuthAction(action = DEPLOY_BASE.class)
@@ -78,7 +90,7 @@ public class SaveDeployScheduleApi extends PrivateApiComponentBase {
             @Param(name = "endTime", type = ApiParamType.LONG, desc = "结束时间"),
             @Param(name = "cron", type = ApiParamType.STRING, isRequired = true, desc = "corn表达式"),
             @Param(name = "isActive", type = ApiParamType.ENUM, isRequired = true, rule = "0,1", desc = "是否激活(0:禁用，1：激活)"),
-            @Param(name = "config", type = ApiParamType.JSONOBJECT, desc = "执行配置信息"),
+            @Param(name = "config", type = ApiParamType.JSONOBJECT, isRequired = true, desc = "执行配置信息"),
             @Param(name = "type", type = ApiParamType.ENUM, member = ScheduleType.class, isRequired = true, desc = "作业类型"),
             @Param(name = "appSystemId", type = ApiParamType.LONG, desc = "应用id"),
             @Param(name = "appModuleId", type = ApiParamType.LONG, desc = "模块id"),
@@ -117,6 +129,47 @@ public class SaveDeployScheduleApi extends PrivateApiComponentBase {
             if (appModuleVo == null) {
                 throw new AppModuleNotFoundException(scheduleVo.getAppModuleId());
             }
+            DeployScheduleConfigVo config = scheduleVo.getConfig();
+            Long scenarioId = config.getScenarioId();
+            if (scenarioId == null) {
+                throw new ParamNotExistsException("场景ID（config.scenarioId）");
+            }
+            IAutoexecScenarioCrossoverMapper autoexecScenarioCrossoverMapper = CrossoverServiceFactory.getApi(IAutoexecScenarioCrossoverMapper.class);
+            AutoexecScenarioVo autoexecScenarioVo = autoexecScenarioCrossoverMapper.getScenarioById(scenarioId);
+            if (autoexecScenarioVo == null) {
+                throw new AutoexecScenarioIsNotFoundException(scenarioId);
+            }
+            Long envId = config.getEnvId();
+            if (envId == null) {
+                throw new ParamNotExistsException("环境ID（config.envId）");
+            }
+            IResourceCrossoverMapper resourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
+            ResourceVo resourceVo = resourceCrossoverMapper.getAppEnvById(envId, schemaName);
+            if (resourceVo == null) {
+                throw new AppEnvNotFoundException(envId);
+            }
+            Integer roundCount = config.getRoundCount();
+            if (roundCount == null) {
+                throw new ParamNotExistsException("分配数量（config.roundCount）");
+            }
+            List<DeployJobModuleVo> moduleList = config.getModuleList();
+            if (CollectionUtils.isEmpty(moduleList)) {
+                throw new ParamNotExistsException("模块版本列表（config.moduleList）");
+            }
+            for (DeployJobModuleVo deployJobModuleVo : moduleList) {
+                String version = deployJobModuleVo.getVersion();
+                if (StringUtils.isBlank(version)) {
+                    throw new ParamNotExistsException("模块版本（config.moduleList.version）");
+                }
+                Long appModuleId = deployJobModuleVo.getId();
+                if (appModuleId == null) {
+                    throw new ParamNotExistsException("模块ID（config.moduleList.id）");
+                }
+                AppModuleVo appModule = appSystemMapper.getAppModuleById(appModuleId, schemaName);
+                if (appModule == null) {
+                    throw new AppModuleNotFoundException(appModuleId);
+                }
+            }
         } else if (type.equals(ScheduleType.PIPELINE.getValue())) {
             String pipelineType = scheduleVo.getPipelineType();
             if (pipelineType.equals(PipelineType.APPSYSTEM.getValue())) {
@@ -125,6 +178,33 @@ public class SaveDeployScheduleApi extends PrivateApiComponentBase {
                 String name = pipelineMapper.getPipelineNameById(scheduleVo.getPipelineId());
                 if (StringUtils.isBlank(name)) {
                     throw new DeployPipelineNotFoundException(scheduleVo.getPipelineId());
+                }
+            }
+            DeployScheduleConfigVo config = scheduleVo.getConfig();
+            List<DeploySystemModuleVersionVo> deploySystemModuleVersionList = config.getAppSystemModuleVersionList();
+            if (CollectionUtils.isEmpty(deploySystemModuleVersionList)) {
+                throw new ParamNotExistsException("应用模块环境（场景）版本列表（config.deploySystemModuleVersionList）");
+            }
+            for (DeploySystemModuleVersionVo deploySystemModuleVersionVo : deploySystemModuleVersionList) {
+                Long appSystemId = deploySystemModuleVersionVo.getAppSystemId();
+                if (appSystemId == null) {
+                    throw new ParamNotExistsException("模块ID（config.deploySystemModuleVersionList.appSystemId）");
+                }
+                AppSystemVo appSystem = appSystemMapper.getAppSystemById(appSystemId, schemaName);
+                if (appSystem == null) {
+                    throw new AppSystemNotFoundException(appSystemId);
+                }
+                Long appModuleId = deploySystemModuleVersionVo.getAppModuleId();
+                if (appModuleId == null) {
+                    throw new ParamNotExistsException("应用ID（config.deploySystemModuleVersionList.appModuleId）");
+                }
+                AppModuleVo appModule = appSystemMapper.getAppModuleById(appModuleId, schemaName);
+                if (appModule == null) {
+                    throw new AppModuleNotFoundException(appModuleId);
+                }
+                Long versionId = deploySystemModuleVersionVo.getVersionId();
+                if (versionId == null) {
+                    throw new ParamNotExistsException("模块版本（config.deploySystemModuleVersionList.versionId）");
                 }
             }
         }

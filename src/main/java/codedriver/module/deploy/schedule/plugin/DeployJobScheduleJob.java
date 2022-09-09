@@ -6,10 +6,15 @@
 package codedriver.module.deploy.schedule.plugin;
 
 import codedriver.framework.asynchronization.threadlocal.TenantContext;
+import codedriver.framework.deploy.constvalue.PipelineType;
+import codedriver.framework.deploy.constvalue.ScheduleType;
+import codedriver.framework.deploy.dto.job.DeployJobVo;
+import codedriver.framework.deploy.dto.schedule.DeployScheduleConfigVo;
 import codedriver.framework.deploy.dto.schedule.DeployScheduleVo;
 import codedriver.framework.scheduler.core.JobBase;
 import codedriver.framework.scheduler.dto.JobObject;
 import codedriver.module.deploy.dao.mapper.DeployScheduleMapper;
+import codedriver.module.deploy.service.DeployJobService;
 import org.quartz.DisallowConcurrentExecution;
 import org.quartz.JobExecutionContext;
 import org.springframework.stereotype.Component;
@@ -23,6 +28,8 @@ public class DeployJobScheduleJob  extends JobBase {
 
     @Resource
     private DeployScheduleMapper deployScheduleMapper;
+    @Resource
+    private DeployJobService deployJobService;
 
     @Override
     public String getGroupName() {
@@ -76,6 +83,31 @@ public class DeployJobScheduleJob  extends JobBase {
         if (scheduleVo == null) {
             schedulerManager.unloadJob(jobObject);
         }
-        // TODO
+        String type = scheduleVo.getType();
+        if (type.equals(ScheduleType.GENERAL.getValue())) {
+            DeployJobVo deployJobVo = convertDeployScheduleVoToDeployJobVo(scheduleVo);
+            deployJobService.initDeployParam(deployJobVo, false);
+            deployJobService.createJob(deployJobVo);
+        } else if(type.equals(ScheduleType.PIPELINE.getValue())) {
+            String pipelineType = scheduleVo.getPipelineType();
+            if (pipelineType.equals(PipelineType.APPSYSTEM.getValue())) {
+
+            } else if (pipelineType.equals(PipelineType.GLOBAL.getValue())) {
+
+            }
+        }
+    }
+
+    private DeployJobVo convertDeployScheduleVoToDeployJobVo(DeployScheduleVo scheduleVo) {
+        DeployJobVo deployJobVo = new DeployJobVo();
+        deployJobVo.setId(scheduleVo.getId());
+        DeployScheduleConfigVo config = scheduleVo.getConfig();
+        deployJobVo.setScenarioId(config.getScenarioId());
+        deployJobVo.setModuleList(config.getModuleList());
+        deployJobVo.setEnvId(config.getEnvId());
+        deployJobVo.setParam(config.getParam());
+        deployJobVo.setSource("定时作业");
+        deployJobVo.setRoundCount(config.getRoundCount());
+        return deployJobVo;
     }
 }
