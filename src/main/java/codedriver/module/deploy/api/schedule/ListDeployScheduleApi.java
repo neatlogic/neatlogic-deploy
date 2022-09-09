@@ -5,17 +5,26 @@
 
 package codedriver.module.deploy.api.schedule;
 
+import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.auth.core.AuthAction;
+import codedriver.framework.cmdb.crossover.IAppSystemMapper;
+import codedriver.framework.cmdb.dto.resourcecenter.entity.AppModuleVo;
+import codedriver.framework.cmdb.dto.resourcecenter.entity.AppSystemVo;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.dto.BasePageVo;
+import codedriver.framework.crossover.CrossoverServiceFactory;
 import codedriver.framework.deploy.auth.DEPLOY_BASE;
+import codedriver.framework.deploy.constvalue.PipelineType;
+import codedriver.framework.deploy.constvalue.ScheduleType;
 import codedriver.framework.deploy.dto.schedule.DeployScheduleVo;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.framework.util.TableResultUtil;
 import codedriver.module.deploy.dao.mapper.DeployScheduleMapper;
+import codedriver.module.deploy.dao.mapper.PipelineMapper;
 import com.alibaba.fastjson.JSONObject;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -29,6 +38,8 @@ public class ListDeployScheduleApi extends PrivateApiComponentBase {
 
     @Resource
     private DeployScheduleMapper deployScheduleMapper;
+    @Resource
+    private PipelineMapper pipelineMapper;
 
     @Override
     public String getToken() {
@@ -66,7 +77,39 @@ public class ListDeployScheduleApi extends PrivateApiComponentBase {
         if (rowNum > 0) {
             searchVo.setRowNum(rowNum);
             if (searchVo.getCurrentPage() <= searchVo.getPageCount()) {
+                String schemaName = TenantContext.get().getDataDbName();
+                IAppSystemMapper appSystemMapper = CrossoverServiceFactory.getApi(IAppSystemMapper.class);
                 tbodyList = deployScheduleMapper.getScheduleList(searchVo);
+                for (DeployScheduleVo scheduleVo : tbodyList) {
+                    String type = scheduleVo.getType();
+                    if (type.equals(ScheduleType.GENERAL.getValue())) {
+                        AppSystemVo appSystemVo = appSystemMapper.getAppSystemById(scheduleVo.getAppSystemId(), schemaName);
+                        if (appSystemVo != null) {
+                            scheduleVo.setAppSystemName(appSystemVo.getName());
+                            scheduleVo.setAppSystemAbbrName(appSystemVo.getAbbrName());
+                        }
+                        AppModuleVo appModuleVo = appSystemMapper.getAppModuleById(scheduleVo.getAppModuleId(), schemaName);
+                        if (appModuleVo != null) {
+                            scheduleVo.setAppModuleName(appModuleVo.getName());
+                            scheduleVo.setAppModuleAbbrName(appModuleVo.getAbbrName());
+                        }
+                    } else if(type.equals(ScheduleType.PIPELINE.getValue())) {
+                        String pipelineType = scheduleVo.getPipelineType();
+                        if (pipelineType.equals(PipelineType.APPSYSTEM.getValue())) {
+                            // TODO 应用流水线功能还没实现
+//                            AppSystemVo appSystemVo = appSystemMapper.getAppSystemById(scheduleVo.getAppSystemId(), schemaName);
+//                            if (appSystemVo != null) {
+//                                scheduleVo.setAppSystemName(appSystemVo.getName());
+//                                scheduleVo.setAppSystemAbbrName(appSystemVo.getAbbrName());
+//                            }
+                        } else if (pipelineType.equals(PipelineType.GLOBAL.getValue())) {
+                            String name = pipelineMapper.getPipelineNameById(scheduleVo.getPipelineId());
+                            if (StringUtils.isNotBlank(name)) {
+                                scheduleVo.setPipelineName(name);
+                            }
+                        }
+                    }
+                }
             }
         }
 //        int scheduleCount = deployScheduleMapper.getScheduleCount(searchVo);

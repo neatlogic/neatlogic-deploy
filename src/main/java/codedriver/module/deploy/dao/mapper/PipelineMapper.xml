@@ -157,6 +157,10 @@
         order by dpl.sort, dpg.sort, dpj.sort
     </select>
 
+    <select id="getPipelineNameById" parameterType="java.lang.Long" resultType="java.lang.String">
+        SELECT `name` FROM deploy_pipeline WHERE `id` = #{value}
+    </select>
+
     <sql id="searchPipelineCondition">
         <where>
             <if test="keyword != null and keyword != ''">

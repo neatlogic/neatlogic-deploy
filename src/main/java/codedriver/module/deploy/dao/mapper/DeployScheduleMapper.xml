@@ -23,7 +23,9 @@
             `lcd`,
             `lcu`,
             `app_system_id` AS appSystemId,
-            `app_module_id` AS appModuleId
+            `app_module_id` AS appModuleId,
+            `pipeline_id` AS pipelineId,
+            `pipeline_type` AS pipelineType
         FROM `deploy_schedule`
         WHERE `id` = #{value}
     </select>
@@ -93,7 +95,9 @@
             `lcd`,
             `lcu`,
             `app_system_id` AS appSystemId,
-            `app_module_id` AS appModuleId
+            `app_module_id` AS appModuleId,
+            `pipeline_id` AS pipelineId,
+            `pipeline_type` AS pipelineType
         FROM `deploy_schedule`
         <where>
             <if test="keyword != null and keyword != ''">
@@ -127,7 +131,9 @@
         `lcd`,
         `lcu`,
         `app_system_id` AS appSystemId,
-        `app_module_id` AS appModuleId
+        `app_module_id` AS appModuleId,
+        `pipeline_id` AS pipelineId,
+        `pipeline_type` AS pipelineType
         FROM `deploy_schedule`
         WHERE `id` IN
         <foreach collection="list" item="id" open="(" separator="," close=")">
