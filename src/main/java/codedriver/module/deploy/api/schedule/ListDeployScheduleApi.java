@@ -94,18 +94,16 @@ public class ListDeployScheduleApi extends PrivateApiComponentBase {
                             scheduleVo.setAppModuleAbbrName(appModuleVo.getAbbrName());
                         }
                     } else if(type.equals(ScheduleType.PIPELINE.getValue())) {
+                        String name = pipelineMapper.getPipelineNameById(scheduleVo.getPipelineId());
+                        if (StringUtils.isNotBlank(name)) {
+                            scheduleVo.setPipelineName(name);
+                        }
                         String pipelineType = scheduleVo.getPipelineType();
                         if (pipelineType.equals(PipelineType.APPSYSTEM.getValue())) {
-                            // TODO 应用流水线功能还没实现
-//                            AppSystemVo appSystemVo = appSystemMapper.getAppSystemById(scheduleVo.getAppSystemId(), schemaName);
-//                            if (appSystemVo != null) {
-//                                scheduleVo.setAppSystemName(appSystemVo.getName());
-//                                scheduleVo.setAppSystemAbbrName(appSystemVo.getAbbrName());
-//                            }
-                        } else if (pipelineType.equals(PipelineType.GLOBAL.getValue())) {
-                            String name = pipelineMapper.getPipelineNameById(scheduleVo.getPipelineId());
-                            if (StringUtils.isNotBlank(name)) {
-                                scheduleVo.setPipelineName(name);
+                            AppSystemVo appSystemVo = appSystemMapper.getAppSystemById(scheduleVo.getAppSystemId(), schemaName);
+                            if (appSystemVo != null) {
+                                scheduleVo.setAppSystemName(appSystemVo.getName());
+                                scheduleVo.setAppSystemAbbrName(appSystemVo.getAbbrName());
                             }
                         }
                     }
