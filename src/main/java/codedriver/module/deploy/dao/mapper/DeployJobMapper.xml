@@ -518,14 +518,6 @@
             <result column="reviewer" property="reviewer"/>
             <result column="reviewStatus" property="reviewStatus"/>
             <result column="reviewTime" property="reviewTime"/>
-            <result column="appSystemId" property="appSystemId"/>
-            <result column="appSystemName" property="appSystemName"/>
-            <result column="appSystemAbbrName" property="appSystemAbbrName"/>
-            <result column="appModuleId" property="appModuleId"/>
-            <result column="appModuleName" property="appModuleName"/>
-            <result column="appModuleAbbrName" property="appModuleAbbrName"/>
-            <result column="envId" property="envId"/>
-            <result column="envName" property="envName"/>
             <result column="version" property="version"/>
             <result column="scenarioName" property="scenarioName"/>
         </collection>
@@ -552,22 +544,11 @@
         ajj.`reviewer` as reviewer,
         ajj.`review_status` as reviewStatus,
         ajj.`review_time` as reviewTime,
-        dj.`app_system_id` as appSystemId,
-        saa.`name` as appSystemName,
-        saa.`abbr_name` as appSystemAbbrName,
-        dj.`app_module_id` as appModuleId,
-        saa.`app_module_name` as appModuleName,
-        saa.`app_module_abbr_name` as appModuleAbbrName,
-        dj.`env_id` as envId,
-        d.`name` as envName,
         dj.`version` as version,
-        saa.`name` as scenarioName
+        e.`name` as scenarioName
         FROM `autoexec_job` aj
         join autoexec_job ajj on ajj.parent_id = aj.id
         join deploy_job dj ON dj.id = ajj.id
-        left join @{DATA_SCHEMA}.scence_appsystem_appmodule saa on saa.id = dj.app_system_id AND saa.app_module_id =
-        dj.app_module_id
-        left join cmdb_cientity d ON dj.env_id = d.id
         left join autoexec_scenario e on dj.scenario_id = e.id
         where aj.id in
         <foreach collection="list" item="id" open="(" separator="," close=")">
