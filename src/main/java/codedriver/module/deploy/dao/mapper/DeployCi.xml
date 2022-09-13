@@ -93,6 +93,10 @@
         LIMIT #{startNum}, #{pageSize}
     </select>
 
+    <update id="updateDeployActiveStatus">
+        update deploy_ci set is_active = #{isActive} where id = #{id}
+    </update>
+
     <insert id="insertDeployCi" parameterType="codedriver.framework.deploy.dto.ci.DeployCiVo">
         insert into deploy_ci (
             `id`,
