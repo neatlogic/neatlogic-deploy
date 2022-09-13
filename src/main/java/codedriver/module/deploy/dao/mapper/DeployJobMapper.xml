@@ -51,6 +51,7 @@
     </select>
 
     <sql id="searchJobSql">
+        left join autoexec_job ajj on ajj.parent_id = aj.id
         <if test="(typeIdList != null and typeIdList.size() > 0) or (combopName != null and combopName != '' )">
             LEFT JOIN `autoexec_combop` ac ON aj.`operation_id` = ac.`id`
         </if>
@@ -78,13 +79,18 @@
                 <foreach collection="excludeIdList" item="item" open="(" close=")" separator=",">#{item}</foreach>
             </if>
             <if test="keyword != null and keyword != ''">
-                and (aj.name like concat('%', #{keyword}, '%') OR aj.id = #{keyword})
+                and (aj.name like concat('%', #{keyword}, '%') OR aj.id = #{keyword} OR ajj.name like concat('%',
+                #{keyword}, '%'))
             </if>
             <if test="operationId != null">
                 and aj.operation_id = #{operationId}
             </if>
             <if test="statusList != null and statusList.size() > 0 ">
                 and aj.`status` in
+                <foreach collection="statusList" item="status" open="(" close=")" separator=",">
+                    #{status}
+                </foreach>
+                or ajj.`status` in
                 <foreach collection="statusList" item="status" open="(" close=")" separator=",">
                     #{status}
                 </foreach>
@@ -113,10 +119,14 @@
                 </foreach>
             </if>
             <if test="execUserList != null and execUserList.size() > 0 ">
-                and aj.`exec_user` in
+                and (aj.`exec_user` in
                 <foreach collection="execUserList" item="execUser" open="(" close=")" separator=",">
                     #{execUser}
                 </foreach>
+                or ajj.`exec_user` in
+                <foreach collection="execUserList" item="execUser" open="(" close=")" separator=",">
+                    #{execUser}
+                </foreach>)
             </if>
             <if test="idList != null and idList.size() > 0">
                 and aj.`id` in
@@ -126,26 +136,32 @@
             </if>
             <if test="startTimeRange != null">
                 <if test="startTimeRange.size() > 0">
-                    and aj.start_time &gt;= STR_TO_DATE(#{startTimeRange[0]},'%Y-%m-%d')
+                    and (aj.start_time &gt;= STR_TO_DATE(#{startTimeRange[0]},'%Y-%m-%d')
+                    or ajj.start_time &gt;= STR_TO_DATE(#{startTimeRange[0]},'%Y-%m-%d'))
                 </if>
                 <if test="startTimeRange.size() > 1">
-                    and aj.start_time &lt;= STR_TO_DATE(#{startTimeRange[1]},'%Y-%m-%d')
+                    and (aj.start_time &lt;= STR_TO_DATE(#{startTimeRange[1]},'%Y-%m-%d')
+                    or ajj.start_time &lt;= STR_TO_DATE(#{startTimeRange[1]},'%Y-%m-%d'))
                 </if>
             </if>
             <if test="endTimeRange != null">
                 <if test="endTimeRange.size() > 0">
-                    and aj.end_time &gt;= STR_TO_DATE(#{endTimeRange[0]},'%Y-%m-%d')
+                    and (aj.end_time &gt;= STR_TO_DATE(#{endTimeRange[0]},'%Y-%m-%d')
+                    or ajj.end_time &gt;= STR_TO_DATE(#{endTimeRange[0]},'%Y-%m-%d'))
                 </if>
                 <if test="endTimeRange.size() > 1">
-                    and aj.end_time &lt;= STR_TO_DATE(#{endTimeRange[1]},'%Y-%m-%d')
+                    and (aj.end_time &lt;= STR_TO_DATE(#{endTimeRange[1]},'%Y-%m-%d')
+                    or ajj.end_time &lt;= STR_TO_DATE(#{endTimeRange[1]},'%Y-%m-%d'))
                 </if>
             </if>
             <if test="planStartTimeRange != null">
                 <if test="planStartTimeRange.size() > 0">
-                    and aj.plan_start_time &gt;= STR_TO_DATE(#{planStartTimeRange[0]},'%Y-%m-%d')
+                    and (aj.plan_start_time &gt;= STR_TO_DATE(#{planStartTimeRange[0]},'%Y-%m-%d')
+                    or ajj.plan_start_time &gt;= STR_TO_DATE(#{planStartTimeRange[0]},'%Y-%m-%d'))
                 </if>
                 <if test="planStartTimeRange.size() > 1">
-                    and aj.plan_start_time &lt;= STR_TO_DATE(#{planStartTimeRange[1]},'%Y-%m-%d')
+                    and (aj.plan_start_time &lt;= STR_TO_DATE(#{planStartTimeRange[1]},'%Y-%m-%d')
+                    or ajj.plan_start_time &lt;= STR_TO_DATE(#{planStartTimeRange[1]},'%Y-%m-%d'))
                 </if>
             </if>
             <include refid="codedriver.module.deploy.dao.mapper.DeployAppConfigMapper.checkDeployAuthority"/>
@@ -473,6 +489,86 @@
         from deploy_job_auth
         where auth_uuid = #{userUuid}
           and job_id = #{jobId}
+    </select>
+
+    <resultMap id="BatchDeployJobListIncludeChildrenJobListMap" type="codedriver.framework.deploy.dto.job.DeployJobVo">
+        <id column="parentId" property="id"/>
+        <collection property="children" ofType="codedriver.framework.deploy.dto.job.DeployJobVo">
+            <id column="id" property="id"/>
+            <result column="name" property="name"/>
+            <result column="status" property="status"/>
+            <result column="errorMsg" property="errorMsg"/>
+            <result column="planStartTime" property="planStartTime"/>
+            <result column="startTime" property="startTime"/>
+            <result column="endTime" property="endTime"/>
+            <result column="operationId" property="operationId"/>
+            <result column="operationType" property="operationType"/>
+            <result column="execUser" property="execUser"/>
+            <result column="execUserType" property="execUserType"/>
+            <result column="source" property="source"/>
+            <result column="roundCount" property="roundCount"/>
+            <result column="source" property="source"/>
+            <result column="source" property="source"/>
+            <result column="triggerType" property="triggerType"/>
+            <result column="parentId" property="parentId"/>
+            <result column="reviewer" property="reviewer"/>
+            <result column="reviewStatus" property="reviewStatus"/>
+            <result column="reviewTime" property="reviewTime"/>
+            <result column="appSystemId" property="appSystemId"/>
+            <result column="appSystemName" property="appSystemName"/>
+            <result column="appSystemAbbrName" property="appSystemAbbrName"/>
+            <result column="appModuleId" property="appModuleId"/>
+            <result column="appModuleName" property="appModuleName"/>
+            <result column="appModuleAbbrName" property="appModuleAbbrName"/>
+            <result column="envId" property="envId"/>
+            <result column="envName" property="envName"/>
+            <result column="version" property="version"/>
+            <result column="scenarioName" property="scenarioName"/>
+        </collection>
+    </resultMap>
+
+    <select id="getBatchDeployJobListIncludeChildrenJobListByIdList"
+            resultMap="BatchDeployJobListIncludeChildrenJobListMap">
+        SELECT aj.`id` as parentId,
+        ajj.`id` as id,
+        ajj.`name` as name,
+        ajj.`status` as status,
+        ajj.`error_msg` as errorMsg,
+        ajj.`plan_start_time` as planStartTime,
+        ajj.`start_time` as startTime,
+        ajj.`end_time` as endTime,
+        ajj.`operation_id` as operationId,
+        ajj.`operation_type` as operationType,
+        ajj.`exec_user` as execUser,
+        ajj.`exec_user_type` as execUserType,
+        ajj.`source` as source,
+        ajj.`round_count` as roundCount,
+        ajj.`trigger_type` as triggerType,
+        ajj.`parent_id` as parentId,
+        ajj.`reviewer` as reviewer,
+        ajj.`review_status` as reviewStatus,
+        ajj.`review_time` as reviewTime,
+        dj.`app_system_id` as appSystemId,
+        saa.`name` as appSystemName,
+        saa.`abbr_name` as appSystemAbbrName,
+        dj.`app_module_id` as appModuleId,
+        saa.`app_module_name` as appModuleName,
+        saa.`app_module_abbr_name` as appModuleAbbrName,
+        dj.`env_id` as envId,
+        d.`name` as envName,
+        dj.`version` as version,
+        saa.`name` as scenarioName
+        FROM `autoexec_job` aj
+        join autoexec_job ajj on ajj.parent_id = aj.id
+        join deploy_job dj ON dj.id = ajj.id
+        left join @{DATA_SCHEMA}.scence_appsystem_appmodule saa on saa.id = dj.app_system_id AND saa.app_module_id =
+        dj.app_module_id
+        left join cmdb_cientity d ON dj.env_id = d.id
+        left join autoexec_scenario e on dj.scenario_id = e.id
+        where aj.id in
+        <foreach collection="list" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
     </select>
 
     <insert id="insertDeployJob">

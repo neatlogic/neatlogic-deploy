@@ -71,6 +71,7 @@ public class DeployJobServiceImpl implements DeployJobService {
 
     @Override
     public List<DeployJobVo> searchDeployJob(DeployJobVo deployJobVo) {
+        List<DeployJobVo> returnList = new ArrayList<>();
         if (CollectionUtils.isEmpty(deployJobVo.getIdList())) {
             int rowNum = deployJobMapper.searchDeployJobCount(deployJobVo);
             deployJobVo.setRowNum(rowNum);
@@ -78,9 +79,26 @@ public class DeployJobServiceImpl implements DeployJobService {
             deployJobVo.setIdList(idList);
         }
         if (CollectionUtils.isNotEmpty(deployJobVo.getIdList())) {
-            return deployJobMapper.searchDeployJob(deployJobVo);
+            returnList = deployJobMapper.searchDeployJob(deployJobVo);
         }
-        return null;
+
+        //补充子作业信息
+        /*经产品核实：含有keyword查询时，匹配到的批量作业需要一次性返回子作业信息*/
+        if (StringUtils.isNotBlank(deployJobVo.getKeyword()) && CollectionUtils.isNotEmpty(returnList)) {
+            List<DeployJobVo> batchJobList = returnList.stream().filter(e -> StringUtils.equals(JobSource.BATCHDEPLOY.getValue(), e.getSource())).collect(Collectors.toList());
+            if (CollectionUtils.isNotEmpty(batchJobList)) {
+                List<DeployJobVo> batchDeployJobListIncludeChildrenJobList = deployJobMapper.getBatchDeployJobListIncludeChildrenJobListByIdList(batchJobList.stream().map(DeployJobVo::getId).collect(Collectors.toList()));
+                if (CollectionUtils.isNotEmpty(batchDeployJobListIncludeChildrenJobList)) {
+                    Map<Long, List<DeployJobVo>> batchJobChildrenListMap = batchDeployJobListIncludeChildrenJobList.stream().collect(Collectors.toMap(DeployJobVo::getId, DeployJobVo::getChildren));
+                    for (DeployJobVo jobVo : returnList) {
+                        if (StringUtils.equals(jobVo.getSource(), JobSource.BATCHDEPLOY.getValue())) {
+                            jobVo.setChildren(batchJobChildrenListMap.get(jobVo.getId()));
+                        }
+                    }
+                }
+            }
+        }
+        return returnList;
     }
 
     @Override
