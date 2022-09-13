@@ -9,10 +9,14 @@ import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.deploy.auth.PIPELINE_MODIFY;
+import codedriver.framework.deploy.constvalue.PipelineType;
 import codedriver.framework.deploy.dto.pipeline.*;
 import codedriver.framework.deploy.exception.DeployPipelineNotFoundException;
+import codedriver.framework.deploy.exception.DeployScheduleNameRepeatException;
+import codedriver.framework.dto.FieldValidResultVo;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
+import codedriver.framework.restful.core.IValid;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.deploy.dao.mapper.PipelineMapper;
 import com.alibaba.fastjson.JSONObject;
@@ -45,6 +49,8 @@ public class SavePipelineApi extends PrivateApiComponentBase {
 
     @Input({@Param(name = "id", type = ApiParamType.LONG, desc = "id，不提供代表添加新流水线"),
             @Param(name = "name", type = ApiParamType.STRING, isRequired = true, desc = "作业名称"),
+            @Param(name = "type", type = ApiParamType.ENUM, member = PipelineType.class, isRequired = true, desc = "类型"),
+            @Param(name = "appSystemId", type = ApiParamType.LONG, desc = "应用ID"),
             @Param(name = "laneList", type = ApiParamType.JSONARRAY, desc = "通道列表"),
             @Param(name = "authList", type = ApiParamType.JSONARRAY, desc = "授权列表")})
     @ResubmitInterval(3)
@@ -106,6 +112,16 @@ public class SavePipelineApi extends PrivateApiComponentBase {
             }
         }
         return pipelineMapper.getPipelineById(pipelineVo.getId());
+    }
+
+    public IValid name() {
+        return value -> {
+            PipelineVo vo = JSONObject.toJavaObject(value, PipelineVo.class);
+            if (pipelineMapper.checkPipelineNameIsExists(vo) > 0) {
+                return new FieldValidResultVo(new DeployScheduleNameRepeatException(vo.getName()));
+            }
+            return new FieldValidResultVo();
+        };
     }
 
 }

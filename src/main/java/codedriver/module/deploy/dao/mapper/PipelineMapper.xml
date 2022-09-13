@@ -80,6 +80,8 @@
         <id column="pipelineId" property="id"/>
         <result column="pipelineName" property="name"/>
         <result column="pipelineIsActive" property="isActive"/>
+        <result column="pipelineType" property="type"/>
+        <result column="pipelineAppSystemId" property="appSystemId"/>
         <result column="pipelineFcd" property="fcd"/>
         <result column="pipelineFcu" property="fcu"/>
         <result column="pipelineLcd" property="lcd"/>
@@ -121,6 +123,8 @@
         SELECT dp.id             as pipelineId,
                dp.`name`         as pipelineName,
                dp.is_active      as pipelineIsActive,
+               dp.type           as pipelineType,
+               dp.app_system_id  as pipelineAppSystemId,
                dp.fcd            as pipelineFcd,
                dp.fcu            as pipelineFcu,
                dp.lcd            as pipelineLcd,
@@ -166,21 +170,40 @@
             <if test="keyword != null and keyword != ''">
                 name like CONCAT('%',#{keyword},'%')
             </if>
+            <if test="type != null and type != ''">
+                `type` = #{type}
+            </if>
+            <if test="appSystemId != null">
+                `app_system_id` = #{appSystemId}
+            </if>
         </where>
     </sql>
 
     <select id="searchPipeline" parameterType="codedriver.framework.deploy.dto.pipeline.PipelineVo"
             resultType="codedriver.framework.deploy.dto.pipeline.PipelineVo">
-        select id, name,is_active as isActive,fcd,fcu,lcd,lcu
+        select id, name,is_active as isActive,fcd,fcu,lcd,lcu, type, app_system_id as appSystemId
         from deploy_pipeline
         <include refid="searchPipelineCondition"/>
         order by lcu DESC
+        LIMIT #{startNum}, #{pageSize}
     </select>
 
     <select id="searchPipelineCount" parameterType="codedriver.framework.deploy.dto.pipeline.PipelineVo"
             resultType="int">
         select count(1) from deploy_pipeline
         <include refid="searchPipelineCondition"/>
+    </select>
+
+    <select id="checkPipelineNameIsExists" parameterType="codedriver.framework.deploy.dto.pipeline.PipelineVo" resultType="int">
+        SELECT
+               count(1)
+        FROM `deploy_pipeline`
+        WHERE `name` = #{name}
+          AND `type` = #{type}
+          <if test="appSystemId != null">
+              `app_system_id` = #{appSystemId}
+          </if>
+          AND `id` != #{id}
     </select>
 
     <update id="updatePipeline" parameterType="codedriver.framework.deploy.dto.pipeline.PipelineVo">
@@ -232,6 +255,8 @@
         INSERT INTO deploy_pipeline(`id`,
                                     `name`,
                                     `is_active`,
+                                    `type`,
+                                    `app_system_id`,
                                     `fcd`,
                                     `fcu`,
                                     `lcd`,
@@ -239,6 +264,8 @@
         VALUES (#{id},
                 #{name},
                 #{isActive},
+                #{type},
+                #{appSystemId},
                 NOW(3),
                 #{fcu},
                 NOW(3),

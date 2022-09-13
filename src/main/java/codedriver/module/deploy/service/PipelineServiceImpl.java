@@ -5,9 +5,13 @@
 
 package codedriver.module.deploy.service;
 
+import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.autoexec.dto.combop.AutoexecCombopPhaseConfigVo;
 import codedriver.framework.autoexec.dto.combop.AutoexecCombopPhaseOperationConfigVo;
 import codedriver.framework.autoexec.dto.combop.AutoexecCombopPhaseOperationVo;
+import codedriver.framework.cmdb.crossover.IAppSystemMapper;
+import codedriver.framework.cmdb.dto.resourcecenter.entity.AppSystemVo;
+import codedriver.framework.crossover.CrossoverServiceFactory;
 import codedriver.framework.dependency.core.DependencyManager;
 import codedriver.framework.deploy.dto.app.DeployAppConfigVo;
 import codedriver.framework.deploy.dto.app.DeployPipelineConfigVo;
@@ -38,7 +42,19 @@ public class PipelineServiceImpl implements PipelineService {
     public List<PipelineVo> searchPipeline(PipelineVo pipelineVo) {
         int rowNum = pipelineMapper.searchPipelineCount(pipelineVo);
         pipelineVo.setRowNum(rowNum);
-        return pipelineMapper.searchPipeline(pipelineVo);
+        List<PipelineVo> pipelineList = pipelineMapper.searchPipeline(pipelineVo);
+        String schemaName = TenantContext.get().getDataDbName();
+        IAppSystemMapper appSystemMapper = CrossoverServiceFactory.getApi(IAppSystemMapper.class);
+        for (PipelineVo pipeline : pipelineList) {
+            if (pipeline.getAppSystemId() != null) {
+                AppSystemVo appSystemVo = appSystemMapper.getAppSystemById(pipeline.getAppSystemId(), schemaName);
+                if (appSystemVo != null) {
+                    pipeline.setAppSystemName(appSystemVo.getName());
+                    pipeline.setAppSystemAbbrName(appSystemVo.getAbbrName());
+                }
+            }
+        }
+        return pipelineList;
     }
 
     @Override
