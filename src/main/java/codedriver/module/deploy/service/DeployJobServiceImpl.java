@@ -17,6 +17,7 @@ import codedriver.framework.autoexec.dto.scenario.AutoexecScenarioVo;
 import codedriver.framework.autoexec.exception.AutoexecScenarioIsNotFoundException;
 import codedriver.framework.autoexec.job.action.core.AutoexecJobActionHandlerFactory;
 import codedriver.framework.autoexec.job.action.core.IAutoexecJobActionHandler;
+import codedriver.framework.batch.BatchRunner;
 import codedriver.framework.cmdb.crossover.IAppSystemMapper;
 import codedriver.framework.cmdb.crossover.ICiEntityCrossoverMapper;
 import codedriver.framework.cmdb.crossover.IResourceCrossoverMapper;
@@ -44,6 +45,7 @@ import codedriver.module.deploy.dao.mapper.DeployAppConfigMapper;
 import codedriver.module.deploy.dao.mapper.DeployJobMapper;
 import codedriver.module.deploy.dao.mapper.DeployVersionMapper;
 import codedriver.module.deploy.schedule.plugin.DeployJobAutoFireJob;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -330,5 +332,33 @@ public class DeployJobServiceImpl implements DeployJobService {
             throw new DeployAppConfigNotFoundException(appModuleId);
         }
         return operationId;
+    }
+
+    @Override
+    public JSONArray createDeployJobFromJson(JSONObject jsonObj) {
+        JSONArray result = new JSONArray();
+        DeployJobVo deployJobParam = JSONObject.toJavaObject(jsonObj, DeployJobVo.class);
+        initDeployParam(deployJobParam, false);
+        BatchRunner<DeployJobModuleVo> runner = new BatchRunner<>();
+        runner.execute(deployJobParam.getModuleList(), 3, module -> {
+            if (module != null) {
+                try {
+                    if (jsonObj.containsKey("triggerType")) {
+                        result.add(createScheduleJob(deployJobParam));
+                    } else {
+                        result.add(createJob(deployJobParam));
+                    }
+                } catch (Exception ex) {
+                    logger.error(ex.getMessage(), ex);
+                    JSONObject resultJson = new JSONObject();
+                    resultJson.put("appSystemName", jsonObj.getString("appSystemName"));
+                    resultJson.put("appModuleName", jsonObj.getString("appModuleName"));
+                    resultJson.put("errorMsg", ex.getMessage());
+                    result.add(resultJson);
+                }
+
+            }
+        }, "DEPLOY-JOB-CREATE");
+        return result;
     }
 }

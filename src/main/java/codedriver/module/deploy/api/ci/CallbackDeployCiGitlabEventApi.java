@@ -1,9 +1,14 @@
 package codedriver.module.deploy.api.ci;
 
+import codedriver.framework.autoexec.dto.combop.AutoexecCombopScenarioVo;
+import codedriver.framework.autoexec.exception.AutoexecScenarioIsNotFoundException;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.deploy.constvalue.DeployCiActionType;
+import codedriver.framework.deploy.constvalue.DeployCiTriggerType;
+import codedriver.framework.deploy.dto.app.DeployPipelineConfigVo;
 import codedriver.framework.deploy.dto.ci.DeployCiVo;
 import codedriver.framework.deploy.dto.version.DeployVersionVo;
+import codedriver.framework.deploy.exception.DeployAppConfigNotFoundException;
 import codedriver.framework.deploy.exception.DeployCiNotFoundException;
 import codedriver.framework.restful.annotation.Description;
 import codedriver.framework.restful.annotation.Input;
@@ -12,8 +17,11 @@ import codedriver.framework.restful.annotation.Param;
 import codedriver.framework.restful.constvalue.ApiAnonymousAccessSupportEnum;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
+import codedriver.framework.util.TimeUtil;
 import codedriver.module.deploy.dao.mapper.DeployCiMapper;
 import codedriver.module.deploy.dao.mapper.DeployVersionMapper;
+import codedriver.module.deploy.service.DeployJobService;
+import codedriver.module.deploy.util.DeployPipelineConfigManager;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
@@ -21,13 +29,23 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.Date;
+import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @Service
+@Transactional
 @OperationType(type = OperationTypeEnum.OPERATE)
 public class CallbackDeployCiGitlabEventApi extends PrivateApiComponentBase {
 
@@ -38,6 +56,9 @@ public class CallbackDeployCiGitlabEventApi extends PrivateApiComponentBase {
 
     @Resource
     DeployVersionMapper deployVersionMapper;
+
+    @Resource
+    DeployJobService deployJobService;
 
     @Override
     public String getName() {
@@ -96,7 +117,63 @@ public class CallbackDeployCiGitlabEventApi extends PrivateApiComponentBase {
         DeployVersionVo deployVersion = deployVersionMapper.getDeployVersionBaseInfoBySystemIdAndModuleIdAndVersion(new DeployVersionVo(versionName, ci.getAppSystemId(), ci.getAppModuleId()));
         // todo 根据场景判断是否需要新建版本
         if (DeployCiActionType.CREATE_JOB.getValue().equals(ci.getAction())) {
-
+            Long scenarioId = ci.getConfig().getLong("scenarioId");
+            Long envId = ci.getConfig().getLong("envId");
+            DeployPipelineConfigVo deployPipelineConfigVo = DeployPipelineConfigManager.init(ci.getAppSystemId())
+                    .withAppModuleId(ci.getAppModuleId())
+                    .withEnvId(envId)
+                    .isHasBuildOrDeployTypeTool(true)
+                    .getConfig();
+            if (deployPipelineConfigVo == null) {
+                logger.error("Gitlab callback error. Deploy app config not found, ciId: {}, callback params: {}", ciId, paramObj.toJSONString());
+                throw new DeployAppConfigNotFoundException(ci.getAppSystemId());
+            }
+            List<AutoexecCombopScenarioVo> scenarioList = deployPipelineConfigVo.getScenarioList();
+            Optional<AutoexecCombopScenarioVo> scenarioOptional = scenarioList.stream().filter(o -> Objects.equals(o.getScenarioId(), scenarioId)).findFirst();
+            if (!scenarioOptional.isPresent()) {
+                logger.error("Gitlab callback error. Scenario not found, ciId: {}, callback params: {}", ciId, paramObj.toJSONString());
+                throw new AutoexecScenarioIsNotFoundException(scenarioId);
+            }
+            AutoexecCombopScenarioVo scenarioVo = scenarioOptional.get();
+            if (deployVersion == null && Objects.equals(scenarioVo.getIsHasBuildTypeTool(), 1)) {
+                deployVersion = new DeployVersionVo(versionName, ci.getAppSystemId(), ci.getAppModuleId(), 0);
+                deployVersionMapper.insertDeployVersion(deployVersion);
+            }
+            Date triggerTime = null;
+            if (StringUtils.isNotBlank(ci.getTriggerTime())) {
+                LocalTime triggerInstance = LocalTime.parse(ci.getTriggerTime(), DateTimeFormatter.ofPattern(TimeUtil.HH_MM_SS));
+                // 如果当前时间在前，则触发时间为当天；如果当前时间在后，则触发时间为第二日
+                String day;
+                if (LocalTime.now().isBefore(triggerInstance)) {
+                    day = LocalDate.now().format(DateTimeFormatter.ofPattern(TimeUtil.YYYY_MM_DD));
+                } else {
+                    day = LocalDate.now().plusDays(1L).format(DateTimeFormatter.ofPattern(TimeUtil.YYYY_MM_DD));
+                }
+                triggerTime = Date.from(LocalDateTime.parse(day + ci.getTriggerTime()
+                        , DateTimeFormatter.ofPattern(TimeUtil.YYYY_MM_DD_HH_MM_SS)).atZone(ZoneId.systemDefault()).toInstant());
+            }
+            String triggerType = ci.getTriggerType();
+            if (DeployCiTriggerType.INSTANT.getValue().equals(ci.getTriggerType())) {
+                triggerType = DeployCiTriggerType.AUTO.getValue();
+            }
+            JSONObject createJobParam = new JSONObject();
+            createJobParam.put("appSystemId", ci.getAppSystemId());
+            createJobParam.put("scenarioId", scenarioId);
+            createJobParam.put("envId", envId);
+            createJobParam.put("triggerType", triggerType);
+            createJobParam.put("planStartTime", triggerTime);
+            createJobParam.put("roundCount", ci.getConfig().getInteger("roundCount"));
+            createJobParam.put("param", ci.getConfig().getInteger("param"));
+            JSONArray moduleList = new JSONArray();
+            moduleList.add(new JSONObject() {
+                {
+                    this.put("id", ci.getAppModuleId());
+                    this.put("version", versionName);
+                    this.put("selectNodeList", ci.getConfig().getJSONArray("selectNodeList"));
+                }
+            });
+            createJobParam.put("moduleList", moduleList);
+            deployJobService.createDeployJobFromJson(createJobParam);
         }
         return null;
     }

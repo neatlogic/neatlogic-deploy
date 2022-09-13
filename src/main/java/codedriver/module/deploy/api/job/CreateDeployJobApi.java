@@ -7,12 +7,9 @@ package codedriver.module.deploy.api.job;
 
 import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.auth.core.AuthAction;
-import codedriver.framework.batch.BatchRunner;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.dao.mapper.UserMapper;
 import codedriver.framework.deploy.auth.DEPLOY_BASE;
-import codedriver.framework.deploy.dto.job.DeployJobModuleVo;
-import codedriver.framework.deploy.dto.job.DeployJobVo;
 import codedriver.framework.deploy.exception.DeployVersionRedirectUrlCredentialUserNotFoundException;
 import codedriver.framework.dto.UserVo;
 import codedriver.framework.exception.core.ApiRuntimeException;
@@ -24,7 +21,6 @@ import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.framework.util.HttpRequestUtil;
 import codedriver.module.deploy.dao.mapper.DeployVersionMapper;
 import codedriver.module.deploy.service.DeployJobService;
-import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -91,30 +87,7 @@ public class CreateDeployJobApi extends PrivateApiComponentBase {
         if (StringUtils.isNotBlank(jsonObj.getString("proxyToUrl"))) {
             proxyToUrl(jsonObj);
         }
-        JSONArray result = new JSONArray();
-        DeployJobVo deployJobParam = JSONObject.toJavaObject(jsonObj, DeployJobVo.class);
-        deployJobService.initDeployParam(deployJobParam, false);
-        BatchRunner<DeployJobModuleVo> runner = new BatchRunner<>();
-        runner.execute(deployJobParam.getModuleList(), 3, module -> {
-            if (module != null) {
-                try {
-                    if (jsonObj.containsKey("triggerType")) {
-                        result.add(deployJobService.createScheduleJob(deployJobParam));
-                    } else {
-                        result.add(deployJobService.createJob(deployJobParam));
-                    }
-                } catch (Exception ex) {
-                    logger.error(ex.getMessage(), ex);
-                    JSONObject resultJson = new JSONObject();
-                    resultJson.put("appSystemName", jsonObj.getString("appSystemName"));
-                    resultJson.put("appModuleName", jsonObj.getString("appModuleName"));
-                    resultJson.put("errorMsg", ex.getMessage());
-                    result.add(resultJson);
-                }
-
-            }
-        }, "DEPLOY-JOB-CREATE");
-        return result;
+        return deployJobService.createDeployJobFromJson(jsonObj);
     }
 
     @Override
