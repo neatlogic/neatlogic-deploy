@@ -6,7 +6,6 @@
 package codedriver.module.deploy.service;
 
 import codedriver.framework.deploy.dto.job.DeployJobVo;
-import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
 import java.util.List;
@@ -53,7 +52,6 @@ public interface DeployJobService {
      * @return result
      */
     JSONObject createJob(DeployJobVo autoexecJobParam) throws Exception;
-
     /**
      * 创建定时发布作业
      *
@@ -70,14 +68,6 @@ public interface DeployJobService {
      * @return 来源id
      */
     Long getOperationId(JSONObject jsonObj);
-
-    /**
-     * 创建并执行发布作业
-     *
-     * @param jsonObj 参见/deploy/job/create接口
-     * @return
-     */
-    JSONArray createDeployJob(DeployJobVo deployJobParam);
 
 
 }

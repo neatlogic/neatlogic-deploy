@@ -160,7 +160,12 @@ public class CallbackDeployCiGitlabEventApi extends PrivateApiComponentBase {
             DeployJobVo deployJobParam = new DeployJobVo(ci.getAppSystemId(), scenarioId, envId, triggerType, triggerTime, ci.getConfig().getInteger("roundCount"), ci.getConfig().getJSONObject("param"));
             JSONArray selectNodeList = ci.getConfig().getJSONArray("selectNodeList");
             deployJobParam.setModuleList(Collections.singletonList(new DeployJobModuleVo(ci.getAppModuleId(), versionName, CollectionUtils.isNotEmpty(selectNodeList) ? selectNodeList.toJavaList(AutoexecNodeVo.class) : null)));
-            deployJobService.createDeployJob(deployJobParam);
+            deployJobService.initDeployParam(deployJobParam, false);
+            if (!Objects.equals(ci.getTriggerType(), DeployCiTriggerType.MANUAL.getValue())) {
+                deployJobService.createScheduleJob(deployJobParam);
+            } else {
+                deployJobService.createJob(deployJobParam);
+            }
         }
         return null;
     }
