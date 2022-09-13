@@ -5,9 +5,13 @@
 
 package codedriver.module.deploy.service;
 
+import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.autoexec.dto.combop.AutoexecCombopPhaseConfigVo;
 import codedriver.framework.autoexec.dto.combop.AutoexecCombopPhaseOperationConfigVo;
 import codedriver.framework.autoexec.dto.combop.AutoexecCombopPhaseOperationVo;
+import codedriver.framework.cmdb.crossover.IAppSystemMapper;
+import codedriver.framework.cmdb.dto.resourcecenter.entity.AppSystemVo;
+import codedriver.framework.crossover.CrossoverServiceFactory;
 import codedriver.framework.dependency.core.DependencyManager;
 import codedriver.framework.deploy.dto.app.DeployAppConfigVo;
 import codedriver.framework.deploy.dto.app.DeployPipelineConfigVo;
@@ -24,8 +28,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Service
 public class PipelineServiceImpl implements PipelineService {
@@ -38,7 +45,25 @@ public class PipelineServiceImpl implements PipelineService {
     public List<PipelineVo> searchPipeline(PipelineVo pipelineVo) {
         int rowNum = pipelineMapper.searchPipelineCount(pipelineVo);
         pipelineVo.setRowNum(rowNum);
-        return pipelineMapper.searchPipeline(pipelineVo);
+        List<PipelineVo> pipelineList = pipelineMapper.searchPipeline(pipelineVo);
+        String schemaName = TenantContext.get().getDataDbName();
+        IAppSystemMapper appSystemMapper = CrossoverServiceFactory.getApi(IAppSystemMapper.class);
+        Map<Long, AppSystemVo> appSystemMap = new HashMap<>();
+        List<Long> appSystemIdList = pipelineList.stream().map(PipelineVo::getAppSystemId).collect(Collectors.toList());
+        if (CollectionUtils.isNotEmpty(appSystemIdList)) {
+            List<AppSystemVo> appSystemList = appSystemMapper.getAppSystemListByIdList(appSystemIdList);
+            appSystemMap = appSystemList.stream().collect(Collectors.toMap(e -> e.getId(), e -> e));
+        }
+        for (PipelineVo pipeline : pipelineList) {
+            if (pipeline.getAppSystemId() != null) {
+                AppSystemVo appSystemVo = appSystemMap.get(pipeline.getAppSystemId());
+                if (appSystemVo != null) {
+                    pipeline.setAppSystemName(appSystemVo.getName());
+                    pipeline.setAppSystemAbbrName(appSystemVo.getAbbrName());
+                }
+            }
+        }
+        return pipelineList;
     }
 
     @Override

@@ -22,6 +22,10 @@ public interface PipelineMapper {
 
     PipelineVo getPipelineById(Long id);
 
+    String getPipelineNameById(Long id);
+
+    int checkPipelineNameIsExists(PipelineVo pipelineVo);
+
     void updatePipeline(PipelineVo pipelineVo);
 
     void insertPipelineAuth(PipelineAuthVo pipelineAuthVo);
