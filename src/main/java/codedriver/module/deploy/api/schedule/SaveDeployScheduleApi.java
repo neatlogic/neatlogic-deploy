@@ -162,7 +162,7 @@ public class SaveDeployScheduleApi extends PrivateApiComponentBase {
             Map<Long, AppModuleVo> appModuleMap = new HashMap<>();
             List<Long> appModuleIdList = moduleList.stream().map(DeployJobModuleVo::getId).collect(Collectors.toList());
             if (CollectionUtils.isNotEmpty(appModuleIdList)) {
-                List<AppModuleVo> appModuleList = appSystemMapper.getAppModuleListByIdList(appModuleIdList, schemaName);
+                List<AppModuleVo> appModuleList = appSystemMapper.getAppModuleListByIdList(appModuleIdList);
                 appModuleMap = appModuleList.stream().collect(Collectors.toMap(e -> e.getId(), e -> e));
             }
             for (DeployJobModuleVo deployJobModuleVo : moduleList) {
@@ -193,13 +193,13 @@ public class SaveDeployScheduleApi extends PrivateApiComponentBase {
             Map<Long, AppSystemVo> appSystemMap = new HashMap<>();
                     List<Long> appSystemIdList = deploySystemModuleVersionList.stream().map(DeploySystemModuleVersionVo::getAppSystemId).collect(Collectors.toList());
             if (CollectionUtils.isNotEmpty(appSystemIdList)) {
-                List<AppSystemVo> appSystemList = appSystemMapper.getAppSystemListByIdList(appSystemIdList, schemaName);
+                List<AppSystemVo> appSystemList = appSystemMapper.getAppSystemListByIdList(appSystemIdList);
                 appSystemMap = appSystemList.stream().collect(Collectors.toMap(e -> e.getId(), e -> e));
             }
             Map<Long, AppModuleVo> appModuleMap = new HashMap<>();
                     List<Long> appModuleIdList = deploySystemModuleVersionList.stream().map(DeploySystemModuleVersionVo::getAppModuleId).collect(Collectors.toList());
             if (CollectionUtils.isNotEmpty(appModuleIdList)) {
-                List<AppModuleVo> appModuleList = appSystemMapper.getAppModuleListByIdList(appModuleIdList, schemaName);
+                List<AppModuleVo> appModuleList = appSystemMapper.getAppModuleListByIdList(appModuleIdList);
                 appModuleMap = appModuleList.stream().collect(Collectors.toMap(e -> e.getId(), e -> e));
             }
             for (DeploySystemModuleVersionVo deploySystemModuleVersionVo : deploySystemModuleVersionList) {

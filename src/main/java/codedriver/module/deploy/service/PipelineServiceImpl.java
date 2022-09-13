@@ -51,7 +51,7 @@ public class PipelineServiceImpl implements PipelineService {
         Map<Long, AppSystemVo> appSystemMap = new HashMap<>();
         List<Long> appSystemIdList = pipelineList.stream().map(PipelineVo::getAppSystemId).collect(Collectors.toList());
         if (CollectionUtils.isNotEmpty(appSystemIdList)) {
-            List<AppSystemVo> appSystemList = appSystemMapper.getAppSystemListByIdList(appSystemIdList, schemaName);
+            List<AppSystemVo> appSystemList = appSystemMapper.getAppSystemListByIdList(appSystemIdList);
             appSystemMap = appSystemList.stream().collect(Collectors.toMap(e -> e.getId(), e -> e));
         }
         for (PipelineVo pipeline : pipelineList) {

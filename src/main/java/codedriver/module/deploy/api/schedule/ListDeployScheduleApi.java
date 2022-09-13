@@ -87,13 +87,13 @@ public class ListDeployScheduleApi extends PrivateApiComponentBase {
                 Map<Long, AppSystemVo> appSystemMap = new HashMap<>();
                 List<Long> appSystemIdList = tbodyList.stream().map(DeployScheduleVo::getAppSystemId).collect(Collectors.toList());
                 if (CollectionUtils.isNotEmpty(appSystemIdList)) {
-                    List<AppSystemVo> appSystemList = appSystemMapper.getAppSystemListByIdList(appSystemIdList, schemaName);
+                    List<AppSystemVo> appSystemList = appSystemMapper.getAppSystemListByIdList(appSystemIdList);
                     appSystemMap = appSystemList.stream().collect(Collectors.toMap(e -> e.getId(), e -> e));
                 }
                 Map<Long, AppModuleVo> appModuleMap = new HashMap<>();
                         List<Long> appModuleIdList = tbodyList.stream().map(DeployScheduleVo::getAppModuleId).collect(Collectors.toList());
                 if (CollectionUtils.isNotEmpty(appModuleIdList)) {
-                    List<AppModuleVo> appModuleList = appSystemMapper.getAppModuleListByIdList(appModuleIdList, schemaName);
+                    List<AppModuleVo> appModuleList = appSystemMapper.getAppModuleListByIdList(appModuleIdList);
                     appModuleMap = appModuleList.stream().collect(Collectors.toMap(e -> e.getId(), e -> e));
                 }
                 for (DeployScheduleVo scheduleVo : tbodyList) {
