@@ -77,7 +77,7 @@ public interface DeployJobService {
      * @param jsonObj 参见/deploy/job/create接口
      * @return
      */
-    JSONArray createDeployJobFromJson(JSONObject jsonObj);
+    JSONArray createDeployJob(DeployJobVo deployJobParam);
 
 
 }

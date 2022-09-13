@@ -10,6 +10,7 @@ import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.dao.mapper.UserMapper;
 import codedriver.framework.deploy.auth.DEPLOY_BASE;
+import codedriver.framework.deploy.dto.job.DeployJobVo;
 import codedriver.framework.deploy.exception.DeployVersionRedirectUrlCredentialUserNotFoundException;
 import codedriver.framework.dto.UserVo;
 import codedriver.framework.exception.core.ApiRuntimeException;
@@ -87,7 +88,8 @@ public class CreateDeployJobApi extends PrivateApiComponentBase {
         if (StringUtils.isNotBlank(jsonObj.getString("proxyToUrl"))) {
             proxyToUrl(jsonObj);
         }
-        return deployJobService.createDeployJobFromJson(jsonObj);
+        DeployJobVo deployJobParam = JSONObject.toJavaObject(jsonObj, DeployJobVo.class);
+        return deployJobService.createDeployJob(deployJobParam);
     }
 
     @Override

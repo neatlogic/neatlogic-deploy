@@ -1,12 +1,15 @@
 package codedriver.module.deploy.api.ci;
 
 import codedriver.framework.autoexec.dto.combop.AutoexecCombopScenarioVo;
+import codedriver.framework.autoexec.dto.node.AutoexecNodeVo;
 import codedriver.framework.autoexec.exception.AutoexecScenarioIsNotFoundException;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.deploy.constvalue.DeployCiActionType;
 import codedriver.framework.deploy.constvalue.DeployCiTriggerType;
 import codedriver.framework.deploy.dto.app.DeployPipelineConfigVo;
 import codedriver.framework.deploy.dto.ci.DeployCiVo;
+import codedriver.framework.deploy.dto.job.DeployJobModuleVo;
+import codedriver.framework.deploy.dto.job.DeployJobVo;
 import codedriver.framework.deploy.dto.version.DeployVersionVo;
 import codedriver.framework.deploy.exception.DeployAppConfigNotFoundException;
 import codedriver.framework.deploy.exception.DeployCiNotFoundException;
@@ -37,10 +40,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -156,24 +156,11 @@ public class CallbackDeployCiGitlabEventApi extends PrivateApiComponentBase {
             if (DeployCiTriggerType.INSTANT.getValue().equals(ci.getTriggerType())) {
                 triggerType = DeployCiTriggerType.AUTO.getValue();
             }
-            JSONObject createJobParam = new JSONObject();
-            createJobParam.put("appSystemId", ci.getAppSystemId());
-            createJobParam.put("scenarioId", scenarioId);
-            createJobParam.put("envId", envId);
-            createJobParam.put("triggerType", triggerType);
-            createJobParam.put("planStartTime", triggerTime);
-            createJobParam.put("roundCount", ci.getConfig().getInteger("roundCount"));
-            createJobParam.put("param", ci.getConfig().getInteger("param"));
-            JSONArray moduleList = new JSONArray();
-            moduleList.add(new JSONObject() {
-                {
-                    this.put("id", ci.getAppModuleId());
-                    this.put("version", versionName);
-                    this.put("selectNodeList", ci.getConfig().getJSONArray("selectNodeList"));
-                }
-            });
-            createJobParam.put("moduleList", moduleList);
-            deployJobService.createDeployJobFromJson(createJobParam);
+            // todo 是否新建buildNo
+            DeployJobVo deployJobParam = new DeployJobVo(ci.getAppSystemId(), scenarioId, envId, triggerType, triggerTime, ci.getConfig().getInteger("roundCount"), ci.getConfig().getJSONObject("param"));
+            JSONArray selectNodeList = ci.getConfig().getJSONArray("selectNodeList");
+            deployJobParam.setModuleList(Collections.singletonList(new DeployJobModuleVo(ci.getAppModuleId(), versionName, CollectionUtils.isNotEmpty(selectNodeList) ? selectNodeList.toJavaList(AutoexecNodeVo.class) : null)));
+            deployJobService.createDeployJob(deployJobParam);
         }
         return null;
     }

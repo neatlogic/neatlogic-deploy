@@ -335,15 +335,14 @@ public class DeployJobServiceImpl implements DeployJobService {
     }
 
     @Override
-    public JSONArray createDeployJobFromJson(JSONObject jsonObj) {
+    public JSONArray createDeployJob(DeployJobVo deployJobParam) {
         JSONArray result = new JSONArray();
-        DeployJobVo deployJobParam = JSONObject.toJavaObject(jsonObj, DeployJobVo.class);
         initDeployParam(deployJobParam, false);
         BatchRunner<DeployJobModuleVo> runner = new BatchRunner<>();
         runner.execute(deployJobParam.getModuleList(), 3, module -> {
             if (module != null) {
                 try {
-                    if (jsonObj.containsKey("triggerType")) {
+                    if (StringUtils.isNotBlank(deployJobParam.getTriggerType())) {
                         result.add(createScheduleJob(deployJobParam));
                     } else {
                         result.add(createJob(deployJobParam));
@@ -351,8 +350,8 @@ public class DeployJobServiceImpl implements DeployJobService {
                 } catch (Exception ex) {
                     logger.error(ex.getMessage(), ex);
                     JSONObject resultJson = new JSONObject();
-                    resultJson.put("appSystemName", jsonObj.getString("appSystemName"));
-                    resultJson.put("appModuleName", jsonObj.getString("appModuleName"));
+                    resultJson.put("appSystemName", deployJobParam.getAppSystemName());
+                    resultJson.put("appModuleName", deployJobParam.getAppModuleName());
                     resultJson.put("errorMsg", ex.getMessage());
                     result.add(resultJson);
                 }
