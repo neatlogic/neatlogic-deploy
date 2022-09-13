@@ -6,6 +6,7 @@
 package codedriver.module.deploy.schedule.plugin;
 
 import codedriver.framework.asynchronization.threadlocal.TenantContext;
+import codedriver.framework.deploy.constvalue.JobSource;
 import codedriver.framework.deploy.constvalue.PipelineType;
 import codedriver.framework.deploy.constvalue.ScheduleType;
 import codedriver.framework.deploy.dto.job.DeployJobVo;
@@ -106,7 +107,7 @@ public class DeployJobScheduleJob  extends JobBase {
         deployJobVo.setModuleList(config.getModuleList());
         deployJobVo.setEnvId(config.getEnvId());
         deployJobVo.setParam(config.getParam());
-        deployJobVo.setSource("定时作业");
+        deployJobVo.setSource(JobSource.DEPLOYSCHEDULE.getValue());
         deployJobVo.setRoundCount(config.getRoundCount());
         return deployJobVo;
     }
