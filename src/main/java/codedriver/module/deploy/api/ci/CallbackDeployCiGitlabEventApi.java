@@ -149,7 +149,7 @@ public class CallbackDeployCiGitlabEventApi extends PrivateApiComponentBase {
                 } else {
                     day = LocalDate.now().plusDays(1L).format(DateTimeFormatter.ofPattern(TimeUtil.YYYY_MM_DD));
                 }
-                triggerTime = Date.from(LocalDateTime.parse(day + ci.getTriggerTime()
+                triggerTime = Date.from(LocalDateTime.parse(day + " " + ci.getTriggerTime()
                         , DateTimeFormatter.ofPattern(TimeUtil.YYYY_MM_DD_HH_MM_SS)).atZone(ZoneId.systemDefault()).toInstant());
             }
             String triggerType = ci.getTriggerType();
