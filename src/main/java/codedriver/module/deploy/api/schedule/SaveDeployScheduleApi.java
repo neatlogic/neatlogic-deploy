@@ -157,10 +157,6 @@ public class SaveDeployScheduleApi extends PrivateApiComponentBase {
                 throw new ParamNotExistsException("模块版本列表（config.moduleList）");
             }
             for (DeployJobModuleVo deployJobModuleVo : moduleList) {
-                String version = deployJobModuleVo.getVersion();
-                if (StringUtils.isBlank(version)) {
-                    throw new ParamNotExistsException("模块版本（config.moduleList.version）");
-                }
                 Long appModuleId = deployJobModuleVo.getId();
                 if (appModuleId == null) {
                     throw new ParamNotExistsException("模块ID（config.moduleList.id）");
