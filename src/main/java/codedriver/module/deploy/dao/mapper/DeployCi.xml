@@ -83,10 +83,10 @@
 
     <select id="searchDeployCiAudit" parameterType="codedriver.framework.deploy.dto.ci.DeployCiAuditVo" resultType="codedriver.framework.deploy.dto.ci.DeployCiAuditVo">
         select `id`,
-               `commit_id`,
+               `commit_id` as commitId,
                `action`,
                `status`,
-               `job_id`,
+               `job_id` as jobId,
                `fcd`
         from deploy_ci_audit a
         where ci_id = #{ciId}
