@@ -28,8 +28,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Service
 public class PipelineServiceImpl implements PipelineService {
@@ -45,9 +48,15 @@ public class PipelineServiceImpl implements PipelineService {
         List<PipelineVo> pipelineList = pipelineMapper.searchPipeline(pipelineVo);
         String schemaName = TenantContext.get().getDataDbName();
         IAppSystemMapper appSystemMapper = CrossoverServiceFactory.getApi(IAppSystemMapper.class);
+        Map<Long, AppSystemVo> appSystemMap = new HashMap<>();
+        List<Long> appSystemIdList = pipelineList.stream().map(PipelineVo::getAppSystemId).collect(Collectors.toList());
+        if (CollectionUtils.isNotEmpty(appSystemIdList)) {
+            List<AppSystemVo> appSystemList = appSystemMapper.getAppSystemListByIdList(appSystemIdList, schemaName);
+            appSystemMap = appSystemList.stream().collect(Collectors.toMap(e -> e.getId(), e -> e));
+        }
         for (PipelineVo pipeline : pipelineList) {
             if (pipeline.getAppSystemId() != null) {
-                AppSystemVo appSystemVo = appSystemMapper.getAppSystemById(pipeline.getAppSystemId(), schemaName);
+                AppSystemVo appSystemVo = appSystemMap.get(pipeline.getAppSystemId());
                 if (appSystemVo != null) {
                     pipeline.setAppSystemName(appSystemVo.getName());
                     pipeline.setAppSystemAbbrName(appSystemVo.getAbbrName());

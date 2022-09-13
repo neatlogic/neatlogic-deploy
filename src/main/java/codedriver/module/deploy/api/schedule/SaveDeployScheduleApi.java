@@ -53,7 +53,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @AuthAction(action = DEPLOY_BASE.class)
@@ -156,12 +159,18 @@ public class SaveDeployScheduleApi extends PrivateApiComponentBase {
             if (CollectionUtils.isEmpty(moduleList)) {
                 throw new ParamNotExistsException("模块版本列表（config.moduleList）");
             }
+            Map<Long, AppModuleVo> appModuleMap = new HashMap<>();
+            List<Long> appModuleIdList = moduleList.stream().map(DeployJobModuleVo::getId).collect(Collectors.toList());
+            if (CollectionUtils.isNotEmpty(appModuleIdList)) {
+                List<AppModuleVo> appModuleList = appSystemMapper.getAppModuleListByIdList(appModuleIdList, schemaName);
+                appModuleMap = appModuleList.stream().collect(Collectors.toMap(e -> e.getId(), e -> e));
+            }
             for (DeployJobModuleVo deployJobModuleVo : moduleList) {
                 Long appModuleId = deployJobModuleVo.getId();
                 if (appModuleId == null) {
                     throw new ParamNotExistsException("模块ID（config.moduleList.id）");
                 }
-                AppModuleVo appModule = appSystemMapper.getAppModuleById(appModuleId, schemaName);
+                AppModuleVo appModule = appModuleMap.get(appModuleId);
                 if (appModule == null) {
                     throw new AppModuleNotFoundException(appModuleId);
                 }
@@ -181,12 +190,24 @@ public class SaveDeployScheduleApi extends PrivateApiComponentBase {
             if (CollectionUtils.isEmpty(deploySystemModuleVersionList)) {
                 throw new ParamNotExistsException("应用模块环境（场景）版本列表（config.deploySystemModuleVersionList）");
             }
+            Map<Long, AppSystemVo> appSystemMap = new HashMap<>();
+                    List<Long> appSystemIdList = deploySystemModuleVersionList.stream().map(DeploySystemModuleVersionVo::getAppSystemId).collect(Collectors.toList());
+            if (CollectionUtils.isNotEmpty(appSystemIdList)) {
+                List<AppSystemVo> appSystemList = appSystemMapper.getAppSystemListByIdList(appSystemIdList, schemaName);
+                appSystemMap = appSystemList.stream().collect(Collectors.toMap(e -> e.getId(), e -> e));
+            }
+            Map<Long, AppModuleVo> appModuleMap = new HashMap<>();
+                    List<Long> appModuleIdList = deploySystemModuleVersionList.stream().map(DeploySystemModuleVersionVo::getAppModuleId).collect(Collectors.toList());
+            if (CollectionUtils.isNotEmpty(appModuleIdList)) {
+                List<AppModuleVo> appModuleList = appSystemMapper.getAppModuleListByIdList(appModuleIdList, schemaName);
+                appModuleMap = appModuleList.stream().collect(Collectors.toMap(e -> e.getId(), e -> e));
+            }
             for (DeploySystemModuleVersionVo deploySystemModuleVersionVo : deploySystemModuleVersionList) {
                 Long appSystemId = deploySystemModuleVersionVo.getAppSystemId();
                 if (appSystemId == null) {
                     throw new ParamNotExistsException("模块ID（config.deploySystemModuleVersionList.appSystemId）");
                 }
-                AppSystemVo appSystem = appSystemMapper.getAppSystemById(appSystemId, schemaName);
+                AppSystemVo appSystem = appSystemMap.get(appSystemId);
                 if (appSystem == null) {
                     throw new AppSystemNotFoundException(appSystemId);
                 }
@@ -194,7 +215,7 @@ public class SaveDeployScheduleApi extends PrivateApiComponentBase {
                 if (appModuleId == null) {
                     throw new ParamNotExistsException("应用ID（config.deploySystemModuleVersionList.appModuleId）");
                 }
-                AppModuleVo appModule = appSystemMapper.getAppModuleById(appModuleId, schemaName);
+                AppModuleVo appModule = appModuleMap.get(appModuleId);
                 if (appModule == null) {
                     throw new AppModuleNotFoundException(appModuleId);
                 }

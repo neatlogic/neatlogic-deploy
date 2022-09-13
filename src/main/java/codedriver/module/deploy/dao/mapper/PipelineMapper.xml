@@ -181,7 +181,7 @@
 
     <select id="searchPipeline" parameterType="codedriver.framework.deploy.dto.pipeline.PipelineVo"
             resultType="codedriver.framework.deploy.dto.pipeline.PipelineVo">
-        select id, name,is_active as isActive,fcd,fcu,lcd,lcu, type, app_system_id as appSystemId
+        select id, name,is_active as isActive,fcd,fcu,lcd,lcu, `type`, `app_system_id` as appSystemId
         from deploy_pipeline
         <include refid="searchPipelineCondition"/>
         order by lcu DESC

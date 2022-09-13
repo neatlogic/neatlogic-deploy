@@ -24,12 +24,16 @@ import codedriver.framework.util.TableResultUtil;
 import codedriver.module.deploy.dao.mapper.DeployScheduleMapper;
 import codedriver.module.deploy.dao.mapper.PipelineMapper;
 import com.alibaba.fastjson.JSONObject;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @AuthAction(action = DEPLOY_BASE.class)
@@ -80,15 +84,27 @@ public class ListDeployScheduleApi extends PrivateApiComponentBase {
                 String schemaName = TenantContext.get().getDataDbName();
                 IAppSystemMapper appSystemMapper = CrossoverServiceFactory.getApi(IAppSystemMapper.class);
                 tbodyList = deployScheduleMapper.getScheduleList(searchVo);
+                Map<Long, AppSystemVo> appSystemMap = new HashMap<>();
+                List<Long> appSystemIdList = tbodyList.stream().map(DeployScheduleVo::getAppSystemId).collect(Collectors.toList());
+                if (CollectionUtils.isNotEmpty(appSystemIdList)) {
+                    List<AppSystemVo> appSystemList = appSystemMapper.getAppSystemListByIdList(appSystemIdList, schemaName);
+                    appSystemMap = appSystemList.stream().collect(Collectors.toMap(e -> e.getId(), e -> e));
+                }
+                Map<Long, AppModuleVo> appModuleMap = new HashMap<>();
+                        List<Long> appModuleIdList = tbodyList.stream().map(DeployScheduleVo::getAppModuleId).collect(Collectors.toList());
+                if (CollectionUtils.isNotEmpty(appModuleIdList)) {
+                    List<AppModuleVo> appModuleList = appSystemMapper.getAppModuleListByIdList(appModuleIdList, schemaName);
+                    appModuleMap = appModuleList.stream().collect(Collectors.toMap(e -> e.getId(), e -> e));
+                }
                 for (DeployScheduleVo scheduleVo : tbodyList) {
                     String type = scheduleVo.getType();
                     if (type.equals(ScheduleType.GENERAL.getValue())) {
-                        AppSystemVo appSystemVo = appSystemMapper.getAppSystemById(scheduleVo.getAppSystemId(), schemaName);
+                        AppSystemVo appSystemVo = appSystemMap.get(scheduleVo.getAppSystemId());
                         if (appSystemVo != null) {
                             scheduleVo.setAppSystemName(appSystemVo.getName());
                             scheduleVo.setAppSystemAbbrName(appSystemVo.getAbbrName());
                         }
-                        AppModuleVo appModuleVo = appSystemMapper.getAppModuleById(scheduleVo.getAppModuleId(), schemaName);
+                        AppModuleVo appModuleVo = appModuleMap.get(scheduleVo.getAppModuleId());
                         if (appModuleVo != null) {
                             scheduleVo.setAppModuleName(appModuleVo.getName());
                             scheduleVo.setAppModuleAbbrName(appModuleVo.getAbbrName());
@@ -100,7 +116,7 @@ public class ListDeployScheduleApi extends PrivateApiComponentBase {
                         }
                         String pipelineType = scheduleVo.getPipelineType();
                         if (pipelineType.equals(PipelineType.APPSYSTEM.getValue())) {
-                            AppSystemVo appSystemVo = appSystemMapper.getAppSystemById(scheduleVo.getAppSystemId(), schemaName);
+                            AppSystemVo appSystemVo = appSystemMap.get(scheduleVo.getAppSystemId());
                             if (appSystemVo != null) {
                                 scheduleVo.setAppSystemName(appSystemVo.getName());
                                 scheduleVo.setAppSystemAbbrName(appSystemVo.getAbbrName());
