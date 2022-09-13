@@ -177,6 +177,9 @@ public class DeployPipelineConfigManager {
                 appConfig = new DeployPipelineConfigVo();
             }
             moduleOverrideConfig = getDeployPipelineConfigVo(searchVo, isAppModuleDraft);
+            if (isAppModuleDraft && moduleOverrideConfig == null) {
+                return null;
+            }
         } else {
             targetLevel = "环境";
             //查询应用层配置信息
@@ -186,6 +189,9 @@ public class DeployPipelineConfigManager {
             }
             moduleOverrideConfig = getDeployPipelineConfigVo(new DeployAppConfigVo(appSystemId, appModuleId), false);
             envOverrideConfig = getDeployPipelineConfigVo(searchVo, isEnvDraft);
+            if (isEnvDraft && envOverrideConfig == null) {
+                return null;
+            }
         }
         DeployPipelineConfigVo deployPipelineConfigVo = mergeDeployPipelineConfig(appConfig, moduleOverrideConfig, envOverrideConfig, targetLevel, profileIdList);
         IAutoexecServiceCrossoverService autoexecServiceCrossoverService = CrossoverServiceFactory.getApi(IAutoexecServiceCrossoverService.class);
