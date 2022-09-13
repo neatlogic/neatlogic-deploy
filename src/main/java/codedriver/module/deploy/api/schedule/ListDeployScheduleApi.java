@@ -112,39 +112,6 @@ public class ListDeployScheduleApi extends PrivateApiComponentBase {
                 }
             }
         }
-//        int scheduleCount = deployScheduleMapper.getScheduleCount(searchVo);
-//        int pipelineScheduleCount = deployScheduleMapper.getPipelineScheduleCount(searchVo);
-//        int rowNum = scheduleCount + pipelineScheduleCount;
-//        if (rowNum > 0) {
-//            searchVo.setRowNum(rowNum);
-//            if (searchVo.getCurrentPage() <= searchVo.getPageCount()) {
-//                if (scheduleCount > 0 && pipelineScheduleCount > 0) {
-//                    List<Long> idList = deployScheduleMapper.getMergeScheduleIdList(searchVo);
-//                    if (CollectionUtils.isNotEmpty(idList)) {
-//                        List<DeployScheduleVo> scheduleList = deployScheduleMapper.getScheduleListByIdList(idList);
-//                        tbodyList.addAll(scheduleList);
-//                        List<DeployScheduleVo> pipelineScheduleList = deployScheduleMapper.getPipelineScheduleByIdList(idList);
-//                        tbodyList.addAll(pipelineScheduleList);
-//                        //排序
-//                        List<DeployScheduleVo> tempList = new ArrayList<>();
-//                        for (Long id : idList) {
-//                            for (DeployScheduleVo scheduleVo : tbodyList) {
-//                                if (Objects.equals(id, scheduleVo.getId())) {
-//                                    tempList.add(scheduleVo);
-//                                    break;
-//                                }
-//                            }
-//                        }
-//                        tbodyList = tempList;
-//
-//                    }
-//                } else if (scheduleCount > 0) {
-//                    tbodyList = deployScheduleMapper.getScheduleList(searchVo);
-//                } else if (pipelineScheduleCount > 0) {
-//                    tbodyList = deployScheduleMapper.getPipelineScheduleList(searchVo);
-//                }
-//            }
-//        }
         return TableResultUtil.getResult(tbodyList, searchVo);
     }
 }

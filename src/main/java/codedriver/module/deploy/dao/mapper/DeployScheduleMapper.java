@@ -14,11 +14,7 @@ public interface DeployScheduleMapper {
 
     DeployScheduleVo getScheduleByUuid(String uuid);
 
-//    DeployScheduleVo getPipelineScheduleById(Long id);
-
     int checkScheduleNameIsExists(DeployScheduleVo vo);
-
-//    int checkPipelineScheduleNameIsExists(DeployScheduleVo vo);
 
     int getScheduleCount(DeployScheduleVo searchVo);
 
@@ -26,27 +22,11 @@ public interface DeployScheduleMapper {
 
     List<DeployScheduleVo> getScheduleListByIdList(List<Long> idList);
 
-//    int getPipelineScheduleCount(DeployScheduleVo searchVo);
-//
-//    List<DeployScheduleVo> getPipelineScheduleList(DeployScheduleVo searchVo);
-//
-//    List<DeployScheduleVo> getPipelineScheduleByIdList(List<Long> idList);
-
-//    List<Long> getMergeScheduleIdList(DeployScheduleVo searchVo);
-
     int insertSchedule(DeployScheduleVo scheduleVo);
-
-//    int insertPipelineSchedule(DeployScheduleVo scheduleVo);
 
     int updateSchedule(DeployScheduleVo scheduleVo);
 
-//    int updatePipelineSchedule(DeployScheduleVo scheduleVo);
-
     int updateScheduleIsActiveById(Long id);
 
-//    int updatePipelineScheduleIsActiveById(Long id);
-
     int deleteScheduleById(Long id);
-
-//    int deletePipelineScheduleById(Long id);
 }
