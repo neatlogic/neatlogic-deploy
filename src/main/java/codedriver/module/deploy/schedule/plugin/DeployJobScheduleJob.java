@@ -6,6 +6,7 @@
 package codedriver.module.deploy.schedule.plugin;
 
 import codedriver.framework.asynchronization.threadlocal.TenantContext;
+import codedriver.framework.autoexec.constvalue.JobStatus;
 import codedriver.framework.deploy.constvalue.JobSource;
 import codedriver.framework.deploy.constvalue.PipelineType;
 import codedriver.framework.deploy.constvalue.ScheduleType;
@@ -124,6 +125,7 @@ public class DeployJobScheduleJob  extends JobBase {
         deployJobVo.setAppSystemModuleVersionList(config.getAppSystemModuleVersionList());
         deployJobVo.setAppSystemId(scheduleVo.getAppSystemId());
         deployJobVo.setAppModuleId(scheduleVo.getAppModuleId());
+        deployJobVo.setStatus(JobStatus.READY.getValue());
         return deployJobVo;
     }
 }
