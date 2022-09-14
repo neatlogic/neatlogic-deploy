@@ -113,7 +113,6 @@ public class DeployJobScheduleJob  extends JobBase {
 
     private DeployJobVo convertDeployScheduleVoToDeployJobVo(DeployScheduleVo scheduleVo) {
         DeployJobVo deployJobVo = new DeployJobVo();
-        deployJobVo.setId(scheduleVo.getId());
         DeployScheduleConfigVo config = scheduleVo.getConfig();
         deployJobVo.setScenarioId(config.getScenarioId());
         deployJobVo.setModuleList(config.getModuleList());
