@@ -163,6 +163,9 @@ public class DeployGlobalLockHandler extends GlobalLockHandlerBase {
         if(MapUtils.isNotEmpty(keywordParam)){
             if (keywordParam.containsKey("appSystemId")){
                 globalLockVo.setKeyword(keywordParam.getString("appSystemId")+"/");
+                if (keywordParam.containsKey("appModuleId")){
+                    globalLockVo.setKeyword(globalLockVo.getKeyword() + keywordParam.getString("appModuleId"));
+                }
             }
             if(keywordParam.containsKey("jobId")){
                 List<String> uuidList = globalLockMapper.getGlobalLockUuidByKey(keywordParam.getString("jobId"));
