@@ -51,6 +51,7 @@
     </select>
 
     <sql id="searchJobSql">
+        left join autoexec_job ajj on ajj.parent_id = aj.id
         <if test="(typeIdList != null and typeIdList.size() > 0) or (combopName != null and combopName != '' )">
             LEFT JOIN `autoexec_combop` ac ON aj.`operation_id` = ac.`id`
         </if>
@@ -78,16 +79,21 @@
                 <foreach collection="excludeIdList" item="item" open="(" close=")" separator=",">#{item}</foreach>
             </if>
             <if test="keyword != null and keyword != ''">
-                and (aj.name like concat('%', #{keyword}, '%') OR aj.id = #{keyword})
+                and (aj.name like concat('%', #{keyword}, '%') OR aj.id = #{keyword} OR ajj.name like concat('%',
+                #{keyword}, '%'))
             </if>
             <if test="operationId != null">
                 and aj.operation_id = #{operationId}
             </if>
             <if test="statusList != null and statusList.size() > 0 ">
-                and aj.`status` in
+                and (aj.`status` in
                 <foreach collection="statusList" item="status" open="(" close=")" separator=",">
                     #{status}
                 </foreach>
+                or ajj.`status` in
+                <foreach collection="statusList" item="status" open="(" close=")" separator=",">
+                    #{status}
+                </foreach>)
             </if>
             <if test="sourceList != null and sourceList.size() > 0 ">
                 and aj.`source` in
@@ -113,10 +119,14 @@
                 </foreach>
             </if>
             <if test="execUserList != null and execUserList.size() > 0 ">
-                and aj.`exec_user` in
+                and (aj.`exec_user` in
                 <foreach collection="execUserList" item="execUser" open="(" close=")" separator=",">
                     #{execUser}
                 </foreach>
+                or ajj.`exec_user` in
+                <foreach collection="execUserList" item="execUser" open="(" close=")" separator=",">
+                    #{execUser}
+                </foreach>)
             </if>
             <if test="idList != null and idList.size() > 0">
                 and aj.`id` in
@@ -126,26 +136,32 @@
             </if>
             <if test="startTimeRange != null">
                 <if test="startTimeRange.size() > 0">
-                    and aj.start_time &gt;= STR_TO_DATE(#{startTimeRange[0]},'%Y-%m-%d')
+                    and (aj.start_time &gt;= STR_TO_DATE(#{startTimeRange[0]},'%Y-%m-%d')
+                    or ajj.start_time &gt;= STR_TO_DATE(#{startTimeRange[0]},'%Y-%m-%d'))
                 </if>
                 <if test="startTimeRange.size() > 1">
-                    and aj.start_time &lt;= STR_TO_DATE(#{startTimeRange[1]},'%Y-%m-%d')
+                    and (aj.start_time &lt;= STR_TO_DATE(#{startTimeRange[1]},'%Y-%m-%d')
+                    or ajj.start_time &lt;= STR_TO_DATE(#{startTimeRange[1]},'%Y-%m-%d'))
                 </if>
             </if>
             <if test="endTimeRange != null">
                 <if test="endTimeRange.size() > 0">
-                    and aj.end_time &gt;= STR_TO_DATE(#{endTimeRange[0]},'%Y-%m-%d')
+                    and (aj.end_time &gt;= STR_TO_DATE(#{endTimeRange[0]},'%Y-%m-%d')
+                    or ajj.end_time &gt;= STR_TO_DATE(#{endTimeRange[0]},'%Y-%m-%d'))
                 </if>
                 <if test="endTimeRange.size() > 1">
-                    and aj.end_time &lt;= STR_TO_DATE(#{endTimeRange[1]},'%Y-%m-%d')
+                    and (aj.end_time &lt;= STR_TO_DATE(#{endTimeRange[1]},'%Y-%m-%d')
+                    or ajj.end_time &lt;= STR_TO_DATE(#{endTimeRange[1]},'%Y-%m-%d'))
                 </if>
             </if>
             <if test="planStartTimeRange != null">
                 <if test="planStartTimeRange.size() > 0">
-                    and aj.plan_start_time &gt;= STR_TO_DATE(#{planStartTimeRange[0]},'%Y-%m-%d')
+                    and (aj.plan_start_time &gt;= STR_TO_DATE(#{planStartTimeRange[0]},'%Y-%m-%d')
+                    or ajj.plan_start_time &gt;= STR_TO_DATE(#{planStartTimeRange[0]},'%Y-%m-%d'))
                 </if>
                 <if test="planStartTimeRange.size() > 1">
-                    and aj.plan_start_time &lt;= STR_TO_DATE(#{planStartTimeRange[1]},'%Y-%m-%d')
+                    and (aj.plan_start_time &lt;= STR_TO_DATE(#{planStartTimeRange[1]},'%Y-%m-%d')
+                    or ajj.plan_start_time &lt;= STR_TO_DATE(#{planStartTimeRange[1]},'%Y-%m-%d'))
                 </if>
             </if>
             <include refid="codedriver.module.deploy.dao.mapper.DeployAppConfigMapper.checkDeployAuthority"/>
@@ -200,11 +216,13 @@
         aj.`review_status` as reviewStatus,
         aj.`review_time` as reviewTime,
         a.`app_system_id` as appSystemId,
-        saa.`name` as appSystemName,
-        saa.`abbr_name` as appSystemAbbrName,
         a.`app_module_id` as appModuleId,
-        saa.`app_module_name` as appModuleName,
-        saa.`app_module_abbr_name` as appModuleAbbrName,
+        <if test="isNeedNameAndAbbrName ==1">
+            saa.`name` as appSystemName,
+            saa.`abbr_name` as appSystemAbbrName,
+            saa.`app_module_name` as appModuleName,
+            saa.`app_module_abbr_name` as appModuleAbbrName,
+        </if>
         a.`env_id` as envId,
         d.`name` as envName,
         a.`version`,
@@ -212,7 +230,9 @@
         FROM
         `autoexec_job` aj
         left join deploy_job a on aj.id = a.id
-        left join @{DATA_SCHEMA}.scence_appsystem_appmodule saa on saa.id = a.app_system_id AND saa.app_module_id = a.app_module_id
+        <if test="isNeedNameAndAbbrName ==1">
+            left join @{DATA_SCHEMA}.scence_appsystem_appmodule saa on saa.id = a.app_system_id AND saa.app_module_id = a.app_module_id
+        </if>
         left join cmdb_cientity d ON a.env_id = d.id
         left join autoexec_scenario e on a.scenario_id = e.id
         WHERE aj.`id` in
