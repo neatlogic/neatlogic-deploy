@@ -15,6 +15,7 @@ import codedriver.framework.deploy.dto.job.DeployJobVo;
 import codedriver.framework.deploy.dto.version.DeployVersionVo;
 import codedriver.framework.deploy.exception.DeployAppConfigNotFoundException;
 import codedriver.framework.deploy.exception.DeployCiNotFoundException;
+import codedriver.framework.deploy.exception.DeployCiVersionRegexIllegalException;
 import codedriver.framework.filter.core.LoginAuthHandlerBase;
 import codedriver.framework.restful.annotation.Description;
 import codedriver.framework.restful.annotation.Input;
@@ -193,6 +194,9 @@ public class CallbackDeployCiGitlabEventApi extends PrivateApiComponentBase {
             Matcher m = r.matcher(versionRegex);
             if (m.find()) {
                 regex = m.group();
+            }
+            if (StringUtils.isBlank(regex)) {
+                throw new DeployCiVersionRegexIllegalException();
             }
             regex = regex.substring(1, regex.lastIndexOf(")"));
         }
