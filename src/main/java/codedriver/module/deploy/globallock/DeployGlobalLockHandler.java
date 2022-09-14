@@ -17,6 +17,7 @@ import codedriver.framework.exception.runner.RunnerNotFoundByRunnerMapIdExceptio
 import codedriver.framework.exception.type.ParamIrregularException;
 import codedriver.framework.globallock.GlobalLockManager;
 import codedriver.framework.globallock.core.GlobalLockHandlerBase;
+import codedriver.framework.globallock.dao.mapper.GlobalLockMapper;
 import codedriver.framework.integration.authentication.enums.AuthenticateType;
 import codedriver.framework.util.HttpRequestUtil;
 import codedriver.framework.util.TableResultUtil;
@@ -24,6 +25,7 @@ import codedriver.framework.util.TimeUtil;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
@@ -31,12 +33,17 @@ import javax.annotation.Resource;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static java.util.stream.Collectors.collectingAndThen;
+import static java.util.stream.Collectors.toCollection;
+
 @Service
 public class DeployGlobalLockHandler extends GlobalLockHandlerBase {
     @Resource
     AutoexecJobMapper autoexecJobMapper;
     @Resource
     RunnerMapper runnerMapper;
+    @Resource
+    GlobalLockMapper globalLockMapper;
 
     @Override
     public String getHandler() {
@@ -148,6 +155,28 @@ public class DeployGlobalLockHandler extends GlobalLockHandlerBase {
             data.put("lockTarget", data.getJSONObject("handlerParam").getString("lockTarget"));
         }
         return result;
+    }
+
+    @Override
+    public void initSearchParam(GlobalLockVo globalLockVo) {
+        JSONObject keywordParam = globalLockVo.getKeywordParam();
+        if (MapUtils.isNotEmpty(keywordParam)) {
+            if (keywordParam.containsKey("appSystemId")) {
+                globalLockVo.setKeyword(keywordParam.getString("appSystemId") + "/");
+                if (keywordParam.containsKey("appModuleId")) {
+                    globalLockVo.setKeyword(globalLockVo.getKeyword() + keywordParam.getString("appModuleId"));
+                }
+            }
+            if (keywordParam.containsKey("jobId")) {
+                List<String> uuidList = globalLockMapper.getGlobalLockUuidByKey(getHandler(), keywordParam.getString("jobId"));
+                if (CollectionUtils.isNotEmpty(uuidList)) {
+                    globalLockVo.setUuidList(uuidList.stream().collect(collectingAndThen(toCollection(() -> new TreeSet<>(Comparator.comparing(r -> r))), ArrayList::new)));
+                } else {
+                    //不存在则没有资源锁
+                    globalLockVo.setUuidList(Collections.singletonList("-1"));
+                }
+            }
+        }
     }
 
     @Override
