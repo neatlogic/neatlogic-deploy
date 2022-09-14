@@ -93,15 +93,14 @@ public class CreateDeployJobApi extends PrivateApiComponentBase {
         }
         JSONArray result = new JSONArray();
         DeployJobVo deployJobParam = JSONObject.toJavaObject(jsonObj, DeployJobVo.class);
-        deployJobService.initDeployParam(deployJobParam, false);
         BatchRunner<DeployJobModuleVo> runner = new BatchRunner<>();
         runner.execute(deployJobParam.getModuleList(), 3, module -> {
             if (module != null) {
                 try {
                     if (jsonObj.containsKey("triggerType")) {
-                        result.add(deployJobService.createScheduleJob(deployJobParam));
+                        result.add(deployJobService.createScheduleJob(deployJobParam, module));
                     } else {
-                        result.add(deployJobService.createJob(deployJobParam));
+                        result.add(deployJobService.createJobAndFire(deployJobParam, module));
                     }
                 } catch (Exception ex) {
                     logger.error(ex.getMessage(), ex);

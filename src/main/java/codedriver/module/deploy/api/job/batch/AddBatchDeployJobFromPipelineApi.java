@@ -16,10 +16,7 @@ import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.deploy.auth.BATCHDEPLOY_MODIFY;
 import codedriver.framework.deploy.auth.BATCHDEPLOY_VERIFY;
 import codedriver.framework.deploy.constvalue.JobSource;
-import codedriver.framework.deploy.dto.job.DeployJobAuthVo;
 import codedriver.framework.deploy.dto.job.DeployJobVo;
-import codedriver.framework.deploy.dto.job.LaneGroupVo;
-import codedriver.framework.deploy.dto.job.LaneVo;
 import codedriver.framework.deploy.dto.pipeline.*;
 import codedriver.framework.deploy.exception.DeployJobParamIrregularException;
 import codedriver.framework.deploy.exception.DeployPipelineNotFoundException;
@@ -34,7 +31,7 @@ import codedriver.framework.scheduler.exception.ScheduleHandlerNotFoundException
 import codedriver.module.deploy.dao.mapper.DeployJobMapper;
 import codedriver.module.deploy.dao.mapper.PipelineMapper;
 import codedriver.module.deploy.schedule.plugin.DeployBatchJobAutoFireJob;
-import codedriver.module.deploy.service.DeployJobService;
+import codedriver.module.deploy.service.DeployBatchJobService;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
@@ -56,7 +53,7 @@ public class AddBatchDeployJobFromPipelineApi extends PrivateApiComponentBase {
     private PipelineMapper pipelineMapper;
 
     @Resource
-    private DeployJobService deployJobService;
+    private DeployBatchJobService deployBatchJobService;
 
 
     @Override
@@ -110,67 +107,8 @@ public class AddBatchDeployJobFromPipelineApi extends PrivateApiComponentBase {
         }
         deployJobVo.setSource(JobSource.BATCHDEPLOY.getValue());
         deployJobVo.setExecUser(UserContext.get().getUserUuid());
-
-        if (CollectionUtils.isNotEmpty(pipelineVo.getLaneList())) {
-            for (int i = 0; i < pipelineVo.getLaneList().size(); i++) {
-                PipelineLaneVo pipelineLaneVo = pipelineVo.getLaneList().get(i);
-                LaneVo laneVo = new LaneVo();
-                boolean hasLaneJob = false;
-                if (CollectionUtils.isNotEmpty(pipelineLaneVo.getGroupList())) {
-                    for (int j = 0; j < pipelineLaneVo.getGroupList().size(); j++) {
-                        PipelineGroupVo pipelineGroupVo = pipelineLaneVo.getGroupList().get(j);
-                        LaneGroupVo groupVo = new LaneGroupVo();
-                        groupVo.setNeedWait(pipelineGroupVo.getNeedWait());
-                        boolean hasGroupJob = false;
-                        if (CollectionUtils.isNotEmpty(pipelineGroupVo.getJobTemplateList())) {
-                            for (int k = 0; k < pipelineGroupVo.getJobTemplateList().size(); k++) {
-                                PipelineJobTemplateVo jobTemplateVo = pipelineGroupVo.getJobTemplateList().get(k);
-                                Long versionId = getVersionId(appSystemModuleVersionList, jobTemplateVo);
-                                if (versionId != null) {
-                                    hasLaneJob = true;
-                                    hasGroupJob = true;
-                                    DeployJobVo jobVo = new DeployJobVo();
-                                    jobVo.setAppSystemId(jobTemplateVo.getAppSystemId());
-                                    jobVo.setAppModuleId(jobTemplateVo.getAppModuleId());
-                                    jobVo.setScenarioId(jobTemplateVo.getScenarioId());
-                                    jobVo.setEnvId(jobTemplateVo.getEnvId());
-                                    jobVo.setVersionId(versionId);
-                                    deployJobService.createBatchJob(jobVo);
-                                    deployJobMapper.insertGroupJob(groupVo.getId(), jobVo.getId(), k + 1);
-                                    deployJobMapper.insertJobInvoke(deployJobVo.getId(), jobVo.getId(), JobSource.BATCHDEPLOY.getValue());
-                                    jobVo.setParentId(deployJobVo.getId());
-                                    deployJobMapper.updateAutoExecJobParentIdById(jobVo);
-                                }
-                            }
-                        }
-                        if (hasGroupJob) {
-                            groupVo.setLaneId(laneVo.getId());
-                            groupVo.setSort(j + 1);
-                            groupVo.setStatus(JobStatus.PENDING.getValue());
-                            deployJobMapper.insertLaneGroup(groupVo);
-                        }
-                    }
-                }
-                if (hasLaneJob) {
-                    laneVo.setBatchJobId(deployJobVo.getId());
-                    laneVo.setSort(i + 1);
-                    laneVo.setStatus(JobStatus.PENDING.getValue());
-                    deployJobMapper.insertLane(laneVo);
-                }
-            }
-        }
-
-        deployJobMapper.insertAutoExecJob(deployJobVo);
+        deployBatchJobService.creatBatchJob(deployJobVo, pipelineVo, false);
         deployJobMapper.insertJobInvoke(deployJobVo.getId(), pipelineId, JobSource.PIPELINE.getValue());
-        if (CollectionUtils.isNotEmpty(pipelineVo.getAuthList())) {
-            for (PipelineAuthVo authVo : pipelineVo.getAuthList()) {
-                DeployJobAuthVo deployAuthVo = new DeployJobAuthVo();
-                deployAuthVo.setJobId(deployJobVo.getId());
-                deployAuthVo.setAuthUuid(authVo.getAuthUuid());
-                deployAuthVo.setType(authVo.getType());
-                deployJobMapper.insertDeployJobAuth(deployAuthVo);
-            }
-        }
 
         //补充定时执行逻辑
         if (Objects.equals(deployJobVo.getTriggerType(), JobTriggerType.AUTO.getValue())) {
