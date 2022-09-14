@@ -41,8 +41,6 @@ public interface DeployJobMapper {
 
     List<DeployJobVo> getDeployJobListByAppSystemIdAndAppModuleIdAndEnvId(@Param("appSystemId") Long appSystemId, @Param("appModuleId") Long appModuleId, @Param("envId") Long envId);
 
-    List<DeployJobVo> getBatchDeployJobListIncludeChildrenJobListByIdList(List<Long> idList);
-
     DeployJobContentVo getDeployJobContentLock(String contentHash);
 
     DeployJobVo getBatchDeployJobById(Long id);

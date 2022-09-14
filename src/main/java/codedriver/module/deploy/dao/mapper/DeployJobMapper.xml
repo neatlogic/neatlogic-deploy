@@ -523,7 +523,7 @@
         </collection>
     </resultMap>
 
-    <select id="getBatchDeployJobListIncludeChildrenJobListByIdList"
+    <select id="getParentDeployJobListIdList"
             resultMap="BatchDeployJobListIncludeChildrenJobListMap">
         SELECT aj.`id` as parentId,
         ajj.`id` as id,
@@ -544,7 +544,6 @@
         ajj.`reviewer` as reviewer,
         ajj.`review_status` as reviewStatus,
         ajj.`review_time` as reviewTime,
-        dj.`version` as version,
         e.`name` as scenarioName
         FROM `autoexec_job` aj
         join autoexec_job ajj on ajj.parent_id = aj.id

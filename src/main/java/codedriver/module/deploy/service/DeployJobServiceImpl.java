@@ -10,8 +10,10 @@ import codedriver.framework.autoexec.constvalue.JobAction;
 import codedriver.framework.autoexec.constvalue.JobTriggerType;
 import codedriver.framework.autoexec.crossover.IAutoexecJobActionCrossoverService;
 import codedriver.framework.autoexec.crossover.IAutoexecScenarioCrossoverMapper;
+import codedriver.framework.autoexec.dao.mapper.AutoexecJobMapper;
 import codedriver.framework.autoexec.dto.combop.AutoexecCombopExecuteConfigVo;
 import codedriver.framework.autoexec.dto.combop.AutoexecCombopExecuteNodeConfigVo;
+import codedriver.framework.autoexec.dto.job.AutoexecJobVo;
 import codedriver.framework.autoexec.dto.node.AutoexecNodeVo;
 import codedriver.framework.autoexec.dto.scenario.AutoexecScenarioVo;
 import codedriver.framework.autoexec.exception.AutoexecScenarioIsNotFoundException;
@@ -67,6 +69,9 @@ public class DeployJobServiceImpl implements DeployJobService {
     private DeployJobMapper deployJobMapper;
 
     @Resource
+    private AutoexecJobMapper autoexecJobMapper;
+
+    @Resource
     private DeployVersionMapper deployVersionMapper;
 
     @Override
@@ -87,12 +92,12 @@ public class DeployJobServiceImpl implements DeployJobService {
         if (StringUtils.isNotBlank(deployJobVo.getKeyword()) && CollectionUtils.isNotEmpty(returnList)) {
             List<DeployJobVo> batchJobList = returnList.stream().filter(e -> StringUtils.equals(JobSource.BATCHDEPLOY.getValue(), e.getSource())).collect(Collectors.toList());
             if (CollectionUtils.isNotEmpty(batchJobList)) {
-                List<DeployJobVo> batchDeployJobListIncludeChildrenJobList = deployJobMapper.getBatchDeployJobListIncludeChildrenJobListByIdList(batchJobList.stream().map(DeployJobVo::getId).collect(Collectors.toList()));
-                if (CollectionUtils.isNotEmpty(batchDeployJobListIncludeChildrenJobList)) {
-                    Map<Long, List<DeployJobVo>> batchJobChildrenListMap = batchDeployJobListIncludeChildrenJobList.stream().collect(Collectors.toMap(DeployJobVo::getId, DeployJobVo::getChildren));
+                List<AutoexecJobVo> parentDeployJobList = autoexecJobMapper.getParentDeployJobListIdList(batchJobList.stream().map(AutoexecJobVo::getId).collect(Collectors.toList()));
+                if (CollectionUtils.isNotEmpty(parentDeployJobList)) {
+                    Map<Long, List<AutoexecJobVo>> parentJobChildrenListMap = parentDeployJobList.stream().collect(Collectors.toMap(AutoexecJobVo::getId, AutoexecJobVo::getChildren));
                     for (DeployJobVo jobVo : returnList) {
                         if (StringUtils.equals(jobVo.getSource(), JobSource.BATCHDEPLOY.getValue())) {
-                            jobVo.setChildren(batchJobChildrenListMap.get(jobVo.getId()));
+                            jobVo.setChildren(parentJobChildrenListMap.get(jobVo.getId()));
                         }
                     }
                 }
