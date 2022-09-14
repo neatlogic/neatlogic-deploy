@@ -89,11 +89,11 @@ public class DeployJobServiceImpl implements DeployJobService {
         //补充子作业信息
         /*经产品核实：含有keyword查询时，匹配到的批量作业需要一次性返回子作业信息*/
         if (StringUtils.isNotBlank(deployJobVo.getKeyword()) && CollectionUtils.isNotEmpty(returnList)) {
-            List<DeployJobVo> batchJobList = returnList.stream().filter(e -> StringUtils.equals(JobSource.BATCHDEPLOY.getValue(), e.getSource())).collect(Collectors.toList());
-            if (CollectionUtils.isNotEmpty(batchJobList)) {
-                List<AutoexecJobVo> parentDeployJobList = autoexecJobMapper.getParentAutoexecJobListIdList(batchJobList.stream().map(AutoexecJobVo::getId).collect(Collectors.toList()));
-                if (CollectionUtils.isNotEmpty(parentDeployJobList)) {
-                    Map<Long, List<AutoexecJobVo>> parentJobChildrenListMap = parentDeployJobList.stream().collect(Collectors.toMap(AutoexecJobVo::getId, AutoexecJobVo::getChildren));
+            List<DeployJobVo> parentJobList = returnList.stream().filter(e -> StringUtils.equals(JobSource.BATCHDEPLOY.getValue(), e.getSource())).collect(Collectors.toList());
+            if (CollectionUtils.isNotEmpty(parentJobList)) {
+                List<AutoexecJobVo> parentInfoJobList = autoexecJobMapper.getParentAutoexecJobListIdList(parentJobList.stream().map(AutoexecJobVo::getId).collect(Collectors.toList()));
+                if (CollectionUtils.isNotEmpty(parentInfoJobList)) {
+                    Map<Long, List<AutoexecJobVo>> parentJobChildrenListMap = parentInfoJobList.stream().collect(Collectors.toMap(AutoexecJobVo::getId, AutoexecJobVo::getChildren));
                     for (DeployJobVo jobVo : returnList) {
                         if (StringUtils.equals(jobVo.getSource(), JobSource.BATCHDEPLOY.getValue())) {
                             jobVo.setChildren(parentJobChildrenListMap.get(jobVo.getId()));
