@@ -167,7 +167,7 @@ public class CallbackDeployCiGitlabEventApi extends PrivateApiComponentBase {
             }
             DeployJobVo deployJobParam = new DeployJobVo(ci.getAppSystemId(), scenarioId, envId, triggerType, triggerTime, ci.getConfig().getInteger("roundCount"), ci.getConfig().getJSONObject("param"));
             JSONArray selectNodeList = ci.getConfig().getJSONArray("selectNodeList");
-            DeployJobModuleVo moduleVo = new DeployJobModuleVo(ci.getAppModuleId(), versionName, CollectionUtils.isNotEmpty(selectNodeList) ? selectNodeList.toJavaList(AutoexecNodeVo.class) : null);
+            DeployJobModuleVo moduleVo = new DeployJobModuleVo(ci.getAppModuleId(), deployVersion != null ? deployVersion.getVersion() : null, CollectionUtils.isNotEmpty(selectNodeList) ? selectNodeList.toJavaList(AutoexecNodeVo.class) : null);
             // 包含编译工具则新建buildNo
             if (Objects.equals(scenarioVo.getIsHasBuildTypeTool(), 1)) {
                 moduleVo.setBuildNo(-1);
