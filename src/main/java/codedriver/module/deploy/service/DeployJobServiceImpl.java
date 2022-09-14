@@ -53,6 +53,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -90,7 +91,7 @@ public class DeployJobServiceImpl implements DeployJobService {
         if (StringUtils.isNotBlank(deployJobVo.getKeyword()) && CollectionUtils.isNotEmpty(returnList)) {
             List<DeployJobVo> batchJobList = returnList.stream().filter(e -> StringUtils.equals(JobSource.BATCHDEPLOY.getValue(), e.getSource())).collect(Collectors.toList());
             if (CollectionUtils.isNotEmpty(batchJobList)) {
-                List<AutoexecJobVo> parentDeployJobList = autoexecJobMapper.getParentDeployJobListIdList(batchJobList.stream().map(AutoexecJobVo::getId).collect(Collectors.toList()));
+                List<AutoexecJobVo> parentDeployJobList = autoexecJobMapper.getParentAutoexecJobListIdList(batchJobList.stream().map(AutoexecJobVo::getId).collect(Collectors.toList()));
                 if (CollectionUtils.isNotEmpty(parentDeployJobList)) {
                     Map<Long, List<AutoexecJobVo>> parentJobChildrenListMap = parentDeployJobList.stream().collect(Collectors.toMap(AutoexecJobVo::getId, AutoexecJobVo::getChildren));
                     for (DeployJobVo jobVo : returnList) {
