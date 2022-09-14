@@ -179,7 +179,7 @@ public class CallbackDeployCiGitlabEventApi extends PrivateApiComponentBase {
             if (!Objects.equals(ci.getTriggerType(), DeployCiTriggerType.INSTANT.getValue())) {
                 deployJobService.createScheduleJob(deployJobParam);
             } else {
-                deployJobService.createJob(deployJobParam);
+                deployJobService.createJobAndFire(deployJobParam, moduleVo);
             }
         }
         return null;

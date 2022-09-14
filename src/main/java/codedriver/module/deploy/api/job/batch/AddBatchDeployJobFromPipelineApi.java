@@ -135,7 +135,7 @@ public class AddBatchDeployJobFromPipelineApi extends PrivateApiComponentBase {
                                     jobVo.setScenarioId(jobTemplateVo.getScenarioId());
                                     jobVo.setEnvId(jobTemplateVo.getEnvId());
                                     jobVo.setVersionId(versionId);
-                                    deployJobService.createBatchJob(jobVo);
+                                    deployJobService.createJob(jobVo);
                                     deployJobMapper.insertGroupJob(groupVo.getId(), jobVo.getId(), k + 1);
                                     deployJobMapper.insertJobInvoke(deployJobVo.getId(), jobVo.getId(), JobSource.BATCHDEPLOY.getValue());
                                     jobVo.setParentId(deployJobVo.getId());
