@@ -89,7 +89,6 @@ public class DeployJobScheduleJob  extends JobBase {
 
     @Override
     public void executeInternal(JobExecutionContext context, JobObject jobObject) throws Exception {
-        System.out.println(1);
         String uuid = jobObject.getJobName();
         DeployScheduleVo scheduleVo = deployScheduleMapper.getScheduleByUuid(uuid);
         if (scheduleVo == null) {
