@@ -1155,7 +1155,7 @@
                                 wontFixIssues                 = #{wontFixIssues},
                                 alertStatus                   = #{alertStatus},
                                 qualityGateDetails            = #{qualityGateDetails},
-                                newMaintainabilityRatin       = #{newMaintainabilityRating}
+                                newMaintainabilityRating      = #{newMaintainabilityRating}
     </insert>
 
     <insert id="insertDeployVersionBuildQualityLog"
