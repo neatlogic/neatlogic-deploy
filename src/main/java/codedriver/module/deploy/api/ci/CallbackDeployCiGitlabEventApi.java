@@ -1,9 +1,11 @@
 package codedriver.module.deploy.api.ci;
 
+import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.autoexec.dto.combop.AutoexecCombopScenarioVo;
 import codedriver.framework.autoexec.dto.node.AutoexecNodeVo;
 import codedriver.framework.autoexec.exception.AutoexecScenarioIsNotFoundException;
 import codedriver.framework.common.constvalue.ApiParamType;
+import codedriver.framework.common.constvalue.SystemUser;
 import codedriver.framework.deploy.constvalue.DeployCiActionType;
 import codedriver.framework.deploy.constvalue.DeployCiTriggerType;
 import codedriver.framework.deploy.dto.app.DeployPipelineConfigVo;
@@ -13,6 +15,7 @@ import codedriver.framework.deploy.dto.job.DeployJobVo;
 import codedriver.framework.deploy.dto.version.DeployVersionVo;
 import codedriver.framework.deploy.exception.DeployAppConfigNotFoundException;
 import codedriver.framework.deploy.exception.DeployCiNotFoundException;
+import codedriver.framework.filter.core.LoginAuthHandlerBase;
 import codedriver.framework.restful.annotation.Description;
 import codedriver.framework.restful.annotation.Input;
 import codedriver.framework.restful.annotation.OperationType;
@@ -115,7 +118,12 @@ public class CallbackDeployCiGitlabEventApi extends PrivateApiComponentBase {
         int useCommitId = versionRule.getInteger("useCommitId") != null ? versionRule.getInteger("useCommitId") : 0;
         String versionName = getVersionName(branchName, versionRegex, versionPrefix, commitId, useCommitId);
         DeployVersionVo deployVersion = deployVersionMapper.getDeployVersionBaseInfoBySystemIdAndModuleIdAndVersion(new DeployVersionVo(versionName, ci.getAppSystemId(), ci.getAppModuleId()));
-        // todo 根据场景判断是否需要新建版本
+        /* todo
+            只要场景包含编译，那么新建buildNo和新建版本（如果版本不存在）
+            如果场景只包含部署，那么新建版本（如果版本不存在）
+            如果场景不含编译和部署，那么buildNo和版本都不新建
+         */
+        // 普通作业
         if (DeployCiActionType.CREATE_JOB.getValue().equals(ci.getAction())) {
             Long scenarioId = ci.getConfig().getLong("scenarioId");
             Long envId = ci.getConfig().getLong("envId");
@@ -135,7 +143,8 @@ public class CallbackDeployCiGitlabEventApi extends PrivateApiComponentBase {
                 throw new AutoexecScenarioIsNotFoundException(scenarioId);
             }
             AutoexecCombopScenarioVo scenarioVo = scenarioOptional.get();
-            if (deployVersion == null && Objects.equals(scenarioVo.getIsHasBuildTypeTool(), 1)) {
+            // 如果版本不存在且包含编译或部署工具
+            if (deployVersion == null && (Objects.equals(scenarioVo.getIsHasBuildTypeTool(), 1) || Objects.equals(scenarioVo.getIsHasDeployTypeTool(), 1))) {
                 deployVersion = new DeployVersionVo(versionName, ci.getAppSystemId(), ci.getAppModuleId(), 0);
                 deployVersionMapper.insertDeployVersion(deployVersion);
             }
@@ -156,12 +165,18 @@ public class CallbackDeployCiGitlabEventApi extends PrivateApiComponentBase {
             if (DeployCiTriggerType.INSTANT.getValue().equals(ci.getTriggerType())) {
                 triggerType = DeployCiTriggerType.AUTO.getValue();
             }
-            // todo 是否新建buildNo
             DeployJobVo deployJobParam = new DeployJobVo(ci.getAppSystemId(), scenarioId, envId, triggerType, triggerTime, ci.getConfig().getInteger("roundCount"), ci.getConfig().getJSONObject("param"));
             JSONArray selectNodeList = ci.getConfig().getJSONArray("selectNodeList");
-            deployJobParam.setModuleList(Collections.singletonList(new DeployJobModuleVo(ci.getAppModuleId(), versionName, CollectionUtils.isNotEmpty(selectNodeList) ? selectNodeList.toJavaList(AutoexecNodeVo.class) : null)));
+            DeployJobModuleVo moduleVo = new DeployJobModuleVo(ci.getAppModuleId(), versionName, CollectionUtils.isNotEmpty(selectNodeList) ? selectNodeList.toJavaList(AutoexecNodeVo.class) : null);
+            // 包含编译工具则新建buildNo
+            if (Objects.equals(scenarioVo.getIsHasBuildTypeTool(), 1)) {
+                moduleVo.setBuildNo(-1);
+            }
+            deployJobParam.setModuleList(Collections.singletonList(moduleVo));
+            UserContext.init(SystemUser.SYSTEM.getUserVo(), SystemUser.SYSTEM.getTimezone());
+            UserContext.get().setToken("GZIP_" + LoginAuthHandlerBase.buildJwt(SystemUser.SYSTEM.getUserVo()).getCc());
             deployJobService.initDeployParam(deployJobParam, false);
-            if (!Objects.equals(ci.getTriggerType(), DeployCiTriggerType.MANUAL.getValue())) {
+            if (!Objects.equals(ci.getTriggerType(), DeployCiTriggerType.INSTANT.getValue())) {
                 deployJobService.createScheduleJob(deployJobParam);
             } else {
                 deployJobService.createJob(deployJobParam);
