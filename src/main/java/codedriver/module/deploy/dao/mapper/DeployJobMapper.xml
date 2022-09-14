@@ -495,66 +495,6 @@
           and job_id = #{jobId}
     </select>
 
-    <resultMap id="BatchDeployJobListIncludeChildrenJobListMap" type="codedriver.framework.deploy.dto.job.DeployJobVo">
-        <id column="parentId" property="id"/>
-        <collection property="children" ofType="codedriver.framework.deploy.dto.job.DeployJobVo">
-            <id column="id" property="id"/>
-            <result column="name" property="name"/>
-            <result column="status" property="status"/>
-            <result column="errorMsg" property="errorMsg"/>
-            <result column="planStartTime" property="planStartTime"/>
-            <result column="startTime" property="startTime"/>
-            <result column="endTime" property="endTime"/>
-            <result column="operationId" property="operationId"/>
-            <result column="operationType" property="operationType"/>
-            <result column="execUser" property="execUser"/>
-            <result column="execUserType" property="execUserType"/>
-            <result column="source" property="source"/>
-            <result column="roundCount" property="roundCount"/>
-            <result column="source" property="source"/>
-            <result column="source" property="source"/>
-            <result column="triggerType" property="triggerType"/>
-            <result column="parentId" property="parentId"/>
-            <result column="reviewer" property="reviewer"/>
-            <result column="reviewStatus" property="reviewStatus"/>
-            <result column="reviewTime" property="reviewTime"/>
-            <result column="version" property="version"/>
-            <result column="scenarioName" property="scenarioName"/>
-        </collection>
-    </resultMap>
-
-    <select id="getParentDeployJobListIdList"
-            resultMap="BatchDeployJobListIncludeChildrenJobListMap">
-        SELECT aj.`id` as parentId,
-        ajj.`id` as id,
-        ajj.`name` as name,
-        ajj.`status` as status,
-        ajj.`error_msg` as errorMsg,
-        ajj.`plan_start_time` as planStartTime,
-        ajj.`start_time` as startTime,
-        ajj.`end_time` as endTime,
-        ajj.`operation_id` as operationId,
-        ajj.`operation_type` as operationType,
-        ajj.`exec_user` as execUser,
-        ajj.`exec_user_type` as execUserType,
-        ajj.`source` as source,
-        ajj.`round_count` as roundCount,
-        ajj.`trigger_type` as triggerType,
-        ajj.`parent_id` as parentId,
-        ajj.`reviewer` as reviewer,
-        ajj.`review_status` as reviewStatus,
-        ajj.`review_time` as reviewTime,
-        e.`name` as scenarioName
-        FROM `autoexec_job` aj
-        join autoexec_job ajj on ajj.parent_id = aj.id
-        join deploy_job dj ON dj.id = ajj.id
-        left join autoexec_scenario e on dj.scenario_id = e.id
-        where aj.id in
-        <foreach collection="list" item="id" open="(" separator="," close=")">
-            #{id}
-        </foreach>
-    </select>
-
     <insert id="insertDeployJob">
         insert into deploy_job (`id`, `app_system_id`, `app_module_id`, `env_id`, `version`, `version_id`,
                                 `runner_map_id`,
