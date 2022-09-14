@@ -175,9 +175,8 @@ public class CallbackDeployCiGitlabEventApi extends PrivateApiComponentBase {
             deployJobParam.setModuleList(Collections.singletonList(moduleVo));
             UserContext.init(SystemUser.SYSTEM.getUserVo(), SystemUser.SYSTEM.getTimezone());
             UserContext.get().setToken("GZIP_" + LoginAuthHandlerBase.buildJwt(SystemUser.SYSTEM.getUserVo()).getCc());
-            deployJobService.initDeployParam(deployJobParam, false);
             if (!Objects.equals(ci.getTriggerType(), DeployCiTriggerType.INSTANT.getValue())) {
-                deployJobService.createScheduleJob(deployJobParam);
+                deployJobService.createScheduleJob(deployJobParam, moduleVo);
             } else {
                 deployJobService.createJobAndFire(deployJobParam, moduleVo);
             }
