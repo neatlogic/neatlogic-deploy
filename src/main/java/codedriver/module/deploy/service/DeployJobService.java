@@ -5,6 +5,7 @@
 
 package codedriver.module.deploy.service;
 
+import codedriver.framework.deploy.dto.job.DeployJobModuleVo;
 import codedriver.framework.deploy.dto.job.DeployJobVo;
 import com.alibaba.fastjson.JSONObject;
 
@@ -15,26 +16,19 @@ public interface DeployJobService {
     List<DeployJobVo> searchDeployJob(DeployJobVo deployJobVo);
 
     /**
-     * 校验&&补充作业参数
+     * 转为自动化通用格式
      *
      * @param deployJobParam 入参
-     * @param isBatch        是否批量
      */
-    void initDeployParam(DeployJobVo deployJobParam, Boolean isBatch);
+    void convertModule(DeployJobVo deployJobParam);
 
     /**
      * 转为自动化通用格式
      *
      * @param deployJobParam 入参
+     * @param moduleVo       模块
      */
-    void convertModuleList(DeployJobVo deployJobParam);
-
-    /**
-     * 转为自动化通用格式
-     *
-     * @param deployJobParam 入参
-     */
-    void convertSingleModule(DeployJobVo deployJobParam);
+    void convertModule(DeployJobVo deployJobParam, DeployJobModuleVo moduleVo);
 
     /**
      * 创建超级流水线发布作业
@@ -42,8 +36,25 @@ public interface DeployJobService {
      * @param autoexecJobParam 作业入参
      * @return result
      */
-    JSONObject createBatchJob(DeployJobVo autoexecJobParam) throws Exception;
+    JSONObject createJob(DeployJobVo autoexecJobParam) throws Exception;
 
+    /**
+     * 创建超级流水线发布作业
+     *
+     * @param autoexecJobParam 作业入参
+     * @param module           模块
+     * @return result
+     */
+    JSONObject createJob(DeployJobVo autoexecJobParam, DeployJobModuleVo module) throws Exception;
+
+    /**
+     * 创建发布作业,用于moduleList 格式
+     *
+     * @param autoexecJobParam 作业入参
+     * @param module           模块
+     * @return result
+     */
+    JSONObject createJobAndFire(DeployJobVo autoexecJobParam, DeployJobModuleVo module) throws Exception;
 
     /**
      * 创建发布作业
@@ -51,14 +62,16 @@ public interface DeployJobService {
      * @param autoexecJobParam 作业入参
      * @return result
      */
-    JSONObject createJob(DeployJobVo autoexecJobParam) throws Exception;
+    JSONObject createJobAndFire(DeployJobVo autoexecJobParam) throws Exception;
+
     /**
      * 创建定时发布作业
      *
      * @param deployJobVo 入参
+     * @param module      模块
      * @return result
      */
-    JSONObject createScheduleJob(DeployJobVo deployJobVo);
+    JSONObject createScheduleJob(DeployJobVo deployJobVo, DeployJobModuleVo module);
 
 
     /**

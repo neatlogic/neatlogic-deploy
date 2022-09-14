@@ -5,10 +5,14 @@
 
 package codedriver.module.deploy.service;
 
+import codedriver.framework.deploy.dto.job.DeployJobVo;
 import codedriver.framework.deploy.dto.job.LaneGroupVo;
+import codedriver.framework.deploy.dto.pipeline.PipelineVo;
 import com.alibaba.fastjson.JSONObject;
 
 public interface DeployBatchJobService {
+
+    void creatBatchJob(DeployJobVo deployJobVo, PipelineVo pipelineVo, boolean isFire) throws Exception;
     /**
      * 执行批量作业
      *
