@@ -96,6 +96,9 @@ public class GetDeployAppPipelineDraftApi extends PrivateApiComponentBase {
                 .withAppModuleDraft(isAppModuleDraft)
                 .withEnvDraft(isEnvDraft)
                 .getConfig();
+        if (deployPipelineConfigVo == null) {
+            return null;
+        }
         searchVo.setConfig(deployPipelineConfigVo);
         return searchVo;
     }
