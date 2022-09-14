@@ -26,6 +26,7 @@ import codedriver.framework.cmdb.crossover.IResourceCrossoverMapper;
 import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
 import codedriver.framework.cmdb.dto.resourcecenter.ResourceVo;
 import codedriver.framework.cmdb.exception.cientity.CiEntityNotFoundException;
+import codedriver.framework.common.constvalue.SystemUser;
 import codedriver.framework.crossover.CrossoverServiceFactory;
 import codedriver.framework.dao.mapper.runner.RunnerMapper;
 import codedriver.framework.deploy.auth.BATCHDEPLOY_MODIFY;
@@ -433,9 +434,13 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
 
     @Override
     public void myExecuteAuthCheck(AutoexecJobVo jobVo) {
+        DeployJobVo deployJobVo = (DeployJobVo) jobVo;
         //包含BATCHJOB_MODIFY 则拥有所有应用的执行权限
-        if (!AuthActionChecker.checkByUserUuid(UserContext.get().getUserUuid(true), BATCHDEPLOY_MODIFY.class.getSimpleName())) {
-            DeployJobVo deployJobVo = deployJobMapper.getDeployJobByJobId(jobVo.getId());
+        if (!AuthActionChecker.checkByUserUuid(UserContext.get().getUserUuid(true), BATCHDEPLOY_MODIFY.class.getSimpleName()) && !Objects.equals(UserContext.get().getUserUuid(), SystemUser.SYSTEM.getUserUuid())) {
+            DeployJobVo deployJobTmp = deployJobMapper.getDeployJobByJobId(jobVo.getId());
+            if (deployJobTmp != null) {
+                deployJobVo = deployJobTmp;
+            }
             Set<String> authSet = DeployAppAuthChecker.builder(deployJobVo.getAppSystemId()).addEnvAction(deployJobVo.getEnvId()).addScenarioAction(deployJobVo.getScenarioId()).check();
             if (!authSet.containsAll(Arrays.asList(deployJobVo.getEnvId().toString(), deployJobVo.getScenarioId().toString()))) {
                 throw new DeployJobCannotExecuteException(deployJobVo);
