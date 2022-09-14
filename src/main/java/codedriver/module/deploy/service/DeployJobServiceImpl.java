@@ -10,8 +10,10 @@ import codedriver.framework.autoexec.constvalue.JobAction;
 import codedriver.framework.autoexec.constvalue.JobTriggerType;
 import codedriver.framework.autoexec.crossover.IAutoexecJobActionCrossoverService;
 import codedriver.framework.autoexec.crossover.IAutoexecScenarioCrossoverMapper;
+import codedriver.framework.autoexec.dao.mapper.AutoexecJobMapper;
 import codedriver.framework.autoexec.dto.combop.AutoexecCombopExecuteConfigVo;
 import codedriver.framework.autoexec.dto.combop.AutoexecCombopExecuteNodeConfigVo;
+import codedriver.framework.autoexec.dto.job.AutoexecJobVo;
 import codedriver.framework.autoexec.dto.node.AutoexecNodeVo;
 import codedriver.framework.autoexec.dto.scenario.AutoexecScenarioVo;
 import codedriver.framework.autoexec.exception.AutoexecScenarioIsNotFoundException;
@@ -51,6 +53,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -65,10 +68,14 @@ public class DeployJobServiceImpl implements DeployJobService {
     private DeployJobMapper deployJobMapper;
 
     @Resource
+    private AutoexecJobMapper autoexecJobMapper;
+
+    @Resource
     private DeployVersionMapper deployVersionMapper;
 
     @Override
     public List<DeployJobVo> searchDeployJob(DeployJobVo deployJobVo) {
+        List<DeployJobVo> returnList = new ArrayList<>();
         if (CollectionUtils.isEmpty(deployJobVo.getIdList())) {
             int rowNum = deployJobMapper.searchDeployJobCount(deployJobVo);
             deployJobVo.setRowNum(rowNum);
@@ -76,9 +83,26 @@ public class DeployJobServiceImpl implements DeployJobService {
             deployJobVo.setIdList(idList);
         }
         if (CollectionUtils.isNotEmpty(deployJobVo.getIdList())) {
-            return deployJobMapper.searchDeployJob(deployJobVo);
+            returnList = deployJobMapper.searchDeployJob(deployJobVo);
         }
-        return null;
+
+        //补充子作业信息
+        /*经产品核实：含有keyword查询时，匹配到的批量作业需要一次性返回子作业信息*/
+        if (StringUtils.isNotBlank(deployJobVo.getKeyword()) && CollectionUtils.isNotEmpty(returnList)) {
+            List<DeployJobVo> parentJobList = returnList.stream().filter(e -> StringUtils.equals(JobSource.BATCHDEPLOY.getValue(), e.getSource())).collect(Collectors.toList());
+            if (CollectionUtils.isNotEmpty(parentJobList)) {
+                List<AutoexecJobVo> parentInfoJobList = autoexecJobMapper.getParentAutoexecJobListIdList(parentJobList.stream().map(AutoexecJobVo::getId).collect(Collectors.toList()));
+                if (CollectionUtils.isNotEmpty(parentInfoJobList)) {
+                    Map<Long, List<AutoexecJobVo>> parentJobChildrenListMap = parentInfoJobList.stream().collect(Collectors.toMap(AutoexecJobVo::getId, AutoexecJobVo::getChildren));
+                    for (DeployJobVo jobVo : returnList) {
+                        if (StringUtils.equals(jobVo.getSource(), JobSource.BATCHDEPLOY.getValue())) {
+                            jobVo.setChildren(parentJobChildrenListMap.get(jobVo.getId()));
+                        }
+                    }
+                }
+            }
+        }
+        return returnList;
     }
 
     /**
