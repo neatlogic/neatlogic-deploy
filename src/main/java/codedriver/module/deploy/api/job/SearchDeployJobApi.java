@@ -53,8 +53,33 @@ public class SearchDeployJobApi extends PrivateApiComponentBase {
         return "/deploy/job/search";
     }
 
-    @Input({@Param(name = "appSystemId", type = ApiParamType.LONG, desc = "应用系统id"), @Param(name = "appModuleId", type = ApiParamType.LONG, desc = "应用模块id"), @Param(name = "envId", type = ApiParamType.LONG, desc = "环境id"), @Param(name = "parentId", type = ApiParamType.LONG, desc = "父作业id"), @Param(name = "pipelineId", type = ApiParamType.LONG, desc = "超级流水线id"), @Param(name = "statusList", type = ApiParamType.JSONARRAY, desc = "作业状态"), @Param(name = "typeIdList", type = ApiParamType.JSONARRAY, desc = "组合工具类型"), @Param(name = "idList", type = ApiParamType.JSONARRAY, desc = "id列表，用于精确查找作业刷新状态"), @Param(name = "excludeIdList", type = ApiParamType.JSONARRAY, desc = "排除id列表"), @Param(name = "confId", type = ApiParamType.LONG, desc = "自动发现配置id"), @Param(name = "startTimeRange", type = ApiParamType.JSONARRAY, desc = "开始时间范围"), @Param(name = "endTimeRange", type = ApiParamType.JSONARRAY, desc = "结束时间范围"), @Param(name = "planStartTimeRange", type = ApiParamType.JSONARRAY, desc = "计划时间范围"), @Param(name = "execUserList", type = ApiParamType.JSONARRAY, desc = "操作人"), @Param(name = "keyword", type = ApiParamType.STRING, desc = "关键词", xss = true), @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "当前页"), @Param(name = "hasParent", type = ApiParamType.BOOLEAN, desc = "是否拥有父作业"), @Param(name = "sourceList", type = ApiParamType.JSONARRAY, desc = "来源，默认是deploy，batchdeploy"), @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "每页数据条目"), @Param(name = "parentId", type = ApiParamType.LONG, desc = "父作业id")})
-    @Output({@Param(name = "tbodyList", type = ApiParamType.JSONARRAY, explode = AutoexecJobVo[].class, desc = "列表"), @Param(explode = BasePageVo.class)})
+    @Input({
+            @Param(name = "appSystemId", type = ApiParamType.LONG, desc = "应用系统id"),
+            @Param(name = "appModuleId", type = ApiParamType.LONG, desc = "应用模块id"),
+            @Param(name = "envId", type = ApiParamType.LONG, desc = "环境id"),
+            @Param(name = "parentId", type = ApiParamType.LONG, desc = "父作业id"),
+            @Param(name = "pipelineId", type = ApiParamType.LONG, desc = "超级流水线id"),
+            @Param(name = "statusList", type = ApiParamType.JSONARRAY, desc = "作业状态"),
+            @Param(name = "invokeIdList", type = ApiParamType.JSONARRAY, desc = "引用id列表"),
+            @Param(name = "typeIdList", type = ApiParamType.JSONARRAY, desc = "组合工具类型"),
+            @Param(name = "idList", type = ApiParamType.JSONARRAY, desc = "id列表，用于精确查找作业刷新状态"),
+            @Param(name = "excludeIdList", type = ApiParamType.JSONARRAY, desc = "排除id列表"),
+            @Param(name = "confId", type = ApiParamType.LONG, desc = "自动发现配置id"),
+            @Param(name = "startTimeRange", type = ApiParamType.JSONARRAY, desc = "开始时间范围"),
+            @Param(name = "endTimeRange", type = ApiParamType.JSONARRAY, desc = "结束时间范围"),
+            @Param(name = "planStartTimeRange", type = ApiParamType.JSONARRAY, desc = "计划时间范围"),
+            @Param(name = "execUserList", type = ApiParamType.JSONARRAY, desc = "操作人"),
+            @Param(name = "keyword", type = ApiParamType.STRING, desc = "关键词", xss = true),
+            @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "当前页"),
+            @Param(name = "hasParent", type = ApiParamType.BOOLEAN, desc = "是否拥有父作业"),
+            @Param(name = "sourceList", type = ApiParamType.JSONARRAY, desc = "来源，默认是deploy，batchdeploy"),
+            @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "每页数据条目"),
+            @Param(name = "parentId", type = ApiParamType.LONG, desc = "父作业id")
+    })
+    @Output({
+            @Param(name = "tbodyList", type = ApiParamType.JSONARRAY, explode = AutoexecJobVo[].class, desc = "列表"),
+            @Param(explode = BasePageVo.class)
+    })
     @Description(desc = "查询发布作业接口")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {

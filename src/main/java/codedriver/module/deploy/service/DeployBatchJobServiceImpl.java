@@ -15,10 +15,14 @@ import codedriver.framework.autoexec.dao.mapper.AutoexecJobMapper;
 import codedriver.framework.autoexec.dto.job.AutoexecJobVo;
 import codedriver.framework.autoexec.job.action.core.AutoexecJobActionHandlerFactory;
 import codedriver.framework.autoexec.job.action.core.IAutoexecJobActionHandler;
+import codedriver.framework.deploy.constvalue.JobSource;
 import codedriver.framework.deploy.crossover.IDeployBatchJobCrossoverService;
+import codedriver.framework.deploy.dto.job.DeployJobAuthVo;
 import codedriver.framework.deploy.dto.job.DeployJobVo;
 import codedriver.framework.deploy.dto.job.LaneGroupVo;
 import codedriver.framework.deploy.dto.job.LaneVo;
+import codedriver.framework.deploy.dto.pipeline.*;
+import codedriver.framework.deploy.dto.version.DeploySystemModuleVersionVo;
 import codedriver.framework.deploy.exception.*;
 import codedriver.framework.exception.core.ApiRuntimeException;
 import codedriver.framework.scheduler.core.IJob;
@@ -49,9 +53,87 @@ public class DeployBatchJobServiceImpl implements DeployBatchJobService, IDeploy
     @Resource
     AutoexecJobMapper autoexecJobMapper;
     @Resource
+    DeployJobService deployJobService;
+    @Resource
     DeployBatchJobMapper deployBatchJobMapper;
     @Resource
     SchedulerManager schedulerManager;
+
+    @Override
+    public void creatBatchJob(DeployJobVo deployJobVo, PipelineVo pipelineVo, boolean isFire) throws Exception {
+        if (CollectionUtils.isNotEmpty(pipelineVo.getLaneList())) {
+            for (int i = 0; i < pipelineVo.getLaneList().size(); i++) {
+                PipelineLaneVo pipelineLaneVo = pipelineVo.getLaneList().get(i);
+                LaneVo laneVo = new LaneVo();
+                boolean hasLaneJob = false;
+                if (CollectionUtils.isNotEmpty(pipelineLaneVo.getGroupList())) {
+                    for (int j = 0; j < pipelineLaneVo.getGroupList().size(); j++) {
+                        PipelineGroupVo pipelineGroupVo = pipelineLaneVo.getGroupList().get(j);
+                        LaneGroupVo groupVo = new LaneGroupVo();
+                        groupVo.setNeedWait(pipelineGroupVo.getNeedWait());
+                        boolean hasGroupJob = false;
+                        if (CollectionUtils.isNotEmpty(pipelineGroupVo.getJobTemplateList())) {
+                            for (int k = 0; k < pipelineGroupVo.getJobTemplateList().size(); k++) {
+                                PipelineJobTemplateVo jobTemplateVo = pipelineGroupVo.getJobTemplateList().get(k);
+                                Long versionId = getVersionId(deployJobVo.getAppSystemModuleVersionList(), jobTemplateVo);
+                                if (versionId != null) {
+                                    hasLaneJob = true;
+                                    hasGroupJob = true;
+                                    DeployJobVo jobVo = new DeployJobVo();
+                                    jobVo.setAppSystemId(jobTemplateVo.getAppSystemId());
+                                    jobVo.setAppModuleId(jobTemplateVo.getAppModuleId());
+                                    jobVo.setScenarioId(jobTemplateVo.getScenarioId());
+                                    jobVo.setEnvId(jobTemplateVo.getEnvId());
+                                    jobVo.setVersionId(versionId);
+                                    if (isFire) {
+                                        deployJobService.createJobAndFire(jobVo);
+                                    } else {
+                                        deployJobService.createJob(jobVo);
+                                    }
+                                    deployJobMapper.insertGroupJob(groupVo.getId(), jobVo.getId(), k + 1);
+                                    deployJobMapper.insertJobInvoke(deployJobVo.getId(), jobVo.getId(), JobSource.BATCHDEPLOY.getValue());
+                                    jobVo.setParentId(deployJobVo.getId());
+                                    deployJobMapper.updateAutoExecJobParentIdById(jobVo);
+                                }
+                            }
+                        }
+                        if (hasGroupJob) {
+                            groupVo.setLaneId(laneVo.getId());
+                            groupVo.setSort(j + 1);
+                            groupVo.setStatus(JobStatus.PENDING.getValue());
+                            deployJobMapper.insertLaneGroup(groupVo);
+                        }
+                    }
+                }
+                if (hasLaneJob) {
+                    laneVo.setBatchJobId(deployJobVo.getId());
+                    laneVo.setSort(i + 1);
+                    laneVo.setStatus(JobStatus.PENDING.getValue());
+                    deployJobMapper.insertLane(laneVo);
+                }
+            }
+        }
+
+        deployJobMapper.insertAutoExecJob(deployJobVo);
+        if (CollectionUtils.isNotEmpty(pipelineVo.getAuthList())) {
+            for (PipelineAuthVo authVo : pipelineVo.getAuthList()) {
+                DeployJobAuthVo deployAuthVo = new DeployJobAuthVo();
+                deployAuthVo.setJobId(deployJobVo.getId());
+                deployAuthVo.setAuthUuid(authVo.getAuthUuid());
+                deployAuthVo.setType(authVo.getType());
+                deployJobMapper.insertDeployJobAuth(deployAuthVo);
+            }
+        }
+    }
+
+    private Long getVersionId(List<DeploySystemModuleVersionVo> appSystemModuleVersionList, PipelineJobTemplateVo jobTemplateVo) {
+        for (DeploySystemModuleVersionVo appSystemModuleVersionVo : appSystemModuleVersionList) {
+            if (appSystemModuleVersionVo.getAppSystemId().equals(jobTemplateVo.getAppSystemId()) && appSystemModuleVersionVo.getAppModuleId().equals(jobTemplateVo.getAppModuleId())) {
+                return appSystemModuleVersionVo.getVersionId();
+            }
+        }
+        return null;
+    }
 
     @Override
     public void fireBatch(Long batchJobId, String batchJobAction, String jobAction) {

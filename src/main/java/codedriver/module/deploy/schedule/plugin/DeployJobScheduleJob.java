@@ -6,15 +6,21 @@
 package codedriver.module.deploy.schedule.plugin;
 
 import codedriver.framework.asynchronization.threadlocal.TenantContext;
+import codedriver.framework.autoexec.constvalue.JobStatus;
+import codedriver.framework.autoexec.constvalue.ReviewStatus;
 import codedriver.framework.deploy.constvalue.JobSource;
 import codedriver.framework.deploy.constvalue.PipelineType;
 import codedriver.framework.deploy.constvalue.ScheduleType;
 import codedriver.framework.deploy.dto.job.DeployJobVo;
+import codedriver.framework.deploy.dto.pipeline.PipelineVo;
 import codedriver.framework.deploy.dto.schedule.DeployScheduleConfigVo;
 import codedriver.framework.deploy.dto.schedule.DeployScheduleVo;
 import codedriver.framework.scheduler.core.JobBase;
 import codedriver.framework.scheduler.dto.JobObject;
+import codedriver.module.deploy.dao.mapper.DeployJobMapper;
 import codedriver.module.deploy.dao.mapper.DeployScheduleMapper;
+import codedriver.module.deploy.dao.mapper.PipelineMapper;
+import codedriver.module.deploy.service.DeployBatchJobService;
 import codedriver.module.deploy.service.DeployJobService;
 import org.quartz.DisallowConcurrentExecution;
 import org.quartz.JobExecutionContext;
@@ -30,7 +36,13 @@ public class DeployJobScheduleJob  extends JobBase {
     @Resource
     private DeployScheduleMapper deployScheduleMapper;
     @Resource
+    private PipelineMapper pipelineMapper;
+    @Resource
+    private DeployJobMapper deployJobMapper;
+    @Resource
     private DeployJobService deployJobService;
+    @Resource
+    private DeployBatchJobService deployBatchJobService;
 
     @Override
     public String getGroupName() {
@@ -83,31 +95,39 @@ public class DeployJobScheduleJob  extends JobBase {
         DeployScheduleVo scheduleVo = deployScheduleMapper.getScheduleByUuid(uuid);
         if (scheduleVo == null) {
             schedulerManager.unloadJob(jobObject);
+            return;
         }
+        DeployJobVo deployJobVo = convertDeployScheduleVoToDeployJobVo(scheduleVo);
         String type = scheduleVo.getType();
         if (type.equals(ScheduleType.GENERAL.getValue())) {
-            DeployJobVo deployJobVo = convertDeployScheduleVoToDeployJobVo(scheduleVo);
             deployJobService.createJobAndFire(deployJobVo);
         } else if(type.equals(ScheduleType.PIPELINE.getValue())) {
-            String pipelineType = scheduleVo.getPipelineType();
-            if (pipelineType.equals(PipelineType.APPSYSTEM.getValue())) {
-
-            } else if (pipelineType.equals(PipelineType.GLOBAL.getValue())) {
-
+            PipelineVo pipelineVo = pipelineMapper.getPipelineById(scheduleVo.getPipelineId());
+            if (pipelineVo == null) {
+                schedulerManager.unloadJob(jobObject);
+                return;
             }
+            deployBatchJobService.creatBatchJob(deployJobVo, pipelineVo, true);
+            deployJobMapper.insertJobInvoke(deployJobVo.getId(), deployJobVo.getInvokeId(), deployJobVo.getSource());
         }
     }
 
     private DeployJobVo convertDeployScheduleVoToDeployJobVo(DeployScheduleVo scheduleVo) {
         DeployJobVo deployJobVo = new DeployJobVo();
-        deployJobVo.setId(scheduleVo.getId());
         DeployScheduleConfigVo config = scheduleVo.getConfig();
         deployJobVo.setScenarioId(config.getScenarioId());
         deployJobVo.setModuleList(config.getModuleList());
         deployJobVo.setEnvId(config.getEnvId());
         deployJobVo.setParam(config.getParam());
         deployJobVo.setSource(JobSource.DEPLOYSCHEDULE.getValue());
+        deployJobVo.setInvokeId(scheduleVo.getId());
         deployJobVo.setRoundCount(config.getRoundCount());
+        deployJobVo.setPipelineId(scheduleVo.getPipelineId());
+        deployJobVo.setAppSystemModuleVersionList(config.getAppSystemModuleVersionList());
+        deployJobVo.setAppSystemId(scheduleVo.getAppSystemId());
+        deployJobVo.setAppModuleId(scheduleVo.getAppModuleId());
+        deployJobVo.setStatus(JobStatus.READY.getValue());
+        deployJobVo.setReviewStatus(ReviewStatus.PASSED.getValue());
         return deployJobVo;
     }
 }
