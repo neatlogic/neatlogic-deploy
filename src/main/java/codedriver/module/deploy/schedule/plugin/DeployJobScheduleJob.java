@@ -87,8 +87,7 @@ public class DeployJobScheduleJob  extends JobBase {
         String type = scheduleVo.getType();
         if (type.equals(ScheduleType.GENERAL.getValue())) {
             DeployJobVo deployJobVo = convertDeployScheduleVoToDeployJobVo(scheduleVo);
-            deployJobService.initDeployParam(deployJobVo, false);
-            deployJobService.createJob(deployJobVo);
+            deployJobService.createJobAndFire(deployJobVo);
         } else if(type.equals(ScheduleType.PIPELINE.getValue())) {
             String pipelineType = scheduleVo.getPipelineType();
             if (pipelineType.equals(PipelineType.APPSYSTEM.getValue())) {
