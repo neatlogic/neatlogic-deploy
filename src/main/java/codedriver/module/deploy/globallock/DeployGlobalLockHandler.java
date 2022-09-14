@@ -158,20 +158,20 @@ public class DeployGlobalLockHandler extends GlobalLockHandlerBase {
     }
 
     @Override
-    public void initSearchParam(GlobalLockVo globalLockVo){
+    public void initSearchParam(GlobalLockVo globalLockVo) {
         JSONObject keywordParam = globalLockVo.getKeywordParam();
-        if(MapUtils.isNotEmpty(keywordParam)){
-            if (keywordParam.containsKey("appSystemId")){
-                globalLockVo.setKeyword(keywordParam.getString("appSystemId")+"/");
-                if (keywordParam.containsKey("appModuleId")){
+        if (MapUtils.isNotEmpty(keywordParam)) {
+            if (keywordParam.containsKey("appSystemId")) {
+                globalLockVo.setKeyword(keywordParam.getString("appSystemId") + "/");
+                if (keywordParam.containsKey("appModuleId")) {
                     globalLockVo.setKeyword(globalLockVo.getKeyword() + keywordParam.getString("appModuleId"));
                 }
             }
-            if(keywordParam.containsKey("jobId")){
-                List<String> uuidList = globalLockMapper.getGlobalLockUuidByKey(keywordParam.getString("jobId"));
-                if(CollectionUtils.isNotEmpty(uuidList)) {
+            if (keywordParam.containsKey("jobId")) {
+                List<String> uuidList = globalLockMapper.getGlobalLockUuidByKey(getHandler(), keywordParam.getString("jobId"));
+                if (CollectionUtils.isNotEmpty(uuidList)) {
                     globalLockVo.setUuidList(uuidList.stream().collect(collectingAndThen(toCollection(() -> new TreeSet<>(Comparator.comparing(r -> r))), ArrayList::new)));
-                }else{
+                } else {
                     //不存在则没有资源锁
                     globalLockVo.setUuidList(Collections.singletonList("-1"));
                 }
