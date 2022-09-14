@@ -18,6 +18,7 @@ import codedriver.framework.autoexec.dto.job.AutoexecJobPhaseNodeVo;
 import codedriver.framework.autoexec.dto.job.AutoexecJobPhaseVo;
 import codedriver.framework.autoexec.dto.job.AutoexecJobVo;
 import codedriver.framework.autoexec.dto.job.AutoexecSqlNodeDetailVo;
+import codedriver.framework.autoexec.exception.AutoexecJobNotFoundException;
 import codedriver.framework.autoexec.exception.AutoexecJobPhaseNotFoundException;
 import codedriver.framework.autoexec.job.source.type.AutoexecJobSourceTypeHandlerBase;
 import codedriver.framework.autoexec.util.AutoexecUtil;
@@ -434,13 +435,21 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
 
     @Override
     public void myExecuteAuthCheck(AutoexecJobVo jobVo) {
-        DeployJobVo deployJobVo = (DeployJobVo) jobVo;
+        if (AuthActionChecker.checkByUserUuid(UserContext.get().getUserUuid(true), BATCHDEPLOY_MODIFY.class.getSimpleName()) || Objects.equals(UserContext.get().getUserUuid(), SystemUser.SYSTEM.getUserUuid())) {
+            return;
+        }
+        DeployJobVo deployJobVo;
+        if (jobVo instanceof DeployJobVo) {
+            deployJobVo = (DeployJobVo) jobVo;
+        } else {
+            DeployJobVo deployJobTmp = deployJobMapper.getDeployJobByJobId(jobVo.getId());
+            if (deployJobTmp == null) {
+                throw new AutoexecJobNotFoundException(jobVo.getId());
+            }
+            deployJobVo = deployJobTmp;
+        }
         //包含BATCHJOB_MODIFY 则拥有所有应用的执行权限
         if (!AuthActionChecker.checkByUserUuid(UserContext.get().getUserUuid(true), BATCHDEPLOY_MODIFY.class.getSimpleName()) && !Objects.equals(UserContext.get().getUserUuid(), SystemUser.SYSTEM.getUserUuid())) {
-            DeployJobVo deployJobTmp = deployJobMapper.getDeployJobByJobId(jobVo.getId());
-            if (deployJobTmp != null) {
-                deployJobVo = deployJobTmp;
-            }
             Set<String> authSet = DeployAppAuthChecker.builder(deployJobVo.getAppSystemId()).addEnvAction(deployJobVo.getEnvId()).addScenarioAction(deployJobVo.getScenarioId()).check();
             if (!authSet.containsAll(Arrays.asList(deployJobVo.getEnvId().toString(), deployJobVo.getScenarioId().toString()))) {
                 throw new DeployJobCannotExecuteException(deployJobVo);
