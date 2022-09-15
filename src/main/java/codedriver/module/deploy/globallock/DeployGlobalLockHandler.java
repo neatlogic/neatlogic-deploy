@@ -199,9 +199,27 @@ public class DeployGlobalLockHandler extends GlobalLockHandlerBase {
                 .setPayload(jsonObj.toJSONString()).setAuthType(AuthenticateType.BUILDIN).setConnectTimeout(5000).setReadTimeout(5000)
                 .sendRequest().getError();
         if (StringUtils.isNotBlank(result)) {
-            throw new RunnerHttpRequestException(url + ":" + result);
+            //如果是进程不存在导致没法写入的问题，则跳过，直接解锁
+            if(!result.contains("No such file")) {
+                throw new RunnerHttpRequestException(url + ":" + result);
+            }
         }
 
+    }
+
+    @Override
+    public boolean getIsHasLockByKey(String key){
+        GlobalLockVo globalLockVo = new GlobalLockVo();
+        List<String> uuidList = globalLockMapper.getGlobalLockUuidByKey(JobSourceType.DEPLOY.getValue(), key);
+        if (CollectionUtils.isNotEmpty(uuidList)) {
+            globalLockVo.setUuidList(uuidList.stream().collect(collectingAndThen(toCollection(() -> new TreeSet<>(Comparator.comparing(r -> r))), ArrayList::new)));
+        } else {
+            //不存在则没有资源锁
+            globalLockVo.setUuidList(Collections.singletonList("-1"));
+        }
+        globalLockVo.setHandler(JobSourceType.DEPLOY.getValue());
+        int count = globalLockMapper.getLockCount(globalLockVo);
+        return count > 0;
     }
 
 }

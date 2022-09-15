@@ -18,19 +18,14 @@ import codedriver.framework.deploy.constvalue.JobSourceType;
 import codedriver.framework.deploy.dto.job.DeployJobVo;
 import codedriver.framework.deploy.dto.version.DeployVersionEnvVo;
 import codedriver.framework.deploy.dto.version.DeployVersionVo;
-import codedriver.framework.dto.globallock.GlobalLockVo;
+import codedriver.framework.globallock.core.GlobalLockHandlerFactory;
 import codedriver.framework.globallock.dao.mapper.GlobalLockMapper;
 import codedriver.module.deploy.dao.mapper.DeployJobMapper;
 import codedriver.module.deploy.dao.mapper.DeployVersionMapper;
 import com.alibaba.fastjson.JSONObject;
-import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.*;
-
-import static java.util.stream.Collectors.collectingAndThen;
-import static java.util.stream.Collectors.toCollection;
 
 @Service
 public class DeployJobSourceHandler extends AutoexecJobSourceHandlerBase {
@@ -85,20 +80,21 @@ public class DeployJobSourceHandler extends AutoexecJobSourceHandlerBase {
             result.put("roundCount", jobVo.getRoundCount());
 
             //补充是否有资源锁
-            GlobalLockVo globalLockVo = new GlobalLockVo();
-            List<String> uuidList = globalLockMapper.getGlobalLockUuidByKey(JobSourceType.DEPLOY.getValue(), jobVo.getId().toString());
-            if (CollectionUtils.isNotEmpty(uuidList)) {
-                globalLockVo.setUuidList(uuidList.stream().collect(collectingAndThen(toCollection(() -> new TreeSet<>(Comparator.comparing(r -> r))), ArrayList::new)));
-            } else {
-                //不存在则没有资源锁
-                globalLockVo.setUuidList(Collections.singletonList("-1"));
-            }
-            globalLockVo.setHandler(JobSourceType.DEPLOY.getValue());
-            int count = globalLockMapper.getLockCount(globalLockVo);
-            if (count > 0) {
-                result.put("isHasLock", 1);
-            }
+            boolean isHasLock = GlobalLockHandlerFactory.getHandler(JobSourceType.DEPLOY.getValue()).getIsHasLockByKey(jobVo.getId().toString());
+            result.put("isHasLock", isHasLock ? 1 : 0);
+
         }
         return result;
     }
+
+    @Override
+    public JSONObject getExtraRefreshJobInfo(AutoexecJobVo jobVo) {
+        JSONObject result = new JSONObject();
+        //补充是否有资源锁
+        boolean isHasLock = GlobalLockHandlerFactory.getHandler(JobSourceType.DEPLOY.getValue()).getIsHasLockByKey(jobVo.getId().toString());
+        result.put("isHasLock", isHasLock ? 1 : 0);
+        return result;
+    }
+
+
 }
