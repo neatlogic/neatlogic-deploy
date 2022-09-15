@@ -11,6 +11,7 @@ import codedriver.framework.auth.core.AuthActionChecker;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.deploy.auth.DEPLOY_BASE;
 import codedriver.framework.deploy.auth.PIPELINE_MODIFY;
+import codedriver.framework.deploy.constvalue.DeployAppConfigAction;
 import codedriver.framework.deploy.constvalue.PipelineType;
 import codedriver.framework.deploy.constvalue.ScheduleType;
 import codedriver.framework.deploy.dto.schedule.DeployScheduleConfigVo;
@@ -86,19 +87,34 @@ public class GetDeployScheduleApi extends PrivateApiComponentBase {
         } else if(type.equals(ScheduleType.PIPELINE.getValue())) {
             String pipelineType = scheduleVo.getPipelineType();
             if (pipelineType.equals(PipelineType.APPSYSTEM.getValue())) {
-                // TODO linbq权限
+                Set<String> actionSet = DeployAppAuthChecker.builder(scheduleVo.getAppSystemId())
+                        .addOperationAction(DeployAppConfigAction.PIPELINE.getValue())
+                        .check();
+                if (actionSet.contains(DeployAppConfigAction.PIPELINE.getValue())) {
+                    scheduleVo.setEditable(1);
+                    scheduleVo.setDeletable(1);
+                } else {
+                    List<Long> pipelineIdList = new ArrayList<>();
+                    pipelineIdList.add(scheduleVo.getPipelineId());
+                    pipelineIdList = pipelineMapper.checkHasAuthPipelineIdList(pipelineIdList, userUuid);
+                    if (CollectionUtils.isNotEmpty(pipelineIdList)) {
+                        scheduleVo.setEditable(1);
+                        scheduleVo.setDeletable(1);
+                    }
+                }
             } else if (pipelineType.equals(PipelineType.GLOBAL.getValue())) {
                 boolean hasPipelineModify = AuthActionChecker.check(PIPELINE_MODIFY.class);
                 if (hasPipelineModify) {
                     scheduleVo.setEditable(1);
                     scheduleVo.setDeletable(1);
-                }
-                List<Long> pipelineIdList = new ArrayList<>();
-                pipelineIdList.add(scheduleVo.getPipelineId());
-                pipelineIdList = pipelineMapper.checkHasAuthPipelineIdList(pipelineIdList, userUuid);
-                if (CollectionUtils.isNotEmpty(pipelineIdList)) {
-                    scheduleVo.setEditable(1);
-                    scheduleVo.setDeletable(1);
+                } else {
+                    List<Long> pipelineIdList = new ArrayList<>();
+                    pipelineIdList.add(scheduleVo.getPipelineId());
+                    pipelineIdList = pipelineMapper.checkHasAuthPipelineIdList(pipelineIdList, userUuid);
+                    if (CollectionUtils.isNotEmpty(pipelineIdList)) {
+                        scheduleVo.setEditable(1);
+                        scheduleVo.setDeletable(1);
+                    }
                 }
             }
         }

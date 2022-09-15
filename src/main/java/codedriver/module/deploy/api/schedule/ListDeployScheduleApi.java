@@ -16,19 +16,16 @@ import codedriver.framework.common.dto.BasePageVo;
 import codedriver.framework.crossover.CrossoverServiceFactory;
 import codedriver.framework.deploy.auth.DEPLOY_BASE;
 import codedriver.framework.deploy.auth.PIPELINE_MODIFY;
-import codedriver.framework.deploy.constvalue.DeployAppConfigActionType;
+import codedriver.framework.deploy.constvalue.DeployAppConfigAction;
 import codedriver.framework.deploy.constvalue.PipelineType;
 import codedriver.framework.deploy.constvalue.ScheduleType;
 import codedriver.framework.deploy.dto.schedule.DeployScheduleConfigVo;
 import codedriver.framework.deploy.dto.schedule.DeployScheduleVo;
-import codedriver.framework.dto.AuthenticationInfoVo;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
-import codedriver.framework.service.AuthenticationInfoService;
 import codedriver.framework.util.TableResultUtil;
 import codedriver.module.deploy.auth.core.DeployAppAuthChecker;
-import codedriver.module.deploy.dao.mapper.DeployAppConfigMapper;
 import codedriver.module.deploy.dao.mapper.DeployScheduleMapper;
 import codedriver.module.deploy.dao.mapper.PipelineMapper;
 import com.alibaba.fastjson.JSONObject;
@@ -104,7 +101,7 @@ public class ListDeployScheduleApi extends PrivateApiComponentBase {
                     List<AppModuleVo> appModuleList = appSystemMapper.getAppModuleListByIdList(appModuleIdList);
                     appModuleMap = appModuleList.stream().collect(Collectors.toMap(e -> e.getId(), e -> e));
                 }
-                List<Long> pipelineIdList = tbodyList.stream().filter(e -> Objects.equals(e.getPipelineType(), PipelineType.GLOBAL.getValue())).map(DeployScheduleVo::getPipelineId).collect(Collectors.toList());
+                List<Long> pipelineIdList = tbodyList.stream().map(DeployScheduleVo::getPipelineId).collect(Collectors.toList());
                 if (CollectionUtils.isNotEmpty(pipelineIdList)) {
                     pipelineIdList = pipelineMapper.checkHasAuthPipelineIdList(pipelineIdList, userUuid);
                 }
@@ -143,12 +140,24 @@ public class ListDeployScheduleApi extends PrivateApiComponentBase {
                         }
                         String pipelineType = scheduleVo.getPipelineType();
                         if (pipelineType.equals(PipelineType.APPSYSTEM.getValue())) {
-                            AppSystemVo appSystemVo = appSystemMap.get(scheduleVo.getAppSystemId());
+                            Long appSystemId = scheduleVo.getAppSystemId();
+                            AppSystemVo appSystemVo = appSystemMap.get(appSystemId);
                             if (appSystemVo != null) {
                                 scheduleVo.setAppSystemName(appSystemVo.getName());
                                 scheduleVo.setAppSystemAbbrName(appSystemVo.getAbbrName());
                             }
-                            // TODO linbq权限
+                            if (pipelineIdList.contains(scheduleVo.getPipelineId())) {
+                                scheduleVo.setEditable(1);
+                                scheduleVo.setDeletable(1);
+                            } else {
+                                Set<String> actionSet = DeployAppAuthChecker.builder(appSystemId)
+                                        .addOperationAction(DeployAppConfigAction.PIPELINE.getValue())
+                                        .check();
+                                if (actionSet.contains(DeployAppConfigAction.PIPELINE.getValue())) {
+                                    scheduleVo.setEditable(1);
+                                    scheduleVo.setDeletable(1);
+                                }
+                            }
                         } else if (pipelineType.equals(PipelineType.GLOBAL.getValue())) {
                             if (hasPipelineModify || pipelineIdList.contains(scheduleVo.getPipelineId())) {
                                 scheduleVo.setEditable(1);
