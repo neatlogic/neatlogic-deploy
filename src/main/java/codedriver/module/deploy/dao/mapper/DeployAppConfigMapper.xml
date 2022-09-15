@@ -250,6 +250,35 @@
         )
     </select>
 
+    <select id="checkAuthByAppSystemIdAndActionTypeAndAction" resultType="int" useCache="false">
+        SELECT
+            COUNT(1)
+        FROM `deploy_app_config_authority`
+        WHERE `app_system_id` = #{appSystemId}
+        AND `action_type` = #{actionType}
+        AND `action` = #{action}
+        AND (
+        (`auth_type` = 'common' AND `auth_uuid` = 'alluser')
+        <if test="authenticationInfoVo.userUuid != null and authenticationInfoVo.userUuid != ''">
+            OR (`auth_type` = 'user' AND `auth_uuid` = #{authenticationInfoVo.userUuid})
+        </if>
+        <if test="authenticationInfoVo.teamUuidList != null and authenticationInfoVo.teamUuidList.size() > 0">
+            OR (`auth_type` = 'team' AND `auth_uuid` IN
+            <foreach collection="authenticationInfoVo.teamUuidList" item="teamUuid" open="(" separator="," close=")">
+                #{teamUuid}
+            </foreach>
+            )
+        </if>
+        <if test="authenticationInfoVo.roleUuidList != null and authenticationInfoVo.roleUuidList.size() > 0">
+            OR (`auth_type` = 'role' AND `auth_uuid` IN
+            <foreach collection="authenticationInfoVo.roleUuidList" item="roleUuid" open="(" separator="," close=")">
+                #{roleUuid}
+            </foreach>
+            )
+        </if>
+        )
+    </select>
+
     <select id="getAppConfigAuthorityCount" resultType="java.lang.Integer" useCache="false">
         select count(distinct `app_system_id`,`auth_uuid`)
         from deploy_app_config_authority

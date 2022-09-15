@@ -5,7 +5,6 @@
 
 package codedriver.module.deploy.api.schedule;
 
-import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.auth.core.AuthActionChecker;
@@ -17,8 +16,10 @@ import codedriver.framework.common.dto.BasePageVo;
 import codedriver.framework.crossover.CrossoverServiceFactory;
 import codedriver.framework.deploy.auth.DEPLOY_BASE;
 import codedriver.framework.deploy.auth.PIPELINE_MODIFY;
+import codedriver.framework.deploy.constvalue.DeployAppConfigActionType;
 import codedriver.framework.deploy.constvalue.PipelineType;
 import codedriver.framework.deploy.constvalue.ScheduleType;
+import codedriver.framework.deploy.dto.schedule.DeployScheduleConfigVo;
 import codedriver.framework.deploy.dto.schedule.DeployScheduleVo;
 import codedriver.framework.dto.AuthenticationInfoVo;
 import codedriver.framework.restful.annotation.*;
@@ -26,6 +27,7 @@ import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.framework.service.AuthenticationInfoService;
 import codedriver.framework.util.TableResultUtil;
+import codedriver.module.deploy.dao.mapper.DeployAppConfigMapper;
 import codedriver.module.deploy.dao.mapper.DeployScheduleMapper;
 import codedriver.module.deploy.dao.mapper.PipelineMapper;
 import com.alibaba.fastjson.JSONObject;
@@ -47,6 +49,8 @@ public class ListDeployScheduleApi extends PrivateApiComponentBase {
 
     @Resource
     private DeployScheduleMapper deployScheduleMapper;
+    @Resource
+    private DeployAppConfigMapper deployAppConfigMapper;
     @Resource
     private PipelineMapper pipelineMapper;
     @Resource
@@ -119,7 +123,8 @@ public class ListDeployScheduleApi extends PrivateApiComponentBase {
                     }
                     String type = scheduleVo.getType();
                     if (type.equals(ScheduleType.GENERAL.getValue())) {
-                        AppSystemVo appSystemVo = appSystemMap.get(scheduleVo.getAppSystemId());
+                        Long appSystemId = scheduleVo.getAppSystemId();
+                        AppSystemVo appSystemVo = appSystemMap.get(appSystemId);
                         if (appSystemVo != null) {
                             scheduleVo.setAppSystemName(appSystemVo.getName());
                             scheduleVo.setAppSystemAbbrName(appSystemVo.getAbbrName());
@@ -128,6 +133,15 @@ public class ListDeployScheduleApi extends PrivateApiComponentBase {
                         if (appModuleVo != null) {
                             scheduleVo.setAppModuleName(appModuleVo.getName());
                             scheduleVo.setAppModuleAbbrName(appModuleVo.getAbbrName());
+                        }
+                        DeployScheduleConfigVo config = scheduleVo.getConfig();
+                        int hasEnvAuth = deployAppConfigMapper.checkAuthByAppSystemIdAndActionTypeAndAction(appSystemId, DeployAppConfigActionType.ENV.getValue(), config.getEnvId().toString(), authenticationInfoVo);
+                        if (hasEnvAuth > 0) {
+                            int hasScenarioAuth = deployAppConfigMapper.checkAuthByAppSystemIdAndActionTypeAndAction(appSystemId, DeployAppConfigActionType.SCENARIO.getValue(), config.getScenarioId().toString(), authenticationInfoVo);
+                            if (hasScenarioAuth > 0) {
+                                scheduleVo.setEditable(1);
+                                scheduleVo.setDeletable(1);
+                            }
                         }
                     } else if(type.equals(ScheduleType.PIPELINE.getValue())) {
                         String name = pipelineMapper.getPipelineNameById(scheduleVo.getPipelineId());
