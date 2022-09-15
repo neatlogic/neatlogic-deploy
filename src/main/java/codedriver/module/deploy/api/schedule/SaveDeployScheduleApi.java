@@ -43,7 +43,7 @@ import codedriver.framework.scheduler.dto.JobObject;
 import codedriver.framework.scheduler.exception.ScheduleHandlerNotFoundException;
 import codedriver.framework.scheduler.exception.ScheduleIllegalParameterException;
 import codedriver.module.deploy.dao.mapper.DeployScheduleMapper;
-import codedriver.module.deploy.dao.mapper.PipelineMapper;
+import codedriver.module.deploy.dao.mapper.DeployPipelineMapper;
 import codedriver.module.deploy.schedule.plugin.DeployJobScheduleJob;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
@@ -67,7 +67,7 @@ public class SaveDeployScheduleApi extends PrivateApiComponentBase {
     @Resource
     private DeployScheduleMapper deployScheduleMapper;
     @Resource
-    private PipelineMapper pipelineMapper;
+    private DeployPipelineMapper deployPipelineMapper;
     @Resource
     private SchedulerManager schedulerManager;
 
@@ -180,7 +180,7 @@ public class SaveDeployScheduleApi extends PrivateApiComponentBase {
             if (pipelineType.equals(PipelineType.APPSYSTEM.getValue())) {
                 // TODO 应用流水线功能还没实现
             } else if (pipelineType.equals(PipelineType.GLOBAL.getValue())) {
-                String name = pipelineMapper.getPipelineNameById(scheduleVo.getPipelineId());
+                String name = deployPipelineMapper.getPipelineNameById(scheduleVo.getPipelineId());
                 if (StringUtils.isBlank(name)) {
                     throw new DeployPipelineNotFoundException(scheduleVo.getPipelineId());
                 }

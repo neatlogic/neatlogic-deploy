@@ -12,10 +12,12 @@ import codedriver.framework.deploy.dto.app.DeployPipelineConfigVo;
 import codedriver.framework.deploy.dto.ci.DeployCiVo;
 import codedriver.framework.deploy.dto.job.DeployJobModuleVo;
 import codedriver.framework.deploy.dto.job.DeployJobVo;
+import codedriver.framework.deploy.dto.pipeline.PipelineGroupVo;
+import codedriver.framework.deploy.dto.pipeline.PipelineJobTemplateVo;
+import codedriver.framework.deploy.dto.pipeline.PipelineLaneVo;
+import codedriver.framework.deploy.dto.pipeline.PipelineVo;
 import codedriver.framework.deploy.dto.version.DeployVersionVo;
-import codedriver.framework.deploy.exception.DeployAppConfigNotFoundException;
-import codedriver.framework.deploy.exception.DeployCiNotFoundException;
-import codedriver.framework.deploy.exception.DeployCiVersionRegexIllegalException;
+import codedriver.framework.deploy.exception.*;
 import codedriver.framework.filter.core.LoginAuthHandlerBase;
 import codedriver.framework.restful.annotation.Description;
 import codedriver.framework.restful.annotation.Input;
@@ -27,6 +29,7 @@ import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.framework.util.TimeUtil;
 import codedriver.module.deploy.dao.mapper.DeployCiMapper;
 import codedriver.module.deploy.dao.mapper.DeployVersionMapper;
+import codedriver.module.deploy.dao.mapper.DeployPipelineMapper;
 import codedriver.module.deploy.service.DeployJobService;
 import codedriver.module.deploy.util.DeployPipelineConfigManager;
 import com.alibaba.fastjson.JSONArray;
@@ -47,6 +50,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -60,6 +64,9 @@ public class CallbackDeployCiGitlabEventApi extends PrivateApiComponentBase {
 
     @Resource
     DeployVersionMapper deployVersionMapper;
+
+    @Resource
+    private DeployPipelineMapper deployPipelineMapper;
 
     @Resource
     DeployJobService deployJobService;
@@ -127,7 +134,15 @@ public class CallbackDeployCiGitlabEventApi extends PrivateApiComponentBase {
         // 普通作业
         if (DeployCiActionType.CREATE_JOB.getValue().equals(ci.getAction())) {
             Long scenarioId = ci.getConfig().getLong("scenarioId");
+            if (scenarioId == null) {
+                logger.error("Gitlab callback error. Missing scenarioId in ci config, ciId: {}, callback params: {}", ciId, paramObj.toJSONString());
+                throw new DeployCiScenarioIdLostException();
+            }
             Long envId = ci.getConfig().getLong("envId");
+            if (envId == null) {
+                logger.error("Gitlab callback error. Missing envId in ci config, ciId: {}, callback params: {}", ciId, paramObj.toJSONString());
+                throw new DeployCiEnvIdLostException();
+            }
             DeployPipelineConfigVo deployPipelineConfigVo = DeployPipelineConfigManager.init(ci.getAppSystemId())
                     .withAppModuleId(ci.getAppModuleId())
                     .withEnvId(envId)
@@ -181,6 +196,54 @@ public class CallbackDeployCiGitlabEventApi extends PrivateApiComponentBase {
             } else {
                 deployJobService.createJobAndFire(deployJobParam, moduleVo);
             }
+        } else if (DeployCiActionType.CREATE_BATCH_JOB.getValue().equals(ci.getAction())) {
+            /* todo
+                1、遍历当前流水线所有属于当前模块的子作业，检查其场景以决定是否要创建版本和buildNo
+                2、筛选出属于当前模块的子作业来执行（执行的顺序？）
+             */
+            Long pipelineId = ci.getConfig().getLong("pipelineId");
+            if (pipelineId == null) {
+                logger.error("Gitlab callback error. Missing pipelineId in ci config, ciId: {}, callback params: {}", ciId, paramObj.toJSONString());
+                throw new DeployCiPipelineIdLostException();
+            }
+            DeployPipelineConfigVo deployPipelineConfigVo = DeployPipelineConfigManager.init(ci.getAppSystemId())
+                    .withAppModuleId(ci.getAppModuleId())
+                    .isHasBuildOrDeployTypeTool(true)
+                    .getConfig();
+            List<AutoexecCombopScenarioVo> scenarioList = deployPipelineConfigVo.getScenarioList();
+            Map<Long, AutoexecCombopScenarioVo> scenarioVoMap = scenarioList.stream().collect(Collectors.toMap(AutoexecCombopScenarioVo::getScenarioId, o -> o));
+
+            // 判断超级流水线中是否含有编译工具的作业模版
+            boolean hasBuildTypeTool = false;
+            PipelineVo pipeline = deployPipelineMapper.getPipelineBaseInfoByIdAndModuleId(pipelineId, ci.getAppModuleId());
+            out:
+            if (CollectionUtils.isNotEmpty(pipeline.getLaneList())) {
+                for (int i = 0; i < pipeline.getLaneList().size(); i++) {
+                    PipelineLaneVo pipelineLaneVo = pipeline.getLaneList().get(i);
+                    if (CollectionUtils.isNotEmpty(pipelineLaneVo.getGroupList())) {
+                        for (int j = 0; j < pipelineLaneVo.getGroupList().size(); j++) {
+                            PipelineGroupVo pipelineGroupVo = pipelineLaneVo.getGroupList().get(j);
+                            if (CollectionUtils.isNotEmpty(pipelineGroupVo.getJobTemplateList())) {
+                                for (int k = 0; k < pipelineGroupVo.getJobTemplateList().size(); k++) {
+                                    PipelineJobTemplateVo jobTemplateVo = pipelineGroupVo.getJobTemplateList().get(k);
+                                    AutoexecCombopScenarioVo scenarioVo = scenarioVoMap.get(jobTemplateVo.getScenarioId());
+                                    if (scenarioVo != null) {
+                                        hasBuildTypeTool = Objects.equals(scenarioVo.getIsHasBuildTypeTool(), 1);
+                                        if (hasBuildTypeTool) {
+                                            break out;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            if (deployVersion == null && hasBuildTypeTool) {
+                deployVersion = new DeployVersionVo(versionName, ci.getAppSystemId(), ci.getAppModuleId(), 0);
+                deployVersionMapper.insertDeployVersion(deployVersion);
+            }
+
         }
         return null;
     }

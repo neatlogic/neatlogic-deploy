@@ -5,7 +5,7 @@
   -->
 
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="codedriver.module.deploy.dao.mapper.PipelineMapper">
+<mapper namespace="codedriver.module.deploy.dao.mapper.DeployPipelineMapper">
 
     <select id="getJobTemplateById" parameterType="java.lang.Long"
             resultType="codedriver.framework.deploy.dto.pipeline.PipelineJobTemplateVo">
@@ -159,6 +159,35 @@
                  LEFT JOIN autoexec_scenario aes ON dpj.scenario_id = aes.id
         where dp.id = #{value}
         order by dpl.sort, dpg.sort, dpj.sort
+    </select>
+
+    <select id="getPipelineBaseInfoByIdAndModuleId" resultMap="pipelineResultMap">
+        SELECT dp.id             as pipelineId,
+               dp.`name`         as pipelineName,
+               dp.is_active      as pipelineIsActive,
+               dp.type           as pipelineType,
+               dp.app_system_id  as pipelineAppSystemId,
+               dp.fcd            as pipelineFcd,
+               dp.fcu            as pipelineFcu,
+               dp.lcd            as pipelineLcd,
+               dp.lcu            as pipelineLcu,
+               dpl.id            as laneId,
+               dpl.sort          as laneSort,
+               dpg.id            as groupId,
+               dpg.need_wait     as groupNeedWait,
+               dpg.sort          as groupSort,
+               dpj.id            as jobTemplateId,
+               dpj.app_system_id as jobTemplateAppId,
+               dpj.app_module_id as jobTemplateModuleId,
+               dpj.env_id        as jobTemplateEnvId,
+               dpj.scenario_id   as jobTemplateScenarioId,
+               dpj.round_count   as jobTemplateRoundCount,
+               dpj.config        as jobTemplateConfigStr
+        FROM deploy_pipeline AS dp
+                 LEFT JOIN deploy_pipeline_lane AS dpl ON dp.id = dpl.pipeline_id
+                 LEFT JOIN deploy_pipeline_group AS dpg ON dpl.id = dpg.lane_id
+                 LEFT JOIN deploy_pipeline_jobtemplate AS dpj ON dpg.id = dpj.group_id
+        where dp.id = #{id} and dpj.app_module_id = #{moduleId}
     </select>
 
     <select id="getPipelineNameById" parameterType="java.lang.Long" resultType="java.lang.String">

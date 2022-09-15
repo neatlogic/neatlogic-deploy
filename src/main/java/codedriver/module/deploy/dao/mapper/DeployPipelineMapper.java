@@ -6,10 +6,11 @@
 package codedriver.module.deploy.dao.mapper;
 
 import codedriver.framework.deploy.dto.pipeline.*;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
-public interface PipelineMapper {
+public interface DeployPipelineMapper {
     List<PipelineVo> searchPipeline(PipelineVo pipelineVo);
 
     int searchPipelineCount(PipelineVo pipelineVo);
@@ -21,6 +22,15 @@ public interface PipelineMapper {
     int searchJobTemplateCount(PipelineJobTemplateVo jobTemplateVo);
 
     PipelineVo getPipelineById(Long id);
+
+    /**
+     * 根据流水线id和模块id获取流水线与其中属于{moduleId}的作业模版
+     *
+     * @param id       流水线id
+     * @param moduleId 模块id
+     * @return
+     */
+    PipelineVo getPipelineBaseInfoByIdAndModuleId(@Param("id") Long id, @Param("moduleId") Long moduleId);
 
     String getPipelineNameById(Long id);
 

@@ -12,7 +12,7 @@ import codedriver.framework.deploy.dto.pipeline.PipelineJobTemplateVo;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
-import codedriver.module.deploy.dao.mapper.PipelineMapper;
+import codedriver.module.deploy.dao.mapper.DeployPipelineMapper;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.stereotype.Service;
 
@@ -23,7 +23,7 @@ import javax.annotation.Resource;
 @OperationType(type = OperationTypeEnum.SEARCH)
 public class GetJobTemplateApi extends PrivateApiComponentBase {
     @Resource
-    private PipelineMapper pipelineMapper;
+    private DeployPipelineMapper deployPipelineMapper;
 
     @Override
     public String getName() {
@@ -45,7 +45,7 @@ public class GetJobTemplateApi extends PrivateApiComponentBase {
     @Description(desc = "获取作业模板信息接口")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
-        return pipelineMapper.getJobTemplateById(jsonObj.getLong("id"));
+        return deployPipelineMapper.getJobTemplateById(jsonObj.getLong("id"));
     }
 
 }

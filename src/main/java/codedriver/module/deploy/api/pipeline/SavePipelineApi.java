@@ -18,7 +18,7 @@ import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.IValid;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
-import codedriver.module.deploy.dao.mapper.PipelineMapper;
+import codedriver.module.deploy.dao.mapper.DeployPipelineMapper;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
@@ -30,7 +30,7 @@ import javax.annotation.Resource;
 @OperationType(type = OperationTypeEnum.UPDATE)
 public class SavePipelineApi extends PrivateApiComponentBase {
     @Resource
-    private PipelineMapper pipelineMapper;
+    private DeployPipelineMapper deployPipelineMapper;
 
     @Override
     public String getName() {
@@ -60,7 +60,7 @@ public class SavePipelineApi extends PrivateApiComponentBase {
     public Object myDoService(JSONObject jsonObj) throws Exception {
         Long id = jsonObj.getLong("id");
         if (id != null) {
-            PipelineVo pipelineVo = pipelineMapper.getPipelineById(id);
+            PipelineVo pipelineVo = deployPipelineMapper.getPipelineById(id);
             if (pipelineVo == null) {
                 throw new DeployPipelineNotFoundException(id);
             }
@@ -68,11 +68,11 @@ public class SavePipelineApi extends PrivateApiComponentBase {
         PipelineVo pipelineVo = JSONObject.toJavaObject(jsonObj, PipelineVo.class);
         if (id == null) {
             pipelineVo.setFcu(UserContext.get().getUserUuid(true));
-            pipelineMapper.insertPipeline(pipelineVo);
+            deployPipelineMapper.insertPipeline(pipelineVo);
         } else {
-            pipelineMapper.updatePipeline(pipelineVo);
-            pipelineMapper.deleteLaneGroupJobTemplateByPipelineId(pipelineVo.getId());
-            pipelineMapper.deletePipelineAuthByPipelineId(pipelineVo.getId());
+            deployPipelineMapper.updatePipeline(pipelineVo);
+            deployPipelineMapper.deleteLaneGroupJobTemplateByPipelineId(pipelineVo.getId());
+            deployPipelineMapper.deletePipelineAuthByPipelineId(pipelineVo.getId());
         }
         if (CollectionUtils.isNotEmpty(pipelineVo.getLaneList())) {
             for (int i = 0; i < pipelineVo.getLaneList().size(); i++) {
@@ -88,36 +88,36 @@ public class SavePipelineApi extends PrivateApiComponentBase {
                             for (int k = 0; k < groupVo.getJobTemplateList().size(); k++) {
                                 PipelineJobTemplateVo jobVo = groupVo.getJobTemplateList().get(k);
                                 jobVo.setGroupId(groupVo.getId());
-                                pipelineMapper.insertJobTemplate(jobVo);
+                                deployPipelineMapper.insertJobTemplate(jobVo);
                             }
                         }
                         if (hasGroupJob) {
                             groupVo.setLaneId(laneVo.getId());
                             groupVo.setSort(j + 1);
-                            pipelineMapper.insertLaneGroup(groupVo);
+                            deployPipelineMapper.insertLaneGroup(groupVo);
                         }
                     }
                 }
                 if (hasLaneJob) {
                     laneVo.setPipelineId(pipelineVo.getId());
                     laneVo.setSort(i + 1);
-                    pipelineMapper.insertLane(laneVo);
+                    deployPipelineMapper.insertLane(laneVo);
                 }
             }
         }
         if (CollectionUtils.isNotEmpty(pipelineVo.getAuthList())) {
             for (PipelineAuthVo authVo : pipelineVo.getAuthList()) {
                 authVo.setPipelineId(pipelineVo.getId());
-                pipelineMapper.insertPipelineAuth(authVo);
+                deployPipelineMapper.insertPipelineAuth(authVo);
             }
         }
-        return pipelineMapper.getPipelineById(pipelineVo.getId());
+        return deployPipelineMapper.getPipelineById(pipelineVo.getId());
     }
 
     public IValid name() {
         return value -> {
             PipelineVo vo = JSONObject.toJavaObject(value, PipelineVo.class);
-            if (pipelineMapper.checkPipelineNameIsExists(vo) > 0) {
+            if (deployPipelineMapper.checkPipelineNameIsExists(vo) > 0) {
                 return new FieldValidResultVo(new DeployScheduleNameRepeatException(vo.getName()));
             }
             return new FieldValidResultVo();

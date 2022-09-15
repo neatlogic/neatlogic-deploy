@@ -14,7 +14,7 @@ import codedriver.framework.restful.annotation.OperationType;
 import codedriver.framework.restful.annotation.Param;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
-import codedriver.module.deploy.dao.mapper.PipelineMapper;
+import codedriver.module.deploy.dao.mapper.DeployPipelineMapper;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,7 +27,7 @@ import javax.annotation.Resource;
 @Transactional
 public class DeletePipelineApi extends PrivateApiComponentBase {
     @Resource
-    private PipelineMapper pipelineMapper;
+    private DeployPipelineMapper deployPipelineMapper;
 
 
     @Override
@@ -50,9 +50,9 @@ public class DeletePipelineApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         Long id = jsonObj.getLong("id");
-        pipelineMapper.deleteLaneGroupJobTemplateByPipelineId(id);
-        pipelineMapper.deleteLaneGroupJobTemplateByPipelineId(id);
-        pipelineMapper.deletePipelineById(id);
+        deployPipelineMapper.deleteLaneGroupJobTemplateByPipelineId(id);
+        deployPipelineMapper.deleteLaneGroupJobTemplateByPipelineId(id);
+        deployPipelineMapper.deletePipelineById(id);
         return null;
     }
 

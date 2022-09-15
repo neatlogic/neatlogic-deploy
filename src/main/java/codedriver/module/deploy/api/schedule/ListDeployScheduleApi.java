@@ -22,7 +22,7 @@ import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.framework.util.TableResultUtil;
 import codedriver.module.deploy.dao.mapper.DeployScheduleMapper;
-import codedriver.module.deploy.dao.mapper.PipelineMapper;
+import codedriver.module.deploy.dao.mapper.DeployPipelineMapper;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -43,7 +43,7 @@ public class ListDeployScheduleApi extends PrivateApiComponentBase {
     @Resource
     private DeployScheduleMapper deployScheduleMapper;
     @Resource
-    private PipelineMapper pipelineMapper;
+    private DeployPipelineMapper deployPipelineMapper;
 
     @Override
     public String getToken() {
@@ -110,7 +110,7 @@ public class ListDeployScheduleApi extends PrivateApiComponentBase {
                             scheduleVo.setAppModuleAbbrName(appModuleVo.getAbbrName());
                         }
                     } else if(type.equals(ScheduleType.PIPELINE.getValue())) {
-                        String name = pipelineMapper.getPipelineNameById(scheduleVo.getPipelineId());
+                        String name = deployPipelineMapper.getPipelineNameById(scheduleVo.getPipelineId());
                         if (StringUtils.isNotBlank(name)) {
                             scheduleVo.setPipelineName(name);
                         }

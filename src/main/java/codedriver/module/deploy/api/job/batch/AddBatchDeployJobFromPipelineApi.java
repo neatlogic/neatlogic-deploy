@@ -29,7 +29,7 @@ import codedriver.framework.scheduler.core.SchedulerManager;
 import codedriver.framework.scheduler.dto.JobObject;
 import codedriver.framework.scheduler.exception.ScheduleHandlerNotFoundException;
 import codedriver.module.deploy.dao.mapper.DeployJobMapper;
-import codedriver.module.deploy.dao.mapper.PipelineMapper;
+import codedriver.module.deploy.dao.mapper.DeployPipelineMapper;
 import codedriver.module.deploy.schedule.plugin.DeployBatchJobAutoFireJob;
 import codedriver.module.deploy.service.DeployBatchJobService;
 import com.alibaba.fastjson.JSONArray;
@@ -50,7 +50,7 @@ public class AddBatchDeployJobFromPipelineApi extends PrivateApiComponentBase {
     private DeployJobMapper deployJobMapper;
 
     @Resource
-    private PipelineMapper pipelineMapper;
+    private DeployPipelineMapper deployPipelineMapper;
 
     @Resource
     private DeployBatchJobService deployBatchJobService;
@@ -86,7 +86,7 @@ public class AddBatchDeployJobFromPipelineApi extends PrivateApiComponentBase {
             throw new DeployJobParamIrregularException("应用模块版本列表");
         }
         Long pipelineId = jsonObj.getLong("pipelineId");
-        PipelineVo pipelineVo = pipelineMapper.getPipelineById(pipelineId);
+        PipelineVo pipelineVo = deployPipelineMapper.getPipelineById(pipelineId);
         if (pipelineVo == null) {
             throw new DeployPipelineNotFoundException(pipelineId);
         }
