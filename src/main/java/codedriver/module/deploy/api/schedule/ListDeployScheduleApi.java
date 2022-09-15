@@ -6,7 +6,9 @@
 package codedriver.module.deploy.api.schedule;
 
 import codedriver.framework.asynchronization.threadlocal.TenantContext;
+import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.auth.core.AuthAction;
+import codedriver.framework.auth.core.AuthActionChecker;
 import codedriver.framework.cmdb.crossover.IAppSystemMapper;
 import codedriver.framework.cmdb.dto.resourcecenter.entity.AppModuleVo;
 import codedriver.framework.cmdb.dto.resourcecenter.entity.AppSystemVo;
@@ -14,12 +16,15 @@ import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.dto.BasePageVo;
 import codedriver.framework.crossover.CrossoverServiceFactory;
 import codedriver.framework.deploy.auth.DEPLOY_BASE;
+import codedriver.framework.deploy.auth.PIPELINE_MODIFY;
 import codedriver.framework.deploy.constvalue.PipelineType;
 import codedriver.framework.deploy.constvalue.ScheduleType;
 import codedriver.framework.deploy.dto.schedule.DeployScheduleVo;
+import codedriver.framework.dto.AuthenticationInfoVo;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
+import codedriver.framework.service.AuthenticationInfoService;
 import codedriver.framework.util.TableResultUtil;
 import codedriver.module.deploy.dao.mapper.DeployScheduleMapper;
 import codedriver.module.deploy.dao.mapper.PipelineMapper;
@@ -44,6 +49,8 @@ public class ListDeployScheduleApi extends PrivateApiComponentBase {
     private DeployScheduleMapper deployScheduleMapper;
     @Resource
     private PipelineMapper pipelineMapper;
+    @Resource
+    private AuthenticationInfoService authenticationInfoService;
 
     @Override
     public String getToken() {
@@ -77,13 +84,17 @@ public class ListDeployScheduleApi extends PrivateApiComponentBase {
     public Object myDoService(JSONObject paramObj) throws Exception {
         DeployScheduleVo searchVo = JSONObject.toJavaObject(paramObj, DeployScheduleVo.class);
         List<DeployScheduleVo> tbodyList = new ArrayList<>();
+        String userUuid = UserContext.get().getUserUuid(true);
+        AuthenticationInfoVo authenticationInfoVo = authenticationInfoService.getAuthenticationInfo(userUuid);
         int rowNum = deployScheduleMapper.getScheduleCount(searchVo);
         if (rowNum > 0) {
             searchVo.setRowNum(rowNum);
             if (searchVo.getCurrentPage() <= searchVo.getPageCount()) {
-                String schemaName = TenantContext.get().getDataDbName();
                 IAppSystemMapper appSystemMapper = CrossoverServiceFactory.getApi(IAppSystemMapper.class);
                 tbodyList = deployScheduleMapper.getScheduleList(searchVo);
+                List<Long> idList = tbodyList.stream().map(DeployScheduleVo::getId).collect(Collectors.toList());
+                List<DeployScheduleVo> scheduleAuditCountList = deployScheduleMapper.getScheduleAuditCountListByIdList(idList);
+                Map<Long, DeployScheduleVo> scheduleMap = scheduleAuditCountList.stream().collect(Collectors.toMap(e -> e.getId(), e -> e));
                 Map<Long, AppSystemVo> appSystemMap = new HashMap<>();
                 List<Long> appSystemIdList = tbodyList.stream().map(DeployScheduleVo::getAppSystemId).collect(Collectors.toList());
                 if (CollectionUtils.isNotEmpty(appSystemIdList)) {
@@ -91,12 +102,21 @@ public class ListDeployScheduleApi extends PrivateApiComponentBase {
                     appSystemMap = appSystemList.stream().collect(Collectors.toMap(e -> e.getId(), e -> e));
                 }
                 Map<Long, AppModuleVo> appModuleMap = new HashMap<>();
-                        List<Long> appModuleIdList = tbodyList.stream().map(DeployScheduleVo::getAppModuleId).collect(Collectors.toList());
+                List<Long> appModuleIdList = tbodyList.stream().map(DeployScheduleVo::getAppModuleId).collect(Collectors.toList());
                 if (CollectionUtils.isNotEmpty(appModuleIdList)) {
                     List<AppModuleVo> appModuleList = appSystemMapper.getAppModuleListByIdList(appModuleIdList);
                     appModuleMap = appModuleList.stream().collect(Collectors.toMap(e -> e.getId(), e -> e));
                 }
+                List<Long> pipelineIdList = tbodyList.stream().map(DeployScheduleVo::getPipelineId).collect(Collectors.toList());
+                if (CollectionUtils.isNotEmpty(pipelineIdList)) {
+                    pipelineIdList = pipelineMapper.checkHasAuthPipelineIdList(pipelineIdList, userUuid);
+                }
+                boolean hasPipelineModify = AuthActionChecker.check(PIPELINE_MODIFY.class);
                 for (DeployScheduleVo scheduleVo : tbodyList) {
+                    DeployScheduleVo scheduleAuditCount = scheduleMap.get(scheduleVo.getId());
+                    if (scheduleAuditCount != null) {
+                        scheduleVo.setExecCount(scheduleAuditCount.getExecCount());
+                    }
                     String type = scheduleVo.getType();
                     if (type.equals(ScheduleType.GENERAL.getValue())) {
                         AppSystemVo appSystemVo = appSystemMap.get(scheduleVo.getAppSystemId());
@@ -120,6 +140,15 @@ public class ListDeployScheduleApi extends PrivateApiComponentBase {
                             if (appSystemVo != null) {
                                 scheduleVo.setAppSystemName(appSystemVo.getName());
                                 scheduleVo.setAppSystemAbbrName(appSystemVo.getAbbrName());
+                            }
+                            if (pipelineIdList.contains(scheduleVo.getPipelineId())) {
+                                scheduleVo.setEditable(1);
+                                scheduleVo.setDeletable(1);
+                            }
+                        } else if (pipelineType.equals(PipelineType.GLOBAL.getValue())) {
+                            if (hasPipelineModify && pipelineIdList.contains(scheduleVo.getPipelineId())) {
+                                scheduleVo.setEditable(1);
+                                scheduleVo.setDeletable(1);
                             }
                         }
                     }

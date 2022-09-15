@@ -6,6 +6,7 @@
 package codedriver.module.deploy.dao.mapper;
 
 import codedriver.framework.deploy.dto.pipeline.*;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
@@ -25,6 +26,8 @@ public interface PipelineMapper {
     String getPipelineNameById(Long id);
 
     int checkPipelineNameIsExists(PipelineVo pipelineVo);
+
+    List<Long> checkHasAuthPipelineIdList(@Param("pipelineIdList") List<Long> pipelineIdList, @Param("authUuid") String authUuid);
 
     void updatePipeline(PipelineVo pipelineVo);
 

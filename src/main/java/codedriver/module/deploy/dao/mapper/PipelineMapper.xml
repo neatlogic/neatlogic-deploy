@@ -206,6 +206,17 @@
           AND `id` != #{id}
     </select>
 
+    <select id="checkHasAuthPipelineIdList" resultType="java.lang.String">
+        SELECT
+            `pipeline_id`
+        FROM `deploy_pipeline_auth`
+        WHERE `auth_uuid` = #{authUuid}
+          AND `pipeline_id` IN
+        <foreach collection="pipelineIdList" item="pipelineId" open="(" separator="," close=")">
+            #{pipelineId}
+        </foreach>
+    </select>
+
     <update id="updatePipeline" parameterType="codedriver.framework.deploy.dto.pipeline.PipelineVo">
         UPDATE deploy_pipeline
         SET `name`      = #{name},

@@ -30,6 +30,8 @@ public interface DeployAppConfigMapper {
 
     Set<Long> getViewableAppSystemIdList(AuthenticationInfoVo authenticationInfoVo);
 
+//    int checkAuhtByAppSystemIdAndActionTypeAndAction(@Param("appSystemId") Long appSystemId, @Param("actionType") String actionType, @Param("action") String action, @Param("userUuid") AuthenticationInfoVo authenticationInfoVo);
+
     Integer getAppConfigAuthorityCount(DeployAppConfigAuthorityVo searchVo);
 
     List<DeployAppConfigAuthorityVo> getAppConfigAuthorityList(DeployAppConfigAuthorityVo searchVo);
