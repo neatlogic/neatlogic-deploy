@@ -139,6 +139,19 @@
         </foreach>
     </select>
 
+    <select id="getScheduleAuditCountListByIdList" parameterType="java.lang.Long" resultType="codedriver.framework.deploy.dto.schedule.DeployScheduleVo">
+        SELECT
+        a.`invoke_id` AS id,
+        COUNT(1) AS execCount
+        FROM `autoexec_job_invoke` a
+        JOIN `autoexec_job` b ON b.`id` = a.`job_id`
+        WHERE a.`invoke_id` IN
+        <foreach collection="list" item="invokeId" open="(" separator="," close=")">
+            #{invokeId}
+        </foreach>
+        GROUP BY a.`invoke_id`
+    </select>
+
     <insert id="insertSchedule" parameterType="codedriver.framework.deploy.dto.schedule.DeployScheduleVo">
         INSERT INTO `deploy_schedule` (
             `id`,

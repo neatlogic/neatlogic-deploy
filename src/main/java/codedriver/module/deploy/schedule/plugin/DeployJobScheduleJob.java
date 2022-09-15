@@ -10,6 +10,7 @@ import codedriver.framework.autoexec.constvalue.JobStatus;
 import codedriver.framework.autoexec.constvalue.ReviewStatus;
 import codedriver.framework.deploy.constvalue.JobSource;
 import codedriver.framework.deploy.constvalue.ScheduleType;
+import codedriver.framework.deploy.dto.job.DeployJobModuleVo;
 import codedriver.framework.deploy.dto.job.DeployJobVo;
 import codedriver.framework.deploy.dto.pipeline.PipelineVo;
 import codedriver.framework.deploy.dto.schedule.DeployScheduleConfigVo;
@@ -71,6 +72,7 @@ public class DeployJobScheduleJob  extends JobBase {
     @Override
     public void initJob(String tenantUuid) {
         DeployScheduleVo searchVo = new DeployScheduleVo();
+        searchVo.setIsActive(1);
         int rowNum = deployScheduleMapper.getScheduleCount(searchVo);
         if (rowNum > 0) {
             searchVo.setRowNum(rowNum);
@@ -96,16 +98,22 @@ public class DeployJobScheduleJob  extends JobBase {
             schedulerManager.unloadJob(jobObject);
             return;
         }
-        DeployJobVo deployJobVo = convertDeployScheduleVoToDeployJobVo(scheduleVo);
+        String schemaName = TenantContext.get().getDataDbName();
         String type = scheduleVo.getType();
         if (type.equals(ScheduleType.GENERAL.getValue())) {
-            deployJobService.createJobAndFire(deployJobVo);
+            DeployJobVo deployJobVo = convertDeployScheduleVoToDeployJobVo(scheduleVo);
+            deployJobVo.setSource(JobSource.DEPLOY_SCHEDULE_GENERAL.getValue());
+            List<DeployJobModuleVo> moduleList = deployJobVo.getModuleList();
+            deployJobService.createJobAndFire(deployJobVo, moduleList.get(0));
         } else if(type.equals(ScheduleType.PIPELINE.getValue())) {
             PipelineVo pipelineVo = deployPipelineMapper.getPipelineById(scheduleVo.getPipelineId());
             if (pipelineVo == null) {
                 schedulerManager.unloadJob(jobObject);
                 return;
             }
+            DeployJobVo deployJobVo = convertDeployScheduleVoToDeployJobVo(scheduleVo);
+            deployJobVo.setSource(JobSource.DEPLOY_SCHEDULE_PIPELINE.getValue());
+            deployJobVo.setName("定时作业/" + pipelineVo.getName());
             deployBatchJobService.creatBatchJob(deployJobVo, pipelineVo, true);
             deployJobMapper.insertJobInvoke(deployJobVo.getId(), deployJobVo.getInvokeId(), deployJobVo.getSource());
         }
@@ -118,7 +126,6 @@ public class DeployJobScheduleJob  extends JobBase {
         deployJobVo.setModuleList(config.getModuleList());
         deployJobVo.setEnvId(config.getEnvId());
         deployJobVo.setParam(config.getParam());
-        deployJobVo.setSource(JobSource.DEPLOYSCHEDULE.getValue());
         deployJobVo.setInvokeId(scheduleVo.getId());
         deployJobVo.setRoundCount(config.getRoundCount());
         deployJobVo.setPipelineId(scheduleVo.getPipelineId());

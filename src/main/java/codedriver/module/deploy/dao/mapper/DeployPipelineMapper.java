@@ -36,6 +36,8 @@ public interface DeployPipelineMapper {
 
     int checkPipelineNameIsExists(PipelineVo pipelineVo);
 
+    List<Long> checkHasAuthPipelineIdList(@Param("pipelineIdList") List<Long> pipelineIdList, @Param("authUuid") String authUuid);
+
     void updatePipeline(PipelineVo pipelineVo);
 
     void insertPipelineAuth(PipelineAuthVo pipelineAuthVo);

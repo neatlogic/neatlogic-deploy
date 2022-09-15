@@ -176,13 +176,15 @@ public class SaveDeployScheduleApi extends PrivateApiComponentBase {
                 }
             }
         } else if (type.equals(ScheduleType.PIPELINE.getValue())) {
+            String name = deployPipelineMapper.getPipelineNameById(scheduleVo.getPipelineId());
+            if (StringUtils.isBlank(name)) {
+                throw new DeployPipelineNotFoundException(scheduleVo.getPipelineId());
+            }
             String pipelineType = scheduleVo.getPipelineType();
             if (pipelineType.equals(PipelineType.APPSYSTEM.getValue())) {
-                // TODO 应用流水线功能还没实现
-            } else if (pipelineType.equals(PipelineType.GLOBAL.getValue())) {
-                String name = deployPipelineMapper.getPipelineNameById(scheduleVo.getPipelineId());
-                if (StringUtils.isBlank(name)) {
-                    throw new DeployPipelineNotFoundException(scheduleVo.getPipelineId());
+                AppSystemVo appSystemVo = appSystemMapper.getAppSystemById(scheduleVo.getAppSystemId(), schemaName);
+                if (appSystemVo == null) {
+                    throw new AppSystemNotFoundException(scheduleVo.getAppSystemId());
                 }
             }
             DeployScheduleConfigVo config = scheduleVo.getConfig();
