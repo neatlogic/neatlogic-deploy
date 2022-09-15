@@ -5,7 +5,6 @@
 
 package codedriver.module.deploy.api.schedule;
 
-import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.auth.core.AuthActionChecker;
@@ -17,15 +16,16 @@ import codedriver.framework.common.dto.BasePageVo;
 import codedriver.framework.crossover.CrossoverServiceFactory;
 import codedriver.framework.deploy.auth.DEPLOY_BASE;
 import codedriver.framework.deploy.auth.PIPELINE_MODIFY;
+import codedriver.framework.deploy.constvalue.DeployAppConfigAction;
 import codedriver.framework.deploy.constvalue.PipelineType;
 import codedriver.framework.deploy.constvalue.ScheduleType;
+import codedriver.framework.deploy.dto.schedule.DeployScheduleConfigVo;
 import codedriver.framework.deploy.dto.schedule.DeployScheduleVo;
-import codedriver.framework.dto.AuthenticationInfoVo;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
-import codedriver.framework.service.AuthenticationInfoService;
 import codedriver.framework.util.TableResultUtil;
+import codedriver.module.deploy.auth.core.DeployAppAuthChecker;
 import codedriver.module.deploy.dao.mapper.DeployScheduleMapper;
 import codedriver.module.deploy.dao.mapper.PipelineMapper;
 import com.alibaba.fastjson.JSONObject;
@@ -34,10 +34,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -49,8 +46,6 @@ public class ListDeployScheduleApi extends PrivateApiComponentBase {
     private DeployScheduleMapper deployScheduleMapper;
     @Resource
     private PipelineMapper pipelineMapper;
-    @Resource
-    private AuthenticationInfoService authenticationInfoService;
 
     @Override
     public String getToken() {
@@ -85,7 +80,6 @@ public class ListDeployScheduleApi extends PrivateApiComponentBase {
         DeployScheduleVo searchVo = JSONObject.toJavaObject(paramObj, DeployScheduleVo.class);
         List<DeployScheduleVo> tbodyList = new ArrayList<>();
         String userUuid = UserContext.get().getUserUuid(true);
-        AuthenticationInfoVo authenticationInfoVo = authenticationInfoService.getAuthenticationInfo(userUuid);
         int rowNum = deployScheduleMapper.getScheduleCount(searchVo);
         if (rowNum > 0) {
             searchVo.setRowNum(rowNum);
@@ -119,7 +113,8 @@ public class ListDeployScheduleApi extends PrivateApiComponentBase {
                     }
                     String type = scheduleVo.getType();
                     if (type.equals(ScheduleType.GENERAL.getValue())) {
-                        AppSystemVo appSystemVo = appSystemMap.get(scheduleVo.getAppSystemId());
+                        Long appSystemId = scheduleVo.getAppSystemId();
+                        AppSystemVo appSystemVo = appSystemMap.get(appSystemId);
                         if (appSystemVo != null) {
                             scheduleVo.setAppSystemName(appSystemVo.getName());
                             scheduleVo.setAppSystemAbbrName(appSystemVo.getAbbrName());
@@ -129,6 +124,15 @@ public class ListDeployScheduleApi extends PrivateApiComponentBase {
                             scheduleVo.setAppModuleName(appModuleVo.getName());
                             scheduleVo.setAppModuleAbbrName(appModuleVo.getAbbrName());
                         }
+                        DeployScheduleConfigVo config = scheduleVo.getConfig();
+                        Set<String> actionSet = DeployAppAuthChecker.builder(appSystemId)
+                                .addEnvAction(config.getEnvId())
+                                .addScenarioAction(config.getScenarioId())
+                                .check();
+                        if (actionSet.contains(config.getEnvId().toString()) && actionSet.contains(config.getScenarioId().toString())) {
+                            scheduleVo.setEditable(1);
+                            scheduleVo.setDeletable(1);
+                        }
                     } else if(type.equals(ScheduleType.PIPELINE.getValue())) {
                         String name = pipelineMapper.getPipelineNameById(scheduleVo.getPipelineId());
                         if (StringUtils.isNotBlank(name)) {
@@ -136,7 +140,8 @@ public class ListDeployScheduleApi extends PrivateApiComponentBase {
                         }
                         String pipelineType = scheduleVo.getPipelineType();
                         if (pipelineType.equals(PipelineType.APPSYSTEM.getValue())) {
-                            AppSystemVo appSystemVo = appSystemMap.get(scheduleVo.getAppSystemId());
+                            Long appSystemId = scheduleVo.getAppSystemId();
+                            AppSystemVo appSystemVo = appSystemMap.get(appSystemId);
                             if (appSystemVo != null) {
                                 scheduleVo.setAppSystemName(appSystemVo.getName());
                                 scheduleVo.setAppSystemAbbrName(appSystemVo.getAbbrName());
@@ -144,9 +149,17 @@ public class ListDeployScheduleApi extends PrivateApiComponentBase {
                             if (pipelineIdList.contains(scheduleVo.getPipelineId())) {
                                 scheduleVo.setEditable(1);
                                 scheduleVo.setDeletable(1);
+                            } else {
+                                Set<String> actionSet = DeployAppAuthChecker.builder(appSystemId)
+                                        .addOperationAction(DeployAppConfigAction.PIPELINE.getValue())
+                                        .check();
+                                if (actionSet.contains(DeployAppConfigAction.PIPELINE.getValue())) {
+                                    scheduleVo.setEditable(1);
+                                    scheduleVo.setDeletable(1);
+                                }
                             }
                         } else if (pipelineType.equals(PipelineType.GLOBAL.getValue())) {
-                            if (hasPipelineModify && pipelineIdList.contains(scheduleVo.getPipelineId())) {
+                            if (hasPipelineModify || pipelineIdList.contains(scheduleVo.getPipelineId())) {
                                 scheduleVo.setEditable(1);
                                 scheduleVo.setDeletable(1);
                             }
