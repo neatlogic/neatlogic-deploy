@@ -182,12 +182,16 @@
                dpj.env_id        as jobTemplateEnvId,
                dpj.scenario_id   as jobTemplateScenarioId,
                dpj.round_count   as jobTemplateRoundCount,
-               dpj.config        as jobTemplateConfigStr
+               dpj.config        as jobTemplateConfigStr,
+               dpa.auth_uuid     as authUuid,
+               dpa.type          as authType
         FROM deploy_pipeline AS dp
                  LEFT JOIN deploy_pipeline_lane AS dpl ON dp.id = dpl.pipeline_id
                  LEFT JOIN deploy_pipeline_group AS dpg ON dpl.id = dpg.lane_id
                  LEFT JOIN deploy_pipeline_jobtemplate AS dpj ON dpg.id = dpj.group_id
+                 LEFT JOIN deploy_pipeline_auth AS dpa ON dp.id = dpa.pipeline_id
         where dp.id = #{id} and dpj.app_module_id = #{moduleId}
+        order by dpl.sort, dpg.sort, dpj.sort
     </select>
 
     <select id="getPipelineNameById" parameterType="java.lang.Long" resultType="java.lang.String">
