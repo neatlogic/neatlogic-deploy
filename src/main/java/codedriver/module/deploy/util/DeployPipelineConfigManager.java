@@ -115,6 +115,9 @@ public class DeployPipelineConfigManager {
                 if (!combopPhaseNameList.contains(pipelinePhaseVo.getName())) {
                     continue;
                 }
+                if (pipelinePhaseVo.getIsActive() == 0) {
+                    continue;
+                }
                 List<AutoexecCombopPhaseOperationVo> phaseOperationList = pipelinePhaseVo.getConfig().getPhaseOperationList();
                 for (AutoexecCombopPhaseOperationVo operationVo : phaseOperationList) {
                     if (Objects.equals(ToolType.TOOL.getValue(), operationVo.getOperationType())) {
@@ -319,6 +322,9 @@ public class DeployPipelineConfigManager {
             }
             if (appSystemCombopPhaseVo.getIsActive() == null) {
                 appSystemCombopPhaseVo.setIsActive(1);
+            }
+            if (appSystemCombopPhaseVo.getParentIsActive() == null) {
+                appSystemCombopPhaseVo.setParentIsActive(1);
             }
             if (CollectionUtils.isEmpty(overrideCombopPhaseList)) {
                 continue;
