@@ -27,7 +27,6 @@ import org.quartz.JobExecutionContext;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
-import java.util.Date;
 import java.util.List;
 
 @Component
@@ -60,26 +59,21 @@ public class DeployJobScheduleJob  extends JobBase {
         String tenantUuid = jobObject.getTenantUuid();
         TenantContext.get().switchTenant(tenantUuid);
         String uuid = jobObject.getJobName();
-        System.out.println("reloadJob=" + uuid);
         DeployScheduleVo scheduleVo = deployScheduleMapper.getScheduleByUuid(uuid);
         if (scheduleVo != null) {
-            System.out.println("reloadJob=" + scheduleVo.getName());
             JobObject newJobObjectBuilder = new JobObject.Builder(scheduleVo.getUuid(), this.getGroupName(), this.getClassName(), tenantUuid)
                     .withCron(scheduleVo.getCron()).withBeginTime(scheduleVo.getBeginTime())
                     .withEndTime(scheduleVo.getEndTime())
                     .build();
-            Date date = schedulerManager.loadJob(newJobObjectBuilder);
-            System.out.println(date);
+            schedulerManager.loadJob(newJobObjectBuilder);
         }
     }
 
     @Override
     public void initJob(String tenantUuid) {
-        System.out.println(tenantUuid);
         DeployScheduleVo searchVo = new DeployScheduleVo();
         searchVo.setIsActive(1);
         int rowNum = deployScheduleMapper.getScheduleCount(searchVo);
-        System.out.println(rowNum);
         if (rowNum > 0) {
             searchVo.setRowNum(rowNum);
             int pageCount = searchVo.getPageCount();
@@ -98,14 +92,12 @@ public class DeployJobScheduleJob  extends JobBase {
 
     @Override
     public void executeInternal(JobExecutionContext context, JobObject jobObject) throws Exception {
-        System.out.println(1);
         String uuid = jobObject.getJobName();
         DeployScheduleVo scheduleVo = deployScheduleMapper.getScheduleByUuid(uuid);
         if (scheduleVo == null) {
             schedulerManager.unloadJob(jobObject);
             return;
         }
-        System.out.println(scheduleVo.getName());
         String schemaName = TenantContext.get().getDataDbName();
         String type = scheduleVo.getType();
         if (type.equals(ScheduleType.GENERAL.getValue())) {
