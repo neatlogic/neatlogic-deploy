@@ -27,6 +27,7 @@ import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.framework.service.AuthenticationInfoService;
 import codedriver.framework.util.TableResultUtil;
+import codedriver.module.deploy.auth.core.DeployAppAuthChecker;
 import codedriver.module.deploy.dao.mapper.DeployAppConfigMapper;
 import codedriver.module.deploy.dao.mapper.DeployScheduleMapper;
 import codedriver.module.deploy.dao.mapper.PipelineMapper;
@@ -36,10 +37,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -50,11 +48,7 @@ public class ListDeployScheduleApi extends PrivateApiComponentBase {
     @Resource
     private DeployScheduleMapper deployScheduleMapper;
     @Resource
-    private DeployAppConfigMapper deployAppConfigMapper;
-    @Resource
     private PipelineMapper pipelineMapper;
-    @Resource
-    private AuthenticationInfoService authenticationInfoService;
 
     @Override
     public String getToken() {
@@ -89,7 +83,6 @@ public class ListDeployScheduleApi extends PrivateApiComponentBase {
         DeployScheduleVo searchVo = JSONObject.toJavaObject(paramObj, DeployScheduleVo.class);
         List<DeployScheduleVo> tbodyList = new ArrayList<>();
         String userUuid = UserContext.get().getUserUuid(true);
-        AuthenticationInfoVo authenticationInfoVo = authenticationInfoService.getAuthenticationInfo(userUuid);
         int rowNum = deployScheduleMapper.getScheduleCount(searchVo);
         if (rowNum > 0) {
             searchVo.setRowNum(rowNum);
@@ -111,7 +104,7 @@ public class ListDeployScheduleApi extends PrivateApiComponentBase {
                     List<AppModuleVo> appModuleList = appSystemMapper.getAppModuleListByIdList(appModuleIdList);
                     appModuleMap = appModuleList.stream().collect(Collectors.toMap(e -> e.getId(), e -> e));
                 }
-                List<Long> pipelineIdList = tbodyList.stream().map(DeployScheduleVo::getPipelineId).collect(Collectors.toList());
+                List<Long> pipelineIdList = tbodyList.stream().filter(e -> Objects.equals(e.getPipelineType(), PipelineType.GLOBAL.getValue())).map(DeployScheduleVo::getPipelineId).collect(Collectors.toList());
                 if (CollectionUtils.isNotEmpty(pipelineIdList)) {
                     pipelineIdList = pipelineMapper.checkHasAuthPipelineIdList(pipelineIdList, userUuid);
                 }
@@ -135,13 +128,13 @@ public class ListDeployScheduleApi extends PrivateApiComponentBase {
                             scheduleVo.setAppModuleAbbrName(appModuleVo.getAbbrName());
                         }
                         DeployScheduleConfigVo config = scheduleVo.getConfig();
-                        int hasEnvAuth = deployAppConfigMapper.checkAuthByAppSystemIdAndActionTypeAndAction(appSystemId, DeployAppConfigActionType.ENV.getValue(), config.getEnvId().toString(), authenticationInfoVo);
-                        if (hasEnvAuth > 0) {
-                            int hasScenarioAuth = deployAppConfigMapper.checkAuthByAppSystemIdAndActionTypeAndAction(appSystemId, DeployAppConfigActionType.SCENARIO.getValue(), config.getScenarioId().toString(), authenticationInfoVo);
-                            if (hasScenarioAuth > 0) {
-                                scheduleVo.setEditable(1);
-                                scheduleVo.setDeletable(1);
-                            }
+                        Set<String> actionSet = DeployAppAuthChecker.builder(appSystemId)
+                                .addEnvAction(config.getEnvId())
+                                .addScenarioAction(config.getScenarioId())
+                                .check();
+                        if (actionSet.contains(config.getEnvId().toString()) && actionSet.contains(config.getScenarioId().toString())) {
+                            scheduleVo.setEditable(1);
+                            scheduleVo.setDeletable(1);
                         }
                     } else if(type.equals(ScheduleType.PIPELINE.getValue())) {
                         String name = pipelineMapper.getPipelineNameById(scheduleVo.getPipelineId());
@@ -155,12 +148,9 @@ public class ListDeployScheduleApi extends PrivateApiComponentBase {
                                 scheduleVo.setAppSystemName(appSystemVo.getName());
                                 scheduleVo.setAppSystemAbbrName(appSystemVo.getAbbrName());
                             }
-                            if (pipelineIdList.contains(scheduleVo.getPipelineId())) {
-                                scheduleVo.setEditable(1);
-                                scheduleVo.setDeletable(1);
-                            }
+                            // TODO linbq权限
                         } else if (pipelineType.equals(PipelineType.GLOBAL.getValue())) {
-                            if (hasPipelineModify && pipelineIdList.contains(scheduleVo.getPipelineId())) {
+                            if (hasPipelineModify || pipelineIdList.contains(scheduleVo.getPipelineId())) {
                                 scheduleVo.setEditable(1);
                                 scheduleVo.setDeletable(1);
                             }
