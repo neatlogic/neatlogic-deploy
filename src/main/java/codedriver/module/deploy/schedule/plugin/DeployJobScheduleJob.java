@@ -8,6 +8,12 @@ package codedriver.module.deploy.schedule.plugin;
 import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.autoexec.constvalue.JobStatus;
 import codedriver.framework.autoexec.constvalue.ReviewStatus;
+import codedriver.framework.cmdb.crossover.IAppSystemMapper;
+import codedriver.framework.cmdb.crossover.IResourceCrossoverMapper;
+import codedriver.framework.cmdb.dto.resourcecenter.ResourceVo;
+import codedriver.framework.cmdb.dto.resourcecenter.entity.AppModuleVo;
+import codedriver.framework.cmdb.dto.resourcecenter.entity.AppSystemVo;
+import codedriver.framework.crossover.CrossoverServiceFactory;
 import codedriver.framework.deploy.constvalue.JobSource;
 import codedriver.framework.deploy.constvalue.PipelineType;
 import codedriver.framework.deploy.constvalue.ScheduleType;
@@ -72,6 +78,7 @@ public class DeployJobScheduleJob  extends JobBase {
     @Override
     public void initJob(String tenantUuid) {
         DeployScheduleVo searchVo = new DeployScheduleVo();
+        searchVo.setIsActive(1);
         int rowNum = deployScheduleMapper.getScheduleCount(searchVo);
         if (rowNum > 0) {
             searchVo.setRowNum(rowNum);
@@ -97,9 +104,27 @@ public class DeployJobScheduleJob  extends JobBase {
             schedulerManager.unloadJob(jobObject);
             return;
         }
-        DeployJobVo deployJobVo = convertDeployScheduleVoToDeployJobVo(scheduleVo);
+        String schemaName = TenantContext.get().getDataDbName();
         String type = scheduleVo.getType();
         if (type.equals(ScheduleType.GENERAL.getValue())) {
+            IAppSystemMapper appSystemMapper = CrossoverServiceFactory.getApi(IAppSystemMapper.class);
+            AppSystemVo appSystemVo = appSystemMapper.getAppSystemById(scheduleVo.getAppSystemId(), schemaName);
+            if (appSystemVo != null) {
+                scheduleVo.setAppSystemName(appSystemVo.getName());
+                scheduleVo.setAppSystemAbbrName(appSystemVo.getAbbrName());
+            }
+            AppModuleVo appModuleVo = appSystemMapper.getAppModuleById(scheduleVo.getAppModuleId(), schemaName);
+            if (appModuleVo != null) {
+                scheduleVo.setAppModuleName(appModuleVo.getName());
+                scheduleVo.setAppModuleAbbrName(appModuleVo.getAbbrName());
+            }
+            DeployScheduleConfigVo config = scheduleVo.getConfig();
+            IResourceCrossoverMapper resourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
+            ResourceVo resourceVo = resourceCrossoverMapper.getAppEnvById(config.getEnvId(), schemaName);
+            if (resourceVo != null) {
+                config.setEnvName(resourceVo.getName());
+            }
+            DeployJobVo deployJobVo = convertDeployScheduleVoToDeployJobVo(scheduleVo);
             deployJobService.createJobAndFire(deployJobVo);
         } else if(type.equals(ScheduleType.PIPELINE.getValue())) {
             PipelineVo pipelineVo = pipelineMapper.getPipelineById(scheduleVo.getPipelineId());
@@ -107,6 +132,7 @@ public class DeployJobScheduleJob  extends JobBase {
                 schedulerManager.unloadJob(jobObject);
                 return;
             }
+            DeployJobVo deployJobVo = convertDeployScheduleVoToDeployJobVo(scheduleVo);
             deployBatchJobService.creatBatchJob(deployJobVo, pipelineVo, true);
             deployJobMapper.insertJobInvoke(deployJobVo.getId(), deployJobVo.getInvokeId(), deployJobVo.getSource());
         }
@@ -118,6 +144,7 @@ public class DeployJobScheduleJob  extends JobBase {
         deployJobVo.setScenarioId(config.getScenarioId());
         deployJobVo.setModuleList(config.getModuleList());
         deployJobVo.setEnvId(config.getEnvId());
+        deployJobVo.setEnvName(config.getEnvName());
         deployJobVo.setParam(config.getParam());
         deployJobVo.setSource(JobSource.DEPLOYSCHEDULE.getValue());
         deployJobVo.setInvokeId(scheduleVo.getId());
@@ -125,7 +152,11 @@ public class DeployJobScheduleJob  extends JobBase {
         deployJobVo.setPipelineId(scheduleVo.getPipelineId());
         deployJobVo.setAppSystemModuleVersionList(config.getAppSystemModuleVersionList());
         deployJobVo.setAppSystemId(scheduleVo.getAppSystemId());
+        deployJobVo.setAppSystemName(scheduleVo.getAppSystemName());
+        deployJobVo.setAppSystemAbbrName(scheduleVo.getAppSystemAbbrName());
         deployJobVo.setAppModuleId(scheduleVo.getAppModuleId());
+        deployJobVo.setAppModuleName(scheduleVo.getAppModuleName());
+        deployJobVo.setAppModuleAbbrName(scheduleVo.getAppModuleAbbrName());
         deployJobVo.setStatus(JobStatus.READY.getValue());
         deployJobVo.setReviewStatus(ReviewStatus.PASSED.getValue());
         return deployJobVo;

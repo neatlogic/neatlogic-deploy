@@ -22,6 +22,8 @@ public interface DeployScheduleMapper {
 
     List<DeployScheduleVo> getScheduleListByIdList(List<Long> idList);
 
+    List<DeployScheduleVo> getScheduleAuditCountListByIdList(List<Long> idList);
+
     int insertSchedule(DeployScheduleVo scheduleVo);
 
     int updateSchedule(DeployScheduleVo scheduleVo);
