@@ -46,35 +46,23 @@
         <include refid="searchDeploy"/>
     </select>
 
-    <select id="searchDeployCiIdList" parameterType="codedriver.framework.deploy.dto.ci.DeployCiVo" resultType="java.lang.Long">
-        select `id`
+    <select id="searchDeployCiList" parameterType="codedriver.framework.deploy.dto.ci.DeployCiVo" resultType="codedriver.framework.deploy.dto.ci.DeployCiVo">
+        select
+        `id`,
+        `name`,
+        `is_active` as isActive,
+        `app_system_id` as appSystemId,
+        `app_module_id` as appModuleId,
+        `repo_type` as repoType,
+        `repo_server_address` as repoServerAddress,
+        `repo_name` as repoName,
+        `branch_filter` as branchFilter,
+        `event`,
+        `action`,
+        `lcu`,
+        `lcd`
         <include refid="searchDeploy"/>
         LIMIT #{startNum}, #{pageSize}
-    </select>
-
-    <select id="getDeployCiListByIdList" parameterType="java.util.List" resultType="codedriver.framework.deploy.dto.ci.DeployCiVo">
-        select a.`id`,
-               a.`name`,
-               a.`is_active` as isActive,
-               a.`app_system_id` as appSystemId,
-               a.`app_module_id` as appModuleId,
-               a.`repo_type` as repoType,
-               a.`repo_server_address` as repoServerAddress,
-               a.`repo_name` as repoName,
-               a.`branch_filter` as branchFilter,
-               a.`event`,
-               a.`action`,
-               a.`lcu`,
-               a.`lcd`,
-               b.`app_module_name` as appModuleName,
-               b.`app_module_abbr_name` as appModuleAbbrName
-        from deploy_ci a left join @{DATA_SCHEMA}.scence_appsystem_appmodule b
-        on a.`app_system_id` = b.id
-        where a.`id` in
-        <foreach collection="list" item="item" open="(" separator="," close=")">
-            #{item}
-        </foreach>
-        order by a.`lcd` desc
     </select>
 
     <select id="searchDeployCiAuditCount" parameterType="codedriver.framework.deploy.dto.ci.DeployCiAuditVo" resultType="java.lang.Integer">
