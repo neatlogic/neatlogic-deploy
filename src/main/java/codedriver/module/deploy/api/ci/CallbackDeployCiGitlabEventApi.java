@@ -133,6 +133,14 @@ public class CallbackDeployCiGitlabEventApi extends PrivateApiComponentBase {
         if (StringUtils.isNotBlank(branchName)) {
             branchName = branchName.substring(branchName.lastIndexOf('/') + 1);
         }
+        if (StringUtils.isBlank(branchName)) {
+            logger.error("Gitlab callback error. Missing branchName in callback params, ciId: {}, callback params: {}", ciId, paramObj.toJSONString());
+            throw new DeployCiGitlabCallbackBranchNameLostException();
+        }
+        if (StringUtils.isBlank(commitId)) {
+            logger.error("Gitlab callback error. Missing commitId in callback params, ciId: {}, callback params: {}", ciId, paramObj.toJSONString());
+            throw new DeployCiGitlabCallbackCommitIdLostException();
+        }
         DeployCiVo ci = deployCiMapper.getDeployCiById(ciId);
         if (ci == null) {
             logger.error("Gitlab callback error. Deploy ci not found, ciId: {}, callback params: {}", ciId, paramObj.toJSONString());
