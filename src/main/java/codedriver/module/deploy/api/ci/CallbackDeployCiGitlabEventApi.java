@@ -163,9 +163,9 @@ public class CallbackDeployCiGitlabEventApi extends PrivateApiComponentBase {
         // 普通作业
         if (DeployCiActionType.CREATE_JOB.getValue().equals(ci.getAction())) {
             /*
-              只要场景包含编译，那么新建buildNo和新建版本（如果版本不存在）
-              如果场景只包含部署，那么新建版本（如果版本不存在）
-              如果场景不含编译和部署，那么buildNo和版本都不新建
+              只要场景包含build，那么新建buildNo和新建版本（如果版本不存在）
+              如果场景只包含deploy，那么新建版本（如果版本不存在）
+              如果场景不含build和deploy，那么buildNo和版本都不新建
             */
             Long scenarioId = ci.getConfig().getLong("scenarioId");
             if (scenarioId == null) {
@@ -193,7 +193,7 @@ public class CallbackDeployCiGitlabEventApi extends PrivateApiComponentBase {
                 throw new AutoexecScenarioIsNotFoundException(scenarioId);
             }
             AutoexecCombopScenarioVo scenarioVo = scenarioOptional.get();
-            // 如果版本不存在且包含编译或部署工具
+            // 如果版本不存在且包含build或deploy工具，那么新建版本
             if (deployVersion == null && (Objects.equals(scenarioVo.getIsHasBuildTypeTool(), 1) || Objects.equals(scenarioVo.getIsHasDeployTypeTool(), 1))) {
                 deployVersion = new DeployVersionVo(versionName, ci.getAppSystemId(), ci.getAppModuleId(), 0);
                 deployVersionMapper.insertDeployVersion(deployVersion);
@@ -217,8 +217,8 @@ public class CallbackDeployCiGitlabEventApi extends PrivateApiComponentBase {
             }
         } else if (DeployCiActionType.CREATE_BATCH_JOB.getValue().equals(ci.getAction())) {
             /*
-               1、遍历当前流水线所有属于当前模块的子作业，检查其场景以决定是否要创建版本
-               2、筛选出属于当前模块的子作业来执行
+               1、筛选出超级流水线中属于当前模块的子作业，检查每个子作业的场景是否包含build工具以决定是否要新建版本
+               2、用筛选后的流水线创建批量作业
              */
             Long pipelineId = ci.getConfig().getLong("pipelineId");
             if (pipelineId == null) {
@@ -227,6 +227,10 @@ public class CallbackDeployCiGitlabEventApi extends PrivateApiComponentBase {
             }
             boolean hasBuildTypeTool = false;
             PipelineVo pipeline = deployPipelineMapper.getPipelineBaseInfoByIdAndModuleId(pipelineId, ci.getAppModuleId());
+            if (pipeline == null) {
+                logger.error("Gitlab callback error. pipeline not found, ciId: {}, callback params: {}", ciId, paramObj.toJSONString());
+                throw new DeployPipelineNotFoundException(pipelineId);
+            }
             // 判断超级流水线中是否含有编译工具的作业模版
             Map<Long, DeployPipelineConfigVo> envPipelineMap = new HashMap<>();
             out:
@@ -281,7 +285,14 @@ public class CallbackDeployCiGitlabEventApi extends PrivateApiComponentBase {
             DeployJobVo deployJobVo = new DeployJobVo();
             deployJobVo.setPipelineId(pipelineId);
             deployJobVo.setName(jobName);
-            Date triggerTime = getTriggerTime(triggerTimeStr);
+            Date triggerTime;
+            // 如果是立即执行，则触发时间为当前时间延后两分钟
+            if (DeployCiTriggerType.INSTANT.getValue().equals(ci.getTriggerType())) {
+                triggerType = DeployCiTriggerType.AUTO.getValue();
+                triggerTime = Date.from(LocalDateTime.now().plusMinutes(2L).atZone(ZoneId.systemDefault()).toInstant());
+            } else {
+                triggerTime = getTriggerTime(triggerTimeStr);
+            }
             if (DeployCiTriggerType.MANUAL.getValue().equals(triggerType)) {
                 deployJobVo.setStatus(JobStatus.PENDING.getValue());
                 deployJobVo.setTriggerType(JobTriggerType.MANUAL.getValue());
