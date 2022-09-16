@@ -7,30 +7,40 @@ package codedriver.module.deploy.api.pipeline;
 
 import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.auth.core.AuthAction;
+import codedriver.framework.auth.core.AuthActionChecker;
 import codedriver.framework.common.constvalue.ApiParamType;
+import codedriver.framework.deploy.auth.DEPLOY_BASE;
 import codedriver.framework.deploy.auth.PIPELINE_MODIFY;
+import codedriver.framework.deploy.constvalue.DeployAppConfigAction;
 import codedriver.framework.deploy.constvalue.PipelineType;
 import codedriver.framework.deploy.dto.pipeline.*;
 import codedriver.framework.deploy.exception.DeployPipelineNotFoundException;
 import codedriver.framework.deploy.exception.DeployScheduleNameRepeatException;
 import codedriver.framework.dto.FieldValidResultVo;
+import codedriver.framework.exception.type.PermissionDeniedException;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.IValid;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
-import codedriver.module.deploy.dao.mapper.DeployPipelineMapper;
+import codedriver.module.deploy.auth.core.DeployAppAuthChecker;
+import codedriver.module.deploy.dao.mapper.PipelineMapper;
+import codedriver.module.deploy.service.DeployAppAuthorityService;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.Objects;
+import java.util.Set;
 
 @Service
-@AuthAction(action = PIPELINE_MODIFY.class)
+@AuthAction(action = DEPLOY_BASE.class)
 @OperationType(type = OperationTypeEnum.UPDATE)
 public class SavePipelineApi extends PrivateApiComponentBase {
     @Resource
-    private DeployPipelineMapper deployPipelineMapper;
+    private PipelineMapper pipelineMapper;
+    @Resource
+    private DeployAppAuthorityService deployAppAuthorityService;
 
     @Override
     public String getName() {
@@ -60,19 +70,28 @@ public class SavePipelineApi extends PrivateApiComponentBase {
     public Object myDoService(JSONObject jsonObj) throws Exception {
         Long id = jsonObj.getLong("id");
         if (id != null) {
-            PipelineVo pipelineVo = deployPipelineMapper.getPipelineById(id);
+            PipelineVo pipelineVo = pipelineMapper.getPipelineById(id);
             if (pipelineVo == null) {
                 throw new DeployPipelineNotFoundException(id);
             }
         }
         PipelineVo pipelineVo = JSONObject.toJavaObject(jsonObj, PipelineVo.class);
+        String type = pipelineVo.getType();
+        if (Objects.equals(type, PipelineType.GLOBAL.getValue())) {
+            if (!AuthActionChecker.check(PIPELINE_MODIFY.class)) {
+                throw new PermissionDeniedException(PIPELINE_MODIFY.class);
+            }
+        } else if (Objects.equals(type, PipelineType.APPSYSTEM.getValue())) {
+            deployAppAuthorityService.checkOperationAuth(pipelineVo.getAppSystemId(), DeployAppConfigAction.PIPELINE);
+        }
         if (id == null) {
             pipelineVo.setFcu(UserContext.get().getUserUuid(true));
-            deployPipelineMapper.insertPipeline(pipelineVo);
+            pipelineMapper.insertPipeline(pipelineVo);
         } else {
-            deployPipelineMapper.updatePipeline(pipelineVo);
-            deployPipelineMapper.deleteLaneGroupJobTemplateByPipelineId(pipelineVo.getId());
-            deployPipelineMapper.deletePipelineAuthByPipelineId(pipelineVo.getId());
+            pipelineVo.setLcu(UserContext.get().getUserUuid(true));
+            pipelineMapper.updatePipeline(pipelineVo);
+            pipelineMapper.deleteLaneGroupJobTemplateByPipelineId(pipelineVo.getId());
+            pipelineMapper.deletePipelineAuthByPipelineId(pipelineVo.getId());
         }
         if (CollectionUtils.isNotEmpty(pipelineVo.getLaneList())) {
             for (int i = 0; i < pipelineVo.getLaneList().size(); i++) {
@@ -88,36 +107,36 @@ public class SavePipelineApi extends PrivateApiComponentBase {
                             for (int k = 0; k < groupVo.getJobTemplateList().size(); k++) {
                                 PipelineJobTemplateVo jobVo = groupVo.getJobTemplateList().get(k);
                                 jobVo.setGroupId(groupVo.getId());
-                                deployPipelineMapper.insertJobTemplate(jobVo);
+                                pipelineMapper.insertJobTemplate(jobVo);
                             }
                         }
                         if (hasGroupJob) {
                             groupVo.setLaneId(laneVo.getId());
                             groupVo.setSort(j + 1);
-                            deployPipelineMapper.insertLaneGroup(groupVo);
+                            pipelineMapper.insertLaneGroup(groupVo);
                         }
                     }
                 }
                 if (hasLaneJob) {
                     laneVo.setPipelineId(pipelineVo.getId());
                     laneVo.setSort(i + 1);
-                    deployPipelineMapper.insertLane(laneVo);
+                    pipelineMapper.insertLane(laneVo);
                 }
             }
         }
         if (CollectionUtils.isNotEmpty(pipelineVo.getAuthList())) {
             for (PipelineAuthVo authVo : pipelineVo.getAuthList()) {
                 authVo.setPipelineId(pipelineVo.getId());
-                deployPipelineMapper.insertPipelineAuth(authVo);
+                pipelineMapper.insertPipelineAuth(authVo);
             }
         }
-        return deployPipelineMapper.getPipelineById(pipelineVo.getId());
+        return pipelineMapper.getPipelineById(pipelineVo.getId());
     }
 
     public IValid name() {
         return value -> {
             PipelineVo vo = JSONObject.toJavaObject(value, PipelineVo.class);
-            if (deployPipelineMapper.checkPipelineNameIsExists(vo) > 0) {
+            if (pipelineMapper.checkPipelineNameIsExists(vo) > 0) {
                 return new FieldValidResultVo(new DeployScheduleNameRepeatException(vo.getName()));
             }
             return new FieldValidResultVo();

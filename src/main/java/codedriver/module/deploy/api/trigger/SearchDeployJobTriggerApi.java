@@ -63,20 +63,13 @@ public class SearchDeployJobTriggerApi extends PrivateApiComponentBase {
         int count = triggerMapper.getTriggerCount(deployJobTriggerVo);
         if (count > 0) {
             deployJobTriggerVo.setRowNum(count);
-            List<Long> triggerIdList = triggerMapper.getTriggerIdList(deployJobTriggerVo);
-            triggerVoList = triggerMapper.getTriggerListByIdList(triggerIdList);
+            triggerVoList = triggerMapper.searchTrigger(deployJobTriggerVo);
             //补充状态、源环境
             IResourceCrossoverMapper appSystemMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
             List<AppEnvironmentVo> environmentVos = appSystemMapper.getAllAppEnv(TenantContext.get().getDataDbName());
             Map<Long, AppEnvironmentVo> envMap = environmentVos.stream().collect(Collectors.toMap(AppEnvironmentVo::getEnvId, e -> e));
             for (DeployJobTriggerVo trigger : triggerVoList) {
                 DeployJobTriggerConfigVo config = trigger.getConfig();
-                List<Long> envIdList = config.getEnvIdList();
-                List<AppEnvironmentVo> envList = new ArrayList<>();
-                for (Long envId : envIdList) {
-                    envList.add(envMap.get(envId));
-                }
-                trigger.setEnvList(envList);
                 List<String> statusList = config.getJobStatusList();
                 List<AutoexecJobStatusVo> jobStatusVoList = new ArrayList<>();
                 for (String status : statusList) {

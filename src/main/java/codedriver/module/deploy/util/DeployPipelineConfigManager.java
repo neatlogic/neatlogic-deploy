@@ -129,7 +129,7 @@ public class DeployPipelineConfigManager {
                 if (!combopPhaseNameList.contains(pipelinePhaseVo.getName())) {
                     continue;
                 }
-                if (!Objects.equals(pipelinePhaseVo.getIsActive(), 1)) {
+                if (Objects.equals(pipelinePhaseVo.getIsActive(), 0)) {
                     continue;
                 }
                 List<AutoexecCombopPhaseOperationVo> phaseOperationList = pipelinePhaseVo.getConfig().getPhaseOperationList();

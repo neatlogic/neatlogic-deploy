@@ -6,13 +6,20 @@
 package codedriver.module.deploy.dao.mapper;
 
 import codedriver.framework.deploy.dto.trigger.DeployJobTriggerVo;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
 public interface DeployJobTriggerMapper {
     int getTriggerCount(DeployJobTriggerVo deployJobTriggerVo);
 
-    List<Long> getTriggerIdList(DeployJobTriggerVo deployJobTriggerVo);
+    List<DeployJobTriggerVo> searchTrigger(DeployJobTriggerVo deployJobTriggerVo);
 
-    List<DeployJobTriggerVo> getTriggerListByIdList(List<Long> idList);
+    int checkTriggerNameIsExist(@Param("id") Long id, @Param("name") String name);
+
+    DeployJobTriggerVo getTriggerById(Long id);
+
+    int insertJobTrigger(DeployJobTriggerVo deployJobTriggerVo);
+
+    void updateJobTrigger(DeployJobTriggerVo deployJobTriggerVo);
 }

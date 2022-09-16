@@ -23,6 +23,8 @@ public interface DeployPipelineMapper {
 
     PipelineVo getPipelineById(Long id);
 
+    PipelineVo getPipelineSimpleInfoById(Long id);
+
     /**
      * 根据流水线id和模块id获取流水线与其中属于{moduleId}的作业模版
      *

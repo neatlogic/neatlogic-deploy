@@ -7,15 +7,19 @@ package codedriver.module.deploy.api.trigger;
 
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.common.constvalue.ApiParamType;
-import codedriver.framework.common.dto.BasePageVo;
 import codedriver.framework.deploy.auth.DEPLOY_MODIFY;
-import codedriver.framework.deploy.dto.schedule.DeployScheduleVo;
+import codedriver.framework.deploy.constvalue.PipelineType;
+import codedriver.framework.deploy.constvalue.ScheduleType;
 import codedriver.framework.deploy.dto.trigger.DeployJobTriggerVo;
+import codedriver.framework.deploy.exception.trigger.DeployTriggerNameRepeatException;
+import codedriver.framework.deploy.exception.trigger.DeployTriggerNotFoundException;
+import codedriver.framework.dto.FieldValidResultVo;
 import codedriver.framework.restful.annotation.Input;
 import codedriver.framework.restful.annotation.OperationType;
 import codedriver.framework.restful.annotation.Output;
 import codedriver.framework.restful.annotation.Param;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
+import codedriver.framework.restful.core.IValid;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.deploy.dao.mapper.DeployJobTriggerMapper;
 import com.alibaba.fastjson.JSONObject;
@@ -32,7 +36,7 @@ public class SaveDeployJobTriggerApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "查询发布作业触发器";
+        return "保存发布作业触发器";
     }
 
     @Override
@@ -40,14 +44,44 @@ public class SaveDeployJobTriggerApi extends PrivateApiComponentBase {
         return null;
     }
 
-    @Input({@Param(name = "id", type = ApiParamType.STRING, desc = "模糊查询"),
-            @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "当前页码"),
-            @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "页大小")})
-    @Output({@Param(explode = BasePageVo.class), @Param(name = "tbodyList", explode = DeployScheduleVo[].class, desc = "定时作业列表"),})
+    @Input({
+            @Param(name = "id", type = ApiParamType.LONG, desc = "触发器id"),
+            @Param(name = "name", type = ApiParamType.STRING, isRequired = true, desc = "触发器名称"),
+            @Param(name = "isActive", type = ApiParamType.INTEGER, isRequired = true, desc = "是否激活"),
+            @Param(name = "integrationUuid", type = ApiParamType.STRING, isRequired = true, desc = "集成uuid"),
+            @Param(name = "type", type = ApiParamType.ENUM, member = ScheduleType.class, isRequired = true, desc = "作业类型"),
+            @Param(name = "pipelineType", type = ApiParamType.ENUM, member = PipelineType.class, desc = "流水线类型"),
+            @Param(name = "config", type = ApiParamType.JSONOBJECT, isRequired = true, desc = "配置信息")
+
+    })
+    @Output({})
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
+        Long id = paramObj.getLong("id");
         DeployJobTriggerVo deployJobTriggerVo = paramObj.toJavaObject(DeployJobTriggerVo.class);
+        if(triggerMapper.checkTriggerNameIsExist( id, deployJobTriggerVo.getName()) > 0){
+            throw new DeployTriggerNameRepeatException(deployJobTriggerVo.getName());
+        }
+        if(id == null){
+            triggerMapper.insertJobTrigger(deployJobTriggerVo);
+        }else{
+            DeployJobTriggerVo oldTrigger = triggerMapper.getTriggerById(id);
+            if(oldTrigger == null){
+                throw new DeployTriggerNotFoundException(id);
+            }
+            triggerMapper.updateJobTrigger(deployJobTriggerVo);
+        }
         return null;
+    }
+
+    public IValid name() {
+        return value -> {
+            DeployJobTriggerVo deployJobTriggerVo = JSONObject.toJavaObject(value, DeployJobTriggerVo.class);
+            if(triggerMapper.checkTriggerNameIsExist(deployJobTriggerVo.getId(),deployJobTriggerVo.getName()) >0){
+                return new FieldValidResultVo(new DeployTriggerNameRepeatException(deployJobTriggerVo.getName()));
+            }
+            return new FieldValidResultVo();
+        };
     }
 
     @Override
