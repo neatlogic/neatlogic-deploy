@@ -6,6 +6,7 @@
 package codedriver.module.deploy.api.pipeline;
 
 import codedriver.framework.asynchronization.threadlocal.UserContext;
+import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.auth.core.AuthActionChecker;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.deploy.auth.DEPLOY_BASE;
@@ -29,6 +30,7 @@ import javax.annotation.Resource;
 import java.util.Objects;
 
 @Service
+@AuthAction(action = DEPLOY_BASE.class)
 @OperationType(type = OperationTypeEnum.UPDATE)
 public class SavePipelineApi extends PrivateApiComponentBase {
     @Resource
@@ -72,10 +74,6 @@ public class SavePipelineApi extends PrivateApiComponentBase {
         if (Objects.equals(type, PipelineType.GLOBAL.getValue())) {
             if (AuthActionChecker.check(PIPELINE_MODIFY.class)) {
                 throw new PermissionDeniedException(PIPELINE_MODIFY.class);
-            }
-        } else if (Objects.equals(type, PipelineType.APPSYSTEM.getValue())) {
-            if (AuthActionChecker.check(DEPLOY_BASE.class)) {
-                throw new PermissionDeniedException(DEPLOY_BASE.class);
             }
         }
         if (id == null) {

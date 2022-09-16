@@ -29,7 +29,7 @@ import javax.annotation.Resource;
 import java.util.Objects;
 
 @Service
-@AuthAction(action = PIPELINE_MODIFY.class)
+@AuthAction(action = DEPLOY_BASE.class)
 @OperationType(type = OperationTypeEnum.DELETE)
 @Transactional
 public class DeletePipelineApi extends PrivateApiComponentBase {
@@ -65,10 +65,6 @@ public class DeletePipelineApi extends PrivateApiComponentBase {
         if (Objects.equals(type, PipelineType.GLOBAL.getValue())) {
             if (AuthActionChecker.check(PIPELINE_MODIFY.class)) {
                 throw new PermissionDeniedException(PIPELINE_MODIFY.class);
-            }
-        } else if (Objects.equals(type, PipelineType.APPSYSTEM.getValue())) {
-            if (AuthActionChecker.check(DEPLOY_BASE.class)) {
-                throw new PermissionDeniedException(DEPLOY_BASE.class);
             }
         }
         pipelineMapper.deleteLaneGroupJobTemplateByPipelineId(id);
