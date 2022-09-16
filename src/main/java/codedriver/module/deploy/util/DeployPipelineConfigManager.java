@@ -46,6 +46,10 @@ public class DeployPipelineConfigManager {
         private boolean isEnvDraft;
         private boolean isHasBuildOrDeployTypeTool;
         private List<Long> profileIdList;
+        /**
+         * 是否需要更新配置信息中场景名称、预置参数集名称、操作对应工具信息
+         */
+        private boolean isUpdateConfig = true;
 
         public Builder(Long appSystemId) {
             this.appSystemId = appSystemId;
@@ -88,14 +92,24 @@ public class DeployPipelineConfigManager {
             return this;
         }
 
+        public Builder isUpdateConfig(boolean _isUpdateConfig) {
+            this.isUpdateConfig = _isUpdateConfig;
+            return this;
+        }
         public DeployPipelineConfigVo getConfig() {
             DeployPipelineConfigVo deployPipelineConfig = getDeployPipelineConfig(appSystemId, appModuleId, envId, isAppSystemDraft, isAppModuleDraft, isEnvDraft, profileIdList);
-            if (deployPipelineConfig != null && isHasBuildOrDeployTypeTool) {
+            if (deployPipelineConfig == null) {
+                return null;
+            }
+            if (isUpdateConfig) {
+                IAutoexecServiceCrossoverService autoexecServiceCrossoverService = CrossoverServiceFactory.getApi(IAutoexecServiceCrossoverService.class);
+                autoexecServiceCrossoverService.updateAutoexecCombopConfig(deployPipelineConfig.getAutoexecCombopConfigVo());
+            }
+            if (isHasBuildOrDeployTypeTool) {
                 setIsHasBuildOrDeployTypeTool(deployPipelineConfig);
             }
             return deployPipelineConfig;
         }
-
     }
 
     /**
@@ -113,6 +127,9 @@ public class DeployPipelineConfigManager {
             List<String> combopPhaseNameList = scenarioVo.getCombopPhaseNameList();
             for (DeployPipelinePhaseVo pipelinePhaseVo : pipelineConfigVo.getCombopPhaseList()) {
                 if (!combopPhaseNameList.contains(pipelinePhaseVo.getName())) {
+                    continue;
+                }
+                if (!Objects.equals(pipelinePhaseVo.getIsActive(), 1)) {
                     continue;
                 }
                 List<AutoexecCombopPhaseOperationVo> phaseOperationList = pipelinePhaseVo.getConfig().getPhaseOperationList();
@@ -194,8 +211,6 @@ public class DeployPipelineConfigManager {
             }
         }
         DeployPipelineConfigVo deployPipelineConfigVo = mergeDeployPipelineConfig(appConfig, moduleOverrideConfig, envOverrideConfig, targetLevel, profileIdList);
-        IAutoexecServiceCrossoverService autoexecServiceCrossoverService = CrossoverServiceFactory.getApi(IAutoexecServiceCrossoverService.class);
-        autoexecServiceCrossoverService.updateAutoexecCombopConfig(deployPipelineConfigVo.getAutoexecCombopConfigVo());
         return deployPipelineConfigVo;
     }
 
@@ -319,6 +334,9 @@ public class DeployPipelineConfigManager {
             }
             if (appSystemCombopPhaseVo.getIsActive() == null) {
                 appSystemCombopPhaseVo.setIsActive(1);
+            }
+            if (appSystemCombopPhaseVo.getParentIsActive() == null) {
+                appSystemCombopPhaseVo.setParentIsActive(1);
             }
             if (CollectionUtils.isEmpty(overrideCombopPhaseList)) {
                 continue;
