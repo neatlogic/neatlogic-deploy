@@ -6,8 +6,15 @@
 package codedriver.module.deploy.api.pipeline;
 
 import codedriver.framework.auth.core.AuthAction;
+import codedriver.framework.auth.core.AuthActionChecker;
 import codedriver.framework.common.constvalue.ApiParamType;
+import codedriver.framework.deploy.auth.DEPLOY_BASE;
 import codedriver.framework.deploy.auth.PIPELINE_MODIFY;
+import codedriver.framework.deploy.constvalue.DeployAppConfigAction;
+import codedriver.framework.deploy.constvalue.PipelineType;
+import codedriver.framework.deploy.dto.pipeline.PipelineVo;
+import codedriver.framework.deploy.exception.DeployPipelineNotFoundException;
+import codedriver.framework.exception.type.PermissionDeniedException;
 import codedriver.framework.restful.annotation.Description;
 import codedriver.framework.restful.annotation.Input;
 import codedriver.framework.restful.annotation.OperationType;
@@ -15,20 +22,23 @@ import codedriver.framework.restful.annotation.Param;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.deploy.dao.mapper.PipelineMapper;
+import codedriver.module.deploy.service.DeployAppAuthorityService;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.Objects;
 
 @Service
-@AuthAction(action = PIPELINE_MODIFY.class)
+@AuthAction(action = DEPLOY_BASE.class)
 @OperationType(type = OperationTypeEnum.DELETE)
 @Transactional
 public class DeletePipelineApi extends PrivateApiComponentBase {
     @Resource
     private PipelineMapper pipelineMapper;
-
+    @Resource
+    private DeployAppAuthorityService deployAppAuthorityService;
 
     @Override
     public String getName() {
@@ -50,6 +60,18 @@ public class DeletePipelineApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         Long id = jsonObj.getLong("id");
+        PipelineVo pipelineVo = pipelineMapper.getPipelineById(id);
+        if (pipelineVo == null) {
+            throw new DeployPipelineNotFoundException(id);
+        }
+        String type = pipelineVo.getType();
+        if (Objects.equals(type, PipelineType.GLOBAL.getValue())) {
+            if (!AuthActionChecker.check(PIPELINE_MODIFY.class)) {
+                throw new PermissionDeniedException(PIPELINE_MODIFY.class);
+            }
+        } else if (Objects.equals(type, PipelineType.APPSYSTEM.getValue())) {
+            deployAppAuthorityService.checkOperationAuth(pipelineVo.getAppSystemId(), DeployAppConfigAction.PIPELINE);
+        }
         pipelineMapper.deleteLaneGroupJobTemplateByPipelineId(id);
         pipelineMapper.deleteLaneGroupJobTemplateByPipelineId(id);
         pipelineMapper.deletePipelineById(id);

@@ -161,6 +161,21 @@
         order by dpl.sort, dpg.sort, dpj.sort
     </select>
 
+    <select id="getPipelineSimpleInfoById" parameterType="java.lang.Long" resultType="codedriver.framework.deploy.dto.pipeline.PipelineVo">
+        SELECT
+           `id`,
+           `name`,
+           `is_active` as isActive,
+           `type`,
+           `app_system_id` as appSystemId,
+           `fcd`,
+           `fcu`,
+           `lcd`,
+           `lcu`
+        FROM `deploy_pipeline`
+        WHERE `id` = #{value}
+    </select>
+
     <select id="getPipelineNameById" parameterType="java.lang.Long" resultType="java.lang.String">
         SELECT `name` FROM deploy_pipeline WHERE `id` = #{value}
     </select>
@@ -206,7 +221,7 @@
           AND `id` != #{id}
     </select>
 
-    <select id="checkHasAuthPipelineIdList" resultType="java.lang.String">
+    <select id="checkHasAuthPipelineIdList" resultType="java.lang.Long">
         SELECT
             `pipeline_id`
         FROM `deploy_pipeline_auth`
@@ -280,7 +295,7 @@
                 NOW(3),
                 #{fcu},
                 NOW(3),
-                #{lcu})
+                #{fcu})
     </insert>
 
     <insert id="insertPipelineJobTemplate"

@@ -23,6 +23,8 @@ public interface PipelineMapper {
 
     PipelineVo getPipelineById(Long id);
 
+    PipelineVo getPipelineSimpleInfoById(Long id);
+
     String getPipelineNameById(Long id);
 
     int checkPipelineNameIsExists(PipelineVo pipelineVo);
