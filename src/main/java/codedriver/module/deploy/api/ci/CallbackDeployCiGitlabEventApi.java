@@ -226,18 +226,10 @@ public class CallbackDeployCiGitlabEventApi extends PrivateApiComponentBase {
                 logger.error("Gitlab callback error. Missing pipelineId in ci config, ciId: {}, callback params: {}", ciId, paramObj.toJSONString());
                 throw new DeployCiPipelineIdLostException();
             }
-            // todo 要精确到环境？
-            // todo 如果阶段禁用了，那么判断场景是否包含build和deploy工具，需要把禁用的阶段排除掉
-            DeployPipelineConfigVo deployPipelineConfigVo = DeployPipelineConfigManager.init(ci.getAppSystemId())
-                    .withAppModuleId(ci.getAppModuleId())
-                    .isHasBuildOrDeployTypeTool(true)
-                    .getConfig();
-            List<AutoexecCombopScenarioVo> scenarioList = deployPipelineConfigVo.getScenarioList();
-            Map<Long, AutoexecCombopScenarioVo> scenarioVoMap = scenarioList.stream().collect(Collectors.toMap(AutoexecCombopScenarioVo::getScenarioId, o -> o));
-
-            // 判断超级流水线中是否含有编译工具的作业模版
             boolean hasBuildTypeTool = false;
             PipelineVo pipeline = deployPipelineMapper.getPipelineBaseInfoByIdAndModuleId(pipelineId, ci.getAppModuleId());
+            // 判断超级流水线中是否含有编译工具的作业模版
+            Map<Long, DeployPipelineConfigVo> envPipelineMap = new HashMap<>();
             out:
             if (CollectionUtils.isNotEmpty(pipeline.getLaneList())) {
                 for (int i = 0; i < pipeline.getLaneList().size(); i++) {
@@ -248,11 +240,27 @@ public class CallbackDeployCiGitlabEventApi extends PrivateApiComponentBase {
                             if (CollectionUtils.isNotEmpty(pipelineGroupVo.getJobTemplateList())) {
                                 for (int k = 0; k < pipelineGroupVo.getJobTemplateList().size(); k++) {
                                     PipelineJobTemplateVo jobTemplateVo = pipelineGroupVo.getJobTemplateList().get(k);
-                                    AutoexecCombopScenarioVo scenarioVo = scenarioVoMap.get(jobTemplateVo.getScenarioId());
-                                    if (scenarioVo != null) {
-                                        hasBuildTypeTool = Objects.equals(scenarioVo.getIsHasBuildTypeTool(), 1);
-                                        if (hasBuildTypeTool) {
-                                            break out;
+                                    DeployPipelineConfigVo pipelineConfigVo = envPipelineMap.get(jobTemplateVo.getEnvId());
+                                    if (pipelineConfigVo == null) {
+                                        pipelineConfigVo = DeployPipelineConfigManager.init(ci.getAppSystemId())
+                                                .withAppModuleId(ci.getAppModuleId())
+                                                .withEnvId(jobTemplateVo.getEnvId())
+                                                .isHasBuildOrDeployTypeTool(true)
+                                                .getConfig();
+                                        if (pipelineConfigVo != null) {
+                                            envPipelineMap.put(jobTemplateVo.getEnvId(), pipelineConfigVo);
+                                        }
+                                    }
+                                    if (pipelineConfigVo != null) {
+                                        List<AutoexecCombopScenarioVo> scenarioList = pipelineConfigVo.getScenarioList();
+                                        if (CollectionUtils.isNotEmpty(scenarioList)) {
+                                            Optional<AutoexecCombopScenarioVo> first = scenarioList.stream().filter(o -> Objects.equals(o.getScenarioId(), jobTemplateVo.getScenarioId())).findFirst();
+                                            if (first.isPresent()) {
+                                                hasBuildTypeTool = Objects.equals(first.get().getIsHasBuildTypeTool(), 1);
+                                                if (hasBuildTypeTool) {
+                                                    break out;
+                                                }
+                                            }
                                         }
                                     }
                                 }
@@ -282,7 +290,7 @@ public class CallbackDeployCiGitlabEventApi extends PrivateApiComponentBase {
                 deployJobVo.setTriggerType(JobTriggerType.AUTO.getValue());
                 deployJobVo.setPlanStartTime(triggerTime);
             }
-            deployJobVo.setAppSystemModuleVersionList(Collections.singletonList(new DeploySystemModuleVersionVo(ci.getAppSystemId(), ci.getAppModuleId(), deployVersion.getId())));
+            deployJobVo.setAppSystemModuleVersionList(Collections.singletonList(new DeploySystemModuleVersionVo(ci.getAppSystemId(), ci.getAppModuleId(), deployVersion != null ? deployVersion.getId() : null)));
             deployJobVo.setReviewStatus(ReviewStatus.PASSED.getValue());
             deployJobVo.setSource(JobSource.BATCHDEPLOY.getValue());
             deployJobVo.setExecUser(UserContext.get().getUserUuid());
