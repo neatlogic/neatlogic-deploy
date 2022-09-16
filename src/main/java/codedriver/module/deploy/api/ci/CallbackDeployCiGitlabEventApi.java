@@ -246,6 +246,7 @@ public class CallbackDeployCiGitlabEventApi extends PrivateApiComponentBase {
                                                 .withAppModuleId(ci.getAppModuleId())
                                                 .withEnvId(jobTemplateVo.getEnvId())
                                                 .isHasBuildOrDeployTypeTool(true)
+                                                .isUpdateConfig(false)
                                                 .getConfig();
                                         if (pipelineConfigVo != null) {
                                             envPipelineMap.put(jobTemplateVo.getEnvId(), pipelineConfigVo);
