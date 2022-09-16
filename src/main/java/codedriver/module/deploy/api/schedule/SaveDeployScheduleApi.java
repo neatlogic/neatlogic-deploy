@@ -176,7 +176,7 @@ public class SaveDeployScheduleApi extends PrivateApiComponentBase {
                 }
             }
         } else if (type.equals(ScheduleType.PIPELINE.getValue())) {
-            PipelineVo pipelineVo = pipelineMapper.getPipelineSimpleInfoById(scheduleVo.getPipelineId());
+            PipelineVo pipelineVo = deployPipelineMapper.getPipelineSimpleInfoById(scheduleVo.getPipelineId());
             if (pipelineVo == null) {
                 throw new DeployPipelineNotFoundException(scheduleVo.getPipelineId());
             }
