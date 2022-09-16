@@ -226,7 +226,8 @@ public class CallbackDeployCiGitlabEventApi extends PrivateApiComponentBase {
                 logger.error("Gitlab callback error. Missing pipelineId in ci config, ciId: {}, callback params: {}", ciId, paramObj.toJSONString());
                 throw new DeployCiPipelineIdLostException();
             }
-            // todo 获取所有环境？
+            // todo 要精确到环境？
+            // todo 如果阶段禁用了，那么判断场景是否包含build和deploy工具，需要把禁用的阶段排除掉
             DeployPipelineConfigVo deployPipelineConfigVo = DeployPipelineConfigManager.init(ci.getAppSystemId())
                     .withAppModuleId(ci.getAppModuleId())
                     .isHasBuildOrDeployTypeTool(true)

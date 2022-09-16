@@ -22,7 +22,7 @@ import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.deploy.auth.core.DeployAppAuthChecker;
 import codedriver.module.deploy.dao.mapper.DeployScheduleMapper;
-import codedriver.module.deploy.dao.mapper.PipelineMapper;
+import codedriver.module.deploy.dao.mapper.DeployPipelineMapper;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
@@ -40,7 +40,7 @@ public class GetDeployScheduleApi extends PrivateApiComponentBase {
     @Resource
     private DeployScheduleMapper deployScheduleMapper;
     @Resource
-    private PipelineMapper pipelineMapper;
+    private DeployPipelineMapper pipelineMapper;
 
     @Override
     public String getToken() {

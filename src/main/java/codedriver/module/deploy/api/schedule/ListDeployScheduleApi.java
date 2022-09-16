@@ -103,7 +103,7 @@ public class ListDeployScheduleApi extends PrivateApiComponentBase {
                 }
                 List<Long> pipelineIdList = tbodyList.stream().map(DeployScheduleVo::getPipelineId).collect(Collectors.toList());
                 if (CollectionUtils.isNotEmpty(pipelineIdList)) {
-                    pipelineIdList = pipelineMapper.checkHasAuthPipelineIdList(pipelineIdList, userUuid);
+                    pipelineIdList = deployPipelineMapper.checkHasAuthPipelineIdList(pipelineIdList, userUuid);
                 }
                 boolean hasPipelineModify = AuthActionChecker.check(PIPELINE_MODIFY.class);
                 for (DeployScheduleVo scheduleVo : tbodyList) {
