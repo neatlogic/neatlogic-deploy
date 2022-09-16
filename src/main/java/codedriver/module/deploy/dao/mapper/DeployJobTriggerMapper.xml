@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright (c)  2022 TechSure Co.,Ltd.  All Rights Reserved.
+  ~ 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
+  -->
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="codedriver.module.deploy.dao.mapper.DeployJobTriggerMapper">
+
+    <select id="getTriggerCount" resultType="java.lang.Integer">
+        select count(distinct djt.`id`)
+        from deploy_job_trigger djt
+        left join deploy_job_trigger_app_module djtam on djt.id = djtam.trigger_id
+        LEFT JOIN @{DATA_SCHEMA}.scence_appsystem_appmodule AS saa ON saa.id = djtam.app_system_id AND saa.app_module_id =
+        djtam.app_module_id
+        <where>
+            <if test="keyword != null and keyword != ''">
+                AND djt.name LIKE concat('%',#{keyword},'%')
+            </if>
+        </where>
+    </select>
+
+    <select id="getTriggerIdList" resultType="java.lang.Long">
+        select distinct djt.`id`
+        from deploy_job_trigger djt
+        left join deploy_job_trigger_app_module djtam on djt.id = djtam.trigger_id
+        LEFT JOIN @{DATA_SCHEMA}.scence_appsystem_appmodule AS saa ON saa.id = djtam.app_system_id AND saa.app_module_id =
+        djtam.app_module_id
+        <where>
+            <if test="keyword != null and keyword != ''">
+                AND djt.name LIKE concat('%',#{keyword},'%')
+            </if>
+        </where>
+        order by djt.`lcd` desc
+        LIMIT #{startNum}, #{pageSize}
+    </select>
+
+    <resultMap id="triggerMap" type="codedriver.framework.deploy.dto.trigger.DeployJobTriggerVo">
+        <id column="id" property="id"/>
+        <result column="name" property="name" />
+        <result column="isActive" property="isActive" />
+        <result column="integrationUuid" property="integrationUuid" />
+
+        <result column="lcd" property="lcd" />
+        <result column="lcu" property="lcu" />
+        <collection property="triggerAppModuleList" ofType="codedriver.framework.deploy.dto.trigger.DeployJobTriggerAppModuleVo">
+            <result column="appSystemId" property="appSystemId"/>
+            <result column="appSystemAbbrName" property="appSystemAbbrName"/>
+            <result column="appModuleId" property="appModuleId"/>
+            <result column="appModuleAbbrName" property="appModuleAbbrName"/>
+        </collection>
+    </resultMap>
+
+    <select id="getTriggerListByIdList" resultMap="triggerMap">
+        select
+        djt.`id`,
+        djt.`name`,
+        djt.`is_active` as isActive,
+        djt.`integration_uuid` as integrationUuid,
+        djt.`config`,
+        djt.`lcd`,
+        djt.`lcu`,
+        djtam.app_system_id as appSystemId,
+        saa.abbr_name as appSystemAbbrName,
+        saa.app_module_abbr_name as appModuleAbbrName,
+        djtam.app_module_id as appModuleId
+        from deploy_job_trigger djt
+        left join deploy_job_trigger_app_module djtam on djt.id = djtam.trigger_id
+        LEFT JOIN @{DATA_SCHEMA}.scence_appsystem_appmodule AS saa ON saa.id = djtam.app_system_id AND saa.app_module_id =
+        djtam.app_module_id
+        <where>
+            djt.`id` in
+            <foreach collection="idList" item="id" separator="," open="(" close=")">
+                #{id}
+            </foreach>
+        </where>
+        order by djt.`lcd` desc
+    </select>
+</mapper>
