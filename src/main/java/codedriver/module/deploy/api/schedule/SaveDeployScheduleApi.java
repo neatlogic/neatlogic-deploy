@@ -25,6 +25,7 @@ import codedriver.framework.deploy.auth.DEPLOY_BASE;
 import codedriver.framework.deploy.constvalue.PipelineType;
 import codedriver.framework.deploy.constvalue.ScheduleType;
 import codedriver.framework.deploy.dto.job.DeployJobModuleVo;
+import codedriver.framework.deploy.dto.pipeline.PipelineVo;
 import codedriver.framework.deploy.dto.schedule.DeployScheduleConfigVo;
 import codedriver.framework.deploy.dto.schedule.DeployScheduleVo;
 import codedriver.framework.deploy.dto.version.DeploySystemModuleVersionVo;
@@ -47,7 +48,6 @@ import codedriver.module.deploy.dao.mapper.PipelineMapper;
 import codedriver.module.deploy.schedule.plugin.DeployJobScheduleJob;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.quartz.CronExpression;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -176,16 +176,13 @@ public class SaveDeployScheduleApi extends PrivateApiComponentBase {
                 }
             }
         } else if (type.equals(ScheduleType.PIPELINE.getValue())) {
-            String name = pipelineMapper.getPipelineNameById(scheduleVo.getPipelineId());
-            if (StringUtils.isBlank(name)) {
+            PipelineVo pipelineVo = pipelineMapper.getPipelineSimpleInfoById(scheduleVo.getPipelineId());
+            if (pipelineVo == null) {
                 throw new DeployPipelineNotFoundException(scheduleVo.getPipelineId());
             }
             String pipelineType = scheduleVo.getPipelineType();
             if (pipelineType.equals(PipelineType.APPSYSTEM.getValue())) {
-                AppSystemVo appSystemVo = appSystemMapper.getAppSystemById(scheduleVo.getAppSystemId(), schemaName);
-                if (appSystemVo == null) {
-                    throw new AppSystemNotFoundException(scheduleVo.getAppSystemId());
-                }
+                scheduleVo.setAppSystemId(pipelineVo.getAppSystemId());
             }
             DeployScheduleConfigVo config = scheduleVo.getConfig();
             List<DeploySystemModuleVersionVo> deploySystemModuleVersionList = config.getAppSystemModuleVersionList();

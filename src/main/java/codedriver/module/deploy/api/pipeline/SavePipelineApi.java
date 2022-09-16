@@ -11,6 +11,7 @@ import codedriver.framework.auth.core.AuthActionChecker;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.deploy.auth.DEPLOY_BASE;
 import codedriver.framework.deploy.auth.PIPELINE_MODIFY;
+import codedriver.framework.deploy.constvalue.DeployAppConfigAction;
 import codedriver.framework.deploy.constvalue.PipelineType;
 import codedriver.framework.deploy.dto.pipeline.*;
 import codedriver.framework.deploy.exception.DeployPipelineNotFoundException;
@@ -21,13 +22,16 @@ import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.IValid;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
+import codedriver.module.deploy.auth.core.DeployAppAuthChecker;
 import codedriver.module.deploy.dao.mapper.PipelineMapper;
+import codedriver.module.deploy.service.DeployAppAuthorityService;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.Objects;
+import java.util.Set;
 
 @Service
 @AuthAction(action = DEPLOY_BASE.class)
@@ -35,6 +39,8 @@ import java.util.Objects;
 public class SavePipelineApi extends PrivateApiComponentBase {
     @Resource
     private PipelineMapper pipelineMapper;
+    @Resource
+    private DeployAppAuthorityService deployAppAuthorityService;
 
     @Override
     public String getName() {
@@ -72,9 +78,11 @@ public class SavePipelineApi extends PrivateApiComponentBase {
         PipelineVo pipelineVo = JSONObject.toJavaObject(jsonObj, PipelineVo.class);
         String type = pipelineVo.getType();
         if (Objects.equals(type, PipelineType.GLOBAL.getValue())) {
-            if (AuthActionChecker.check(PIPELINE_MODIFY.class)) {
+            if (!AuthActionChecker.check(PIPELINE_MODIFY.class)) {
                 throw new PermissionDeniedException(PIPELINE_MODIFY.class);
             }
+        } else if (Objects.equals(type, PipelineType.APPSYSTEM.getValue())) {
+            deployAppAuthorityService.checkOperationAuth(pipelineVo.getAppSystemId(), DeployAppConfigAction.PIPELINE);
         }
         if (id == null) {
             pipelineVo.setFcu(UserContext.get().getUserUuid(true));

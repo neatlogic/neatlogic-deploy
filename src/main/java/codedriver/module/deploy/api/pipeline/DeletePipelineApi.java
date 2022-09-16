@@ -10,6 +10,7 @@ import codedriver.framework.auth.core.AuthActionChecker;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.deploy.auth.DEPLOY_BASE;
 import codedriver.framework.deploy.auth.PIPELINE_MODIFY;
+import codedriver.framework.deploy.constvalue.DeployAppConfigAction;
 import codedriver.framework.deploy.constvalue.PipelineType;
 import codedriver.framework.deploy.dto.pipeline.PipelineVo;
 import codedriver.framework.deploy.exception.DeployPipelineNotFoundException;
@@ -21,6 +22,7 @@ import codedriver.framework.restful.annotation.Param;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.deploy.dao.mapper.PipelineMapper;
+import codedriver.module.deploy.service.DeployAppAuthorityService;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,7 +37,8 @@ import java.util.Objects;
 public class DeletePipelineApi extends PrivateApiComponentBase {
     @Resource
     private PipelineMapper pipelineMapper;
-
+    @Resource
+    private DeployAppAuthorityService deployAppAuthorityService;
 
     @Override
     public String getName() {
@@ -63,9 +66,11 @@ public class DeletePipelineApi extends PrivateApiComponentBase {
         }
         String type = pipelineVo.getType();
         if (Objects.equals(type, PipelineType.GLOBAL.getValue())) {
-            if (AuthActionChecker.check(PIPELINE_MODIFY.class)) {
+            if (!AuthActionChecker.check(PIPELINE_MODIFY.class)) {
                 throw new PermissionDeniedException(PIPELINE_MODIFY.class);
             }
+        } else if (Objects.equals(type, PipelineType.APPSYSTEM.getValue())) {
+            deployAppAuthorityService.checkOperationAuth(pipelineVo.getAppSystemId(), DeployAppConfigAction.PIPELINE);
         }
         pipelineMapper.deleteLaneGroupJobTemplateByPipelineId(id);
         pipelineMapper.deleteLaneGroupJobTemplateByPipelineId(id);
