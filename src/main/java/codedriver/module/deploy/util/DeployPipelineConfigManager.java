@@ -46,6 +46,9 @@ public class DeployPipelineConfigManager {
         private boolean isEnvDraft;
         private boolean isHasBuildOrDeployTypeTool;
         private List<Long> profileIdList;
+        /**
+         * 是否需要更新配置信息中场景名称、预置参数集名称、操作对应工具信息
+         */
         private boolean isUpdateConfig = true;
 
         public Builder(Long appSystemId) {
