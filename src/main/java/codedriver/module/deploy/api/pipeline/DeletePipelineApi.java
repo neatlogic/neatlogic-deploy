@@ -6,8 +6,14 @@
 package codedriver.module.deploy.api.pipeline;
 
 import codedriver.framework.auth.core.AuthAction;
+import codedriver.framework.auth.core.AuthActionChecker;
 import codedriver.framework.common.constvalue.ApiParamType;
+import codedriver.framework.deploy.auth.DEPLOY_BASE;
 import codedriver.framework.deploy.auth.PIPELINE_MODIFY;
+import codedriver.framework.deploy.constvalue.PipelineType;
+import codedriver.framework.deploy.dto.pipeline.PipelineVo;
+import codedriver.framework.deploy.exception.DeployPipelineNotFoundException;
+import codedriver.framework.exception.type.PermissionDeniedException;
 import codedriver.framework.restful.annotation.Description;
 import codedriver.framework.restful.annotation.Input;
 import codedriver.framework.restful.annotation.OperationType;
@@ -20,6 +26,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.Objects;
 
 @Service
 @AuthAction(action = PIPELINE_MODIFY.class)
@@ -50,6 +57,20 @@ public class DeletePipelineApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         Long id = jsonObj.getLong("id");
+        PipelineVo pipelineVo = pipelineMapper.getPipelineById(id);
+        if (pipelineVo == null) {
+            throw new DeployPipelineNotFoundException(id);
+        }
+        String type = pipelineVo.getType();
+        if (Objects.equals(type, PipelineType.GLOBAL.getValue())) {
+            if (AuthActionChecker.check(PIPELINE_MODIFY.class)) {
+                throw new PermissionDeniedException(PIPELINE_MODIFY.class);
+            }
+        } else if (Objects.equals(type, PipelineType.APPSYSTEM.getValue())) {
+            if (AuthActionChecker.check(DEPLOY_BASE.class)) {
+                throw new PermissionDeniedException(DEPLOY_BASE.class);
+            }
+        }
         pipelineMapper.deleteLaneGroupJobTemplateByPipelineId(id);
         pipelineMapper.deleteLaneGroupJobTemplateByPipelineId(id);
         pipelineMapper.deletePipelineById(id);

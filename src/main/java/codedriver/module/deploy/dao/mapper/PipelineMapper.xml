@@ -206,7 +206,7 @@
           AND `id` != #{id}
     </select>
 
-    <select id="checkHasAuthPipelineIdList" resultType="java.lang.String">
+    <select id="checkHasAuthPipelineIdList" resultType="java.lang.Long">
         SELECT
             `pipeline_id`
         FROM `deploy_pipeline_auth`
@@ -280,7 +280,7 @@
                 NOW(3),
                 #{fcu},
                 NOW(3),
-                #{lcu})
+                #{fcu})
     </insert>
 
     <insert id="insertPipelineJobTemplate"

@@ -6,14 +6,16 @@
 package codedriver.module.deploy.api.pipeline;
 
 import codedriver.framework.asynchronization.threadlocal.UserContext;
-import codedriver.framework.auth.core.AuthAction;
+import codedriver.framework.auth.core.AuthActionChecker;
 import codedriver.framework.common.constvalue.ApiParamType;
+import codedriver.framework.deploy.auth.DEPLOY_BASE;
 import codedriver.framework.deploy.auth.PIPELINE_MODIFY;
 import codedriver.framework.deploy.constvalue.PipelineType;
 import codedriver.framework.deploy.dto.pipeline.*;
 import codedriver.framework.deploy.exception.DeployPipelineNotFoundException;
 import codedriver.framework.deploy.exception.DeployScheduleNameRepeatException;
 import codedriver.framework.dto.FieldValidResultVo;
+import codedriver.framework.exception.type.PermissionDeniedException;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.IValid;
@@ -24,9 +26,9 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.Objects;
 
 @Service
-@AuthAction(action = PIPELINE_MODIFY.class)
 @OperationType(type = OperationTypeEnum.UPDATE)
 public class SavePipelineApi extends PrivateApiComponentBase {
     @Resource
@@ -66,10 +68,21 @@ public class SavePipelineApi extends PrivateApiComponentBase {
             }
         }
         PipelineVo pipelineVo = JSONObject.toJavaObject(jsonObj, PipelineVo.class);
+        String type = pipelineVo.getType();
+        if (Objects.equals(type, PipelineType.GLOBAL.getValue())) {
+            if (AuthActionChecker.check(PIPELINE_MODIFY.class)) {
+                throw new PermissionDeniedException(PIPELINE_MODIFY.class);
+            }
+        } else if (Objects.equals(type, PipelineType.APPSYSTEM.getValue())) {
+            if (AuthActionChecker.check(DEPLOY_BASE.class)) {
+                throw new PermissionDeniedException(DEPLOY_BASE.class);
+            }
+        }
         if (id == null) {
             pipelineVo.setFcu(UserContext.get().getUserUuid(true));
             pipelineMapper.insertPipeline(pipelineVo);
         } else {
+            pipelineVo.setLcu(UserContext.get().getUserUuid(true));
             pipelineMapper.updatePipeline(pipelineVo);
             pipelineMapper.deleteLaneGroupJobTemplateByPipelineId(pipelineVo.getId());
             pipelineMapper.deletePipelineAuthByPipelineId(pipelineVo.getId());
