@@ -57,60 +57,65 @@
         SELECT COUNT(1) FROM `deploy_schedule` WHERE `name` = #{name} and `id` != #{id}
     </select>
 
-    <select id="getScheduleCount" parameterType="codedriver.framework.deploy.dto.schedule.DeployScheduleVo" resultType="int">
+    <sql id="searchScheduleWhere">
+        <where>
+            <if test="keyword != null and keyword != ''">
+                AND a.`name` LIKE concat('%', #{keyword}, '%')
+            </if>
+            <if test="isActive != null">
+                AND a.`is_active` = #{isActive}
+            </if>
+            <if test="appSystemId != null">
+                AND a.`app_system_id` = #{appSystemId}
+            </if>
+            <if test="appModuleId != null">
+                AND a.`app_module_id` = #{appModuleId}
+            </if>
+            <if test="isHasAllAuthority == 0">
+            AND (a.`type` = 'pipeline'
+            OR daca.`app_system_id`
+            <include refid="codedriver.module.deploy.dao.mapper.DeployAppConfigMapper.checkDeployAuthority"/>
+            )
+            </if>
+        </where>
+    </sql>
+
+    <select id="getScheduleCount" parameterType="codedriver.framework.deploy.dto.schedule.DeployScheduleSearchVo" resultType="int">
         SELECT
             COUNT(1)
-        FROM `deploy_schedule`
-        <where>
-            <if test="keyword != null and keyword != ''">
-                AND `name` LIKE concat('%', #{keyword}, '%')
-            </if>
-            <if test="isActive != null">
-                AND `is_active` = #{isActive}
-            </if>
-            <if test="appSystemId != null">
-                AND `app_system_id` = #{appSystemId}
-            </if>
-            <if test="appModuleId != null">
-                AND `app_module_id` = #{appModuleId}
-            </if>
-        </where>
+        FROM `deploy_schedule` a
+        <if test="isHasAllAuthority == 0">
+            LEFT JOIN `deploy_app_config_authority` daca ON daca.`app_system_id` = a.`app_system_id`
+        </if>
+        <include refid="searchScheduleWhere"/>
     </select>
 
-    <select id="getScheduleList" parameterType="codedriver.framework.deploy.dto.schedule.DeployScheduleVo" resultType="codedriver.framework.deploy.dto.schedule.DeployScheduleVo">
+    <select id="getScheduleList" parameterType="codedriver.framework.deploy.dto.schedule.DeployScheduleSearchVo" resultType="codedriver.framework.deploy.dto.schedule.DeployScheduleVo">
         SELECT
-            `id`,
-            `uuid`,
-            `name`,
-            `begin_time` AS beginTime,
-            `end_time` AS endTime,
-            `cron`,
-            `is_active` AS isActive,
-            `config` AS configStr,
-            `type`,
-            `fcd`,
-            `fcu`,
-            `lcd`,
-            `lcu`,
-            `app_system_id` AS appSystemId,
-            `app_module_id` AS appModuleId,
-            `pipeline_id` AS pipelineId,
-            `pipeline_type` AS pipelineType
-        FROM `deploy_schedule`
-        <where>
-            <if test="keyword != null and keyword != ''">
-                AND `name` LIKE concat('%', #{keyword}, '%')
-            </if>
-            <if test="isActive != null">
-                AND `is_active` = #{isActive}
-            </if>
-            <if test="appSystemId != null">
-                AND `app_system_id` = #{appSystemId}
-            </if>
-            <if test="appModuleId != null">
-                AND `app_module_id` = #{appModuleId}
-            </if>
-        </where>
+        a.`id`,
+        a.`uuid`,
+        a.`name`,
+        a.`begin_time` AS beginTime,
+        a.`end_time` AS endTime,
+        a.`cron`,
+        a.`is_active` AS isActive,
+        a.`config` AS configStr,
+        a.`type`,
+        a.`fcd`,
+        a.`fcu`,
+        a.`lcd`,
+        a.`lcu`,
+        a.`app_system_id` AS appSystemId,
+        a.`app_module_id` AS appModuleId,
+        a.`pipeline_id` AS pipelineId,
+        a.`pipeline_type` AS pipelineType
+        FROM `deploy_schedule` a
+        <if test="isHasAllAuthority == 0">
+            LEFT JOIN `deploy_app_config_authority` daca ON daca.`app_system_id` = a.`app_system_id`
+        </if>
+        <include refid="searchScheduleWhere"/>
+        ORDER BY a.`lcd`
+        LIMIT #{startNum}, #{pageSize}
     </select>
 
     <select id="getScheduleListByIdList" parameterType="java.lang.Long" resultType="codedriver.framework.deploy.dto.schedule.DeployScheduleVo">

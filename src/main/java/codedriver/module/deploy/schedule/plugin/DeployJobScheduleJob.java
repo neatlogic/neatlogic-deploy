@@ -14,6 +14,7 @@ import codedriver.framework.deploy.dto.job.DeployJobModuleVo;
 import codedriver.framework.deploy.dto.job.DeployJobVo;
 import codedriver.framework.deploy.dto.pipeline.PipelineVo;
 import codedriver.framework.deploy.dto.schedule.DeployScheduleConfigVo;
+import codedriver.framework.deploy.dto.schedule.DeployScheduleSearchVo;
 import codedriver.framework.deploy.dto.schedule.DeployScheduleVo;
 import codedriver.framework.scheduler.core.JobBase;
 import codedriver.framework.scheduler.dto.JobObject;
@@ -71,7 +72,7 @@ public class DeployJobScheduleJob  extends JobBase {
 
     @Override
     public void initJob(String tenantUuid) {
-        DeployScheduleVo searchVo = new DeployScheduleVo();
+        DeployScheduleSearchVo searchVo = new DeployScheduleSearchVo();
         searchVo.setIsActive(1);
         int rowNum = deployScheduleMapper.getScheduleCount(searchVo);
         if (rowNum > 0) {
@@ -98,7 +99,6 @@ public class DeployJobScheduleJob  extends JobBase {
             schedulerManager.unloadJob(jobObject);
             return;
         }
-        String schemaName = TenantContext.get().getDataDbName();
         String type = scheduleVo.getType();
         if (type.equals(ScheduleType.GENERAL.getValue())) {
             DeployJobVo deployJobVo = convertDeployScheduleVoToDeployJobVo(scheduleVo);
