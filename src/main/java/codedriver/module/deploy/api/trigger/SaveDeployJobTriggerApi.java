@@ -59,7 +59,7 @@ public class SaveDeployJobTriggerApi extends PrivateApiComponentBase {
     public Object myDoService(JSONObject paramObj) throws Exception {
         Long id = paramObj.getLong("id");
         DeployJobTriggerVo deployJobTriggerVo = paramObj.toJavaObject(DeployJobTriggerVo.class);
-        if(triggerMapper.checkTriggerNameIsExist( id, deployJobTriggerVo.getName()) > 0){
+        if(triggerMapper.checkTriggerNameIsExist( deployJobTriggerVo.getId(), deployJobTriggerVo.getName()) > 0){
             throw new DeployTriggerNameRepeatException(deployJobTriggerVo.getName());
         }
         if(id == null){
