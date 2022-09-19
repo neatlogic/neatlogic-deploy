@@ -17,9 +17,6 @@ import codedriver.framework.deploy.dto.app.DeployPipelineConfigVo;
 import codedriver.framework.deploy.dto.ci.DeployCiVo;
 import codedriver.framework.deploy.dto.job.DeployJobModuleVo;
 import codedriver.framework.deploy.dto.job.DeployJobVo;
-import codedriver.framework.deploy.dto.pipeline.PipelineGroupVo;
-import codedriver.framework.deploy.dto.pipeline.PipelineJobTemplateVo;
-import codedriver.framework.deploy.dto.pipeline.PipelineLaneVo;
 import codedriver.framework.deploy.dto.pipeline.PipelineVo;
 import codedriver.framework.deploy.dto.version.DeploySystemModuleVersionVo;
 import codedriver.framework.deploy.dto.version.DeployVersionVo;
@@ -239,7 +236,7 @@ public class CallbackDeployCiGitlabEventApi extends PrivateApiComponentBase {
                 throw new DeployPipelineNotFoundException(pipelineId);
             }
             // 判断超级流水线中是否含有编译工具的作业模版
-            boolean hasBuildTypeTool = getHasBuildTypeTool(ci, pipeline);
+            boolean hasBuildTypeTool = DeployPipelineConfigManager.judgeHasBuildTypeToolInPipeline(ci, pipeline);
             if (deployVersion == null && hasBuildTypeTool) {
                 deployVersion = new DeployVersionVo(versionName, ci.getAppSystemId(), ci.getAppModuleId(), 0);
                 deployVersionMapper.insertDeployVersion(deployVersion);
@@ -299,59 +296,6 @@ public class CallbackDeployCiGitlabEventApi extends PrivateApiComponentBase {
         deployJobVo.setSource(JobSource.BATCHDEPLOY.getValue());
         deployJobVo.setExecUser(UserContext.get().getUserUuid());
         return deployJobVo;
-    }
-
-    /**
-     * 判断超级流水线中是否含有编译工具的作业模版
-     *
-     * @param ci       持续集成配置
-     * @param pipeline 超级流水线
-     * @return
-     */
-    private boolean getHasBuildTypeTool(DeployCiVo ci, PipelineVo pipeline) {
-        boolean hasBuildTypeTool = false;
-        Map<Long, DeployPipelineConfigVo> envPipelineMap = new HashMap<>();
-        out:
-        if (CollectionUtils.isNotEmpty(pipeline.getLaneList())) {
-            for (int i = 0; i < pipeline.getLaneList().size(); i++) {
-                PipelineLaneVo pipelineLaneVo = pipeline.getLaneList().get(i);
-                if (CollectionUtils.isNotEmpty(pipelineLaneVo.getGroupList())) {
-                    for (int j = 0; j < pipelineLaneVo.getGroupList().size(); j++) {
-                        PipelineGroupVo pipelineGroupVo = pipelineLaneVo.getGroupList().get(j);
-                        if (CollectionUtils.isNotEmpty(pipelineGroupVo.getJobTemplateList())) {
-                            for (int k = 0; k < pipelineGroupVo.getJobTemplateList().size(); k++) {
-                                PipelineJobTemplateVo jobTemplateVo = pipelineGroupVo.getJobTemplateList().get(k);
-                                DeployPipelineConfigVo pipelineConfigVo = envPipelineMap.get(jobTemplateVo.getEnvId());
-                                if (pipelineConfigVo == null) {
-                                    pipelineConfigVo = DeployPipelineConfigManager.init(ci.getAppSystemId())
-                                            .withAppModuleId(ci.getAppModuleId())
-                                            .withEnvId(jobTemplateVo.getEnvId())
-                                            .isHasBuildOrDeployTypeTool(true)
-                                            .isUpdateConfig(false)
-                                            .getConfig();
-                                    if (pipelineConfigVo != null) {
-                                        envPipelineMap.put(jobTemplateVo.getEnvId(), pipelineConfigVo);
-                                    }
-                                }
-                                if (pipelineConfigVo != null) {
-                                    List<AutoexecCombopScenarioVo> scenarioList = pipelineConfigVo.getScenarioList();
-                                    if (CollectionUtils.isNotEmpty(scenarioList)) {
-                                        Optional<AutoexecCombopScenarioVo> first = scenarioList.stream().filter(o -> Objects.equals(o.getScenarioId(), jobTemplateVo.getScenarioId())).findFirst();
-                                        if (first.isPresent()) {
-                                            hasBuildTypeTool = Objects.equals(first.get().getIsHasBuildTypeTool(), 1);
-                                            if (hasBuildTypeTool) {
-                                                break out;
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        return hasBuildTypeTool;
     }
 
     /**

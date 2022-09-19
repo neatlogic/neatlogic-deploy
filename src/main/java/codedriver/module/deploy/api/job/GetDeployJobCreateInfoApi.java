@@ -108,9 +108,7 @@ public class GetDeployJobCreateInfoApi extends PrivateApiComponentBase {
         }
         if (CollectionUtils.isNotEmpty(appModuleIdList)) {
             envList = deployAppConfigMapper.getDeployAppEnvListByAppSystemIdAndModuleIdList(appSystemId, appModuleIdList, TenantContext.get().getDataDbName());
-            TenantContext.get().switchDataDatabase();
-            appModuleList = resourceCrossoverMapper.getAppModuleListByIdListSimple(appModuleIdList);
-            TenantContext.get().switchDefaultDatabase();
+            appModuleList = resourceCrossoverMapper.getAppModuleListByIdListSimple(appModuleIdList, true);
         }
         result.put("envList", envList);
         result.put("appModuleList", appModuleList);

@@ -14,6 +14,11 @@ import codedriver.framework.autoexec.dto.profile.AutoexecProfileParamVo;
 import codedriver.framework.autoexec.dto.profile.AutoexecProfileVo;
 import codedriver.framework.crossover.CrossoverServiceFactory;
 import codedriver.framework.deploy.dto.app.*;
+import codedriver.framework.deploy.dto.ci.DeployCiVo;
+import codedriver.framework.deploy.dto.pipeline.PipelineGroupVo;
+import codedriver.framework.deploy.dto.pipeline.PipelineJobTemplateVo;
+import codedriver.framework.deploy.dto.pipeline.PipelineLaneVo;
+import codedriver.framework.deploy.dto.pipeline.PipelineVo;
 import codedriver.framework.exception.type.ParamNotExistsException;
 import codedriver.module.deploy.dao.mapper.DeployAppConfigMapper;
 import org.apache.commons.collections4.CollectionUtils;
@@ -68,10 +73,12 @@ public class DeployPipelineConfigManager {
             }
             return this;
         }
+
         public Builder withAppSystemDraft(boolean isAppSystemDraft) {
             this.isAppSystemDraft = isAppSystemDraft;
             return this;
         }
+
         public Builder withAppModuleDraft(boolean isAppModuleDraft) {
             this.isAppModuleDraft = isAppModuleDraft;
             return this;
@@ -96,6 +103,7 @@ public class DeployPipelineConfigManager {
             this.isUpdateConfig = _isUpdateConfig;
             return this;
         }
+
         public DeployPipelineConfigVo getConfig() {
             DeployPipelineConfigVo deployPipelineConfig = getDeployPipelineConfig(appSystemId, appModuleId, envId, isAppSystemDraft, isAppModuleDraft, isEnvDraft, profileIdList);
             if (deployPipelineConfig == null) {
@@ -158,9 +166,9 @@ public class DeployPipelineConfigManager {
     /**
      * 获取流水线配置信息
      *
-     * @param appSystemId 应用id
-     * @param appModuleId 应用模块id
-     * @param envId       环境id
+     * @param appSystemId      应用id
+     * @param appModuleId      应用模块id
+     * @param envId            环境id
      * @param isAppSystemDraft 是否取应用层配置草稿
      * @param isAppModuleDraft 是否取模块层配置草稿
      * @param isEnvDraft       是否取环境层配置草稿
@@ -232,11 +240,11 @@ public class DeployPipelineConfigManager {
     /**
      * 组装应用、模块、环境的流水线配置信息
      *
-     * @param appConfig 应用层配置信息
+     * @param appConfig            应用层配置信息
      * @param moduleOverrideConfig 模块层配置信息
-     * @param envOverrideConfig 环境层配置信息
-     * @param targetLevel 目标层
-     * @param profileIdList 预置参数集id列表
+     * @param envOverrideConfig    环境层配置信息
+     * @param targetLevel          目标层
+     * @param profileIdList        预置参数集id列表
      * @return 目标层配置信息
      */
     private static DeployPipelineConfigVo mergeDeployPipelineConfig(DeployPipelineConfigVo appConfig, DeployPipelineConfigVo moduleOverrideConfig, DeployPipelineConfigVo envOverrideConfig, String targetLevel, List<Long> profileIdList) {
@@ -319,7 +327,7 @@ public class DeployPipelineConfigManager {
      *
      * @param appSystemCombopPhaseList 应用层阶段列表数据
      * @param overrideCombopPhaseList  模块层或环境层阶段列表数据
-     * @param source 来源层名称
+     * @param source                   来源层名称
      */
     private static void overridePhase(List<DeployPipelinePhaseVo> appSystemCombopPhaseList, List<DeployPipelinePhaseVo> overrideCombopPhaseList, String source) {
         if (CollectionUtils.isEmpty(appSystemCombopPhaseList)) {
@@ -629,6 +637,59 @@ public class DeployPipelineConfigManager {
         } else {
             appSystemExecuteConfigVo.setInherit(1);
         }
+    }
+
+    /**
+     * 判断超级流水线中是否含有编译工具的作业模版
+     *
+     * @param ci       持续集成配置
+     * @param pipeline 超级流水线
+     * @return
+     */
+    public static boolean judgeHasBuildTypeToolInPipeline(DeployCiVo ci, PipelineVo pipeline) {
+        boolean hasBuildTypeTool = false;
+        Map<Long, DeployPipelineConfigVo> envPipelineMap = new HashMap<>();
+        out:
+        if (CollectionUtils.isNotEmpty(pipeline.getLaneList())) {
+            for (int i = 0; i < pipeline.getLaneList().size(); i++) {
+                PipelineLaneVo pipelineLaneVo = pipeline.getLaneList().get(i);
+                if (CollectionUtils.isNotEmpty(pipelineLaneVo.getGroupList())) {
+                    for (int j = 0; j < pipelineLaneVo.getGroupList().size(); j++) {
+                        PipelineGroupVo pipelineGroupVo = pipelineLaneVo.getGroupList().get(j);
+                        if (CollectionUtils.isNotEmpty(pipelineGroupVo.getJobTemplateList())) {
+                            for (int k = 0; k < pipelineGroupVo.getJobTemplateList().size(); k++) {
+                                PipelineJobTemplateVo jobTemplateVo = pipelineGroupVo.getJobTemplateList().get(k);
+                                DeployPipelineConfigVo pipelineConfigVo = envPipelineMap.get(jobTemplateVo.getEnvId());
+                                if (pipelineConfigVo == null) {
+                                    pipelineConfigVo = DeployPipelineConfigManager.init(ci.getAppSystemId())
+                                            .withAppModuleId(ci.getAppModuleId())
+                                            .withEnvId(jobTemplateVo.getEnvId())
+                                            .isHasBuildOrDeployTypeTool(true)
+                                            .isUpdateConfig(false)
+                                            .getConfig();
+                                    if (pipelineConfigVo != null) {
+                                        envPipelineMap.put(jobTemplateVo.getEnvId(), pipelineConfigVo);
+                                    }
+                                }
+                                if (pipelineConfigVo != null) {
+                                    List<AutoexecCombopScenarioVo> scenarioList = pipelineConfigVo.getScenarioList();
+                                    if (CollectionUtils.isNotEmpty(scenarioList)) {
+                                        Optional<AutoexecCombopScenarioVo> first = scenarioList.stream().filter(o -> Objects.equals(o.getScenarioId(), jobTemplateVo.getScenarioId())).findFirst();
+                                        if (first.isPresent()) {
+                                            hasBuildTypeTool = Objects.equals(first.get().getIsHasBuildTypeTool(), 1);
+                                            if (hasBuildTypeTool) {
+                                                break out;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return hasBuildTypeTool;
     }
 
 }

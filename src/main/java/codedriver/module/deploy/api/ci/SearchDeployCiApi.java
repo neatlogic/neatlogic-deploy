@@ -2,7 +2,7 @@ package codedriver.module.deploy.api.ci;
 
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.cmdb.crossover.IResourceCrossoverMapper;
-import codedriver.framework.cmdb.dto.resourcecenter.entity.ModuleVo;
+import codedriver.framework.cmdb.dto.resourcecenter.ResourceVo;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.crossover.CrossoverServiceFactory;
 import codedriver.framework.deploy.auth.DEPLOY_BASE;
@@ -65,9 +65,9 @@ public class SearchDeployCiApi extends PrivateApiComponentBase {
             if (list.size() > 0) {
                 List<Long> moduleIdList = list.stream().map(DeployCiVo::getAppModuleId).collect(Collectors.toList());
                 IResourceCrossoverMapper resourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
-                List<ModuleVo> moduleList = resourceCrossoverMapper.getAppModuleListByModuleIdList(moduleIdList);
+                List<ResourceVo> moduleList = resourceCrossoverMapper.getAppModuleListByIdListSimple(moduleIdList, false);
                 if (moduleList.size() > 0) {
-                    Map<Long, String> moduleMap = moduleList.stream().collect(Collectors.toMap(ModuleVo::getAppModuleId, ModuleVo::getAppModuleAbbrName));
+                    Map<Long, String> moduleMap = moduleList.stream().collect(Collectors.toMap(ResourceVo::getId, ResourceVo::getAbbrName));
                     list.forEach(o -> o.setAppModuleAbbrName(moduleMap.get(o.getAppModuleId())));
                 }
             }
