@@ -290,7 +290,7 @@ public class DeployJobServiceImpl implements DeployJobService {
         autoexecJobActionCrossoverService.validateAndCreateJobFromCombop(deployJobVo);
         // 保存之后，如果设置的人工触发，那只有点执行按钮才能触发；如果是自动触发，则启动一个定时作业；如果没到点就人工触发了，则取消定时作业，立即执行
         if (JobTriggerType.AUTO.getValue().equals(deployJobVo.getTriggerType())) {
-            if (deployJobVo.getStartTime() == null) {
+            if (deployJobVo.getPlanStartTime() == null) {
                 throw new ParamIrregularException("planStartTime");
             }
             IJob jobHandler = SchedulerManager.getHandler(DeployJobAutoFireJob.class.getName());
