@@ -44,7 +44,7 @@ import codedriver.framework.scheduler.dto.JobObject;
 import codedriver.framework.scheduler.exception.ScheduleHandlerNotFoundException;
 import codedriver.framework.scheduler.exception.ScheduleIllegalParameterException;
 import codedriver.module.deploy.dao.mapper.DeployScheduleMapper;
-import codedriver.module.deploy.dao.mapper.PipelineMapper;
+import codedriver.module.deploy.dao.mapper.DeployPipelineMapper;
 import codedriver.module.deploy.schedule.plugin.DeployJobScheduleJob;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
@@ -67,7 +67,7 @@ public class SaveDeployScheduleApi extends PrivateApiComponentBase {
     @Resource
     private DeployScheduleMapper deployScheduleMapper;
     @Resource
-    private PipelineMapper pipelineMapper;
+    private DeployPipelineMapper deployPipelineMapper;
     @Resource
     private SchedulerManager schedulerManager;
 
@@ -176,7 +176,7 @@ public class SaveDeployScheduleApi extends PrivateApiComponentBase {
                 }
             }
         } else if (type.equals(ScheduleType.PIPELINE.getValue())) {
-            PipelineVo pipelineVo = pipelineMapper.getPipelineSimpleInfoById(scheduleVo.getPipelineId());
+            PipelineVo pipelineVo = deployPipelineMapper.getPipelineSimpleInfoById(scheduleVo.getPipelineId());
             if (pipelineVo == null) {
                 throw new DeployPipelineNotFoundException(scheduleVo.getPipelineId());
             }

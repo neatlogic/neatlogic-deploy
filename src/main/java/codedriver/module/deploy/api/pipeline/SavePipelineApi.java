@@ -22,8 +22,7 @@ import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.IValid;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
-import codedriver.module.deploy.auth.core.DeployAppAuthChecker;
-import codedriver.module.deploy.dao.mapper.PipelineMapper;
+import codedriver.module.deploy.dao.mapper.DeployPipelineMapper;
 import codedriver.module.deploy.service.DeployAppAuthorityService;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
@@ -31,14 +30,13 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.Objects;
-import java.util.Set;
 
 @Service
 @AuthAction(action = DEPLOY_BASE.class)
 @OperationType(type = OperationTypeEnum.UPDATE)
 public class SavePipelineApi extends PrivateApiComponentBase {
     @Resource
-    private PipelineMapper pipelineMapper;
+    private DeployPipelineMapper pipelineMapper;
     @Resource
     private DeployAppAuthorityService deployAppAuthorityService;
 

@@ -12,7 +12,7 @@ import codedriver.framework.deploy.dto.pipeline.*;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
-import codedriver.module.deploy.dao.mapper.PipelineMapper;
+import codedriver.module.deploy.dao.mapper.DeployPipelineMapper;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
@@ -27,7 +27,7 @@ import java.util.Optional;
 @OperationType(type = OperationTypeEnum.SEARCH)
 public class ListPipelineAppSystemModuleEnvScenarioApi extends PrivateApiComponentBase {
     @Resource
-    private PipelineMapper pipelineMapper;
+    private DeployPipelineMapper deployPipelineMapper;
 
     @Override
     public String getName() {
@@ -50,7 +50,7 @@ public class ListPipelineAppSystemModuleEnvScenarioApi extends PrivateApiCompone
     @Description(desc = "获取超级流水线应用模块环境列表接口")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
-        PipelineVo pipelineVo = pipelineMapper.getPipelineById(jsonObj.getLong("id"));
+        PipelineVo pipelineVo = deployPipelineMapper.getPipelineById(jsonObj.getLong("id"));
         JobTemplateList jobTemplateList = new JobTemplateList();
         if (CollectionUtils.isNotEmpty(pipelineVo.getLaneList())) {
             for (PipelineLaneVo laneVo : pipelineVo.getLaneList()) {

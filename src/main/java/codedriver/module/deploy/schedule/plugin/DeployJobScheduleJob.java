@@ -19,7 +19,7 @@ import codedriver.framework.scheduler.core.JobBase;
 import codedriver.framework.scheduler.dto.JobObject;
 import codedriver.module.deploy.dao.mapper.DeployJobMapper;
 import codedriver.module.deploy.dao.mapper.DeployScheduleMapper;
-import codedriver.module.deploy.dao.mapper.PipelineMapper;
+import codedriver.module.deploy.dao.mapper.DeployPipelineMapper;
 import codedriver.module.deploy.service.DeployBatchJobService;
 import codedriver.module.deploy.service.DeployJobService;
 import org.quartz.DisallowConcurrentExecution;
@@ -36,7 +36,7 @@ public class DeployJobScheduleJob  extends JobBase {
     @Resource
     private DeployScheduleMapper deployScheduleMapper;
     @Resource
-    private PipelineMapper pipelineMapper;
+    private DeployPipelineMapper deployPipelineMapper;
     @Resource
     private DeployJobMapper deployJobMapper;
     @Resource
@@ -106,7 +106,7 @@ public class DeployJobScheduleJob  extends JobBase {
             List<DeployJobModuleVo> moduleList = deployJobVo.getModuleList();
             deployJobService.createJobAndFire(deployJobVo, moduleList.get(0));
         } else if(type.equals(ScheduleType.PIPELINE.getValue())) {
-            PipelineVo pipelineVo = pipelineMapper.getPipelineById(scheduleVo.getPipelineId());
+            PipelineVo pipelineVo = deployPipelineMapper.getPipelineById(scheduleVo.getPipelineId());
             if (pipelineVo == null) {
                 schedulerManager.unloadJob(jobObject);
                 return;

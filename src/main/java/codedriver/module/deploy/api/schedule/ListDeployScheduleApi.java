@@ -27,7 +27,7 @@ import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.framework.util.TableResultUtil;
 import codedriver.module.deploy.auth.core.DeployAppAuthChecker;
 import codedriver.module.deploy.dao.mapper.DeployScheduleMapper;
-import codedriver.module.deploy.dao.mapper.PipelineMapper;
+import codedriver.module.deploy.dao.mapper.DeployPipelineMapper;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -45,7 +45,7 @@ public class ListDeployScheduleApi extends PrivateApiComponentBase {
     @Resource
     private DeployScheduleMapper deployScheduleMapper;
     @Resource
-    private PipelineMapper pipelineMapper;
+    private DeployPipelineMapper deployPipelineMapper;
 
     @Override
     public String getToken() {
@@ -103,7 +103,7 @@ public class ListDeployScheduleApi extends PrivateApiComponentBase {
                 }
                 List<Long> pipelineIdList = tbodyList.stream().map(DeployScheduleVo::getPipelineId).collect(Collectors.toList());
                 if (CollectionUtils.isNotEmpty(pipelineIdList)) {
-                    pipelineIdList = pipelineMapper.checkHasAuthPipelineIdList(pipelineIdList, userUuid);
+                    pipelineIdList = deployPipelineMapper.checkHasAuthPipelineIdList(pipelineIdList, userUuid);
                 }
                 boolean hasPipelineModify = AuthActionChecker.check(PIPELINE_MODIFY.class);
                 for (DeployScheduleVo scheduleVo : tbodyList) {
@@ -134,7 +134,7 @@ public class ListDeployScheduleApi extends PrivateApiComponentBase {
                             scheduleVo.setDeletable(1);
                         }
                     } else if(type.equals(ScheduleType.PIPELINE.getValue())) {
-                        String name = pipelineMapper.getPipelineNameById(scheduleVo.getPipelineId());
+                        String name = deployPipelineMapper.getPipelineNameById(scheduleVo.getPipelineId());
                         if (StringUtils.isNotBlank(name)) {
                             scheduleVo.setPipelineName(name);
                         }

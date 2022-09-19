@@ -18,7 +18,7 @@ import codedriver.framework.deploy.dto.app.DeployPipelineConfigVo;
 import codedriver.framework.deploy.dto.app.DeployPipelinePhaseVo;
 import codedriver.framework.deploy.dto.pipeline.PipelineJobTemplateVo;
 import codedriver.framework.deploy.dto.pipeline.PipelineVo;
-import codedriver.module.deploy.dao.mapper.PipelineMapper;
+import codedriver.module.deploy.dao.mapper.DeployPipelineMapper;
 import codedriver.module.deploy.dependency.handler.AutoexecGlobalParam2DeployAppPipelinePhaseOperationArgumentParamDependencyHandler;
 import codedriver.module.deploy.dependency.handler.AutoexecGlobalParam2DeployAppPipelinePhaseOperationInputParamDependencyHandler;
 import codedriver.module.deploy.dependency.handler.AutoexecProfile2DeployAppPipelinePhaseOperationDependencyHandler;
@@ -38,14 +38,14 @@ import java.util.stream.Collectors;
 public class PipelineServiceImpl implements PipelineService {
     private final static Logger logger = LoggerFactory.getLogger(PipelineServiceImpl.class);
     @Resource
-    PipelineMapper pipelineMapper;
+    DeployPipelineMapper deployPipelineMapper;
 
 
     @Override
     public List<PipelineVo> searchPipeline(PipelineVo pipelineVo) {
-        int rowNum = pipelineMapper.searchPipelineCount(pipelineVo);
+        int rowNum = deployPipelineMapper.searchPipelineCount(pipelineVo);
         pipelineVo.setRowNum(rowNum);
-        List<PipelineVo> pipelineList = pipelineMapper.searchPipeline(pipelineVo);
+        List<PipelineVo> pipelineList = deployPipelineMapper.searchPipeline(pipelineVo);
         String schemaName = TenantContext.get().getDataDbName();
         IAppSystemMapper appSystemMapper = CrossoverServiceFactory.getApi(IAppSystemMapper.class);
         Map<Long, AppSystemVo> appSystemMap = new HashMap<>();
@@ -68,9 +68,9 @@ public class PipelineServiceImpl implements PipelineService {
 
     @Override
     public List<PipelineJobTemplateVo> searchPipelineJobTemplate(PipelineJobTemplateVo pipelineJobTemplateVo) {
-        int rowNum = pipelineMapper.searchJobTemplateCount(pipelineJobTemplateVo);
+        int rowNum = deployPipelineMapper.searchJobTemplateCount(pipelineJobTemplateVo);
         pipelineJobTemplateVo.setRowNum(rowNum);
-        return pipelineMapper.searchJobTemplate(pipelineJobTemplateVo);
+        return deployPipelineMapper.searchJobTemplate(pipelineJobTemplateVo);
     }
 
     @Override

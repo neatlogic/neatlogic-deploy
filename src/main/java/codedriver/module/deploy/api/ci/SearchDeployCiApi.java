@@ -1,7 +1,10 @@
 package codedriver.module.deploy.api.ci;
 
 import codedriver.framework.auth.core.AuthAction;
+import codedriver.framework.cmdb.crossover.IResourceCrossoverMapper;
+import codedriver.framework.cmdb.dto.resourcecenter.ResourceVo;
 import codedriver.framework.common.constvalue.ApiParamType;
+import codedriver.framework.crossover.CrossoverServiceFactory;
 import codedriver.framework.deploy.auth.DEPLOY_BASE;
 import codedriver.framework.deploy.dto.ci.DeployCiVo;
 import codedriver.framework.restful.annotation.Description;
@@ -18,6 +21,8 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @AuthAction(action = DEPLOY_BASE.class)
@@ -56,9 +61,15 @@ public class SearchDeployCiApi extends PrivateApiComponentBase {
         deployCiVo.setRowNum(count);
         List<DeployCiVo> list = new ArrayList<>();
         if (count > 0) {
-            List<Long> idList = deployCiMapper.searchDeployCiIdList(deployCiVo);
-            if (idList.size() > 0) {
-                list = deployCiMapper.getDeployCiListByIdList(idList);
+            list = deployCiMapper.searchDeployCiList(deployCiVo);
+            if (list.size() > 0) {
+                List<Long> moduleIdList = list.stream().map(DeployCiVo::getAppModuleId).collect(Collectors.toList());
+                IResourceCrossoverMapper resourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
+                List<ResourceVo> moduleList = resourceCrossoverMapper.getAppModuleListByIdListSimple(moduleIdList, false);
+                if (moduleList.size() > 0) {
+                    Map<Long, String> moduleMap = moduleList.stream().collect(Collectors.toMap(ResourceVo::getId, ResourceVo::getAbbrName));
+                    list.forEach(o -> o.setAppModuleAbbrName(moduleMap.get(o.getAppModuleId())));
+                }
             }
         }
         return TableResultUtil.getResult(list, deployCiVo);
