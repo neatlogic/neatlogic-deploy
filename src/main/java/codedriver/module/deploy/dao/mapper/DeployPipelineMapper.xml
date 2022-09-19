@@ -216,29 +216,52 @@
     <sql id="searchPipelineCondition">
         <where>
             <if test="keyword != null and keyword != ''">
-                and name like CONCAT('%',#{keyword},'%')
+                <choose>
+                    <when test="type == 'appsystem'">
+                        AND (a.`name` LIKE CONCAT('%',#{keyword},'%') OR b.`abbr_name` LIKE CONCAT ('%',#{keyword},'%'))
+                    </when>
+                    <otherwise>
+                        AND a.`name` LIKE CONCAT('%',#{keyword},'%')
+                    </otherwise>
+                </choose>
+
             </if>
             <if test="type != null and type != ''">
-                and `type` = #{type}
+                AND a.`type` = #{type}
             </if>
             <if test="appSystemId != null">
-                and `app_system_id` = #{appSystemId}
+                AND a.`app_system_id` = #{appSystemId}
             </if>
         </where>
     </sql>
 
     <select id="searchPipeline" parameterType="codedriver.framework.deploy.dto.pipeline.PipelineVo"
             resultType="codedriver.framework.deploy.dto.pipeline.PipelineVo">
-        select id, name,is_active as isActive,fcd,fcu,lcd,lcu, `type`, `app_system_id` as appSystemId
-        from deploy_pipeline
+        SELECT
+            a.`id`,
+            a.`name`,
+            a.`is_active` as isActive,
+            a.`fcd`,
+            a.`fcu`,
+            a.`lcd`,
+            a.`lcu`,
+            a.`type`,
+            a.`app_system_id` AS appSystemId
+        FROM `deploy_pipeline` a
+        <if test="type == 'appsystem'">
+            JOIN @{DATA_SCHEMA}.`scence_appsystem` b ON b.`id` = a.`app_system_id`
+        </if>
         <include refid="searchPipelineCondition"/>
-        order by lcu DESC
+        ORDER BY a.`lcu` DESC
         LIMIT #{startNum}, #{pageSize}
     </select>
 
     <select id="searchPipelineCount" parameterType="codedriver.framework.deploy.dto.pipeline.PipelineVo"
             resultType="int">
-        select count(1) from deploy_pipeline
+        select count(1) from deploy_pipeline a
+        <if test="type == 'appsystem'">
+            JOIN @{DATA_SCHEMA}.`scence_appsystem` b ON b.`id` = a.`app_system_id`
+        </if>
         <include refid="searchPipelineCondition"/>
     </select>
 
