@@ -15,10 +15,7 @@ import codedriver.framework.autoexec.dto.profile.AutoexecProfileParamVo;
 import codedriver.framework.autoexec.dto.profile.AutoexecProfileVo;
 import codedriver.framework.crossover.CrossoverServiceFactory;
 import codedriver.framework.deploy.dto.app.*;
-import codedriver.framework.deploy.dto.pipeline.PipelineGroupVo;
-import codedriver.framework.deploy.dto.pipeline.PipelineJobTemplateVo;
-import codedriver.framework.deploy.dto.pipeline.PipelineLaneVo;
-import codedriver.framework.deploy.dto.pipeline.PipelineVo;
+import codedriver.framework.deploy.dto.pipeline.*;
 import codedriver.framework.exception.type.ParamNotExistsException;
 import codedriver.module.deploy.dao.mapper.DeployAppConfigMapper;
 import org.apache.commons.collections4.CollectionUtils;
@@ -47,6 +44,7 @@ public class DeployPipelineConfigManager {
     public void setAutoexecTypeMapper(AutoexecTypeMapper _autoexecTypeMapper) {
         autoexecTypeMapper = _autoexecTypeMapper;
     }
+
     @Resource
     public void setAutoexecToolMapper(AutoexecToolMapper _autoexecToolMapper) {
         autoexecToolMapper = _autoexecToolMapper;
@@ -708,9 +706,15 @@ public class DeployPipelineConfigManager {
                         if (CollectionUtils.isNotEmpty(pipelineGroupVo.getJobTemplateList())) {
                             for (int k = 0; k < pipelineGroupVo.getJobTemplateList().size(); k++) {
                                 PipelineJobTemplateVo jobTemplateVo = pipelineGroupVo.getJobTemplateList().get(k);
-                                if(appSystemId == null || Objects.equals(jobTemplateVo.getAppSystemId(), appSystemId)) {
-                                    if(appModuleId == null || Objects.equals(jobTemplateVo.getAppSystemId(), appSystemId)) {
-                                        setIsJobTemplateVoHasBuildDeployType(jobTemplateVo, envPipelineMap, pipeline);
+                                if (appSystemId == null || Objects.equals(jobTemplateVo.getAppSystemId(), appSystemId)) {
+                                    if (appModuleId == null || Objects.equals(jobTemplateVo.getAppSystemId(), appSystemId)) {
+                                        setIsJobTemplateVoHasBuildDeployType(jobTemplateVo, envPipelineMap);
+                                        if (jobTemplateVo.getIsHasBuildTypeTool() != 1) {
+                                            pipeline.setIsHasBuildTypeTool(jobTemplateVo.getIsHasBuildTypeTool());
+                                        }
+                                        if (jobTemplateVo.getIsHasDeployTypeTool() != 1) {
+                                            pipeline.setIsHasDeployTypeTool(jobTemplateVo.getIsHasDeployTypeTool());
+                                        }
                                     }
                                 }
                                 if (pipeline.getIsHasBuildTypeTool() == 1 && pipeline.getIsHasDeployTypeTool() == 1) {
@@ -726,12 +730,12 @@ public class DeployPipelineConfigManager {
 
     /**
      * 设置超级流水线是否含有build｜deploy 工具
-     * @param jobTemplateVo 流水线
+     *
+     * @param jobTemplateVo  流水线
      * @param envPipelineMap 出重环境流水线map
-     * @param pipeline 超级流水线
      */
-    public static void setIsJobTemplateVoHasBuildDeployType(PipelineJobTemplateVo jobTemplateVo,Map<Long, DeployPipelineConfigVo> envPipelineMap, PipelineVo pipeline) {
-        if (pipeline.getIsHasBuildTypeTool() == 1 && pipeline.getIsHasDeployTypeTool() == 1) {
+    public static void setIsJobTemplateVoHasBuildDeployType(PipelineJobTemplateVo jobTemplateVo, Map<Long, DeployPipelineConfigVo> envPipelineMap) {
+        if (jobTemplateVo.getIsHasBuildTypeTool() == 1 && jobTemplateVo.getIsHasDeployTypeTool() == 1) {
             return;
         }
         DeployPipelineConfigVo pipelineConfigVo = envPipelineMap.get(jobTemplateVo.getEnvId());
@@ -752,10 +756,10 @@ public class DeployPipelineConfigManager {
                 Optional<AutoexecCombopScenarioVo> first = scenarioList.stream().filter(o -> Objects.equals(o.getScenarioId(), jobTemplateVo.getScenarioId())).findFirst();
                 if (first.isPresent()) {
                     if (Objects.equals(first.get().getIsHasBuildTypeTool(), 1)) {
-                        pipeline.setIsHasBuildTypeTool(1);
+                        jobTemplateVo.setIsHasBuildTypeTool(1);
                     }
                     if (Objects.equals(first.get().getIsHasDeployTypeTool(), 1)) {
-                        pipeline.setIsHasDeployTypeTool(1);
+                        jobTemplateVo.setIsHasDeployTypeTool(1);
                     }
                 }
             }

@@ -8,19 +8,19 @@ package codedriver.module.deploy.api.pipeline;
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.deploy.auth.DEPLOY_BASE;
+import codedriver.framework.deploy.dto.app.DeployPipelineConfigVo;
 import codedriver.framework.deploy.dto.pipeline.*;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.deploy.dao.mapper.DeployPipelineMapper;
+import codedriver.module.deploy.util.DeployPipelineConfigManager;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 @AuthAction(action = DEPLOY_BASE.class)
@@ -52,13 +52,14 @@ public class ListPipelineAppSystemModuleEnvScenarioApi extends PrivateApiCompone
     public Object myDoService(JSONObject jsonObj) throws Exception {
         PipelineVo pipelineVo = deployPipelineMapper.getPipelineById(jsonObj.getLong("id"));
         JobTemplateList jobTemplateList = new JobTemplateList();
+        Map<Long, DeployPipelineConfigVo> envPipelineMap = new HashMap<>();
         if (CollectionUtils.isNotEmpty(pipelineVo.getLaneList())) {
             for (PipelineLaneVo laneVo : pipelineVo.getLaneList()) {
                 if (CollectionUtils.isNotEmpty(laneVo.getGroupList())) {
                     for (PipelineGroupVo groupVo : laneVo.getGroupList()) {
                         if (CollectionUtils.isNotEmpty(groupVo.getJobTemplateList())) {
                             for (PipelineJobTemplateVo jobTemplateVo : groupVo.getJobTemplateList()) {
-                                jobTemplateList.add(jobTemplateVo);
+                                jobTemplateList.add(jobTemplateVo, envPipelineMap);
                             }
                         }
                     }
@@ -71,7 +72,7 @@ public class ListPipelineAppSystemModuleEnvScenarioApi extends PrivateApiCompone
     static class JobTemplateList {
         List<PipelineJobTemplateVo> jobTemplateList = new ArrayList<>();
 
-        public void add(PipelineJobTemplateVo jobTemplateVo) {
+        public void add(PipelineJobTemplateVo jobTemplateVo, Map<Long, DeployPipelineConfigVo> envPipelineMap) {
             PipelineJobTemplateVo existsJobVo = null;
             Optional<PipelineJobTemplateVo> op = jobTemplateList.stream().filter(d -> d.getAppSystemId().equals(jobTemplateVo.getAppSystemId())
                     && d.getAppModuleId().equals(jobTemplateVo.getAppModuleId())
@@ -83,6 +84,8 @@ public class ListPipelineAppSystemModuleEnvScenarioApi extends PrivateApiCompone
             envScenarioVo.setScenarioId(jobTemplateVo.getScenarioId());
             envScenarioVo.setScenarioName(jobTemplateVo.getScenarioName());
             existsJobVo.addEnvScenario(envScenarioVo);
+            existsJobVo.setScenarioId(envScenarioVo.getScenarioId());
+            DeployPipelineConfigManager.setIsJobTemplateVoHasBuildDeployType(existsJobVo, envPipelineMap);
             if (!op.isPresent()) {
                 jobTemplateList.add(existsJobVo);
             }
