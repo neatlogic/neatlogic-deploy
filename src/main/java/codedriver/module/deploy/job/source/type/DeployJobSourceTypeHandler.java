@@ -358,14 +358,14 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
         DeployJobVo deployJobVo = (DeployJobVo) jobVo;
         deployJobMapper.insertIgnoreDeployJobContent(new DeployJobContentVo(jobVo.getConfigStr()));
         //如果buildNo是-1，表示新建buildNo
-        if (deployJobVo.getBuildNo() != null) {
+        if (deployJobVo.getBuildNo() != null || StringUtils.isNotBlank(deployJobVo.getVersion())) {
             DeployVersionVo deployVersionVo = deployVersionMapper.getVersionByAppSystemIdAndAppModuleIdAndVersion(deployJobVo.getAppSystemId(), deployJobVo.getAppModuleId(), deployJobVo.getVersion());
             if (deployVersionVo == null) {
                 throw new DeployVersionNotFoundException(deployJobVo.getVersion());
             }
             deployJobVo.setVersionId(deployVersionVo.getId());
             //获取最新buildNo
-            if (deployJobVo.getBuildNo() == -1) {
+            if (deployJobVo.getBuildNo() == null || deployJobVo.getBuildNo() == -1) {
                 Integer maxBuildNo = deployVersionMapper.getDeployVersionMaxBuildNoByVersionIdLock(deployVersionVo.getId());
                 if (maxBuildNo == null) {
                     deployJobVo.setBuildNo(1);
