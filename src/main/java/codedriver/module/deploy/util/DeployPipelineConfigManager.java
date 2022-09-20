@@ -645,7 +645,7 @@ public class DeployPipelineConfigManager {
      * @param appModuleId 模块id
      * @param pipeline    超级流水线
      */
-    public static void judgeHasBuildTypeToolInPipeline(Long appSystemId, Long appModuleId, PipelineVo pipeline) {
+    public static void judgeHasBuildOrDeployTypeToolInPipeline(Long appSystemId, Long appModuleId, PipelineVo pipeline) {
         Map<Long, DeployPipelineConfigVo> envPipelineMap = new HashMap<>();
         out:
         if (CollectionUtils.isNotEmpty(pipeline.getLaneList())) {
@@ -657,8 +657,8 @@ public class DeployPipelineConfigManager {
                         if (CollectionUtils.isNotEmpty(pipelineGroupVo.getJobTemplateList())) {
                             for (int k = 0; k < pipelineGroupVo.getJobTemplateList().size(); k++) {
                                 PipelineJobTemplateVo jobTemplateVo = pipelineGroupVo.getJobTemplateList().get(k);
-                                if(appSystemId == null || Objects.equals(jobTemplateVo.getAppSystemId(), appSystemId)) {
-                                    if(appModuleId == null || Objects.equals(jobTemplateVo.getAppSystemId(), appSystemId)) {
+                                if (appSystemId == null || Objects.equals(jobTemplateVo.getAppSystemId(), appSystemId)) {
+                                    if (appModuleId == null || Objects.equals(jobTemplateVo.getAppSystemId(), appSystemId)) {
                                         setIsJobTemplateVoHasBuildDeployType(jobTemplateVo, envPipelineMap, pipeline);
                                     }
                                 }
@@ -675,11 +675,12 @@ public class DeployPipelineConfigManager {
 
     /**
      * 设置超级流水线是否含有build｜deploy 工具
-     * @param jobTemplateVo 流水线
+     *
+     * @param jobTemplateVo  流水线
      * @param envPipelineMap 出重环境流水线map
-     * @param pipeline 超级流水线
+     * @param pipeline       超级流水线
      */
-    public static void setIsJobTemplateVoHasBuildDeployType(PipelineJobTemplateVo jobTemplateVo,Map<Long, DeployPipelineConfigVo> envPipelineMap, PipelineVo pipeline) {
+    public static void setIsJobTemplateVoHasBuildDeployType(PipelineJobTemplateVo jobTemplateVo, Map<Long, DeployPipelineConfigVo> envPipelineMap, PipelineVo pipeline) {
         if (pipeline.getIsHasBuildTypeTool() == 1 && pipeline.getIsHasDeployTypeTool() == 1) {
             return;
         }
