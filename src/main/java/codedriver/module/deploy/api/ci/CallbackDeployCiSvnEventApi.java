@@ -31,6 +31,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -102,6 +103,7 @@ public class CallbackDeployCiSvnEventApi extends PrivateApiComponentBase {
             3、创建作业
          */
         List<DeployCiVo> ciVoList = new ArrayList<>();
+        // 所有属于当前仓库与事件的ci配置
         List<DeployCiVo> ciList = deployCiMapper.getDeployCiListByRepoNameAndEvent(repo, event);
         if (ciList.size() > 0) {
             List<String> dirList = Arrays.asList(dirsChanged.split(","));
@@ -122,6 +124,10 @@ public class CallbackDeployCiSvnEventApi extends PrivateApiComponentBase {
                         }
                     }
                 }
+            }
+            // 如果变更的分支没有与之匹配的ci，那么触发所有分支过滤规则为"\"的ci
+            if (ciVoList.size() == 0) {
+                ciVoList = ciList.stream().filter(o -> Objects.equals(o.getBranchFilter(), "\\")).collect(Collectors.toList());
             }
         }
 
