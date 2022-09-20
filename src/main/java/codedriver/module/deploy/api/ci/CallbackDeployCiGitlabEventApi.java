@@ -236,8 +236,8 @@ public class CallbackDeployCiGitlabEventApi extends PrivateApiComponentBase {
                 throw new DeployPipelineNotFoundException(pipelineId);
             }
             // 判断超级流水线中是否含有编译工具的作业模版
-            boolean hasBuildTypeTool = DeployPipelineConfigManager.judgeHasBuildTypeToolInPipeline(ci.getAppSystemId(), ci.getAppModuleId(), pipeline);
-            if (deployVersion == null && hasBuildTypeTool) {
+            DeployPipelineConfigManager.judgeHasBuildTypeToolInPipeline(ci.getAppSystemId(), ci.getAppModuleId(), pipeline);
+            if (deployVersion == null && pipeline.getIsHasBuildTypeTool() == 1) {
                 deployVersion = new DeployVersionVo(versionName, ci.getAppSystemId(), ci.getAppModuleId(), 0);
                 deployVersionMapper.insertDeployVersion(deployVersion);
             }

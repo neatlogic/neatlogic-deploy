@@ -644,10 +644,8 @@ public class DeployPipelineConfigManager {
      * @param appSystemId 系统id
      * @param appModuleId 模块id
      * @param pipeline    超级流水线
-     * @return 是否含有build｜deploy工具
      */
-    public static boolean judgeHasBuildTypeToolInPipeline(Long appSystemId, Long appModuleId, PipelineVo pipeline) {
-        boolean hasBuildTypeTool = false;
+    public static void judgeHasBuildTypeToolInPipeline(Long appSystemId, Long appModuleId, PipelineVo pipeline) {
         Map<Long, DeployPipelineConfigVo> envPipelineMap = new HashMap<>();
         out:
         if (CollectionUtils.isNotEmpty(pipeline.getLaneList())) {
@@ -659,29 +657,13 @@ public class DeployPipelineConfigManager {
                         if (CollectionUtils.isNotEmpty(pipelineGroupVo.getJobTemplateList())) {
                             for (int k = 0; k < pipelineGroupVo.getJobTemplateList().size(); k++) {
                                 PipelineJobTemplateVo jobTemplateVo = pipelineGroupVo.getJobTemplateList().get(k);
-                                DeployPipelineConfigVo pipelineConfigVo = envPipelineMap.get(jobTemplateVo.getEnvId());
-                                if (pipelineConfigVo == null) {
-                                    pipelineConfigVo = DeployPipelineConfigManager.init(appSystemId)
-                                            .withAppModuleId(appModuleId)
-                                            .withEnvId(jobTemplateVo.getEnvId())
-                                            .isHasBuildOrDeployTypeTool(true)
-                                            .isUpdateConfig(false)
-                                            .getConfig();
-                                    if (pipelineConfigVo != null) {
-                                        envPipelineMap.put(jobTemplateVo.getEnvId(), pipelineConfigVo);
+                                if(appSystemId == null || Objects.equals(jobTemplateVo.getAppSystemId(), appSystemId)) {
+                                    if(appModuleId == null || Objects.equals(jobTemplateVo.getAppSystemId(), appSystemId)) {
+                                        setIsJobTemplateVoHasBuildDeployType(jobTemplateVo, envPipelineMap, pipeline);
                                     }
                                 }
-                                if (pipelineConfigVo != null) {
-                                    List<AutoexecCombopScenarioVo> scenarioList = pipelineConfigVo.getScenarioList();
-                                    if (CollectionUtils.isNotEmpty(scenarioList)) {
-                                        Optional<AutoexecCombopScenarioVo> first = scenarioList.stream().filter(o -> Objects.equals(o.getScenarioId(), jobTemplateVo.getScenarioId())).findFirst();
-                                        if (first.isPresent()) {
-                                            hasBuildTypeTool = Objects.equals(first.get().getIsHasBuildTypeTool(), 1);
-                                            if (hasBuildTypeTool) {
-                                                break out;
-                                            }
-                                        }
-                                    }
+                                if (pipeline.getIsHasBuildTypeTool() == 1 && pipeline.getIsHasDeployTypeTool() == 1) {
+                                    break out;
                                 }
                             }
                         }
@@ -689,7 +671,44 @@ public class DeployPipelineConfigManager {
                 }
             }
         }
-        return hasBuildTypeTool;
+    }
+
+    /**
+     * 设置超级流水线是否含有build｜deploy 工具
+     * @param jobTemplateVo 流水线
+     * @param envPipelineMap 出重环境流水线map
+     * @param pipeline 超级流水线
+     */
+    public static void setIsJobTemplateVoHasBuildDeployType(PipelineJobTemplateVo jobTemplateVo,Map<Long, DeployPipelineConfigVo> envPipelineMap, PipelineVo pipeline) {
+        if (pipeline.getIsHasBuildTypeTool() == 1 && pipeline.getIsHasDeployTypeTool() == 1) {
+            return;
+        }
+        DeployPipelineConfigVo pipelineConfigVo = envPipelineMap.get(jobTemplateVo.getEnvId());
+        if (pipelineConfigVo == null) {
+            pipelineConfigVo = DeployPipelineConfigManager.init(jobTemplateVo.getAppSystemId())
+                    .withAppModuleId(jobTemplateVo.getAppModuleId())
+                    .withEnvId(jobTemplateVo.getEnvId())
+                    .isHasBuildOrDeployTypeTool(true)
+                    .isUpdateConfig(false)
+                    .getConfig();
+            if (pipelineConfigVo != null) {
+                envPipelineMap.put(jobTemplateVo.getEnvId(), pipelineConfigVo);
+            }
+        }
+        if (pipelineConfigVo != null) {
+            List<AutoexecCombopScenarioVo> scenarioList = pipelineConfigVo.getScenarioList();
+            if (CollectionUtils.isNotEmpty(scenarioList)) {
+                Optional<AutoexecCombopScenarioVo> first = scenarioList.stream().filter(o -> Objects.equals(o.getScenarioId(), jobTemplateVo.getScenarioId())).findFirst();
+                if (first.isPresent()) {
+                    if (Objects.equals(first.get().getIsHasBuildTypeTool(), 1)) {
+                        pipeline.setIsHasBuildTypeTool(1);
+                    }
+                    if (Objects.equals(first.get().getIsHasDeployTypeTool(), 1)) {
+                        pipeline.setIsHasDeployTypeTool(1);
+                    }
+                }
+            }
+        }
     }
 
 }
