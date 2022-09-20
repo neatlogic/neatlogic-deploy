@@ -5,6 +5,7 @@
 
 package codedriver.module.deploy.dao.mapper;
 
+import codedriver.framework.deploy.dto.trigger.DeployJobTriggerAppModuleVo;
 import codedriver.framework.deploy.dto.trigger.DeployJobTriggerVo;
 import org.apache.ibatis.annotations.Param;
 
@@ -15,11 +16,15 @@ public interface DeployJobTriggerMapper {
 
     List<DeployJobTriggerVo> searchTrigger(DeployJobTriggerVo deployJobTriggerVo);
 
+    List<DeployJobTriggerVo> getTriggerListByAppSystemIdAndAppModuleId(@Param("appSystemId") Long appSystemId, @Param("appModuleId") Long appModuleId);
+
     int checkTriggerNameIsExist(@Param("id") Long id, @Param("name") String name);
 
     DeployJobTriggerVo getTriggerById(Long id);
 
     int insertJobTrigger(DeployJobTriggerVo deployJobTriggerVo);
+
+    int insertJobTriggerAppModule(DeployJobTriggerAppModuleVo triggerAppModuleVo);
 
     void updateJobTrigger(DeployJobTriggerVo deployJobTriggerVo);
 }

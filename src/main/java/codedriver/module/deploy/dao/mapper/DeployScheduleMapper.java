@@ -5,6 +5,7 @@
 
 package codedriver.module.deploy.dao.mapper;
 
+import codedriver.framework.deploy.dto.schedule.DeployScheduleSearchVo;
 import codedriver.framework.deploy.dto.schedule.DeployScheduleVo;
 
 import java.util.List;
@@ -16,9 +17,9 @@ public interface DeployScheduleMapper {
 
     int checkScheduleNameIsExists(DeployScheduleVo vo);
 
-    int getScheduleCount(DeployScheduleVo searchVo);
+    int getScheduleCount(DeployScheduleSearchVo searchVo);
 
-    List<DeployScheduleVo> getScheduleList(DeployScheduleVo searchVo);
+    List<DeployScheduleVo> getScheduleList(DeployScheduleSearchVo searchVo);
 
     List<DeployScheduleVo> getScheduleListByIdList(List<Long> idList);
 

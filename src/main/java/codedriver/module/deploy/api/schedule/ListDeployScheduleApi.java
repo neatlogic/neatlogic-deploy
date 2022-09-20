@@ -15,12 +15,15 @@ import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.dto.BasePageVo;
 import codedriver.framework.crossover.CrossoverServiceFactory;
 import codedriver.framework.deploy.auth.DEPLOY_BASE;
+import codedriver.framework.deploy.auth.DEPLOY_MODIFY;
 import codedriver.framework.deploy.auth.PIPELINE_MODIFY;
 import codedriver.framework.deploy.constvalue.DeployAppConfigAction;
 import codedriver.framework.deploy.constvalue.PipelineType;
 import codedriver.framework.deploy.constvalue.ScheduleType;
 import codedriver.framework.deploy.dto.schedule.DeployScheduleConfigVo;
+import codedriver.framework.deploy.dto.schedule.DeployScheduleSearchVo;
 import codedriver.framework.deploy.dto.schedule.DeployScheduleVo;
+import codedriver.framework.dto.AuthenticationInfoVo;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
@@ -77,7 +80,25 @@ public class ListDeployScheduleApi extends PrivateApiComponentBase {
     @Description(desc = "查询定时作业列表")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
-        DeployScheduleVo searchVo = JSONObject.toJavaObject(paramObj, DeployScheduleVo.class);
+        DeployScheduleSearchVo searchVo = JSONObject.toJavaObject(paramObj, DeployScheduleSearchVo.class);
+        if (AuthActionChecker.check(DEPLOY_MODIFY.class)) {
+            searchVo.setIsHasAllAuthority(1);
+        } else {
+            searchVo.setIsHasAllAuthority(0);
+            List<String> authorityActionList = new ArrayList<>();
+            authorityActionList.add(DeployAppConfigAction.VIEW.getValue());
+            searchVo.setAuthorityActionList(authorityActionList);
+            List<String> authUuidList = new ArrayList<>();
+            AuthenticationInfoVo authInfo = UserContext.get().getAuthenticationInfoVo();
+            authUuidList.add(authInfo.getUserUuid());
+            if (CollectionUtils.isNotEmpty(authInfo.getTeamUuidList())) {
+                authUuidList.addAll(authInfo.getTeamUuidList());
+            }
+            if (CollectionUtils.isNotEmpty(authInfo.getRoleUuidList())) {
+                authUuidList.addAll(authInfo.getRoleUuidList());
+            }
+            searchVo.setAuthUuidList(authUuidList);
+        }
         List<DeployScheduleVo> tbodyList = new ArrayList<>();
         String userUuid = UserContext.get().getUserUuid(true);
         int rowNum = deployScheduleMapper.getScheduleCount(searchVo);

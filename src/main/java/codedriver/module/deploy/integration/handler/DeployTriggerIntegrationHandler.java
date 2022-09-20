@@ -11,10 +11,12 @@ import codedriver.framework.integration.core.IntegrationHandlerBase;
 import codedriver.framework.integration.dto.IntegrationResultVo;
 import codedriver.framework.integration.dto.IntegrationVo;
 import codedriver.framework.integration.dto.PatternVo;
+import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
 
+@Component
 public class DeployTriggerIntegrationHandler extends IntegrationHandlerBase {
     @Override
     public String getName() {
@@ -37,7 +39,8 @@ public class DeployTriggerIntegrationHandler extends IntegrationHandlerBase {
         jsonList.add(new PatternVo("appModuleAbbrName", "input", ApiParamType.STRING, 0, "应用模块简称"));
         jsonList.add(new PatternVo("envName", "input", ApiParamType.STRING, 0, "目标环境名"));
         jsonList.add(new PatternVo("buildNo", "input", ApiParamType.INTEGER, 0, "编译号"));
-        jsonList.add(new PatternVo("scenarioName", "input", ApiParamType.INTEGER, 0, "场景名"));
+        jsonList.add(new PatternVo("scenarioName", "input", ApiParamType.STRING, 0, "场景名"));
+        jsonList.add(new PatternVo("targetEnvName", "input", ApiParamType.STRING, 0, "目标环境名"));
         return jsonList;
     }
 
