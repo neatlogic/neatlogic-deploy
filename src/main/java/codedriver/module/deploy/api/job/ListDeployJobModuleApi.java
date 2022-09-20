@@ -7,15 +7,11 @@ package codedriver.module.deploy.api.job;
 
 import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.auth.core.AuthAction;
-import codedriver.framework.autoexec.crossover.IAutoexecServiceCrossoverService;
 import codedriver.framework.autoexec.dto.combop.AutoexecCombopScenarioVo;
 import codedriver.framework.common.constvalue.ApiParamType;
-import codedriver.framework.crossover.CrossoverServiceFactory;
 import codedriver.framework.deploy.auth.DEPLOY_BASE;
-import codedriver.framework.deploy.dto.app.DeployAppConfigVo;
 import codedriver.framework.deploy.dto.app.DeployAppModuleVo;
 import codedriver.framework.deploy.dto.app.DeployPipelineConfigVo;
-import codedriver.framework.deploy.dto.app.DeployPipelinePhaseVo;
 import codedriver.framework.deploy.exception.DeployAppConfigNotFoundException;
 import codedriver.framework.deploy.exception.DeployAppConfigScenarioNotFoundException;
 import codedriver.framework.deploy.exception.DeployAppConfigScenarioPhaseNameListNotFoundException;
@@ -77,36 +73,35 @@ public class ListDeployJobModuleApi extends PrivateApiComponentBase {
         Long appSystemId = paramObj.getLong("appSystemId");
         Long envId = paramObj.getLong("envId");
         Long scenarioId = paramObj.getLong("scenarioId");
-        int count = deployAppConfigMapper.getAppModuleCountBySystemIdAndEnvId(appSystemId, envId, TenantContext.get().getDataDbName());
-        if (count > 0) {
-            returnAppModuleVoList = deployAppConfigMapper.getAppModuleListBySystemIdAndEnvId(appSystemId, envId, TenantContext.get().getDataDbName());
+        returnAppModuleVoList = deployAppConfigMapper.getAppModuleListBySystemIdAndEnvId(appSystemId, envId, TenantContext.get().getDataDbName());
+        if (CollectionUtils.isNotEmpty(returnAppModuleVoList)) {
             //判断是否有配流水线
-            List<DeployAppConfigVo> appConfigVoList = deployAppConfigMapper.getAppConfigListByAppSystemId(appSystemId);
-            if (CollectionUtils.isEmpty(appConfigVoList)) {
+//            List<DeployAppConfigVo> appConfigVoList = deployAppConfigMapper.getAppConfigListByAppSystemId(appSystemId);
+            int count = deployAppConfigMapper.getAppConfigCountByAppSystemId(appSystemId);
+            if (count == 0) {
                 throw new DeployAppConfigNotFoundException(appSystemId);
             }
             //查询拥有runner的模块id列表
             List<Long> hasRunnerAppModuleIdList = deployAppConfigMapper.getAppModuleIdListHasRunnerByAppSystemIdAndModuleIdList(appSystemId, returnAppModuleVoList.stream().map(DeployAppModuleVo::getId).collect(Collectors.toList()));
-
-            IAutoexecServiceCrossoverService autoexecServiceCrossoverService = CrossoverServiceFactory.getApi(IAutoexecServiceCrossoverService.class);
             /*补充当前模块是否有BUILD分类的工具，前端需要根据此标识(isHasBuildTypeTool) 调用不同的选择版本下拉接口*/
             //1、获取流水线
-            Map<String, DeployAppConfigVo> appConfigVoMap = appConfigVoList.stream().collect(Collectors.toMap(o -> o.getAppSystemId().toString() + "-" + o.getAppModuleId().toString() + "-" + o.getEnvId().toString(), e -> e));
+//            Map<String, DeployAppConfigVo> appConfigVoMap = appConfigVoList.stream().collect(Collectors.toMap(o -> o.getAppSystemId().toString() + "-" + o.getAppModuleId().toString() + "-" + o.getEnvId().toString(), e -> e));
             for (DeployAppModuleVo appModuleVo : returnAppModuleVoList) {
-                DeployAppConfigVo configVo = appConfigVoMap.get(appSystemId.toString() + "-" + appModuleVo.getId().toString() + "-" + envId.toString());
-                if (configVo == null) {
-                    configVo = appConfigVoMap.get(appSystemId + "-" + appModuleVo.getId().toString() + "-0");
-                }
-                if (configVo == null) {
-                    configVo = appConfigVoMap.get(appSystemId + "-0" + "-0");
-                }
-                if (configVo == null) {
-                    throw new DeployAppConfigNotFoundException(appSystemId);
-                }
-                DeployPipelineConfigVo pipelineConfigVo = DeployPipelineConfigManager.init(configVo.getAppSystemId())
-                        .withAppModuleId(configVo.getAppModuleId())
-                        .withEnvId(configVo.getEnvId())
+//                DeployAppConfigVo configVo = appConfigVoMap.get(appSystemId.toString() + "-" + appModuleVo.getId().toString() + "-" + envId.toString());
+//                if (configVo == null) {
+//                    configVo = appConfigVoMap.get(appSystemId + "-" + appModuleVo.getId().toString() + "-0");
+//                }
+//                if (configVo == null) {
+//                    configVo = appConfigVoMap.get(appSystemId + "-0" + "-0");
+//                }
+//                if (configVo == null) {
+//                    throw new DeployAppConfigNotFoundException(appSystemId);
+//                }
+                DeployPipelineConfigVo pipelineConfigVo = DeployPipelineConfigManager.init(appSystemId)
+                        .withAppModuleId(appModuleVo.getId())
+                        .withEnvId(envId)
                         .isHasBuildOrDeployTypeTool(true)
+                        .isUpdateConfig(false)
                         .getConfig();
                 if (pipelineConfigVo == null) {
                     throw new DeployAppConfigNotFoundException(appSystemId);

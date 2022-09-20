@@ -50,6 +50,8 @@ public interface DeployAppConfigMapper {
 
     List<DeployAppConfigVo> getAppConfigListByAppSystemId(Long appSystemId);
 
+    int getAppConfigCountByAppSystemId(Long appSystemId);
+
     List<DeployAppConfigVo> getAppConfigList(DeployAppConfigVo configVo);
 
     DeployAppConfigVo getAppConfigDraft(DeployAppConfigVo deployAppConfigDraftVo);
