@@ -8,8 +8,10 @@ package codedriver.module.deploy.api.trigger;
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.deploy.auth.DEPLOY_MODIFY;
+import codedriver.framework.deploy.constvalue.DeployTriggerBuildNoPolicy;
 import codedriver.framework.deploy.constvalue.PipelineType;
 import codedriver.framework.deploy.constvalue.ScheduleType;
+import codedriver.framework.deploy.dto.trigger.DeployJobTriggerAppModuleVo;
 import codedriver.framework.deploy.dto.trigger.DeployJobTriggerVo;
 import codedriver.framework.deploy.exception.trigger.DeployTriggerNameRepeatException;
 import codedriver.framework.deploy.exception.trigger.DeployTriggerNotFoundException;
@@ -23,11 +25,16 @@ import codedriver.framework.restful.core.IValid;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.deploy.dao.mapper.DeployJobTriggerMapper;
 import com.alibaba.fastjson.JSONObject;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.List;
+import java.util.Objects;
 
 @Service
+@Transactional
 @AuthAction(action = DEPLOY_MODIFY.class)
 @OperationType(type = OperationTypeEnum.UPDATE)
 public class SaveDeployJobTriggerApi extends PrivateApiComponentBase {
@@ -51,6 +58,7 @@ public class SaveDeployJobTriggerApi extends PrivateApiComponentBase {
             @Param(name = "integrationUuid", type = ApiParamType.STRING, isRequired = true, desc = "集成uuid"),
             @Param(name = "type", type = ApiParamType.ENUM, member = ScheduleType.class, isRequired = true, desc = "作业类型"),
             @Param(name = "pipelineType", type = ApiParamType.ENUM, member = PipelineType.class, desc = "流水线类型"),
+            @Param(name = "buildNoPolicy", type = ApiParamType.ENUM, member = DeployTriggerBuildNoPolicy.class, desc = "编译号策略"),
             @Param(name = "config", type = ApiParamType.JSONOBJECT, isRequired = true, desc = "配置信息")
 
     })
@@ -64,6 +72,14 @@ public class SaveDeployJobTriggerApi extends PrivateApiComponentBase {
         }
         if(id == null){
             triggerMapper.insertJobTrigger(deployJobTriggerVo);
+            if(Objects.equals(ScheduleType.GENERAL.getValue(),deployJobTriggerVo.getType())){
+                List<DeployJobTriggerAppModuleVo> appModuleVoList = deployJobTriggerVo.getConfig().getTriggerAppModuleList();
+                if(CollectionUtils.isNotEmpty(appModuleVoList)){
+                    for(DeployJobTriggerAppModuleVo appModuleVo : appModuleVoList) {
+                        triggerMapper.insertJobTriggerAppModule(appModuleVo);
+                    }
+                }
+            }
         }else{
             DeployJobTriggerVo oldTrigger = triggerMapper.getTriggerById(id);
             if(oldTrigger == null){

@@ -14,7 +14,6 @@ import codedriver.framework.autoexec.dto.profile.AutoexecProfileParamVo;
 import codedriver.framework.autoexec.dto.profile.AutoexecProfileVo;
 import codedriver.framework.crossover.CrossoverServiceFactory;
 import codedriver.framework.deploy.dto.app.*;
-import codedriver.framework.deploy.dto.ci.DeployCiVo;
 import codedriver.framework.deploy.dto.pipeline.PipelineGroupVo;
 import codedriver.framework.deploy.dto.pipeline.PipelineJobTemplateVo;
 import codedriver.framework.deploy.dto.pipeline.PipelineLaneVo;
@@ -642,11 +641,12 @@ public class DeployPipelineConfigManager {
     /**
      * 判断超级流水线中是否含有编译工具的作业模版
      *
-     * @param ci       持续集成配置
-     * @param pipeline 超级流水线
-     * @return
+     * @param appSystemId 系统id
+     * @param appModuleId 模块id
+     * @param pipeline    超级流水线
+     * @return 是否含有build｜deploy工具
      */
-    public static boolean judgeHasBuildTypeToolInPipeline(DeployCiVo ci, PipelineVo pipeline) {
+    public static boolean judgeHasBuildTypeToolInPipeline(Long appSystemId, Long appModuleId, PipelineVo pipeline) {
         boolean hasBuildTypeTool = false;
         Map<Long, DeployPipelineConfigVo> envPipelineMap = new HashMap<>();
         out:
@@ -661,8 +661,8 @@ public class DeployPipelineConfigManager {
                                 PipelineJobTemplateVo jobTemplateVo = pipelineGroupVo.getJobTemplateList().get(k);
                                 DeployPipelineConfigVo pipelineConfigVo = envPipelineMap.get(jobTemplateVo.getEnvId());
                                 if (pipelineConfigVo == null) {
-                                    pipelineConfigVo = DeployPipelineConfigManager.init(ci.getAppSystemId())
-                                            .withAppModuleId(ci.getAppModuleId())
+                                    pipelineConfigVo = DeployPipelineConfigManager.init(appSystemId)
+                                            .withAppModuleId(appModuleId)
                                             .withEnvId(jobTemplateVo.getEnvId())
                                             .isHasBuildOrDeployTypeTool(true)
                                             .isUpdateConfig(false)

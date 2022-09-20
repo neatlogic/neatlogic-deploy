@@ -167,6 +167,7 @@ public class DeployJobServiceImpl implements DeployJobService {
             deployJobParam.setSource(JobSource.DEPLOY.getValue());
         }
         deployJobParam.setOperationType(CombopOperationType.PIPELINE.getValue());
+        deployJobParam.setIsJobInitParam(true);
     }
 
     @Override
@@ -176,7 +177,9 @@ public class DeployJobServiceImpl implements DeployJobService {
 
     @Override
     public void convertModule(DeployJobVo deployJobParam, DeployJobModuleVo moduleVo) {
-        initDeployJobParam(deployJobParam);
+        if (!deployJobParam.getIsJobInitParam()) {
+            initDeployJobParam(deployJobParam);
+        }
         IAppSystemMapper iAppSystemMapper = CrossoverServiceFactory.getApi(IAppSystemMapper.class);
         AppModuleVo appModuleVo;
         if (StringUtils.isNotBlank(moduleVo.getName())) {

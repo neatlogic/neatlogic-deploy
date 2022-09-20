@@ -75,26 +75,25 @@ public class DeployBatchJobServiceImpl implements DeployBatchJobService, IDeploy
                         if (CollectionUtils.isNotEmpty(pipelineGroupVo.getJobTemplateList())) {
                             for (int k = 0; k < pipelineGroupVo.getJobTemplateList().size(); k++) {
                                 PipelineJobTemplateVo jobTemplateVo = pipelineGroupVo.getJobTemplateList().get(k);
+                                hasLaneJob = true;
+                                hasGroupJob = true;
+                                DeployJobVo jobVo = new DeployJobVo();
+                                jobVo.setAppSystemId(jobTemplateVo.getAppSystemId());
+                                jobVo.setAppModuleId(jobTemplateVo.getAppModuleId());
+                                jobVo.setScenarioId(jobTemplateVo.getScenarioId());
+                                jobVo.setEnvId(jobTemplateVo.getEnvId());
                                 Long versionId = getVersionId(deployJobVo.getAppSystemModuleVersionList(), jobTemplateVo);
-                                if (versionId != null) {
-                                    hasLaneJob = true;
-                                    hasGroupJob = true;
-                                    DeployJobVo jobVo = new DeployJobVo();
-                                    jobVo.setAppSystemId(jobTemplateVo.getAppSystemId());
-                                    jobVo.setAppModuleId(jobTemplateVo.getAppModuleId());
-                                    jobVo.setScenarioId(jobTemplateVo.getScenarioId());
-                                    jobVo.setEnvId(jobTemplateVo.getEnvId());
-                                    jobVo.setVersionId(versionId);
-                                    if (isFire) {
-                                        deployJobService.createJobAndFire(jobVo);
-                                    } else {
-                                        deployJobService.createJob(jobVo);
-                                    }
-                                    deployJobMapper.insertGroupJob(groupVo.getId(), jobVo.getId(), k + 1);
-                                    deployJobMapper.insertJobInvoke(deployJobVo.getId(), jobVo.getId(), JobSource.BATCHDEPLOY.getValue());
-                                    jobVo.setParentId(deployJobVo.getId());
-                                    deployJobMapper.updateAutoExecJobParentIdById(jobVo);
+                                jobVo.setVersionId(versionId);
+                                if (isFire) {
+                                    deployJobService.createJobAndFire(jobVo);
+                                } else {
+                                    deployJobService.createJob(jobVo);
                                 }
+                                deployJobMapper.insertGroupJob(groupVo.getId(), jobVo.getId(), k + 1);
+                                deployJobMapper.insertJobInvoke(deployJobVo.getId(), jobVo.getId(), JobSource.BATCHDEPLOY.getValue());
+                                jobVo.setParentId(deployJobVo.getId());
+                                deployJobMapper.updateAutoExecJobParentIdById(jobVo);
+
                             }
                         }
                         if (hasGroupJob) {

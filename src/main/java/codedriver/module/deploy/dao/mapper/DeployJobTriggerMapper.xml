@@ -21,6 +21,7 @@
         <result column="name" property="name"/>
         <result column="isActive" property="isActive"/>
         <result column="integrationUuid" property="integrationUuid"/>
+        <result column="buildNoPolicy" property="buildNoPolicy"/>
         <result column="configStr" property="configStr"/>
         <result column="lcd" property="lcd"/>
         <result column="lcu" property="lcu"/>
@@ -32,6 +33,7 @@
         djt.`name`,
         djt.`is_active` as isActive,
         djt.`integration_uuid` as integrationUuid,
+        djt.`build_no_policy` as buildNoPolicy,
         djt.`config` as configStr,
         djt.`lcd`,
         djt.`lcu`
@@ -58,11 +60,27 @@
                djt.`name`,
                djt.`is_active`        as isActive,
                djt.`integration_uuid` as integrationUuid,
+               djt.`build_no_policy`  as buildNoPolicy,
                djt.`config`           as configStr,
                djt.`lcd`,
                djt.`lcu`
         from deploy_job_trigger djt
         where djt.id = #{value}
+    </select>
+    <select id="getTriggerListByAppSystemIdAndAppModuleId"
+            resultType="codedriver.framework.deploy.dto.trigger.DeployJobTriggerVo">
+        select djt.`id`,
+               djt.`name`,
+               djt.`is_active`        as isActive,
+               djt.`integration_uuid` as integrationUuid,
+               djt.`build_no_policy`  as buildNoPolicy,
+               djt.`config`           as configStr,
+               djt.`lcd`,
+               djt.`lcu`
+        from deploy_job_trigger djt
+                 join deploy_job_trigger_app_module djtam on djt.id = djtam.trigger_id
+        where djtam.app_system_id = #{appSystemId}
+          and djtam.app_module_id = #{appModuleId}
     </select>
 
     <insert id="insertJobTrigger">
@@ -72,6 +90,7 @@
                                         `integration_uuid`,
                                         `type`,
                                         `pipeline_type`,
+                                        `build_no_policy`,
                                         `config`,
                                         `lcd`,
                                         `lcu`)
@@ -81,9 +100,18 @@
                 #{integrationUuid},
                 #{type},
                 #{pipelineType},
+                #{buildNoPolicy},
                 #{configStr},
                 NOW(),
                 #{lcu})
+    </insert>
+    <insert id="insertJobTriggerAppModule">
+        insert into deploy_job_trigger_app_module (`trigger_id`,
+                                                   `app_system_id`,
+                                                   `app_module_id`)
+        values (#{triggerId},
+                #{appSystemId},
+                #{appModuleId})
     </insert>
 
     <update id="updateJobTrigger">
@@ -93,6 +121,7 @@
             `integration_uuid` = #{integrationUuid},
             `type`             = #{type},
             `pipeline_type`    = #{pipelineType},
+            `build_no_policy`  = #{buildNoPolicy},
             `config`           = #{config},
             `lcd`              = NOW(3),
             `lcu`              = #{lcu}
