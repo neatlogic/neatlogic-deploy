@@ -987,6 +987,10 @@
         WHERE `app_system_id` = #{appSystemId}
     </select>
 
+    <select id="getAppConfigCountByAppSystemId" resultType="int" useCache="false">
+        SELECT count(1) FROM `deploy_app_config` WHERE `app_system_id` = #{appSystemId}
+    </select>
+
     <select id="getAppConfigList" resultType="codedriver.framework.deploy.dto.app.DeployAppConfigVo">
         SELECT
         `id`,

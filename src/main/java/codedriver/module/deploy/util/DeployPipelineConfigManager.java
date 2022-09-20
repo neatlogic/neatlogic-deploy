@@ -8,19 +8,18 @@ package codedriver.module.deploy.util;
 import codedriver.framework.autoexec.constvalue.ToolType;
 import codedriver.framework.autoexec.crossover.IAutoexecProfileCrossoverService;
 import codedriver.framework.autoexec.crossover.IAutoexecServiceCrossoverService;
-import codedriver.framework.autoexec.dto.AutoexecOperationBaseVo;
+import codedriver.framework.autoexec.dao.mapper.AutoexecToolMapper;
+import codedriver.framework.autoexec.dao.mapper.AutoexecTypeMapper;
 import codedriver.framework.autoexec.dto.combop.*;
 import codedriver.framework.autoexec.dto.profile.AutoexecProfileParamVo;
 import codedriver.framework.autoexec.dto.profile.AutoexecProfileVo;
 import codedriver.framework.crossover.CrossoverServiceFactory;
 import codedriver.framework.deploy.dto.app.*;
-import codedriver.framework.deploy.dto.pipeline.PipelineGroupVo;
-import codedriver.framework.deploy.dto.pipeline.PipelineJobTemplateVo;
-import codedriver.framework.deploy.dto.pipeline.PipelineLaneVo;
-import codedriver.framework.deploy.dto.pipeline.PipelineVo;
+import codedriver.framework.deploy.dto.pipeline.*;
 import codedriver.framework.exception.type.ParamNotExistsException;
 import codedriver.module.deploy.dao.mapper.DeployAppConfigMapper;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
@@ -32,9 +31,23 @@ public class DeployPipelineConfigManager {
 
     private static DeployAppConfigMapper deployAppConfigMapper;
 
+    private static AutoexecTypeMapper autoexecTypeMapper;
+
+    private static AutoexecToolMapper autoexecToolMapper;
+
     @Resource
     public void setDeployAppConfigMapper(DeployAppConfigMapper _deployAppConfigMapper) {
         deployAppConfigMapper = _deployAppConfigMapper;
+    }
+
+    @Resource
+    public void setAutoexecTypeMapper(AutoexecTypeMapper _autoexecTypeMapper) {
+        autoexecTypeMapper = _autoexecTypeMapper;
+    }
+
+    @Resource
+    public void setAutoexecToolMapper(AutoexecToolMapper _autoexecToolMapper) {
+        autoexecToolMapper = _autoexecToolMapper;
     }
 
     public static Builder init(Long appSystemId) {
@@ -125,12 +138,18 @@ public class DeployPipelineConfigManager {
      * @param pipelineConfigVo 配置
      */
     private static void setIsHasBuildOrDeployTypeTool(DeployPipelineConfigVo pipelineConfigVo) {
-        IAutoexecServiceCrossoverService autoexecServiceCrossoverService = CrossoverServiceFactory.getApi(IAutoexecServiceCrossoverService.class);
+//        IAutoexecServiceCrossoverService autoexecServiceCrossoverService = CrossoverServiceFactory.getApi(IAutoexecServiceCrossoverService.class);
         List<AutoexecCombopScenarioVo> scenarioList = pipelineConfigVo.getScenarioList();
         if (CollectionUtils.isEmpty(scenarioList)) {
             return;
         }
+        Set<Long> operationIdSet = new HashSet<>();
+        Map<Long, List<Long>> scenarioOperationIdListMap = new HashMap<>();
+        Long buildTypeId = autoexecTypeMapper.getTypeIdByName("BUILD");
+        Long deployTypeId = autoexecTypeMapper.getTypeIdByName("DEPLOY");
         for (AutoexecCombopScenarioVo scenarioVo : scenarioList) {
+            List<Long> operationIdList = new ArrayList<>();
+            scenarioOperationIdListMap.put(scenarioVo.getScenarioId(), operationIdList);
             List<String> combopPhaseNameList = scenarioVo.getCombopPhaseNameList();
             for (DeployPipelinePhaseVo pipelinePhaseVo : pipelineConfigVo.getCombopPhaseList()) {
                 if (!combopPhaseNameList.contains(pipelinePhaseVo.getName())) {
@@ -142,24 +161,54 @@ public class DeployPipelineConfigManager {
                 List<AutoexecCombopPhaseOperationVo> phaseOperationList = pipelinePhaseVo.getConfig().getPhaseOperationList();
                 for (AutoexecCombopPhaseOperationVo operationVo : phaseOperationList) {
                     if (Objects.equals(ToolType.TOOL.getValue(), operationVo.getOperationType())) {
-                        AutoexecOperationBaseVo autoexecOperationBaseVo = autoexecServiceCrossoverService.getAutoexecOperationBaseVoByIdAndType(pipelinePhaseVo.getName(), operationVo, false);
-                        if (autoexecOperationBaseVo != null && Objects.equals(autoexecOperationBaseVo.getTypeName(), "BUILD")) {
-                            scenarioVo.setIsHasBuildTypeTool(1);
-                        }
-                        if (autoexecOperationBaseVo != null && Objects.equals(autoexecOperationBaseVo.getTypeName(), "DEPLOY")) {
-                            scenarioVo.setIsHasDeployTypeTool(1);
-                        }
-                    }
-                    if (scenarioVo.getIsHasBuildTypeTool() == 1 && scenarioVo.getIsHasDeployTypeTool() == 1) {
-                        break;
+                        operationIdSet.add(operationVo.getOperationId());
+                        operationIdList.add(operationVo.getOperationId());
                     }
                 }
-                if (scenarioVo.getIsHasBuildTypeTool() == 1 && scenarioVo.getIsHasDeployTypeTool() == 1) {
-                    break;
-                }
+//                for (AutoexecCombopPhaseOperationVo operationVo : phaseOperationList) {
+//                    if (Objects.equals(ToolType.TOOL.getValue(), operationVo.getOperationType())) {
+//                        AutoexecOperationBaseVo autoexecOperationBaseVo = autoexecServiceCrossoverService.getAutoexecOperationBaseVoByIdAndType(pipelinePhaseVo.getName(), operationVo, false);
+//                        if (autoexecOperationBaseVo != null && Objects.equals(autoexecOperationBaseVo.getTypeName(), "BUILD")) {
+//                            scenarioVo.setIsHasBuildTypeTool(1);
+//                        }
+//                        if (autoexecOperationBaseVo != null && Objects.equals(autoexecOperationBaseVo.getTypeName(), "DEPLOY")) {
+//                            scenarioVo.setIsHasDeployTypeTool(1);
+//                        }
+//                    }
+//                    if (scenarioVo.getIsHasBuildTypeTool() == 1 && scenarioVo.getIsHasDeployTypeTool() == 1) {
+//                        break;
+//                    }
+//                }
+//                if (scenarioVo.getIsHasBuildTypeTool() == 1 && scenarioVo.getIsHasDeployTypeTool() == 1) {
+//                    break;
+//                }
             }
         }
+        if (CollectionUtils.isEmpty(operationIdSet)) {
+            return;
+        }
+        List<Long> buildTypeToolIdList = new ArrayList<>();
+        List<Long> deployTypeToolIdList = new ArrayList<>();
+        List<Long> operationIdList = new ArrayList<>(operationIdSet);
+        if (buildTypeId != null) {
+            buildTypeToolIdList = autoexecToolMapper.getToolIdListByIdListAndTypeId(operationIdList, buildTypeId);
 
+        }
+        if (deployTypeId != null) {
+            deployTypeToolIdList = autoexecToolMapper.getToolIdListByIdListAndTypeId(operationIdList, deployTypeId);
+        }
+        for (AutoexecCombopScenarioVo scenarioVo : scenarioList) {
+            List<Long> scenarioOperationIdList = scenarioOperationIdListMap.get(scenarioVo.getScenarioId());
+            if (CollectionUtils.isEmpty(scenarioOperationIdList)) {
+                continue;
+            }
+            if (CollectionUtils.isNotEmpty(ListUtils.retainAll(scenarioOperationIdList, buildTypeToolIdList))) {
+                scenarioVo.setIsHasBuildTypeTool(1);
+            }
+            if (CollectionUtils.isNotEmpty(ListUtils.retainAll(scenarioOperationIdList, deployTypeToolIdList))) {
+                scenarioVo.setIsHasDeployTypeTool(1);
+            }
+        }
     }
 
     /**
@@ -645,7 +694,7 @@ public class DeployPipelineConfigManager {
      * @param appModuleId 模块id
      * @param pipeline    超级流水线
      */
-    public static void judgeHasBuildOrDeployTypeToolInPipeline(Long appSystemId, Long appModuleId, PipelineVo pipeline) {
+    public static void judgeHasBuildTypeToolInPipeline(Long appSystemId, Long appModuleId, PipelineVo pipeline) {
         Map<Long, DeployPipelineConfigVo> envPipelineMap = new HashMap<>();
         out:
         if (CollectionUtils.isNotEmpty(pipeline.getLaneList())) {
@@ -659,7 +708,13 @@ public class DeployPipelineConfigManager {
                                 PipelineJobTemplateVo jobTemplateVo = pipelineGroupVo.getJobTemplateList().get(k);
                                 if (appSystemId == null || Objects.equals(jobTemplateVo.getAppSystemId(), appSystemId)) {
                                     if (appModuleId == null || Objects.equals(jobTemplateVo.getAppSystemId(), appSystemId)) {
-                                        setIsJobTemplateVoHasBuildDeployType(jobTemplateVo, envPipelineMap, pipeline);
+                                        setIsJobTemplateVoHasBuildDeployType(jobTemplateVo, envPipelineMap);
+                                        if (jobTemplateVo.getIsHasBuildTypeTool() != 1) {
+                                            pipeline.setIsHasBuildTypeTool(jobTemplateVo.getIsHasBuildTypeTool());
+                                        }
+                                        if (jobTemplateVo.getIsHasDeployTypeTool() != 1) {
+                                            pipeline.setIsHasDeployTypeTool(jobTemplateVo.getIsHasDeployTypeTool());
+                                        }
                                     }
                                 }
                                 if (pipeline.getIsHasBuildTypeTool() == 1 && pipeline.getIsHasDeployTypeTool() == 1) {
@@ -678,10 +733,9 @@ public class DeployPipelineConfigManager {
      *
      * @param jobTemplateVo  流水线
      * @param envPipelineMap 出重环境流水线map
-     * @param pipeline       超级流水线
      */
-    public static void setIsJobTemplateVoHasBuildDeployType(PipelineJobTemplateVo jobTemplateVo, Map<Long, DeployPipelineConfigVo> envPipelineMap, PipelineVo pipeline) {
-        if (pipeline.getIsHasBuildTypeTool() == 1 && pipeline.getIsHasDeployTypeTool() == 1) {
+    public static void setIsJobTemplateVoHasBuildDeployType(PipelineJobTemplateVo jobTemplateVo, Map<Long, DeployPipelineConfigVo> envPipelineMap) {
+        if (jobTemplateVo.getIsHasBuildTypeTool() == 1 && jobTemplateVo.getIsHasDeployTypeTool() == 1) {
             return;
         }
         DeployPipelineConfigVo pipelineConfigVo = envPipelineMap.get(jobTemplateVo.getEnvId());
@@ -702,10 +756,10 @@ public class DeployPipelineConfigManager {
                 Optional<AutoexecCombopScenarioVo> first = scenarioList.stream().filter(o -> Objects.equals(o.getScenarioId(), jobTemplateVo.getScenarioId())).findFirst();
                 if (first.isPresent()) {
                     if (Objects.equals(first.get().getIsHasBuildTypeTool(), 1)) {
-                        pipeline.setIsHasBuildTypeTool(1);
+                        jobTemplateVo.setIsHasBuildTypeTool(1);
                     }
                     if (Objects.equals(first.get().getIsHasDeployTypeTool(), 1)) {
-                        pipeline.setIsHasDeployTypeTool(1);
+                        jobTemplateVo.setIsHasDeployTypeTool(1);
                     }
                 }
             }
