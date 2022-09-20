@@ -130,6 +130,14 @@ public class CallbackDeployCiSvnEventApi extends PrivateApiComponentBase {
                 ciVoList = ciList.stream().filter(o -> Objects.equals(o.getBranchFilter(), "\\")).collect(Collectors.toList());
             }
         }
+        if (ciVoList.size() > 0) {
+            for (DeployCiVo ci : ciVoList) {
+                try {
+
+                } catch (Exception ex) {
+                }
+            }
+        }
 
         return null;
     }
