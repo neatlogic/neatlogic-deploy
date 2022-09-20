@@ -204,10 +204,10 @@ public class DeployPipelineConfigManager {
             if (CollectionUtils.isEmpty(scenarioOperationIdList)) {
                 continue;
             }
-            if (CollectionUtils.isNotEmpty(ListUtils.removeAll(scenarioOperationIdList, buildTypeToolIdList))) {
+            if (CollectionUtils.isNotEmpty(ListUtils.retainAll(scenarioOperationIdList, buildTypeToolIdList))) {
                 scenarioVo.setIsHasBuildTypeTool(1);
             }
-            if (CollectionUtils.isNotEmpty(ListUtils.removeAll(scenarioOperationIdList, deployTypeToolIdList))) {
+            if (CollectionUtils.isNotEmpty(ListUtils.retainAll(scenarioOperationIdList, deployTypeToolIdList))) {
                 scenarioVo.setIsHasDeployTypeTool(1);
             }
         }
