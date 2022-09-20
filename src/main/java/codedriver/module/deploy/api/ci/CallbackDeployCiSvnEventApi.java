@@ -1,7 +1,13 @@
 package codedriver.module.deploy.api.ci;
 
+import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.common.constvalue.ApiParamType;
+import codedriver.framework.common.constvalue.SystemUser;
+import codedriver.framework.deploy.constvalue.DeployCiTriggerType;
 import codedriver.framework.deploy.dto.ci.DeployCiVo;
+import codedriver.framework.deploy.dto.version.DeployVersionVo;
+import codedriver.framework.deploy.exception.DeployCiVersionRegexIllegalException;
+import codedriver.framework.filter.core.LoginAuthHandlerBase;
 import codedriver.framework.restful.annotation.Description;
 import codedriver.framework.restful.annotation.Input;
 import codedriver.framework.restful.annotation.OperationType;
@@ -31,6 +37,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Service
@@ -96,7 +104,7 @@ public class CallbackDeployCiSvnEventApi extends PrivateApiComponentBase {
         String repo = paramObj.getString("repo");
         String event = paramObj.getString("event");
         String dirsChanged = paramObj.getString("dirsChanged");
-        String revision = paramObj.getString("revision");
+        String revision = paramObj.getString("revision").trim();
         /* todo
             1、根据event和repo确定要触发的ci（是否要根据仓库服务器地址过滤）
             2、根据dirsChanged和revision确定版本号
@@ -133,13 +141,118 @@ public class CallbackDeployCiSvnEventApi extends PrivateApiComponentBase {
         if (ciVoList.size() > 0) {
             for (DeployCiVo ci : ciVoList) {
                 try {
-
+                    String triggerType = ci.getTriggerType();
+                    if (StringUtils.isBlank(triggerType)) {
+                        logger.error("Svn callback error. Missing triggerTime in ci config, ciId: {}, callback params: {}", ci.getId(), paramObj.toJSONString());
+                        continue;
+                    }
+                    String triggerTimeStr = ci.getTriggerTime();
+                    if (!DeployCiTriggerType.INSTANT.getValue().equals(ci.getTriggerType()) && StringUtils.isBlank(triggerTimeStr)) {
+                        logger.error("Svn callback error. Missing triggerTime in ci config, ciId: {}, callback params: {}", ci.getId(), paramObj.toJSONString());
+                        continue;
+                    }
+                    JSONObject versionRule = ci.getVersionRule();
+                    String versionPrefix = versionRule.getString("versionPrefix");
+                    String versionRegex = versionRule.getString("versionRegex");
+                    int useCommitId = versionRule.getInteger("useCommitId") != null ? versionRule.getInteger("useCommitId") : 0;
+                    String versionName = getVersionName(repo, dirsChanged, revision, versionRegex, versionPrefix, useCommitId);
+                    DeployVersionVo deployVersion = deployVersionMapper.getDeployVersionBaseInfoBySystemIdAndModuleIdAndVersion(new DeployVersionVo(versionName, ci.getAppSystemId(), ci.getAppModuleId()));
+                    UserContext.init(SystemUser.SYSTEM.getUserVo(), SystemUser.SYSTEM.getTimezone());
+                    UserContext.get().setToken("GZIP_" + LoginAuthHandlerBase.buildJwt(SystemUser.SYSTEM.getUserVo()).getCc());
                 } catch (Exception ex) {
+                    logger.error("Svn callback error. Deploy ci:{} has been ignored, callback params: {}", ci.getName(), paramObj.toJSONString());
+                    logger.error(ex.getMessage(), ex);
                 }
             }
         }
 
         return null;
+    }
+
+    private String getVersionName(String repoName, String dirsChanged, String revision, String versionRegex, String versionPrefix, Integer useCommitId) {
+        String[] dirsChanges = dirsChanged.split(",");
+        String branchName = "";
+        if (dirsChanges.length == 1) {
+            branchName = dirsChanged;
+        } else if (dirsChanges.length > 1) {
+            branchName = getMaxSubString(dirsChanges);
+        }
+        if (StringUtils.isBlank(branchName) || "/".equals(branchName)) {
+            branchName = repoName.substring(repoName.lastIndexOf("/") + 1);
+        } else {
+            if (branchName.endsWith("/")) {
+                branchName = branchName.substring(0, branchName.length() - 1);
+            }
+            branchName = branchName.substring(branchName.lastIndexOf("/") + 1);
+        }
+
+        String versionName = StringUtils.EMPTY;
+        if (StringUtils.isNotEmpty(versionPrefix)) {
+            versionName += versionPrefix + "_";
+        }
+        String regex = StringUtils.EMPTY;
+        if (StringUtils.isNotEmpty(versionRegex)) {
+            String pattern = "\\(.*\\)";
+            Pattern r = Pattern.compile(pattern);
+            Matcher m = r.matcher(versionRegex);
+            if (m.find()) {
+                regex = m.group();
+            }
+            if (StringUtils.isBlank(regex)) {
+                throw new DeployCiVersionRegexIllegalException();
+            }
+            regex = regex.substring(1, regex.lastIndexOf(")"));
+        }
+        if (StringUtils.isEmpty(regex)) {
+            versionName += branchName;
+        } else {
+            Pattern r = Pattern.compile(regex);
+            Matcher m = r.matcher(dirsChanged);
+            if (m.find()) {
+                versionName += m.group();
+            } else {
+                versionName += branchName;
+            }
+        }
+        if (Objects.equals(useCommitId, 1)) {
+            versionName += ("_" + revision);
+        }
+        return versionName;
+    }
+
+    /**
+     * 获取多个文件目录下最后相同的目录
+     *
+     * @param args such as:{"/a/b/c","/a/b/","/a/b/d"} getMaxSubString(a,b)=>"/a/b/"
+     * @return
+     */
+    private String getMaxSubString(String[] args) {
+        String common = "";
+        if (args == null || args.length == 0) {
+            return null;
+        }
+        String[] shortArr = args[0].split("/"), longArr = args[0].split("/");
+        int shortSize = shortArr.length, longSize = longArr.length;
+        for (int i = 0; i < args.length; i++) {
+            String[] _this = args[i].split("/");
+            if (_this.length >= longSize && !_this.toString().equals(shortArr.toString())) {
+                longSize = _this.length;
+                longArr = _this;
+            }
+            if (_this.length <= shortSize && !_this.toString().equals(longArr.toString())) {
+                shortSize = _this.length;
+                shortArr = _this;
+            }
+        }
+        if (shortSize == 0) {
+            return null;
+        }
+        for (int i = 0; i < shortArr.length; i++) {
+            if (shortArr[i].equals(longArr[i])) {
+                common = shortArr[i];
+            }
+        }
+        return common;
     }
 
 
