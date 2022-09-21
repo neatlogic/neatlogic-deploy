@@ -164,6 +164,17 @@ public class CallbackDeployCiSvnEventApi extends PrivateApiComponentBase {
         return null;
     }
 
+    /**
+     * 计算版本号
+     *
+     * @param repoName      仓库名称
+     * @param dirsChanged   受影响的目录
+     * @param revision      提交id
+     * @param versionRegex  分支名截取规则
+     * @param versionPrefix 版本前缀
+     * @param useCommitId   是否拼接commitId
+     * @return
+     */
     private String getVersionName(String repoName, String dirsChanged, String revision, String versionRegex, String versionPrefix, Integer useCommitId) {
         String[] dirsChanges = dirsChanged.split(",");
         String branchName = "";
