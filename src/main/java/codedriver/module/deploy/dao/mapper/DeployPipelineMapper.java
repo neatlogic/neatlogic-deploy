@@ -11,9 +11,9 @@ import org.apache.ibatis.annotations.Param;
 import java.util.List;
 
 public interface DeployPipelineMapper {
-    List<PipelineVo> searchPipeline(PipelineVo pipelineVo);
+    List<PipelineVo> searchPipeline(PipelineSearchVo searchVo);
 
-    int searchPipelineCount(PipelineVo pipelineVo);
+    int searchPipelineCount(PipelineSearchVo searchVo);
 
     PipelineJobTemplateVo getJobTemplateById(Long id);
 

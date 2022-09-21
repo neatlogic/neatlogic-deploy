@@ -232,10 +232,13 @@
             <if test="appSystemId != null">
                 AND a.`app_system_id` = #{appSystemId}
             </if>
+            <if test="isHasAllAuthority != 1">
+                AND c.`auth_uuid` = #{authUuid}
+            </if>
         </where>
     </sql>
 
-    <select id="searchPipeline" parameterType="codedriver.framework.deploy.dto.pipeline.PipelineVo"
+    <select id="searchPipeline" parameterType="codedriver.framework.deploy.dto.pipeline.PipelineSearchVo"
             resultType="codedriver.framework.deploy.dto.pipeline.PipelineVo">
         SELECT
             a.`id`,
@@ -251,16 +254,22 @@
         <if test="type == 'appsystem'">
             JOIN @{DATA_SCHEMA}.`scence_appsystem` b ON b.`id` = a.`app_system_id`
         </if>
+        <if test="isHasAllAuthority != 1">
+            JOIN `deploy_pipeline_auth` c on c.`pipeline_id` = a.`id`
+        </if>
         <include refid="searchPipelineCondition"/>
         ORDER BY a.`lcu` DESC
         LIMIT #{startNum}, #{pageSize}
     </select>
 
-    <select id="searchPipelineCount" parameterType="codedriver.framework.deploy.dto.pipeline.PipelineVo"
+    <select id="searchPipelineCount" parameterType="codedriver.framework.deploy.dto.pipeline.PipelineSearchVo"
             resultType="int">
         select count(1) from deploy_pipeline a
         <if test="type == 'appsystem'">
             JOIN @{DATA_SCHEMA}.`scence_appsystem` b ON b.`id` = a.`app_system_id`
+        </if>
+        <if test="isHasAllAuthority != 1">
+            JOIN `deploy_pipeline_auth` c ON c.`pipeline_id` = a.`id`
         </if>
         <include refid="searchPipelineCondition"/>
     </select>
