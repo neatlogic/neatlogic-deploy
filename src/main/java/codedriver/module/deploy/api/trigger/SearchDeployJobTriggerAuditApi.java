@@ -10,7 +10,7 @@ import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.dto.BasePageVo;
 import codedriver.framework.deploy.auth.DEPLOY_BASE;
 import codedriver.framework.deploy.dto.schedule.DeployScheduleVo;
-import codedriver.framework.deploy.dto.trigger.DeployJobTriggerVo;
+import codedriver.framework.deploy.dto.trigger.DeployJobTriggerAuditVo;
 import codedriver.framework.restful.annotation.Input;
 import codedriver.framework.restful.annotation.OperationType;
 import codedriver.framework.restful.annotation.Output;
@@ -29,13 +29,13 @@ import java.util.List;
 @Service
 @AuthAction(action = DEPLOY_BASE.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
-public class SearchDeployJobTriggerApi extends PrivateApiComponentBase {
+public class SearchDeployJobTriggerAuditApi extends PrivateApiComponentBase {
     @Resource
     DeployJobTriggerMapper triggerMapper;
 
     @Override
     public String getName() {
-        return "查询发布作业触发器";
+        return "查询发布作业触发器记录";
     }
 
     @Override
@@ -43,25 +43,26 @@ public class SearchDeployJobTriggerApi extends PrivateApiComponentBase {
         return null;
     }
 
-    @Input({@Param(name = "keyword", type = ApiParamType.STRING, desc = "模糊查询"),
+    @Input({
+            @Param(name = "triggerId", type = ApiParamType.LONG, isRequired = true, desc = "触发器id"),
             @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "当前页码"),
             @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "页大小")})
     @Output({@Param(explode = BasePageVo.class), @Param(name = "tbodyList", explode = DeployScheduleVo[].class, desc = "定时作业列表"),})
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
-        DeployJobTriggerVo deployJobTriggerVo = paramObj.toJavaObject(DeployJobTriggerVo.class);
-        List<DeployJobTriggerVo> triggerVoList = new ArrayList<>();
-        int count = triggerMapper.getTriggerCount(deployJobTriggerVo);
+        DeployJobTriggerAuditVo deployJobTriggerAuditVo = paramObj.toJavaObject(DeployJobTriggerAuditVo.class);
+        List<DeployJobTriggerAuditVo> triggerAuditVoList = new ArrayList<>();
+        int count = triggerMapper.getTriggerAuditCount(deployJobTriggerAuditVo);
         if (count > 0) {
-            deployJobTriggerVo.setRowNum(count);
-            triggerVoList = triggerMapper.searchTrigger(deployJobTriggerVo);
-            return TableResultUtil.getResult(triggerVoList, deployJobTriggerVo);
+            deployJobTriggerAuditVo.setRowNum(count);
+            triggerAuditVoList = triggerMapper.searchTriggerAudit(deployJobTriggerAuditVo);
+            return TableResultUtil.getResult(triggerAuditVoList, deployJobTriggerAuditVo);
         }
-        return triggerVoList;
+        return triggerAuditVoList;
     }
 
     @Override
     public String getToken() {
-        return "/deploy/job/trigger/search";
+        return "/deploy/job/trigger/audit/search";
     }
 }

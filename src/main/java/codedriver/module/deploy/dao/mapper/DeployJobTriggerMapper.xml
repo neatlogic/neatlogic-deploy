@@ -82,6 +82,26 @@
         where djtam.app_system_id = #{appSystemId}
           and djtam.app_module_id = #{appModuleId}
     </select>
+    <select id="getTriggerAuditCount" resultType="java.lang.Integer">
+        select count(id)
+        from deploy_job_trigger_audit
+        where trigger_id = #{triggerId}
+    </select>
+    <select id="searchTriggerAudit"
+            resultType="codedriver.framework.deploy.dto.trigger.DeployJobTriggerAuditVo">
+        select sjta.`name`,
+               ia.status,
+               sjta.lcd,
+               sjta.trigger_id     as triggerId,
+               ia.param_file_path  as paramFilePath,
+               ia.result_file_path as resultFilePath,
+               ia.error_file_path  as errorFilePath
+        from deploy_job_trigger_audit sjta
+                 left join integration_audit ia on sjta.integration_audit_id = ia.id
+        where sjta.trigger_id = #{triggerId}
+        order by sjta.lcd desc
+        limit #{startNum}, #{pageSize}
+    </select>
 
     <insert id="insertJobTrigger">
         insert into deploy_job_trigger (`id`,
@@ -113,6 +133,18 @@
                 #{appSystemId},
                 #{appModuleId})
     </insert>
+    <insert id="insertJobTriggerAudit">
+        insert into deploy_job_trigger_audit (`id`,
+                                              `trigger_id`,
+                                              `name`,
+                                              `integration_audit_id`,
+                                              lcd)
+        values (#{id},
+                #{triggerId},
+                #{name},
+                #{integrationAuditId},
+                NOW())
+    </insert>
 
     <update id="updateJobTrigger">
         update deploy_job_trigger
@@ -127,4 +159,15 @@
             `lcu`              = #{lcu}
         where `id` = #{id}
     </update>
+
+    <delete id="deleteTriggerById">
+        delete
+        from deploy_job_trigger
+        where id = #{value}
+    </delete>
+    <delete id="deleteTriggerAuditByTriggerId">
+        delete
+        from deploy_job_trigger_audit
+        where trigger_id = #{value}
+    </delete>
 </mapper>

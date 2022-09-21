@@ -31,16 +31,16 @@ public class DeployTriggerIntegrationHandler extends IntegrationHandlerBase {
     @Override
     public List<PatternVo> getInputPattern() {
         List<PatternVo> jsonList = new ArrayList<>();
-        jsonList.add(new PatternVo("appSystemId", "input", ApiParamType.LONG, 0, "应用系统id"));
-        jsonList.add(new PatternVo("appSystemName", "input", ApiParamType.STRING, 0, "应用系统名"));
-        jsonList.add(new PatternVo("appSystemAbbrName", "input", ApiParamType.STRING, 0, "应用系统简称"));
-        jsonList.add(new PatternVo("appModuleId", "input", ApiParamType.LONG, 0, "应用模块id"));
-        jsonList.add(new PatternVo("appModuleName", "input", ApiParamType.STRING, 0, "应用模块名"));
-        jsonList.add(new PatternVo("appModuleAbbrName", "input", ApiParamType.STRING, 0, "应用模块简称"));
-        jsonList.add(new PatternVo("envName", "input", ApiParamType.STRING, 0, "目标环境名"));
-        jsonList.add(new PatternVo("buildNo", "input", ApiParamType.INTEGER, 0, "编译号"));
-        jsonList.add(new PatternVo("scenarioName", "input", ApiParamType.STRING, 0, "场景名"));
-        jsonList.add(new PatternVo("targetEnvName", "input", ApiParamType.STRING, 0, "目标环境名"));
+        jsonList.add(new PatternVo("appSystemId", "input", ApiParamType.LONG, 0, "应用系统id",0));
+        jsonList.add(new PatternVo("appSystemName", "input", ApiParamType.STRING, 0, "应用系统名",0));
+        jsonList.add(new PatternVo("appSystemAbbrName", "input", ApiParamType.STRING, 0, "应用系统简称",0));
+        jsonList.add(new PatternVo("appModuleId", "input", ApiParamType.LONG, 0, "应用模块id",0));
+        jsonList.add(new PatternVo("appModuleName", "input", ApiParamType.STRING, 0, "应用模块名",0));
+        jsonList.add(new PatternVo("appModuleAbbrName", "input", ApiParamType.STRING, 0, "应用模块简称",0));
+        jsonList.add(new PatternVo("envName", "input", ApiParamType.STRING, 0, "目标环境名",0));
+        jsonList.add(new PatternVo("buildNo", "input", ApiParamType.INTEGER, 0, "编译号",0));
+        jsonList.add(new PatternVo("scenarioName", "input", ApiParamType.STRING, 0, "场景"));
+        jsonList.add(new PatternVo("targetEnvName", "input", ApiParamType.STRING, 0, "目标环境"));
         return jsonList;
     }
 
