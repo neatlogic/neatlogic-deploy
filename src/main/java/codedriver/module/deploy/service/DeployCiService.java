@@ -6,7 +6,11 @@
 package codedriver.module.deploy.service;
 
 import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
+import codedriver.framework.deploy.constvalue.DeployCiRepoType;
+import codedriver.framework.deploy.dto.ci.DeployCiVo;
+import codedriver.framework.deploy.dto.version.DeployVersionVo;
 import codedriver.framework.dto.runner.RunnerVo;
+import com.alibaba.fastjson.JSONObject;
 
 public interface DeployCiService {
 
@@ -18,5 +22,9 @@ public interface DeployCiService {
      * @return
      */
     RunnerVo getRandomRunnerBySystemIdAndModuleId(CiEntityVo system, CiEntityVo module);
+
+    void createJobForCallback(JSONObject paramObj, DeployCiVo ci, String versionName, DeployVersionVo deployVersion, DeployCiRepoType repoType) throws Exception;
+
+    void createBatchJobForCallback(JSONObject paramObj, DeployCiVo ci, String versionName, DeployVersionVo deployVersion, DeployCiRepoType repoType) throws Exception;
 
 }

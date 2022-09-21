@@ -1,24 +1,12 @@
 package codedriver.module.deploy.api.ci;
 
-import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.asynchronization.threadlocal.UserContext;
-import codedriver.framework.autoexec.constvalue.JobStatus;
-import codedriver.framework.autoexec.constvalue.JobTriggerType;
-import codedriver.framework.autoexec.constvalue.ReviewStatus;
-import codedriver.framework.autoexec.dto.combop.AutoexecCombopScenarioVo;
-import codedriver.framework.autoexec.dto.node.AutoexecNodeVo;
-import codedriver.framework.autoexec.exception.AutoexecScenarioIsNotFoundException;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.constvalue.SystemUser;
 import codedriver.framework.deploy.constvalue.DeployCiActionType;
+import codedriver.framework.deploy.constvalue.DeployCiRepoType;
 import codedriver.framework.deploy.constvalue.DeployCiTriggerType;
-import codedriver.framework.deploy.constvalue.JobSource;
-import codedriver.framework.deploy.dto.app.DeployPipelineConfigVo;
 import codedriver.framework.deploy.dto.ci.DeployCiVo;
-import codedriver.framework.deploy.dto.job.DeployJobModuleVo;
-import codedriver.framework.deploy.dto.job.DeployJobVo;
-import codedriver.framework.deploy.dto.pipeline.PipelineVo;
-import codedriver.framework.deploy.dto.version.DeploySystemModuleVersionVo;
 import codedriver.framework.deploy.dto.version.DeployVersionVo;
 import codedriver.framework.deploy.exception.*;
 import codedriver.framework.filter.core.LoginAuthHandlerBase;
@@ -29,19 +17,9 @@ import codedriver.framework.restful.annotation.Param;
 import codedriver.framework.restful.constvalue.ApiAnonymousAccessSupportEnum;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
-import codedriver.framework.scheduler.core.IJob;
-import codedriver.framework.scheduler.core.SchedulerManager;
-import codedriver.framework.scheduler.dto.JobObject;
-import codedriver.framework.scheduler.exception.ScheduleHandlerNotFoundException;
-import codedriver.framework.util.TimeUtil;
 import codedriver.module.deploy.dao.mapper.DeployCiMapper;
-import codedriver.module.deploy.dao.mapper.DeployJobMapper;
-import codedriver.module.deploy.dao.mapper.DeployPipelineMapper;
 import codedriver.module.deploy.dao.mapper.DeployVersionMapper;
-import codedriver.module.deploy.schedule.plugin.DeployBatchJobAutoFireJob;
-import codedriver.module.deploy.service.DeployBatchJobService;
-import codedriver.module.deploy.service.DeployJobService;
-import codedriver.module.deploy.util.DeployPipelineConfigManager;
+import codedriver.module.deploy.service.DeployCiService;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
@@ -52,12 +30,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -75,16 +48,7 @@ public class CallbackDeployCiGitlabEventApi extends PrivateApiComponentBase {
     DeployVersionMapper deployVersionMapper;
 
     @Resource
-    DeployPipelineMapper deployPipelineMapper;
-
-    @Resource
-    DeployJobMapper deployJobMapper;
-
-    @Resource
-    DeployJobService deployJobService;
-
-    @Resource
-    DeployBatchJobService deployBatchJobService;
+    DeployCiService deployCiService;
 
     @Override
     public String getName() {
@@ -147,13 +111,11 @@ public class CallbackDeployCiGitlabEventApi extends PrivateApiComponentBase {
             logger.info("Gitlab callback stop. Deploy ci is not active, ciId: {}, callback params: {}", ciId, paramObj.toJSONString());
             return null;
         }
-        String triggerType = ci.getTriggerType();
-        if (StringUtils.isBlank(triggerType)) {
+        if (StringUtils.isBlank(ci.getTriggerType())) {
             logger.error("Gitlab callback error. Missing triggerTime in ci config, ciId: {}, callback params: {}", ciId, paramObj.toJSONString());
             throw new DeployCiTriggerTypeLostException();
         }
-        String triggerTimeStr = ci.getTriggerTime();
-        if (!DeployCiTriggerType.INSTANT.getValue().equals(ci.getTriggerType()) && StringUtils.isBlank(triggerTimeStr)) {
+        if (!DeployCiTriggerType.INSTANT.getValue().equals(ci.getTriggerType()) && StringUtils.isBlank(ci.getTriggerTime())) {
             logger.error("Gitlab callback error. Missing triggerTime in ci config, ciId: {}, callback params: {}", ciId, paramObj.toJSONString());
             throw new DeployCiTriggerTimeLostException();
         }
@@ -167,158 +129,11 @@ public class CallbackDeployCiGitlabEventApi extends PrivateApiComponentBase {
         UserContext.get().setToken("GZIP_" + LoginAuthHandlerBase.buildJwt(SystemUser.SYSTEM.getUserVo()).getCc());
         // 普通作业
         if (DeployCiActionType.CREATE_JOB.getValue().equals(ci.getAction())) {
-            /*
-              只要场景包含build，那么新建buildNo和新建版本（如果版本不存在）
-              如果场景只包含deploy，那么新建版本（如果版本不存在）
-              如果场景不含build和deploy，那么buildNo和版本都不新建
-            */
-            Long scenarioId = ci.getConfig().getLong("scenarioId");
-            if (scenarioId == null) {
-                logger.error("Gitlab callback error. Missing scenarioId in ci config, ciId: {}, callback params: {}", ciId, paramObj.toJSONString());
-                throw new DeployCiScenarioIdLostException();
-            }
-            Long envId = ci.getConfig().getLong("envId");
-            if (envId == null) {
-                logger.error("Gitlab callback error. Missing envId in ci config, ciId: {}, callback params: {}", ciId, paramObj.toJSONString());
-                throw new DeployCiEnvIdLostException();
-            }
-            DeployPipelineConfigVo deployPipelineConfigVo = DeployPipelineConfigManager.init(ci.getAppSystemId())
-                    .withAppModuleId(ci.getAppModuleId())
-                    .withEnvId(envId)
-                    .isHasBuildOrDeployTypeTool(true)
-                    .getConfig();
-            if (deployPipelineConfigVo == null) {
-                logger.error("Gitlab callback error. Deploy app config not found, ciId: {}, callback params: {}", ciId, paramObj.toJSONString());
-                throw new DeployAppConfigNotFoundException(ci.getAppSystemId());
-            }
-            List<AutoexecCombopScenarioVo> scenarioList = deployPipelineConfigVo.getScenarioList();
-            Optional<AutoexecCombopScenarioVo> scenarioOptional = scenarioList.stream().filter(o -> Objects.equals(o.getScenarioId(), scenarioId)).findFirst();
-            if (!scenarioOptional.isPresent()) {
-                logger.error("Gitlab callback error. Scenario not found, ciId: {}, callback params: {}", ciId, paramObj.toJSONString());
-                throw new AutoexecScenarioIsNotFoundException(scenarioId);
-            }
-            AutoexecCombopScenarioVo scenarioVo = scenarioOptional.get();
-            // 如果版本不存在且包含build或deploy工具，那么新建版本
-            if (deployVersion == null && (Objects.equals(scenarioVo.getIsHasBuildTypeTool(), 1) || Objects.equals(scenarioVo.getIsHasDeployTypeTool(), 1))) {
-                deployVersion = new DeployVersionVo(versionName, ci.getAppSystemId(), ci.getAppModuleId(), 0);
-                deployVersionMapper.insertDeployVersion(deployVersion);
-            }
-            Date triggerTime = getTriggerTime(triggerTimeStr);
-            if (DeployCiTriggerType.INSTANT.getValue().equals(ci.getTriggerType())) {
-                triggerType = DeployCiTriggerType.AUTO.getValue();
-            }
-            DeployJobVo deployJobParam = new DeployJobVo(ci.getAppSystemId(), scenarioId, envId, triggerType, triggerTime, ci.getConfig().getInteger("roundCount"), ci.getConfig().getJSONObject("param"));
-            JSONArray selectNodeList = ci.getConfig().getJSONArray("selectNodeList");
-            DeployJobModuleVo moduleVo = new DeployJobModuleVo(ci.getAppModuleId(), deployVersion != null ? deployVersion.getVersion() : null, CollectionUtils.isNotEmpty(selectNodeList) ? selectNodeList.toJavaList(AutoexecNodeVo.class) : null);
-            // 包含编译工具则新建buildNo
-            if (Objects.equals(scenarioVo.getIsHasBuildTypeTool(), 1)) {
-                moduleVo.setBuildNo(-1);
-            }
-            deployJobParam.setModuleList(Collections.singletonList(moduleVo));
-            if (!Objects.equals(ci.getTriggerType(), DeployCiTriggerType.INSTANT.getValue())) {
-                deployJobService.createScheduleJob(deployJobParam, moduleVo);
-            } else {
-                deployJobService.createJobAndFire(deployJobParam, moduleVo);
-            }
+            deployCiService.createJobForCallback(paramObj, ci, versionName, deployVersion, DeployCiRepoType.GITLAB);
         } else if (DeployCiActionType.CREATE_BATCH_JOB.getValue().equals(ci.getAction())) {
-            /*
-               1、筛选出超级流水线中属于当前模块的子作业，检查每个子作业的场景是否包含build工具以决定是否要新建版本
-               2、用筛选后的流水线创建批量作业
-             */
-            Long pipelineId = ci.getConfig().getLong("pipelineId");
-            if (pipelineId == null) {
-                logger.error("Gitlab callback error. Missing pipelineId in ci config, ciId: {}, callback params: {}", ciId, paramObj.toJSONString());
-                throw new DeployCiPipelineIdLostException();
-            }
-            PipelineVo pipeline = deployPipelineMapper.getPipelineBaseInfoByIdAndModuleId(pipelineId, ci.getAppModuleId());
-            if (pipeline == null) {
-                logger.error("Gitlab callback error. pipeline not found, ciId: {}, callback params: {}", ciId, paramObj.toJSONString());
-                throw new DeployPipelineNotFoundException(pipelineId);
-            }
-            // 判断超级流水线中是否含有编译工具的作业模版
-            DeployPipelineConfigManager.judgeHasBuildOrDeployTypeToolInPipeline(ci.getAppSystemId(), ci.getAppModuleId(), pipeline);
-            if (deployVersion == null && (pipeline.getIsHasBuildTypeTool() == 1 || pipeline.getIsHasDeployTypeTool() == 1)) {
-                deployVersion = new DeployVersionVo(versionName, ci.getAppSystemId(), ci.getAppModuleId(), 0);
-                deployVersionMapper.insertDeployVersion(deployVersion);
-            }
-            String jobName = ci.getConfig().getString("jobName");
-            if (StringUtils.isBlank(jobName)) {
-                logger.error("Gitlab callback error. Missing jobName in ci config, ciId: {}, callback params: {}", ciId, paramObj.toJSONString());
-                throw new DeployCiJobNameLostException();
-            }
-            DeployJobVo deployJobVo = getBatchDeployJobVo(ci, deployVersion != null ? deployVersion.getId() : null);
-            deployBatchJobService.creatBatchJob(deployJobVo, pipeline, false);
-            deployJobMapper.insertJobInvoke(deployJobVo.getId(), pipelineId, JobSource.PIPELINE.getValue());
-
-            //补充定时执行逻辑
-            if (Objects.equals(deployJobVo.getTriggerType(), JobTriggerType.AUTO.getValue())) {
-                IJob jobHandler = SchedulerManager.getHandler(DeployBatchJobAutoFireJob.class.getName());
-                if (jobHandler == null) {
-                    throw new ScheduleHandlerNotFoundException(DeployBatchJobAutoFireJob.class.getName());
-                }
-                JobObject.Builder jobObjectBuilder = new JobObject.Builder(deployJobVo.getId().toString(), jobHandler.getGroupName(), jobHandler.getClassName(), TenantContext.get().getTenantUuid());
-                jobHandler.reloadJob(jobObjectBuilder.build());
-            }
+            deployCiService.createBatchJobForCallback(paramObj, ci, versionName, deployVersion, DeployCiRepoType.GITLAB);
         }
         return null;
-    }
-
-    /**
-     * 构造批量作业VO
-     *
-     * @param ci              持续集成配置
-     * @param deployVersionId 版本ID
-     * @return
-     */
-    private DeployJobVo getBatchDeployJobVo(DeployCiVo ci, Long deployVersionId) {
-        DeployJobVo deployJobVo = new DeployJobVo();
-        deployJobVo.setPipelineId(ci.getConfig().getLong("pipelineId"));
-        deployJobVo.setName(ci.getConfig().getString("jobName"));
-        Date triggerTime;
-        String triggerType = ci.getTriggerType();
-        // 如果是立即执行，则触发时间为当前时间延后两分钟
-        if (DeployCiTriggerType.INSTANT.getValue().equals(ci.getTriggerType())) {
-            triggerType = DeployCiTriggerType.AUTO.getValue();
-            triggerTime = Date.from(LocalDateTime.now().plusMinutes(2L).atZone(ZoneId.systemDefault()).toInstant());
-        } else {
-            triggerTime = getTriggerTime(ci.getTriggerTime());
-        }
-        if (DeployCiTriggerType.MANUAL.getValue().equals(triggerType)) {
-            deployJobVo.setStatus(JobStatus.PENDING.getValue());
-            deployJobVo.setTriggerType(JobTriggerType.MANUAL.getValue());
-        } else {
-            deployJobVo.setStatus(JobStatus.READY.getValue());
-            deployJobVo.setTriggerType(JobTriggerType.AUTO.getValue());
-            deployJobVo.setPlanStartTime(triggerTime);
-        }
-        deployJobVo.setAppSystemModuleVersionList(Collections.singletonList(new DeploySystemModuleVersionVo(ci.getAppSystemId(), ci.getAppModuleId(), deployVersionId)));
-        deployJobVo.setReviewStatus(ReviewStatus.PASSED.getValue());
-        deployJobVo.setSource(JobSource.BATCHDEPLOY.getValue());
-        deployJobVo.setExecUser(UserContext.get().getUserUuid());
-        return deployJobVo;
-    }
-
-    /**
-     * 计算触发时间
-     *
-     * @param triggerTimeStr
-     * @return
-     */
-    private Date getTriggerTime(String triggerTimeStr) {
-        Date triggerTime = null;
-        if (StringUtils.isNotBlank(triggerTimeStr)) {
-            LocalTime triggerInstance = LocalTime.parse(triggerTimeStr, DateTimeFormatter.ofPattern(TimeUtil.HH_MM_SS));
-            // 如果当前时间在前，则触发时间为当天；如果当前时间在后，则触发时间为第二日
-            String day;
-            if (LocalTime.now().isBefore(triggerInstance)) {
-                day = LocalDate.now().format(DateTimeFormatter.ofPattern(TimeUtil.YYYY_MM_DD));
-            } else {
-                day = LocalDate.now().plusDays(1L).format(DateTimeFormatter.ofPattern(TimeUtil.YYYY_MM_DD));
-            }
-            triggerTime = Date.from(LocalDateTime.parse(day + " " + triggerTimeStr
-                    , DateTimeFormatter.ofPattern(TimeUtil.YYYY_MM_DD_HH_MM_SS)).atZone(ZoneId.systemDefault()).toInstant());
-        }
-        return triggerTime;
     }
 
     /**
