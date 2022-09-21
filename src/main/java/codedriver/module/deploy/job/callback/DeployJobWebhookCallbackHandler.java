@@ -21,11 +21,11 @@ import codedriver.framework.cmdb.dto.resourcecenter.entity.AppSystemVo;
 import codedriver.framework.cmdb.exception.cientity.CiEntityNotFoundException;
 import codedriver.framework.crossover.CrossoverServiceFactory;
 import codedriver.framework.deploy.constvalue.DeployRequestFrom;
-import codedriver.framework.deploy.constvalue.DeployTriggerBuildNoPolicy;
+import codedriver.framework.deploy.constvalue.DeployWebhookBuildNoPolicy;
 import codedriver.framework.deploy.constvalue.JobSource;
 import codedriver.framework.deploy.dto.job.DeployJobVo;
-import codedriver.framework.deploy.dto.trigger.DeployJobTriggerAuditVo;
-import codedriver.framework.deploy.dto.trigger.DeployJobTriggerVo;
+import codedriver.framework.deploy.dto.webhook.DeployJobWebhookAuditVo;
+import codedriver.framework.deploy.dto.webhook.DeployJobWebhookVo;
 import codedriver.framework.exception.integration.IntegrationHandlerNotFoundException;
 import codedriver.framework.integration.core.IIntegrationHandler;
 import codedriver.framework.integration.core.IntegrationHandlerFactory;
@@ -33,7 +33,7 @@ import codedriver.framework.integration.dao.mapper.IntegrationMapper;
 import codedriver.framework.integration.dto.IntegrationResultVo;
 import codedriver.framework.integration.dto.IntegrationVo;
 import codedriver.module.deploy.dao.mapper.DeployJobMapper;
-import codedriver.module.deploy.dao.mapper.DeployJobTriggerMapper;
+import codedriver.module.deploy.dao.mapper.DeployJobWebhookMapper;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
@@ -47,11 +47,11 @@ import java.util.Objects;
  * @since 2022/9/19 17:40
  **/
 @Component
-public class DeployJobTriggerCallbackHandler extends AutoexecJobCallbackBase {
+public class DeployJobWebhookCallbackHandler extends AutoexecJobCallbackBase {
     @Resource
     private AutoexecJobMapper autoexecJobMapper;
     @Resource
-    private DeployJobTriggerMapper triggerMapper;
+    private DeployJobWebhookMapper webhookMapper;
     @Resource
     private DeployJobMapper deployJobMapper;
     @Resource
@@ -59,7 +59,7 @@ public class DeployJobTriggerCallbackHandler extends AutoexecJobCallbackBase {
 
     @Override
     public String getHandler() {
-        return DeployJobTriggerCallbackHandler.class.getSimpleName();
+        return DeployJobWebhookCallbackHandler.class.getSimpleName();
     }
 
     @Override
@@ -73,10 +73,10 @@ public class DeployJobTriggerCallbackHandler extends AutoexecJobCallbackBase {
                 if (jobInvokeVo != null) {
                     DeployJobVo deployJobVo = deployJobMapper.getDeployJobByJobId(jobInvokeVo.getInvokeId());
                     if (deployJobVo != null) {
-                        List<DeployJobTriggerVo> triggerVoList = triggerMapper.getTriggerListByAppSystemIdAndAppModuleId(deployJobVo.getAppSystemId(), deployJobVo.getAppModuleId());
-                        for (DeployJobTriggerVo triggerVo : triggerVoList) {
-                            if (triggerVo.getConfig().getEnvNameList().contains(deployJobVo.getEnvName())
-                                    && triggerVo.getConfig().getJobStatusList().contains(jobVo.getStatus())) {
+                        List<DeployJobWebhookVo> webhookVoList = webhookMapper.getWebhookListByAppSystemIdAndAppModuleId(deployJobVo.getAppSystemId(), deployJobVo.getAppModuleId());
+                        for (DeployJobWebhookVo webhookVo : webhookVoList) {
+                            if (webhookVo.getConfig().getEnvNameList().contains(deployJobVo.getEnvName())
+                                    && webhookVo.getConfig().getJobStatusList().contains(jobVo.getStatus())) {
                                 return true;
                             }
                         }
@@ -94,20 +94,20 @@ public class DeployJobTriggerCallbackHandler extends AutoexecJobCallbackBase {
     public void doService(Long invokeId, AutoexecJobVo jobVo) {
         DeployJobVo deployJobVo = deployJobMapper.getDeployJobByJobId(invokeId);
         if (deployJobVo != null) {
-            List<DeployJobTriggerVo> triggerVoList = triggerMapper.getTriggerListByAppSystemIdAndAppModuleId(deployJobVo.getAppSystemId(), deployJobVo.getAppModuleId());
-            for (DeployJobTriggerVo triggerVo : triggerVoList) {
-                if (triggerVo.getConfig().getEnvNameList().contains(deployJobVo.getEnvName())
-                        && triggerVo.getConfig().getJobStatusList().contains(jobVo.getStatus())) {
-                    IntegrationVo integrationVo = integrationMapper.getIntegrationByUuid(triggerVo.getIntegrationUuid());
-                    JSONObject param = getIntegrationParam(deployJobVo, triggerVo);
+            List<DeployJobWebhookVo> webhookVoList = webhookMapper.getWebhookListByAppSystemIdAndAppModuleId(deployJobVo.getAppSystemId(), deployJobVo.getAppModuleId());
+            for (DeployJobWebhookVo webhookVo : webhookVoList) {
+                if (webhookVo.getConfig().getEnvNameList().contains(deployJobVo.getEnvName())
+                        && webhookVo.getConfig().getJobStatusList().contains(jobVo.getStatus())) {
+                    IntegrationVo integrationVo = integrationMapper.getIntegrationByUuid(webhookVo.getIntegrationUuid());
+                    JSONObject param = getIntegrationParam(deployJobVo, webhookVo);
                     integrationVo.getParamObj().putAll(param);
                     IIntegrationHandler handler = IntegrationHandlerFactory.getHandler(integrationVo.getHandler());
                     if (handler == null) {
                         throw new IntegrationHandlerNotFoundException(integrationVo.getHandler());
                     }
                     IntegrationResultVo resultVo = handler.sendRequest(integrationVo, DeployRequestFrom.DEPLOY_TRIGGER);
-                    DeployJobTriggerAuditVo triggerAuditVo = new DeployJobTriggerAuditVo(param.getString("jobName"),triggerVo.getId(),resultVo.getAuditId());
-                    triggerMapper.insertJobTriggerAudit(triggerAuditVo);
+                    DeployJobWebhookAuditVo webhookAuditVo = new DeployJobWebhookAuditVo(param.getString("jobName"),webhookVo.getId(),resultVo.getAuditId());
+                    webhookMapper.insertJobWebhookAudit(webhookAuditVo);
                 }
             }
         }
@@ -117,10 +117,10 @@ public class DeployJobTriggerCallbackHandler extends AutoexecJobCallbackBase {
      * 补充集成接口入参
      *
      * @param deployJobVo 发布作业
-     * @param triggerVo   触发器
+     * @param webhookVo   触发器
      * @return 入参
      */
-    private JSONObject getIntegrationParam(DeployJobVo deployJobVo, DeployJobTriggerVo triggerVo) {
+    private JSONObject getIntegrationParam(DeployJobVo deployJobVo, DeployJobWebhookVo webhookVo) {
         JSONObject param = new JSONObject();
         ICiEntityCrossoverMapper iCiEntityCrossoverMapper = CrossoverServiceFactory.getApi(ICiEntityCrossoverMapper.class);
         IAppSystemMapper iAppSystemMapper = CrossoverServiceFactory.getApi(IAppSystemMapper.class);
@@ -144,13 +144,13 @@ public class DeployJobTriggerCallbackHandler extends AutoexecJobCallbackBase {
         }
         param.put("envName", envEntity.getName());
         if (deployJobVo.getBuildNo() != null) {
-            if (Objects.equals(DeployTriggerBuildNoPolicy.NEW.getValue(), triggerVo.getBuildNoPolicy())) {
+            if (Objects.equals(DeployWebhookBuildNoPolicy.NEW.getValue(), webhookVo.getBuildNoPolicy())) {
                 param.put("buildNo", -1);
-            } else if (Objects.equals(DeployTriggerBuildNoPolicy.THE_SAME.getValue(), triggerVo.getBuildNoPolicy())) {
+            } else if (Objects.equals(DeployWebhookBuildNoPolicy.THE_SAME.getValue(), webhookVo.getBuildNoPolicy())) {
                 param.put("buildNo", deployJobVo.getBuildNo());
             }
         }
-        String targetScenarioName = triggerVo.getConfig().getIntegrationInputParam().getString("scenarioName");
+        String targetScenarioName = webhookVo.getConfig().getIntegrationInputParam().getString("scenarioName");
         if (StringUtils.isBlank(targetScenarioName)) {
             IAutoexecScenarioCrossoverMapper autoexecScenarioCrossoverMapper = CrossoverServiceFactory.getApi(IAutoexecScenarioCrossoverMapper.class);
             AutoexecScenarioVo scenarioVo = autoexecScenarioCrossoverMapper.getScenarioById(deployJobVo.getScenarioId());
@@ -161,7 +161,7 @@ public class DeployJobTriggerCallbackHandler extends AutoexecJobCallbackBase {
         } else {
             param.put("scenarioName", targetScenarioName);
         }
-        param.put("targetEnvName", triggerVo.getConfig().getIntegrationInputParam().getString("targetEnvName"));
+        param.put("targetEnvName", webhookVo.getConfig().getIntegrationInputParam().getString("targetEnvName"));
         param.put("versionId", deployJobVo.getVersionId());
         param.put("version", deployJobVo.getVersion());
         param.put("jobName", appSystem.getAbbrName() + "/" + appModule.getAbbrName() + "/" + envEntity.getName() + (StringUtils.isBlank(deployJobVo.getVersion()) ? StringUtils.EMPTY : "/" + deployJobVo.getVersion()));

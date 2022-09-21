@@ -150,7 +150,7 @@ public class DeployJobServiceImpl implements DeployJobService {
         if (StringUtils.isNotBlank(deployJobParam.getScenarioName())) {
             AutoexecScenarioVo scenarioVo = autoexecScenarioCrossoverMapper.getScenarioByName(deployJobParam.getScenarioName());
             if (scenarioVo == null) {
-                throw new CiEntityNotFoundException(deployJobParam.getScenarioName());
+                throw new AutoexecScenarioIsNotFoundException(deployJobParam.getScenarioName());
             }
             deployJobParam.setScenarioId(scenarioVo.getId());
         } else if (deployJobParam.getScenarioId() != null) {
@@ -208,10 +208,16 @@ public class DeployJobServiceImpl implements DeployJobService {
         if (StringUtils.isNotBlank(moduleVo.getVersion())) {
             versionVo = deployVersionMapper.getDeployVersionBySystemIdAndModuleIdAndVersion(deployJobParam.getAppSystemId(), deployJobParam.getAppModuleId(), moduleVo.getVersion());
             if (versionVo == null) {
+                throw new DeployVersionNotFoundException(deployJobParam.getAppSystemName(), deployJobParam.getAppModuleName(), moduleVo.getVersion());
+            }
+
+        } if (StringUtils.isNotBlank(deployJobParam.getVersion())) {
+            versionVo = deployVersionMapper.getDeployVersionBySystemIdAndModuleIdAndVersion(deployJobParam.getAppSystemId(), deployJobParam.getAppModuleId(), deployJobParam.getVersion());
+            if (versionVo == null) {
                 throw new DeployVersionNotFoundException(deployJobParam.getAppSystemName(), deployJobParam.getAppModuleName(), deployJobParam.getVersion());
             }
 
-        } else if (deployJobParam.getVersionId() != null) {
+        }else if (deployJobParam.getVersionId() != null) {
             versionVo = deployVersionMapper.getDeployVersionBySystemIdAndModuleIdAndVersionId(deployJobParam.getAppSystemId(), deployJobParam.getAppModuleId(), deployJobParam.getVersionId());
             if (versionVo == null) {
                 throw new DeployVersionNotFoundException(deployJobParam.getAppSystemName(), deployJobParam.getAppModuleName(), deployJobParam.getVersion());
