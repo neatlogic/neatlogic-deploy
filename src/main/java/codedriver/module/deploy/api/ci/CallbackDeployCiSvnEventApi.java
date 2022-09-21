@@ -95,8 +95,8 @@ public class CallbackDeployCiSvnEventApi extends PrivateApiComponentBase {
         String event = paramObj.getString("event");
         String dirsChanged = paramObj.getString("dirsChanged");
         String revision = paramObj.getString("revision").trim();
-        /* todo
-            1、根据event和repo确定要触发的ci（是否要根据仓库服务器地址过滤）
+        /*
+            1、根据event和repo确定要触发的ci（todo 是否要根据仓库服务器地址过滤）
             2、根据dirsChanged和revision确定版本号
             3、创建作业
          */
@@ -123,9 +123,9 @@ public class CallbackDeployCiSvnEventApi extends PrivateApiComponentBase {
                     }
                 }
             }
-            // 如果变更的分支没有与之匹配的ci，那么触发所有分支过滤规则为"\"的ci
+            // 如果变更的分支没有与之匹配的ci，那么触发所有分支过滤规则为"/"的ci
             if (ciVoList.size() == 0) {
-                ciVoList = ciList.stream().filter(o -> Objects.equals(o.getBranchFilter(), "\\")).collect(Collectors.toList());
+                ciVoList = ciList.stream().filter(o -> Objects.equals(o.getBranchFilter(), "/")).collect(Collectors.toList());
             }
         }
         if (ciVoList.size() > 0) {
@@ -155,7 +155,7 @@ public class CallbackDeployCiSvnEventApi extends PrivateApiComponentBase {
                         deployCiService.createBatchJobForVCSCallback(paramObj, ci, versionName, deployVersion, DeployCiRepoType.SVN);
                     }
                 } catch (Exception ex) {
-                    logger.error("Svn callback error. Deploy ci:{} has been ignored, callback params: {}", ci.getName(), paramObj.toJSONString());
+                    logger.error("Svn callback error. Deploy ci:{} has been ignored, callback params: {}", ci.getId(), paramObj.toJSONString());
                     logger.error(ex.getMessage(), ex);
                 }
             }
