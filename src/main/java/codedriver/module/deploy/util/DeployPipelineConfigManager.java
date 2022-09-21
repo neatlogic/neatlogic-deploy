@@ -688,13 +688,13 @@ public class DeployPipelineConfigManager {
     }
 
     /**
-     * 判断超级流水线中是否含有编译工具的作业模版
+     * 判断超级流水线中是否含有编译和发布工具的作业模版
      *
      * @param appSystemId 系统id
      * @param appModuleId 模块id
      * @param pipeline    超级流水线
      */
-    public static void judgeHasBuildTypeToolInPipeline(Long appSystemId, Long appModuleId, PipelineVo pipeline) {
+    public static void judgeHasBuildOrDeployTypeToolInPipeline(Long appSystemId, Long appModuleId, PipelineVo pipeline) {
         Map<Long, DeployPipelineConfigVo> envPipelineMap = new HashMap<>();
         out:
         if (CollectionUtils.isNotEmpty(pipeline.getLaneList())) {
