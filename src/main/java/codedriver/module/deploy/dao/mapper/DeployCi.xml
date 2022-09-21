@@ -62,7 +62,28 @@
         `lcu`,
         `lcd`
         <include refid="searchDeploy"/>
+        order by `lcd` desc
         LIMIT #{startNum}, #{pageSize}
+    </select>
+
+    <select id="getDeployCiListByRepoNameAndEvent" resultType="codedriver.framework.deploy.dto.ci.DeployCiVo">
+        select `id`,
+               `name`,
+               `is_active` as isActive,
+               `app_system_id` as appSystemId,
+               `app_module_id` as appModuleId,
+               `repo_type` as repoType,
+               `repo_server_address` as repoServerAddress,
+               `repo_name` as repoName,
+               `branch_filter` as branchFilter,
+               `event`,
+               `action`,
+               `trigger_type` as triggerType,
+               `trigger_time` as triggerTime,
+               `version_rule` as versionRuleStr,
+               `config` as configStr
+        from deploy_ci
+        where repo_name = #{repoName} and event = #{event} and is_active = 1
     </select>
 
     <select id="searchDeployCiAuditCount" parameterType="codedriver.framework.deploy.dto.ci.DeployCiAuditVo" resultType="java.lang.Integer">

@@ -16,6 +16,8 @@ public interface DeployCiMapper {
 
     List<DeployCiVo> searchDeployCiList(DeployCiVo vo);
 
+    List<DeployCiVo> getDeployCiListByRepoNameAndEvent(@Param("repoName") String repoName, @Param("event") String event);
+
     int searchDeployCiAuditCount(DeployCiAuditVo vo);
 
     List<DeployCiAuditVo> searchDeployCiAudit(DeployCiAuditVo vo);
