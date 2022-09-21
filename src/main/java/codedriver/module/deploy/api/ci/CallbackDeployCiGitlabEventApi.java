@@ -129,9 +129,9 @@ public class CallbackDeployCiGitlabEventApi extends PrivateApiComponentBase {
         UserContext.get().setToken("GZIP_" + LoginAuthHandlerBase.buildJwt(SystemUser.SYSTEM.getUserVo()).getCc());
         // 普通作业
         if (DeployCiActionType.CREATE_JOB.getValue().equals(ci.getAction())) {
-            deployCiService.createJobForCallback(paramObj, ci, versionName, deployVersion, DeployCiRepoType.GITLAB);
+            deployCiService.createJobForVCSCallback(paramObj, ci, versionName, deployVersion, DeployCiRepoType.GITLAB);
         } else if (DeployCiActionType.CREATE_BATCH_JOB.getValue().equals(ci.getAction())) {
-            deployCiService.createBatchJobForCallback(paramObj, ci, versionName, deployVersion, DeployCiRepoType.GITLAB);
+            deployCiService.createBatchJobForVCSCallback(paramObj, ci, versionName, deployVersion, DeployCiRepoType.GITLAB);
         }
         return null;
     }

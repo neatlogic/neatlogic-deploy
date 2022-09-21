@@ -83,7 +83,7 @@ public class DeployCiServiceImpl implements DeployCiService {
     }
 
     @Override
-    public void createJobForCallback(JSONObject paramObj, DeployCiVo ci, String versionName, DeployVersionVo deployVersion, DeployCiRepoType repoType) throws Exception {
+    public void createJobForVCSCallback(JSONObject paramObj, DeployCiVo ci, String versionName, DeployVersionVo deployVersion, DeployCiRepoType repoType) throws Exception {
         /*
           只要场景包含build，那么新建buildNo和新建版本（如果版本不存在）
           如果场景只包含deploy，那么新建版本（如果版本不存在）
@@ -142,7 +142,7 @@ public class DeployCiServiceImpl implements DeployCiService {
     }
 
     @Override
-    public void createBatchJobForCallback(JSONObject paramObj, DeployCiVo ci, String versionName, DeployVersionVo deployVersion, DeployCiRepoType repoType) throws Exception {
+    public void createBatchJobForVCSCallback(JSONObject paramObj, DeployCiVo ci, String versionName, DeployVersionVo deployVersion, DeployCiRepoType repoType) throws Exception {
         /*
            1、筛选出超级流水线中属于当前模块的子作业，检查每个子作业的场景是否包含build工具以决定是否要新建版本
            2、用筛选后的流水线创建批量作业

@@ -3,6 +3,8 @@ package codedriver.module.deploy.api.ci;
 import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.constvalue.SystemUser;
+import codedriver.framework.deploy.constvalue.DeployCiActionType;
+import codedriver.framework.deploy.constvalue.DeployCiRepoType;
 import codedriver.framework.deploy.constvalue.DeployCiTriggerType;
 import codedriver.framework.deploy.dto.ci.DeployCiVo;
 import codedriver.framework.deploy.dto.version.DeployVersionVo;
@@ -16,11 +18,8 @@ import codedriver.framework.restful.constvalue.ApiAnonymousAccessSupportEnum;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.deploy.dao.mapper.DeployCiMapper;
-import codedriver.module.deploy.dao.mapper.DeployJobMapper;
-import codedriver.module.deploy.dao.mapper.DeployPipelineMapper;
 import codedriver.module.deploy.dao.mapper.DeployVersionMapper;
-import codedriver.module.deploy.service.DeployBatchJobService;
-import codedriver.module.deploy.service.DeployJobService;
+import codedriver.module.deploy.service.DeployCiService;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -55,16 +54,7 @@ public class CallbackDeployCiSvnEventApi extends PrivateApiComponentBase {
     DeployVersionMapper deployVersionMapper;
 
     @Resource
-    DeployPipelineMapper deployPipelineMapper;
-
-    @Resource
-    DeployJobMapper deployJobMapper;
-
-    @Resource
-    DeployJobService deployJobService;
-
-    @Resource
-    DeployBatchJobService deployBatchJobService;
+    DeployCiService deployCiService;
 
     @Override
     public String getName() {
@@ -159,6 +149,11 @@ public class CallbackDeployCiSvnEventApi extends PrivateApiComponentBase {
                     DeployVersionVo deployVersion = deployVersionMapper.getDeployVersionBaseInfoBySystemIdAndModuleIdAndVersion(new DeployVersionVo(versionName, ci.getAppSystemId(), ci.getAppModuleId()));
                     UserContext.init(SystemUser.SYSTEM.getUserVo(), SystemUser.SYSTEM.getTimezone());
                     UserContext.get().setToken("GZIP_" + LoginAuthHandlerBase.buildJwt(SystemUser.SYSTEM.getUserVo()).getCc());
+                    if (DeployCiActionType.CREATE_JOB.getValue().equals(ci.getAction())) {
+                        deployCiService.createJobForVCSCallback(paramObj, ci, versionName, deployVersion, DeployCiRepoType.SVN);
+                    } else if (DeployCiActionType.CREATE_BATCH_JOB.getValue().equals(ci.getAction())) {
+                        deployCiService.createBatchJobForVCSCallback(paramObj, ci, versionName, deployVersion, DeployCiRepoType.SVN);
+                    }
                 } catch (Exception ex) {
                     logger.error("Svn callback error. Deploy ci:{} has been ignored, callback params: {}", ci.getName(), paramObj.toJSONString());
                     logger.error(ex.getMessage(), ex);
