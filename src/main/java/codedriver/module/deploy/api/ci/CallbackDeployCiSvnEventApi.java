@@ -95,15 +95,33 @@ public class CallbackDeployCiSvnEventApi extends PrivateApiComponentBase {
         String event = paramObj.getString("event");
         String dirsChanged = paramObj.getString("dirsChanged");
         String revision = paramObj.getString("revision").trim();
+        String message = paramObj.getString("message");
         /*
             1、根据event和repo确定要触发的ci（todo 是否要根据仓库服务器地址过滤）
             2、根据dirsChanged和revision确定版本号
             3、创建作业
          */
+        //提交信息中包含"--nodeploy"关键字时,不触发动作
+        if (StringUtils.isNotBlank(message) && message.contains("--nodeploy")) {
+            return null;
+        }
         List<DeployCiVo> ciVoList = new ArrayList<>();
         // 所有属于当前仓库与事件的ci配置
         List<DeployCiVo> ciList = deployCiMapper.getDeployCiListByRepoNameAndEvent(repo, event);
         if (ciList.size() > 0) {
+            /*
+                当有多个svn集成配置，某个commit同时满足多个配置的条件时，使用最长匹配
+                比如有3个svn配置，过滤分支分别为：
+                配置1：branches/v1.0.0/
+                配置2：branches/*
+                配置3：branches/v1.0.0/*
+                则对 branches/v1.0.0/ 分支的修改代码提交时触发配置3，对branches/v1.0.0/doc/ 分支的修改代码提交时触发配置3，对 branches/3.0.0/ 分支的修改触发配置2
+             */
+            ciList.sort((o1, o2) -> {
+                int i1 = o1.getBranchFilter() == null ? 0 : o1.getBranchFilter().length();
+                int i2 = o2.getBranchFilter() == null ? 0 : o2.getBranchFilter().length();
+                return i2 - i1;
+            });
             List<String> dirList = Arrays.asList(dirsChanged.split(","));
             if (CollectionUtils.isNotEmpty(dirList)) {
                 for (String dir : dirList) {
