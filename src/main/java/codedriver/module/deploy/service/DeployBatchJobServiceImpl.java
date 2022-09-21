@@ -84,6 +84,7 @@ public class DeployBatchJobServiceImpl implements DeployBatchJobService, IDeploy
                                 jobVo.setEnvId(jobTemplateVo.getEnvId());
                                 Long versionId = getVersionId(deployJobVo.getAppSystemModuleVersionList(), jobTemplateVo);
                                 jobVo.setVersionId(versionId);
+                                jobVo.setParentId(deployJobVo.getId());
                                 if (isFire) {
                                     deployJobService.createJobAndFire(jobVo);
                                 } else {
@@ -91,7 +92,6 @@ public class DeployBatchJobServiceImpl implements DeployBatchJobService, IDeploy
                                 }
                                 deployJobMapper.insertGroupJob(groupVo.getId(), jobVo.getId(), k + 1);
                                 deployJobMapper.insertJobInvoke(deployJobVo.getId(), jobVo.getId(), JobSource.BATCHDEPLOY.getValue());
-                                jobVo.setParentId(deployJobVo.getId());
                                 deployJobMapper.updateAutoExecJobParentIdById(jobVo);
 
                             }

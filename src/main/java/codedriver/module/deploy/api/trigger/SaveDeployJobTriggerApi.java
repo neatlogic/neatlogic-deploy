@@ -76,6 +76,7 @@ public class SaveDeployJobTriggerApi extends PrivateApiComponentBase {
                 List<DeployJobTriggerAppModuleVo> appModuleVoList = deployJobTriggerVo.getConfig().getTriggerAppModuleList();
                 if(CollectionUtils.isNotEmpty(appModuleVoList)){
                     for(DeployJobTriggerAppModuleVo appModuleVo : appModuleVoList) {
+                        appModuleVo.setTriggerId(deployJobTriggerVo.getId());
                         triggerMapper.insertJobTriggerAppModule(appModuleVo);
                     }
                 }

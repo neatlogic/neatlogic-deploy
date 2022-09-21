@@ -250,7 +250,6 @@ public class DeployJobServiceImpl implements DeployJobService {
             deployJobParam.setExecuteConfig(new AutoexecCombopExecuteConfigVo());
         }
         deployJobParam.getExecuteConfig().setExecuteNodeConfig(executeNodeConfig);
-        deployJobParam.setName(deployJobParam.getAppSystemAbbrName() + "/" + deployJobParam.getAppModuleAbbrName() + "/" + deployJobParam.getEnvName() + (StringUtils.isBlank(deployJobParam.getVersion()) ? StringUtils.EMPTY : "/" + deployJobParam.getVersion()));
     }
 
     @Override

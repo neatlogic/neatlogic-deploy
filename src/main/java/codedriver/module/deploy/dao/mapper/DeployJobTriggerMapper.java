@@ -6,6 +6,7 @@
 package codedriver.module.deploy.dao.mapper;
 
 import codedriver.framework.deploy.dto.trigger.DeployJobTriggerAppModuleVo;
+import codedriver.framework.deploy.dto.trigger.DeployJobTriggerAuditVo;
 import codedriver.framework.deploy.dto.trigger.DeployJobTriggerVo;
 import org.apache.ibatis.annotations.Param;
 
@@ -22,9 +23,19 @@ public interface DeployJobTriggerMapper {
 
     DeployJobTriggerVo getTriggerById(Long id);
 
+    int getTriggerAuditCount(DeployJobTriggerAuditVo deployJobTriggerAuditVo);
+
+    List<DeployJobTriggerAuditVo> searchTriggerAudit(DeployJobTriggerAuditVo deployJobTriggerAuditVo);
+
     int insertJobTrigger(DeployJobTriggerVo deployJobTriggerVo);
 
     int insertJobTriggerAppModule(DeployJobTriggerAppModuleVo triggerAppModuleVo);
 
-    void updateJobTrigger(DeployJobTriggerVo deployJobTriggerVo);
+    int updateJobTrigger(DeployJobTriggerVo deployJobTriggerVo);
+
+    int insertJobTriggerAudit(DeployJobTriggerAuditVo triggerAuditVo);
+
+    int deleteTriggerById(Long id);
+
+    int deleteTriggerAuditByTriggerId(Long id);
 }

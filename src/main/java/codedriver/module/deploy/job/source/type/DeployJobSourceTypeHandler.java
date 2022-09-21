@@ -38,6 +38,7 @@ import codedriver.framework.deploy.constvalue.JobSourceType;
 import codedriver.framework.deploy.dto.app.DeployPipelineConfigVo;
 import codedriver.framework.deploy.dto.job.DeployJobContentVo;
 import codedriver.framework.deploy.dto.job.DeployJobVo;
+import codedriver.framework.deploy.dto.pipeline.PipelineJobTemplateVo;
 import codedriver.framework.deploy.dto.sql.DeploySqlJobPhaseVo;
 import codedriver.framework.deploy.dto.sql.DeploySqlNodeDetailVo;
 import codedriver.framework.deploy.dto.version.DeployVersionBuildNoVo;
@@ -357,27 +358,41 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
     public void updateInvokeJob(AutoexecJobVo jobVo) {
         DeployJobVo deployJobVo = (DeployJobVo) jobVo;
         deployJobMapper.insertIgnoreDeployJobContent(new DeployJobContentVo(jobVo.getConfigStr()));
-        //如果buildNo是-1，表示新建buildNo
         if (deployJobVo.getBuildNo() != null || StringUtils.isNotBlank(deployJobVo.getVersion())) {
             DeployVersionVo deployVersionVo = deployVersionMapper.getVersionByAppSystemIdAndAppModuleIdAndVersion(deployJobVo.getAppSystemId(), deployJobVo.getAppModuleId(), deployJobVo.getVersion());
             if (deployVersionVo == null) {
                 throw new DeployVersionNotFoundException(deployJobVo.getVersion());
             }
             deployJobVo.setVersionId(deployVersionVo.getId());
-            //获取最新buildNo
-            if (deployJobVo.getBuildNo() == null || deployJobVo.getBuildNo() == -1) {
-                Integer maxBuildNo = deployVersionMapper.getDeployVersionMaxBuildNoByVersionIdLock(deployVersionVo.getId());
-                if (maxBuildNo == null) {
-                    deployJobVo.setBuildNo(1);
-                } else {
-                    deployJobVo.setBuildNo(maxBuildNo + 1);
+            //如果存在version 但buildNo 为null，则需要根据流水线是否含有build工具决定是否新建buildNo，如果没有deploy工具和build工具则version设置为null
+            if(deployJobVo.getBuildNo() == null){
+                PipelineJobTemplateVo jobTemplateVo = new PipelineJobTemplateVo(deployJobVo);
+                DeployPipelineConfigManager.setIsJobTemplateVoHasBuildDeployType(jobTemplateVo,new HashMap<>());
+                if(jobTemplateVo.getIsHasBuildTypeTool() == 1){
+                    deployJobVo.setBuildNo(-1);
+                }
+                if(jobTemplateVo.getIsHasBuildTypeTool() != 1 && jobTemplateVo.getIsHasDeployTypeTool() != 1){
+                    deployJobVo.setVersionId(null);
+                    deployJobVo.setVersion(null);
+                }
+            }
+            if(deployJobVo.getBuildNo() != null) {
+                //如果buildNo是-1，表示新建buildNo
+                if (deployJobVo.getBuildNo() == -1) {
+                    Integer maxBuildNo = deployVersionMapper.getDeployVersionMaxBuildNoByVersionIdLock(deployVersionVo.getId());
+                    if (maxBuildNo == null) {
+                        deployJobVo.setBuildNo(1);
+                    } else {
+                        deployJobVo.setBuildNo(maxBuildNo + 1);
+                    }
+                    deployVersionMapper.insertDeployVersionBuildNo(new DeployVersionBuildNoVo(deployVersionVo.getId(), deployJobVo.getBuildNo(), deployJobVo.getId(), BuildNoStatus.PENDING.getValue()));
+                } else if (deployJobVo.getBuildNo() > 0) {
+                    deployJobVo.setBuildNo(deployJobVo.getBuildNo());
                 }
                 deployVersionMapper.insertDeployVersionBuildNo(new DeployVersionBuildNoVo(deployVersionVo.getId(), deployJobVo.getBuildNo(), deployJobVo.getId(), BuildNoStatus.PENDING.getValue()));
-            } else if (deployJobVo.getBuildNo() > 0) {
-                deployJobVo.setBuildNo(deployJobVo.getBuildNo());
             }
-            deployVersionMapper.insertDeployVersionBuildNo(new DeployVersionBuildNoVo(deployVersionVo.getId(), deployJobVo.getBuildNo(), deployJobVo.getId(), BuildNoStatus.PENDING.getValue()));
         }
+        deployJobVo.setName(deployJobVo.getAppSystemAbbrName() + "/" + deployJobVo.getAppModuleAbbrName() + "/" + deployJobVo.getEnvName() + (StringUtils.isBlank(deployJobVo.getVersion()) ? StringUtils.EMPTY : "/" + deployJobVo.getVersion()));
         deployJobMapper.insertDeployJob(deployJobVo);
         if (jobVo.getInvokeId() == null) {
             jobVo.setInvokeId(deployJobVo.getId());
