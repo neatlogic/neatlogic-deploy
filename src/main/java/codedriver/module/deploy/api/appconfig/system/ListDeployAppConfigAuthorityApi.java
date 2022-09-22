@@ -82,7 +82,7 @@ public class ListDeployAppConfigAuthorityApi extends PrivateApiComponentBase {
 
         //环境权限
         List<JSONObject> envAuthList = new ArrayList<>();
-        List<DeployAppEnvironmentVo> envList = deployAppConfigMapper.getDeployAppEnvListByAppSystemIdAndModuleIdList(appSystemId, new ArrayList<>(), TenantContext.get().getDataDbName());
+        List<DeployAppEnvironmentVo> envList = deployAppConfigMapper.getDeployAppEnvListByAppSystemIdAndModuleIdList(appSystemId, new ArrayList<>());
         for (DeployAppEnvironmentVo env : envList) {
             JSONObject envValueText = new JSONObject();
             envValueText.put("text", env.getName());

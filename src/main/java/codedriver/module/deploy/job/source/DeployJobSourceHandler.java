@@ -51,19 +51,19 @@ public class DeployJobSourceHandler extends AutoexecJobSourceHandlerBase {
             DeployJobVo deployJobVo = deployJobMapper.getDeployJobByJobId(jobInvokeVo.getInvokeId());
             IResourceCrossoverMapper resourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
             result.put("appSystemId", deployJobVo.getAppSystemId());
-            ResourceVo appSystem = resourceCrossoverMapper.getAppSystemById(deployJobVo.getAppSystemId(), TenantContext.get().getDataDbName());
+            ResourceVo appSystem = resourceCrossoverMapper.getAppSystemById(deployJobVo.getAppSystemId());
             if (appSystem != null) {
                 result.put("appSystemAbbrName", appSystem.getAbbrName());
                 result.put("appSystemName", appSystem.getName());
             }
             result.put("appModuleId", deployJobVo.getAppModuleId());
-            ResourceVo appModule = resourceCrossoverMapper.getAppModuleById(deployJobVo.getAppModuleId(), TenantContext.get().getDataDbName());
+            ResourceVo appModule = resourceCrossoverMapper.getAppModuleById(deployJobVo.getAppModuleId());
             if (appModule != null) {
                 result.put("appModuleAbbrName", appModule.getAbbrName());
                 result.put("appModuleName", appModule.getName());
             }
             result.put("envId", deployJobVo.getEnvId());
-            ResourceVo env = resourceCrossoverMapper.getAppEnvById(deployJobVo.getEnvId(), TenantContext.get().getDataDbName());
+            ResourceVo env = resourceCrossoverMapper.getAppEnvById(deployJobVo.getEnvId());
             if (env != null) {
                 result.put("envAbbrName", env.getAbbrName());
                 result.put("envName", env.getName());

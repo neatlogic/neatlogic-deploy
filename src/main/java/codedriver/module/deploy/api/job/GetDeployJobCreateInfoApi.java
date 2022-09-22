@@ -71,7 +71,7 @@ public class GetDeployJobCreateInfoApi extends PrivateApiComponentBase {
 
         //查询系统名称、简称
         IAppSystemMapper iAppSystemMapper = CrossoverServiceFactory.getApi(IAppSystemMapper.class);
-        AppSystemVo appSystemVo = iAppSystemMapper.getAppSystemById(appSystemId, TenantContext.get().getDataDbName());
+        AppSystemVo appSystemVo = iAppSystemMapper.getAppSystemById(appSystemId);
         if (appSystemVo == null) {
             throw new CiEntityNotFoundException(appSystemId);
         }
@@ -102,12 +102,10 @@ public class GetDeployJobCreateInfoApi extends PrivateApiComponentBase {
         if (appModuleId != 0L) {
             appModuleIdList.add(appModuleId);
         } else {
-            TenantContext.get().switchDataDatabase();
             appModuleIdList.addAll(resourceCrossoverMapper.getAppSystemModuleIdListByAppSystemId(appSystemId));
-            TenantContext.get().switchDefaultDatabase();
         }
         if (CollectionUtils.isNotEmpty(appModuleIdList)) {
-            envList = deployAppConfigMapper.getDeployAppEnvListByAppSystemIdAndModuleIdList(appSystemId, appModuleIdList, TenantContext.get().getDataDbName());
+            envList = deployAppConfigMapper.getDeployAppEnvListByAppSystemIdAndModuleIdList(appSystemId, appModuleIdList);
             appModuleList = resourceCrossoverMapper.getAppModuleListByIdListSimple(appModuleIdList, true);
         }
         result.put("envList", envList);

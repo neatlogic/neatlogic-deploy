@@ -94,7 +94,7 @@ public class SearchDeployAppConfigAuthorityApi extends PrivateApiComponentBase {
         JSONArray finalTheadList = JSONArray.parseArray(theadList.toString());
 
         //获取当前应用下的所有环境
-        List<DeployAppEnvironmentVo> envList = deployAppConfigMapper.getDeployAppEnvListByAppSystemIdAndModuleIdList(paramObj.getLong("appSystemId"), new ArrayList<>(), TenantContext.get().getDataDbName());
+        List<DeployAppEnvironmentVo> envList = deployAppConfigMapper.getDeployAppEnvListByAppSystemIdAndModuleIdList(paramObj.getLong("appSystemId"), new ArrayList<>());
         for (DeployAppEnvironmentVo environmentVo : envList) {
             JSONObject envKeyValue = new JSONObject();
             envKeyValue.put("name", environmentVo.getId());

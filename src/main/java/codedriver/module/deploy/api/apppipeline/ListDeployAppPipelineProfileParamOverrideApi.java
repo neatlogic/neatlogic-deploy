@@ -92,9 +92,8 @@ public class ListDeployAppPipelineProfileParamOverrideApi extends PrivateApiComp
 
         IResourceCrossoverMapper resourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
         //查询应用层配置信息
-        String schameName = TenantContext.get().getDataDbName();
         Long appSystemId = paramObj.getLong("appSystemId");
-        ResourceVo appSystem = resourceCrossoverMapper.getAppSystemById(appSystemId, schameName);
+        ResourceVo appSystem = resourceCrossoverMapper.getAppSystemById(appSystemId);
         if (appSystem == null) {
             throw new AppSystemNotFoundException(appSystemId);
         }
@@ -156,7 +155,7 @@ public class ListDeployAppPipelineProfileParamOverrideApi extends PrivateApiComp
             for (ModuleVo appModule : appModuleList) {
                 allDeployAppConfigList.add(new DeployAppConfigVo(appSystemId, appModule.getAppModuleId()));
                 nameMap.put(appModule.getAppModuleId(), appModule.getAppModuleName());
-                List<AppEnvironmentVo> envList = appSystemMapper.getAppEnvListByAppSystemIdAndModuleIdList(appSystemId, Arrays.asList(appModule.getAppModuleId()), TenantContext.get().getDataDbName());
+                List<AppEnvironmentVo> envList = appSystemMapper.getAppEnvListByAppSystemIdAndModuleIdList(appSystemId, Arrays.asList(appModule.getAppModuleId()));
                 if (CollectionUtils.isNotEmpty(envList)) {
                     for (AppEnvironmentVo appEnvironmentVo : envList) {
                         nameMap.put(appEnvironmentVo.getEnvId(), appEnvironmentVo.getEnvName());

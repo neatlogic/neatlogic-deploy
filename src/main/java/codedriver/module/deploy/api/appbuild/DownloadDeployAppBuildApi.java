@@ -144,11 +144,11 @@ public class DownloadDeployAppBuildApi extends PrivateBinaryStreamApiComponentBa
         String version = jsonObj.getString("version");
         String envName = jsonObj.getString("envName");
         IResourceCrossoverMapper resourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
-        ResourceVo appSystem = resourceCrossoverMapper.getAppSystemByName(sysName, TenantContext.get().getDataDbName());
+        ResourceVo appSystem = resourceCrossoverMapper.getAppSystemByName(sysName);
         if (appSystem == null) {
             throw new AppSystemNotFoundException(sysName);
         }
-        ResourceVo appModule = resourceCrossoverMapper.getAppModuleByName(moduleName, TenantContext.get().getDataDbName());
+        ResourceVo appModule = resourceCrossoverMapper.getAppModuleByName(moduleName);
         if (appModule == null) {
             throw new AppModuleNotFoundException(moduleName);
         }
@@ -161,7 +161,7 @@ public class DownloadDeployAppBuildApi extends PrivateBinaryStreamApiComponentBa
             throw new DeployVersionNotFoundException(version);
         }
         //env status
-        ResourceVo env = resourceCrossoverMapper.getAppEnvByName(envName, TenantContext.get().getDataDbName());
+        ResourceVo env = resourceCrossoverMapper.getAppEnvByName(envName);
         if (env == null) {
             throw new AppEnvNotFoundException(envName);
         }
@@ -258,11 +258,11 @@ public class DownloadDeployAppBuildApi extends PrivateBinaryStreamApiComponentBa
     private void downloadFromCurrentEnv(JSONObject jsonObj, HttpServletRequest request, HttpServletResponse response) {
         //获取对应的sysId、moduleId
         IResourceCrossoverMapper resourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
-        ResourceVo appSystem = resourceCrossoverMapper.getAppSystemByName(jsonObj.getString("sysName"), TenantContext.get().getDataDbName());
+        ResourceVo appSystem = resourceCrossoverMapper.getAppSystemByName(jsonObj.getString("sysName"));
         if (appSystem == null) {
             throw new AppSystemNotFoundException(jsonObj.getString("sysName"));
         }
-        ResourceVo appModule = resourceCrossoverMapper.getAppModuleByName(jsonObj.getString("moduleName"), TenantContext.get().getDataDbName());
+        ResourceVo appModule = resourceCrossoverMapper.getAppModuleByName(jsonObj.getString("moduleName"));
         if (appModule == null) {
             throw new AppModuleNotFoundException(jsonObj.getString("moduleName"));
         }

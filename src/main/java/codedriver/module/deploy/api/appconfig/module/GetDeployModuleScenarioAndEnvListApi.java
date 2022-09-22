@@ -73,7 +73,7 @@ public class GetDeployModuleScenarioAndEnvListApi extends PrivateApiComponentBas
         }
         result.put("scenarioList", pipelineConfigVo.getScenarioList());
         result.put("defaultScenarioId", pipelineConfigVo.getDefaultScenarioId());
-        result.put("envList", deployAppConfigMapper.getDeployAppModuleEnvListByAppSystemIdAndModuleId(appSystemId, appModuleId, TenantContext.get().getDataDbName()));
+        result.put("envList", deployAppConfigMapper.getDeployAppModuleEnvListByAppSystemIdAndModuleId(appSystemId, appModuleId));
         return result;
     }
 }

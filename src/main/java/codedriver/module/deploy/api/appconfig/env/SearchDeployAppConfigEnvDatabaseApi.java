@@ -66,12 +66,12 @@ public class SearchDeployAppConfigEnvDatabaseApi extends PrivateApiComponentBase
     public Object myDoService(JSONObject paramObj) throws Exception {
         DeployResourceSearchVo searchVo = paramObj.toJavaObject(DeployResourceSearchVo.class);
         List<ResourceVo> deployDBResourceVoList = new ArrayList<>();
-        int count = deployAppConfigMapper.getAppConfigEnvDatabaseCount(searchVo, TenantContext.get().getDataDbName());
+        int count = deployAppConfigMapper.getAppConfigEnvDatabaseCount(searchVo);
         if (count > 0) {
             searchVo.setRowNum(count);
-            List<Long> databaseIdList = deployAppConfigMapper.getAppConfigEnvDatabaseResourceIdList(searchVo, TenantContext.get().getDataDbName());
+            List<Long> databaseIdList = deployAppConfigMapper.getAppConfigEnvDatabaseResourceIdList(searchVo);
             IResourceCrossoverMapper resourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
-            deployDBResourceVoList = resourceCrossoverMapper.getResourceListByIdList(databaseIdList, TenantContext.get().getDataDbName());
+            deployDBResourceVoList = resourceCrossoverMapper.getResourceListByIdList(databaseIdList);
         }
         return TableResultUtil.getResult(deployDBResourceVoList, searchVo);
     }

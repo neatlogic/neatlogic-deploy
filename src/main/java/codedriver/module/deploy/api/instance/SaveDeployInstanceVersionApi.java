@@ -95,7 +95,7 @@ public class SaveDeployInstanceVersionApi extends PrivateApiComponentBase {
             throw new AppEnvNotFoundException(envId);
         }
         IResourceCrossoverMapper resourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
-        List<Long> instanceIdList = resourceCrossoverMapper.getAppInstanceResourceIdListByAppSystemIdAndModuleIdAndEnvId(new ResourceVo(sysId, moduleId, envId), TenantContext.get().getDataDbName());
+        List<Long> instanceIdList = resourceCrossoverMapper.getAppInstanceResourceIdListByAppSystemIdAndModuleIdAndEnvId(new ResourceVo(sysId, moduleId, envId));
         if (instanceIdList.size() == 0 || !instanceIdList.contains(resourceId)) {
             throw new DeployInstanceInEnvNotFoundException(paramObj.getString("sysName"), paramObj.getString("moduleName"), envName, resourceId);
         }

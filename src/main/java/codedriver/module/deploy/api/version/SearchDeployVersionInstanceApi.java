@@ -66,10 +66,10 @@ public class SearchDeployVersionInstanceApi extends PrivateApiComponentBase {
         }
         List<DeployVersionEnvInstanceVo> result = new ArrayList<>();
         IResourceCrossoverMapper resourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
-        List<Long> instanceIdList = resourceCrossoverMapper.getAppInstanceResourceIdListByAppSystemIdAndModuleIdAndEnvId(new ResourceVo(versionVo.getAppSystemId(), versionVo.getAppModuleId(), envId), TenantContext.get().getDataDbName());
+        List<Long> instanceIdList = resourceCrossoverMapper.getAppInstanceResourceIdListByAppSystemIdAndModuleIdAndEnvId(new ResourceVo(versionVo.getAppSystemId(), versionVo.getAppModuleId(), envId));
         if (instanceIdList.size() > 0) {
             List<DeployVersionEnvInstanceVo> deployedInstanceList = deployVersionMapper.getDeployedInstanceByVersionIdAndEnvId(versionId, envId);
-            List<ResourceVo> instanceList = resourceCrossoverMapper.getAppInstanceResourceListByIdListAndKeyword(instanceIdList, keyword, TenantContext.get().getDataDbName());
+            List<ResourceVo> instanceList = resourceCrossoverMapper.getAppInstanceResourceListByIdListAndKeyword(instanceIdList, keyword);
             for (ResourceVo ins : instanceList) {
                 DeployVersionEnvInstanceVo vo = new DeployVersionEnvInstanceVo(ins.getId(), ins.getName(), ins.getIp());
                 Optional<DeployVersionEnvInstanceVo> first = deployedInstanceList.stream().filter(o -> Objects.equals(o.getResourceId(), ins.getId())).findFirst();

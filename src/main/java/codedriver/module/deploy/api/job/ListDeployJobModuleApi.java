@@ -73,7 +73,7 @@ public class ListDeployJobModuleApi extends PrivateApiComponentBase {
         Long appSystemId = paramObj.getLong("appSystemId");
         Long envId = paramObj.getLong("envId");
         Long scenarioId = paramObj.getLong("scenarioId");
-        returnAppModuleVoList = deployAppConfigMapper.getAppModuleListBySystemIdAndEnvId(appSystemId, envId, TenantContext.get().getDataDbName());
+        returnAppModuleVoList = deployAppConfigMapper.getAppModuleListBySystemIdAndEnvId(appSystemId, envId);
         if (CollectionUtils.isNotEmpty(returnAppModuleVoList)) {
             //判断是否有配流水线
 //            List<DeployAppConfigVo> appConfigVoList = deployAppConfigMapper.getAppConfigListByAppSystemId(appSystemId);

@@ -70,14 +70,14 @@ public class ListDeployAppConfigAppEnvApi extends PrivateApiComponentBase {
         Long appModuleId = paramObj.getLong("appModuleId");
         List<DeployAppEnvironmentVo> returnEnvList = null;
         if (Objects.nonNull(paramObj.getInteger("isHasEnv")) && paramObj.getInteger("isHasEnv") == 0) {
-            returnEnvList = deployAppConfigMapper.getDeployAppHasNotEnvListByAppSystemIdAndModuleIdList(appSystemId, appModuleId, TenantContext.get().getDataDbName());
+            returnEnvList = deployAppConfigMapper.getDeployAppHasNotEnvListByAppSystemIdAndModuleIdList(appSystemId, appModuleId);
         } else {
 
             //查找发布的环境
             List<DeployAppEnvironmentVo> deployEnvList = deployAppConfigMapper.getDeployAppEnvListByAppSystemIdAndModuleId(appSystemId, appModuleId);
 
             //查找cmdb的环境
-            List<DeployAppEnvironmentVo> cmdbEnvList = deployAppConfigMapper.getCmdbEnvListByAppSystemIdAndModuleId(appSystemId, appModuleId, TenantContext.get().getDataDbName());
+            List<DeployAppEnvironmentVo> cmdbEnvList = deployAppConfigMapper.getCmdbEnvListByAppSystemIdAndModuleId(appSystemId, appModuleId);
 
             //如果有交集，则删除发布多余的环境idList
             if (CollectionUtils.isNotEmpty(cmdbEnvList) && CollectionUtils.isNotEmpty(deployEnvList)) {
