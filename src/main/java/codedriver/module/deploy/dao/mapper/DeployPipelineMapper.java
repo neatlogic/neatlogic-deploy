@@ -11,9 +11,9 @@ import org.apache.ibatis.annotations.Param;
 import java.util.List;
 
 public interface DeployPipelineMapper {
-    List<PipelineVo> searchPipeline(PipelineVo pipelineVo);
+    List<PipelineVo> searchPipeline(PipelineSearchVo searchVo);
 
-    int searchPipelineCount(PipelineVo pipelineVo);
+    int searchPipelineCount(PipelineSearchVo searchVo);
 
     PipelineJobTemplateVo getJobTemplateById(Long id);
 
@@ -24,6 +24,8 @@ public interface DeployPipelineMapper {
     PipelineVo getPipelineById(Long id);
 
     PipelineVo getPipelineSimpleInfoById(Long id);
+
+    List<PipelineVo> getPipelineListByIdList(List<Long> idList);
 
     /**
      * 根据流水线id和模块id获取流水线与其中属于{moduleId}的作业模版

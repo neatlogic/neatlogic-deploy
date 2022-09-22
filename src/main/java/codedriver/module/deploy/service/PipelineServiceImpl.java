@@ -6,6 +6,8 @@
 package codedriver.module.deploy.service;
 
 import codedriver.framework.asynchronization.threadlocal.TenantContext;
+import codedriver.framework.asynchronization.threadlocal.UserContext;
+import codedriver.framework.auth.core.AuthActionChecker;
 import codedriver.framework.autoexec.dto.combop.AutoexecCombopPhaseConfigVo;
 import codedriver.framework.autoexec.dto.combop.AutoexecCombopPhaseOperationConfigVo;
 import codedriver.framework.autoexec.dto.combop.AutoexecCombopPhaseOperationVo;
@@ -13,25 +15,29 @@ import codedriver.framework.cmdb.crossover.IAppSystemMapper;
 import codedriver.framework.cmdb.dto.resourcecenter.entity.AppSystemVo;
 import codedriver.framework.crossover.CrossoverServiceFactory;
 import codedriver.framework.dependency.core.DependencyManager;
+import codedriver.framework.deploy.auth.PIPELINE_MODIFY;
+import codedriver.framework.deploy.constvalue.DeployAppConfigAction;
+import codedriver.framework.deploy.constvalue.PipelineType;
 import codedriver.framework.deploy.dto.app.DeployAppConfigVo;
 import codedriver.framework.deploy.dto.app.DeployPipelineConfigVo;
 import codedriver.framework.deploy.dto.app.DeployPipelinePhaseVo;
 import codedriver.framework.deploy.dto.pipeline.PipelineJobTemplateVo;
+import codedriver.framework.deploy.dto.pipeline.PipelineSearchVo;
 import codedriver.framework.deploy.dto.pipeline.PipelineVo;
+import codedriver.module.deploy.auth.core.DeployAppAuthChecker;
 import codedriver.module.deploy.dao.mapper.DeployPipelineMapper;
 import codedriver.module.deploy.dependency.handler.AutoexecGlobalParam2DeployAppPipelinePhaseOperationArgumentParamDependencyHandler;
 import codedriver.module.deploy.dependency.handler.AutoexecGlobalParam2DeployAppPipelinePhaseOperationInputParamDependencyHandler;
 import codedriver.module.deploy.dependency.handler.AutoexecProfile2DeployAppPipelinePhaseOperationDependencyHandler;
+import com.alibaba.fastjson.JSONArray;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -42,12 +48,51 @@ public class PipelineServiceImpl implements PipelineService {
 
 
     @Override
-    public List<PipelineVo> searchPipeline(PipelineVo pipelineVo) {
-        int rowNum = deployPipelineMapper.searchPipelineCount(pipelineVo);
-        pipelineVo.setRowNum(rowNum);
-        List<PipelineVo> pipelineList = deployPipelineMapper.searchPipeline(pipelineVo);
-        String schemaName = TenantContext.get().getDataDbName();
+    public List<PipelineVo> searchPipeline(PipelineSearchVo searchVo) {
         IAppSystemMapper appSystemMapper = CrossoverServiceFactory.getApi(IAppSystemMapper.class);
+        JSONArray defaultValue = searchVo.getDefaultValue();
+        if (CollectionUtils.isNotEmpty(defaultValue)) {
+            List<Long> idList = defaultValue.toJavaList(Long.class);
+            List<PipelineVo> pipelineList = deployPipelineMapper.getPipelineListByIdList(idList);
+            for (PipelineVo pipeline : pipelineList) {
+                if (pipeline.getAppSystemId() != null) {
+                    AppSystemVo appSystemVo = appSystemMapper.getAppSystemById(pipeline.getAppSystemId(), TenantContext.get().getDataDbName());
+                    if (appSystemVo != null) {
+                        pipeline.setAppSystemName(appSystemVo.getName());
+                        pipeline.setAppSystemAbbrName(appSystemVo.getAbbrName());
+                    }
+                }
+            }
+            return pipelineList;
+        }
+        // 判断是否需要验证权限
+        int isHasAllAuthority = 0;
+        if (Objects.equals(searchVo.getNeedVerifyAuth(), 1)) {
+            String type = searchVo.getType();
+            if (StringUtils.isNotBlank(type)) {
+                if (PipelineType.APPSYSTEM.getValue().equals(type)) {
+                    Set<String> actionSet = DeployAppAuthChecker.builder(searchVo.getAppSystemId())
+                            .addOperationAction(DeployAppConfigAction.PIPELINE.getValue())
+                            .check();
+                    if (actionSet.contains(DeployAppConfigAction.PIPELINE.getValue())) {
+                        isHasAllAuthority = 1;
+                    }
+                } else if (PipelineType.GLOBAL.getValue().equals(type)) {
+                    if (AuthActionChecker.check(PIPELINE_MODIFY.class)) {
+                        isHasAllAuthority = 1;
+                    }
+                }
+            }
+        } else {
+            // 不需要验证权限的话，就当拥有所有权限
+            isHasAllAuthority = 1;
+        }
+
+        searchVo.setIsHasAllAuthority(isHasAllAuthority);
+        searchVo.setAuthUuid(UserContext.get().getUserUuid());
+        int rowNum = deployPipelineMapper.searchPipelineCount(searchVo);
+        searchVo.setRowNum(rowNum);
+        List<PipelineVo> pipelineList = deployPipelineMapper.searchPipeline(searchVo);
         Map<Long, AppSystemVo> appSystemMap = new HashMap<>();
         List<Long> appSystemIdList = pipelineList.stream().map(PipelineVo::getAppSystemId).collect(Collectors.toList());
         if (CollectionUtils.isNotEmpty(appSystemIdList)) {

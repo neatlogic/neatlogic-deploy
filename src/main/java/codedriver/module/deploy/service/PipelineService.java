@@ -7,13 +7,14 @@ package codedriver.module.deploy.service;
 
 import codedriver.framework.deploy.dto.app.DeployAppConfigVo;
 import codedriver.framework.deploy.dto.pipeline.PipelineJobTemplateVo;
+import codedriver.framework.deploy.dto.pipeline.PipelineSearchVo;
 import codedriver.framework.deploy.dto.pipeline.PipelineVo;
 
 import java.util.List;
 
 public interface PipelineService {
 
-    List<PipelineVo> searchPipeline(PipelineVo pipelineVo);
+    List<PipelineVo> searchPipeline(PipelineSearchVo searchVo);
 
     List<PipelineJobTemplateVo> searchPipelineJobTemplate(PipelineJobTemplateVo pipelineJobTemplateVo);
 

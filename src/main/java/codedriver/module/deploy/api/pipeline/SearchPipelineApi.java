@@ -10,6 +10,7 @@ import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.dto.BasePageVo;
 import codedriver.framework.deploy.auth.DEPLOY_BASE;
 import codedriver.framework.deploy.constvalue.PipelineType;
+import codedriver.framework.deploy.dto.pipeline.PipelineSearchVo;
 import codedriver.framework.deploy.dto.pipeline.PipelineVo;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
@@ -47,6 +48,7 @@ public class SearchPipelineApi extends PrivateApiComponentBase {
             @Param(name = "keyword", type = ApiParamType.STRING, desc = "关键字"),
             @Param(name = "type", type = ApiParamType.ENUM, member = PipelineType.class, desc = "类型"),
             @Param(name = "appSystemId", type = ApiParamType.LONG, desc = "应用ID"),
+            @Param(name = "needVerifyAuth", type = ApiParamType.INTEGER, desc = "是否需要验证权限"),
             @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "当前页码"),
             @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "页大小")
     })
@@ -57,8 +59,8 @@ public class SearchPipelineApi extends PrivateApiComponentBase {
     @Description(desc = "查询超级流水线接口")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
-        PipelineVo pipelineVo = JSONObject.toJavaObject(jsonObj, PipelineVo.class);
-        return TableResultUtil.getResult(pipelineService.searchPipeline(pipelineVo), pipelineVo);
+        PipelineSearchVo searchVo = JSONObject.toJavaObject(jsonObj, PipelineSearchVo.class);
+        return TableResultUtil.getResult(pipelineService.searchPipeline(searchVo), searchVo);
     }
 
 }
