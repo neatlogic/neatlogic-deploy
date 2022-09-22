@@ -66,7 +66,7 @@
         LIMIT #{startNum}, #{pageSize}
     </select>
 
-    <select id="getDeployCiListByRepoNameAndEvent" resultType="codedriver.framework.deploy.dto.ci.DeployCiVo">
+    <select id="getDeployCiListByRepoServerAddressAndRepoNameAndEvent" resultType="codedriver.framework.deploy.dto.ci.DeployCiVo">
         select `id`,
                `name`,
                `is_active` as isActive,
@@ -83,7 +83,11 @@
                `version_rule` as versionRuleStr,
                `config` as configStr
         from deploy_ci
-        where repo_name = #{repoName} and event = #{event} and is_active = 1
+        where is_active = 1 and repo_name = #{repoName} and event = #{event}
+        and repo_server_address in
+        <foreach collection="ipList" item="item" separator="," open="(" close=")">
+            #{item}
+        </foreach>
     </select>
 
     <select id="searchDeployCiAuditCount" parameterType="codedriver.framework.deploy.dto.ci.DeployCiAuditVo" resultType="java.lang.Integer">
