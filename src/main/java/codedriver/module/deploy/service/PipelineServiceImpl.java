@@ -5,6 +5,7 @@
 
 package codedriver.module.deploy.service;
 
+import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.auth.core.AuthActionChecker;
 import codedriver.framework.autoexec.dto.combop.AutoexecCombopPhaseConfigVo;
@@ -23,12 +24,12 @@ import codedriver.framework.deploy.dto.app.DeployPipelinePhaseVo;
 import codedriver.framework.deploy.dto.pipeline.PipelineJobTemplateVo;
 import codedriver.framework.deploy.dto.pipeline.PipelineSearchVo;
 import codedriver.framework.deploy.dto.pipeline.PipelineVo;
-import codedriver.framework.exception.type.ParamNotExistsException;
 import codedriver.module.deploy.auth.core.DeployAppAuthChecker;
 import codedriver.module.deploy.dao.mapper.DeployPipelineMapper;
 import codedriver.module.deploy.dependency.handler.AutoexecGlobalParam2DeployAppPipelinePhaseOperationArgumentParamDependencyHandler;
 import codedriver.module.deploy.dependency.handler.AutoexecGlobalParam2DeployAppPipelinePhaseOperationInputParamDependencyHandler;
 import codedriver.module.deploy.dependency.handler.AutoexecProfile2DeployAppPipelinePhaseOperationDependencyHandler;
+import com.alibaba.fastjson.JSONArray;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -48,6 +49,22 @@ public class PipelineServiceImpl implements PipelineService {
 
     @Override
     public List<PipelineVo> searchPipeline(PipelineSearchVo searchVo) {
+        IAppSystemMapper appSystemMapper = CrossoverServiceFactory.getApi(IAppSystemMapper.class);
+        JSONArray defaultValue = searchVo.getDefaultValue();
+        if (CollectionUtils.isNotEmpty(defaultValue)) {
+            List<Long> idList = defaultValue.toJavaList(Long.class);
+            List<PipelineVo> pipelineList = deployPipelineMapper.getPipelineListByIdList(idList);
+            for (PipelineVo pipeline : pipelineList) {
+                if (pipeline.getAppSystemId() != null) {
+                    AppSystemVo appSystemVo = appSystemMapper.getAppSystemById(pipeline.getAppSystemId(), TenantContext.get().getDataDbName());
+                    if (appSystemVo != null) {
+                        pipeline.setAppSystemName(appSystemVo.getName());
+                        pipeline.setAppSystemAbbrName(appSystemVo.getAbbrName());
+                    }
+                }
+            }
+            return pipelineList;
+        }
         // 判断是否需要验证权限
         int isHasAllAuthority = 0;
         if (Objects.equals(searchVo.getNeedVerifyAuth(), 1)) {
@@ -76,7 +93,6 @@ public class PipelineServiceImpl implements PipelineService {
         int rowNum = deployPipelineMapper.searchPipelineCount(searchVo);
         searchVo.setRowNum(rowNum);
         List<PipelineVo> pipelineList = deployPipelineMapper.searchPipeline(searchVo);
-        IAppSystemMapper appSystemMapper = CrossoverServiceFactory.getApi(IAppSystemMapper.class);
         Map<Long, AppSystemVo> appSystemMap = new HashMap<>();
         List<Long> appSystemIdList = pipelineList.stream().map(PipelineVo::getAppSystemId).collect(Collectors.toList());
         if (CollectionUtils.isNotEmpty(appSystemIdList)) {

@@ -209,6 +209,24 @@
         WHERE `id` = #{value}
     </select>
 
+    <select id="getPipelineListByIdList" parameterType="java.lang.Long" resultType="codedriver.framework.deploy.dto.pipeline.PipelineVo">
+        SELECT
+           `id`,
+           `name`,
+           `is_active` as isActive,
+           `type`,
+           `app_system_id` as appSystemId,
+           `fcd`,
+           `fcu`,
+           `lcd`,
+           `lcu`
+        FROM `deploy_pipeline`
+        WHERE `id` IN
+        <foreach collection="list" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
+
     <select id="getPipelineNameById" parameterType="java.lang.Long" resultType="java.lang.String">
         SELECT `name` FROM deploy_pipeline WHERE `id` = #{value}
     </select>
