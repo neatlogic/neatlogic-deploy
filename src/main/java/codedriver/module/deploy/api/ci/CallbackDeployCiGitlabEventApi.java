@@ -76,6 +76,7 @@ public class CallbackDeployCiGitlabEventApi extends PrivateApiComponentBase {
     @Description(desc = "gitlab webhook回调api")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
+        logger.info("Gitlab callback triggered, callback param: {}", paramObj.toJSONString());
         /*
             1、查出ciId对应的配置
             2、获取参数中的commits和ref，确定commitId、分支

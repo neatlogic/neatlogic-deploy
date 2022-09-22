@@ -32,10 +32,7 @@ import javax.annotation.Resource;
 import java.nio.file.FileSystems;
 import java.nio.file.PathMatcher;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -77,6 +74,7 @@ public class CallbackDeployCiSvnEventApi extends PrivateApiComponentBase {
     }
 
     @Input({
+            @Param(name = "ip", desc = "svn服务器ip", type = ApiParamType.STRING, isRequired = true),
             @Param(name = "repo", desc = "仓库名称", type = ApiParamType.STRING, isRequired = true),
             @Param(name = "event", desc = "事件", type = ApiParamType.STRING, isRequired = true),
             @Param(name = "dirsChanged", desc = "受影响的目录", type = ApiParamType.STRING, isRequired = true),
@@ -91,13 +89,15 @@ public class CallbackDeployCiSvnEventApi extends PrivateApiComponentBase {
     @Description(desc = "svn hook回调api")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
+        logger.info("Svn callback triggered, callback param: {}", paramObj.toJSONString());
+        String ip = paramObj.getString("ip");
         String repo = paramObj.getString("repo");
         String event = paramObj.getString("event");
         String dirsChanged = paramObj.getString("dirsChanged");
         String revision = paramObj.getString("revision").trim();
         String message = paramObj.getString("message");
         /*
-            1、根据event和repo确定要触发的ci（todo 是否要根据仓库服务器地址过滤）
+            1、根据ip、event和repo确定要触发的ci
             2、根据dirsChanged和revision确定版本号
             3、创建作业
          */
@@ -105,9 +105,13 @@ public class CallbackDeployCiSvnEventApi extends PrivateApiComponentBase {
         if (StringUtils.isNotBlank(message) && message.contains("--nodeploy")) {
             return null;
         }
+        List<String> ipList = Collections.singletonList(ip);
+        if (ip.contains(",")) {
+            ipList = Arrays.asList(ip.split(","));
+        }
         List<DeployCiVo> ciVoList = new ArrayList<>();
         // 所有属于当前仓库与事件的ci配置
-        List<DeployCiVo> ciList = deployCiMapper.getDeployCiListByRepoNameAndEvent(repo, event);
+        List<DeployCiVo> ciList = deployCiMapper.getDeployCiListByRepoServerAddressAndRepoNameAndEvent(ipList, repo, event);
         if (ciList.size() > 0) {
             /*
                 当有多个svn集成配置，某个commit同时满足多个配置的条件时，使用最长匹配
