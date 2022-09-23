@@ -236,7 +236,7 @@
         AND dace.app_module_id = dv.app_module_id
         JOIN cmdb_cientity cc ON cc.id = dace.env_id
         WHERE dv.id IN
-        <foreach collection="idList" item="id" separator="," open="(" close=")">
+        <foreach collection="list" item="id" separator="," open="(" close=")">
             #{id}
         </foreach>
         )
