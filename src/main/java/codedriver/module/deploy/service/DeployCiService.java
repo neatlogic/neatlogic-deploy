@@ -31,9 +31,10 @@ public interface DeployCiService {
      * @param versionName   版本号
      * @param deployVersion 版本
      * @param repoType      仓库类型
+     * @return 作业id
      * @throws Exception
      */
-    void createJobForVCSCallback(JSONObject paramObj, DeployCiVo ci, String versionName, DeployVersionVo deployVersion, DeployCiRepoType repoType) throws Exception;
+    Long createJobForVCSCallback(JSONObject paramObj, DeployCiVo ci, String versionName, DeployVersionVo deployVersion, DeployCiRepoType repoType) throws Exception;
 
     /**
      * 代码仓库hook回调创建批量发布作业
@@ -43,8 +44,9 @@ public interface DeployCiService {
      * @param versionName   版本号
      * @param deployVersion 版本
      * @param repoType      仓库类型
+     * @return 作业id
      * @throws Exception
      */
-    void createBatchJobForVCSCallback(JSONObject paramObj, DeployCiVo ci, String versionName, DeployVersionVo deployVersion, DeployCiRepoType repoType) throws Exception;
+    Long createBatchJobForVCSCallback(JSONObject paramObj, DeployCiVo ci, String versionName, DeployVersionVo deployVersion, DeployCiRepoType repoType) throws Exception;
 
 }

@@ -1,11 +1,14 @@
 package codedriver.module.deploy.api.ci;
 
+import codedriver.framework.asynchronization.thread.CodeDriverThread;
 import codedriver.framework.asynchronization.threadlocal.UserContext;
+import codedriver.framework.asynchronization.threadpool.CachedThreadPool;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.constvalue.SystemUser;
 import codedriver.framework.deploy.constvalue.DeployCiActionType;
 import codedriver.framework.deploy.constvalue.DeployCiRepoType;
 import codedriver.framework.deploy.constvalue.DeployCiTriggerType;
+import codedriver.framework.deploy.dto.ci.DeployCiAuditVo;
 import codedriver.framework.deploy.dto.ci.DeployCiVo;
 import codedriver.framework.deploy.dto.version.DeployVersionVo;
 import codedriver.framework.deploy.exception.DeployCiVersionRegexIllegalException;
@@ -17,15 +20,20 @@ import codedriver.framework.restful.annotation.Param;
 import codedriver.framework.restful.constvalue.ApiAnonymousAccessSupportEnum;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
+import codedriver.framework.restful.enums.ApiInvokedStatus;
+import codedriver.framework.transaction.util.TransactionUtil;
+import codedriver.module.deploy.thread.DeployCiAuditSaveThread;
 import codedriver.module.deploy.dao.mapper.DeployCiMapper;
 import codedriver.module.deploy.dao.mapper.DeployVersionMapper;
 import codedriver.module.deploy.service.DeployCiService;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
@@ -38,7 +46,6 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Service
-@Transactional
 @OperationType(type = OperationTypeEnum.OPERATE)
 public class CallbackDeployCiSvnEventApi extends PrivateApiComponentBase {
 
@@ -152,6 +159,8 @@ public class CallbackDeployCiSvnEventApi extends PrivateApiComponentBase {
         }
         if (ciVoList.size() > 0) {
             for (DeployCiVo ci : ciVoList) {
+                DeployCiAuditVo auditVo = new DeployCiAuditVo(ci.getId(), revision, ci.getAction(), paramObj.toJSONString());
+                TransactionStatus transactionStatus = null;
                 try {
                     String triggerType = ci.getTriggerType();
                     if (StringUtils.isBlank(triggerType)) {
@@ -171,14 +180,29 @@ public class CallbackDeployCiSvnEventApi extends PrivateApiComponentBase {
                     DeployVersionVo deployVersion = deployVersionMapper.getDeployVersionBaseInfoBySystemIdAndModuleIdAndVersion(new DeployVersionVo(versionName, ci.getAppSystemId(), ci.getAppModuleId()));
                     UserContext.init(SystemUser.SYSTEM.getUserVo(), SystemUser.SYSTEM.getTimezone());
                     UserContext.get().setToken("GZIP_" + LoginAuthHandlerBase.buildJwt(SystemUser.SYSTEM.getUserVo()).getCc());
+                    Long jobId = null;
+                    transactionStatus = TransactionUtil.openTx();
                     if (DeployCiActionType.CREATE_JOB.getValue().equals(ci.getAction())) {
-                        deployCiService.createJobForVCSCallback(paramObj, ci, versionName, deployVersion, DeployCiRepoType.SVN);
+                        jobId = deployCiService.createJobForVCSCallback(paramObj, ci, versionName, deployVersion, DeployCiRepoType.SVN);
                     } else if (DeployCiActionType.CREATE_BATCH_JOB.getValue().equals(ci.getAction())) {
-                        deployCiService.createBatchJobForVCSCallback(paramObj, ci, versionName, deployVersion, DeployCiRepoType.SVN);
+                        jobId = deployCiService.createBatchJobForVCSCallback(paramObj, ci, versionName, deployVersion, DeployCiRepoType.SVN);
                     }
+                    TransactionUtil.commitTx(transactionStatus);
+                    auditVo.setJobId(jobId);
+                    auditVo.setStatus(ApiInvokedStatus.SUCCEED.getValue());
+                    auditVo.setResult(jobId);
                 } catch (Exception ex) {
+                    if (transactionStatus != null) {
+                        TransactionUtil.rollbackTx(transactionStatus);
+                    }
                     logger.error("Svn callback error. Deploy ci:{} has been ignored, callback params: {}", ci.getId(), paramObj.toJSONString());
                     logger.error(ex.getMessage(), ex);
+                    auditVo.setStatus(ApiInvokedStatus.FAILED.getValue());
+                    auditVo.setError(ExceptionUtils.getStackTrace(ex));
+                } finally {
+                    CodeDriverThread thread = new DeployCiAuditSaveThread(auditVo);
+                    thread.setThreadName("DEPLOY-CI-AUDIT-SAVER-" + auditVo.getId());
+                    CachedThreadPool.execute(thread);
                 }
             }
         }
