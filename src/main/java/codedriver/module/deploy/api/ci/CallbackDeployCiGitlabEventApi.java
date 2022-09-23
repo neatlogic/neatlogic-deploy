@@ -84,7 +84,6 @@ public class CallbackDeployCiGitlabEventApi extends PrivateApiComponentBase {
     public Object myDoService(JSONObject paramObj) throws Exception {
         logger.info("Gitlab callback triggered, callback param: {}", paramObj.toJSONString());
         DeployCiAuditVo auditVo = new DeployCiAuditVo();
-        Exception exception = null;
         try {
             /*
                 1、查出ciId对应的配置
@@ -152,12 +151,9 @@ public class CallbackDeployCiGitlabEventApi extends PrivateApiComponentBase {
             auditVo.setStatus(ApiInvokedStatus.SUCCEED.getValue());
             auditVo.setResult(jobId);
         } catch (Exception ex) {
-            exception = ex;
+            auditVo.setStatus(ApiInvokedStatus.FAILED.getValue());
+            auditVo.setError(ExceptionUtils.getStackTrace(ex));
         } finally {
-            if (exception != null) {
-                auditVo.setStatus(ApiInvokedStatus.FAILED.getValue());
-                auditVo.setError(ExceptionUtils.getStackTrace(exception));
-            }
             CodeDriverThread thread = new DeployCiAuditSaveThread(auditVo);
             thread.setThreadName("DEPLOY-CI-AUDIT-SAVER-" + auditVo.getId());
             CachedThreadPool.execute(thread);
