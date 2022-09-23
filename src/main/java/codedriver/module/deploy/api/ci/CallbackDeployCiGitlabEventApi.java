@@ -21,10 +21,11 @@ import codedriver.framework.restful.constvalue.ApiAnonymousAccessSupportEnum;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.framework.restful.enums.ApiInvokedStatus;
-import codedriver.module.deploy.thread.DeployCiAuditSaveThread;
+import codedriver.framework.transaction.util.TransactionUtil;
 import codedriver.module.deploy.dao.mapper.DeployCiMapper;
 import codedriver.module.deploy.dao.mapper.DeployVersionMapper;
 import codedriver.module.deploy.service.DeployCiService;
+import codedriver.module.deploy.thread.DeployCiAuditSaveThread;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
@@ -33,7 +34,7 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.TransactionStatus;
 
 import javax.annotation.Resource;
 import java.util.Objects;
@@ -41,7 +42,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @Service
-@Transactional
 @OperationType(type = OperationTypeEnum.OPERATE)
 public class CallbackDeployCiGitlabEventApi extends PrivateApiComponentBase {
 
@@ -84,6 +84,7 @@ public class CallbackDeployCiGitlabEventApi extends PrivateApiComponentBase {
     public Object myDoService(JSONObject paramObj) throws Exception {
         logger.info("Gitlab callback triggered, callback param: {}", paramObj.toJSONString());
         DeployCiAuditVo auditVo = new DeployCiAuditVo();
+        TransactionStatus transactionStatus = null;
         try {
             /*
                 1、查出ciId对应的配置
@@ -140,17 +141,21 @@ public class CallbackDeployCiGitlabEventApi extends PrivateApiComponentBase {
             DeployVersionVo deployVersion = deployVersionMapper.getDeployVersionBaseInfoBySystemIdAndModuleIdAndVersion(new DeployVersionVo(versionName, ci.getAppSystemId(), ci.getAppModuleId()));
             UserContext.init(SystemUser.SYSTEM.getUserVo(), SystemUser.SYSTEM.getTimezone());
             UserContext.get().setToken("GZIP_" + LoginAuthHandlerBase.buildJwt(SystemUser.SYSTEM.getUserVo()).getCc());
-            // 普通作业
             Long jobId = null;
+            transactionStatus = TransactionUtil.openTx();
             if (DeployCiActionType.CREATE_JOB.getValue().equals(ci.getAction())) {
                 jobId = deployCiService.createJobForVCSCallback(paramObj, ci, versionName, deployVersion, DeployCiRepoType.GITLAB);
             } else if (DeployCiActionType.CREATE_BATCH_JOB.getValue().equals(ci.getAction())) {
                 jobId = deployCiService.createBatchJobForVCSCallback(paramObj, ci, versionName, deployVersion, DeployCiRepoType.GITLAB);
             }
+            TransactionUtil.commitTx(transactionStatus);
             auditVo.setJobId(jobId);
             auditVo.setStatus(ApiInvokedStatus.SUCCEED.getValue());
             auditVo.setResult(jobId);
         } catch (Exception ex) {
+            if (transactionStatus != null) {
+                TransactionUtil.rollbackTx(transactionStatus);
+            }
             auditVo.setStatus(ApiInvokedStatus.FAILED.getValue());
             auditVo.setError(ExceptionUtils.getStackTrace(ex));
         } finally {
