@@ -64,14 +64,11 @@ public class SearchDeployAppConfigInstanceApi extends PrivateApiComponentBase {
     public Object myDoService(JSONObject paramObj) throws Exception {
         DeployAppConfigInstanceVo searchVo = paramObj.toJavaObject(DeployAppConfigInstanceVo.class);
         List<DeployAppConfigInstanceVo> instanceList = new ArrayList<>();
-
-        TenantContext.get().switchDataDatabase();
         int count = deployAppConfigMapper.getAppConfigEnvInstanceCount(searchVo);
         if (count > 0) {
             searchVo.setRowNum(count);
             instanceList = deployAppConfigMapper.searchAppConfigEnvInstanceList(searchVo);
         }
-        TenantContext.get().switchDefaultDatabase();
         return TableResultUtil.getResult(instanceList, searchVo);
     }
 }

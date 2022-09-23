@@ -14,7 +14,7 @@
         SELECT DISTINCT id from
         (
         SELECT a.`id`
-        FROM ${searchVo.schemaName}.`scence_appsystem_appmodule` a
+        FROM @{DATA_SCHEMA}.`scence_appsystem_appmodule` a
         left join deploy_app_config_user dacu on a.`id` = dacu.app_system_id and dacu.user_uuid = #{userUuid}
         <if test="searchVo.isHasAllAuthority == 0">
             LEFT JOIN deploy_app_config_authority daca ON daca.app_system_id = a.id
@@ -80,7 +80,7 @@
     <select id="searchAppSystemList" resultType="codedriver.framework.deploy.dto.app.DeployAppSystemVo"
             useCache="false">
         SELECT DISTINCT `id`, `abbr_name` as abbrName, `name`
-        FROM ${schemaName}.`scence_appsystem_appmodule`
+        FROM @{DATA_SCHEMA}.`scence_appsystem_appmodule`
         <where>
             <if test="keyword != null and keyword != ''">
                 and (`name` LIKE concat('%', #{keyword}, '%') or `app_module_name` LIKE concat('%', #{keyword}, '%')
@@ -134,7 +134,7 @@
         daca.auth_uuid as authUuid,
         daca.`action` as authAction,
         daca.action_type authActionType
-        from ${schemaName}.`scence_appsystem_appmodule` saa
+        from @{DATA_SCHEMA}.`scence_appsystem_appmodule` saa
         left join deploy_app_config_user dacu on saa.id = dacu.app_system_id and dacu.user_uuid = #{userUuid}
         left join deploy_app_config dac on saa.id = dac.app_system_id and dac.app_module_id = 0 and dac.env_id = 0
         LEFT JOIN deploy_app_config_authority daca ON daca.app_system_id = saa.id
@@ -159,7 +159,7 @@
         daca.auth_uuid as authUuid,
         daca.`action` as authAction,
         daca.action_type authActionType
-        from ${schemaName}.`scence_appsystem` sa
+        from @{DATA_SCHEMA}.`scence_appsystem` sa
         left join deploy_app_config_user dacu on sa.id = dacu.app_system_id and dacu.user_uuid = #{userUuid}
         left join deploy_app_config dac on sa.id = dac.app_system_id and dac.app_module_id = 0 and dac.env_id = 0
         LEFT JOIN deploy_app_config_authority daca ON daca.app_system_id = sa.id
@@ -176,7 +176,7 @@
         a.`app_module_id` AS appModuleId,
         a.`app_module_name` AS appModuleName,
         a.`app_module_abbr_name` AS appModuleNameAbbrName
-        from ${schemaName}.`scence_appsystem_appmodule` a
+        from @{DATA_SCHEMA}.`scence_appsystem_appmodule` a
         <if test="isConfig != null">
             left join deploy_app_config b on a.id = b.app_system_id and b.app_module_id = 0 and b.env_id = 0
         </if>
@@ -368,7 +368,7 @@
         a.`env_name` AS envName,
         a.`app_module_id` AS appModuleId,
         a.`app_module_name` AS appModuleName
-        FROM ${schemaName}.`scence_appinstance_env_appmodule_appsystem` a
+        FROM @{DATA_SCHEMA}.`scence_appinstance_env_appmodule_appsystem` a
         <where>
             a.`env_id` is not null
             <choose>
@@ -416,17 +416,17 @@
         )
     </select>
 
-    <select id="getDeployAppEnvIdListByAppSystemId"
+    <select id="getDeployAppEnvIdListByAppSystemId" parameterType="java.lang.Long"
             resultType="long" useCache="false">
         (
         SELECT
         a.`env_id` AS envId
-        FROM ${schemaName}.`scence_appinstance_env_appmodule_appsystem` a
+        FROM @{DATA_SCHEMA}.`scence_appinstance_env_appmodule_appsystem` a
         <where>
             a.`env_id` is not null
             <choose>
-                <when test="appSystemId != null">
-                    AND a.`app_system_id` = #{appSystemId}
+                <when test="value != null">
+                    AND a.`app_system_id` = #{value}
                 </when>
                 <otherwise>
                     and a.`app_system_id` is not null
@@ -443,8 +443,8 @@
         JOIN cmdb_cientity cc ON cc.id = dace.env_id
         JOIN cmdb_cientity cce ON cce.id = dace.app_module_id
         <where>
-            <if test="appSystemId != null">
-                dace.app_system_id = #{appSystemId}
+            <if test="value != null">
+                dace.app_system_id = #{value}
             </if>
         </where>
         )
@@ -463,7 +463,7 @@
         SELECT a.`env_id`        AS envId,
                a.`env_name`      AS envName,
                a.`app_module_id` AS appModuleId
-        FROM ${schemaName}.`scence_appinstance_env_appmodule_appsystem` a
+        FROM @{DATA_SCHEMA}.`scence_appinstance_env_appmodule_appsystem` a
         where a.`env_id` is not null
           and a.`app_system_id` = #{appSystemId}
         UNION
@@ -472,7 +472,7 @@
                dace.app_module_id AS appModuleId
         FROM deploy_app_config_env dace
                  JOIN cmdb_cientity cc ON cc.id = dace.env_id
-        where dace.app_system_id = #{appSystemId}
+        where dace.app_system_id = #{value}
     </select>
 
     <resultMap id="appModuleIncludeEnvIdListMap" type="codedriver.framework.deploy.dto.app.DeployAppModuleEnvVo">
@@ -486,7 +486,7 @@
             resultMap="appModuleIncludeEnvIdListMap" useCache="false">
         SELECT a.`env_id` AS envId,
         a.`app_module_id` AS appModuleId
-        FROM ${schemaName}.`scence_appinstance_env_appmodule_appsystem` a
+        FROM @{DATA_SCHEMA}.`scence_appinstance_env_appmodule_appsystem` a
         where a.`env_id` is not null
         and a.`app_system_id` = #{appSystemId}
         and a.app_module_id in
@@ -509,7 +509,7 @@
             resultType="codedriver.framework.cmdb.dto.resourcecenter.entity.AppEnvironmentVo" useCache="false">
         SELECT a.`env_id` AS envId,
         a.`env_name` AS envName
-        FROM ${schemaName}.`scence_appinstance_env_appmodule_appsystem` a
+        FROM @{DATA_SCHEMA}.`scence_appinstance_env_appmodule_appsystem` a
         where a.`env_id` is not null
         and a.`app_system_id` = #{systemId}
         and a.`app_module_id` = #{moduleId}
@@ -544,7 +544,7 @@
         daced.config as configStr,
         daeac.key,
         daeac.value
-        FROM ${schemaName}.`scence_appinstance_env_appmodule_appsystem` a
+        FROM @{DATA_SCHEMA}.`scence_appinstance_env_appmodule_appsystem` a
         LEFT JOIN deploy_app_config_env_db daced
         on a.app_system_id = daced.app_system_id and a.app_module_id = daced.app_module_id and a.env_id = daced.env_id
         LEFT JOIN deploy_app_env_auto_config daeac
@@ -584,12 +584,12 @@
             resultType="codedriver.framework.deploy.dto.app.DeployAppEnvironmentVo" useCache="false">
         SELECT a.`id`,
         a.`name`
-        FROM ${schemaName}.`scence_env` a
+        FROM @{DATA_SCHEMA}.`scence_env` a
         where a.id not in(
         (
         SELECT
         a.`env_id`
-        FROM ${schemaName}.`scence_appinstance_env_appmodule_appsystem` a
+        FROM @{DATA_SCHEMA}.`scence_appinstance_env_appmodule_appsystem` a
         <where>
             a.`env_id` is not null
             <choose>
@@ -635,7 +635,7 @@
         a.`env_id` AS id,
         a.`env_name` AS name,
         0 AS isDeletable
-        FROM ${schemaName}.`scence_appinstance_env_appmodule_appsystem` a
+        FROM @{DATA_SCHEMA}.`scence_appinstance_env_appmodule_appsystem` a
         <where>
             a.`env_id` is not null
             <choose>
@@ -682,7 +682,7 @@
         (
         SELECT
         a.`app_module_id`
-        FROM ${schemaName}.`scence_appinstance_env_appmodule_appsystem` a
+        FROM @{DATA_SCHEMA}.`scence_appinstance_env_appmodule_appsystem` a
         <where>
             a.`env_id` IS NOT NULL
             <choose>
@@ -829,41 +829,41 @@
     </select>
 
     <sql id="searchAppModuleEnvConfigInstance">
-        FROM ${schemaName}.`scence_appinstance_env_appmodule_appsystem` a
-        WHERE a.`app_system_id` = #{searchVo.appSystemId}
-        AND a.`app_module_id` = #{searchVo.appModuleId}
-        AND a.`env_id` = #{searchVo.envId}
-        <if test="searchVo.isAutoConfig != null">
+        FROM @{DATA_SCHEMA}.`scence_appinstance_env_appmodule_appsystem` a
+        WHERE a.`app_system_id` = #{appSystemId}
+        AND a.`app_module_id` = #{appModuleId}
+        AND a.`env_id` = #{envId}
+        <if test="isAutoConfig != null">
             AND a.`id`
-            <if test="searchVo.isAutoConfig == 1">
+            <if test="isAutoConfig == 1">
                 in
             </if>
-            <if test="searchVo.isAutoConfig == 0">
+            <if test="isAutoConfig == 0">
                 not in
             </if>
             (select `instance_id`
             from `deploy_app_env_auto_config`
-            WHERE `app_system_id` = #{searchVo.appSystemId}
-            and `app_module_id` = #{searchVo.appModuleId}
-            and `env_id` = #{searchVo.envId})
+            WHERE `app_system_id` = #{appSystemId}
+            and `app_module_id` = #{appModuleId}
+            and `env_id` = #{envId})
         </if>
     </sql>
 
-    <select id="getAppModuleEnvAutoConfigInstanceIdCount" resultType="int" useCache="false">
+    <select id="getAppModuleEnvAutoConfigInstanceIdCount" parameterType="codedriver.framework.deploy.dto.app.DeployAppEnvAutoConfigVo" resultType="int" useCache="false">
         SELECT count(a.id)
         <include refid="searchAppModuleEnvConfigInstance"></include>
     </select>
 
-    <select id="getAppModuleEnvAutoConfigInstanceIdList" resultType="java.lang.Long" useCache="false">
+    <select id="getAppModuleEnvAutoConfigInstanceIdList" parameterType="codedriver.framework.deploy.dto.app.DeployAppEnvAutoConfigVo" resultType="java.lang.Long" useCache="false">
         SELECT a.id
         <include refid="searchAppModuleEnvConfigInstance"></include>
         ORDER BY a.id DESC
-        LIMIT #{searchVo.startNum}, #{searchVo.pageSize}
+        LIMIT #{startNum}, #{pageSize}
     </select>
 
-    <select id="getAppConfigEnvInstanceCount" resultType="int" useCache="false">
+    <select id="getAppConfigEnvInstanceCount" parameterType="codedriver.framework.deploy.dto.app.DeployAppConfigInstanceVo" resultType="int" useCache="false">
         SELECT count(a.`id`)
-        FROM `scence_appinstance_ip_port_env_appmodule` a
+        FROM @{DATA_SCHEMA}.`scence_appinstance_ip_port_env_appmodule` a
         WHERE
         ( a.`app_module_id` IS NULL AND a.`env_id` IS NULL )
         OR ( a.`app_module_id` IS NULL AND a.`env_id` = #{envId} )
@@ -879,7 +879,7 @@
         a.`ip`,
         a.`port`,
         a.`name`
-        FROM `scence_appinstance_ip_port_env_appmodule` a
+        FROM @{DATA_SCHEMA}.`scence_appinstance_ip_port_env_appmodule` a
         WHERE
         ( a.`app_module_id` IS NULL AND a.`env_id` IS NULL )
         OR ( a.`app_module_id` IS NULL AND a.`env_id` = #{envId} )
@@ -893,7 +893,7 @@
 
     <select id="getAppSystemIdListCount" resultType="java.lang.Integer" useCache="false">
         SELECT count(distinct a.`id`)
-        FROM ${schemaName}.`scence_appsystem_appmodule` a
+        FROM @{DATA_SCHEMA}.`scence_appsystem_appmodule` a
         <if test="isHasAllAuthority == 0">
             LEFT JOIN deploy_app_config_authority daca ON daca.app_system_id = a.id
         </if>
@@ -1117,39 +1117,39 @@
         <result column="port" property="port"/>
     </resultMap>
 
-    <select id="getAppConfigEnvDatabaseCount" parameterType="java.lang.String" resultType="java.lang.Integer"
+    <select id="getAppConfigEnvDatabaseCount" parameterType="codedriver.framework.deploy.dto.app.DeployResourceSearchVo" resultType="java.lang.Integer"
             useCache="false">
         SELECT count(a.id)
         <include refid="searchDatabase"></include>
     </select>
     <sql id="searchDatabase">
-        FROM ${schemaName}.`scence_database_ip_port_env_appmodule` a
+        FROM @{DATA_SCHEMA}.`scence_database_ip_port_env_appmodule` a
         <where>
-            (a.env_id = #{searchVo.envId} OR a.env_id IS NULL)
+            (a.env_id = #{envId} OR a.env_id IS NULL)
             AND (
-            a.app_module_id = #{searchVo.appModuleId}
+            a.app_module_id = #{appModuleId}
             OR a.app_module_id IS NULL
             )
-            <if test="searchVo.defaultValue != null and searchVo.defaultValue.size() > 0">
+            <if test="defaultValue != null and defaultValue.size() > 0">
                 AND a.`id` IN
-                <foreach collection="searchVo.defaultValue" item="id" open="(" separator="," close=")">
+                <foreach collection="defaultValue" item="id" open="(" separator="," close=")">
                     #{id}
                 </foreach>
             </if>
-            <if test="searchVo.keyword != null and searchVo.keyword != ''">
-                AND (a.`name` LIKE concat('%', #{searchVo.keyword}, '%') OR a.`ip` LIKE concat('%', #{searchVo.keyword},
+            <if test="keyword != null and keyword != ''">
+                AND (a.`name` LIKE concat('%', #{keyword}, '%') OR a.`ip` LIKE concat('%', #{keyword},
                 '%') OR a.`port`
-                LIKE concat('%', #{searchVo.keyword}, '%'))
+                LIKE concat('%', #{keyword}, '%'))
             </if>
         </where>
     </sql>
 
-    <select id="getAppConfigEnvDatabaseResourceIdList" parameterType="java.lang.String" resultType="java.lang.Long"
+    <select id="getAppConfigEnvDatabaseResourceIdList" parameterType="codedriver.framework.deploy.dto.app.DeployResourceSearchVo" resultType="java.lang.Long"
             useCache="false">
         SELECT a.id
         <include refid="searchDatabase"></include>
-        <if test="searchVo.needPage">
-            LIMIT #{searchVo.startNum}, #{searchVo.pageSize}
+        <if test="needPage">
+            LIMIT #{startNum}, #{pageSize}
         </if>
     </select>
 
@@ -1159,12 +1159,12 @@
         SELECT
         a.`app_system_id` as id
         FROM
-        ${schemaName}.`scence_appinstance_env_appmodule_appsystem` a
+        @{DATA_SCHEMA}.`scence_appinstance_env_appmodule_appsystem` a
         <where>
             a.`env_id` is not null
             and a.`app_module_id` is not null
             and a.`app_system_id` in
-            <foreach collection="idList" item="id" separator="," open="(" close=")">
+            <foreach collection="list" item="id" separator="," open="(" close=")">
                 #{id}
             </foreach>
         </where>
@@ -1176,7 +1176,7 @@
         deploy_app_config_env dace
         where dace.app_system_id
         in
-        <foreach collection="idList" item="id" separator="," open="(" close=")">
+        <foreach collection="list" item="id" separator="," open="(" close=")">
             #{id}
         </foreach>
         )
@@ -1231,7 +1231,7 @@
         (SELECT sieaa.app_module_id        as id,
                 sieaa.app_module_name      as name,
                 sieaa.app_module_abbr_name as abbrName
-         FROM ${schemaName}.scence_ipobject_env_appmodule_appsystem sieaa
+         FROM @{DATA_SCHEMA}.scence_ipobject_env_appmodule_appsystem sieaa
          WHERE sieaa.app_system_id = #{appSystemId}
            AND sieaa.env_id = #{envId}
            AND sieaa.`app_module_id` IS NOT NULL)
@@ -1241,7 +1241,7 @@
                    ra.name,
                    ra.abbr_name       as abbrName
             FROM deploy_app_config_env dace
-                     LEFT JOIN ${schemaName}.scence_appmodule ra ON ra.id = dace.app_module_id
+                     LEFT JOIN @{DATA_SCHEMA}.scence_appmodule ra ON ra.id = dace.app_module_id
             WHERE dace.app_system_id = #{appSystemId}
               AND dace.env_id = #{envId}
         )
@@ -1252,10 +1252,10 @@
         SELECT saa.app_module_id        AS id,
                saa.app_module_name      AS NAME,
                saa.app_module_abbr_name AS abbrName
-        FROM ${schemaName}.scence_appsystem_appmodule saa
+        FROM @{DATA_SCHEMA}.scence_appsystem_appmodule saa
         WHERE saa.app_module_id NOT IN
               (SELECT dac.app_module_id
-               FROM ${schemaName}.scence_appsystem_appmodule sa
+               FROM @{DATA_SCHEMA}.scence_appsystem_appmodule sa
                         JOIN deploy_app_config dac ON dac.app_system_id = sa.id
                    AND dac.app_module_id = sa.app_module_id
                WHERE sa.id = #{appSystemId})
@@ -1269,7 +1269,7 @@
         from ((
                   SELECT a.`env_id`   AS id,
                          a.`env_name` AS name
-                  FROM ${schemaName}.`scence_appinstance_env_appmodule_appsystem` a
+                  FROM @{DATA_SCHEMA}.`scence_appinstance_env_appmodule_appsystem` a
                   where a.`env_id` is not null
                     AND a.`app_system_id` = #{appSystemId}
                     and a.`app_module_id` = #{appModuleId}
@@ -1295,7 +1295,7 @@
     <select id="getAppModuleCountBySystemIdAndEnvId" resultType="java.lang.Integer" useCache="false">
         select count(a.app_module_id)
         from ((SELECT sieaa.app_module_id
-               FROM ${schemaName}.scence_ipobject_env_appmodule_appsystem sieaa
+               FROM @{DATA_SCHEMA}.scence_ipobject_env_appmodule_appsystem sieaa
                WHERE sieaa.app_system_id = #{appSystemId}
                  AND sieaa.env_id = #{envId}
                  AND sieaa.`app_module_id` IS NOT NULL)
@@ -1303,7 +1303,7 @@
               (
                   SELECT dace.app_module_id
                   FROM deploy_app_config_env dace
-                           LEFT JOIN ${schemaName}.scence_appmodule ra ON ra.id = dace.app_module_id
+                           LEFT JOIN @{DATA_SCHEMA}.scence_appmodule ra ON ra.id = dace.app_module_id
                   WHERE dace.app_system_id = #{appSystemId}
                     AND dace.env_id = #{envId}
               )) a
@@ -1431,16 +1431,16 @@
         </collection>
     </resultMap>
 
-    <select id="getBatchAppConfigAuthorityListByAppSystemIdList" resultMap="appConfigSystemMapNew" useCache="false">
+    <select id="getBatchAppConfigAuthorityListByAppSystemIdList" parameterType="java.lang.Long" resultMap="appConfigSystemMapNew" useCache="false">
         select a.id as appSystemId,
         b.auth_uuid as authUuid ,
         b.auth_type as authType,
         b.`action` as authAction,
         b.action_type as authActionType
-        FROM ${schemaName}.`scence_appsystem_appmodule` a
+        FROM @{DATA_SCHEMA}.`scence_appsystem_appmodule` a
         left join deploy_app_config_authority b on a.id =b.app_system_id
         where a.id in
-        <foreach collection="appSystemIdList" item="id" open="(" close=")" separator=",">
+        <foreach collection="list" item="id" open="(" close=")" separator=",">
             #{id}
         </foreach>
     </select>

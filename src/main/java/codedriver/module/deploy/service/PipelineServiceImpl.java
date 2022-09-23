@@ -56,7 +56,7 @@ public class PipelineServiceImpl implements PipelineService {
             List<PipelineVo> pipelineList = deployPipelineMapper.getPipelineListByIdList(idList);
             for (PipelineVo pipeline : pipelineList) {
                 if (pipeline.getAppSystemId() != null) {
-                    AppSystemVo appSystemVo = appSystemMapper.getAppSystemById(pipeline.getAppSystemId(), TenantContext.get().getDataDbName());
+                    AppSystemVo appSystemVo = appSystemMapper.getAppSystemById(pipeline.getAppSystemId());
                     if (appSystemVo != null) {
                         pipeline.setAppSystemName(appSystemVo.getName());
                         pipeline.setAppSystemAbbrName(appSystemVo.getAbbrName());

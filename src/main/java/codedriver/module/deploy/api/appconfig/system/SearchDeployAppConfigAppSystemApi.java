@@ -90,7 +90,7 @@ public class SearchDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
         JSONArray defaultValue = searchVo.getDefaultValue();
         if (CollectionUtils.isNotEmpty(defaultValue)) {
             List<Long> idList = defaultValue.toJavaList(Long.class);
-            List<DeployAppSystemVo> tbodyList = deployAppConfigMapper.getAppSystemListByIdList(idList, TenantContext.get().getDataDbName(), UserContext.get().getUserUuid());
+            List<DeployAppSystemVo> tbodyList = deployAppConfigMapper.getAppSystemListByIdList(idList, UserContext.get().getUserUuid());
             return TableResultUtil.getResult(tbodyList, searchVo);
         }
         List<String> authorityActionList = new ArrayList<>();
@@ -106,17 +106,15 @@ public class SearchDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
                 return TableResultUtil.getResult(returnAppSystemList, searchVo);
             }
             if (StringUtils.isNotEmpty(searchVo.getKeyword())) {
-                returnAppSystemList = deployAppConfigMapper.getAppSystemListIncludeModuleByIdList(appSystemIdList, TenantContext.get().getDataDbName(), UserContext.get().getUserUuid());
+                returnAppSystemList = deployAppConfigMapper.getAppSystemListIncludeModuleByIdList(appSystemIdList, UserContext.get().getUserUuid());
             } else {
-                returnAppSystemList = deployAppConfigMapper.getAppSystemListByIdList(appSystemIdList, TenantContext.get().getDataDbName(), UserContext.get().getUserUuid());
+                returnAppSystemList = deployAppConfigMapper.getAppSystemListByIdList(appSystemIdList, UserContext.get().getUserUuid());
             }
 
             /*补充系统是否有模块、是否有环境、是否有配置权限 ,补充模块是否配置、是否有环境、是否含有资源锁*/
-            TenantContext.get().switchDataDatabase();
             IResourceCrossoverMapper resourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
             List<Long> hasModuleAppSystemIdList = resourceCrossoverMapper.getHasModuleAppSystemIdListByAppSystemIdList(appSystemIdList);
-            TenantContext.get().switchDefaultDatabase();
-            List<Long> hasEnvAppSystemIdList = deployAppConfigMapper.getHasEnvAppSystemIdListByAppSystemIdList(appSystemIdList, TenantContext.get().getDataDbName());
+            List<Long> hasEnvAppSystemIdList = deployAppConfigMapper.getHasEnvAppSystemIdListByAppSystemIdList(appSystemIdList);
 
             Set<String> globalLockKeySet = new HashSet<>();
             List<GlobalLockVo> globalLockVoList = globalLockMapper.getLockListByKeyListAndHandler(appSystemIdList.stream().map(Object::toString).collect(Collectors.toList()), JobSourceType.DEPLOY.getValue());
@@ -138,7 +136,7 @@ public class SearchDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
                     if (CollectionUtils.isNotEmpty(deployAppConfigMapper.getAppConfigListByAppSystemId(returnSystemVo.getId()))) {
                         isHasConfig = 1;
                     }
-                    List<Long> appModuleIdList = deployAppConfigMapper.getHasEnvAppModuleIdListByAppSystemIdAndModuleIdList(returnSystemVo.getId(), returnSystemVo.getAppModuleList().stream().map(DeployAppModuleVo::getId).collect(Collectors.toList()), TenantContext.get().getDataDbName());
+                    List<Long> appModuleIdList = deployAppConfigMapper.getHasEnvAppModuleIdListByAppSystemIdAndModuleIdList(returnSystemVo.getId(), returnSystemVo.getAppModuleList().stream().map(DeployAppModuleVo::getId).collect(Collectors.toList()));
                     for (DeployAppModuleVo appModuleVo : returnSystemVo.getAppModuleList()) {
                         if (appModuleIdList.contains(appModuleVo.getId())) {
                             appModuleVo.setIsHasEnv(1);

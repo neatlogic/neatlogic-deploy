@@ -109,7 +109,7 @@ public class CopyDeployAppConfigModuleConfigApi extends PrivateApiComponentBase 
             List<Long> allParamModuleIdList = new ArrayList<>();
             allParamModuleIdList.add(fromAppModuleId);
             allParamModuleIdList.addAll(toAppModuleIdList);
-            List<DeployAppModuleEnvVo> appModuleEnvVoList = deployAppConfigMapper.getDeployAppModuleEnvListByAppSystemIdAndAppModuleIdList(appSystemId, allParamModuleIdList, TenantContext.get().getDataDbName());
+            List<DeployAppModuleEnvVo> appModuleEnvVoList = deployAppConfigMapper.getDeployAppModuleEnvListByAppSystemIdAndAppModuleIdList(appSystemId, allParamModuleIdList);
             Map<Long, List<Long>> appModuleEnvListMap = appModuleEnvVoList.stream().collect(Collectors.toMap(DeployAppModuleEnvVo::getId, DeployAppModuleEnvVo::getEnvIdList));
             List<Long> fromModuleEnvIdList = new ArrayList<>();
             if (CollectionUtils.isNotEmpty(appModuleEnvListMap.get(fromAppModuleId))) {
@@ -215,7 +215,7 @@ public class CopyDeployAppConfigModuleConfigApi extends PrivateApiComponentBase 
             if (fromModuleRunnerGroup != null) {
                 deployAppConfigMapper.insertAppModuleRunnerGroup(appSystemId, toAppModuleId, fromModuleRunnerGroup.getId());
             }
-            List<Long> envIdList = deployAppConfigMapper.getDeployAppModuleEnvListByAppSystemIdAndModuleId(appSystemId, fromAppModuleId, TenantContext.get().getDataDbName()).stream().map(AppEnvironmentVo::getEnvId).collect(Collectors.toList());
+            List<Long> envIdList = deployAppConfigMapper.getDeployAppModuleEnvListByAppSystemIdAndModuleId(appSystemId, fromAppModuleId).stream().map(AppEnvironmentVo::getEnvId).collect(Collectors.toList());
             if (CollectionUtils.isNotEmpty(envIdList)) {
                 deployAppConfigMapper.insertAppConfigEnv(appSystemId, toAppModuleId, envIdList);
                 copyDbSchemaListAndAutoCfgKeyList(appSystemId, fromAppModuleId, toAppModuleId, envIdList);
@@ -238,7 +238,7 @@ public class CopyDeployAppConfigModuleConfigApi extends PrivateApiComponentBase 
             return;
         }
 
-        List<DeployAppEnvironmentVo> envInfoVoList = deployAppConfigMapper.getAppConfigEnvListIncludeDBCSchemaListAndAutoCfgKeyListByAppSystemIdAndAppModuleIdAndEnvId(appSystemId, fromAppModuleId, envIdList, TenantContext.get().getDataDbName());
+        List<DeployAppEnvironmentVo> envInfoVoList = deployAppConfigMapper.getAppConfigEnvListIncludeDBCSchemaListAndAutoCfgKeyListByAppSystemIdAndAppModuleIdAndEnvId(appSystemId, fromAppModuleId, envIdList);
         Map<Long, List<DeployAppConfigEnvDBConfigVo>> envDbSchemaListMap = new HashMap<>();
         Map<Long, List<DeployAppEnvAutoConfigKeyValueVo>> envAutoCfgKeyListMap = new HashMap<>();
         for (DeployAppEnvironmentVo envVo : envInfoVoList) {

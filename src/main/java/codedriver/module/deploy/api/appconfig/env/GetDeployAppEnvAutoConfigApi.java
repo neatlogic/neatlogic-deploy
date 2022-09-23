@@ -67,9 +67,9 @@ public class GetDeployAppEnvAutoConfigApi extends PrivateApiComponentBase {
         Long moduleId = paramObj.getLong("moduleId");
         Long envId = paramObj.getLong("envId");
         IResourceCrossoverMapper resourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
-        List<Long> instanceIdList = resourceCrossoverMapper.getResourceIdListByAppSystemIdAndModuleIdAndEnvId(new ResourceVo(sysId, moduleId, envId), TenantContext.get().getDataDbName());
+        List<Long> instanceIdList = resourceCrossoverMapper.getResourceIdListByAppSystemIdAndModuleIdAndEnvId(new ResourceVo(sysId, moduleId, envId));
         if (instanceIdList.size() > 0) {
-            List<ResourceVo> instanceList = resourceCrossoverMapper.getResourceListByIdList(instanceIdList, TenantContext.get().getDataDbName());
+            List<ResourceVo> instanceList = resourceCrossoverMapper.getResourceListByIdList(instanceIdList);
             List<DeployAppEnvAutoConfigVo> configVoList = deployAppConfigMapper.getAppEnvAutoConfigBySystemIdAndModuleIdAndEnvId(sysId, moduleId, envId);
             // env配置
             Optional<List<DeployAppEnvAutoConfigKeyValueVo>> envConfigOpt = configVoList.stream().filter(o -> Objects.equals(o.getInstanceId(), 0L))

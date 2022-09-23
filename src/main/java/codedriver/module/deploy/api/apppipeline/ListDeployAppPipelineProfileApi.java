@@ -60,9 +60,8 @@ public class ListDeployAppPipelineProfileApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         DeployAppConfigVo searchVo = paramObj.toJavaObject(DeployAppConfigVo.class);
-        String schemaName = TenantContext.get().getDataDbName();
         IResourceCrossoverMapper resourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
-        ResourceVo appSystem = resourceCrossoverMapper.getAppSystemById(searchVo.getAppSystemId(), schemaName);
+        ResourceVo appSystem = resourceCrossoverMapper.getAppSystemById(searchVo.getAppSystemId());
         if (appSystem == null) {
             throw new AppSystemNotFoundException(searchVo.getAppSystemId());
         }
@@ -70,7 +69,7 @@ public class ListDeployAppPipelineProfileApi extends PrivateApiComponentBase {
         searchVo.setAppSystemAbbrName(appSystem.getAbbrName());
         Long appModuleId = searchVo.getAppModuleId();
         if (appModuleId != null && appModuleId != 0) {
-            ResourceVo appModule = resourceCrossoverMapper.getAppModuleById(appModuleId, schemaName);
+            ResourceVo appModule = resourceCrossoverMapper.getAppModuleById(appModuleId);
             if (appModule == null) {
                 throw new AppModuleNotFoundException(appModuleId);
             }
@@ -79,7 +78,7 @@ public class ListDeployAppPipelineProfileApi extends PrivateApiComponentBase {
         }
         Long envId = searchVo.getEnvId();
         if (envId != null && envId != 0) {
-            ResourceVo env = resourceCrossoverMapper.getAppEnvById(envId, schemaName);
+            ResourceVo env = resourceCrossoverMapper.getAppEnvById(envId);
             if (env == null) {
                 throw new AppEnvNotFoundException(envId);
             }

@@ -124,14 +124,14 @@ public class DeployJobWebhookCallbackHandler extends AutoexecJobCallbackBase {
         JSONObject param = new JSONObject();
         ICiEntityCrossoverMapper iCiEntityCrossoverMapper = CrossoverServiceFactory.getApi(ICiEntityCrossoverMapper.class);
         IAppSystemMapper iAppSystemMapper = CrossoverServiceFactory.getApi(IAppSystemMapper.class);
-        AppSystemVo appSystem = iAppSystemMapper.getAppSystemById(deployJobVo.getAppSystemId(), TenantContext.get().getDataDbName());
+        AppSystemVo appSystem = iAppSystemMapper.getAppSystemById(deployJobVo.getAppSystemId());
         if (iCiEntityCrossoverMapper.getCiEntityBaseInfoById(deployJobVo.getAppSystemId()) == null) {
             throw new CiEntityNotFoundException(deployJobVo.getAppSystemId());
         }
         param.put("appSystemId", appSystem.getId());
         param.put("appSystemName", appSystem.getName());
         param.put("appSystemAbbrName", appSystem.getAbbrName());
-        AppModuleVo appModule = iAppSystemMapper.getAppModuleById(deployJobVo.getAppModuleId(), TenantContext.get().getDataDbName());
+        AppModuleVo appModule = iAppSystemMapper.getAppModuleById(deployJobVo.getAppModuleId());
         if (appModule == null) {
             throw new CiEntityNotFoundException(deployJobVo.getAppModuleId());
         }

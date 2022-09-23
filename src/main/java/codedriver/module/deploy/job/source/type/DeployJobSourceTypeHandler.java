@@ -419,11 +419,11 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
         JSONObject runnerMap = new JSONObject();
         DeployJobVo deployJobVo = deployJobMapper.getDeployJobByJobId(jobVo.getId());
         IResourceCrossoverMapper iResourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
-        ResourceVo appSystem = iResourceCrossoverMapper.getAppSystemById(deployJobVo.getAppSystemId(), TenantContext.get().getDataDbName());
+        ResourceVo appSystem = iResourceCrossoverMapper.getAppSystemById(deployJobVo.getAppSystemId());
         if (appSystem == null) {
             throw new CiEntityNotFoundException(deployJobVo.getAppSystemId());
         }
-        ResourceVo appModule = iResourceCrossoverMapper.getAppModuleById(deployJobVo.getAppModuleId(), TenantContext.get().getDataDbName());
+        ResourceVo appModule = iResourceCrossoverMapper.getAppModuleById(deployJobVo.getAppModuleId());
         if (appModule == null) {
             throw new CiEntityNotFoundException(deployJobVo.getAppModuleId());
         }

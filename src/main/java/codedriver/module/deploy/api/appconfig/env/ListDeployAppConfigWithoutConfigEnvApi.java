@@ -56,6 +56,6 @@ public class ListDeployAppConfigWithoutConfigEnvApi extends PrivateApiComponentB
     @Description(desc = "获取没有继承应用配置的环境列表(复制配置到现有环境时的环境下拉)")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
-        return deployAppConfigMapper.getDeployHasNotConfigAppEnvListByAppSystemIdAndAppModuleIdAndEnvId(paramObj.getLong("appSystemId"), paramObj.getLong("appModuleId"), paramObj.getLong("envId"), TenantContext.get().getDataDbName());
+        return deployAppConfigMapper.getDeployHasNotConfigAppEnvListByAppSystemIdAndAppModuleIdAndEnvId(paramObj.getLong("appSystemId"), paramObj.getLong("appModuleId"), paramObj.getLong("envId"));
     }
 }

@@ -55,6 +55,6 @@ public class ListDeployAppConfigWithoutConfigModuleApi extends PrivateApiCompone
     @Description(desc = "获取没有继承应用配置的模块列表(复制配置到现有模块时的模块下拉)")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
-        return deployAppConfigMapper.getDeployHasNotConfigAppModuleListByAppSystemIdAndAppModuleId(paramObj.getLong("appSystemId"), paramObj.getLong("appModuleId"), TenantContext.get().getDataDbName());
+        return deployAppConfigMapper.getDeployHasNotConfigAppModuleListByAppSystemIdAndAppModuleId(paramObj.getLong("appSystemId"), paramObj.getLong("appModuleId"));
     }
 }

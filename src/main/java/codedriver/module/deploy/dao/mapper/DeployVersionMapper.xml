@@ -211,17 +211,17 @@
         ORDER BY dv.fcd DESC, dvb.compile_start_time DESC,dvb.build_no DESC
     </select>
 
-    <select id="getDeployVersionIncludeEnvListByVersionIdList" resultMap="deployVersionMap">
+    <select id="getDeployVersionIncludeEnvListByVersionIdList" parameterType="java.lang.Long" resultMap="deployVersionMap">
         (SELECT dv.id,
         dv.version,
         a.env_id AS envId,
         a.env_name AS envName
-        FROM ${schemaName}.`scence_appinstance_env_appmodule_appsystem` a
+        FROM @{DATA_SCHEMA}.`scence_appinstance_env_appmodule_appsystem` a
         JOIN deploy_version dv ON a.app_system_id = dv.app_system_id
         AND a.app_module_id = dv.app_module_id
         AND a.`env_id` IS NOT NULL
         WHERE dv.id IN
-        <foreach collection="idList" item="id" separator="," open="(" close=")">
+        <foreach collection="list" item="id" separator="," open="(" close=")">
             #{id}
         </foreach>
         )
@@ -236,7 +236,7 @@
         AND dace.app_module_id = dv.app_module_id
         JOIN cmdb_cientity cc ON cc.id = dace.env_id
         WHERE dv.id IN
-        <foreach collection="idList" item="id" separator="," open="(" close=")">
+        <foreach collection="list" item="id" separator="," open="(" close=")">
             #{id}
         </foreach>
         )

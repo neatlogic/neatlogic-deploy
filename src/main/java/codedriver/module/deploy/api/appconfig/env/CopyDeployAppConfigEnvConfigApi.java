@@ -131,7 +131,7 @@ public class CopyDeployAppConfigEnvConfigApi extends PrivateApiComponentBase {
             return;
         }
 
-        List<DeployAppEnvironmentVo> envInfoVoList = deployAppConfigMapper.getAppConfigEnvListIncludeDBCSchemaListAndAutoCfgKeyListByAppSystemIdAndAppModuleIdAndEnvId(appSystemId, appModuleId, Collections.singletonList(fromEnvId), TenantContext.get().getDataDbName());
+        List<DeployAppEnvironmentVo> envInfoVoList = deployAppConfigMapper.getAppConfigEnvListIncludeDBCSchemaListAndAutoCfgKeyListByAppSystemIdAndAppModuleIdAndEnvId(appSystemId, appModuleId, Collections.singletonList(fromEnvId));
         if (CollectionUtils.isEmpty(envInfoVoList)) {
             return;
         }

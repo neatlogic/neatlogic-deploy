@@ -74,7 +74,7 @@ public class ListDeployAppConfigAppModuleApi extends PrivateApiComponentBase {
         }
 
         //补充模块是否有环境（有实例的环境）
-        List<Long> hasEnvAppModuleIdList = deployAppConfigMapper.getHasEnvAppModuleIdListByAppSystemIdAndModuleIdList(paramObj.getLong("appSystemId"), moduleResourceList.stream().map(ResourceVo::getId).collect(Collectors.toList()), TenantContext.get().getDataDbName());
+        List<Long> hasEnvAppModuleIdList = deployAppConfigMapper.getHasEnvAppModuleIdListByAppSystemIdAndModuleIdList(paramObj.getLong("appSystemId"), moduleResourceList.stream().map(ResourceVo::getId).collect(Collectors.toList()));
         for (ResourceVo resourceVo : moduleResourceList) {
             DeployAppModuleVo returnAppModuleVo = new DeployAppModuleVo(resourceVo.getId(), resourceVo.getName(), resourceVo.getAbbrName());
             returnAppModuleVoList.add(returnAppModuleVo);

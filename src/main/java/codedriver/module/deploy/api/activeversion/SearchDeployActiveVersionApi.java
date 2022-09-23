@@ -85,12 +85,10 @@ public class SearchDeployActiveVersionApi extends PrivateApiComponentBase {
             IResourceCrossoverMapper resourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
             ResourceSearchVo moduleSearchVo = new ResourceSearchVo();
             moduleSearchVo.setAppSystemIdList(systemList.stream().map(DeployAppSystemVo::getId).collect(Collectors.toList()));
-            TenantContext.get().switchDataDatabase();
             // 每个系统各自的模块
             List<ModuleVo> systemModuleList = resourceCrossoverMapper.getAppModuleListByAppSystemIdList(moduleSearchVo);
-            TenantContext.get().switchDefaultDatabase();
             // 所有环境
-            List<AppEnvironmentVo> allEnv = resourceCrossoverMapper.getAllAppEnv(TenantContext.get().getDataDbName());
+            List<AppEnvironmentVo> allEnv = resourceCrossoverMapper.getAllAppEnv();
             Map<Long, List<ModuleVo>> systemModuleMap = new HashMap<>();
             if (systemModuleList.size() > 0) {
                 systemModuleMap = systemModuleList.stream().collect(Collectors.groupingBy(ModuleVo::getResourceId));
@@ -112,7 +110,7 @@ public class SearchDeployActiveVersionApi extends PrivateApiComponentBase {
                     moduleVersionMap = systemVersionList.stream().collect(Collectors.groupingBy(DeployVersionVo::getAppModuleId));
                 }
                 // 当前系统所有模块各自所拥有的环境
-                List<DeployAppModuleEnvVo> moduleEnvList = deployAppConfigMapper.getDeployAppModuleEnvListByAppSystemId(systemVo.getId(), TenantContext.get().getDataDbName());
+                List<DeployAppModuleEnvVo> moduleEnvList = deployAppConfigMapper.getDeployAppModuleEnvListByAppSystemId(systemVo.getId());
                 Map<Long, List<AppEnvironmentVo>> moduleEnvListMap = null;
                 if (moduleEnvList.size() > 0) {
                     // 补充环境序号

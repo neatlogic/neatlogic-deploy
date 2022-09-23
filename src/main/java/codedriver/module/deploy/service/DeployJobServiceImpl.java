@@ -114,14 +114,14 @@ public class DeployJobServiceImpl implements DeployJobService {
         ICiEntityCrossoverMapper iCiEntityCrossoverMapper = CrossoverServiceFactory.getApi(ICiEntityCrossoverMapper.class);
         IAppSystemMapper iAppSystemMapper = CrossoverServiceFactory.getApi(IAppSystemMapper.class);
         if (StringUtils.isNotBlank(deployJobParam.getAppSystemName())) {
-            AppSystemVo appSystem = iAppSystemMapper.getAppSystemByAbbrName(deployJobParam.getAppSystemAbbrName(), TenantContext.get().getDataDbName());
+            AppSystemVo appSystem = iAppSystemMapper.getAppSystemByAbbrName(deployJobParam.getAppSystemAbbrName());
             if (appSystem == null) {
                 throw new CiEntityNotFoundException(deployJobParam.getAppSystemName());
             }
             deployJobParam.setAppSystemId(appSystem.getId());
             deployJobParam.setAppSystemAbbrName(appSystem.getAbbrName());
         } else if (deployJobParam.getAppSystemId() != null) {
-            AppSystemVo appSystem = iAppSystemMapper.getAppSystemById(deployJobParam.getAppSystemId(), TenantContext.get().getDataDbName());
+            AppSystemVo appSystem = iAppSystemMapper.getAppSystemById(deployJobParam.getAppSystemId());
             if (iCiEntityCrossoverMapper.getCiEntityBaseInfoById(deployJobParam.getAppSystemId()) == null) {
                 throw new CiEntityNotFoundException(deployJobParam.getAppSystemId());
             }
@@ -183,17 +183,17 @@ public class DeployJobServiceImpl implements DeployJobService {
         IAppSystemMapper iAppSystemMapper = CrossoverServiceFactory.getApi(IAppSystemMapper.class);
         AppModuleVo appModuleVo;
         if (StringUtils.isNotBlank(moduleVo.getName())) {
-            appModuleVo = iAppSystemMapper.getAppModuleByAbbrName(moduleVo.getAbbrName(), TenantContext.get().getDataDbName());
+            appModuleVo = iAppSystemMapper.getAppModuleByAbbrName(moduleVo.getAbbrName());
             if (appModuleVo == null) {
                 throw new CiEntityNotFoundException(moduleVo.getAbbrName());
             }
         } else if (moduleVo.getId() != null) {
-            appModuleVo = iAppSystemMapper.getAppModuleById(moduleVo.getId(), TenantContext.get().getDataDbName());
+            appModuleVo = iAppSystemMapper.getAppModuleById(moduleVo.getId());
             if (appModuleVo == null) {
                 throw new CiEntityNotFoundException(moduleVo.getId());
             }
         } else if (deployJobParam.getAppModuleId() != null) {
-            appModuleVo = iAppSystemMapper.getAppModuleById(deployJobParam.getAppModuleId(), TenantContext.get().getDataDbName());
+            appModuleVo = iAppSystemMapper.getAppModuleById(deployJobParam.getAppModuleId());
             if (appModuleVo == null) {
                 throw new CiEntityNotFoundException(deployJobParam.getAppModuleId());
             }
@@ -233,7 +233,7 @@ public class DeployJobServiceImpl implements DeployJobService {
             //如果不存在resourceId则需要补充 resourceId
             for (AutoexecNodeVo autoexecNodeVo : moduleVo.getSelectNodeList()) {
                 if (autoexecNodeVo.getId() == null) {
-                    ResourceVo resourceVo = resourceCrossoverMapper.getResourceByIpAndPort(TenantContext.get().getDataDbName(), autoexecNodeVo.getIp(), autoexecNodeVo.getPort());
+                    ResourceVo resourceVo = resourceCrossoverMapper.getResourceByIpAndPort(autoexecNodeVo.getIp(), autoexecNodeVo.getPort());
                     if (resourceVo != null) {
                         autoexecNodeVo.setId(resourceVo.getId());
                         autoexecNodeVo.setName(resourceVo.getName());
@@ -242,9 +242,9 @@ public class DeployJobServiceImpl implements DeployJobService {
             }
         } else {
             //如果selectNodeList 是empty，则发布全部实例
-            List<Long> instanceIdList = resourceCrossoverMapper.getAppInstanceResourceIdListByAppSystemIdAndModuleIdAndEnvId(new ResourceVo(deployJobParam.getAppSystemId(), deployJobParam.getAppModuleId(), deployJobParam.getEnvId()), TenantContext.get().getDataDbName());
+            List<Long> instanceIdList = resourceCrossoverMapper.getAppInstanceResourceIdListByAppSystemIdAndModuleIdAndEnvId(new ResourceVo(deployJobParam.getAppSystemId(), deployJobParam.getAppModuleId(), deployJobParam.getEnvId()));
             if (CollectionUtils.isNotEmpty(instanceIdList)) {
-                List<ResourceVo> instanceList = resourceCrossoverMapper.getAppInstanceResourceListByIdList(instanceIdList, TenantContext.get().getDataDbName());
+                List<ResourceVo> instanceList = resourceCrossoverMapper.getAppInstanceResourceListByIdList(instanceIdList);
                 for (ResourceVo instance : instanceList) {
                     AutoexecNodeVo autoexecNodeVo = new AutoexecNodeVo(instance);
                     moduleVo.getSelectNodeList().add(autoexecNodeVo);

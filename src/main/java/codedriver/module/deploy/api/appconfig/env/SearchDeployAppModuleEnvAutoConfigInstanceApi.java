@@ -73,14 +73,14 @@ public class SearchDeployAppModuleEnvAutoConfigInstanceApi extends PrivateApiCom
         JSONArray defaultValue = searchVo.getDefaultValue();
         IResourceCrossoverMapper resourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
         if (CollectionUtils.isNotEmpty(defaultValue)) {
-            instanceList = resourceCrossoverMapper.getAppInstanceResourceListByIdListSimple(defaultValue.toJavaList(Long.class), TenantContext.get().getDataDbName());
+            instanceList = resourceCrossoverMapper.getAppInstanceResourceListByIdListSimple(defaultValue.toJavaList(Long.class));
         } else {
-            int count = deployAppConfigMapper.getAppModuleEnvAutoConfigInstanceIdCount(searchVo, TenantContext.get().getDataDbName());
+            int count = deployAppConfigMapper.getAppModuleEnvAutoConfigInstanceIdCount(searchVo);
             if (count > 0) {
                 searchVo.setRowNum(count);
-                List<Long> instanceIdList = deployAppConfigMapper.getAppModuleEnvAutoConfigInstanceIdList(searchVo, TenantContext.get().getDataDbName());
+                List<Long> instanceIdList = deployAppConfigMapper.getAppModuleEnvAutoConfigInstanceIdList(searchVo);
                 if (CollectionUtils.isNotEmpty(instanceIdList)) {
-                    instanceList = resourceCrossoverMapper.getAppInstanceResourceListByIdListSimple(instanceIdList, TenantContext.get().getDataDbName());
+                    instanceList = resourceCrossoverMapper.getAppInstanceResourceListByIdListSimple(instanceIdList);
                 }
             }
         }

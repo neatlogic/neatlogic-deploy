@@ -57,6 +57,6 @@ public class GetDeployVersionEnvListApi extends PrivateApiComponentBase {
         if (version == null) {
             throw new DeployVersionNotFoundException(versionId);
         }
-        return deployAppConfigMapper.getDeployAppModuleEnvListByAppSystemIdAndModuleId(version.getAppSystemId(), version.getAppModuleId(), TenantContext.get().getDataDbName());
+        return deployAppConfigMapper.getDeployAppModuleEnvListByAppSystemIdAndModuleId(version.getAppSystemId(), version.getAppModuleId());
     }
 }

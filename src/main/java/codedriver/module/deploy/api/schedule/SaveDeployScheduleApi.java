@@ -112,7 +112,6 @@ public class SaveDeployScheduleApi extends PrivateApiComponentBase {
         }
         String tenantUuid = TenantContext.get().getTenantUuid();
         String userUuid = UserContext.get().getUserUuid(true);
-        String schemaName = TenantContext.get().getDataDbName();
         DeployScheduleVo scheduleVo = paramObj.toJavaObject(DeployScheduleVo.class);
         String cron = scheduleVo.getCron();
         if (!CronExpression.isValidExpression(cron)) {
@@ -124,11 +123,11 @@ public class SaveDeployScheduleApi extends PrivateApiComponentBase {
         IAppSystemMapper appSystemMapper = CrossoverServiceFactory.getApi(IAppSystemMapper.class);
         String type = scheduleVo.getType();
         if (type.equals(ScheduleType.GENERAL.getValue())) {
-            AppSystemVo appSystemVo = appSystemMapper.getAppSystemById(scheduleVo.getAppSystemId(), schemaName);
+            AppSystemVo appSystemVo = appSystemMapper.getAppSystemById(scheduleVo.getAppSystemId());
             if (appSystemVo == null) {
                 throw new AppSystemNotFoundException(scheduleVo.getAppSystemId());
             }
-            AppModuleVo appModuleVo = appSystemMapper.getAppModuleById(scheduleVo.getAppModuleId(), schemaName);
+            AppModuleVo appModuleVo = appSystemMapper.getAppModuleById(scheduleVo.getAppModuleId());
             if (appModuleVo == null) {
                 throw new AppModuleNotFoundException(scheduleVo.getAppModuleId());
             }
@@ -147,7 +146,7 @@ public class SaveDeployScheduleApi extends PrivateApiComponentBase {
                 throw new ParamNotExistsException("环境ID（config.envId）");
             }
             IResourceCrossoverMapper resourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
-            ResourceVo resourceVo = resourceCrossoverMapper.getAppEnvById(envId, schemaName);
+            ResourceVo resourceVo = resourceCrossoverMapper.getAppEnvById(envId);
             if (resourceVo == null) {
                 throw new AppEnvNotFoundException(envId);
             }

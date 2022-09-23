@@ -211,7 +211,7 @@ public class DeployAppAuthChecker {
         /*将其分类为有特权和无特权（发布管理员权限和没有配置过的系统）两种，有特权直接拼接需要验权的权限列表到returnMap里，无特权的用sql语句进行批量验权，再拼接数据到returnMap里*/
 
         //1、查询系统信息列表
-        List<DeployAppSystemVo> needCheckAppSystemVoList = checker.deployAppConfigMapper.getBatchAppConfigAuthorityListByAppSystemIdList(new ArrayList<>(typeActionSetMap.keySet()), TenantContext.get().getDataDbName());
+        List<DeployAppSystemVo> needCheckAppSystemVoList = checker.deployAppConfigMapper.getBatchAppConfigAuthorityListByAppSystemIdList(new ArrayList<>(typeActionSetMap.keySet()));
 
         //2、循环入参系统id，将其分类为有特权和无特权两种
         for (DeployAppSystemVo appSystemVo : needCheckAppSystemVoList) {
