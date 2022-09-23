@@ -172,20 +172,28 @@
             `lcd` = now(3)
     </insert>
 
-    <insert id="insertDeployCiJobAudit" parameterType="codedriver.framework.deploy.dto.ci.DeployCiAuditVo">
+    <insert id="insertDeployCiAudit" parameterType="codedriver.framework.deploy.dto.ci.DeployCiAuditVo">
         insert into deploy_ci_audit (
             `id`,
+            `ci_id`,
             `commit_id`,
             `action`,
             `status`,
             `job_id`,
-            `fcd`,
+            `param_file_path`,
+            `result_file_path`,
+            `error_file_path`,
+            `fcd`
         ) values (
             #{id},
+            #{ciId},
             #{commitId},
             #{action},
             #{status},
             #{jobId},
+            #{paramFilePath},
+            #{resultFilePath},
+            #{errorFilePath},
             now(3)
         )
     </insert>

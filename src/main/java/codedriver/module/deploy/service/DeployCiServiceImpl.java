@@ -83,7 +83,7 @@ public class DeployCiServiceImpl implements DeployCiService {
     }
 
     @Override
-    public void createJobForVCSCallback(JSONObject paramObj, DeployCiVo ci, String versionName, DeployVersionVo deployVersion, DeployCiRepoType repoType) throws Exception {
+    public Long createJobForVCSCallback(JSONObject paramObj, DeployCiVo ci, String versionName, DeployVersionVo deployVersion, DeployCiRepoType repoType) throws Exception {
         /*
           只要场景包含build，那么新建buildNo和新建版本（如果版本不存在）
           如果场景只包含deploy，那么新建版本（如果版本不存在）
@@ -139,10 +139,11 @@ public class DeployCiServiceImpl implements DeployCiService {
         } else {
             deployJobService.createJobAndFire(deployJobParam, moduleVo);
         }
+        return deployJobParam.getId();
     }
 
     @Override
-    public void createBatchJobForVCSCallback(JSONObject paramObj, DeployCiVo ci, String versionName, DeployVersionVo deployVersion, DeployCiRepoType repoType) throws Exception {
+    public Long createBatchJobForVCSCallback(JSONObject paramObj, DeployCiVo ci, String versionName, DeployVersionVo deployVersion, DeployCiRepoType repoType) throws Exception {
         /*
            1、筛选出超级流水线中属于当前模块的子作业，检查每个子作业的场景是否包含build工具以决定是否要新建版本
            2、用筛选后的流水线创建批量作业
@@ -182,6 +183,7 @@ public class DeployCiServiceImpl implements DeployCiService {
             JobObject.Builder jobObjectBuilder = new JobObject.Builder(deployJobVo.getId().toString(), jobHandler.getGroupName(), jobHandler.getClassName(), TenantContext.get().getTenantUuid());
             jobHandler.reloadJob(jobObjectBuilder.build());
         }
+        return deployJobVo.getId();
     }
 
     /**
