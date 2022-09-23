@@ -21,7 +21,7 @@ import codedriver.framework.restful.constvalue.ApiAnonymousAccessSupportEnum;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.framework.restful.enums.ApiInvokedStatus;
-import codedriver.module.deploy.ci.DeployCiAuditSaveThread;
+import codedriver.module.deploy.thread.DeployCiAuditSaveThread;
 import codedriver.module.deploy.dao.mapper.DeployCiMapper;
 import codedriver.module.deploy.dao.mapper.DeployVersionMapper;
 import codedriver.module.deploy.service.DeployCiService;
