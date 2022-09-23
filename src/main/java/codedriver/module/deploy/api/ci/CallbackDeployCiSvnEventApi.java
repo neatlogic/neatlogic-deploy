@@ -21,6 +21,7 @@ import codedriver.framework.restful.constvalue.ApiAnonymousAccessSupportEnum;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.framework.restful.enums.ApiInvokedStatus;
+import codedriver.framework.transaction.util.TransactionUtil;
 import codedriver.module.deploy.thread.DeployCiAuditSaveThread;
 import codedriver.module.deploy.dao.mapper.DeployCiMapper;
 import codedriver.module.deploy.dao.mapper.DeployVersionMapper;
@@ -32,6 +33,7 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
@@ -44,7 +46,6 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Service
-@Transactional
 @OperationType(type = OperationTypeEnum.OPERATE)
 public class CallbackDeployCiSvnEventApi extends PrivateApiComponentBase {
 
@@ -159,6 +160,7 @@ public class CallbackDeployCiSvnEventApi extends PrivateApiComponentBase {
         if (ciVoList.size() > 0) {
             for (DeployCiVo ci : ciVoList) {
                 DeployCiAuditVo auditVo = new DeployCiAuditVo(ci.getId(), revision, ci.getAction(), paramObj.toJSONString());
+                TransactionStatus transactionStatus = null;
                 try {
                     String triggerType = ci.getTriggerType();
                     if (StringUtils.isBlank(triggerType)) {
@@ -179,15 +181,20 @@ public class CallbackDeployCiSvnEventApi extends PrivateApiComponentBase {
                     UserContext.init(SystemUser.SYSTEM.getUserVo(), SystemUser.SYSTEM.getTimezone());
                     UserContext.get().setToken("GZIP_" + LoginAuthHandlerBase.buildJwt(SystemUser.SYSTEM.getUserVo()).getCc());
                     Long jobId = null;
+                    transactionStatus = TransactionUtil.openTx();
                     if (DeployCiActionType.CREATE_JOB.getValue().equals(ci.getAction())) {
                         jobId = deployCiService.createJobForVCSCallback(paramObj, ci, versionName, deployVersion, DeployCiRepoType.SVN);
                     } else if (DeployCiActionType.CREATE_BATCH_JOB.getValue().equals(ci.getAction())) {
                         jobId = deployCiService.createBatchJobForVCSCallback(paramObj, ci, versionName, deployVersion, DeployCiRepoType.SVN);
                     }
+                    TransactionUtil.commitTx(transactionStatus);
                     auditVo.setJobId(jobId);
                     auditVo.setStatus(ApiInvokedStatus.SUCCEED.getValue());
                     auditVo.setResult(jobId);
                 } catch (Exception ex) {
+                    if (transactionStatus != null) {
+                        TransactionUtil.rollbackTx(transactionStatus);
+                    }
                     logger.error("Svn callback error. Deploy ci:{} has been ignored, callback params: {}", ci.getId(), paramObj.toJSONString());
                     logger.error(ex.getMessage(), ex);
                     auditVo.setStatus(ApiInvokedStatus.FAILED.getValue());
