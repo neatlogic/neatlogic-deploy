@@ -19,7 +19,7 @@ import org.springframework.stereotype.Service;
 @Service
 @AuthAction(action = DEPLOY_BASE.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
-public class DeployCiAuditDetailGetApi extends PrivateApiComponentBase {
+public class GetDeployCiAuditDetailApi extends PrivateApiComponentBase {
 
     @Override
     public String getToken() {
@@ -28,7 +28,7 @@ public class DeployCiAuditDetailGetApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "获取持续集成触发日志";
+        return "获取持续集成回调接口调用日志";
     }
 
     @Override
@@ -39,9 +39,9 @@ public class DeployCiAuditDetailGetApi extends PrivateApiComponentBase {
     @Input({@Param(name = "filePath", type = ApiParamType.STRING, desc = "调用记录文件路径", isRequired = true)})
     @Output({
             @Param(name = "result", desc = "内容", type = ApiParamType.STRING),
-            @Param(name = "hasMore", desc = "是否尚有更多内容未读取", type = ApiParamType.BOOLEAN)
+            @Param(name = "hasMore", desc = "是否有更多内容尚未读取", type = ApiParamType.BOOLEAN)
     })
-    @Description(desc = "获取持续集成触发日志")
+    @Description(desc = "获取持续集成回调接口调用日志")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
 
