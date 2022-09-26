@@ -1,6 +1,7 @@
 package codedriver.module.deploy.dao.mapper;
 
 import codedriver.framework.cmdb.dto.resourcecenter.entity.AppEnvironmentVo;
+import codedriver.framework.common.dto.BasePageVo;
 import codedriver.framework.deploy.dto.app.*;
 import codedriver.framework.dto.AuthenticationInfoVo;
 import codedriver.framework.dto.runner.RunnerGroupVo;
@@ -53,6 +54,10 @@ public interface DeployAppConfigMapper {
     int getAppConfigCountByAppSystemId(Long appSystemId);
 
     List<DeployAppConfigVo> getAppConfigList(DeployAppConfigVo configVo);
+
+    int getAllDeployAppConfigCount();
+
+    List<DeployAppConfigVo> getAllAppConfigListByPage(BasePageVo searchVo);
 
     DeployAppConfigVo getAppConfigDraft(DeployAppConfigVo deployAppConfigDraftVo);
 
@@ -212,5 +217,4 @@ public interface DeployAppConfigMapper {
     void deleteAppConfigEnvByAppSystemIdAndAppModuleIdAndEnvIdList(@Param("appSystemId") Long appSystemId, @Param("appModuleId") Long appModuleId, @Param("envIdList") List<Long> envIdList);
 
     void deleteAppConfigDBConfigByIdList(List<Long> idList);
-
 }

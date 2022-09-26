@@ -1012,6 +1012,26 @@
         </if>
     </select>
 
+    <select id="getAllDeployAppConfigCount" resultType="int">
+        SELECT COUNT(1) FROM `deploy_app_config`
+    </select>
+
+    <select id="getAllAppConfigListByPage" resultType="codedriver.framework.deploy.dto.app.DeployAppConfigVo">
+        SELECT
+        `id`,
+        `app_system_id` as appSystemId,
+        `app_module_id` as appModuleId,
+        `env_id` as envId,
+        `config` as configStr,
+        `fcd`,
+        `fcu`,
+        `lcd`,
+        `lcu`
+        FROM `deploy_app_config`
+        ORDER BY `id`
+        LIMIT #{startNum}, #{pageSize}
+    </select>
+
     <select id="getAppConfigByAppSystemIdAndAppModuleIdAndEnvId"
             resultType="codedriver.framework.deploy.dto.app.DeployAppConfigVo" useCache="false">
         SELECT `app_system_id` as appSystemId,
