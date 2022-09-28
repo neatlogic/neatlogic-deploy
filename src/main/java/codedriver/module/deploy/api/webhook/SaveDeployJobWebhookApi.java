@@ -67,23 +67,23 @@ public class SaveDeployJobWebhookApi extends PrivateApiComponentBase {
     public Object myDoService(JSONObject paramObj) throws Exception {
         Long id = paramObj.getLong("id");
         DeployJobWebhookVo deployJobWebhookVo = paramObj.toJavaObject(DeployJobWebhookVo.class);
-        if(webhookMapper.checkWebhookNameIsExist( deployJobWebhookVo.getId(), deployJobWebhookVo.getName()) > 0){
+        if (webhookMapper.checkWebhookNameIsExist(deployJobWebhookVo.getId(), deployJobWebhookVo.getName()) > 0) {
             throw new DeployWebhookNameRepeatException(deployJobWebhookVo.getName());
         }
-        if(id == null){
+        if (id == null) {
             webhookMapper.insertJobWebhook(deployJobWebhookVo);
-            if(Objects.equals(ScheduleType.GENERAL.getValue(),deployJobWebhookVo.getType())){
+            if (Objects.equals(ScheduleType.GENERAL.getValue(), deployJobWebhookVo.getType())) {
                 List<DeployJobWebhookAppModuleVo> appModuleVoList = deployJobWebhookVo.getConfig().getWebhookAppModuleList();
-                if(CollectionUtils.isNotEmpty(appModuleVoList)){
-                    for(DeployJobWebhookAppModuleVo appModuleVo : appModuleVoList) {
+                if (CollectionUtils.isNotEmpty(appModuleVoList)) {
+                    for (DeployJobWebhookAppModuleVo appModuleVo : appModuleVoList) {
                         appModuleVo.setWebhookId(deployJobWebhookVo.getId());
                         webhookMapper.insertJobWebhookAppModule(appModuleVo);
                     }
                 }
             }
-        }else{
+        } else {
             DeployJobWebhookVo oldWebhook = webhookMapper.getWebhookById(id);
-            if(oldWebhook == null){
+            if (oldWebhook == null) {
                 throw new DeployWebhookNotFoundException(id);
             }
             webhookMapper.updateJobWebhook(deployJobWebhookVo);
@@ -94,7 +94,7 @@ public class SaveDeployJobWebhookApi extends PrivateApiComponentBase {
     public IValid name() {
         return value -> {
             DeployJobWebhookVo deployJobWebhookVo = JSONObject.toJavaObject(value, DeployJobWebhookVo.class);
-            if(webhookMapper.checkWebhookNameIsExist(deployJobWebhookVo.getId(),deployJobWebhookVo.getName()) >0){
+            if (webhookMapper.checkWebhookNameIsExist(deployJobWebhookVo.getId(), deployJobWebhookVo.getName()) > 0) {
                 return new FieldValidResultVo(new DeployWebhookNameRepeatException(deployJobWebhookVo.getName()));
             }
             return new FieldValidResultVo();

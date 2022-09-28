@@ -158,7 +158,7 @@
             `type`             = #{type},
             `pipeline_type`    = #{pipelineType},
             `build_no_policy`  = #{buildNoPolicy},
-            `config`           = #{config},
+            `config`           = #{configStr},
             `lcd`              = NOW(3),
             `lcu`              = #{lcu}
         where `id` = #{id}
