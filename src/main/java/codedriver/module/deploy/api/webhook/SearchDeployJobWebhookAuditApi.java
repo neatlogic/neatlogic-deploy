@@ -9,7 +9,6 @@ import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.dto.BasePageVo;
 import codedriver.framework.deploy.auth.DEPLOY_BASE;
-import codedriver.framework.deploy.dto.schedule.DeployScheduleVo;
 import codedriver.framework.deploy.dto.webhook.DeployJobWebhookAuditVo;
 import codedriver.framework.restful.annotation.Input;
 import codedriver.framework.restful.annotation.OperationType;
@@ -47,7 +46,7 @@ public class SearchDeployJobWebhookAuditApi extends PrivateApiComponentBase {
             @Param(name = "webhookId", type = ApiParamType.LONG, isRequired = true, desc = "触发器id"),
             @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "当前页码"),
             @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "页大小")})
-    @Output({@Param(explode = BasePageVo.class), @Param(name = "tbodyList", explode = DeployScheduleVo[].class, desc = "定时作业列表"),})
+    @Output({@Param(explode = BasePageVo.class), @Param(name = "tbodyList", explode = DeployJobWebhookAuditVo[].class, desc = "作业触发器记录列表"),})
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         DeployJobWebhookAuditVo deployJobWebhookAuditVo = paramObj.toJavaObject(DeployJobWebhookAuditVo.class);

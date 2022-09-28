@@ -21,6 +21,7 @@
         <result column="name" property="name"/>
         <result column="isActive" property="isActive"/>
         <result column="integrationUuid" property="integrationUuid"/>
+        <result column="integrationName" property="integrationName"/>
         <result column="buildNoPolicy" property="buildNoPolicy"/>
         <result column="configStr" property="configStr"/>
         <result column="lcd" property="lcd"/>
@@ -33,11 +34,13 @@
         djw.`name`,
         djw.`is_active` as isActive,
         djw.`integration_uuid` as integrationUuid,
+        i.`name` AS integrationName,
         djw.`build_no_policy` as buildNoPolicy,
         djw.`config` as configStr,
         djw.`lcd`,
         djw.`lcu`
         from deploy_job_webhook djw
+        left join integration i on i.uuid =djw.integration_uuid
         <where>
             <if test="keyword != null and keyword != ''">
                 AND djw.name LIKE concat('%',#{keyword},'%')
@@ -58,6 +61,7 @@
     <select id="getWebhookById" resultType="codedriver.framework.deploy.dto.webhook.DeployJobWebhookVo">
         select djw.`id`,
                djw.`name`,
+               djw.`type`             as type,
                djw.`is_active`        as isActive,
                djw.`integration_uuid` as integrationUuid,
                djw.`build_no_policy`  as buildNoPolicy,
@@ -154,9 +158,15 @@
             `type`             = #{type},
             `pipeline_type`    = #{pipelineType},
             `build_no_policy`  = #{buildNoPolicy},
-            `config`           = #{config},
+            `config`           = #{configStr},
             `lcd`              = NOW(3),
             `lcu`              = #{lcu}
+        where `id` = #{id}
+    </update>
+
+    <update id="ActivateJobWebhookById">
+        update deploy_job_webhook
+        set `is_active` = #{isActive}
         where `id` = #{id}
     </update>
 
