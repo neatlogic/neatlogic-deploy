@@ -5,7 +5,6 @@
 
 package codedriver.module.deploy.job.callback;
 
-import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.autoexec.crossover.IAutoexecScenarioCrossoverMapper;
 import codedriver.framework.autoexec.dao.mapper.AutoexecJobMapper;
 import codedriver.framework.autoexec.dto.job.AutoexecJobInvokeVo;
@@ -106,7 +105,7 @@ public class DeployJobWebhookCallbackHandler extends AutoexecJobCallbackBase {
                         throw new IntegrationHandlerNotFoundException(integrationVo.getHandler());
                     }
                     IntegrationResultVo resultVo = handler.sendRequest(integrationVo, DeployRequestFrom.DEPLOY_TRIGGER);
-                    DeployJobWebhookAuditVo webhookAuditVo = new DeployJobWebhookAuditVo(param.getString("jobName"),webhookVo.getId(),resultVo.getAuditId());
+                    DeployJobWebhookAuditVo webhookAuditVo = new DeployJobWebhookAuditVo(jobVo.getId(),param.getString("jobName"),webhookVo.getId(),resultVo.getAuditId());
                     webhookMapper.insertJobWebhookAudit(webhookAuditVo);
                 }
             }

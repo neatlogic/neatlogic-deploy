@@ -5,7 +5,6 @@
 
 package codedriver.module.deploy.job.source.type;
 
-import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.auth.core.AuthActionChecker;
 import codedriver.framework.autoexec.constvalue.ExecMode;
@@ -351,6 +350,13 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
         }
         AutoexecCombopVo combopVo = new AutoexecCombopVo();
         combopVo.setConfig(deployPipelineConfigVo.getAutoexecCombopConfigVo());
+        return combopVo;
+    }
+
+    @Override
+    public AutoexecCombopVo getSnapshotAutoexecCombop(AutoexecJobVo autoexecJobParam) {
+        AutoexecCombopVo combopVo = new AutoexecCombopVo();
+        combopVo.setConfig(autoexecJobParam.getConfig());
         return combopVo;
     }
 
