@@ -83,9 +83,9 @@
                djw.`lcu`
         from deploy_job_webhook djw
                  join deploy_job_webhook_app_module djwam on djw.id = djwam.webhook_id
-        where djw.is_active = 1 and djwam.app_system_id = 0
+        where djw.is_active = 1 and ( djwam.app_system_id = 0
            or (djwam.app_system_id = #{appSystemId}
-            and (djwam.app_module_id = #{appModuleId} or djwam.app_module_id = 0))
+            and (djwam.app_module_id = #{appModuleId} or djwam.app_module_id = 0)))
     </select>
     <select id="getWebhookAuditCount" resultType="java.lang.Integer">
         select count(id)
