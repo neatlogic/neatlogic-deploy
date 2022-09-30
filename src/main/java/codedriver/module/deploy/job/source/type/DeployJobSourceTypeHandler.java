@@ -132,7 +132,7 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
     }
 
     @Override
-    public void resetSqlStatus(JSONObject paramObj, AutoexecJobVo jobVo) {
+    public List<Long> getSqlIdsAndExecuteJobNodes(JSONObject paramObj, AutoexecJobVo jobVo) {
         JSONArray sqlIdArray = paramObj.getJSONArray("sqlIdList");
         List<Long> resetSqlIdList = null;
         if (!Objects.isNull(paramObj.getInteger("isAll")) && paramObj.getInteger("isAll") == 1) {
@@ -144,6 +144,12 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
             resetSqlIdList = sqlIdArray.toJavaList(Long.class);
         }
         jobVo.setExecuteJobNodeVoList(deploySqlMapper.getDeployJobPhaseNodeListBySqlIdList(resetSqlIdList));
+        return resetSqlIdList;
+    }
+
+    @Override
+    public void resetSqlStatus(JSONObject paramObj, AutoexecJobVo jobVo) {
+        List<Long> resetSqlIdList = getSqlIdsAndExecuteJobNodes(paramObj, jobVo);
         deploySqlMapper.resetDeploySqlStatusBySqlIdList(resetSqlIdList);
     }
 
@@ -361,6 +367,11 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
     }
 
     @Override
+    public void updateSqlStatus(List<Long> sqlIdList, String status) {
+        deploySqlMapper.updateDeploySqlStatusByIdList(sqlIdList, status);
+    }
+
+    @Override
     public void updateInvokeJob(AutoexecJobVo jobVo) {
         DeployJobVo deployJobVo = (DeployJobVo) jobVo;
         deployJobMapper.insertIgnoreDeployJobContent(new DeployJobContentVo(jobVo.getConfigStr()));
@@ -371,18 +382,18 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
             }
             deployJobVo.setVersionId(deployVersionVo.getId());
             //如果存在version 但buildNo 为null，则需要根据流水线是否含有build工具决定是否新建buildNo，如果没有deploy工具和build工具则version设置为null
-            if(deployJobVo.getBuildNo() == null){
+            if (deployJobVo.getBuildNo() == null) {
                 PipelineJobTemplateVo jobTemplateVo = new PipelineJobTemplateVo(deployJobVo);
-                DeployPipelineConfigManager.setIsJobTemplateVoHasBuildDeployType(jobTemplateVo,new HashMap<>());
-                if(jobTemplateVo.getIsHasBuildTypeTool() == 1){
+                DeployPipelineConfigManager.setIsJobTemplateVoHasBuildDeployType(jobTemplateVo, new HashMap<>());
+                if (jobTemplateVo.getIsHasBuildTypeTool() == 1) {
                     deployJobVo.setBuildNo(-1);
                 }
-                if(jobTemplateVo.getIsHasBuildTypeTool() != 1 && jobTemplateVo.getIsHasDeployTypeTool() != 1){
+                if (jobTemplateVo.getIsHasBuildTypeTool() != 1 && jobTemplateVo.getIsHasDeployTypeTool() != 1) {
                     deployJobVo.setVersionId(null);
                     deployJobVo.setVersion(null);
                 }
             }
-            if(deployJobVo.getBuildNo() != null) {
+            if (deployJobVo.getBuildNo() != null) {
                 //如果buildNo是-1，表示新建buildNo
                 if (deployJobVo.getBuildNo() == -1) {
                     Integer maxBuildNo = deployVersionMapper.getDeployVersionMaxBuildNoByVersionIdLock(deployVersionVo.getId());

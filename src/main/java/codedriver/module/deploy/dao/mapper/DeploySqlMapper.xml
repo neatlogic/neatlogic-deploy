@@ -367,7 +367,7 @@
             ,sort = #{sort}
         </if>
         <choose>
-          <when test="status == 'pending'">
+            <when test="status == 'pending'">
                 ,`start_time`= null
                 ,`end_time`= null
             </when>
@@ -375,8 +375,8 @@
                 ,`start_time`=now(3)
                 ,`end_time`= null
             </when>
-          <when test="status == 'aborted' || status == 'succeed' || status == 'failed' || status == 'ignored'">
-              ,`end_time`=now(3)
+            <when test="status == 'aborted' || status == 'succeed' || status == 'failed' || status == 'ignored'">
+                ,`end_time`=now(3)
             </when>
             <otherwise>
             </otherwise>
@@ -388,6 +388,14 @@
             ,warn_count = #{warnCount}
         </if>
         where id = #{id}
+    </update>
+    <update id="updateDeploySqlStatusByIdList">
+        update deploy_sql_detail
+        set `status` = #{status}
+        where id in
+        <foreach collection="idList" item="id" close=")" open="(" separator=",">
+            #{id}
+        </foreach>
     </update>
 
 </mapper>
