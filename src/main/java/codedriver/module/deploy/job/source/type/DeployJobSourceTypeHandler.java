@@ -13,10 +13,7 @@ import codedriver.framework.autoexec.dao.mapper.AutoexecJobMapper;
 import codedriver.framework.autoexec.dto.ISqlNodeDetail;
 import codedriver.framework.autoexec.dto.combop.AutoexecCombopPhaseVo;
 import codedriver.framework.autoexec.dto.combop.AutoexecCombopVo;
-import codedriver.framework.autoexec.dto.job.AutoexecJobPhaseNodeVo;
-import codedriver.framework.autoexec.dto.job.AutoexecJobPhaseVo;
-import codedriver.framework.autoexec.dto.job.AutoexecJobVo;
-import codedriver.framework.autoexec.dto.job.AutoexecSqlNodeDetailVo;
+import codedriver.framework.autoexec.dto.job.*;
 import codedriver.framework.autoexec.exception.AutoexecJobNotFoundException;
 import codedriver.framework.autoexec.exception.AutoexecJobPhaseNotFoundException;
 import codedriver.framework.autoexec.job.source.type.AutoexecJobSourceTypeHandlerBase;
@@ -64,6 +61,7 @@ import codedriver.module.deploy.util.DeployPipelineConfigManager;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.nacos.common.utils.CollectionUtils;
+import com.alibaba.nacos.common.utils.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
@@ -516,6 +514,35 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
                 jobVo.setIsCanExecute(1);
             } else {
                 jobVo.setIsCanTakeOver(1);
+            }
+        }
+    }
+
+    @Override
+    public void getCreatePayload(AutoexecJobVo jobVo, JSONObject result) {
+        DeployJobVo deployJobVo = deployJobMapper.getDeployJobByJobId(jobVo.getId());
+        if (deployJobVo != null) {
+            result.put("appSystemId", deployJobVo.getAppSystemId());
+            result.put("envId", deployJobVo.getEnvId());
+            result.put("scenarioId", deployJobVo.getScenarioId());
+            JSONArray moduleList = new JSONArray();
+            result.put("moduleList", moduleList);
+            JSONObject module = new JSONObject();
+            moduleList.add(module);
+            module.put("id", deployJobVo.getAppModuleId());
+            module.put("version", deployJobVo.getVersion());
+            module.put("buildNo", deployJobVo.getBuildNo());
+            AutoexecJobContentVo configContentVo = autoexecJobMapper.getJobContent(jobVo.getConfigHash());
+            JSONObject jobConfig = JSONObject.parseObject(configContentVo.getContent());
+            JSONObject executeConfig = jobConfig.getJSONObject("executeConfig");
+            if (MapUtils.isNotEmpty(executeConfig)) {
+                JSONObject executeNodeConfig = executeConfig.getJSONObject("executeNodeConfig");
+                if (MapUtils.isNotEmpty(executeNodeConfig)) {
+                    module.put("selectNodeList", executeNodeConfig.getJSONArray("selectNodeList"));
+                }
+            }
+            if (!module.containsKey("selectNodeList")) {
+                module.put("selectNodeList", new JSONArray());
             }
         }
     }
