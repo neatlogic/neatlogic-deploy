@@ -83,7 +83,7 @@ public interface DeployVersionMapper {
 
     int insertDeployVersionBuildQuality(DeployVersionBuildQualityVo vo);
 
-    int insertDeployVersionBuildQualityLog(DeployVersionBuildQualityVo vo);
+    int insertDeployVersionUnitTest(DeployVersionUnitTestVo vo);
 
     int insertDeployVersionDependency(DeployVersionDependencyVo vo);
 
@@ -105,6 +105,6 @@ public interface DeployVersionMapper {
 
     int deleteDeployVersionBuildQualityByVersionId(Long versionId);
 
-    int deleteDeployVersionBuildQualityLogByVersionId(Long versionId);
+    int deleteDeployVersionUnitTestByVersionId(Long versionId);
 
 }
