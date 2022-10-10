@@ -3,7 +3,7 @@ package codedriver.module.deploy.api.version;
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.deploy.auth.DEPLOY_MODIFY;
-import codedriver.framework.deploy.dto.version.DeployVersionBuildQualityVo;
+import codedriver.framework.deploy.dto.version.DeployVersionUnitTestVo;
 import codedriver.framework.deploy.dto.version.DeployVersionVo;
 import codedriver.framework.deploy.exception.DeployVersionNotFoundException;
 import codedriver.framework.restful.annotation.*;
@@ -20,19 +20,19 @@ import javax.annotation.Resource;
 @Transactional
 @AuthAction(action = DEPLOY_MODIFY.class)
 @OperationType(type = OperationTypeEnum.UPDATE)
-public class SaveDeployVersionBuildQualityApi extends PrivateApiComponentBase {
+public class SaveDeployVersionUnitTestApi extends PrivateApiComponentBase {
 
     @Resource
     DeployVersionMapper deployVersionMapper;
 
     @Override
     public String getName() {
-        return "保存发布版本构建质量";
+        return "保存发布版本单元测试指标";
     }
 
     @Override
     public String getToken() {
-        return "deploy/versoin/build/quality/save";
+        return "deploy/versoin/unittest/save";
     }
 
     @Override
@@ -44,24 +44,24 @@ public class SaveDeployVersionBuildQualityApi extends PrivateApiComponentBase {
             @Param(name = "sysId", desc = "应用ID", isRequired = true, type = ApiParamType.LONG),
             @Param(name = "moduleId", desc = "应用模块id", isRequired = true, type = ApiParamType.LONG),
             @Param(name = "version", desc = "版本号", isRequired = true, type = ApiParamType.STRING),
-            @Param(explode = DeployVersionBuildQualityVo.class, desc = "代码质量指标", type = ApiParamType.JSONOBJECT),
+            @Param(explode = DeployVersionUnitTestVo.class, desc = "单元测试指标", type = ApiParamType.JSONOBJECT),
     })
     @Output({
     })
-    @Description(desc = "保存发布版本构建质量")
+    @Description(desc = "保存发布版本单元测试指标")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
 
         Long sysId = paramObj.getLong("sysId");
         Long moduleId = paramObj.getLong("moduleId");
         String version = paramObj.getString("version");
-        DeployVersionBuildQualityVo qualityVo = paramObj.toJavaObject(DeployVersionBuildQualityVo.class);
+        DeployVersionUnitTestVo qualityVo = paramObj.toJavaObject(DeployVersionUnitTestVo.class);
         DeployVersionVo versionVo = deployVersionMapper.getDeployVersionBaseInfoBySystemIdAndModuleIdAndVersion(new DeployVersionVo(version, sysId, moduleId));
         if (versionVo == null) {
             throw new DeployVersionNotFoundException(version);
         }
         qualityVo.setVersionId(versionVo.getId());
-        deployVersionMapper.insertDeployVersionBuildQuality(qualityVo);
+        deployVersionMapper.insertDeployVersionUnitTest(qualityVo);
         return null;
     }
 }
