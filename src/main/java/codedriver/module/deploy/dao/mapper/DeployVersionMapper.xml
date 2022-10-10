@@ -879,7 +879,7 @@
 
     <insert id="insertDeployVersionBuildQuality"
             parameterType="codedriver.framework.deploy.dto.version.DeployVersionBuildQualityVo">
-        INSERT INTO deploy_build_quality (app_module_id,
+        INSERT INTO deploy_version_build_quality (
                                           version_id,
                                           build_time,
                                           files,
@@ -915,13 +915,6 @@
                                           new_duplicated_lines_density,
                                           duplicated_blocks,
                                           new_duplicated_blocks,
-                                          tests,
-                                          test_success_density,
-                                          test_errors,
-                                          branch_coverage,
-                                          new_branch_coverage,
-                                          line_coverage,
-                                          new_line_coverage,
                                           bugs,
                                           vulnerabilities,
                                           code_smells,
@@ -972,8 +965,7 @@
                                           quality_gate_details,
                                           new_maintainability_rating
                                           )
-        VALUES (#{appModuleId},
-                #{versionId},
+        VALUES (#{versionId},
                 NOW(3),
                 #{files},
                 #{classes},
@@ -1008,13 +1000,6 @@
                 #{newDuplicatedLinesDensity},
                 #{duplicatedBlocks},
                 #{newDuplicatedBlocks},
-                #{tests},
-                #{testSuccessDensity},
-                #{testErrors},
-                #{branchCoverage},
-                #{newBranchCoverage},
-                #{lineCoverage},
-                #{newLineCoverage},
                 #{bugs},
                 #{vulnerabilities},
                 #{codeSmells},
@@ -1065,8 +1050,7 @@
                 #{qualityGateDetails},
                 #{newMaintainabilityRating}
                 )
-        ON DUPLICATE KEY UPDATE app_module_id                 = #{appModuleId},
-                                build_time                    = NOW(3),
+        ON DUPLICATE KEY UPDATE build_time                    = NOW(3),
                                 files                         = #{files},
                                 classes                       = #{classes},
                                 `lines`                       = #{lines},
@@ -1100,13 +1084,6 @@
                                 new_duplicated_lines_density  = #{newDuplicatedLinesDensity},
                                 duplicated_blocks             = #{duplicatedBlocks},
                                 new_duplicated_blocks         = #{newDuplicatedBlocks},
-                                tests                         = #{tests},
-                                test_success_density          = #{testSuccessDensity},
-                                test_errors                   = #{testErrors},
-                                branch_coverage               = #{branchCoverage},
-                                new_branch_coverage           = #{newBranchCoverage},
-                                line_coverage                 = #{lineCoverage},
-                                new_line_coverage             = #{newLineCoverage},
                                 bugs                          = #{bugs},
                                 vulnerabilities               = #{vulnerabilities},
                                 code_smells                   = #{codeSmells},
@@ -1160,7 +1137,7 @@
 
     <insert id="insertDeployVersionBuildQualityLog"
             parameterType="codedriver.framework.deploy.dto.version.DeployVersionBuildQualityVo">
-        INSERT INTO deploy_build_quality_log (app_module_id,
+        INSERT INTO deploy_version_build_quality_log (
                                               version_id,
                                               build_time,
                                               files,
@@ -1196,13 +1173,6 @@
                                               new_duplicated_lines_density,
                                               duplicated_blocks,
                                               new_duplicated_blocks,
-                                              tests,
-                                              test_success_density,
-                                              test_errors,
-                                              branch_coverage,
-                                              new_branch_coverage,
-                                              line_coverage,
-                                              new_line_coverage,
                                               bugs,
                                               vulnerabilities,
                                               code_smells,
@@ -1253,8 +1223,7 @@
                                               quality_gate_details,
                                               new_maintainability_rating
                                               )
-        VALUES (#{appModuleId},
-                #{versionId},
+        VALUES (#{versionId},
                 NOW(3),
                 #{files},
                 #{classes},
@@ -1289,13 +1258,6 @@
                 #{newDuplicatedLinesDensity},
                 #{duplicatedBlocks},
                 #{newDuplicatedBlocks},
-                #{tests},
-                #{testSuccessDensity},
-                #{testErrors},
-                #{branchCoverage},
-                #{newBranchCoverage},
-                #{lineCoverage},
-                #{newLineCoverage},
                 #{bugs},
                 #{vulnerabilities},
                 #{codeSmells},
@@ -1441,11 +1403,11 @@
     </delete>
 
     <delete id="deleteDeployVersionBuildQualityByVersionId" parameterType="java.lang.Long">
-        delete from deploy_build_quality where version_id = #{value}
+        delete from deploy_version_build_quality where version_id = #{value}
     </delete>
 
     <delete id="deleteDeployVersionBuildQualityLogByVersionId" parameterType="java.lang.Long">
-        delete from deploy_build_quality_log where version_id = #{value}
+        delete from deploy_version_build_quality_log where version_id = #{value}
     </delete>
 
 </mapper>
