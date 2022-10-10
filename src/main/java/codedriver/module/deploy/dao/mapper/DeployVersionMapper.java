@@ -63,6 +63,10 @@ public interface DeployVersionMapper {
 
     List<DeployVersionVo> getDeployVersionBySystemId(Long systemId);
 
+    List<DeployVersionBuildQualityVo> getDeployVersionBuildQualityListByVersionIdWithLimit(@Param("versionId") Long versionId, @Param("limit") Integer limit);
+
+    List<DeployVersionUnitTestVo> getDeployVersionUnitTestListByVersionIdWithLimit(@Param("versionId") Long versionId, @Param("limit") Integer limit);
+
     int unFreezeDeployVersionById(@Param("id") Long id, @Param("isFreeze") Long isFreeze);
 
     int updateDeployVersionDependencyBuildTimeById(Long id);

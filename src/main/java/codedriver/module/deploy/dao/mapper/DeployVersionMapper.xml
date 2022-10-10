@@ -600,6 +600,120 @@
         where app_system_id = #{value}
     </select>
 
+    <select id="getDeployVersionBuildQualityListByVersionIdWithLimit"
+            resultType="codedriver.framework.deploy.dto.version.DeployVersionBuildQualityVo">
+        select
+            id,
+            version_id as versionId,
+            build_time as buildTime,
+            files,
+            classes,
+            `lines`,
+            ncloc,
+            functions,
+            statements,
+            complexity,
+            file_complexity as fileComplexity,
+            class_complexity as classComplexity,
+            function_complexity as functionComplexity,
+            violations,
+            blocker_violations as blockerViolations,
+            critical_violations as criticalViolations,
+            major_violations as majorViolations,
+            minor_violations as minorViolations,
+            executable_lines_data as executableLinesData,
+            it_conditions_to_cover as itConditionsToCover,
+            it_branch_coverage as itBranchCoverage,
+            it_conditions_by_line as itConditionsByLine,
+            it_coverage as itCoverage,
+            it_coverage_line_hits_data as itCoverageLineHitsData,
+            it_covered_conditions_by_line as itCoveredConditionsByLine,
+            it_line_coverage as itLineCoverage,
+            it_lines_to_cover as itLinesToCover,
+            comment_lines_density as commentLinesDensity,
+            public_documented_api_density as publicDocumentedApiDensity,
+            duplicated_files as duplicatedFiles,
+            duplicated_lines as duplicatedLines,
+            duplicated_lines_density as duplicatedLinesDensity,
+            new_duplicated_lines as newDuplicatedLines,
+            new_duplicated_lines_density as newDuplicatedLinesDensity,
+            duplicated_blocks as duplicatedBlocks,
+            new_duplicated_blocks as newDuplicatedBlocks,
+            bugs,
+            vulnerabilities,
+            code_smells as codeSmells,
+            threshold,
+            new_security_hotspots as newSecurityHotspots,
+            new_security_rating as newSecurityRating,
+            new_security_remediation_effort as newSecurityRemediationEffort,
+            new_vulnerabilities as newVulnerabilities,
+            security_hotspots as securityHotspots,
+            security_rating as securityRating,
+            security_remediation_effort as securityRemediationEffort,
+            comment_lines as commentLines,
+            ncloc_language_distribution as nclocLanguageDistribution,
+            new_lines as newLines,
+            cognitive_complexity as cognitiveComplexity,
+            conditions_to_cover as conditionsToCover,
+            coverage,
+            lines_to_cover as linesToCover,
+            new_conditions_to_cover as newConditionsToCover,
+            new_coverage as newCoverage,
+            new_lines_to_cover as newLinesToCover,
+            new_uncovered_conditions as newUncoveredConditions,
+            new_uncovered_lines as newUncoveredLines,
+            uncovered_conditions as uncoveredConditions,
+            uncovered_lines as uncoveredLines,
+            new_bugs as newBugs,
+            new_reliability_rating as newReliabilityRating,
+            reliability_rating as reliabilityRating,
+            new_code_smells as newCodeSmells,
+            new_sqale_debt_ratio as newSqaleDebtRatio,
+            new_technical_debt as newTechnicalDebt,
+            sqale_debt_ratio as sqaleDebtRatio,
+            sqale_index as sqaleIndex,
+            sqale_rating as sqaleRating,
+            confirmed_issues as confirmedIssues,
+            false_positive_issues as falsePositiveIssues,
+            info_violations as infoViolations,
+            new_blocker_violations as newBlockerViolations,
+            new_critical_violations as newCriticalViolations,
+            new_info_violations as newInfoViolations,
+            new_major_violations as newMajorViolations,
+            new_minor_violations as newMinorViolations,
+            new_violations as newViolations,
+            open_issues as openIssues,
+            reopened_issues as reopenedIssues,
+            wont_fix_issues as wontFixIssues,
+            alert_status as alertStatus,
+            quality_gate_details as qualityGateDetails,
+            new_maintainability_rating as newMaintainabilityRating
+        from deploy_version_build_quality
+        where version_id = #{versionId}
+        order by build_time desc
+        limit #{limit}
+    </select>
+
+    <select id="getDeployVersionUnitTestListByVersionIdWithLimit"
+            resultType="codedriver.framework.deploy.dto.version.DeployVersionUnitTestVo">
+        select
+            id,
+            version_id as versionId,
+            build_time as buildTime,
+            tests,
+            test_success_density as testSuccessDensity,
+            test_errors as testErrors,
+            branch_coverage as branchCoverage,
+            new_branch_coverage as newBranchCoverage,
+            line_coverage as lineCoverage,
+            new_line_coverage as newLineCoverage
+        from deploy_version_unit_test
+        where version_id = #{versionId}
+        order by build_time desc
+        limit #{limit}
+    </select>
+
+
     <update id="unFreezeDeployVersionById">
         update deploy_version
         set is_freeze = #{isFreeze}
