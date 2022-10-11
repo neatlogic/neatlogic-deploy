@@ -15,19 +15,19 @@ import javax.annotation.Resource;
 @Service
 @AuthAction(action = DEPLOY_BASE.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
-public class ListDeployVersionUnitTestApi extends PrivateApiComponentBase {
+public class GetDeployVersionLastUnitTestApi extends PrivateApiComponentBase {
 
     @Resource
     DeployVersionMapper deployVersionMapper;
 
     @Override
     public String getName() {
-        return "获取发布版本单元测试记录列表";
+        return "获取发布版本最近一次单元测试记录";
     }
 
     @Override
     public String getToken() {
-        return "deploy/versoin/unittest/list";
+        return "deploy/versoin/lastunittest/get";
     }
 
     @Override
@@ -36,14 +36,13 @@ public class ListDeployVersionUnitTestApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "versionId", desc = "版本号", isRequired = true, type = ApiParamType.STRING),
-            @Param(name = "limitCount", desc = "限制查询的记录数量", isRequired = true, type = ApiParamType.INTEGER),
+            @Param(name = "versionId", desc = "版本号", isRequired = true, type = ApiParamType.LONG),
     })
     @Output({
     })
-    @Description(desc = "获取发布版本单元测试记录列表")
+    @Description(desc = "获取发布版本最近一次单元测试记录")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
-        return deployVersionMapper.getDeployVersionUnitTestListByVersionIdWithLimit(paramObj.getLong("versionId"), paramObj.getInteger("limitCount"));
+        return deployVersionMapper.getDeployVersionUnitTestListByVersionIdWithLimit(paramObj.getLong("versionId"), 1);
     }
 }

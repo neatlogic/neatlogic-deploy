@@ -15,19 +15,19 @@ import javax.annotation.Resource;
 @Service
 @AuthAction(action = DEPLOY_BASE.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
-public class ListDeployVersionBuildQualityApi extends PrivateApiComponentBase {
+public class GetDeployVersionLastBuildQualityApi extends PrivateApiComponentBase {
 
     @Resource
     DeployVersionMapper deployVersionMapper;
 
     @Override
     public String getName() {
-        return "获取发布版本构建质量记录列表";
+        return "获取发布版本最后一次构建质量记录";
     }
 
     @Override
     public String getToken() {
-        return "deploy/versoin/build/quality/list";
+        return "deploy/versoin/lastbuildquality/get";
     }
 
     @Override
@@ -36,14 +36,13 @@ public class ListDeployVersionBuildQualityApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "versionId", desc = "版本号", isRequired = true, type = ApiParamType.STRING),
-            @Param(name = "limitCount", desc = "限制查询的记录数量", isRequired = true, type = ApiParamType.INTEGER),
+            @Param(name = "versionId", desc = "版本号", isRequired = true, type = ApiParamType.LONG),
     })
     @Output({
     })
-    @Description(desc = "获取发布版本构建质量")
+    @Description(desc = "获取发布版本最后一次构建质量记录")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
-        return deployVersionMapper.getDeployVersionBuildQualityListByVersionIdWithLimit(paramObj.getLong("versionId"), paramObj.getInteger("limitCount"));
+        return deployVersionMapper.getDeployVersionBuildQualityListByVersionIdWithLimit(paramObj.getLong("versionId"), 1);
     }
 }
