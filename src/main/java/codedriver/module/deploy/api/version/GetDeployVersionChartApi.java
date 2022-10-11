@@ -35,7 +35,7 @@ public class GetDeployVersionChartApi extends PrivateApiComponentBase {
     @Input({
             @Param(name = "versionId", desc = "版本号", isRequired = true, type = ApiParamType.LONG),
             @Param(name = "name", desc = "DeployVersionChart定义的图表tab名称", member = DeployVersionChart.class, isRequired = true, type = ApiParamType.ENUM),
-            @Param(name = "chartName", desc = "图表名称", isRequired = true, type = ApiParamType.STRING),
+            @Param(name = "chart", desc = "图表名称", isRequired = true, type = ApiParamType.STRING),
     })
     @Output({
     })
@@ -44,7 +44,7 @@ public class GetDeployVersionChartApi extends PrivateApiComponentBase {
     public Object myDoService(JSONObject paramObj) throws Exception {
         IDeployVersionChartHandler handler = DeployVersionChartHandlerFactory.getHandler(paramObj.getString("name"));
         if (handler != null) {
-            return handler.getChartData(paramObj.getString("chartName"), paramObj.getLong("versionId"));
+            return handler.getChartData(paramObj.getString("chart"), paramObj.getLong("versionId"));
         }
         return null;
     }
