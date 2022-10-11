@@ -22,7 +22,7 @@ public class DeployVersionCodeScanChartHandler extends DeployVersionChartHandler
     @Resource
     DeployVersionMapper deployVersionMapper;
 
-    private final static Map<String, Function<Long, Object>> chartMap = new HashMap<>();
+    private final static Map<String, Function<Long, JSONObject>> chartMap = new HashMap<>();
 
     final static String LAST_CODE_ISSUE = "last_code_issue"; //最近一次代码问题
     final static String LAST_FIVE_ANNOTATION_RATE = "last_five_annotation_rate"; //最近五次注释率
@@ -162,8 +162,8 @@ public class DeployVersionCodeScanChartHandler extends DeployVersionChartHandler
     }
 
     @Override
-    protected Object myGetChartData(String chartType, Long versionId) {
-        Function<Long, Object> function = chartMap.get(chartType);
+    protected JSONObject myGetChartData(String chartType, Long versionId) {
+        Function<Long, JSONObject> function = chartMap.get(chartType);
         if (function != null) {
             return function.apply(versionId);
         }

@@ -23,7 +23,7 @@ public class DeployVersionUnitTestChartHandler extends DeployVersionChartHandler
     @Resource
     DeployVersionMapper deployVersionMapper;
 
-    private final static Map<String, Function<Long, Object>> chartMap = new HashMap<>();
+    private final static Map<String, Function<Long, JSONObject>> chartMap = new HashMap<>();
 
     final static String LAST_CODE_TEST_RESULT = "last_code_test_result"; //最近一次代码测试结果
     final static String LAST_FIVE_INCREMENTAL_COVERAGE_RATE = "last_five_incremental_coverage_rate"; //最近五次增量覆盖率
@@ -109,8 +109,8 @@ public class DeployVersionUnitTestChartHandler extends DeployVersionChartHandler
     }
 
     @Override
-    protected Object myGetChartData(String chartType, Long versionId) {
-        Function<Long, Object> function = chartMap.get(chartType);
+    protected JSONObject myGetChartData(String chartType, Long versionId) {
+        Function<Long, JSONObject> function = chartMap.get(chartType);
         if (function != null) {
             return function.apply(versionId);
         }
