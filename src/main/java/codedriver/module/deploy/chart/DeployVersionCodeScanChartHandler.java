@@ -6,14 +6,17 @@ import codedriver.framework.deploy.dto.version.DeployVersionBuildQualityVo;
 import codedriver.module.deploy.dao.mapper.DeployVersionMapper;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
+@Component
 public class DeployVersionCodeScanChartHandler extends DeployVersionChartHandlerBase {
 
     @Resource
@@ -36,7 +39,6 @@ public class DeployVersionCodeScanChartHandler extends DeployVersionChartHandler
             data.put("data", dataList);
             List<DeployVersionBuildQualityVo> list = deployVersionMapper.getDeployVersionBuildQualityListByVersionIdWithLimit(versionId, 1);
             if (list.size() > 0) {
-
                 DeployVersionBuildQualityVo qualityVo = list.get(0);
                 dataList.add(new JSONObject() {
                     {
@@ -66,6 +68,7 @@ public class DeployVersionCodeScanChartHandler extends DeployVersionChartHandler
             data.put("data", dataList);
             List<DeployVersionBuildQualityVo> list = deployVersionMapper.getDeployVersionBuildQualityListByVersionIdWithLimit(versionId, 5);
             if (list.size() > 0) {
+                list.sort(Comparator.comparingLong(DeployVersionBuildQualityVo::getId));
                 for (DeployVersionBuildQualityVo vo : list) {
                     dataList.add(new JSONObject() {
                         {
@@ -91,6 +94,7 @@ public class DeployVersionCodeScanChartHandler extends DeployVersionChartHandler
             data.put("data", dataList);
             List<DeployVersionBuildQualityVo> list = deployVersionMapper.getDeployVersionBuildQualityListByVersionIdWithLimit(versionId, 5);
             if (list.size() > 0) {
+                list.sort(Comparator.comparingLong(DeployVersionBuildQualityVo::getId));
                 for (DeployVersionBuildQualityVo vo : list) {
                     dataList.add(new JSONObject() {
                         {
@@ -117,6 +121,7 @@ public class DeployVersionCodeScanChartHandler extends DeployVersionChartHandler
             data.put("data", dataList);
             List<DeployVersionBuildQualityVo> list = deployVersionMapper.getDeployVersionBuildQualityListByVersionIdWithLimit(versionId, 5);
             if (list.size() > 0) {
+                list.sort(Comparator.comparingLong(DeployVersionBuildQualityVo::getId));
                 for (DeployVersionBuildQualityVo vo : list) {
                     dataList.add(new JSONObject() {
                         {
@@ -142,6 +147,7 @@ public class DeployVersionCodeScanChartHandler extends DeployVersionChartHandler
             data.put("data", dataList);
             List<DeployVersionBuildQualityVo> list = deployVersionMapper.getDeployVersionBuildQualityListByVersionIdWithLimit(versionId, 5);
             if (list.size() > 0) {
+                list.sort(Comparator.comparingLong(DeployVersionBuildQualityVo::getId));
                 for (DeployVersionBuildQualityVo vo : list) {
                     dataList.add(new JSONObject() {
                         {
@@ -157,7 +163,11 @@ public class DeployVersionCodeScanChartHandler extends DeployVersionChartHandler
 
     @Override
     protected Object myGetChartData(String chartType, Long versionId) {
-        return chartMap.get(chartType).apply(versionId);
+        Function<Long, Object> function = chartMap.get(chartType);
+        if (function != null) {
+            return function.apply(versionId);
+        }
+        return null;
     }
 
     @Override

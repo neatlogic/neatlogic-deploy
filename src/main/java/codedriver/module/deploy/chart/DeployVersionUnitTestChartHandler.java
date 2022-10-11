@@ -2,18 +2,22 @@ package codedriver.module.deploy.chart;
 
 import codedriver.framework.deploy.chart.DeployVersionChartHandlerBase;
 import codedriver.framework.deploy.constvalue.DeployVersionChartMenu;
+import codedriver.framework.deploy.dto.version.DeployVersionBuildQualityVo;
 import codedriver.framework.deploy.dto.version.DeployVersionUnitTestVo;
 import codedriver.module.deploy.dao.mapper.DeployVersionMapper;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
+@Component
 public class DeployVersionUnitTestChartHandler extends DeployVersionChartHandlerBase {
 
     @Resource
@@ -21,7 +25,7 @@ public class DeployVersionUnitTestChartHandler extends DeployVersionChartHandler
 
     private final static Map<String, Function<Long, Object>> chartMap = new HashMap<>();
 
-    final static String LAST_CODE_TEST_RESULT = "LAST_CODE_TEST_RESULT"; //最近一次代码测试结果
+    final static String LAST_CODE_TEST_RESULT = "last_code_test_result"; //最近一次代码测试结果
     final static String LAST_FIVE_INCREMENTAL_COVERAGE_RATE = "last_five_incremental_coverage_rate"; //最近五次增量覆盖率
     final static String LAST_FIVE_FULL_COVERAGE_RATE = "last_five_full_coverage_rate"; //最近五次全量覆盖率
 
@@ -63,6 +67,7 @@ public class DeployVersionUnitTestChartHandler extends DeployVersionChartHandler
             data.put("data", dataList);
             List<DeployVersionUnitTestVo> list = deployVersionMapper.getDeployVersionUnitTestListByVersionIdWithLimit(versionId, 1);
             if (list.size() > 0) {
+                list.sort(Comparator.comparingLong(DeployVersionUnitTestVo::getId));
                 for (DeployVersionUnitTestVo vo : list) {
                     dataList.add(new JSONObject() {
                         {
@@ -88,6 +93,7 @@ public class DeployVersionUnitTestChartHandler extends DeployVersionChartHandler
             data.put("data", dataList);
             List<DeployVersionUnitTestVo> list = deployVersionMapper.getDeployVersionUnitTestListByVersionIdWithLimit(versionId, 1);
             if (list.size() > 0) {
+                list.sort(Comparator.comparingLong(DeployVersionUnitTestVo::getId));
                 for (DeployVersionUnitTestVo vo : list) {
                     dataList.add(new JSONObject() {
                         {
@@ -104,7 +110,11 @@ public class DeployVersionUnitTestChartHandler extends DeployVersionChartHandler
 
     @Override
     protected Object myGetChartData(String chartType, Long versionId) {
-        return chartMap.get(chartType).apply(versionId);
+        Function<Long, Object> function = chartMap.get(chartType);
+        if (function != null) {
+            return function.apply(versionId);
+        }
+        return null;
     }
 
     @Override
