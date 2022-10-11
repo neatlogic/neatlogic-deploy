@@ -2,7 +2,6 @@ package codedriver.module.deploy.chart;
 
 import codedriver.framework.deploy.chart.DeployVersionChartHandlerBase;
 import codedriver.framework.deploy.constvalue.DeployVersionChartMenu;
-import codedriver.framework.deploy.dto.version.DeployVersionBuildQualityVo;
 import codedriver.framework.deploy.dto.version.DeployVersionUnitTestVo;
 import codedriver.module.deploy.dao.mapper.DeployVersionMapper;
 import com.alibaba.fastjson.JSONArray;
@@ -109,8 +108,8 @@ public class DeployVersionUnitTestChartHandler extends DeployVersionChartHandler
     }
 
     @Override
-    protected JSONObject myGetChartData(String chartType, Long versionId) {
-        Function<Long, JSONObject> function = chartMap.get(chartType);
+    protected JSONObject myGetChartData(String chartName, Long versionId) {
+        Function<Long, JSONObject> function = chartMap.get(chartName);
         if (function != null) {
             return function.apply(versionId);
         }

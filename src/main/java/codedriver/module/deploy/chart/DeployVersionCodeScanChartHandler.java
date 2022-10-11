@@ -162,8 +162,8 @@ public class DeployVersionCodeScanChartHandler extends DeployVersionChartHandler
     }
 
     @Override
-    protected JSONObject myGetChartData(String chartType, Long versionId) {
-        Function<Long, JSONObject> function = chartMap.get(chartType);
+    protected JSONObject myGetChartData(String chartName, Long versionId) {
+        Function<Long, JSONObject> function = chartMap.get(chartName);
         if (function != null) {
             return function.apply(versionId);
         }
