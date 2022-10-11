@@ -34,7 +34,7 @@ public class GetDeployVersionChartApi extends PrivateApiComponentBase {
 
     @Input({
             @Param(name = "versionId", desc = "版本号", isRequired = true, type = ApiParamType.LONG),
-            @Param(name = "menu", desc = "DeployVersionChart定义的图表菜单", member = DeployVersionChart.class, isRequired = true, type = ApiParamType.ENUM),
+            @Param(name = "name", desc = "DeployVersionChart定义的图表tab名称", member = DeployVersionChart.class, isRequired = true, type = ApiParamType.ENUM),
             @Param(name = "chartName", desc = "图表名称", isRequired = true, type = ApiParamType.STRING),
     })
     @Output({
@@ -42,7 +42,7 @@ public class GetDeployVersionChartApi extends PrivateApiComponentBase {
     @Description(desc = "获取发布版本图表数据")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
-        IDeployVersionChartHandler handler = DeployVersionChartHandlerFactory.getHandler(paramObj.getString("menu"));
+        IDeployVersionChartHandler handler = DeployVersionChartHandlerFactory.getHandler(paramObj.getString("name"));
         if (handler != null) {
             return handler.getChartData(paramObj.getString("chartName"), paramObj.getLong("versionId"));
         }
