@@ -1,7 +1,7 @@
 package codedriver.module.deploy.chart;
 
 import codedriver.framework.deploy.chart.DeployVersionChartHandlerBase;
-import codedriver.framework.deploy.constvalue.DeployVersionChartMenu;
+import codedriver.framework.deploy.constvalue.DeployVersionChart;
 import codedriver.framework.deploy.dto.version.DeployVersionBuildQualityVo;
 import codedriver.module.deploy.dao.mapper.DeployVersionMapper;
 import com.alibaba.fastjson.JSONArray;
@@ -171,7 +171,7 @@ public class DeployVersionCodeScanChartHandler extends DeployVersionChartHandler
     }
 
     @Override
-    public String getMenu() {
-        return DeployVersionChartMenu.CODE_SCAN.getValue();
+    public String getName() {
+        return DeployVersionChart.CODE_SCAN.getValue();
     }
 }

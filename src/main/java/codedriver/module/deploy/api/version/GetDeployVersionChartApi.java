@@ -5,7 +5,7 @@ import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.deploy.auth.DEPLOY_BASE;
 import codedriver.framework.deploy.chart.DeployVersionChartHandlerFactory;
 import codedriver.framework.deploy.chart.IDeployVersionChartHandler;
-import codedriver.framework.deploy.constvalue.DeployVersionChartMenu;
+import codedriver.framework.deploy.constvalue.DeployVersionChart;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
@@ -34,7 +34,7 @@ public class GetDeployVersionChartApi extends PrivateApiComponentBase {
 
     @Input({
             @Param(name = "versionId", desc = "版本号", isRequired = true, type = ApiParamType.LONG),
-            @Param(name = "menu", desc = "DeployVersionChartMenu定义的图表菜单", member = DeployVersionChartMenu.class, isRequired = true, type = ApiParamType.ENUM),
+            @Param(name = "menu", desc = "DeployVersionChart定义的图表菜单", member = DeployVersionChart.class, isRequired = true, type = ApiParamType.ENUM),
             @Param(name = "chartName", desc = "图表名称", isRequired = true, type = ApiParamType.STRING),
     })
     @Output({
