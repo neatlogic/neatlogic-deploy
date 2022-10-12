@@ -6,7 +6,8 @@ import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
 import codedriver.framework.cmdb.exception.cientity.CiEntityNotFoundException;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.crossover.CrossoverServiceFactory;
-import codedriver.framework.deploy.auth.DEPLOY_MODIFY;
+import codedriver.framework.deploy.auth.DEPLOY_BASE;
+import codedriver.framework.deploy.constvalue.DeployAppConfigAction;
 import codedriver.framework.deploy.constvalue.DeployCiGitlabAuthMode;
 import codedriver.framework.deploy.constvalue.DeployCiRepoType;
 import codedriver.framework.deploy.dto.ci.DeployCiVo;
@@ -22,6 +23,7 @@ import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.framework.util.HttpRequestUtil;
 import codedriver.module.deploy.dao.mapper.DeployCiMapper;
+import codedriver.module.deploy.service.DeployAppAuthorityService;
 import codedriver.module.deploy.service.DeployCiService;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.lang3.StringUtils;
@@ -34,7 +36,7 @@ import javax.annotation.Resource;
 
 @Service
 @Transactional
-@AuthAction(action = DEPLOY_MODIFY.class)
+@AuthAction(action = DEPLOY_BASE.class)
 @OperationType(type = OperationTypeEnum.OPERATE)
 public class DeleteDeployCiApi extends PrivateApiComponentBase {
 
@@ -45,6 +47,9 @@ public class DeleteDeployCiApi extends PrivateApiComponentBase {
 
     @Resource
     DeployCiService deployCiService;
+
+    @Resource
+    DeployAppAuthorityService deployAppAuthorityService;
 
     @Override
     public String getName() {
@@ -69,35 +74,38 @@ public class DeleteDeployCiApi extends PrivateApiComponentBase {
     public Object myDoService(JSONObject paramObj) throws Exception {
         Long id = paramObj.getLong("id");
         DeployCiVo ci = deployCiMapper.getDeployCiById(id);
-        if (ci != null && DeployCiRepoType.GITLAB.getValue().equals(ci.getRepoType())) {
-            ICiEntityCrossoverMapper iCiEntityCrossoverMapper = CrossoverServiceFactory.getApi(ICiEntityCrossoverMapper.class);
-            CiEntityVo system = iCiEntityCrossoverMapper.getCiEntityBaseInfoById(ci.getAppSystemId());
-            if (system == null) {
-                throw new CiEntityNotFoundException(ci.getAppSystemId());
-            }
-            CiEntityVo module = iCiEntityCrossoverMapper.getCiEntityBaseInfoById(ci.getAppModuleId());
-            if (module == null) {
-                throw new CiEntityNotFoundException(ci.getAppModuleId());
-            }
-            RunnerVo runnerVo = deployCiService.getRandomRunnerBySystemIdAndModuleId(system, module);
-            String gitlabUsername = ci.getConfig().getString("gitlabUsername");
-            String gitlabPassword = ci.getConfig().getString("gitlabPassword");
-            if (StringUtils.isBlank(gitlabUsername) || StringUtils.isBlank(gitlabPassword)) {
-                throw new DeployCiGitlabAccountLostException();
-            }
-            JSONObject param = new JSONObject();
-            param.put("hookId", ci.getHookId());
-            param.put("repoServerAddress", ci.getRepoServerAddress());
-            param.put("repoName", ci.getRepoName());
-            param.put("authMode", DeployCiGitlabAuthMode.ACCESS_TOKEN.getValue());
-            param.put("username", gitlabUsername);
-            param.put("password", gitlabPassword);
-            String url = runnerVo.getUrl() + "/api/rest/deploy/ci/gitlabwebhook/delete";
-            HttpRequestUtil request = HttpRequestUtil.post(url).setPayload(param.toJSONString()).setAuthType(AuthenticateType.BUILDIN).sendRequest();
-            String error = request.getError();
-            if (StringUtils.isNotBlank(error)) {
-                logger.error("Gitlab webhook delete failed. Request url: {}; params: {}; error: {}", url, param.toJSONString(), error);
-                throw new DeployCiGitlabWebHookDeleteFailedException();
+        if (ci != null) {
+            deployAppAuthorityService.checkOperationAuth(ci.getAppSystemId(), DeployAppConfigAction.EDIT);
+            if (DeployCiRepoType.GITLAB.getValue().equals(ci.getRepoType())) {
+                ICiEntityCrossoverMapper iCiEntityCrossoverMapper = CrossoverServiceFactory.getApi(ICiEntityCrossoverMapper.class);
+                CiEntityVo system = iCiEntityCrossoverMapper.getCiEntityBaseInfoById(ci.getAppSystemId());
+                if (system == null) {
+                    throw new CiEntityNotFoundException(ci.getAppSystemId());
+                }
+                CiEntityVo module = iCiEntityCrossoverMapper.getCiEntityBaseInfoById(ci.getAppModuleId());
+                if (module == null) {
+                    throw new CiEntityNotFoundException(ci.getAppModuleId());
+                }
+                RunnerVo runnerVo = deployCiService.getRandomRunnerBySystemIdAndModuleId(system, module);
+                String gitlabUsername = ci.getConfig().getString("gitlabUsername");
+                String gitlabPassword = ci.getConfig().getString("gitlabPassword");
+                if (StringUtils.isBlank(gitlabUsername) || StringUtils.isBlank(gitlabPassword)) {
+                    throw new DeployCiGitlabAccountLostException();
+                }
+                JSONObject param = new JSONObject();
+                param.put("hookId", ci.getHookId());
+                param.put("repoServerAddress", ci.getRepoServerAddress());
+                param.put("repoName", ci.getRepoName());
+                param.put("authMode", DeployCiGitlabAuthMode.ACCESS_TOKEN.getValue());
+                param.put("username", gitlabUsername);
+                param.put("password", gitlabPassword);
+                String url = runnerVo.getUrl() + "/api/rest/deploy/ci/gitlabwebhook/delete";
+                HttpRequestUtil request = HttpRequestUtil.post(url).setPayload(param.toJSONString()).setAuthType(AuthenticateType.BUILDIN).sendRequest();
+                String error = request.getError();
+                if (StringUtils.isNotBlank(error)) {
+                    logger.error("Gitlab webhook delete failed. Request url: {}; params: {}; error: {}", url, param.toJSONString(), error);
+                    throw new DeployCiGitlabWebHookDeleteFailedException();
+                }
             }
         }
         deployCiMapper.deleteDeployCiById(id);
