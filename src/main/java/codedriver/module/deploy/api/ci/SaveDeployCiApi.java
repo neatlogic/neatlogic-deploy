@@ -7,7 +7,7 @@ import codedriver.framework.cmdb.exception.cientity.CiEntityNotFoundException;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.util.RC4Util;
 import codedriver.framework.crossover.CrossoverServiceFactory;
-import codedriver.framework.deploy.auth.DEPLOY_MODIFY;
+import codedriver.framework.deploy.auth.DEPLOY_BASE;
 import codedriver.framework.deploy.constvalue.*;
 import codedriver.framework.deploy.dto.ci.DeployCiVo;
 import codedriver.framework.deploy.exception.DeployCiGitlabAccountLostException;
@@ -26,6 +26,7 @@ import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.framework.util.HttpRequestUtil;
 import codedriver.framework.util.RegexUtils;
 import codedriver.module.deploy.dao.mapper.DeployCiMapper;
+import codedriver.module.deploy.service.DeployAppAuthorityService;
 import codedriver.module.deploy.service.DeployCiService;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.lang3.StringUtils;
@@ -38,7 +39,7 @@ import javax.annotation.Resource;
 
 @Service
 @Transactional
-@AuthAction(action = DEPLOY_MODIFY.class)
+@AuthAction(action = DEPLOY_BASE.class)
 @OperationType(type = OperationTypeEnum.OPERATE)
 public class SaveDeployCiApi extends PrivateApiComponentBase {
 
@@ -49,6 +50,9 @@ public class SaveDeployCiApi extends PrivateApiComponentBase {
 
     @Resource
     DeployCiService deployCiService;
+
+    @Resource
+    DeployAppAuthorityService deployAppAuthorityService;
 
     @Override
     public String getName() {
@@ -86,6 +90,7 @@ public class SaveDeployCiApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         DeployCiVo deployCiVo = paramObj.toJavaObject(DeployCiVo.class);
+        deployAppAuthorityService.checkOperationAuth(deployCiVo.getAppSystemId(), DeployAppConfigAction.EDIT);
         if (deployCiMapper.checkDeployCiIsRepeat(deployCiVo) > 0) {
             throw new DeployCiIsRepeatException(deployCiVo.getName());
         }
