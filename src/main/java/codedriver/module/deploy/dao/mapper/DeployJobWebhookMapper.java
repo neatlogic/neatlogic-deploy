@@ -40,4 +40,6 @@ public interface DeployJobWebhookMapper {
     int deleteWebhookAuditByWebhookId(Long id);
 
     void ActivateJobWebhookById(@Param("id") Long id, @Param("isActive") Integer isActive);
+
+    void deleteWebhookByIdAppModuleByWebhookId(Long id);
 }
