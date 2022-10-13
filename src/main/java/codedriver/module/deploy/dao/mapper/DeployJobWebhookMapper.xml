@@ -184,4 +184,10 @@
         from deploy_job_webhook_audit
         where webhook_id = #{value}
     </delete>
+
+    <delete id="deleteWebhookByIdAppModuleByWebhookId">
+        delete
+        from deploy_job_webhook_app_module
+        where webhook_id = #{value}
+    </delete>
 </mapper>

@@ -72,21 +72,22 @@ public class SaveDeployJobWebhookApi extends PrivateApiComponentBase {
         }
         if (id == null) {
             webhookMapper.insertJobWebhook(deployJobWebhookVo);
-            if (Objects.equals(ScheduleType.GENERAL.getValue(), deployJobWebhookVo.getType())) {
-                List<DeployJobWebhookAppModuleVo> appModuleVoList = deployJobWebhookVo.getConfig().getWebhookAppModuleList();
-                if (CollectionUtils.isNotEmpty(appModuleVoList)) {
-                    for (DeployJobWebhookAppModuleVo appModuleVo : appModuleVoList) {
-                        appModuleVo.setWebhookId(deployJobWebhookVo.getId());
-                        webhookMapper.insertJobWebhookAppModule(appModuleVo);
-                    }
-                }
-            }
         } else {
             DeployJobWebhookVo oldWebhook = webhookMapper.getWebhookById(id);
             if (oldWebhook == null) {
                 throw new DeployWebhookNotFoundException(id);
             }
+            webhookMapper.deleteWebhookByIdAppModuleByWebhookId(id);
             webhookMapper.updateJobWebhook(deployJobWebhookVo);
+        }
+        if (Objects.equals(ScheduleType.GENERAL.getValue(), deployJobWebhookVo.getType())) {
+            List<DeployJobWebhookAppModuleVo> appModuleVoList = deployJobWebhookVo.getConfig().getWebhookAppModuleList();
+            if (CollectionUtils.isNotEmpty(appModuleVoList)) {
+                for (DeployJobWebhookAppModuleVo appModuleVo : appModuleVoList) {
+                    appModuleVo.setWebhookId(deployJobWebhookVo.getId());
+                    webhookMapper.insertJobWebhookAppModule(appModuleVo);
+                }
+            }
         }
         return null;
     }
