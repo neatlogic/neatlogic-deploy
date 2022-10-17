@@ -41,8 +41,8 @@ public class AutoexecScenarioDeployPipelineDependencyHandler extends FixedTableD
         Long configId = Long.valueOf(dependencyVo.getTo());
 
         Long appSystemId = config.getLong("appSystemId");
-        Long moduleId = config.getLong("moduleId");
-        Long envId = config.getLong("envId");
+        Long moduleId = config.getLong("moduleId") != 0L ? config.getLong("moduleId") : null;
+        Long envId = config.getLong("envId") != 0L ? config.getLong("envId") : null;
         List<Long> ciEntityIdList = new ArrayList<>();
         ciEntityIdList.add(appSystemId);
         if (Objects.nonNull(moduleId)) {

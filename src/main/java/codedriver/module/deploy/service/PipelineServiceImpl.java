@@ -126,10 +126,9 @@ public class PipelineServiceImpl implements PipelineService {
             return;
         }
 
-        String dependencyToString = "systemId&" + deployAppConfigVo.getAppSystemId().toString() + (deployAppConfigVo.getAppModuleId() != null ? "moduleId&" + deployAppConfigVo.getAppModuleId() : "") + (deployAppConfigVo.getEnvId() != null ? "envId&" + deployAppConfigVo.getEnvId() : "");
         List<AutoexecCombopScenarioVo> scenarioList = config.getScenarioList();
         if (CollectionUtils.isNotEmpty(scenarioList)) {
-            DependencyManager.delete(AutoexecScenarioDeployPipelineDependencyHandler.class, dependencyToString);
+            DependencyManager.delete(AutoexecScenarioDeployPipelineDependencyHandler.class, deployAppConfigVo.getId());
         }
 
         List<DeployPipelinePhaseVo> combopPhaseList = config.getCombopPhaseList();
