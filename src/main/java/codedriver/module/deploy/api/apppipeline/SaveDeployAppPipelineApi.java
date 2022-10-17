@@ -271,27 +271,29 @@ public class SaveDeployAppPipelineApi extends PrivateApiComponentBase {
             return;
         }
 
+        Long appSystemId = deployAppConfigVo.getAppSystemId();
+        Long moduleId = deployAppConfigVo.getAppModuleId();
+        Long envId = deployAppConfigVo.getEnvId();
+
         JSONObject dependencyConfig = new JSONObject();
-        dependencyConfig.put("appSystemId", deployAppConfigVo.getAppSystemId());
-        dependencyConfig.put("appSystemName", deployAppConfigVo.getAppSystemName());
+        dependencyConfig.put("appSystemId", appSystemId);
+        dependencyConfig.put("moduleId", moduleId);
+        dependencyConfig.put("envId", envId);
 
         List<AutoexecCombopScenarioVo> scenarioList = config.getScenarioList();
         if (CollectionUtils.isNotEmpty(scenarioList)) {
             for (AutoexecCombopScenarioVo scenarioVo : scenarioList) {
                 dependencyConfig.put("scenarioId", scenarioVo.getScenarioId());
                 dependencyConfig.put("scenarioName", scenarioVo.getScenarioName());
-                DependencyManager.insert(AutoexecScenarioDeployPipelineDependencyHandler.class, scenarioVo.getScenarioId(), deployAppConfigVo.getAppSystemId(), dependencyConfig);
+                DependencyManager.insert(AutoexecScenarioDeployPipelineDependencyHandler.class, scenarioVo.getScenarioId(),  deployAppConfigVo.getId(), dependencyConfig);
             }
         }
-
 
         List<DeployPipelinePhaseVo> combopPhaseList = config.getCombopPhaseList();
         if (CollectionUtils.isEmpty(combopPhaseList)) {
             return;
         }
-        Long appSystemId = deployAppConfigVo.getAppSystemId();
-        Long moduleId = deployAppConfigVo.getAppModuleId();
-        Long envId = deployAppConfigVo.getEnvId();
+
         for (DeployPipelinePhaseVo combopPhaseVo : combopPhaseList) {
             if (combopPhaseVo == null) {
                 continue;
