@@ -28,6 +28,7 @@ import codedriver.module.deploy.dao.mapper.DeployAppConfigMapper;
 import codedriver.module.deploy.dependency.handler.AutoexecGlobalParam2DeployAppPipelinePhaseOperationArgumentParamDependencyHandler;
 import codedriver.module.deploy.dependency.handler.AutoexecGlobalParam2DeployAppPipelinePhaseOperationInputParamDependencyHandler;
 import codedriver.module.deploy.dependency.handler.AutoexecProfile2DeployAppPipelinePhaseOperationDependencyHandler;
+import codedriver.module.deploy.dependency.handler.AutoexecScenarioDeployPipelineDependencyHandler;
 import codedriver.module.deploy.service.DeployAppAuthorityService;
 import codedriver.module.deploy.service.PipelineService;
 import com.alibaba.fastjson.JSONObject;
@@ -143,6 +144,7 @@ public class SaveDeployAppPipelineApi extends PrivateApiComponentBase {
 
     /**
      * 设置阶段的组id
+     *
      * @param deployAppConfigVo
      */
     private void setPhaseGroupId(DeployAppConfigVo deployAppConfigVo) {
@@ -168,8 +170,10 @@ public class SaveDeployAppPipelineApi extends PrivateApiComponentBase {
             }
         }
     }
+
     /**
      * 重新生成阶段id和操作id
+     *
      * @param deployAppConfigVo
      */
     private void regeneratePhaseIdAndOperationId(DeployAppConfigVo deployAppConfigVo) {
@@ -192,8 +196,10 @@ public class SaveDeployAppPipelineApi extends PrivateApiComponentBase {
             regenerateOperationId(combopPhaseVo);
         }
     }
+
     /**
      * 重新生成操作id
+     *
      * @param deployAppConfigVo
      */
     private void regenerateOperationId(DeployAppConfigVo deployAppConfigVo) {
@@ -206,14 +212,16 @@ public class SaveDeployAppPipelineApi extends PrivateApiComponentBase {
             if (combopPhaseVo == null) {
                 continue;
             }
-            if(!Objects.equals(combopPhaseVo.getOverride(), 1)) {
+            if (!Objects.equals(combopPhaseVo.getOverride(), 1)) {
                 continue;
             }
             regenerateOperationId(combopPhaseVo);
         }
     }
+
     /**
      * 重新生成操作id
+     *
      * @param combopPhaseVo
      */
     private void regenerateOperationId(AutoexecCombopPhaseVo combopPhaseVo) {
@@ -226,7 +234,7 @@ public class SaveDeployAppPipelineApi extends PrivateApiComponentBase {
             return;
         }
         for (AutoexecCombopPhaseOperationVo phaseOperationVo : operationList) {
-            if(phaseOperationVo == null) {
+            if (phaseOperationVo == null) {
                 continue;
             }
             phaseOperationVo.setId(null);
@@ -251,8 +259,10 @@ public class SaveDeployAppPipelineApi extends PrivateApiComponentBase {
             }
         }
     }
+
     /**
-     * 保存阶段中操作工具对预置参数集和全局参数的引用关系
+     * 保存阶段中操作工具对预置参数集和全局参数的引用关系、流水线对场景的引用关系
+     *
      * @param deployAppConfigVo
      */
     private void saveDependency(DeployAppConfigVo deployAppConfigVo) {
@@ -260,6 +270,21 @@ public class SaveDeployAppPipelineApi extends PrivateApiComponentBase {
         if (config == null) {
             return;
         }
+
+        JSONObject dependencyConfig = new JSONObject();
+        dependencyConfig.put("appSystemId", deployAppConfigVo.getAppSystemId());
+        dependencyConfig.put("appSystemName", deployAppConfigVo.getAppSystemName());
+
+        List<AutoexecCombopScenarioVo> scenarioList = config.getScenarioList();
+        if (CollectionUtils.isNotEmpty(scenarioList)) {
+            for (AutoexecCombopScenarioVo scenarioVo : scenarioList) {
+                dependencyConfig.put("scenarioId", scenarioVo.getScenarioId());
+                dependencyConfig.put("scenarioName", scenarioVo.getScenarioName());
+                DependencyManager.insert(AutoexecScenarioDeployPipelineDependencyHandler.class, scenarioVo.getScenarioId(), deployAppConfigVo.getAppSystemId(), dependencyConfig);
+            }
+        }
+
+
         List<DeployPipelinePhaseVo> combopPhaseList = config.getCombopPhaseList();
         if (CollectionUtils.isEmpty(combopPhaseList)) {
             return;
@@ -313,8 +338,10 @@ public class SaveDeployAppPipelineApi extends PrivateApiComponentBase {
             }
         }
     }
+
     /**
      * 保存阶段中操作工具对预置参数集和全局参数的引用关系
+     *
      * @param combopPhaseVo
      * @param phaseOperationVo
      * @param appSystemId
