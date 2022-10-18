@@ -5,12 +5,12 @@
 
 package codedriver.module.deploy.service;
 
-import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.auth.core.AuthActionChecker;
 import codedriver.framework.autoexec.dto.combop.AutoexecCombopPhaseConfigVo;
 import codedriver.framework.autoexec.dto.combop.AutoexecCombopPhaseOperationConfigVo;
 import codedriver.framework.autoexec.dto.combop.AutoexecCombopPhaseOperationVo;
+import codedriver.framework.autoexec.dto.combop.AutoexecCombopScenarioVo;
 import codedriver.framework.cmdb.crossover.IAppSystemMapper;
 import codedriver.framework.cmdb.dto.resourcecenter.entity.AppSystemVo;
 import codedriver.framework.crossover.CrossoverServiceFactory;
@@ -29,6 +29,7 @@ import codedriver.module.deploy.dao.mapper.DeployPipelineMapper;
 import codedriver.module.deploy.dependency.handler.AutoexecGlobalParam2DeployAppPipelinePhaseOperationArgumentParamDependencyHandler;
 import codedriver.module.deploy.dependency.handler.AutoexecGlobalParam2DeployAppPipelinePhaseOperationInputParamDependencyHandler;
 import codedriver.module.deploy.dependency.handler.AutoexecProfile2DeployAppPipelinePhaseOperationDependencyHandler;
+import codedriver.module.deploy.dependency.handler.AutoexecScenarioDeployPipelineDependencyHandler;
 import com.alibaba.fastjson.JSONArray;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -124,6 +125,12 @@ public class PipelineServiceImpl implements PipelineService {
         if (config == null) {
             return;
         }
+
+        List<AutoexecCombopScenarioVo> scenarioList = config.getScenarioList();
+        if (CollectionUtils.isNotEmpty(scenarioList)) {
+            DependencyManager.delete(AutoexecScenarioDeployPipelineDependencyHandler.class, deployAppConfigVo.getId());
+        }
+
         List<DeployPipelinePhaseVo> combopPhaseList = config.getCombopPhaseList();
         if (CollectionUtils.isEmpty(combopPhaseList)) {
             return;
