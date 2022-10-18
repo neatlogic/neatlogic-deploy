@@ -1,6 +1,5 @@
 package codedriver.module.deploy.api.appconfig.env;
 
-import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.cmdb.crossover.IResourceCrossoverMapper;
 import codedriver.framework.cmdb.dto.resourcecenter.ResourceVo;
@@ -54,6 +53,7 @@ public class SearchDeployAppModuleEnvAutoConfigInstanceApi extends PrivateApiCom
     }
 
     @Input({
+            @Param(name = "keyword", type = ApiParamType.STRING, desc = "模糊查询"),
             @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "应用 id"),
             @Param(name = "appModuleId", type = ApiParamType.LONG, isRequired = true, desc = "模块 id"),
             @Param(name = "envId", type = ApiParamType.LONG, isRequired = true, desc = "环境 id"),

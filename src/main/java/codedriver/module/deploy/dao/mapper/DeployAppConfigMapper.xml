@@ -847,6 +847,9 @@
             and `app_module_id` = #{appModuleId}
             and `env_id` = #{envId})
         </if>
+        <if test="keyword != null and keyword != ''">
+            AND (a.`ip` LIKE concat('%', #{keyword}, '%') or a.`port` LIKE concat('%', #{keyword},'%'))
+        </if>
     </sql>
 
     <select id="getAppModuleEnvAutoConfigInstanceIdCount" parameterType="codedriver.framework.deploy.dto.app.DeployAppEnvAutoConfigVo" resultType="int" useCache="false">
@@ -861,16 +864,20 @@
         LIMIT #{startNum}, #{pageSize}
     </select>
 
-    <select id="getAppConfigEnvInstanceCount" parameterType="codedriver.framework.deploy.dto.app.DeployAppConfigInstanceVo" resultType="int" useCache="false">
-        SELECT count(a.`id`)
+    <sql id="searchAppConfigEnvInstance">
         FROM @{DATA_SCHEMA}.`scence_appinstance_ip_port_env_appmodule` a
         WHERE
-        ( a.`app_module_id` IS NULL AND a.`env_id` IS NULL )
+        (( a.`app_module_id` IS NULL AND a.`env_id` IS NULL )
         OR ( a.`app_module_id` IS NULL AND a.`env_id` = #{envId} )
-        OR (a.`app_module_id` = #{appModuleId} AND a.`env_id` IS NULL)
+        OR (a.`app_module_id` = #{appModuleId} AND a.`env_id` IS NULL))
         <if test="keyword != null and keyword != ''">
-            AND a.`ip` LIKE concat('%', #{keyword}, '%') or a.`port` LIKE concat('%', #{keyword},'%')
+            AND (a.`ip` LIKE concat('%', #{keyword}, '%') or a.`port` LIKE concat('%', #{keyword},'%'))
         </if>
+    </sql>
+
+    <select id="getAppConfigEnvInstanceCount" parameterType="codedriver.framework.deploy.dto.app.DeployAppConfigInstanceVo" resultType="int" useCache="false">
+        SELECT count(a.`id`)
+        <include refid="searchAppConfigEnvInstance"></include>
     </select>
 
     <select id="searchAppConfigEnvInstanceList"
@@ -879,14 +886,7 @@
         a.`ip`,
         a.`port`,
         a.`name`
-        FROM @{DATA_SCHEMA}.`scence_appinstance_ip_port_env_appmodule` a
-        WHERE
-        ( a.`app_module_id` IS NULL AND a.`env_id` IS NULL )
-        OR ( a.`app_module_id` IS NULL AND a.`env_id` = #{envId} )
-        OR (a.`app_module_id` = #{appModuleId} AND a.`env_id` IS NULL)
-        <if test="keyword != null and keyword != ''">
-            AND a.`ip` LIKE concat('%', #{keyword}, '%') or a.`port` LIKE concat('%', #{keyword},'%')
-        </if>
+        <include refid="searchAppConfigEnvInstance"></include>
         ORDER BY a.`id` DESC
         LIMIT #{startNum}, #{pageSize}
     </select>
