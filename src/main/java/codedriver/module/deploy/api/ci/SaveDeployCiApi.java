@@ -127,11 +127,11 @@ public class SaveDeployCiApi extends PrivateApiComponentBase {
             param.put("password", gitlabPassword);
             String url = runnerVo.getUrl() + "/api/rest/deploy/ci/gitlabwebhook/save";
             HttpRequestUtil request = HttpRequestUtil.post(url).setPayload(param.toJSONString()).setAuthType(AuthenticateType.BUILDIN).sendRequest();
-            String error = request.getError();
+            String errorMsg = request.getErrorMsg();
             JSONObject resultJson = request.getResultJson();
-            if (StringUtils.isNotBlank(error)) {
-                logger.error("Gitlab webhook save failed. Request url: {}; params: {}; error: {}", url, param.toJSONString(), error);
-                throw new DeployCiGitlabWebHookSaveFailedException();
+            if (StringUtils.isNotBlank(errorMsg)) {
+                logger.error("Gitlab webhook save failed. Request url: {}; params: {}; errorMsg: {}", url, param.toJSONString(), errorMsg);
+                throw new DeployCiGitlabWebHookSaveFailedException(errorMsg);
             }
             if (ci == null) {
                 deployCiVo.setHookId(resultJson.getString("Return"));

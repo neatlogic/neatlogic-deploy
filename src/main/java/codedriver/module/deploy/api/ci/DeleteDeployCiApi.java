@@ -101,9 +101,9 @@ public class DeleteDeployCiApi extends PrivateApiComponentBase {
                 param.put("password", gitlabPassword);
                 String url = runnerVo.getUrl() + "/api/rest/deploy/ci/gitlabwebhook/delete";
                 HttpRequestUtil request = HttpRequestUtil.post(url).setPayload(param.toJSONString()).setAuthType(AuthenticateType.BUILDIN).sendRequest();
-                String error = request.getError();
-                if (StringUtils.isNotBlank(error)) {
-                    logger.error("Gitlab webhook delete failed. Request url: {}; params: {}; error: {}", url, param.toJSONString(), error);
+                String errorMsg = request.getErrorMsg();
+                if (StringUtils.isNotBlank(errorMsg)) {
+                    logger.error("Gitlab webhook delete failed. Request url: {}; params: {}; errorMsg: {}", url, param.toJSONString(), errorMsg);
                     throw new DeployCiGitlabWebHookDeleteFailedException();
                 }
             }
