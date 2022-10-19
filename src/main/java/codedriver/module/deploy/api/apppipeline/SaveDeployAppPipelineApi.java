@@ -131,6 +131,7 @@ public class SaveDeployAppPipelineApi extends PrivateApiComponentBase {
         if (oldDeployAppConfigVo != null) {
             pipelineService.deleteDependency(oldDeployAppConfigVo);
             deployAppConfigVo.setLcu(UserContext.get().getUserUuid());
+            deployAppConfigVo.setId(oldDeployAppConfigVo.getId());
             deployAppConfigMapper.updateAppConfig(deployAppConfigVo);
             saveDependency(deployAppConfigVo);
             deployAppConfigMapper.deleteAppConfigDraft(deployAppConfigVo);
