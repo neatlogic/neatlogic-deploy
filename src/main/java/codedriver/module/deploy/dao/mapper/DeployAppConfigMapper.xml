@@ -321,7 +321,8 @@
 
     <select id="getAppConfigVo" parameterType="codedriver.framework.deploy.dto.app.DeployAppConfigVo"
             resultType="codedriver.framework.deploy.dto.app.DeployAppConfigVo" useCache="true">
-        SELECT `app_system_id` as appSystemId,
+        SELECT `id`            as id,
+               `app_system_id` as appSystemId,
                `app_module_id` as appModuleId,
                `env_id`        as envId,
                `config`        as configStr,
