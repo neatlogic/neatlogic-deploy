@@ -171,6 +171,7 @@
             `trigger_time` = #{triggerTime},
             `version_rule` = #{versionRuleStr},
             `config` = #{configStr},
+            `hook_id` = #{hookId},
             `lcu` = #{lcu},
             `lcd` = now(3)
     </insert>
