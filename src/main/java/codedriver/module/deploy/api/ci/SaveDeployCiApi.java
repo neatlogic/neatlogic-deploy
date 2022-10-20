@@ -133,9 +133,7 @@ public class SaveDeployCiApi extends PrivateApiComponentBase {
                 logger.error("Gitlab webhook save failed. Request url: {}; params: {}; errorMsg: {}", url, param.toJSONString(), errorMsg);
                 throw new DeployCiGitlabWebHookSaveFailedException(errorMsg);
             }
-            if (ci == null) {
-                deployCiVo.setHookId(resultJson.getString("Return"));
-            }
+            deployCiVo.setHookId(resultJson.getString("Return"));
         }
         deployCiMapper.insertDeployCi(deployCiVo);
         return null;
