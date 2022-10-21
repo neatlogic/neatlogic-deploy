@@ -8,6 +8,7 @@ import codedriver.framework.autoexec.dto.job.AutoexecJobVo;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.constvalue.SystemUser;
 import codedriver.framework.deploy.constvalue.DeployCiActionType;
+import codedriver.framework.deploy.constvalue.DeployCiAuditStatus;
 import codedriver.framework.deploy.constvalue.DeployCiRepoType;
 import codedriver.framework.deploy.constvalue.DeployCiTriggerType;
 import codedriver.framework.deploy.dto.ci.DeployCiAuditVo;
@@ -23,7 +24,6 @@ import codedriver.framework.restful.annotation.Param;
 import codedriver.framework.restful.constvalue.ApiAnonymousAccessSupportEnum;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
-import codedriver.framework.restful.enums.ApiInvokedStatus;
 import codedriver.framework.transaction.util.TransactionUtil;
 import codedriver.module.deploy.dao.mapper.DeployCiMapper;
 import codedriver.module.deploy.dao.mapper.DeployVersionMapper;
@@ -176,7 +176,7 @@ public class CallbackDeployCiSvnEventApi extends PrivateApiComponentBase {
                         JSONObject result = new JSONObject();
                         result.put("msg", "in " + ci.getDelayTime() + "s , ignored");
                         auditVo.setResult(result);
-                        auditVo.setStatus(ApiInvokedStatus.IGNORED.getValue());
+                        auditVo.setStatus(DeployCiAuditStatus.IGNORED.getValue());
                         CodeDriverThread thread = new DeployCiAuditSaveThread(auditVo);
                         thread.setThreadName("DEPLOY-CI-AUDIT-SAVER-" + auditVo.getId());
                         CachedThreadPool.execute(thread);
@@ -213,7 +213,7 @@ public class CallbackDeployCiSvnEventApi extends PrivateApiComponentBase {
                     }
                     TransactionUtil.commitTx(transactionStatus);
                     auditVo.setJobId(jobId);
-                    auditVo.setStatus(ApiInvokedStatus.SUCCEED.getValue());
+                    auditVo.setStatus(DeployCiAuditStatus.SUCCEED.getValue());
                     auditVo.setResult(jobId);
                 } catch (Exception ex) {
                     if (transactionStatus != null) {
@@ -221,7 +221,7 @@ public class CallbackDeployCiSvnEventApi extends PrivateApiComponentBase {
                     }
                     logger.error("Svn callback error. Deploy ci:{} has been ignored, callback params: {}", ci.getId(), paramObj.toJSONString());
                     logger.error(ex.getMessage(), ex);
-                    auditVo.setStatus(ApiInvokedStatus.FAILED.getValue());
+                    auditVo.setStatus(DeployCiAuditStatus.FAILED.getValue());
                     auditVo.setError(ExceptionUtils.getStackTrace(ex));
                 } finally {
                     CodeDriverThread thread = new DeployCiAuditSaveThread(auditVo);

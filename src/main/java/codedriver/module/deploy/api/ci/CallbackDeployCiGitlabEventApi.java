@@ -8,6 +8,7 @@ import codedriver.framework.autoexec.dto.job.AutoexecJobVo;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.constvalue.SystemUser;
 import codedriver.framework.deploy.constvalue.DeployCiActionType;
+import codedriver.framework.deploy.constvalue.DeployCiAuditStatus;
 import codedriver.framework.deploy.constvalue.DeployCiRepoType;
 import codedriver.framework.deploy.constvalue.DeployCiTriggerType;
 import codedriver.framework.deploy.dto.ci.DeployCiAuditVo;
@@ -23,7 +24,6 @@ import codedriver.framework.restful.annotation.Param;
 import codedriver.framework.restful.constvalue.ApiAnonymousAccessSupportEnum;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
-import codedriver.framework.restful.enums.ApiInvokedStatus;
 import codedriver.framework.transaction.util.TransactionUtil;
 import codedriver.module.deploy.dao.mapper.DeployCiMapper;
 import codedriver.module.deploy.dao.mapper.DeployVersionMapper;
@@ -135,7 +135,7 @@ public class CallbackDeployCiGitlabEventApi extends PrivateApiComponentBase {
                 }
                 AutoexecJobVo autoexecJobVo = autoexecJobMapper.getLatestJobByInvokeId(ci.getId());
                 if (autoexecJobVo != null && autoexecJobVo.getFcd() != null && (System.currentTimeMillis() - autoexecJobVo.getFcd().getTime()) <= ci.getDelayTime() * 1000) {
-                    auditVo.setStatus(ApiInvokedStatus.IGNORED.getValue());
+                    auditVo.setStatus(DeployCiAuditStatus.IGNORED.getValue());
                     JSONObject result = new JSONObject();
                     result.put("msg", "in " + ci.getDelayTime() + "s , ignored");
                     return result;
@@ -149,7 +149,7 @@ public class CallbackDeployCiGitlabEventApi extends PrivateApiComponentBase {
                 logger.error("Gitlab callback error. Missing triggerTime in ci config, ciId: {}, callback params: {}", ciId, paramObj.toJSONString());
                 throw new DeployCiTriggerTypeLostException();
             }
-            if (Arrays.asList(DeployCiTriggerType.AUTO.getValue(),DeployCiTriggerType.MANUAL.getValue()).contains(ci.getTriggerType()) && StringUtils.isBlank(ci.getTriggerTime())) {
+            if (Arrays.asList(DeployCiTriggerType.AUTO.getValue(), DeployCiTriggerType.MANUAL.getValue()).contains(ci.getTriggerType()) && StringUtils.isBlank(ci.getTriggerTime())) {
                 logger.error("Gitlab callback error. Missing triggerTime in ci config, ciId: {}, callback params: {}", ciId, paramObj.toJSONString());
                 throw new DeployCiTriggerTimeLostException();
             }
@@ -170,13 +170,13 @@ public class CallbackDeployCiGitlabEventApi extends PrivateApiComponentBase {
             }
             TransactionUtil.commitTx(transactionStatus);
             auditVo.setJobId(jobId);
-            auditVo.setStatus(ApiInvokedStatus.SUCCEED.getValue());
+            auditVo.setStatus(DeployCiAuditStatus.SUCCEED.getValue());
             auditVo.setResult(jobId);
         } catch (Exception ex) {
             if (transactionStatus != null) {
                 TransactionUtil.rollbackTx(transactionStatus);
             }
-            auditVo.setStatus(ApiInvokedStatus.FAILED.getValue());
+            auditVo.setStatus(DeployCiAuditStatus.FAILED.getValue());
             auditVo.setError(ExceptionUtils.getStackTrace(ex));
         } finally {
             CodeDriverThread thread = new DeployCiAuditSaveThread(auditVo);
