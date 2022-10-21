@@ -4,6 +4,7 @@ import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.cmdb.crossover.ICiEntityCrossoverService;
 import codedriver.framework.cmdb.exception.resourcecenter.AppEnvNotFoundException;
 import codedriver.framework.common.constvalue.ApiParamType;
+import codedriver.framework.common.constvalue.SystemUser;
 import codedriver.framework.crossover.CrossoverServiceFactory;
 import codedriver.framework.dao.mapper.UserMapper;
 import codedriver.framework.deploy.auth.DEPLOY_MODIFY;
@@ -77,7 +78,7 @@ public class SaveDeployEnvVersionApi extends PrivateApiComponentBase {
         Integer buildNo = paramObj.getInteger("buildNo");
         String execUser = paramObj.getString("execUser");
         Long deployTime = paramObj.getLong("deployTime");
-        if (userMapper.checkUserIsExists(execUser) == 0) {
+        if (userMapper.checkUserIsExists(execUser) == 0 && !Objects.equals(execUser, SystemUser.SYSTEM.getUserUuid())) {
             throw new UserNotFoundException(execUser);
         }
         ICiEntityCrossoverService ciEntityCrossoverService = CrossoverServiceFactory.getApi(ICiEntityCrossoverService.class);
