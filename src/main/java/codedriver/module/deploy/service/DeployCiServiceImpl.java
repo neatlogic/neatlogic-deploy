@@ -10,6 +10,7 @@ import codedriver.framework.autoexec.dto.node.AutoexecNodeVo;
 import codedriver.framework.autoexec.exception.AutoexecScenarioIsNotFoundException;
 import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
 import codedriver.framework.common.util.StringUtil;
+import codedriver.framework.deploy.constvalue.DeployCiGitlabAuthMode;
 import codedriver.framework.deploy.constvalue.DeployCiRepoType;
 import codedriver.framework.deploy.constvalue.DeployCiTriggerType;
 import codedriver.framework.deploy.constvalue.JobSource;
@@ -23,10 +24,12 @@ import codedriver.framework.deploy.dto.version.DeployVersionVo;
 import codedriver.framework.deploy.exception.*;
 import codedriver.framework.dto.runner.RunnerGroupVo;
 import codedriver.framework.dto.runner.RunnerVo;
+import codedriver.framework.integration.authentication.enums.AuthenticateType;
 import codedriver.framework.scheduler.core.IJob;
 import codedriver.framework.scheduler.core.SchedulerManager;
 import codedriver.framework.scheduler.dto.JobObject;
 import codedriver.framework.scheduler.exception.ScheduleHandlerNotFoundException;
+import codedriver.framework.util.HttpRequestUtil;
 import codedriver.framework.util.TimeUtil;
 import codedriver.module.deploy.dao.mapper.DeployAppConfigMapper;
 import codedriver.module.deploy.dao.mapper.DeployJobMapper;
@@ -43,7 +46,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.time.*;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
@@ -244,5 +250,33 @@ public class DeployCiServiceImpl implements DeployCiService {
         deployJobVo.setSource(JobSource.BATCHDEPLOY.getValue());
         deployJobVo.setExecUser(UserContext.get().getUserUuid());
         return deployJobVo;
+    }
+
+    @Override
+    public void deleteGitlabWebHook(DeployCiVo ci, String runnerUrl) {
+        String gitlabUsername = null;
+        String gitlabPassword = null;
+        JSONObject config = ci.getConfig();
+        if (config != null) {
+            gitlabUsername = config.getString("gitlabUsername");
+            gitlabPassword = config.getString("gitlabPassword");
+        }
+        if (StringUtils.isBlank(gitlabUsername) || StringUtils.isBlank(gitlabPassword)) {
+            throw new DeployCiGitlabAccountLostException(ci.getRepoServerAddress(), ci.getRepoName());
+        }
+        JSONObject param = new JSONObject();
+        param.put("hookId", ci.getHookId());
+        param.put("repoServerAddress", ci.getRepoServerAddress());
+        param.put("repoName", ci.getRepoName());
+        param.put("authMode", DeployCiGitlabAuthMode.ACCESS_TOKEN.getValue());
+        param.put("username", gitlabUsername);
+        param.put("password", gitlabPassword);
+        String url = runnerUrl + "/api/rest/deploy/ci/gitlabwebhook/delete";
+        HttpRequestUtil request = HttpRequestUtil.post(url).setPayload(param.toJSONString()).setAuthType(AuthenticateType.BUILDIN).sendRequest();
+        String errorMsg = request.getErrorMsg();
+        if (StringUtils.isNotBlank(errorMsg)) {
+            logger.error("Gitlab webhook delete failed. Request url: {}; params: {}; errorMsg: {}", url, param.toJSONString(), errorMsg);
+            throw new DeployCiGitlabWebHookDeleteFailedException(ci.getRepoServerAddress(), ci.getRepoName());
+        }
     }
 }

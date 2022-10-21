@@ -114,7 +114,7 @@ public class SaveDeployCiApi extends PrivateApiComponentBase {
             String gitlabUsername = deployCiVo.getConfig().getString("gitlabUsername");
             String gitlabPassword = deployCiVo.getConfig().getString("gitlabPassword");
             if (StringUtils.isBlank(gitlabUsername) || StringUtils.isBlank(gitlabPassword)) {
-                throw new DeployCiGitlabAccountLostException();
+                throw new DeployCiGitlabAccountLostException(deployCiVo.getRepoServerAddress(), deployCiVo.getRepoName());
             }
             gitlabPassword = RC4Util.encrypt(gitlabPassword);
             deployCiVo.getConfig().put("gitlabPassword", gitlabPassword);
@@ -124,20 +124,7 @@ public class SaveDeployCiApi extends PrivateApiComponentBase {
                 param.put("hookId", ci.getHookId());
                 // 检查服务器与仓库是否有变化，有则删除原有的hook，再生成新的hook
                 if (!Objects.equals(deployCiVo.getRepoServerAddress(), ci.getRepoServerAddress()) || !Objects.equals(deployCiVo.getRepoName(), ci.getRepoName())) {
-                    JSONObject deleteParam = new JSONObject();
-                    deleteParam.put("hookId", ci.getHookId());
-                    deleteParam.put("repoServerAddress", ci.getRepoServerAddress());
-                    deleteParam.put("repoName", ci.getRepoName());
-                    deleteParam.put("authMode", DeployCiGitlabAuthMode.ACCESS_TOKEN.getValue());
-                    deleteParam.put("username", ci.getConfig().getString("gitlabUsername"));
-                    deleteParam.put("password", ci.getConfig().getString("gitlabPassword"));
-                    String url = runnerVo.getUrl() + "/api/rest/deploy/ci/gitlabwebhook/delete";
-                    HttpRequestUtil request = HttpRequestUtil.post(url).setPayload(deleteParam.toJSONString()).setAuthType(AuthenticateType.BUILDIN).sendRequest();
-                    String errorMsg = request.getErrorMsg();
-                    if (StringUtils.isNotBlank(errorMsg)) {
-                        logger.error("Gitlab webhook delete failed. Request url: {}; params: {}; errorMsg: {}", url, deleteParam.toJSONString(), errorMsg);
-                        throw new DeployCiGitlabWebHookDeleteFailedException();
-                    }
+                    deployCiService.deleteGitlabWebHook(ci, runnerVo.getUrl());
                 }
             }
             ConfigVo gitlabWebHookCallbackHost = configMapper.getConfigByKey("gitlabWebHookCallbackHost");
