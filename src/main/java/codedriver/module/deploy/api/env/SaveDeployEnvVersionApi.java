@@ -78,7 +78,7 @@ public class SaveDeployEnvVersionApi extends PrivateApiComponentBase {
         Integer buildNo = paramObj.getInteger("buildNo");
         String execUser = paramObj.getString("execUser");
         Long deployTime = paramObj.getLong("deployTime");
-        if (userMapper.checkUserIsExists(execUser) == 0 || !Objects.equals(execUser, SystemUser.SYSTEM.getUserUuid())) {
+        if (userMapper.checkUserIsExists(execUser) == 0 && !Objects.equals(execUser, SystemUser.SYSTEM.getUserUuid())) {
             throw new UserNotFoundException(execUser);
         }
         ICiEntityCrossoverService ciEntityCrossoverService = CrossoverServiceFactory.getApi(ICiEntityCrossoverService.class);
