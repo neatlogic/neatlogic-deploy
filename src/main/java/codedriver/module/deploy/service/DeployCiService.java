@@ -49,4 +49,12 @@ public interface DeployCiService {
      */
     Long createBatchJobForVCSCallback(JSONObject paramObj, DeployCiVo ci, String versionName, DeployVersionVo deployVersion, DeployCiRepoType repoType) throws Exception;
 
+    /**
+     * 删除gitlab webhook
+     *
+     * @param ci        持续集成配置
+     * @param runnerUrl runner url
+     */
+    void deleteGitlabWebHook(DeployCiVo ci, String runnerUrl);
+
 }
