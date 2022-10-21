@@ -7,12 +7,12 @@ import codedriver.framework.cmdb.exception.cientity.CiEntityNotFoundException;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.util.RC4Util;
 import codedriver.framework.crossover.CrossoverServiceFactory;
+import codedriver.framework.dao.mapper.ConfigMapper;
 import codedriver.framework.deploy.auth.DEPLOY_BASE;
 import codedriver.framework.deploy.constvalue.*;
 import codedriver.framework.deploy.dto.ci.DeployCiVo;
-import codedriver.framework.deploy.exception.DeployCiGitlabAccountLostException;
-import codedriver.framework.deploy.exception.DeployCiGitlabWebHookSaveFailedException;
-import codedriver.framework.deploy.exception.DeployCiIsRepeatException;
+import codedriver.framework.deploy.exception.*;
+import codedriver.framework.dto.ConfigVo;
 import codedriver.framework.dto.FieldValidResultVo;
 import codedriver.framework.dto.runner.RunnerVo;
 import codedriver.framework.integration.authentication.enums.AuthenticateType;
@@ -47,6 +47,9 @@ public class SaveDeployCiApi extends PrivateApiComponentBase {
 
     @Resource
     DeployCiMapper deployCiMapper;
+
+    @Resource
+    ConfigMapper configMapper;
 
     @Resource
     DeployCiService deployCiService;
@@ -119,6 +122,15 @@ public class SaveDeployCiApi extends PrivateApiComponentBase {
             if (ci != null) {
                 param.put("hookId", ci.getHookId());
             }
+            ConfigVo gitlabWebHookCallbackHost = configMapper.getConfigByKey("gitlabWebHookCallbackHost");
+            if (gitlabWebHookCallbackHost == null || StringUtils.isBlank(gitlabWebHookCallbackHost.getValue())) {
+                throw new DeployGitlabWebHookCallbackHostLostException();
+            }
+            // gitlabWebHookCallbackHost格式形如：http://192.168.0.25:8080/codedriver
+            if (!RegexUtils.isMatch(gitlabWebHookCallbackHost.getValue(), RegexUtils.CONNECT_URL)) {
+                throw new DeployGitlabWebHookCallbackHostIlegalException();
+            }
+            param.put("callbackHost", gitlabWebHookCallbackHost.getValue());
             param.put("repoServerAddress", deployCiVo.getRepoServerAddress());
             param.put("repoName", deployCiVo.getRepoName());
             param.put("branchFilter", deployCiVo.getBranchFilter());
