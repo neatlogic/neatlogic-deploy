@@ -83,6 +83,7 @@ public class SaveDeployCiApi extends PrivateApiComponentBase {
             @Param(name = "action", desc = "动作类型", member = DeployCiActionType.class, type = ApiParamType.ENUM, isRequired = true),
             @Param(name = "triggerType", member = DeployCiTriggerType.class, desc = "触发类型", type = ApiParamType.ENUM, isRequired = true),
             @Param(name = "triggerTime", desc = "触发时间", type = ApiParamType.STRING),
+            @Param(name = "delayTime", desc = "延迟时间", type = ApiParamType.INTEGER),
             @Param(name = "versionRule", desc = "版本号规则", type = ApiParamType.JSONOBJECT),
             @Param(name = "config", desc = "配置", type = ApiParamType.JSONOBJECT),
     })

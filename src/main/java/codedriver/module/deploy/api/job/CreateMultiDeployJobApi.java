@@ -100,7 +100,7 @@ public class CreateMultiDeployJobApi extends PrivateApiComponentBase {
                 DeployJobVo deployJob = JSONObject.toJavaObject(jsonObj, DeployJobVo.class);
                 try {
                     if (jsonObj.containsKey("triggerType")) {
-                        result.add(deployJobService.createScheduleJob(deployJob, module));
+                        result.add(deployJobService.createJobAndSchedule(deployJob, module));
                     } else {
                         result.add(deployJobService.createJobAndFire(deployJob, module));
                     }

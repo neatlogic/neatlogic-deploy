@@ -71,7 +71,7 @@ public interface DeployJobService {
      * @param module      模块
      * @return result
      */
-    JSONObject createScheduleJob(DeployJobVo deployJobVo, DeployJobModuleVo module);
+    JSONObject createJobAndSchedule(DeployJobVo deployJobVo, DeployJobModuleVo module);
 
 
     /**

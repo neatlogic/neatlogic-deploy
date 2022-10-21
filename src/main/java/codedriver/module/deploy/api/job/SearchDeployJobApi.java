@@ -10,7 +10,7 @@ import codedriver.framework.autoexec.dto.job.AutoexecJobVo;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.dto.BasePageVo;
 import codedriver.framework.deploy.auth.DEPLOY_BASE;
-import codedriver.framework.deploy.constvalue.JobSource;
+import codedriver.framework.deploy.constvalue.JobSourceType;
 import codedriver.framework.deploy.dto.job.DeployJobVo;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
@@ -19,13 +19,10 @@ import codedriver.framework.util.TableResultUtil;
 import codedriver.module.deploy.dao.mapper.DeployJobMapper;
 import codedriver.module.deploy.service.DeployJobService;
 import com.alibaba.fastjson.JSONObject;
-import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @AuthAction(action = DEPLOY_BASE.class)
@@ -84,27 +81,11 @@ public class SearchDeployJobApi extends PrivateApiComponentBase {
     @Description(desc = "查询发布作业接口")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
-        Long appSystemId = jsonObj.getLong("appSystemId");
-        Long appModuleId = jsonObj.getLong("appModuleId");
-        Long envId = jsonObj.getLong("envId");
-        Long parentId = jsonObj.getLong("parentId");
         DeployJobVo deployJobVo = JSONObject.toJavaObject(jsonObj, DeployJobVo.class);
-        //根据appSystemId和appModuleId 获取invokeIdList
-        if (appSystemId != null || appModuleId != null || envId != null) {
-            List<DeployJobVo> deployJobVos = deployJobMapper.getDeployJobListByAppSystemIdAndAppModuleIdAndEnvId(appSystemId, appModuleId, envId);
-            if (CollectionUtils.isNotEmpty(deployJobVos)) {
-                deployJobVo.setInvokeIdList(deployJobVos.stream().map(DeployJobVo::getId).collect(Collectors.toSet()));
-            } else {
-                return TableResultUtil.getResult(new ArrayList<>(), deployJobVo);
-            }
-        }
-
-        if (parentId != null) {
-            List<Long> idList = deployJobMapper.getJobIdListByParentId(parentId);
+        deployJobVo.setSourceType(JobSourceType.DEPLOY.getValue());
+        if (deployJobVo.getParentId() != null) {
+            List<Long> idList = deployJobMapper.getJobIdListByParentId(deployJobVo.getParentId());
             deployJobVo.setIdList(idList);
-            deployJobVo.setSourceList(new ArrayList<String>() {{
-                this.add(JobSource.DEPLOY.getValue());
-            }});
         }
         List<DeployJobVo> deployJobList = deployJobService.searchDeployJob(deployJobVo);
         return TableResultUtil.getResult(deployJobList, deployJobVo);

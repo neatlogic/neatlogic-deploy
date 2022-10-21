@@ -31,6 +31,7 @@ import org.springframework.stereotype.Component;
 import javax.annotation.Resource;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * 在组合工具保存的作业，设置为自动触发后，创建本Job，到达计划时间后自动执行作业
@@ -108,7 +109,12 @@ public class DeployJobAutoFireJob extends JobBase {
     }
 
     private void fireJob(AutoexecJobVo jobVo) throws Exception {
-        UserVo execUser = userMapper.getUserBaseInfoByUuid(jobVo.getExecUser());
+        UserVo execUser;
+        if(Objects.equals(jobVo.getExecUser(),SystemUser.SYSTEM.getUserUuid())){
+            execUser = SystemUser.SYSTEM.getUserVo();
+        }else {
+            execUser = userMapper.getUserBaseInfoByUuid(jobVo.getExecUser());
+        }
         if (execUser != null) {
             AuthenticationInfoVo authenticationInfo = authenticationInfoService.getAuthenticationInfo(execUser.getUuid());
             UserContext.init(execUser, authenticationInfo, SystemUser.SYSTEM.getTimezone());

@@ -3,6 +3,8 @@ package codedriver.module.deploy.api.ci;
 import codedriver.framework.asynchronization.thread.CodeDriverThread;
 import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.asynchronization.threadpool.CachedThreadPool;
+import codedriver.framework.autoexec.dao.mapper.AutoexecJobMapper;
+import codedriver.framework.autoexec.dto.job.AutoexecJobVo;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.constvalue.SystemUser;
 import codedriver.framework.deploy.constvalue.DeployCiActionType;
@@ -12,6 +14,7 @@ import codedriver.framework.deploy.dto.ci.DeployCiAuditVo;
 import codedriver.framework.deploy.dto.ci.DeployCiVo;
 import codedriver.framework.deploy.dto.version.DeployVersionVo;
 import codedriver.framework.deploy.exception.DeployCiVersionRegexIllegalException;
+import codedriver.framework.exception.type.ParamIrregularException;
 import codedriver.framework.filter.core.LoginAuthHandlerBase;
 import codedriver.framework.restful.annotation.Description;
 import codedriver.framework.restful.annotation.Input;
@@ -22,10 +25,10 @@ import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.framework.restful.enums.ApiInvokedStatus;
 import codedriver.framework.transaction.util.TransactionUtil;
-import codedriver.module.deploy.thread.DeployCiAuditSaveThread;
 import codedriver.module.deploy.dao.mapper.DeployCiMapper;
 import codedriver.module.deploy.dao.mapper.DeployVersionMapper;
 import codedriver.module.deploy.service.DeployCiService;
+import codedriver.module.deploy.thread.DeployCiAuditSaveThread;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -34,7 +37,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.nio.file.FileSystems;
@@ -59,6 +61,9 @@ public class CallbackDeployCiSvnEventApi extends PrivateApiComponentBase {
 
     @Resource
     DeployCiService deployCiService;
+
+    @Resource
+    AutoexecJobMapper autoexecJobMapper;
 
     @Override
     public String getName() {
@@ -160,6 +165,25 @@ public class CallbackDeployCiSvnEventApi extends PrivateApiComponentBase {
         if (ciVoList.size() > 0) {
             for (DeployCiVo ci : ciVoList) {
                 DeployCiAuditVo auditVo = new DeployCiAuditVo(ci.getId(), revision, ci.getAction(), paramObj.toJSONString());
+                //如果是延迟触发且同一集成触发的情况，n秒内不再创建作业
+                if (Objects.equals(ci.getTriggerType(), DeployCiTriggerType.DELAY.getValue())) {
+                    if (ci.getDelayTime() == null) {
+                        throw new ParamIrregularException("delayTime");
+                    }
+                    AutoexecJobVo autoexecJobVo = autoexecJobMapper.getLatestJobByInvokeId(ci.getId());
+                    if (autoexecJobVo != null && autoexecJobVo.getFcd() != null && (System.currentTimeMillis() - autoexecJobVo.getFcd().getTime()) <= ci.getDelayTime() * 1000) {
+                        auditVo.setCiId(ci.getId());
+                        JSONObject result = new JSONObject();
+                        result.put("msg", "in " + ci.getDelayTime() + "s , ignored");
+                        auditVo.setResult(result);
+                        auditVo.setStatus(ApiInvokedStatus.IGNORED.getValue());
+                        CodeDriverThread thread = new DeployCiAuditSaveThread(auditVo);
+                        thread.setThreadName("DEPLOY-CI-AUDIT-SAVER-" + auditVo.getId());
+                        CachedThreadPool.execute(thread);
+                        continue;
+                    }
+                }
+
                 TransactionStatus transactionStatus = null;
                 try {
                     String triggerType = ci.getTriggerType();

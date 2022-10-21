@@ -7,28 +7,35 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="codedriver.module.deploy.dao.mapper.DeployCiMapper">
 
-    <select id="checkDeployCiIsRepeat" parameterType="codedriver.framework.deploy.dto.ci.DeployCiVo" resultType="java.lang.Integer">
-        select count(1) from deploy_ci where `id` != #{id} and `name` = #{name}
+    <select id="checkDeployCiIsRepeat" parameterType="codedriver.framework.deploy.dto.ci.DeployCiVo"
+            resultType="java.lang.Integer">
+        select count(1)
+        from deploy_ci
+        where `id` != #{id}
+          and `name` = #{name}
     </select>
 
-    <select id="getDeployCiById" parameterType="java.lang.Long" resultType="codedriver.framework.deploy.dto.ci.DeployCiVo">
+    <select id="getDeployCiById" parameterType="java.lang.Long"
+            resultType="codedriver.framework.deploy.dto.ci.DeployCiVo">
         select `id`,
                `name`,
-               `is_active` as isActive,
-               `app_system_id` as appSystemId,
-               `app_module_id` as appModuleId,
-               `repo_type` as repoType,
+               `is_active`           as isActive,
+               `app_system_id`       as appSystemId,
+               `app_module_id`       as appModuleId,
+               `repo_type`           as repoType,
                `repo_server_address` as repoServerAddress,
-               `repo_name` as repoName,
-               `branch_filter` as branchFilter,
+               `repo_name`           as repoName,
+               `branch_filter`       as branchFilter,
                `event`,
                `action`,
-               `trigger_type` as triggerType,
-               `trigger_time` as triggerTime,
-               `version_rule` as versionRuleStr,
-               `config` as configStr,
-               `hook_id` as hookId
-        from deploy_ci where `id` = #{value}
+               `trigger_type`        as triggerType,
+               `trigger_time`        as triggerTime,
+               `delay_time`          as delayTime,
+               `version_rule`        as versionRuleStr,
+               `config`              as configStr,
+               `hook_id`             as hookId
+        from deploy_ci
+        where `id` = #{value}
     </select>
 
     <sql id="searchDeploy">
@@ -41,12 +48,14 @@
         </where>
     </sql>
 
-    <select id="searchDeployCiCount" parameterType="codedriver.framework.deploy.dto.ci.DeployCiVo" resultType="java.lang.Integer">
+    <select id="searchDeployCiCount" parameterType="codedriver.framework.deploy.dto.ci.DeployCiVo"
+            resultType="java.lang.Integer">
         select count(1)
         <include refid="searchDeploy"/>
     </select>
 
-    <select id="searchDeployCiList" parameterType="codedriver.framework.deploy.dto.ci.DeployCiVo" resultType="codedriver.framework.deploy.dto.ci.DeployCiVo">
+    <select id="searchDeployCiList" parameterType="codedriver.framework.deploy.dto.ci.DeployCiVo"
+            resultType="codedriver.framework.deploy.dto.ci.DeployCiVo">
         select
         `id`,
         `name`,
@@ -66,22 +75,23 @@
         LIMIT #{startNum}, #{pageSize}
     </select>
 
-    <select id="getDeployCiListByRepoServerAddressAndRepoNameAndEvent" resultType="codedriver.framework.deploy.dto.ci.DeployCiVo">
+    <select id="getDeployCiListByRepoServerAddressAndRepoNameAndEvent"
+            resultType="codedriver.framework.deploy.dto.ci.DeployCiVo">
         select `id`,
-               `name`,
-               `is_active` as isActive,
-               `app_system_id` as appSystemId,
-               `app_module_id` as appModuleId,
-               `repo_type` as repoType,
-               `repo_server_address` as repoServerAddress,
-               `repo_name` as repoName,
-               `branch_filter` as branchFilter,
-               `event`,
-               `action`,
-               `trigger_type` as triggerType,
-               `trigger_time` as triggerTime,
-               `version_rule` as versionRuleStr,
-               `config` as configStr
+        `name`,
+        `is_active` as isActive,
+        `app_system_id` as appSystemId,
+        `app_module_id` as appModuleId,
+        `repo_type` as repoType,
+        `repo_server_address` as repoServerAddress,
+        `repo_name` as repoName,
+        `branch_filter` as branchFilter,
+        `event`,
+        `action`,
+        `trigger_type` as triggerType,
+        `trigger_time` as triggerTime,
+        `version_rule` as versionRuleStr,
+        `config` as configStr
         from deploy_ci
         where is_active = 1 and repo_name = #{repoName} and event = #{event}
         and repo_server_address in
@@ -90,19 +100,23 @@
         </foreach>
     </select>
 
-    <select id="searchDeployCiAuditCount" parameterType="codedriver.framework.deploy.dto.ci.DeployCiAuditVo" resultType="java.lang.Integer">
-        select count(1) from deploy_ci_audit where ci_id = #{ciId}
+    <select id="searchDeployCiAuditCount" parameterType="codedriver.framework.deploy.dto.ci.DeployCiAuditVo"
+            resultType="java.lang.Integer">
+        select count(1)
+        from deploy_ci_audit
+        where ci_id = #{ciId}
     </select>
 
-    <select id="searchDeployCiAudit" parameterType="codedriver.framework.deploy.dto.ci.DeployCiAuditVo" resultType="codedriver.framework.deploy.dto.ci.DeployCiAuditVo">
+    <select id="searchDeployCiAudit" parameterType="codedriver.framework.deploy.dto.ci.DeployCiAuditVo"
+            resultType="codedriver.framework.deploy.dto.ci.DeployCiAuditVo">
         select `id`,
-               `commit_id` as commitId,
+               `commit_id`        as commitId,
                `action`,
                `status`,
-               `job_id` as jobId,
-               `param_file_path` as paramFilePath,
+               `job_id`           as jobId,
+               `param_file_path`  as paramFilePath,
                `result_file_path` as resultFilePath,
-               `error_file_path` as errorFilePath,
+               `error_file_path`  as errorFilePath,
                `fcd`
         from deploy_ci_audit a
         where ci_id = #{ciId}
@@ -110,104 +124,107 @@
     </select>
 
     <update id="updateDeployActiveStatus">
-        update deploy_ci set is_active = #{isActive} where id = #{id}
+        update deploy_ci
+        set is_active = #{isActive}
+        where id = #{id}
     </update>
 
     <insert id="insertDeployCi" parameterType="codedriver.framework.deploy.dto.ci.DeployCiVo">
-        insert into deploy_ci (
-            `id`,
-            `name`,
-            `is_active`,
-            `app_system_id`,
-            `app_module_id`,
-            `repo_type`,
-            `repo_server_address`,
-            `repo_name`,
-            `branch_filter`,
-            `event`,
-            `action`,
-            `trigger_type`,
-            `trigger_time`,
-            `version_rule`,
-            `config`,
-            `hook_id`,
-            `fcu`,
-            `fcd`,
-            `lcu`,
-            `lcd`
-        ) values (
-            #{id},
-            #{name},
-            #{isActive},
-            #{appSystemId},
-            #{appModuleId},
-            #{repoType},
-            #{repoServerAddress},
-            #{repoName},
-            #{branchFilter},
-            #{event},
-            #{action},
-            #{triggerType},
-            #{triggerTime},
-            #{versionRuleStr},
-            #{configStr},
-            #{hookId},
-            #{fcu},
-            now(3),
-            #{lcu},
-            now(3)
-        ) ON DUPLICATE KEY UPDATE
-            `name` = #{name},
-            `is_active` = #{isActive},
-            `app_system_id` = #{appSystemId},
-            `app_module_id` = #{appModuleId},
-            `repo_type` = #{repoType},
-            `repo_server_address` = #{repoServerAddress},
-            `repo_name` = #{repoName},
-            `branch_filter` = #{branchFilter},
-            `event` = #{event},
-            `action` = #{action},
-            `trigger_type` = #{triggerType},
-            `trigger_time` = #{triggerTime},
-            `version_rule` = #{versionRuleStr},
-            `config` = #{configStr},
-            `hook_id` = #{hookId},
-            `lcu` = #{lcu},
-            `lcd` = now(3)
+        insert into deploy_ci (`id`,
+                               `name`,
+                               `is_active`,
+                               `app_system_id`,
+                               `app_module_id`,
+                               `repo_type`,
+                               `repo_server_address`,
+                               `repo_name`,
+                               `branch_filter`,
+                               `event`,
+                               `action`,
+                               `trigger_type`,
+                               `trigger_time`,
+                               `delay_time`,
+                               `version_rule`,
+                               `config`,
+                               `hook_id`,
+                               `fcu`,
+                               `fcd`,
+                               `lcu`,
+                               `lcd`)
+        values (#{id},
+                #{name},
+                #{isActive},
+                #{appSystemId},
+                #{appModuleId},
+                #{repoType},
+                #{repoServerAddress},
+                #{repoName},
+                #{branchFilter},
+                #{event},
+                #{action},
+                #{triggerType},
+                #{triggerTime},
+                #{delayTime},
+                #{versionRuleStr},
+                #{configStr},
+                #{hookId},
+                #{fcu},
+                now(3),
+                #{lcu},
+                now(3))
+        ON DUPLICATE KEY UPDATE `name`                = #{name},
+                                `is_active`           = #{isActive},
+                                `app_system_id`       = #{appSystemId},
+                                `app_module_id`       = #{appModuleId},
+                                `repo_type`           = #{repoType},
+                                `repo_server_address` = #{repoServerAddress},
+                                `repo_name`           = #{repoName},
+                                `branch_filter`       = #{branchFilter},
+                                `event`               = #{event},
+                                `action`              = #{action},
+                                `trigger_type`        = #{triggerType},
+                                `trigger_time`        = #{triggerTime},
+                                `delay_time`          = #{delayTime},
+                                `version_rule`        = #{versionRuleStr},
+                                `config`              = #{configStr},
+                                `hook_id`             = #{hookId},
+                                `lcu`                 = #{lcu},
+                                `lcd`                 = now(3)
     </insert>
 
     <insert id="insertDeployCiAudit" parameterType="codedriver.framework.deploy.dto.ci.DeployCiAuditVo">
-        insert into deploy_ci_audit (
-            `id`,
-            `ci_id`,
-            `commit_id`,
-            `action`,
-            `status`,
-            `job_id`,
-            `param_file_path`,
-            `result_file_path`,
-            `error_file_path`,
-            `fcd`
-        ) values (
-            #{id},
-            #{ciId},
-            #{commitId},
-            #{action},
-            #{status},
-            #{jobId},
-            #{paramFilePath},
-            #{resultFilePath},
-            #{errorFilePath},
-            now(3)
-        )
+        insert into deploy_ci_audit (`id`,
+                                     `ci_id`,
+                                     `commit_id`,
+                                     `action`,
+                                     `status`,
+                                     `job_id`,
+                                     `param_file_path`,
+                                     `result_file_path`,
+                                     `error_file_path`,
+                                     `fcd`)
+        values (#{id},
+                #{ciId},
+                #{commitId},
+                #{action},
+                #{status},
+                #{jobId},
+                #{paramFilePath},
+                #{resultFilePath},
+                #{errorFilePath},
+                now(3))
     </insert>
 
     <delete id="deleteDeployCiById" parameterType="java.lang.Long">
-        delete from deploy_ci where id = #{value}
+        delete
+        from deploy_ci
+        where id = #{value}
     </delete>
 
     <delete id="deleteDeployCiAuditByCiId" parameterType="java.lang.Long">
-        delete from deploy_ci_audit where ci_id = #{value}
+        delete
+        from deploy_ci_audit
+        where ci_id = #{value}
     </delete>
 
 </mapper>

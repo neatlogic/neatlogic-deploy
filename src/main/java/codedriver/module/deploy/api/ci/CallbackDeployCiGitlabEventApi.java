@@ -3,6 +3,8 @@ package codedriver.module.deploy.api.ci;
 import codedriver.framework.asynchronization.thread.CodeDriverThread;
 import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.asynchronization.threadpool.CachedThreadPool;
+import codedriver.framework.autoexec.dao.mapper.AutoexecJobMapper;
+import codedriver.framework.autoexec.dto.job.AutoexecJobVo;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.constvalue.SystemUser;
 import codedriver.framework.deploy.constvalue.DeployCiActionType;
@@ -12,6 +14,7 @@ import codedriver.framework.deploy.dto.ci.DeployCiAuditVo;
 import codedriver.framework.deploy.dto.ci.DeployCiVo;
 import codedriver.framework.deploy.dto.version.DeployVersionVo;
 import codedriver.framework.deploy.exception.*;
+import codedriver.framework.exception.type.ParamIrregularException;
 import codedriver.framework.filter.core.LoginAuthHandlerBase;
 import codedriver.framework.restful.annotation.Description;
 import codedriver.framework.restful.annotation.Input;
@@ -37,6 +40,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.TransactionStatus;
 
 import javax.annotation.Resource;
+import java.util.Arrays;
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -55,6 +59,9 @@ public class CallbackDeployCiGitlabEventApi extends PrivateApiComponentBase {
 
     @Resource
     DeployCiService deployCiService;
+
+    @Resource
+    AutoexecJobMapper autoexecJobMapper;
 
     @Override
     public String getName() {
@@ -121,6 +128,19 @@ public class CallbackDeployCiGitlabEventApi extends PrivateApiComponentBase {
                 throw new DeployCiNotFoundException(ciId);
             }
             auditVo.setAction(ci.getAction());
+            //如果是延迟触发且同一集成触发的情况，n秒内不再创建作业
+            if (Objects.equals(ci.getTriggerType(), DeployCiTriggerType.DELAY.getValue())) {
+                if (ci.getDelayTime() == null) {
+                    throw new ParamIrregularException("delayTime");
+                }
+                AutoexecJobVo autoexecJobVo = autoexecJobMapper.getLatestJobByInvokeId(ci.getId());
+                if (autoexecJobVo != null && autoexecJobVo.getFcd() != null && (System.currentTimeMillis() - autoexecJobVo.getFcd().getTime()) <= ci.getDelayTime() * 1000) {
+                    auditVo.setStatus(ApiInvokedStatus.IGNORED.getValue());
+                    JSONObject result = new JSONObject();
+                    result.put("msg", "in " + ci.getDelayTime() + "s , ignored");
+                    return result;
+                }
+            }
             if (!Objects.equals(ci.getIsActive(), 1)) {
                 logger.info("Gitlab callback stop. Deploy ci is not active, ciId: {}, callback params: {}", ciId, paramObj.toJSONString());
                 return null;
@@ -129,7 +149,7 @@ public class CallbackDeployCiGitlabEventApi extends PrivateApiComponentBase {
                 logger.error("Gitlab callback error. Missing triggerTime in ci config, ciId: {}, callback params: {}", ciId, paramObj.toJSONString());
                 throw new DeployCiTriggerTypeLostException();
             }
-            if (!DeployCiTriggerType.INSTANT.getValue().equals(ci.getTriggerType()) && StringUtils.isBlank(ci.getTriggerTime())) {
+            if (Arrays.asList(DeployCiTriggerType.AUTO.getValue(),DeployCiTriggerType.MANUAL.getValue()).contains(ci.getTriggerType()) && StringUtils.isBlank(ci.getTriggerTime())) {
                 logger.error("Gitlab callback error. Missing triggerTime in ci config, ciId: {}, callback params: {}", ciId, paramObj.toJSONString());
                 throw new DeployCiTriggerTimeLostException();
             }
@@ -163,7 +183,7 @@ public class CallbackDeployCiGitlabEventApi extends PrivateApiComponentBase {
             thread.setThreadName("DEPLOY-CI-AUDIT-SAVER-" + auditVo.getId());
             CachedThreadPool.execute(thread);
         }
-        return null;
+        return auditVo;
     }
 
     /**

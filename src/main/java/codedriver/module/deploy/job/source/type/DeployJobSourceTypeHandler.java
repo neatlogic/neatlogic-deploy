@@ -38,6 +38,7 @@ import codedriver.framework.deploy.dto.pipeline.PipelineJobTemplateVo;
 import codedriver.framework.deploy.dto.sql.DeploySqlJobPhaseVo;
 import codedriver.framework.deploy.dto.sql.DeploySqlNodeDetailVo;
 import codedriver.framework.deploy.dto.version.DeployVersionBuildNoVo;
+import codedriver.framework.deploy.dto.version.DeployVersionEnvVo;
 import codedriver.framework.deploy.dto.version.DeployVersionVo;
 import codedriver.framework.deploy.exception.DeployAppConfigModuleRunnerGroupNotFoundException;
 import codedriver.framework.deploy.exception.DeployJobCannotExecuteException;
@@ -49,6 +50,7 @@ import codedriver.framework.exception.runner.RunnerGroupRunnerNotFoundException;
 import codedriver.framework.exception.runner.RunnerHttpRequestException;
 import codedriver.framework.exception.runner.RunnerNotFoundByRunnerMapIdException;
 import codedriver.framework.exception.type.ParamIrregularException;
+import codedriver.framework.globallock.core.GlobalLockHandlerFactory;
 import codedriver.framework.integration.authentication.enums.AuthenticateType;
 import codedriver.framework.util.HttpRequestUtil;
 import codedriver.framework.util.TableResultUtil;
@@ -545,6 +547,58 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
                 module.put("selectNodeList", new JSONArray());
             }
         }
+    }
+
+    @Override
+    public JSONObject getExtraJobInfo(AutoexecJobVo jobVo) {
+        JSONObject result = new JSONObject();
+        DeployJobVo deployJobVo = deployJobMapper.getDeployJobByJobId(jobVo.getId());
+        if (deployJobVo != null) {
+            IResourceCrossoverMapper resourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
+            result.put("appSystemId", deployJobVo.getAppSystemId());
+            ResourceVo appSystem = resourceCrossoverMapper.getAppSystemById(deployJobVo.getAppSystemId());
+            if (appSystem != null) {
+                result.put("appSystemAbbrName", appSystem.getAbbrName());
+                result.put("appSystemName", appSystem.getName());
+            }
+            result.put("appModuleId", deployJobVo.getAppModuleId());
+            ResourceVo appModule = resourceCrossoverMapper.getAppModuleById(deployJobVo.getAppModuleId());
+            if (appModule != null) {
+                result.put("appModuleAbbrName", appModule.getAbbrName());
+                result.put("appModuleName", appModule.getName());
+            }
+            result.put("envId", deployJobVo.getEnvId());
+            ResourceVo env = resourceCrossoverMapper.getAppEnvById(deployJobVo.getEnvId());
+            if (env != null) {
+                result.put("envAbbrName", env.getAbbrName());
+                result.put("envName", env.getName());
+            }
+            DeployVersionVo versionVo = deployVersionMapper.getDeployVersionBySystemIdAndModuleIdAndVersionId(deployJobVo.getAppSystemId(), deployJobVo.getAppModuleId(), deployJobVo.getVersionId());
+            if (versionVo != null) {
+                result.put("version", versionVo);
+                result.put("buildNo", deployVersionMapper.getDeployVersionBuildNoByVersionIdAndBuildNo(versionVo.getId(), deployJobVo.getBuildNo()));
+                DeployVersionEnvVo versionEnvVo = deployVersionMapper.getDeployVersionEnvByVersionIdAndEnvId(versionVo.getId(), deployJobVo.getEnvId());
+                if (versionEnvVo != null) {
+                    result.put("env", versionEnvVo);
+                }
+            }
+            result.put("roundCount", jobVo.getRoundCount());
+
+            //补充是否有资源锁
+            boolean isHasLock = GlobalLockHandlerFactory.getHandler(JobSourceType.DEPLOY.getValue()).getIsHasLockByKey(jobVo.getId().toString());
+            result.put("isHasLock", isHasLock ? 1 : 0);
+
+        }
+        return result;
+    }
+
+    @Override
+    public JSONObject getExtraRefreshJobInfo(AutoexecJobVo jobVo) {
+        JSONObject result = new JSONObject();
+        //补充是否有资源锁
+        boolean isHasLock = GlobalLockHandlerFactory.getHandler(JobSourceType.DEPLOY.getValue()).getIsHasLockByKey(jobVo.getId().toString());
+        result.put("isHasLock", isHasLock ? 1 : 0);
+        return result;
     }
 
 }

@@ -291,7 +291,7 @@ public class DeployJobServiceImpl implements DeployJobService {
     }
 
     @Override
-    public JSONObject createScheduleJob(DeployJobVo deployJobVo, DeployJobModuleVo module) {
+    public JSONObject createJobAndSchedule(DeployJobVo deployJobVo, DeployJobModuleVo module) {
         convertModule(deployJobVo, module);
         JSONObject resultJson = new JSONObject();
         IAutoexecJobActionCrossoverService autoexecJobActionCrossoverService = CrossoverServiceFactory.getApi(IAutoexecJobActionCrossoverService.class);
@@ -312,7 +312,6 @@ public class DeployJobServiceImpl implements DeployJobService {
         resultJson.put("appModuleName", deployJobVo.getAppModuleName());
         return resultJson;
     }
-
 
     @Override
     @Deprecated

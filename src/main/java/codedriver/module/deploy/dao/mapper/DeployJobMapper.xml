@@ -52,22 +52,18 @@
 
     <sql id="searchJobSql">
         left join autoexec_job ajj on ajj.parent_id = aj.id
+        LEFT JOIN deploy_job dj ON dj.id = aj.id
         <if test="(typeIdList != null and typeIdList.size() > 0) or (combopName != null and combopName != '' )">
             LEFT JOIN `autoexec_combop` ac ON aj.`operation_id` = ac.`id`
         </if>
-        <if test="invokeIdList != null and invokeIdList.size() > 0">
-            JOIN `autoexec_job_invoke` aji ON aj.`id` = aji.`job_id` AND
-            aji.`invoke_id` in
-            <foreach collection="invokeIdList" open="(" item="invokeId" close=")" separator=",">
-                #{invokeId}
-            </foreach>
+        <if test="(invokeIdList != null and invokeIdList.size() > 0) or (sourceType != null and sourceType != '')">
+            JOIN `autoexec_job_invoke` aji ON aj.`id` = aji.`job_id`
         </if>
         <if test="pipelineId != null">
             JOIN `autoexec_job_invoke` aji_pipeline ON aj.`id` = aji_pipeline.`job_id` AND aji_pipeline.`invoke_id` =
             #{pipelineId} AND aji_pipeline.`source` = 'pipeline'
         </if>
         <if test="isHasAllAuthority == 0">
-            LEFT JOIN deploy_job dj ON dj.id = aj.id
             LEFT JOIN deploy_app_config_authority daca ON daca.app_system_id = dj.app_system_id
         </if>
         <where>
@@ -94,6 +90,9 @@
                 <foreach collection="statusList" item="status" open="(" close=")" separator=",">
                     #{status}
                 </foreach>)
+            </if>
+            <if test="sourceType != null and sourceType != ''">
+                and aji.`type` = #{sourceType}
             </if>
             <if test="sourceList != null and sourceList.size() > 0 ">
                 and aj.`source` in
@@ -163,6 +162,18 @@
                     and (aj.plan_start_time &lt;= STR_TO_DATE(#{planStartTimeRange[1]},'%Y-%m-%d')
                     or ajj.plan_start_time &lt;= STR_TO_DATE(#{planStartTimeRange[1]},'%Y-%m-%d'))
                 </if>
+            </if>
+            <if test="invokeIdList != null and invokeIdList.size() > 0">
+                and aji.`invoke_id` in
+                <foreach collection="invokeIdList" open="(" item="invokeId" close=")" separator=",">
+                    #{invokeId}
+                </foreach>
+            </if>
+            <if test="appSystemId != null">
+                and dj.`app_system_id` = #{appSystemId}
+            </if>
+            <if test="appModuleId != null">
+                and dj.`app_module_id` = #{appModuleId}
             </if>
             <include refid="codedriver.module.deploy.dao.mapper.DeployAppConfigMapper.checkDeployAuthority"/>
         </where>

@@ -43,10 +43,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.ZoneId;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
@@ -123,19 +120,24 @@ public class DeployCiServiceImpl implements DeployCiService {
         }
         String triggerType = ci.getTriggerType();
         Date triggerTime = getTriggerTime(ci.getTriggerTime());
-        if (DeployCiTriggerType.INSTANT.getValue().equals(ci.getTriggerType())) {
+        if (Objects.equals(DeployCiTriggerType.DELAY.getValue(), ci.getTriggerType())) {
+            triggerTime = Date.from(LocalDateTime.now().plusSeconds(ci.getDelayTime()).atZone(ZoneId.systemDefault()).toInstant());
+        }
+        if (Arrays.asList(DeployCiTriggerType.INSTANT.getValue(), DeployCiTriggerType.DELAY.getValue()).contains(ci.getTriggerType())) {
             triggerType = DeployCiTriggerType.AUTO.getValue();
         }
         DeployJobVo deployJobParam = new DeployJobVo(ci.getAppSystemId(), scenarioId, envId, triggerType, triggerTime, ci.getConfig().getInteger("roundCount"), ci.getConfig().getJSONObject("param"));
         JSONArray selectNodeList = ci.getConfig().getJSONArray("selectNodeList");
-        DeployJobModuleVo moduleVo = new DeployJobModuleVo(ci.getAppModuleId(), deployVersion != null ? deployVersion.getVersion() : null, CollectionUtils.isNotEmpty(selectNodeList) ? selectNodeList.toJavaList(AutoexecNodeVo.class) : null);
+        DeployJobModuleVo moduleVo = new DeployJobModuleVo(ci.getAppModuleId(), deployVersion != null ? deployVersion.getVersion() : null, CollectionUtils.isNotEmpty(selectNodeList) ? selectNodeList.toJavaList(AutoexecNodeVo.class) : new ArrayList<>());
         // 包含编译工具则新建buildNo
         if (Objects.equals(scenarioVo.getIsHasBuildTypeTool(), 1)) {
             moduleVo.setBuildNo(-1);
         }
         deployJobParam.setModuleList(Collections.singletonList(moduleVo));
+        deployJobParam.setSource(JobSource.DEPLOY_CI.getValue());
+        deployJobParam.setInvokeId(ci.getId());
         if (!Objects.equals(ci.getTriggerType(), DeployCiTriggerType.INSTANT.getValue())) {
-            deployJobService.createScheduleJob(deployJobParam, moduleVo);
+            deployJobService.createJobAndSchedule(deployJobParam, moduleVo);
         } else {
             deployJobService.createJobAndFire(deployJobParam, moduleVo);
         }
@@ -243,5 +245,4 @@ public class DeployCiServiceImpl implements DeployCiService {
         deployJobVo.setExecUser(UserContext.get().getUserUuid());
         return deployJobVo;
     }
-
 }
