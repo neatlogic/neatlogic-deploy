@@ -593,6 +593,12 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
     }
 
     @Override
+    public void deleteJob(AutoexecJobVo jobVo) {
+        deploySqlMapper.deleteDeploySqlDetailByJobId(jobVo.getId());
+        deployJobMapper.deleteJobById(jobVo.getId());
+    }
+
+    @Override
     public JSONObject getExtraRefreshJobInfo(AutoexecJobVo jobVo) {
         JSONObject result = new JSONObject();
         //补充是否有资源锁

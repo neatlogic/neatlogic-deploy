@@ -397,5 +397,9 @@
             #{id}
         </foreach>
     </update>
-
+    <delete id="deleteDeploySqlDetailByJobId">
+        delete
+        from deploy_sql_detail
+        where id = #{value}
+    </delete>
 </mapper>
