@@ -64,7 +64,7 @@ public class DeployVersionUnitTestChartHandler extends DeployVersionChartHandler
             });
             JSONArray dataList = new JSONArray();
             data.put("data", dataList);
-            List<DeployVersionUnitTestVo> list = deployVersionMapper.getDeployVersionUnitTestListByVersionIdWithLimit(versionId, 1);
+            List<DeployVersionUnitTestVo> list = deployVersionMapper.getDeployVersionUnitTestListByVersionIdWithLimit(versionId, 5);
             if (list.size() > 0) {
                 list.sort(Comparator.comparingLong(DeployVersionUnitTestVo::getId));
                 for (DeployVersionUnitTestVo vo : list) {
@@ -90,7 +90,7 @@ public class DeployVersionUnitTestChartHandler extends DeployVersionChartHandler
             });
             JSONArray dataList = new JSONArray();
             data.put("data", dataList);
-            List<DeployVersionUnitTestVo> list = deployVersionMapper.getDeployVersionUnitTestListByVersionIdWithLimit(versionId, 1);
+            List<DeployVersionUnitTestVo> list = deployVersionMapper.getDeployVersionUnitTestListByVersionIdWithLimit(versionId, 5);
             if (list.size() > 0) {
                 list.sort(Comparator.comparingLong(DeployVersionUnitTestVo::getId));
                 for (DeployVersionUnitTestVo vo : list) {
