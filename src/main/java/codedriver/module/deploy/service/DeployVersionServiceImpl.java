@@ -17,7 +17,7 @@ import codedriver.framework.globallock.core.GlobalLockHandlerFactory;
 import codedriver.framework.globallock.core.IGlobalLockHandler;
 import codedriver.module.deploy.dao.mapper.DeployVersionMapper;
 import com.alibaba.fastjson.JSONObject;
-import com.alibaba.nacos.common.utils.MapUtils;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 

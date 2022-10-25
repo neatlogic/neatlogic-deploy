@@ -1,6 +1,5 @@
 package codedriver.module.deploy.api.activeversion;
 
-import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.cmdb.crossover.IResourceCrossoverMapper;
 import codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo;
@@ -27,7 +26,6 @@ import codedriver.module.deploy.dao.mapper.DeployAppConfigMapper;
 import codedriver.module.deploy.dao.mapper.DeployEnvVersionMapper;
 import codedriver.module.deploy.dao.mapper.DeployVersionMapper;
 import com.alibaba.fastjson.JSONObject;
-import com.alibaba.nacos.common.utils.Objects;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 
