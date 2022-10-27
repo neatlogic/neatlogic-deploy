@@ -122,7 +122,8 @@ public class CallbackDeployCiGitlabEventApi extends PrivateApiComponentBase {
                 logger.error("Gitlab callback error. Missing commitId in callback params, ciId: {}, callback params: {}", ciId, paramObj.toJSONString());
                 throw new DeployCiGitlabCallbackCommitIdLostException();
             }
-            DeployCiVo ci = deployCiMapper.getDeployCiById(ciId);
+            transactionStatus = TransactionUtil.openTx();
+            DeployCiVo ci = deployCiMapper.getDeployCiLockById(ciId);
             if (ci == null) {
                 logger.error("Gitlab callback error. Deploy ci not found, ciId: {}, callback params: {}", ciId, paramObj.toJSONString());
                 throw new DeployCiNotFoundException(ciId);
@@ -162,7 +163,6 @@ public class CallbackDeployCiGitlabEventApi extends PrivateApiComponentBase {
             UserContext.init(SystemUser.SYSTEM.getUserVo(), SystemUser.SYSTEM.getTimezone());
             UserContext.get().setToken("GZIP_" + LoginAuthHandlerBase.buildJwt(SystemUser.SYSTEM.getUserVo()).getCc());
             Long jobId = null;
-            transactionStatus = TransactionUtil.openTx();
             if (DeployCiActionType.CREATE_JOB.getValue().equals(ci.getAction())) {
                 jobId = deployCiService.createJobForVCSCallback(paramObj, ci, versionName, deployVersion, DeployCiRepoType.GITLAB);
             } else if (DeployCiActionType.CREATE_BATCH_JOB.getValue().equals(ci.getAction())) {

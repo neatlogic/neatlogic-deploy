@@ -12,6 +12,8 @@ public interface DeployCiMapper {
 
     DeployCiVo getDeployCiById(Long id);
 
+    DeployCiVo getDeployCiLockById(Long id);
+
     int searchDeployCiCount(DeployCiVo vo);
 
     List<DeployCiVo> searchDeployCiList(DeployCiVo vo);

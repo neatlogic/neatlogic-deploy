@@ -38,6 +38,29 @@
         where `id` = #{value}
     </select>
 
+    <select id="getDeployCiLockById" parameterType="java.lang.Long"
+            resultType="codedriver.framework.deploy.dto.ci.DeployCiVo">
+        select `id`,
+               `name`,
+               `is_active`           as isActive,
+               `app_system_id`       as appSystemId,
+               `app_module_id`       as appModuleId,
+               `repo_type`           as repoType,
+               `repo_server_address` as repoServerAddress,
+               `repo_name`           as repoName,
+               `branch_filter`       as branchFilter,
+               `event`,
+               `action`,
+               `trigger_type`        as triggerType,
+               `trigger_time`        as triggerTime,
+               `delay_time`          as delayTime,
+               `version_rule`        as versionRuleStr,
+               `config`              as configStr,
+               `hook_id`             as hookId
+        from deploy_ci
+        where `id` = #{value} for update
+    </select>
+
     <sql id="searchDeploy">
         from deploy_ci
         <where>

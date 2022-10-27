@@ -164,28 +164,29 @@ public class CallbackDeployCiSvnEventApi extends PrivateApiComponentBase {
         }
         if (ciVoList.size() > 0) {
             for (DeployCiVo ci : ciVoList) {
-                DeployCiAuditVo auditVo = new DeployCiAuditVo(ci.getId(), revision, ci.getAction(), paramObj.toJSONString());
-                //如果是延迟触发且同一集成触发的情况，n秒内不再创建作业
-                if (Objects.equals(ci.getTriggerType(), DeployCiTriggerType.DELAY.getValue())) {
-                    if (ci.getDelayTime() == null) {
-                        throw new ParamIrregularException("delayTime");
-                    }
-                    AutoexecJobVo autoexecJobVo = autoexecJobMapper.getLatestJobByInvokeId(ci.getId());
-                    if (autoexecJobVo != null && autoexecJobVo.getFcd() != null && (System.currentTimeMillis() - autoexecJobVo.getFcd().getTime()) <= ci.getDelayTime() * 1000) {
-                        auditVo.setCiId(ci.getId());
-                        JSONObject result = new JSONObject();
-                        result.put("msg", "in " + ci.getDelayTime() + "s , ignored");
-                        auditVo.setResult(result);
-                        auditVo.setStatus(DeployCiAuditStatus.IGNORED.getValue());
-                        CodeDriverThread thread = new DeployCiAuditSaveThread(auditVo);
-                        thread.setThreadName("DEPLOY-CI-AUDIT-SAVER-" + auditVo.getId());
-                        CachedThreadPool.execute(thread);
-                        continue;
-                    }
-                }
-
                 TransactionStatus transactionStatus = null;
+                DeployCiAuditVo auditVo = new DeployCiAuditVo(ci.getId(), revision, ci.getAction(), paramObj.toJSONString());
                 try {
+                    transactionStatus = TransactionUtil.openTx();
+                    //如果是延迟触发且同一集成触发的情况，n秒内不再创建作业
+                    if (Objects.equals(ci.getTriggerType(), DeployCiTriggerType.DELAY.getValue())) {
+                        if (ci.getDelayTime() == null) {
+                            throw new ParamIrregularException("delayTime");
+                        }
+                        AutoexecJobVo autoexecJobVo = autoexecJobMapper.getLatestJobByInvokeId(ci.getId());
+                        if (autoexecJobVo != null && autoexecJobVo.getFcd() != null && (System.currentTimeMillis() - autoexecJobVo.getFcd().getTime()) <= ci.getDelayTime() * 1000) {
+                            auditVo.setCiId(ci.getId());
+                            JSONObject result = new JSONObject();
+                            result.put("msg", "in " + ci.getDelayTime() + "s , ignored");
+                            auditVo.setResult(result);
+                            auditVo.setStatus(DeployCiAuditStatus.IGNORED.getValue());
+                            CodeDriverThread thread = new DeployCiAuditSaveThread(auditVo);
+                            thread.setThreadName("DEPLOY-CI-AUDIT-SAVER-" + auditVo.getId());
+                            CachedThreadPool.execute(thread);
+                            continue;
+                        }
+                    }
+
                     String triggerType = ci.getTriggerType();
                     if (StringUtils.isBlank(triggerType)) {
                         logger.error("Svn callback error. Missing triggerTime in ci config, ciId: {}, callback params: {}", ci.getId(), paramObj.toJSONString());
@@ -205,7 +206,8 @@ public class CallbackDeployCiSvnEventApi extends PrivateApiComponentBase {
                     UserContext.init(SystemUser.SYSTEM.getUserVo(), SystemUser.SYSTEM.getTimezone());
                     UserContext.get().setToken("GZIP_" + LoginAuthHandlerBase.buildJwt(SystemUser.SYSTEM.getUserVo()).getCc());
                     Long jobId = null;
-                    transactionStatus = TransactionUtil.openTx();
+
+                    deployCiMapper.getDeployCiLockById(ci.getId());
                     if (DeployCiActionType.CREATE_JOB.getValue().equals(ci.getAction())) {
                         jobId = deployCiService.createJobForVCSCallback(paramObj, ci, versionName, deployVersion, DeployCiRepoType.SVN);
                     } else if (DeployCiActionType.CREATE_BATCH_JOB.getValue().equals(ci.getAction())) {
