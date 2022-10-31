@@ -61,6 +61,23 @@
         where id = #{value}
     </select>
 
+    <select id="getDeployVersionLockById" parameterType="java.lang.Long" resultType="codedriver.framework.deploy.dto.version.DeployVersionVo">
+        select id,
+               version,
+               app_system_id   as appSystemId,
+               app_system_name as appSystemName,
+               app_module_id   as appModuleId,
+               app_module_name as appModuleName,
+               is_freeze       as isFreeze,
+               fcu,
+               fcd,
+               lcu,
+               lcd
+        from deploy_version
+        where id = #{value}
+        for update
+    </select>
+
     <select id="searchDeployVersionCount" resultType="java.lang.Integer">
         select count(dv.id)
         from deploy_version dv
@@ -285,7 +302,9 @@
         update
     </select>
 
-    <sql id="getDeployVersionBaseInfoBySystemIdAndModuleIdAndVersion">
+    <select id="getDeployVersionBaseInfoBySystemIdAndModuleIdAndVersion"
+            parameterType="codedriver.framework.deploy.dto.version.DeployVersionVo"
+            resultType="codedriver.framework.deploy.dto.version.DeployVersionVo">
         select id,
                version,
                app_system_id   as appSystemId,
@@ -309,47 +328,6 @@
         where version = #{version}
           and app_system_id = #{appSystemId}
           and app_module_id = #{appModuleId}
-    </sql>
-
-    <select id="getDeployVersionBaseInfoBySystemIdAndModuleIdAndVersion"
-            parameterType="codedriver.framework.deploy.dto.version.DeployVersionVo"
-            resultType="codedriver.framework.deploy.dto.version.DeployVersionVo">
-        <include refid="getDeployVersionBaseInfoBySystemIdAndModuleIdAndVersion"/>
-    </select>
-
-    <select id="getDeployVersionBaseInfoBySystemIdAndModuleIdAndVersionLock"
-            parameterType="codedriver.framework.deploy.dto.version.DeployVersionVo"
-            resultType="codedriver.framework.deploy.dto.version.DeployVersionVo">
-        <include refid="getDeployVersionBaseInfoBySystemIdAndModuleIdAndVersion"/>
-        for update
-    </select>
-
-    <select id="getDeployVersionBySystemIdAndModuleIdAndVersionLock"
-            parameterType="codedriver.framework.deploy.dto.version.DeployVersionVo"
-            resultType="codedriver.framework.deploy.dto.version.DeployVersionVo">
-        select dv.id,
-               dv.version,
-               dv.app_system_id as appSystemId,
-               dv.app_module_id as appModuleId,
-               dv.is_freeze     as isFreeze,
-               dv.repo_type     as repoType,
-               dv.repo          as repo,
-               dv.trunk         as trunk,
-               dv.branch        as branch,
-               dv.tag           as tag,
-               dv.tags_dir      as tagsDir,
-               dv.start_rev     as startRev,
-               dv.end_rev       as endRev,
-               dv.fcu,
-               dv.fcd,
-               dv.lcu,
-               dv.lcd
-        from deploy_version dv
-        where dv.version = #{version}
-          and dv.app_system_id = #{appSystemId}
-          and dv.app_module_id = #{appModuleId}
-            for
-        update
     </select>
 
     <select id="getDeployVersionBySystemIdAndModuleIdAndVersion"

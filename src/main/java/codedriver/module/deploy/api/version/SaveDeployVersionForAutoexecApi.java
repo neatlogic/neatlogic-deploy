@@ -66,7 +66,7 @@ public class SaveDeployVersionForAutoexecApi extends PrivateApiComponentBase {
         JSONObject verInfo = paramObj.getJSONObject("verInfo");
         String status = verInfo.getString("status");
         DeployVersionVo versionVo = verInfo.toJavaObject(DeployVersionVo.class);
-        DeployVersionVo oldVersionVo = deployVersionMapper.getDeployVersionBaseInfoBySystemIdAndModuleIdAndVersionLock(new DeployVersionVo(version, sysId, moduleId));
+        DeployVersionVo oldVersionVo = deployVersionMapper.getDeployVersionBaseInfoBySystemIdAndModuleIdAndVersion(new DeployVersionVo(version, sysId, moduleId));
         if (oldVersionVo == null) {
             versionVo.setAppSystemId(sysId);
             versionVo.setAppModuleId(moduleId);
@@ -80,6 +80,7 @@ public class SaveDeployVersionForAutoexecApi extends PrivateApiComponentBase {
             }
             deployVersionMapper.insertDeployVersion(versionVo);
         } else {
+            deployVersionMapper.getDeployVersionLockById(oldVersionVo.getId());
             versionVo.setId(oldVersionVo.getId());
             versionVo.setRunnerMapId(runnerId);
             versionVo.setRunnerGroup(runnerGroup);

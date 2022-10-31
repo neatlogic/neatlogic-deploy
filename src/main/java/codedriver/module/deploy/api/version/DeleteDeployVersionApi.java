@@ -78,8 +78,9 @@ public class DeleteDeployVersionApi extends PrivateApiComponentBase {
             throw new ParamNotExistsException(Collections.singletonList("id"), paramList);
         }
         if (versionId == null) {
-            DeployVersionVo versionVo = deployVersionMapper.getDeployVersionBySystemIdAndModuleIdAndVersionLock(new DeployVersionVo(version, sysId, moduleId));
+            DeployVersionVo versionVo = deployVersionMapper.getDeployVersionBaseInfoBySystemIdAndModuleIdAndVersion(new DeployVersionVo(version, sysId, moduleId));
             if (versionVo != null) {
+                deployVersionMapper.getDeployVersionLockById(versionVo.getId());
                 versionId = versionVo.getId();
             }
         }
