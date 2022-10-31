@@ -21,6 +21,8 @@ public interface DeployVersionMapper {
 
     DeployVersionVo getDeployVersionBaseInfoById(Long id);
 
+    DeployVersionVo getDeployVersionLockById(Long id);
+
     DeployVersionVo getVersionByAppSystemIdAndAppModuleIdAndVersion(@Param("appSystemId") Long appSystemId, @Param("appModuleId") Long appModuleId, @Param("version") String version);
 
     List<DeployVersionVo> getDeployVersionBaseInfoByIdList(List<Long> idList);
@@ -36,10 +38,6 @@ public interface DeployVersionMapper {
     Long getJobIdByDeployVersionIdAndEnvId(@Param("versionId") Long versionId, @Param("envId") Long envId);
 
     DeployVersionVo getDeployVersionBaseInfoBySystemIdAndModuleIdAndVersion(DeployVersionVo versionVo);
-
-    DeployVersionVo getDeployVersionBaseInfoBySystemIdAndModuleIdAndVersionLock(DeployVersionVo versionVo);
-
-    DeployVersionVo getDeployVersionBySystemIdAndModuleIdAndVersionLock(DeployVersionVo versionVo);
 
     DeployVersionVo getDeployVersionBySystemIdAndModuleIdAndVersion(@Param("appSystemId") Long systemId, @Param("appModuleId") Long moduleId, @Param("version") String version);
 
