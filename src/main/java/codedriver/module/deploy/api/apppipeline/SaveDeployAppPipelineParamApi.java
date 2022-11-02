@@ -8,6 +8,7 @@ package codedriver.module.deploy.api.apppipeline;
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.autoexec.constvalue.ParamType;
 import codedriver.framework.autoexec.crossover.IAutoexecServiceCrossoverService;
+import codedriver.framework.autoexec.dto.AutoexecParamConfigVo;
 import codedriver.framework.autoexec.dto.AutoexecParamVo;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.util.RC4Util;
@@ -105,9 +106,9 @@ public class SaveDeployAppPipelineParamApi extends PrivateApiComponentBase {
                 if (paramType == ParamType.PASSWORD && value != null) {
                     autoexecParamVo.setDefaultValue(RC4Util.encrypt((String) value));
                 } else if (paramType == ParamType.SELECT || paramType == ParamType.MULTISELECT || paramType == ParamType.CHECKBOX || paramType == ParamType.RADIO) {
-                    JSONObject config = autoexecParamVo.getConfig();
-                    if (MapUtils.isNotEmpty(config)) {
-                        String matrixUuid = config.getString("matrixUuid");
+                    AutoexecParamConfigVo config = autoexecParamVo.getConfig();
+                    if (config != null) {
+                        String matrixUuid = config.getMatrixUuid();
                         if (StringUtils.isNotBlank(matrixUuid)) {
                             JSONObject dependencyConfig = new JSONObject();
                             dependencyConfig.put("appSystemId", appSystemId);
