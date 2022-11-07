@@ -44,6 +44,13 @@ public class BatchUpdateGitlabHookApi extends PrivateApiComponentBase {
     @Input({
             @Param(name = "runnerUrl", desc = "runner url", type = ApiParamType.STRING, isRequired = true),
             @Param(name = "configList", desc = "hook配置列表", type = ApiParamType.JSONARRAY, isRequired = true),
+            @Param(name = "configList.repoServerAddress", desc = "仓库服务器地址"),
+            @Param(name = "configList.repoName", desc = "仓库名称"),
+            @Param(name = "configList.branchFilter", desc = "分支", type = ApiParamType.STRING),
+            @Param(name = "configList.callbackUrl", desc = "回调url", type = ApiParamType.STRING),
+            @Param(name = "configList.username", desc = "gitlab用户", type = ApiParamType.STRING),
+            @Param(name = "configList.password", desc = "gitlab密码", type = ApiParamType.STRING),
+            @Param(name = "configList.action", desc = "动作类型", type = ApiParamType.ENUM, rule = "insert,delete"),
     })
     @Description(desc = "批量更新gitlab webhook")
     @Override
