@@ -45,9 +45,11 @@ public class BatchUpdateGitlabHookApi extends PrivateApiComponentBase {
     @Input({
             @Param(name = "runnerUrl", desc = "runner url", type = ApiParamType.STRING, isRequired = true),
             @Param(name = "repoServerAddress", desc = "仓库服务器地址", type = ApiParamType.STRING, isRequired = true),
+            @Param(name = "callbackUrl", desc = "回调url", type = ApiParamType.JSONARRAY),
             @Param(name = "branchFilter", desc = "分支", type = ApiParamType.STRING),
             @Param(name = "username", desc = "gitlab用户", type = ApiParamType.STRING),
             @Param(name = "password", desc = "gitlab密码", type = ApiParamType.STRING),
+            @Param(name = "action", desc = "动作类型", type = ApiParamType.ENUM, rule = "insert,delete"),
             @Param(name = "configList", desc = "hook配置列表", type = ApiParamType.JSONARRAY, isRequired = true),
             @Param(name = "configList.repoServerAddress", desc = "仓库服务器地址"),
             @Param(name = "configList.repoName", desc = "仓库名称"),
@@ -62,9 +64,11 @@ public class BatchUpdateGitlabHookApi extends PrivateApiComponentBase {
     public Object myDoService(JSONObject paramObj) throws Exception {
         JSONArray array = new JSONArray();
         String globalRepoServerAddress = paramObj.getString("repoServerAddress");
+        JSONArray globalCallbackUrl = paramObj.getJSONArray("callbackUrl");
         String globalBranchFilter = paramObj.getString("branchFilter");
         String globalUsername = paramObj.getString("username");
         String globalPassword = paramObj.getString("password");
+        String globalAction = paramObj.getString("action");
         String encPassword = null;
         if (StringUtils.isNotBlank(globalPassword)) {
             encPassword = RC4Util.encrypt(globalPassword);
@@ -81,7 +85,10 @@ public class BatchUpdateGitlabHookApi extends PrivateApiComponentBase {
                 throw new ApiRuntimeException("第：" + (i + 1) + "个缺少repoName");
             }
             if (CollectionUtils.isEmpty(callbackUrl)) {
-                throw new ApiRuntimeException(repoName + "缺少callbackUrl");
+                config.put("callbackUrl", globalCallbackUrl);
+                if (CollectionUtils.isEmpty(globalCallbackUrl)) {
+                    throw new ApiRuntimeException(repoName + "缺少callbackUrl");
+                }
             }
             if (StringUtils.isBlank(username)) {
                 config.put("username", globalUsername);
@@ -101,7 +108,11 @@ public class BatchUpdateGitlabHookApi extends PrivateApiComponentBase {
                 config.put("branchFilter", globalBranchFilter);
             }
             if (StringUtils.isBlank(action)) {
-                throw new ApiRuntimeException(repoName + "缺少action");
+                config.put("action", globalAction);
+                action = globalAction;
+                if (StringUtils.isBlank(globalAction)) {
+                    throw new ApiRuntimeException(repoName + "缺少action");
+                }
             }
             if (!"insert".equals(action) && !"delete".equals(action)) {
                 throw new ApiRuntimeException(repoName + "未知的action：" + action);
@@ -115,6 +126,10 @@ public class BatchUpdateGitlabHookApi extends PrivateApiComponentBase {
         JSONObject param = new JSONObject();
         param.put("configList", array);
         HttpRequestUtil request = HttpRequestUtil.post(url).setPayload(param.toJSONString()).setAuthType(AuthenticateType.BUILDIN).sendRequest();
+        String error = request.getError();
+        if (StringUtils.isNotBlank(error)) {
+            throw new ApiRuntimeException(error);
+        }
         JSONObject resultJson = request.getResultJson();
         if (MapUtils.isNotEmpty(resultJson)) {
             return resultJson.getJSONArray("Return");
