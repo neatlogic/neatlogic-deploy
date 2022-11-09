@@ -84,7 +84,7 @@ public class GetDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
                     JSONArray stateIdArray = attrEntityVo.getValueList();
                     if (CollectionUtils.isNotEmpty(stateIdArray)) {
                         List<Long> stateIdList = stateIdArray.toJavaList(Long.class);
-                        appSystemVo.setStateIdList(stateIdList);
+                        appSystemVo.setState(stateIdList);
                     }
                 }
                 //负责人
@@ -92,7 +92,7 @@ public class GetDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
                     JSONArray ownerIdArray = attrEntityVo.getValueList();
                     if (CollectionUtils.isNotEmpty(ownerIdArray)) {
                         List<Long> ownerIdList = ownerIdArray.toJavaList(Long.class);
-                        appSystemVo.setOwnerIdList(ownerIdList);
+                        appSystemVo.setOwner(ownerIdList);
                     }
                 }
                 //维护窗口

@@ -17,6 +17,7 @@ import codedriver.framework.deploy.exception.DeployAppConfigModuleRunnerGroupNot
 import codedriver.framework.dto.runner.RunnerGroupVo;
 import codedriver.framework.dto.runner.RunnerMapVo;
 import codedriver.framework.exception.runner.RunnerGroupRunnerNotFoundException;
+import codedriver.framework.exception.type.ParamIrregularException;
 import codedriver.module.deploy.dao.mapper.DeployAppConfigMapper;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
@@ -114,8 +115,8 @@ public class DeployAppConfigServiceImpl implements DeployAppConfigService {
         Long appModuleId = deployAppModuleVo.getId();
 
         JSONObject paramObj = new JSONObject();
-        paramObj.put("stateIdList", deployAppModuleVo.getStateIdList());
-        paramObj.put("ownerIdList", deployAppModuleVo.getOwnerIdList());
+        paramObj.put("stateIdList", deployAppModuleVo.getState());
+        paramObj.put("ownerIdList", deployAppModuleVo.getOwner());
         paramObj.put("abbrName", deployAppModuleVo.getAbbrName());
         paramObj.put("name", deployAppModuleVo.getName());
         paramObj.put("maintenanceWindow", deployAppModuleVo.getMaintenanceWindow());
@@ -164,6 +165,56 @@ public class DeployAppConfigServiceImpl implements DeployAppConfigService {
         ciEntityTransactionList.add(ciEntityTransactionVo);
         ciEntityService.saveCiEntity(ciEntityTransactionList);
         return ciEntityTransactionVo.getCiEntityId();
+    }
+
+    @Override
+    public JSONObject getDeployCiAttrList(Long ciId, Integer isAll, JSONArray attrNameArray) {
+        JSONObject returnObj = new JSONObject();
+        IAttrCrossoverMapper attrCrossoverMapper = CrossoverServiceFactory.getApi(IAttrCrossoverMapper.class);
+        List<AttrVo> attrList = attrCrossoverMapper.getAttrByCiId(ciId);
+        if (CollectionUtils.isNotEmpty(attrList)) {
+            if (isAll == 0) {
+                if (CollectionUtils.isEmpty(attrNameArray)) {
+                    throw new ParamIrregularException("attrNameList");
+                }
+                List<String> attrNameList = attrNameArray.toJavaList(String.class);
+                for (AttrVo attrVo : attrList) {
+                    JSONObject attrInfo = new JSONObject();
+                    if (attrNameList.contains(attrVo.getName())) {
+                        attrInfo.put("label", attrVo.getLabel());
+                        attrInfo.put("type", attrVo.getType());
+                        attrInfo.put("isRequired", attrVo.getIsRequired());
+                        if (StringUtils.equals(attrVo.getType(), "select")) {
+                            JSONObject attrVoConfig = attrVo.getConfig();
+                            if (attrVoConfig != null) {
+                                attrInfo.put("isMultiple", attrVoConfig.getInteger("isMultiple") == 1);
+                            }
+                        } else if (StringUtils.equals(attrVo.getType(), "datetime")) {
+                            JSONObject attrVoConfig = attrVo.getConfig();
+                            if (attrVoConfig != null) {
+                                attrInfo.put("format", attrVoConfig.getString("format"));
+                            }
+                        } else if (StringUtils.equals(attrVo.getType(), "datetimerange")) {
+                            JSONObject attrVoConfig = attrVo.getConfig();
+                            if (attrVoConfig != null) {
+                                attrInfo.put("format", attrVoConfig.getString("format"));
+                                attrInfo.put("formatType", attrVoConfig.getString("type"));
+                            }
+                        }
+                        returnObj.put(StringUtils.equals(attrVo.getName(), "maintenance_window") ? "maintenanceWindow" : attrVo.getName(), attrInfo);
+                    }
+                }
+            } else {
+                for (AttrVo attrVo : attrList) {
+                    JSONObject attrInfo = new JSONObject();
+                    attrInfo.put("label", attrVo.getLabel());
+                    attrInfo.put("type", attrVo.getType());
+                    attrInfo.put("isRequired", attrVo.getIsRequired());
+                    returnObj.put(StringUtils.equals(attrVo.getName(), "maintenance_window") ? "maintenanceWindow" : attrVo.getName(), attrInfo);
+                }
+            }
+        }
+        return returnObj;
     }
 
     /**
