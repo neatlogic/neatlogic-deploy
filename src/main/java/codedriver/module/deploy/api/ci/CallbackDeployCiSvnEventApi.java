@@ -15,6 +15,7 @@ import codedriver.framework.deploy.dto.ci.DeployCiAuditVo;
 import codedriver.framework.deploy.dto.ci.DeployCiVo;
 import codedriver.framework.deploy.dto.version.DeployVersionVo;
 import codedriver.framework.deploy.exception.DeployCiVersionRegexIllegalException;
+import codedriver.framework.exception.core.ApiRuntimeException;
 import codedriver.framework.exception.type.ParamIrregularException;
 import codedriver.framework.filter.core.LoginAuthHandlerBase;
 import codedriver.framework.restful.annotation.Description;
@@ -24,7 +25,6 @@ import codedriver.framework.restful.annotation.Param;
 import codedriver.framework.restful.constvalue.ApiAnonymousAccessSupportEnum;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
-import codedriver.framework.transaction.util.TransactionUtil;
 import codedriver.module.deploy.dao.mapper.DeployCiMapper;
 import codedriver.module.deploy.dao.mapper.DeployVersionMapper;
 import codedriver.module.deploy.service.DeployCiService;
@@ -36,7 +36,7 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.nio.file.FileSystems;
@@ -48,6 +48,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Service
+@Transactional
 @OperationType(type = OperationTypeEnum.OPERATE)
 public class CallbackDeployCiSvnEventApi extends PrivateApiComponentBase {
 
@@ -164,10 +165,8 @@ public class CallbackDeployCiSvnEventApi extends PrivateApiComponentBase {
         }
         if (ciVoList.size() > 0) {
             for (DeployCiVo ci : ciVoList) {
-                TransactionStatus transactionStatus = null;
                 DeployCiAuditVo auditVo = new DeployCiAuditVo(ci.getId(), revision, ci.getAction(), paramObj.toJSONString());
                 try {
-                    transactionStatus = TransactionUtil.openTx();
                     //如果是延迟触发且同一集成触发的情况，n秒内不再创建作业
                     if (Objects.equals(ci.getTriggerType(), DeployCiTriggerType.DELAY.getValue())) {
                         if (ci.getDelayTime() == null) {
@@ -213,18 +212,15 @@ public class CallbackDeployCiSvnEventApi extends PrivateApiComponentBase {
                     } else if (DeployCiActionType.CREATE_BATCH_JOB.getValue().equals(ci.getAction())) {
                         jobId = deployCiService.createBatchJobForVCSCallback(paramObj, ci, versionName, deployVersion, DeployCiRepoType.SVN);
                     }
-                    TransactionUtil.commitTx(transactionStatus);
                     auditVo.setJobId(jobId);
                     auditVo.setStatus(DeployCiAuditStatus.SUCCEED.getValue());
                     auditVo.setResult(jobId);
                 } catch (Exception ex) {
-                    if (transactionStatus != null) {
-                        TransactionUtil.rollbackTx(transactionStatus);
-                    }
                     logger.error("Svn callback error. Deploy ci:{} has been ignored, callback params: {}", ci.getId(), paramObj.toJSONString());
                     logger.error(ex.getMessage(), ex);
                     auditVo.setStatus(DeployCiAuditStatus.FAILED.getValue());
                     auditVo.setError(ExceptionUtils.getStackTrace(ex));
+                    throw new ApiRuntimeException(ex);
                 } finally {
                     CodeDriverThread thread = new DeployCiAuditSaveThread(auditVo);
                     thread.setThreadName("DEPLOY-CI-AUDIT-SAVER-" + auditVo.getId());

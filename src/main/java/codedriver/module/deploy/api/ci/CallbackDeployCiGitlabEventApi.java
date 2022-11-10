@@ -15,6 +15,7 @@ import codedriver.framework.deploy.dto.ci.DeployCiAuditVo;
 import codedriver.framework.deploy.dto.ci.DeployCiVo;
 import codedriver.framework.deploy.dto.version.DeployVersionVo;
 import codedriver.framework.deploy.exception.*;
+import codedriver.framework.exception.core.ApiRuntimeException;
 import codedriver.framework.exception.type.ParamIrregularException;
 import codedriver.framework.filter.core.LoginAuthHandlerBase;
 import codedriver.framework.restful.annotation.Description;
@@ -24,7 +25,6 @@ import codedriver.framework.restful.annotation.Param;
 import codedriver.framework.restful.constvalue.ApiAnonymousAccessSupportEnum;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
-import codedriver.framework.transaction.util.TransactionUtil;
 import codedriver.module.deploy.dao.mapper.DeployCiMapper;
 import codedriver.module.deploy.dao.mapper.DeployVersionMapper;
 import codedriver.module.deploy.service.DeployCiService;
@@ -37,7 +37,7 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.Arrays;
@@ -46,6 +46,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @Service
+@Transactional
 @OperationType(type = OperationTypeEnum.OPERATE)
 public class CallbackDeployCiGitlabEventApi extends PrivateApiComponentBase {
 
@@ -91,7 +92,6 @@ public class CallbackDeployCiGitlabEventApi extends PrivateApiComponentBase {
     public Object myDoService(JSONObject paramObj) throws Exception {
         logger.info("Gitlab callback triggered, callback param: {}", paramObj.toJSONString());
         DeployCiAuditVo auditVo = new DeployCiAuditVo();
-        TransactionStatus transactionStatus = null;
         try {
             /*
                 1、查出ciId对应的配置
@@ -122,7 +122,6 @@ public class CallbackDeployCiGitlabEventApi extends PrivateApiComponentBase {
                 logger.error("Gitlab callback error. Missing commitId in callback params, ciId: {}, callback params: {}", ciId, paramObj.toJSONString());
                 throw new DeployCiGitlabCallbackCommitIdLostException();
             }
-            transactionStatus = TransactionUtil.openTx();
             DeployCiVo ci = deployCiMapper.getDeployCiLockById(ciId);
             if (ci == null) {
                 logger.error("Gitlab callback error. Deploy ci not found, ciId: {}, callback params: {}", ciId, paramObj.toJSONString());
@@ -168,16 +167,13 @@ public class CallbackDeployCiGitlabEventApi extends PrivateApiComponentBase {
             } else if (DeployCiActionType.CREATE_BATCH_JOB.getValue().equals(ci.getAction())) {
                 jobId = deployCiService.createBatchJobForVCSCallback(paramObj, ci, versionName, deployVersion, DeployCiRepoType.GITLAB);
             }
-            TransactionUtil.commitTx(transactionStatus);
             auditVo.setJobId(jobId);
             auditVo.setStatus(DeployCiAuditStatus.SUCCEED.getValue());
             auditVo.setResult(jobId);
         } catch (Exception ex) {
-            if (transactionStatus != null) {
-                TransactionUtil.rollbackTx(transactionStatus);
-            }
             auditVo.setStatus(DeployCiAuditStatus.FAILED.getValue());
             auditVo.setError(ExceptionUtils.getStackTrace(ex));
+            throw new ApiRuntimeException(ex);
         } finally {
             CodeDriverThread thread = new DeployCiAuditSaveThread(auditVo);
             thread.setThreadName("DEPLOY-CI-AUDIT-SAVER-" + auditVo.getId());
