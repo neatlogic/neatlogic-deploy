@@ -27,6 +27,8 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * @author longrf
@@ -178,6 +180,13 @@ public class DeployAppConfigServiceImpl implements DeployAppConfigService {
                     throw new ParamIrregularException("attrNameList");
                 }
                 List<String> attrNameList = attrNameArray.toJavaList(String.class);
+                for (int i = 0; i < attrNameList.size(); i++) {
+                    String attr = attrNameList.get(i);
+                    if (StringUtils.equals(attr, "maintenanceWindow")) {
+                        attrNameList.remove(i);
+                        attrNameList.add(humpToUnderline(attr));
+                    }
+                }
                 for (AttrVo attrVo : attrList) {
                     JSONObject attrInfo = new JSONObject();
                     if (attrNameList.contains(attrVo.getName())) {
@@ -312,5 +321,21 @@ public class DeployAppConfigServiceImpl implements DeployAppConfigService {
         map.put("APP", "appSystemId");
         map.put("APPComponent", "appModuleId");
         return map;
+    }
+
+    /**
+     * 驼峰转下划线
+     *
+     * @param paramString 目标字符串
+     * @return java.lang.String
+     */
+    public static String humpToUnderline(String paramString) {
+        String regex = "([A-Z])";
+        Matcher matcher = Pattern.compile(regex).matcher(paramString);
+        while (matcher.find()) {
+            String target = matcher.group();
+            paramString = paramString.replaceAll(target, "_" + target.toLowerCase());
+        }
+        return paramString;
     }
 }
