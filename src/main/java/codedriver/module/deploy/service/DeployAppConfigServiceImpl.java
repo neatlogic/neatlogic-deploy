@@ -326,16 +326,16 @@ public class DeployAppConfigServiceImpl implements DeployAppConfigService {
     /**
      * 驼峰转下划线
      *
-     * @param str 目标字符串
+     * @param paramString 目标字符串
      * @return java.lang.String
      */
-    public static String humpToUnderline(String str) {
+    public static String humpToUnderline(String paramString) {
         String regex = "([A-Z])";
-        Matcher matcher = Pattern.compile(regex).matcher(str);
+        Matcher matcher = Pattern.compile(regex).matcher(paramString);
         while (matcher.find()) {
             String target = matcher.group();
-            str = str.replaceAll(target, "_" + target.toLowerCase());
+            paramString = paramString.replaceAll(target, "_" + target.toLowerCase());
         }
-        return str;
+        return paramString;
     }
 }
