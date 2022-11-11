@@ -1,22 +1,20 @@
 package codedriver.module.deploy.api.ci;
 
-import codedriver.framework.asynchronization.thread.CodeDriverThread;
 import codedriver.framework.asynchronization.threadlocal.UserContext;
-import codedriver.framework.asynchronization.threadpool.CachedThreadPool;
 import codedriver.framework.autoexec.dao.mapper.AutoexecJobMapper;
 import codedriver.framework.autoexec.dto.job.AutoexecJobVo;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.constvalue.SystemUser;
-import codedriver.framework.deploy.constvalue.DeployCiActionType;
-import codedriver.framework.deploy.constvalue.DeployCiAuditStatus;
-import codedriver.framework.deploy.constvalue.DeployCiRepoType;
-import codedriver.framework.deploy.constvalue.DeployCiTriggerType;
+import codedriver.framework.crossover.CrossoverServiceFactory;
+import codedriver.framework.deploy.constvalue.*;
 import codedriver.framework.deploy.dto.ci.DeployCiAuditVo;
 import codedriver.framework.deploy.dto.ci.DeployCiVo;
 import codedriver.framework.deploy.dto.version.DeployVersionVo;
 import codedriver.framework.deploy.exception.DeployCiVersionRegexIllegalException;
 import codedriver.framework.exception.core.ApiRuntimeException;
 import codedriver.framework.exception.type.ParamIrregularException;
+import codedriver.framework.file.core.Event;
+import codedriver.framework.file.core.appender.AppenderManager;
 import codedriver.framework.filter.core.LoginAuthHandlerBase;
 import codedriver.framework.restful.annotation.Description;
 import codedriver.framework.restful.annotation.Input;
@@ -25,10 +23,11 @@ import codedriver.framework.restful.annotation.Param;
 import codedriver.framework.restful.constvalue.ApiAnonymousAccessSupportEnum;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
+import codedriver.module.deploy.audit.DeployCiCallbackAuditAppendPostProcessor;
+import codedriver.module.deploy.audit.DeployCiCallbackAuditAppendPreProcessor;
 import codedriver.module.deploy.dao.mapper.DeployCiMapper;
 import codedriver.module.deploy.dao.mapper.DeployVersionMapper;
 import codedriver.module.deploy.service.DeployCiService;
-import codedriver.module.deploy.thread.DeployCiAuditSaveThread;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -166,6 +165,10 @@ public class CallbackDeployCiSvnEventApi extends PrivateApiComponentBase {
         if (ciVoList.size() > 0) {
             for (DeployCiVo ci : ciVoList) {
                 DeployCiAuditVo auditVo = new DeployCiAuditVo(ci.getId(), revision, ci.getAction(), paramObj.toJSONString());
+                JSONObject auditData = new JSONObject();
+                auditData.put("deployCiAudit", auditVo);
+                DeployCiCallbackAuditAppendPostProcessor appendPostProcessor = CrossoverServiceFactory.getApi(DeployCiCallbackAuditAppendPostProcessor.class);
+                DeployCiCallbackAuditAppendPreProcessor appendPreProcessor = CrossoverServiceFactory.getApi(DeployCiCallbackAuditAppendPreProcessor.class);
                 try {
                     //如果是延迟触发且同一集成触发的情况，n秒内不再创建作业
                     if (Objects.equals(ci.getTriggerType(), DeployCiTriggerType.DELAY.getValue())) {
@@ -179,9 +182,7 @@ public class CallbackDeployCiSvnEventApi extends PrivateApiComponentBase {
                             result.put("msg", "in " + ci.getDelayTime() + "s , ignored");
                             auditVo.setResult(result);
                             auditVo.setStatus(DeployCiAuditStatus.IGNORED.getValue());
-                            CodeDriverThread thread = new DeployCiAuditSaveThread(auditVo);
-                            thread.setThreadName("DEPLOY-CI-AUDIT-SAVER-" + auditVo.getId());
-                            CachedThreadPool.execute(thread);
+                            AppenderManager.execute(new Event(ci.getName(), System.currentTimeMillis(), auditData, appendPreProcessor, appendPostProcessor, AuditType.DEPLOY_CI_CALLBACK_AUDIT));
                             continue;
                         }
                     }
@@ -222,9 +223,7 @@ public class CallbackDeployCiSvnEventApi extends PrivateApiComponentBase {
                     auditVo.setError(ExceptionUtils.getStackTrace(ex));
                     throw new ApiRuntimeException(ex);
                 } finally {
-                    CodeDriverThread thread = new DeployCiAuditSaveThread(auditVo);
-                    thread.setThreadName("DEPLOY-CI-AUDIT-SAVER-" + auditVo.getId());
-                    CachedThreadPool.execute(thread);
+                    AppenderManager.execute(new Event(ci.getName(), System.currentTimeMillis(), auditData, appendPreProcessor, appendPostProcessor, AuditType.DEPLOY_CI_CALLBACK_AUDIT));
                 }
             }
         }
