@@ -4,6 +4,7 @@ import codedriver.framework.cmdb.dto.transaction.CiEntityTransactionVo;
 import codedriver.framework.deploy.dto.app.DeployAppConfigVo;
 import codedriver.framework.deploy.dto.app.DeployAppModuleVo;
 import codedriver.framework.dto.runner.RunnerMapVo;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
 import java.util.List;
@@ -49,4 +50,15 @@ public interface DeployAppConfigService {
      * @return 模块id
      */
     Long saveDeployAppModule(DeployAppModuleVo deployAppModuleVo, int isAdd);
+
+
+    /**
+     * 获取发布模型属性列表
+     *
+     * @param ciId          模型id
+     * @param isAll         是否获取所有属性列表
+     * @param attrNameArray 需要的属性列表名称
+     * @return 属性列表
+     */
+    JSONObject getDeployCiAttrList(Long ciId, Integer isAll, JSONArray attrNameArray);
 }

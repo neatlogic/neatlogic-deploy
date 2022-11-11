@@ -56,8 +56,8 @@ public class SaveDeployAppConfigAppModuleApi extends PrivateApiComponentBase {
             @Param(name = "id", type = ApiParamType.LONG, desc = "id"),
             @Param(name = "abbrName", type = ApiParamType.STRING, isRequired = true, desc = "简称"),
             @Param(name = "name", type = ApiParamType.STRING, desc = "名称"),
-            @Param(name = "stateIdList", type = ApiParamType.JSONARRAY, desc = "状态"),
-            @Param(name = "ownerIdList", type = ApiParamType.JSONARRAY, desc = "负责人"),
+            @Param(name = "state", type = ApiParamType.JSONARRAY, desc = "状态"),
+            @Param(name = "owner", type = ApiParamType.JSONARRAY, desc = "负责人"),
             @Param(name = "maintenanceWindow", type = ApiParamType.STRING, desc = "维护窗口"),
             @Param(name = "description", type = ApiParamType.STRING, desc = "备注"),
             @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "应用系统id")

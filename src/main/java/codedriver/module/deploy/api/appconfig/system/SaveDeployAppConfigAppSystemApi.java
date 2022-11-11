@@ -69,8 +69,8 @@ public class SaveDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
             @Param(name = "id", type = ApiParamType.LONG, desc = "id"),
             @Param(name = "abbrName", type = ApiParamType.STRING, isRequired = true, desc = "简称"),
             @Param(name = "name", type = ApiParamType.STRING, desc = "名称"),
-            @Param(name = "stateIdList", type = ApiParamType.JSONARRAY, desc = "状态"),
-            @Param(name = "ownerIdList", type = ApiParamType.JSONARRAY, desc = "负责人"),
+            @Param(name = "state", type = ApiParamType.JSONARRAY, desc = "状态"),
+            @Param(name = "owner", type = ApiParamType.JSONARRAY, desc = "负责人"),
             @Param(name = "maintenanceWindow", type = ApiParamType.STRING, desc = "维护窗口"),
             @Param(name = "description", type = ApiParamType.STRING, desc = "备注")
     })
@@ -89,11 +89,11 @@ public class SaveDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
         List<Long> stateIdList = new ArrayList<>();
         List<Long> ownerIdList = new ArrayList<>();
         //构建数据结构
-        JSONArray stateIdArray = paramObj.getJSONArray("stateIdList");
+        JSONArray stateIdArray = paramObj.getJSONArray("state");
         if (CollectionUtils.isNotEmpty(stateIdArray)) {
             stateIdList = stateIdArray.toJavaList(Long.class);
         }
-        JSONArray ownerIdArray = paramObj.getJSONArray("ownerIdList");
+        JSONArray ownerIdArray = paramObj.getJSONArray("owner");
         if (CollectionUtils.isNotEmpty(ownerIdArray)) {
             ownerIdList = ownerIdArray.toJavaList(Long.class);
         }
