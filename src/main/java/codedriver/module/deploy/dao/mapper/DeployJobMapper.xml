@@ -191,11 +191,17 @@
     <select id="searchDeployJobId" parameterType="codedriver.framework.deploy.dto.job.DeployJobVo"
             resultType="java.lang.Long">
         SELECT
-        distinct aj.`id`
+         aj.`id`
         FROM
         `autoexec_job` aj
         <include refid="searchJobSql"/>
-        order by aj.`id` desc
+        GROUP BY aj.`id`
+        <if test="sortOrder != null">
+            order by aj.${sortOrder.key} ${sortOrder.type}
+        </if>
+        <if test="sortOrder == null">
+            order by aj.`plan_start_time` desc
+        </if>
         limit #{startNum}, #{pageSize}
     </select>
 
@@ -249,7 +255,12 @@
         <foreach collection="idList" item="jobId" open="(" close=")" separator=",">
             #{jobId}
         </foreach>
-        order by aj.`id` desc
+        <if test="sortOrder != null">
+            order by aj.${sortOrder.key} ${sortOrder.type}
+        </if>
+        <if test="sortOrder == null">
+            order by aj.`plan_start_time` desc
+        </if>
     </select>
 
 
