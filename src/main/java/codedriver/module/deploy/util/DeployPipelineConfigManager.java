@@ -300,7 +300,7 @@ public class DeployPipelineConfigManager {
         if (moduleOverrideConfig == null && envOverrideConfig == null) {
             if (!Objects.equals(targetLevel, "应用")) {
                 overridePhase(appConfig.getCombopPhaseList());
-                overridePhaseGroupSetInherit(appConfig.getCombopGroupList(), 1);
+                overridePhaseGroupSetInherit(appConfig.getCombopGroupList());
                 appConfig.getExecuteConfig().setInherit(1);
             }
         } else if (moduleOverrideConfig != null && envOverrideConfig == null) {
@@ -315,7 +315,7 @@ public class DeployPipelineConfigManager {
             overrideProfileParamSetSource(moduleOverrideConfig.getOverrideProfileList(), "模块");
             overrideProfile(appConfig.getOverrideProfileList(), moduleOverrideConfig.getOverrideProfileList());
             if (Objects.equals(targetLevel, "环境")) {
-                overridePhaseGroupSetInherit(appConfig.getCombopGroupList(), 1);
+                overridePhaseGroupSetInherit(appConfig.getCombopGroupList());
             }
         } else if (moduleOverrideConfig == null) {
             overrideExecuteConfig(appConfig.getExecuteConfig(), envOverrideConfig.getExecuteConfig());
@@ -434,14 +434,14 @@ public class DeployPipelineConfigManager {
     }
 
     /**
-     * 覆盖阶段组列表配置信息
+     * 设置阶段组的inherit字段值
      *
      * @param appSystemCombopGroupList 应用层阶段组列表数据
      */
-    private static void overridePhaseGroupSetInherit(List<DeployPipelineGroupVo> appSystemCombopGroupList, int inherit) {
+    private static void overridePhaseGroupSetInherit(List<DeployPipelineGroupVo> appSystemCombopGroupList) {
         if (CollectionUtils.isNotEmpty(appSystemCombopGroupList)) {
             for (DeployPipelineGroupVo appSystemCombopGroup : appSystemCombopGroupList) {
-                appSystemCombopGroup.setInherit(inherit);
+                appSystemCombopGroup.setInherit(1);
             }
         }
     }
