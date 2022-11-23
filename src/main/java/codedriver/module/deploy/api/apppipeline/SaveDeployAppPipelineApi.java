@@ -154,11 +154,11 @@ public class SaveDeployAppPipelineApi extends PrivateApiComponentBase {
         if (CollectionUtils.isEmpty(combopPhaseList)) {
             return;
         }
-        Map<String, AutoexecCombopGroupVo> groupMap = new HashMap<>();
-        List<AutoexecCombopGroupVo> combopGroupList = config.getCombopGroupList();
+        Map<String, DeployPipelineGroupVo> groupMap = new HashMap<>();
+        List<DeployPipelineGroupVo> combopGroupList = config.getCombopGroupList();
         if (CollectionUtils.isNotEmpty(combopGroupList)) {
-            for (AutoexecCombopGroupVo autoexecCombopGroupVo : combopGroupList) {
-                groupMap.put(autoexecCombopGroupVo.getUuid(), autoexecCombopGroupVo);
+            for (DeployPipelineGroupVo groupVo : combopGroupList) {
+                groupMap.put(groupVo.getUuid(), groupVo);
             }
         }
         for (DeployPipelinePhaseVo combopPhaseVo : combopPhaseList) {

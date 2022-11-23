@@ -300,6 +300,7 @@ public class DeployPipelineConfigManager {
         if (moduleOverrideConfig == null && envOverrideConfig == null) {
             if (!Objects.equals(targetLevel, "应用")) {
                 overridePhase(appConfig.getCombopPhaseList());
+                overridePhaseGroupSetInherit(appConfig.getCombopGroupList());
                 appConfig.getExecuteConfig().setInherit(1);
             }
         } else if (moduleOverrideConfig != null && envOverrideConfig == null) {
@@ -313,6 +314,9 @@ public class DeployPipelineConfigManager {
             overridePhaseGroup(appConfig.getCombopGroupList(), moduleOverrideConfig.getCombopGroupList());
             overrideProfileParamSetSource(moduleOverrideConfig.getOverrideProfileList(), "模块");
             overrideProfile(appConfig.getOverrideProfileList(), moduleOverrideConfig.getOverrideProfileList());
+            if (Objects.equals(targetLevel, "环境")) {
+                overridePhaseGroupSetInherit(appConfig.getCombopGroupList());
+            }
         } else if (moduleOverrideConfig == null) {
             overrideExecuteConfig(appConfig.getExecuteConfig(), envOverrideConfig.getExecuteConfig());
             overridePhase(appConfig.getCombopPhaseList(), envOverrideConfig.getCombopPhaseList());
@@ -430,18 +434,35 @@ public class DeployPipelineConfigManager {
     }
 
     /**
+     * 设置阶段组的inherit字段值
+     *
+     * @param appSystemCombopGroupList 应用层阶段组列表数据
+     */
+    private static void overridePhaseGroupSetInherit(List<DeployPipelineGroupVo> appSystemCombopGroupList) {
+        if (CollectionUtils.isNotEmpty(appSystemCombopGroupList)) {
+            for (DeployPipelineGroupVo appSystemCombopGroup : appSystemCombopGroupList) {
+                appSystemCombopGroup.setInherit(1);
+            }
+        }
+    }
+    /**
      * 覆盖阶段组列表配置信息
      *
      * @param appSystemCombopGroupList 应用层阶段组列表数据
      * @param overrideCombopGroupList  模块层或环境层阶段组列表数据
      */
-    private static void overridePhaseGroup(List<AutoexecCombopGroupVo> appSystemCombopGroupList, List<AutoexecCombopGroupVo> overrideCombopGroupList) {
+    private static void overridePhaseGroup(List<DeployPipelineGroupVo> appSystemCombopGroupList, List<DeployPipelineGroupVo> overrideCombopGroupList) {
         if (CollectionUtils.isNotEmpty(appSystemCombopGroupList) && CollectionUtils.isNotEmpty(overrideCombopGroupList)) {
-            for (AutoexecCombopGroupVo appSystemCombopGroup : appSystemCombopGroupList) {
-                for (AutoexecCombopGroupVo overrideCombopGroup : overrideCombopGroupList) {
+            for (DeployPipelineGroupVo appSystemCombopGroup : appSystemCombopGroupList) {
+                for (DeployPipelineGroupVo overrideCombopGroup : overrideCombopGroupList) {
                     if (Objects.equals(appSystemCombopGroup.getUuid(), overrideCombopGroup.getUuid())) {
-                        appSystemCombopGroup.setPolicy(overrideCombopGroup.getPolicy());
-                        appSystemCombopGroup.setConfig(overrideCombopGroup.getConfigStr());
+                        if (Objects.equals(overrideCombopGroup.getInherit(), 0)) {
+                            appSystemCombopGroup.setInherit(0);
+                            appSystemCombopGroup.setPolicy(overrideCombopGroup.getPolicy());
+                            appSystemCombopGroup.setConfig(overrideCombopGroup.getConfigStr());
+                        } else {
+                            appSystemCombopGroup.setInherit(1);
+                        }
                     }
                 }
             }
