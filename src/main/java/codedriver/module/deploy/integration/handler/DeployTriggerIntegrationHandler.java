@@ -1,5 +1,5 @@
 /*
- * Copyright (c)  2022 TechSure Co.,Ltd.  All Rights Reserved.
+ * Copyright(c) 2022 TechSure Co., Ltd. All Rights Reserved.
  * 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
  */
 
@@ -20,7 +20,7 @@ import java.util.List;
 public class DeployTriggerIntegrationHandler extends IntegrationHandlerBase {
     @Override
     public String getName() {
-        return "发布触发器组件";
+        return "发布触发器数据规范";
     }
 
     @Override
