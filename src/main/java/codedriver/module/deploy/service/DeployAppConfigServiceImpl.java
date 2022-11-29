@@ -22,6 +22,7 @@ import codedriver.module.deploy.dao.mapper.DeployAppConfigMapper;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
@@ -195,7 +196,7 @@ public class DeployAppConfigServiceImpl implements DeployAppConfigService {
                         attrInfo.put("isRequired", attrVo.getIsRequired());
                         if (StringUtils.equals(attrVo.getType(), "select")) {
                             JSONObject attrVoConfig = attrVo.getConfig();
-                            if (attrVoConfig != null && !attrVoConfig.isEmpty()) {
+                            if ( MapUtils.isNotEmpty(attrVoConfig)) {
                                 attrInfo.put("isMultiple", attrVoConfig.getInteger("isMultiple") == 1);
                             }
                         } else if (StringUtils.equals(attrVo.getType(), "datetime")) {
