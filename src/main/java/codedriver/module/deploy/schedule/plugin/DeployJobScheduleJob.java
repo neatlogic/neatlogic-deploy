@@ -51,7 +51,7 @@ public class DeployJobScheduleJob  extends JobBase {
     }
 
     @Override
-    public Boolean isHealthy(JobObject jobObject) {
+    public Boolean isMyHealthy(JobObject jobObject) {
         return true;
     }
 
