@@ -5,7 +5,6 @@
 
 package codedriver.module.deploy.api.apppipeline;
 
-import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.cmdb.crossover.IResourceCrossoverMapper;
 import codedriver.framework.cmdb.dto.resourcecenter.ResourceVo;
