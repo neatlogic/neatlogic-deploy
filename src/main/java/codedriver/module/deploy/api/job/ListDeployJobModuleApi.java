@@ -5,10 +5,12 @@
 
 package codedriver.module.deploy.api.job;
 
-import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.autoexec.dto.combop.AutoexecCombopScenarioVo;
+import codedriver.framework.cmdb.crossover.IResourceCrossoverMapper;
+import codedriver.framework.cmdb.dto.resourcecenter.ResourceVo;
 import codedriver.framework.common.constvalue.ApiParamType;
+import codedriver.framework.crossover.CrossoverServiceFactory;
 import codedriver.framework.deploy.auth.DEPLOY_BASE;
 import codedriver.framework.deploy.dto.app.DeployAppModuleVo;
 import codedriver.framework.deploy.dto.app.DeployPipelineConfigVo;
@@ -28,7 +30,10 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -73,8 +78,13 @@ public class ListDeployJobModuleApi extends PrivateApiComponentBase {
         Long appSystemId = paramObj.getLong("appSystemId");
         Long envId = paramObj.getLong("envId");
         Long scenarioId = paramObj.getLong("scenarioId");
-        returnAppModuleVoList = deployAppConfigMapper.getAppModuleListBySystemIdAndEnvId(appSystemId, envId);
-        if (CollectionUtils.isNotEmpty(returnAppModuleVoList)) {
+        List<ResourceVo> moduleResourceList = new ArrayList<>();
+        IResourceCrossoverMapper resourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
+        List<Long> moduleIdList = resourceCrossoverMapper.getAppSystemModuleIdListByAppSystemIdAndAppModuleIdList(paramObj.getLong("appSystemId"), paramObj.getJSONArray("appModuleIdList"));
+        if (CollectionUtils.isNotEmpty(moduleIdList)) {
+            moduleResourceList = resourceCrossoverMapper.getAppModuleListByIdListSimple(moduleIdList, true);
+        }
+        if (CollectionUtils.isNotEmpty(moduleResourceList)) {
             //判断是否有配流水线
 //            List<DeployAppConfigVo> appConfigVoList = deployAppConfigMapper.getAppConfigListByAppSystemId(appSystemId);
             int count = deployAppConfigMapper.getAppConfigCountByAppSystemId(appSystemId);
@@ -82,11 +92,13 @@ public class ListDeployJobModuleApi extends PrivateApiComponentBase {
                 throw new DeployAppConfigNotFoundException(appSystemId);
             }
             //查询拥有runner的模块id列表
-            List<Long> hasRunnerAppModuleIdList = deployAppConfigMapper.getAppModuleIdListHasRunnerByAppSystemIdAndModuleIdList(appSystemId, returnAppModuleVoList.stream().map(DeployAppModuleVo::getId).collect(Collectors.toList()));
+            List<Long> hasRunnerAppModuleIdList = deployAppConfigMapper.getAppModuleIdListHasRunnerByAppSystemIdAndModuleIdList(appSystemId, moduleResourceList.stream().map(ResourceVo::getId).collect(Collectors.toList()));
             /*补充当前模块是否有BUILD分类的工具，前端需要根据此标识(isHasBuildTypeTool) 调用不同的选择版本下拉接口*/
             //1、获取流水线
 //            Map<String, DeployAppConfigVo> appConfigVoMap = appConfigVoList.stream().collect(Collectors.toMap(o -> o.getAppSystemId().toString() + "-" + o.getAppModuleId().toString() + "-" + o.getEnvId().toString(), e -> e));
-            for (DeployAppModuleVo appModuleVo : returnAppModuleVoList) {
+            for (ResourceVo resourceVo : moduleResourceList) {
+                DeployAppModuleVo appModuleVo = new DeployAppModuleVo(resourceVo.getId(), resourceVo.getName(), resourceVo.getAbbrName());
+                returnAppModuleVoList.add(appModuleVo);
 //                DeployAppConfigVo configVo = appConfigVoMap.get(appSystemId.toString() + "-" + appModuleVo.getId().toString() + "-" + envId.toString());
 //                if (configVo == null) {
 //                    configVo = appConfigVoMap.get(appSystemId + "-" + appModuleVo.getId().toString() + "-0");
