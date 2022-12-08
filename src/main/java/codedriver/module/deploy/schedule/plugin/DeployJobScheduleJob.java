@@ -29,6 +29,7 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 import java.util.List;
+import java.util.Objects;
 
 @Component
 @DisallowConcurrentExecution
@@ -52,7 +53,12 @@ public class DeployJobScheduleJob  extends JobBase {
 
     @Override
     public Boolean isMyHealthy(JobObject jobObject) {
-        return true;
+        String uuid = jobObject.getJobName();
+        DeployScheduleVo scheduleVo = deployScheduleMapper.getScheduleByUuid(uuid);
+        if (scheduleVo == null) {
+            return false;
+        }
+        return Objects.equals(scheduleVo.getIsActive(), 1) && Objects.equals(scheduleVo.getCron(), jobObject.getCron());
     }
 
     @Override
