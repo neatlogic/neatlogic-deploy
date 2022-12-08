@@ -23,14 +23,13 @@ import codedriver.framework.deploy.constvalue.ScheduleType;
 import codedriver.framework.deploy.dto.schedule.DeployScheduleConfigVo;
 import codedriver.framework.deploy.dto.schedule.DeployScheduleSearchVo;
 import codedriver.framework.deploy.dto.schedule.DeployScheduleVo;
-import codedriver.framework.dto.AuthenticationInfoVo;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.framework.util.TableResultUtil;
 import codedriver.module.deploy.auth.core.DeployAppAuthChecker;
-import codedriver.module.deploy.dao.mapper.DeployScheduleMapper;
 import codedriver.module.deploy.dao.mapper.DeployPipelineMapper;
+import codedriver.module.deploy.dao.mapper.DeployScheduleMapper;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -88,16 +87,7 @@ public class ListDeployScheduleApi extends PrivateApiComponentBase {
             List<String> authorityActionList = new ArrayList<>();
             authorityActionList.add(DeployAppConfigAction.VIEW.getValue());
             searchVo.setAuthorityActionList(authorityActionList);
-            List<String> authUuidList = new ArrayList<>();
-            AuthenticationInfoVo authInfo = UserContext.get().getAuthenticationInfoVo();
-            authUuidList.add(authInfo.getUserUuid());
-            if (CollectionUtils.isNotEmpty(authInfo.getTeamUuidList())) {
-                authUuidList.addAll(authInfo.getTeamUuidList());
-            }
-            if (CollectionUtils.isNotEmpty(authInfo.getRoleUuidList())) {
-                authUuidList.addAll(authInfo.getRoleUuidList());
-            }
-            searchVo.setAuthUuidList(authUuidList);
+            searchVo.setAuthUuidList(UserContext.get().getUuidList());
         }
         List<DeployScheduleVo> tbodyList = new ArrayList<>();
         String userUuid = UserContext.get().getUserUuid(true);
