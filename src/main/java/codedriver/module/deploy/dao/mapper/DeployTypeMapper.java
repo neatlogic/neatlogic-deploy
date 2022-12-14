@@ -23,7 +23,5 @@ public interface DeployTypeMapper extends IDeployTypeCrossoverMapper {
 
     void insertTypeActive(@Param("isActive") Integer isActive, @Param("id") Long id);
 
-    void insertDeployActiveList(@Param("typeIdList") List<Long> typeIdList, @Param("isActive") int isActive);
-
     void deleteTypeActiveByTypeId(Long typeId);
 }
