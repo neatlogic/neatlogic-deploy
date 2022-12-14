@@ -5,7 +5,6 @@
 package codedriver.module.deploy.api.type;
 
 import codedriver.framework.auth.core.AuthAction;
-import codedriver.framework.autoexec.dto.AutoexecTypeVo;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.dto.BasePageVo;
 import codedriver.framework.deploy.auth.DEPLOY_BASE;
@@ -58,7 +57,7 @@ public class SearchDeployTypeApi extends PrivateApiComponentBase {
             @Param(name = "needPage", type = ApiParamType.BOOLEAN, desc = "是否需要分页，默认true")
     })
     @Output({
-            @Param(name = "tbodyList", type = ApiParamType.JSONARRAY, explode = AutoexecTypeVo[].class, desc = "类型列表"),
+            @Param(name = "tbodyList", type = ApiParamType.JSONARRAY, explode = DeployTypeVo[].class, desc = "类型列表"),
             @Param(explode = BasePageVo.class)
     })
     @Description(desc = "查询发布工具类型列表")

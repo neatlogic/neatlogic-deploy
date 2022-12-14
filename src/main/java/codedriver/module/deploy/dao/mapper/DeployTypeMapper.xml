@@ -41,20 +41,27 @@
         b.is_active as isActive
         from `autoexec_type` a
         left join deploy_type_status b on a.id = b.type_id
-        <where>
-            <if test="keyword != null and keyword != ''">
-                and (a.`name` LIKE CONCAT('%', #{keyword}, '%')
-                OR a.`description` LIKE CONCAT('%',#{keyword}, '%'))
-            </if>
-            <if test="isActive != null">
-                and b.is_active = #{isActive}
-            </if>
-        </where>
+        <include refid="searchType"></include>
         order by a.`lcd` desc
         <if test="needPage == true">
             LIMIT #{startNum}, #{pageSize}
         </if>
     </select>
+
+    <sql id="searchType">
+        <where>
+            <if test="keyword != null and keyword != ''">
+                and (a.`name` LIKE CONCAT('%', #{keyword}, '%')
+                OR a.`description` LIKE CONCAT('%',#{keyword}, '%'))
+            </if>
+            <if test="isActive != null and isActive == 1">
+                and b.is_active = 1
+            </if>
+            <if test="isActive != null and isActive == 0">
+                and ((b.is_active = 0) or (b.is_active is null))
+            </if>
+        </where>
+    </sql>
 
     <select id="searchTypeCount" resultType="int">
         select count(1)
@@ -62,14 +69,7 @@
         <if test="isActive != null">
             left join deploy_type_status b on a.id = b.type_id
         </if>
-        <where>
-            <if test="keyword != null and keyword != ''">
-                and a.`name` LIKE CONCAT('%', #{keyword}, '%')
-            </if>
-            <if test="isActive != null">
-                and b.is_active = #{isActive}
-            </if>
-        </where>
+        <include refid="searchType"></include>
     </select>
 
 </mapper>
