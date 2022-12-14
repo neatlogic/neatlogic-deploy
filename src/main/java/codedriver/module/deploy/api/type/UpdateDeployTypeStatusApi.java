@@ -26,7 +26,7 @@ import javax.annotation.Resource;
 @Service
 @AuthAction(action = DEPLOY_MODIFY.class)
 @OperationType(type = OperationTypeEnum.UPDATE)
-public class UpdateSaveDeployTypeStatusApi extends PrivateApiComponentBase {
+public class UpdateDeployTypeStatusApi extends PrivateApiComponentBase {
 
     @Resource
     DeployTypeMapper deployTypeMapper;
