@@ -36,6 +36,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -89,36 +90,37 @@ public class SaveDeployAppPipelineParamApi extends PrivateApiComponentBase {
                 }
             }
         }
+        List<AutoexecParamVo> runtimeParamList = new ArrayList<>();
         JSONArray paramList = jsonObj.getJSONArray("paramList");
-        if (CollectionUtils.isEmpty(paramList)) {
-            return null;
-        }
-        List<AutoexecParamVo> runtimeParamList = paramList.toJavaList(AutoexecParamVo.class);
-        IAutoexecServiceCrossoverService autoexecServiceCrossoverService = CrossoverServiceFactory.getApi(IAutoexecServiceCrossoverService.class);
-        autoexecServiceCrossoverService.validateRuntimeParamList(runtimeParamList);
-        for (int i = 0; i < runtimeParamList.size(); i++) {
-            AutoexecParamVo autoexecParamVo = runtimeParamList.get(i);
-            if (autoexecParamVo != null) {
-                String type = autoexecParamVo.getType();
-                ParamType paramType = ParamType.getParamType(type);
-                Object value = autoexecParamVo.getDefaultValue();
-                // 如果默认值不以"RC4:"开头，说明修改了密码，则重新加密
-                if (paramType == ParamType.PASSWORD && value != null) {
-                    autoexecParamVo.setDefaultValue(RC4Util.encrypt((String) value));
-                } else if (paramType == ParamType.SELECT || paramType == ParamType.MULTISELECT || paramType == ParamType.CHECKBOX || paramType == ParamType.RADIO) {
-                    AutoexecParamConfigVo config = autoexecParamVo.getConfig();
-                    if (config != null) {
-                        String matrixUuid = config.getMatrixUuid();
-                        if (StringUtils.isNotBlank(matrixUuid)) {
-                            JSONObject dependencyConfig = new JSONObject();
-                            dependencyConfig.put("appSystemId", appSystemId);
-                            DependencyManager.insert(Matrix2DeployAppPipelineParamDependencyHandler.class, matrixUuid, autoexecParamVo.getId(), dependencyConfig);
+        if (CollectionUtils.isNotEmpty(paramList)) {
+            runtimeParamList = paramList.toJavaList(AutoexecParamVo.class);
+            IAutoexecServiceCrossoverService autoexecServiceCrossoverService = CrossoverServiceFactory.getApi(IAutoexecServiceCrossoverService.class);
+            autoexecServiceCrossoverService.validateRuntimeParamList(runtimeParamList);
+            for (int i = 0; i < runtimeParamList.size(); i++) {
+                AutoexecParamVo autoexecParamVo = runtimeParamList.get(i);
+                if (autoexecParamVo != null) {
+                    String type = autoexecParamVo.getType();
+                    ParamType paramType = ParamType.getParamType(type);
+                    Object value = autoexecParamVo.getDefaultValue();
+                    // 如果默认值不以"RC4:"开头，说明修改了密码，则重新加密
+                    if (paramType == ParamType.PASSWORD && value != null) {
+                        autoexecParamVo.setDefaultValue(RC4Util.encrypt((String) value));
+                    } else if (paramType == ParamType.SELECT || paramType == ParamType.MULTISELECT || paramType == ParamType.CHECKBOX || paramType == ParamType.RADIO) {
+                        AutoexecParamConfigVo config = autoexecParamVo.getConfig();
+                        if (config != null) {
+                            String matrixUuid = config.getMatrixUuid();
+                            if (StringUtils.isNotBlank(matrixUuid)) {
+                                JSONObject dependencyConfig = new JSONObject();
+                                dependencyConfig.put("appSystemId", appSystemId);
+                                DependencyManager.insert(Matrix2DeployAppPipelineParamDependencyHandler.class, matrixUuid, autoexecParamVo.getId(), dependencyConfig);
+                            }
                         }
                     }
+                    autoexecParamVo.setSort(i);
                 }
-                autoexecParamVo.setSort(i);
             }
         }
+
         if (deployAppConfigVo == null) {
             deployAppConfigVo = new DeployAppConfigVo(appSystemId);
             DeployPipelineConfigVo config = new DeployPipelineConfigVo();
