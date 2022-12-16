@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright(c) 2022 TechSureCo.,Ltd.AllRightsReserved.
+  ~ 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
+  -->
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="codedriver.module.deploy.dao.mapper.DeployTypeMapper">
+
+    <insert id="insertTypeActive">
+        insert
+        ignore into deploy_type_status(type_id,is_active)values (
+        #{id},
+        #{isActive}
+        )
+    </insert>
+
+    <delete id="deleteTypeActiveByTypeId">
+        delete
+        deploy_type_status
+        where type_id =
+        #{typeId}
+    </delete>
+
+    <select id="searchType" resultType="codedriver.framework.deploy.dto.type.DeployTypeVo">
+        select
+        a.`id`,
+        a.`name`,
+        a.`description`,
+        a.`lcu`,
+        a.`lcd`,
+        b.is_active as isActive
+        from `autoexec_type` a
+        left join deploy_type_status b on a.id = b.type_id
+        <include refid="searchType"></include>
+        order by a.`lcd` desc
+        <if test="needPage == true">
+            LIMIT #{startNum}, #{pageSize}
+        </if>
+    </select>
+
+    <sql id="searchType">
+        <where>
+            <if test="keyword != null and keyword != ''">
+                and (a.`name` LIKE CONCAT('%', #{keyword}, '%')
+                OR a.`description` LIKE CONCAT('%',#{keyword}, '%'))
+            </if>
+            <if test="isActive != null and isActive == 1">
+                and b.is_active = 1
+            </if>
+            <if test="isActive != null and isActive == 0">
+                and ((b.is_active = 0) or (b.is_active is null))
+            </if>
+        </where>
+    </sql>
+
+    <select id="searchTypeCount" resultType="int">
+        select count(1)
+        from `autoexec_type` a
+        <if test="isActive != null">
+            left join deploy_type_status b on a.id = b.type_id
+        </if>
+        <include refid="searchType"></include>
+    </select>
+
+</mapper>
