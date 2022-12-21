@@ -17,6 +17,7 @@
 
     <delete id="deleteTypeActiveByTypeId">
         delete
+        from
         deploy_type_status
         where type_id =
         #{typeId}
