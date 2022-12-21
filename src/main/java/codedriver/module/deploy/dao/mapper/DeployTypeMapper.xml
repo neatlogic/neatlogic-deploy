@@ -8,12 +8,11 @@
 <mapper namespace="codedriver.module.deploy.dao.mapper.DeployTypeMapper">
 
     <insert id="insertTypeActive">
-        insert into deploy_type_status(type_id, is_active)
-        values (#{id},
-                #{isActive}) ON
-        DUPLICATE
-        KEY
-        UPDATE `is_active` = #{isActive}
+        insert
+        ignore into deploy_type_status(type_id,is_active)values (
+        #{id},
+        #{isActive}
+        )
     </insert>
 
     <delete id="deleteTypeActiveByTypeId">
