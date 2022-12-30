@@ -18,6 +18,8 @@ public interface DeployJobMapper {
 
     DeployJobVo getDeployJobByJobId(Long id);
 
+    DeployJobVo getDeployJobInfoByJobId(Long id);
+
     List<DeployJobVo> getDeployJobByJobIdList(List<Long> idList);
 
     int searchDeployJobCount(DeployJobVo deployJobVo);
