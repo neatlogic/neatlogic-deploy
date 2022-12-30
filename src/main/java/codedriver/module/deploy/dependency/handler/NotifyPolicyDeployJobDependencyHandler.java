@@ -5,6 +5,9 @@
 package codedriver.module.deploy.dependency.handler;
 
 import codedriver.framework.asynchronization.threadlocal.TenantContext;
+import codedriver.framework.cmdb.crossover.IAppSystemMapper;
+import codedriver.framework.cmdb.dto.resourcecenter.entity.AppSystemVo;
+import codedriver.framework.crossover.CrossoverServiceFactory;
 import codedriver.framework.dependency.constvalue.FrameworkFromType;
 import codedriver.framework.dependency.core.CustomTableDependencyHandlerBase;
 import codedriver.framework.dependency.core.IFromType;
@@ -12,6 +15,7 @@ import codedriver.framework.dependency.dto.DependencyInfoVo;
 import codedriver.framework.deploy.dto.app.DeployAppConfigVo;
 import codedriver.module.deploy.dao.mapper.DeployAppConfigMapper;
 import com.alibaba.fastjson.JSONObject;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -56,12 +60,17 @@ public class NotifyPolicyDeployJobDependencyHandler extends CustomTableDependenc
             Long appSystemId = (Long) map.get("app_system_id");
             DeployAppConfigVo appConfigVo = deployAppConfigMapper.getAppConfigVo(new DeployAppConfigVo(appSystemId));
             if (appConfigVo != null) {
-                JSONObject dependencyInfoConfig = new JSONObject();
-                dependencyInfoConfig.put("appSystemId", appConfigVo.getAppSystemId());
-                List<String> pathList = new ArrayList<>();
-                pathList.add("应用配置");
-                String urlFormat = "/" + TenantContext.get().getTenantUuid() + "/deploy.html#/application-config-manage?appSystemId=${DATA.appSystemId}";
-                return new DependencyInfoVo(appConfigVo.getAppSystemId(), dependencyInfoConfig, appConfigVo.getAppSystemName(), pathList, urlFormat, this.getGroupName());
+                IAppSystemMapper iAppSystemMapper = CrossoverServiceFactory.getApi(IAppSystemMapper.class);
+                AppSystemVo appSystemVo = iAppSystemMapper.getAppSystemById(appSystemId);
+                if (appSystemVo != null) {
+                    String lastName = appSystemVo.getAbbrName() + (StringUtils.isNotEmpty(appSystemVo.getName()) ? "(" + appSystemVo.getName() + ")" : "");
+                    JSONObject dependencyInfoConfig = new JSONObject();
+                    dependencyInfoConfig.put("appSystemId", appConfigVo.getAppSystemId());
+                    List<String> pathList = new ArrayList<>();
+                    pathList.add("应用配置");
+                    String urlFormat = "/" + TenantContext.get().getTenantUuid() + "/deploy.html#/application-config-manage?appSystemId=${DATA.appSystemId}";
+                    return new DependencyInfoVo(appConfigVo.getAppSystemId(), dependencyInfoConfig, lastName, pathList, urlFormat, this.getGroupName());
+                }
             }
         }
         return null;
