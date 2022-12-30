@@ -1482,6 +1482,24 @@
         where app_system_id = #{appSystemId}
     </select>
 
+    <select id="getAppSystemById" parameterType="java.lang.Long" resultType="codedriver.framework.deploy.dto.app.DeployAppSystemVo">
+        SELECT
+            `id`,
+            `name`,
+            `abbr_name` AS abbrName
+        FROM @{DATA_SCHEMA}.`scence_appsystem`
+        WHERE `id` = #{value}
+    </select>
+
+    <select id="getAppModuleListBySystemId" parameterType="java.lang.Long" resultType="codedriver.framework.deploy.dto.app.DeployAppModuleVo">
+        SELECT
+            `app_module_id` AS id,
+            `app_module_name` AS name,
+            `app_module_abbr_name` AS abbrName
+        FROM @{DATA_SCHEMA}.`scence_appsystem_appmodule`
+        WHERE `id` = #{value}
+    </select>
+
     <insert id="insertAppConfigAuthority">
         INSERT INTO `deploy_app_config_authority` (`app_system_id`,
         `auth_type`,
