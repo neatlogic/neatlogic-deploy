@@ -87,12 +87,14 @@ public class DeployJobNotifyCallbackHandler extends AutoexecJobCallbackBase {
                     IAppSystemMapper iAppSystemMapper = CrossoverServiceFactory.getApi(IAppSystemMapper.class);
                     AppSystemVo appSystemVo = iAppSystemMapper.getAppSystemById(appSystemId);
                     if (appSystemVo != null) {
+                        jobInfo.setAppSystemName(appSystemVo.getName());
                         jobInfo.setAppSystemAbbrName(appSystemVo.getAbbrName());
                     }
                     Long appModuleId = jobInfo.getAppModuleId();
                     if (appModuleId != null) {
                         AppModuleVo appModuleVo = iAppSystemMapper.getAppModuleById(appModuleId);
                         if (appModuleVo != null) {
+                            jobInfo.setAppModuleName(appModuleVo.getName());
                             jobInfo.setAppModuleAbbrName(appModuleVo.getAbbrName());
                         }
                     }
