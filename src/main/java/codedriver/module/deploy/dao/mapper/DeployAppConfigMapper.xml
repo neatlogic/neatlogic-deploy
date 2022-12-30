@@ -1476,6 +1476,12 @@
         </foreach>
     </select>
 
+    <select id="getAppSystemNotifyPolicyIdByAppSystemId" resultType="java.lang.Long">
+        select notify_policy_id
+        from deploy_job_notify_policy
+        where app_system_id = #{appSystemId}
+    </select>
+
     <insert id="insertAppConfigAuthority">
         INSERT INTO `deploy_app_config_authority` (`app_system_id`,
         `auth_type`,
