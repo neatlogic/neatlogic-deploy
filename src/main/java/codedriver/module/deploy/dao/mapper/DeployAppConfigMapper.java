@@ -99,6 +99,10 @@ public interface DeployAppConfigMapper {
 
     List<DeployAppEnvironmentVo> getAppConfigEnvListIncludeDBCSchemaListAndAutoCfgKeyListByAppSystemIdAndAppModuleIdAndEnvId(@Param("appSystemId") Long appSystemId, @Param("appModuleId") Long appModuleId, @Param("envIdList") List<Long> envIdList);
 
+    DeployAppSystemVo getAppSystemById(Long appSystemId);
+
+    List<DeployAppModuleVo> getAppModuleListBySystemId(Long appSystemId);
+
     Integer insertAppConfigAuthority(DeployAppConfigAuthorityVo deployAppConfigAuthorityVo);
 
     Integer insertAppModuleRunnerGroup(@Param("appSystemId") Long appSystemId, @Param("appModuleId") Long appModuleId, @Param("runnerGroupId") Long runnerGroupId);
