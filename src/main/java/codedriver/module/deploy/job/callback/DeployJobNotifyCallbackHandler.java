@@ -4,7 +4,6 @@
  */
 package codedriver.module.deploy.job.callback;
 
-import codedriver.framework.autoexec.constvalue.CombopOperationType;
 import codedriver.framework.autoexec.dao.mapper.AutoexecJobMapper;
 import codedriver.framework.autoexec.dto.job.AutoexecJobVo;
 import codedriver.framework.autoexec.job.callback.core.AutoexecJobCallbackBase;
@@ -70,7 +69,7 @@ public class DeployJobNotifyCallbackHandler extends AutoexecJobCallbackBase {
                     TransactionUtil.commitTx(tx);
                 }
             }
-            if (jobInfo != null && Objects.equals(jobInfo.getOperationType(), CombopOperationType.COMBOP.getValue()) && !Objects.equals(jobVo.getStatus(), jobInfo.getStatus())) {
+            if (jobInfo != null && !Objects.equals(jobVo.getStatus(), jobInfo.getStatus())) {
                 return true;
             }
         }
@@ -90,9 +89,12 @@ public class DeployJobNotifyCallbackHandler extends AutoexecJobCallbackBase {
                     if (appSystemVo != null) {
                         jobInfo.setAppSystemAbbrName(appSystemVo.getAbbrName());
                     }
-                    AppModuleVo appModuleVo = iAppSystemMapper.getAppModuleById(appSystemId);
-                    if (appModuleVo != null) {
-                        jobInfo.setAppModuleAbbrName(appModuleVo.getAbbrName());
+                    Long appModuleId = jobInfo.getAppModuleId();
+                    if (appModuleId != null) {
+                        AppModuleVo appModuleVo = iAppSystemMapper.getAppModuleById(appModuleId);
+                        if (appModuleVo != null) {
+                            jobInfo.setAppModuleAbbrName(appModuleVo.getAbbrName());
+                        }
                     }
                     Long notifyPolicyId = deployAppConfigMapper.getAppSystemNotifyPolicyIdByAppSystemId(appSystemId);
                     if (notifyPolicyId != null) {
