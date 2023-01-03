@@ -16,8 +16,6 @@ import com.alibaba.fastjson.JSONObject;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Objects;
-
 /**
  * @author longrf
  * @date 2022/12/29 17:11
@@ -48,7 +46,7 @@ public class SaveDeployJobNotifyPolicyApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         DependencyManager.delete(NotifyPolicyDeployJobDependencyHandler.class, paramObj.getLong("appSystemId"));
-        if (Objects.nonNull(paramObj.getLong("notifyPolicyId"))) {
+        if (paramObj.getLong("notifyPolicyId") != null) {
             DependencyManager.insert(NotifyPolicyDeployJobDependencyHandler.class, paramObj.getLong("notifyPolicyId"), paramObj.getLong("appSystemId"));
         }
         return null;
