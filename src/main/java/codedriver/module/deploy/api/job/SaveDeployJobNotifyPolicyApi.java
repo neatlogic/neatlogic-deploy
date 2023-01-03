@@ -14,12 +14,16 @@ import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.deploy.dependency.handler.NotifyPolicyDeployJobDependencyHandler;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Objects;
 
 /**
  * @author longrf
  * @date 2022/12/29 17:11
  */
 @Service
+@Transactional
 @AuthAction(action = DEPLOY_MODIFY.class)
 @OperationType(type = OperationTypeEnum.UPDATE)
 public class SaveDeployJobNotifyPolicyApi extends PrivateApiComponentBase {
@@ -36,15 +40,17 @@ public class SaveDeployJobNotifyPolicyApi extends PrivateApiComponentBase {
 
     @Input({
             @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "应用系统id"),
-            @Param(name = "notifyPolicyId", type = ApiParamType.LONG, isRequired = true, desc = "通知策略id")
+            @Param(name = "notifyPolicyId", type = ApiParamType.LONG, desc = "通知策略id")
     })
     @Output({
     })
     @Description(desc = "保存发布作业通知策略")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
-        DependencyManager.delete(NotifyPolicyDeployJobDependencyHandler.class,paramObj.getLong("appSystemId"));
-        DependencyManager.insert(NotifyPolicyDeployJobDependencyHandler.class, paramObj.getLong("notifyPolicyId"), paramObj.getLong("appSystemId"));
+        DependencyManager.delete(NotifyPolicyDeployJobDependencyHandler.class, paramObj.getLong("appSystemId"));
+        if (Objects.nonNull(paramObj.getLong("notifyPolicyId"))) {
+            DependencyManager.insert(NotifyPolicyDeployJobDependencyHandler.class, paramObj.getLong("notifyPolicyId"), paramObj.getLong("appSystemId"));
+        }
         return null;
     }
 
