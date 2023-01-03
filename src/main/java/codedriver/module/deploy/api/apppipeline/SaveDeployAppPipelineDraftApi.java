@@ -65,7 +65,7 @@ public class SaveDeployAppPipelineDraftApi extends PrivateApiComponentBase {
 
         //校验环境权限、编辑配置的操作权限
         deployAppAuthorityService.checkOperationAuth(paramObj.getLong("appSystemId"), DeployAppConfigAction.EDIT);
-        if (!Objects.isNull(paramObj.getLong("envId"))) {
+        if (paramObj.getLong("envId") != null) {
             deployAppAuthorityService.checkEnvAuth(paramObj.getLong("appSystemId"), paramObj.getLong("envId"));
         }
 

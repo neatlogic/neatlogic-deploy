@@ -22,7 +22,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.Date;
-import java.util.Objects;
 
 /**
  * @author lvzk
@@ -81,7 +80,7 @@ public class SaveDeployAppConfigEnvAutoConfigApi extends PrivateApiComponentBase
         }
         deployAppConfigMapper.deleteAppEnvAutoConfig(appEnvAutoConfigVo);
         Long deleteInstanceId = paramObj.getLong("deleteInstanceId");
-        if (!Objects.isNull(deleteInstanceId)) {
+        if (deleteInstanceId != null) {
             DeployAppEnvAutoConfigVo deleteAppEnvAutoConfigVo = new DeployAppEnvAutoConfigVo(paramObj.getLong("appSystemId"), paramObj.getLong("appModuleId"), paramObj.getLong("envId"), deleteInstanceId);
             deployAppConfigMapper.deleteAppEnvAutoConfig(deleteAppEnvAutoConfigVo);
         }
