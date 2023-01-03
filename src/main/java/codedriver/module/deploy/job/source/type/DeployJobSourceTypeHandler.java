@@ -135,7 +135,7 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
     public List<Long> getSqlIdsAndExecuteJobNodes(JSONObject paramObj, AutoexecJobVo jobVo) {
         JSONArray sqlIdArray = paramObj.getJSONArray("sqlIdList");
         List<Long> resetSqlIdList = null;
-        if (!Objects.isNull(paramObj.getInteger("isAll")) && paramObj.getInteger("isAll") == 1) {
+        if (paramObj.getInteger("isAll") != null && paramObj.getInteger("isAll") == 1) {
             List<AutoexecJobPhaseNodeVo> jobPhaseNodeVos = new ArrayList<>();
             //重置phase的所有sql文件状态
             resetSqlIdList = deploySqlMapper.getDeployJobSqlIdListByJobIdAndJobPhaseName(paramObj.getLong("jobId"), paramObj.getString("phaseName"));
