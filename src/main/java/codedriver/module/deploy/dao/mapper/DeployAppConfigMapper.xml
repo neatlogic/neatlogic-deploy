@@ -1476,7 +1476,7 @@
         </foreach>
     </select>
 
-    <select id="getAppSystemNotifyPolicyIdByAppSystemId" resultType="java.lang.Long">
+    <select id="getAppSystemNotifyPolicyIdByAppSystemId" resultType="java.lang.Long" useCache="false">
         select notify_policy_id
         from deploy_job_notify_policy
         where app_system_id = #{appSystemId}
