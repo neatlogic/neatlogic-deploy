@@ -1497,7 +1497,7 @@
             `app_module_name` AS name,
             `app_module_abbr_name` AS abbrName
         FROM @{DATA_SCHEMA}.`scence_appsystem_appmodule`
-        WHERE `id` = #{value}
+        WHERE `id` = #{value} AND `app_module_id` IS NOT NULL
     </select>
 
     <insert id="insertAppConfigAuthority">
