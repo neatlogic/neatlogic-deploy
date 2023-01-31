@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright (c)  2022 TechSure Co.,Ltd.  All Rights Reserved.
+  ~ 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
+  -->
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="neatlogic.module.deploy.dao.mapper.DeployJobWebhookMapper">
+    <select id="getWebhookCount" resultType="java.lang.Integer">
+        select count(djw.`id`)
+        from deploy_job_webhook djw
+        <where>
+            <if test="keyword != null and keyword != ''">
+                AND djw.name LIKE concat('%',#{keyword},'%')
+            </if>
+        </where>
+    </select>
+
+    <resultMap id="webhookMap" type="neatlogic.framework.deploy.dto.webhook.DeployJobWebhookVo">
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="isActive" property="isActive"/>
+        <result column="integrationUuid" property="integrationUuid"/>
+        <result column="integrationName" property="integrationName"/>
+        <result column="buildNoPolicy" property="buildNoPolicy"/>
+        <result column="configStr" property="configStr"/>
+        <result column="lcd" property="lcd"/>
+        <result column="lcu" property="lcu"/>
+    </resultMap>
+
+    <select id="searchWebhook" resultMap="webhookMap">
+        select
+        djw.`id`,
+        djw.`name`,
+        djw.`is_active` as isActive,
+        djw.`integration_uuid` as integrationUuid,
+        i.`name` AS integrationName,
+        djw.`build_no_policy` as buildNoPolicy,
+        djw.`config` as configStr,
+        djw.`lcd`,
+        djw.`lcu`
+        from deploy_job_webhook djw
+        left join integration i on i.uuid =djw.integration_uuid
+        <where>
+            <if test="keyword != null and keyword != ''">
+                AND djw.name LIKE concat('%',#{keyword},'%')
+            </if>
+        </where>
+        order by djw.`lcd` desc
+        LIMIT #{startNum}, #{pageSize}
+    </select>
+
+    <select id="checkWebhookNameIsExist"
+            resultType="java.lang.Integer">
+        select count(djw.`id`)
+        from deploy_job_webhook djw
+        where djw.id != #{id}
+          and djw.name = #{name}
+    </select>
+
+    <select id="getWebhookById" resultType="neatlogic.framework.deploy.dto.webhook.DeployJobWebhookVo">
+        select djw.`id`,
+               djw.`name`,
+               djw.`type`             as type,
+               djw.`is_active`        as isActive,
+               djw.`integration_uuid` as integrationUuid,
+               djw.`build_no_policy`  as buildNoPolicy,
+               djw.`config`           as configStr,
+               djw.`lcd`,
+               djw.`lcu`
+        from deploy_job_webhook djw
+        where djw.id = #{value}
+    </select>
+    <select id="getWebhookListByAppSystemIdAndAppModuleId"
+            resultType="neatlogic.framework.deploy.dto.webhook.DeployJobWebhookVo">
+        select djw.`id`,
+               djw.`name`,
+               djw.`is_active`        as isActive,
+               djw.`integration_uuid` as integrationUuid,
+               djw.`build_no_policy`  as buildNoPolicy,
+               djw.`config`           as configStr,
+               djw.`lcd`,
+               djw.`lcu`
+        from deploy_job_webhook djw
+                 join deploy_job_webhook_app_module djwam on djw.id = djwam.webhook_id
+        where djw.is_active = 1 and ( djwam.app_system_id = 0
+           or (djwam.app_system_id = #{appSystemId}
+            and (djwam.app_module_id = #{appModuleId} or djwam.app_module_id = 0)))
+    </select>
+    <select id="getWebhookAuditCount" resultType="java.lang.Integer">
+        select count(id)
+        from deploy_job_webhook_audit
+        where webhook_id = #{webhookId}
+    </select>
+    <select id="searchWebhookAudit"
+            resultType="neatlogic.framework.deploy.dto.webhook.DeployJobWebhookAuditVo">
+        select sjta.from_job_id as fromJobId,
+               sjta.`name`,
+               ia.status,
+               sjta.lcd,
+               sjta.webhook_id     as webhookId,
+               ia.param_file_path  as paramFilePath,
+               ia.result_file_path as resultFilePath,
+               ia.error_file_path  as errorFilePath
+        from deploy_job_webhook_audit sjta
+                 left join integration_audit ia on sjta.integration_audit_id = ia.id
+        where sjta.webhook_id = #{webhookId}
+        order by sjta.lcd desc
+        limit #{startNum}, #{pageSize}
+    </select>
+
+    <insert id="insertJobWebhook">
+        insert into deploy_job_webhook (`id`,
+                                        `name`,
+                                        `is_active`,
+                                        `integration_uuid`,
+                                        `type`,
+                                        `pipeline_type`,
+                                        `build_no_policy`,
+                                        `config`,
+                                        `lcd`,
+                                        `lcu`)
+        values (#{id},
+                #{name},
+                #{isActive},
+                #{integrationUuid},
+                #{type},
+                #{pipelineType},
+                #{buildNoPolicy},
+                #{configStr},
+                NOW(),
+                #{lcu})
+    </insert>
+    <insert id="insertJobWebhookAppModule">
+        insert into deploy_job_webhook_app_module (`webhook_id`,
+                                                   `app_system_id`,
+                                                   `app_module_id`)
+        values (#{webhookId},
+                #{appSystemId},
+                #{appModuleId})
+    </insert>
+    <insert id="insertJobWebhookAudit">
+        insert into deploy_job_webhook_audit (`id`,
+                                              `webhook_id`,
+                                              `name`,
+                                              `integration_audit_id`,
+                                              `from_job_id`,
+                                              lcd)
+        values (#{id},
+                #{webhookId},
+                #{name},
+                #{integrationAuditId},
+                #{fromJobId},
+                NOW())
+    </insert>
+
+    <update id="updateJobWebhook">
+        update deploy_job_webhook
+        set `name`             = #{name},
+            `is_active`        = #{isActive},
+            `integration_uuid` = #{integrationUuid},
+            `type`             = #{type},
+            `pipeline_type`    = #{pipelineType},
+            `build_no_policy`  = #{buildNoPolicy},
+            `config`           = #{configStr},
+            `lcd`              = NOW(3),
+            `lcu`              = #{lcu}
+        where `id` = #{id}
+    </update>
+
+    <update id="ActivateJobWebhookById">
+        update deploy_job_webhook
+        set `is_active` = #{isActive}
+        where `id` = #{id}
+    </update>
+
+    <delete id="deleteWebhookById">
+        delete
+        from deploy_job_webhook
+        where id = #{value}
+    </delete>
+    <delete id="deleteWebhookAuditByWebhookId">
+        delete
+        from deploy_job_webhook_audit
+        where webhook_id = #{value}
+    </delete>
+
+    <delete id="deleteWebhookByIdAppModuleByWebhookId">
+        delete
+        from deploy_job_webhook_app_module
+        where webhook_id = #{value}
+    </delete>
+</mapper>

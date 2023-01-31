@@ -1,0 +1,1276 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright(c) 2022 TechSureCo.,Ltd.AllRightsReserved.
+  ~ 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
+  -->
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="neatlogic.module.deploy.dao.mapper.DeployVersionMapper">
+
+    <select id="checkDeployVersionIsRepeat" resultType="int">
+        select count(id)
+        from deploy_version
+        where id != #{id}
+          and app_system_id = #{appSystemId}
+          and app_module_id = #{appModuleId}
+          and version = #{version}
+    </select>
+
+    <select id="getDeployVersionById" resultType="neatlogic.framework.deploy.dto.version.DeployVersionVo">
+        select dv.id,
+               dv.version,
+               dv.app_system_id as appSystemId,
+               cc.name          as appSystemName,
+               dv.app_module_id as appModuleId,
+               cce.name         as appModuleName,
+               dv.is_freeze     as isFreeze,
+               dv.runner_map_id   as runnerMapId,
+               dv.runner_group    as runnerGroupStr,
+               dv.fcu,
+               dv.fcd,
+               dv.lcu,
+               dv.lcd
+        from deploy_version dv
+                 left join cmdb_cientity cc on cc.id = dv.app_system_id
+                 left join cmdb_cientity cce on cce.id = dv.app_module_id
+        where dv.id = #{id}
+
+    </select>
+
+    <select id="getDeployVersionBaseInfoById" resultType="neatlogic.framework.deploy.dto.version.DeployVersionVo">
+        select id,
+               version,
+               app_system_id   as appSystemId,
+               app_system_name as appSystemName,
+               app_module_id   as appModuleId,
+               app_module_name as appModuleName,
+               is_freeze       as isFreeze,
+               repo_type       as repoType,
+               repo            as repo,
+               trunk           as trunk,
+               branch          as branch,
+               tag             as tag,
+               tags_dir        as tagsDir,
+               start_rev       as startRev,
+               end_rev         as endRev,
+               fcu,
+               fcd,
+               lcu,
+               lcd
+        from deploy_version
+        where id = #{value}
+    </select>
+
+    <select id="getDeployVersionLockById" parameterType="java.lang.Long" resultType="neatlogic.framework.deploy.dto.version.DeployVersionVo">
+        select id,
+               version,
+               app_system_id   as appSystemId,
+               app_system_name as appSystemName,
+               app_module_id   as appModuleId,
+               app_module_name as appModuleName,
+               is_freeze       as isFreeze,
+               fcu,
+               fcd,
+               lcu,
+               lcd
+        from deploy_version
+        where id = #{value}
+        for update
+    </select>
+
+    <select id="searchDeployVersionCount" resultType="java.lang.Integer">
+        select count(dv.id)
+        from deploy_version dv
+        <if test="isHasAllAuthority == 0">
+            LEFT JOIN deploy_app_config_authority daca ON daca.app_system_id = dv.app_system_id
+        </if>
+        <include refid="searchVersionWhere"></include>
+    </select>
+
+    <select id="getDeployVersionIdList" resultType="java.lang.Long">
+        select dv.id
+        from deploy_version dv
+        <if test="isHasAllAuthority == 0">
+            LEFT JOIN deploy_app_config_authority daca ON daca.app_system_id = dv.app_system_id
+        </if>
+        <include refid="searchVersionWhere"></include>
+        <if test="needPage == true">
+            LIMIT #{startNum}, #{pageSize}
+        </if>
+    </select>
+
+    <sql id="searchVersionWhere">
+        <where>
+            <if test="keyword != null and keyword != ''">
+                and dv.`version` like CONCAT('%', #{keyword}, '%')
+            </if>
+            <if test="isFreeze != null">
+                and dv.is_freeze = #{isFreeze}
+            </if>
+            <if test="appSystemIdList != null and appSystemIdList.size() > 0">
+                AND dv.app_system_id IN
+                <foreach collection="appSystemIdList" item="appSystemId" open="(" separator="," close=")">
+                    #{appSystemId}
+                </foreach>
+            </if>
+            <if test="appModuleIdList != null and appModuleIdList.size() > 0">
+                AND dv.app_module_id IN
+                <foreach collection="appModuleIdList" item="appModuleId" open="(" separator="," close=")">
+                    #{appModuleId}
+                </foreach>
+            </if>
+            <if test="defaultValue != null and defaultValue.size() > 0">
+                AND (dv.id IN
+                <foreach collection="defaultValue" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+                OR dv.version IN
+                <foreach collection="defaultValue" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+                )
+            </if>
+            <if test="startTimeRange != null and startTimeRange.size() == 2">
+                and (
+                dv.`fcd` &gt;= FROM_UNIXTIME(#{startTimeRange[0]})
+                and
+                dv.`fcd` &lt;= FROM_UNIXTIME(#{startTimeRange[1]})
+                )
+            </if>
+            <include refid="neatlogic.module.deploy.dao.mapper.DeployAppConfigMapper.checkDeployAuthority"/>
+        </where>
+    </sql>
+
+    <resultMap id="deployVersionMap" type="neatlogic.framework.deploy.dto.version.DeployVersionVo">
+        <id column="id" property="id"/>
+        <result column="version" property="version"/>
+        <result column="appSystemId" property="appSystemId"/>
+        <result column="appSystemName" property="appSystemName"/>
+        <result column="appSystemAbbrName" property="appSystemAbbrName"/>
+        <result column="appModuleId" property="appModuleId"/>
+        <result column="appModuleName" property="appModuleName"/>
+        <result column="appModuleAbbrName" property="appModuleAbbrName"/>
+        <result column="description" property="description"/>
+        <result column="isFreeze" property="isFreeze"/>
+        <result column="compileSuccessCount" property="compileSuccessCount"/>
+        <result column="compileFailCount" property="compileFailCount"/>
+        <result column="fcu" property="fcu"/>
+        <result column="fcd" property="fcd"/>
+        <result column="lcu" property="lcu"/>
+        <result column="lcd" property="lcd"/>
+        <collection property="buildNoList" ofType="neatlogic.framework.deploy.dto.version.DeployVersionBuildNoVo">
+            <result column="buildNo" property="buildNo"/>
+            <result column="buildNoStatus" property="status"/>
+        </collection>
+        <collection property="envList" ofType="neatlogic.framework.deploy.dto.version.DeployVersionEnvVo">
+            <id column="envId" property="envId"/>
+            <result column="envName" property="envName"/>
+            <result column="envBuildNo" property="buildNo"/>
+            <result column="isMirror" property="isMirror"/>
+            <result column="envStatus" property="status"/>
+        </collection>
+    </resultMap>
+
+    <select id="getDeployVersionBaseInfoByIdList" parameterType="java.util.List"
+            resultType="neatlogic.framework.deploy.dto.version.DeployVersionVo">
+        select id,
+               version,
+               app_system_id   as appSystemId,
+               app_system_name as appSystemName,
+               app_module_id   as appModuleId,
+               app_module_name as appModuleName,
+               is_freeze       as isFreeze,
+               fcu,
+               fcd,
+               lcu,
+               lcd
+        from deploy_version
+        where id in
+        <foreach collection="list" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </select>
+
+    <select id="getDeployVersionByIdList" resultMap="deployVersionMap">
+        select
+        dv.id,
+        dv.version,
+        dv.app_system_id as appSystemId,
+        a.name as appSystemName,
+        a.abbr_name as appSystemAbbrName,
+        dv.app_module_id as appModuleId,
+        a.app_module_name as appModuleName,
+        a.app_module_abbr_name as appModuleAbbrName,
+        dv.description as description,
+        dv.is_freeze as isFreeze,
+        dvb.build_no as buildNo,
+        dvb.status as buildNoStatus,
+        dve.env_id as envId,
+        cc.name as envName,
+        dve.status as envStatus,
+        dve.is_mirror as isMirror,
+        dve.build_no as envBuildNo,
+        dv.compile_success_count as compileSuccessCount,
+        dv.compile_fail_count as compileFailCount,
+        dv.fcu,
+        dv.fcd,
+        dv.lcu,
+        dv.lcd
+        from deploy_version dv
+        left join @{DATA_SCHEMA}.scence_appsystem_appmodule a on a.id = dv.app_system_id and a.app_module_id = dv.app_module_id
+        left join deploy_version_buildno dvb on dvb.version_id = dv.id
+        left join deploy_version_env dve on dve.version_id = dv.id
+        left join cmdb_cientity cc on cc.id = dve.env_id
+        where dv.id IN
+        <foreach collection="idList" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+        ORDER BY dv.fcd DESC, dvb.compile_start_time DESC,dvb.build_no DESC
+    </select>
+
+    <select id="getDeployVersionIncludeEnvListByVersionIdList" parameterType="java.lang.Long" resultMap="deployVersionMap">
+        (SELECT dv.id,
+        dv.version,
+        a.env_id AS envId,
+        a.env_name AS envName
+        FROM @{DATA_SCHEMA}.`scence_appinstance_env_appmodule_appsystem` a
+        JOIN deploy_version dv ON a.app_system_id = dv.app_system_id
+        AND a.app_module_id = dv.app_module_id
+        AND a.`env_id` IS NOT NULL
+        WHERE dv.id IN
+        <foreach collection="list" item="id" separator="," open="(" close=")">
+            #{id}
+        </foreach>
+        )
+        UNION
+        (
+        SELECT dv.id,
+        dv.version,
+        cc.id AS envId,
+        cc.NAME AS envName
+        FROM deploy_version dv
+        JOIN deploy_app_config_env dace ON dace.app_system_id = dv.app_system_id
+        AND dace.app_module_id = dv.app_module_id
+        JOIN cmdb_cientity cc ON cc.id = dace.env_id
+        WHERE dv.id IN
+        <foreach collection="list" item="id" separator="," open="(" close=")">
+            #{id}
+        </foreach>
+        )
+    </select>
+
+    <select id="getJobIdByDeployVersionIdAndBuildNo" resultType="java.lang.Long">
+        SELECT `job_id`
+        FROM `deploy_version_buildno`
+        WHERE `version_id` = #{versionId}
+          AND `build_no` = #{buildNo}
+    </select>
+
+    <select id="getJobIdByDeployVersionIdAndEnvId" resultType="java.lang.Long">
+        SELECT `job_id`
+        FROM `deploy_version_env`
+        WHERE `version_id` = #{versionId}
+          AND `env_id` = #{envId}
+    </select>
+
+    <select id="getVersionByAppSystemIdAndAppModuleIdAndVersion"
+            resultType="neatlogic.framework.deploy.dto.version.DeployVersionVo">
+        select dv.id,
+               dv.version,
+               dv.app_system_id as appSystemId,
+               cc.name          as appSystemName,
+               dv.app_module_id as appModuleId,
+               cce.name         as appModuleName,
+               dv.is_freeze     as isFreeze,
+               dv.fcu,
+               dv.fcd,
+               dv.lcu,
+               dv.lcd
+        from deploy_version dv
+                 left join cmdb_cientity cc on cc.id = dv.app_system_id
+                 left join cmdb_cientity cce on cce.id = dv.app_module_id
+        where dv.app_system_id = #{appSystemId}
+          and dv.app_module_id = #{appModuleId}
+          and dv.version = #{version}
+
+    </select>
+
+    <select id="getDeployVersionMaxBuildNoByVersionIdLock" resultType="java.lang.Integer">
+        select max(build_no)
+        from deploy_version_buildno
+        where version_id = #{value} for
+        update
+    </select>
+
+    <select id="getDeployVersionBaseInfoBySystemIdAndModuleIdAndVersion"
+            parameterType="neatlogic.framework.deploy.dto.version.DeployVersionVo"
+            resultType="neatlogic.framework.deploy.dto.version.DeployVersionVo">
+        select id,
+               version,
+               app_system_id   as appSystemId,
+               app_system_name as appSystemName,
+               app_module_id   as appModuleId,
+               app_module_name as appModuleName,
+               is_freeze       as isFreeze,
+               repo_type       as repoType,
+               repo            as repo,
+               trunk           as trunk,
+               branch          as branch,
+               tag             as tag,
+               tags_dir        as tagsDir,
+               start_rev       as startRev,
+               end_rev         as endRev,
+               fcu,
+               fcd,
+               lcu,
+               lcd
+        from deploy_version
+        where version = #{version}
+          and app_system_id = #{appSystemId}
+          and app_module_id = #{appModuleId}
+    </select>
+
+    <select id="getDeployVersionBySystemIdAndModuleIdAndVersion"
+            resultType="neatlogic.framework.deploy.dto.version.DeployVersionVo">
+        select dv.id,
+               dv.version,
+               dv.app_system_id as appSystemId,
+               dv.app_module_id as appModuleId,
+               dv.is_freeze     as isFreeze,
+               dv.repo_type     as repoType,
+               dv.repo          as repo,
+               dv.trunk         as trunk,
+               dv.branch        as branch,
+               dv.tag           as tag,
+               dv.tags_dir      as tagsDir,
+               dv.start_rev     as startRev,
+               dv.end_rev       as endRev,
+               dv.fcu,
+               dv.fcd,
+               dv.lcu,
+               dv.lcd
+        from deploy_version dv
+        where dv.version = #{version}
+          and dv.app_system_id = #{appSystemId}
+          and dv.app_module_id = #{appModuleId}
+    </select>
+
+    <select id="getDeployVersionBySystemIdAndModuleIdAndVersionId"
+            resultType="neatlogic.framework.deploy.dto.version.DeployVersionVo">
+        select dv.id,
+               dv.version,
+               dv.app_system_id as appSystemId,
+               dv.app_module_id as appModuleId,
+               dv.is_freeze     as isFreeze,
+               dv.repo_type     as repoType,
+               dv.repo          as repo,
+               dv.trunk         as trunk,
+               dv.branch        as branch,
+               dv.tag           as tag,
+               dv.tags_dir      as tagsDir,
+               dv.start_rev     as startRev,
+               dv.end_rev       as endRev,
+               dv.fcu,
+               dv.fcd,
+               dv.lcu,
+               dv.lcd
+        from deploy_version dv
+        where dv.id = #{versionId}
+          and dv.app_system_id = #{appSystemId}
+          and dv.app_module_id = #{appModuleId}
+    </select>
+
+    <select id="getDeployVersionBuildNoListCount" resultType="java.lang.Integer">
+        SELECT count(dvb.build_no)
+        <include refid="searchDeployVersionBuildNo"></include>
+    </select>
+
+    <select id="searchDeployVersionBuildNoList"
+            resultType="neatlogic.framework.deploy.dto.version.DeployVersionBuildNoVo">
+        SELECT dvb.build_no AS buildNo,
+        dvb.status AS status,
+        dvb.compile_start_time AS compileStartTime,
+        dvb.compile_end_time AS compileEndTime,
+        dv.id as versionId,
+        dv.version,
+        dv.is_freeze AS versionIsFreeze
+        <include refid="searchDeployVersionBuildNo"></include>
+        ORDER BY dvb.compile_start_time DESC
+        <if test="needPage == true">
+            LIMIT #{startNum}, #{pageSize}
+        </if>
+    </select>
+
+    <sql id="searchDeployVersionBuildNo">
+        FROM deploy_version_buildno dvb
+        LEFT JOIN deploy_version dv ON dv.id = dvb.version_id
+        <where>
+            <if test="keyword != null and keyword != ''">
+                and dv.`version` like CONCAT('%', #{keyword}, '%')
+            </if>
+            <if test="startTimeRange != null and startTimeRange.size() == 2">
+                and (
+                dvb.compile_start_time &gt;= FROM_UNIXTIME(#{startTimeRange[0]})
+                and
+                dvb.compile_start_time &lt;= FROM_UNIXTIME(#{startTimeRange[1]})
+                )
+            </if>
+            <if test="appSystemIdList != null and appSystemIdList.size() > 0">
+                AND dv.app_system_id IN
+                <foreach collection="appSystemIdList" item="systemId" open="(" separator="," close=")">
+                    #{systemId}
+                </foreach>
+            </if>
+            <if test="appModuleIdList != null and appModuleIdList.size() > 0">
+                AND dv.app_module_id IN
+                <foreach collection="appModuleIdList" item="moduleId" open="(" separator="," close=")">
+                    #{moduleId}
+                </foreach>
+            </if>
+        </where>
+    </sql>
+
+    <select id="getDeployVersionBuildNoByVersionIdAndBuildNo"
+            resultType="neatlogic.framework.deploy.dto.version.DeployVersionBuildNoVo">
+        select version_id         as versionId,
+               build_no           as buildNo,
+               job_id             as jobId,
+               status,
+               compile_start_time as compileStartTime,
+               compile_end_time   as compileEndTime,
+               compile_end_time   as compileEndTime,
+               runner_map_id      as runnerMapId,
+               runner_group       as runnerGroupStr,
+               end_rev            as endRev
+        from deploy_version_buildno
+        where version_id = #{versionId}
+          and build_no = #{buildNo}
+    </select>
+
+    <select id="getDeployVersionEnvByVersionIdAndEnvId"
+            resultType="neatlogic.framework.deploy.dto.version.DeployVersionEnvVo">
+        select version_id    as versionId,
+               env_id        as envId,
+               job_id        as jobId,
+               status        as status,
+               runner_map_id as runnerMapId,
+               runner_group  as runnerGroupStr,
+               build_no      as buildNo,
+               is_mirror     as isMirror
+        from deploy_version_env
+        where version_id = #{versionId}
+          and env_id = #{envId}
+    </select>
+
+    <select id="getDeployVersionEnvByVersionIdAndEnvIdAndBuildNo"
+            resultType="neatlogic.framework.deploy.dto.version.DeployVersionEnvVo">
+        select version_id    as versionId,
+               env_id        as envId,
+               job_id        as jobId,
+               status        as status,
+               runner_map_id as runnerMapId,
+               runner_group  as runnerGroupStr,
+               build_no      as buildNo,
+               is_mirror     as isMirror
+        from deploy_version_env
+        where version_id = #{versionId}
+          and env_id = #{envId}
+          and build_no = #{buildNo}
+    </select>
+
+    <resultMap id="DeployVersionDependencyMap" type="neatlogic.framework.deploy.dto.version.DeployVersionDependencyVo">
+        <result column="id" property="id"/>
+        <result column="version_id" property="versionId"/>
+        <result column="package_id" property="packageId"/>
+        <result column="scope" property="scope"/>
+        <result column="parent_id" property="parentId"/>
+        <result column="build_time" property="buildTime"/>
+        <association property="packageVo" javaType="neatlogic.framework.deploy.dto.DeployPackageVo">
+            <result property="id" column="package_id"/>
+            <result property="groupId" column="group_id"/>
+            <result property="artifactId" column="artifact_id"/>
+            <result property="version" column="version"/>
+            <result property="type" column="type"/>
+            <result property="license" column="license"/>
+            <result property="url" column="url"/>
+        </association>
+    </resultMap>
+
+    <select id="getDeployVersionDependencyListByVersionId" parameterType="java.lang.Long"
+            resultMap="DeployVersionDependencyMap">
+        SELECT a.id,
+               a.version_id,
+               a.`scope`,
+               a.parent_id,
+               a.build_time,
+               b.id AS package_id,
+               b.group_id,
+               b.artifact_id,
+               b.version,
+               b.type,
+               b.license,
+               b.url
+        FROM deploy_version_dependency a
+                 JOIN deploy_package b ON a.package_id = b.id
+        WHERE a.version_id = #{versionId}
+    </select>
+
+    <select id="getDeployVersionDependencyByVersionIdAndPackageId"
+            resultType="neatlogic.framework.deploy.dto.version.DeployVersionDependencyVo">
+        SELECT id,
+               version_id as versionId,
+               package_id as packageId,
+               `scope`,
+               parent_id  as parentId,
+               build_time as buildTime
+        FROM deploy_version_dependency
+        WHERE version_id = #{versionId}
+          and package_id = #{packageId}
+    </select>
+
+    <select id="getDeployVersionAppbuildCredentialByProxyToUrl" resultType="java.lang.String">
+        select user_uuid
+        from deploy_version_appbuild_credential
+        where proxy_to_url = #{value}
+    </select>
+
+    <resultMap id="DeployVersionEnvInstanceVoMap" type="neatlogic.framework.deploy.dto.version.DeployVersionEnvInstanceVo">
+        <result column="id" property="id"/>
+        <result column="resourceId" property="resourceId"/>
+        <result column="versionId" property="versionId"/>
+        <result column="envId" property="envId"/>
+        <result column="deployUser" property="deployUser"/>
+        <result column="deployTime" property="deployTime"/>
+        <association property="deployUserVo" javaType="neatlogic.framework.dto.UserVo">
+            <result property="uuid" column="deployUser"/>
+            <result property="userName" column="deployUserName"/>
+        </association>
+    </resultMap>
+
+    <select id="getDeployedInstanceByVersionIdAndEnvId"
+            resultMap="DeployVersionEnvInstanceVoMap">
+        select
+            a.id,
+            a.resource_id as resourceId,
+            a.version_id as versionId,
+            a.env_id as envId,
+            a.deploy_user as deployUser,
+            a.deploy_time as deployTime,
+            b.user_name as deployUserName
+        from deploy_version_deployed_instance a
+        left join `user` b on a.deploy_user = b.uuid
+        where a.version_id = #{versionId} and a.env_id = #{envId}
+    </select>
+
+    <select id="getDeployVersionBySystemId" parameterType="java.lang.Long"
+            resultType="neatlogic.framework.deploy.dto.version.DeployVersionVo">
+        select id,
+               version,
+               app_system_id   as appSystemId,
+               app_module_id   as appModuleId,
+               compile_success_count as compileSuccessCount,
+               compile_fail_count as compileFailCount,
+               fcu,
+               fcd,
+               lcu,
+               lcd
+        from deploy_version
+        where app_system_id = #{value}
+    </select>
+
+    <select id="getDeployVersionBuildQualityListByVersionIdWithLimit"
+            resultType="neatlogic.framework.deploy.dto.version.DeployVersionBuildQualityVo">
+        select
+            id,
+            version_id as versionId,
+            build_time as buildTime,
+            files,
+            classes,
+            `lines`,
+            ncloc,
+            functions,
+            statements,
+            complexity,
+            file_complexity as fileComplexity,
+            class_complexity as classComplexity,
+            function_complexity as functionComplexity,
+            violations,
+            blocker_violations as blockerViolations,
+            critical_violations as criticalViolations,
+            major_violations as majorViolations,
+            minor_violations as minorViolations,
+            executable_lines_data as executableLinesData,
+            it_conditions_to_cover as itConditionsToCover,
+            it_branch_coverage as itBranchCoverage,
+            it_conditions_by_line as itConditionsByLine,
+            it_coverage as itCoverage,
+            it_coverage_line_hits_data as itCoverageLineHitsData,
+            it_covered_conditions_by_line as itCoveredConditionsByLine,
+            it_line_coverage as itLineCoverage,
+            it_lines_to_cover as itLinesToCover,
+            comment_lines_density as commentLinesDensity,
+            public_documented_api_density as publicDocumentedApiDensity,
+            duplicated_files as duplicatedFiles,
+            duplicated_lines as duplicatedLines,
+            duplicated_lines_density as duplicatedLinesDensity,
+            new_duplicated_lines as newDuplicatedLines,
+            new_duplicated_lines_density as newDuplicatedLinesDensity,
+            duplicated_blocks as duplicatedBlocks,
+            new_duplicated_blocks as newDuplicatedBlocks,
+            bugs,
+            vulnerabilities,
+            code_smells as codeSmells,
+            threshold,
+            new_security_hotspots as newSecurityHotspots,
+            new_security_rating as newSecurityRating,
+            new_security_remediation_effort as newSecurityRemediationEffort,
+            new_vulnerabilities as newVulnerabilities,
+            security_hotspots as securityHotspots,
+            security_rating as securityRating,
+            security_remediation_effort as securityRemediationEffort,
+            comment_lines as commentLines,
+            ncloc_language_distribution as nclocLanguageDistribution,
+            new_lines as newLines,
+            cognitive_complexity as cognitiveComplexity,
+            conditions_to_cover as conditionsToCover,
+            coverage,
+            lines_to_cover as linesToCover,
+            new_conditions_to_cover as newConditionsToCover,
+            new_coverage as newCoverage,
+            new_lines_to_cover as newLinesToCover,
+            new_uncovered_conditions as newUncoveredConditions,
+            new_uncovered_lines as newUncoveredLines,
+            uncovered_conditions as uncoveredConditions,
+            uncovered_lines as uncoveredLines,
+            new_bugs as newBugs,
+            new_reliability_rating as newReliabilityRating,
+            reliability_rating as reliabilityRating,
+            new_code_smells as newCodeSmells,
+            new_sqale_debt_ratio as newSqaleDebtRatio,
+            new_technical_debt as newTechnicalDebt,
+            sqale_debt_ratio as sqaleDebtRatio,
+            sqale_index as sqaleIndex,
+            sqale_rating as sqaleRating,
+            confirmed_issues as confirmedIssues,
+            false_positive_issues as falsePositiveIssues,
+            info_violations as infoViolations,
+            new_blocker_violations as newBlockerViolations,
+            new_critical_violations as newCriticalViolations,
+            new_info_violations as newInfoViolations,
+            new_major_violations as newMajorViolations,
+            new_minor_violations as newMinorViolations,
+            new_violations as newViolations,
+            open_issues as openIssues,
+            reopened_issues as reopenedIssues,
+            wont_fix_issues as wontFixIssues,
+            alert_status as alertStatus,
+            quality_gate_details as qualityGateDetails,
+            new_maintainability_rating as newMaintainabilityRating
+        from deploy_version_build_quality
+        where version_id = #{versionId}
+        order by build_time desc
+        limit #{limit}
+    </select>
+
+    <select id="getDeployVersionUnitTestListByVersionIdWithLimit"
+            resultType="neatlogic.framework.deploy.dto.version.DeployVersionUnitTestVo">
+        select
+            id,
+            version_id as versionId,
+            build_time as buildTime,
+            tests,
+            test_success_density as testSuccessDensity,
+            test_errors as testErrors,
+            branch_coverage as branchCoverage,
+            new_branch_coverage as newBranchCoverage,
+            line_coverage as lineCoverage,
+            new_line_coverage as newLineCoverage
+        from deploy_version_unit_test
+        where version_id = #{versionId}
+        order by build_time desc
+        limit #{limit}
+    </select>
+
+
+    <update id="unFreezeDeployVersionById">
+        update deploy_version
+        set is_freeze = #{isFreeze}
+        where id = #{id}
+    </update>
+
+    <update id="updateDeployVersionInfoById" parameterType="neatlogic.framework.deploy.dto.version.DeployVersionVo">
+        update deploy_version set
+        <if test="repoType != null and repoType != ''">
+            repo_type = #{repoType},
+        </if>
+        <if test="repo != null and repo != ''">
+            repo = #{repo},
+        </if>
+        <if test="trunk != null and trunk != ''">
+            trunk = #{trunk},
+        </if>
+        <if test="branch != null and branch != ''">
+            branch = #{branch},
+        </if>
+        <if test="tag != null and tag != ''">
+            tag = #{tag},
+        </if>
+        <if test="tagsDir != null and tagsDir != ''">
+            tags_dir = #{tagsDir},
+        </if>
+        <if test="isFreeze != null">
+            is_freeze = #{isFreeze},
+        </if>
+        <if test="startRev != null and startRev != ''">
+            start_rev = #{startRev},
+        </if>
+        <if test="endRev != null and endRev != ''">
+            end_rev = #{endRev},
+        </if>
+        <if test="runnerMapId != null">
+            runner_map_id = #{runnerMapId},
+        </if>
+        <if test="runnerGroupStr != null and runnerGroupStr != ''">
+            runner_group = #{runnerGroupStr},
+        </if>
+        <if test="isCompiled != null">
+            <choose>
+                <when test="isCompiled == 1">
+                    compile_success_count = compile_success_count + 1,
+                </when>
+                <otherwise>
+                    compile_fail_count = compile_fail_count + 1,
+                </otherwise>
+            </choose>
+        </if>
+        lcu = #{lcu},
+        lcd = now(3)
+        where id = #{id}
+    </update>
+
+    <update id="updateDeployVersionBuildNoByVersionIdAndBuildNo"
+            parameterType="neatlogic.framework.deploy.dto.version.DeployVersionBuildNoVo">
+        update deploy_version_buildno set
+        <if test="runnerMapId != null">
+            runner_map_id = #{runnerMapId},
+        </if>
+        <if test="runnerGroupStr != null and runnerGroupStr != ''">
+            runner_group = #{runnerGroupStr},
+        </if>
+        <if test="endRev != null and endRev != ''">
+            end_rev = #{endRev},
+        </if>
+        <if test="status != null and status != ''">
+            status = #{status},
+        </if>
+        lcu = #{lcu},
+        lcd = now(3)
+        where version_id = #{versionId} and build_no = #{buildNo}
+    </update>
+
+    <update id="updateDeployVersionEnvInfo" parameterType="neatlogic.framework.deploy.dto.version.DeployVersionEnvVo">
+        update deploy_version_env set
+        <if test="status != null and status != ''">
+            status = #{status},
+        </if>
+        <if test="runnerMapId != null">
+            runner_map_id = #{runnerMapId},
+        </if>
+        <if test="runnerGroupStr != null and runnerGroupStr != ''">
+            runner_group = #{runnerGroupStr},
+        </if>
+        <if test="buildNo != null">
+            build_no = #{buildNo},
+        </if>
+        <if test="isMirror != null">
+            is_mirror = #{isMirror},
+        </if>
+        lcu = #{lcu},
+        lcd = now(3)
+        where version_id = #{versionId} and env_id = #{envId}
+    </update>
+
+    <update id="updateDeployVersionDependencyBuildTimeById" parameterType="java.lang.Long">
+        update deploy_version_dependency
+        set build_time = now(3)
+        where id = #{value}
+    </update>
+
+    <insert id="insertDeployVersion">
+        insert into deploy_version(
+            id,
+            version,
+            app_system_id,
+            app_module_id,
+            description,
+            is_freeze,
+            <if test="repoType != null and repoType != ''">
+                repo_type,
+            </if>
+            <if test="repo != null and repo != ''">
+                repo,
+            </if>
+            <if test="trunk != null and trunk != ''">
+                trunk,
+            </if>
+            <if test="branch != null and branch != ''">
+                branch,
+            </if>
+            <if test="tag != null and tag != ''">
+                tag,
+            </if>
+            <if test="tagsDir != null and tagsDir != ''">
+                tags_dir,
+            </if>
+            <if test="startRev != null and startRev != ''">
+                start_rev,
+            </if>
+            <if test="endRev != null and endRev != ''">
+                end_rev,
+            </if>
+            <if test="runnerMapId != null">
+                runner_map_id,
+            </if>
+            <if test="runnerGroupStr != null and runnerGroupStr != ''">
+                runner_group,
+            </if>
+            <if test="compileSuccessCount != null">
+                compile_success_count,
+            </if>
+            <if test="compileFailCount != null">
+                compile_fail_count,
+            </if>
+            fcu,
+            fcd,
+            lcu,
+            lcd
+         )
+        values (
+            #{id},
+            #{version},
+            #{appSystemId},
+            #{appModuleId},
+            #{description},
+            #{isFreeze},
+            <if test="repoType != null and repoType != ''">
+                #{repoType},
+            </if>
+            <if test="repo != null and repo != ''">
+                #{repo},
+            </if>
+            <if test="trunk != null and trunk != ''">
+                #{trunk},
+            </if>
+            <if test="branch != null and branch != ''">
+                #{branch},
+            </if>
+            <if test="tag != null and tag != ''">
+                #{tag},
+            </if>
+            <if test="tagsDir != null and tagsDir != ''">
+                #{tagsDir},
+            </if>
+            <if test="startRev != null and startRev != ''">
+                #{startRev},
+            </if>
+            <if test="endRev != null and endRev != ''">
+                #{endRev},
+            </if>
+            <if test="runnerMapId != null">
+                #{runnerMapId},
+            </if>
+            <if test="runnerGroupStr != null and runnerGroupStr != ''">
+                #{runnerGroupStr},
+            </if>
+            <if test="compileSuccessCount != null">
+                #{compileSuccessCount},
+            </if>
+            <if test="compileFailCount != null">
+                #{compileFailCount},
+            </if>
+            #{fcu},
+            now(3),
+            #{lcu},
+            now(3)
+        )
+    </insert>
+
+    <insert id="insertDeployVersionEnv" parameterType="neatlogic.framework.deploy.dto.version.DeployVersionEnvVo">
+        insert into deploy_version_env(version_id,
+                                       env_id,
+                                       job_id,
+                                       status,
+                                       runner_map_id,
+                                       runner_group,
+                                       build_no,
+                                       is_mirror,
+                                       lcu,
+                                       lcd)
+        values (#{versionId},
+                #{envId},
+                #{jobId},
+                #{status},
+                #{runnerMapId},
+                #{runnerGroupStr},
+                #{buildNo},
+                #{isMirror},
+                #{lcu},
+                now(3))
+    </insert>
+
+    <insert id="insertDeployVersionBuildNo">
+        INSERT INTO `deploy_version_buildno` (
+            `version_id`,
+            `build_no`,
+            `job_id`,
+            `status`,
+            <if test="runnerMapId != null">
+                runner_map_id,
+            </if>
+            <if test="runnerGroupStr != null and runnerGroupStr != ''">
+                runner_group,
+            </if>
+            <if test="endRev != null and endRev != ''">
+                end_rev,
+            </if>
+            lcu,
+            lcd
+        )
+        values (
+            #{versionId},
+            #{buildNo},
+            #{jobId},
+            #{status},
+            <if test="runnerMapId != null">
+                #{runnerMapId},
+            </if>
+            <if test="runnerGroupStr != null and runnerGroupStr != ''">
+                #{runnerGroupStr},
+            </if>
+            <if test="endRev != null and endRev != ''">
+                #{endRev},
+            </if>
+            #{lcu},
+            now(3)
+        )
+        ON DUPLICATE KEY UPDATE
+            `job_id` = #{jobId},
+            `status` = #{status},
+            <if test="runnerMapId != null">
+                `runner_map_id` = #{runnerMapId},
+            </if>
+            <if test="runnerGroupStr != null and runnerGroupStr != ''">
+                `runner_group` = #{runnerGroupStr},
+            </if>
+            <if test="endRev != null and endRev != ''">
+                `end_rev` = #{endRev},
+            </if>
+            `lcu` = #{lcu},
+            `lcd` = now(3)
+    </insert>
+
+    <insert id="insertDeployVersionBuildQuality"
+            parameterType="neatlogic.framework.deploy.dto.version.DeployVersionBuildQualityVo">
+        INSERT INTO deploy_version_build_quality (
+                                          id,
+                                          version_id,
+                                          build_time,
+                                          files,
+                                          classes,
+                                          `lines`,
+                                          ncloc,
+                                          functions,
+                                          statements,
+                                          complexity,
+                                          file_complexity,
+                                          class_complexity,
+                                          function_complexity,
+                                          violations,
+                                          blocker_violations,
+                                          critical_violations,
+                                          major_violations,
+                                          minor_violations,
+                                          executable_lines_data,
+                                          it_conditions_to_cover,
+                                          it_branch_coverage,
+                                          it_conditions_by_line,
+                                          it_coverage,
+                                          it_coverage_line_hits_data,
+                                          it_covered_conditions_by_line,
+                                          it_line_coverage,
+                                          it_lines_to_cover,
+                                          comment_lines_density,
+                                          public_documented_api_density,
+                                          duplicated_files,
+                                          duplicated_lines,
+                                          duplicated_lines_density,
+                                          new_duplicated_lines,
+                                          new_duplicated_lines_density,
+                                          duplicated_blocks,
+                                          new_duplicated_blocks,
+                                          bugs,
+                                          vulnerabilities,
+                                          code_smells,
+                                          threshold,
+                                          new_security_hotspots,
+                                          new_security_rating,
+                                          new_security_remediation_effort,
+                                          new_vulnerabilities,
+                                          security_hotspots,
+                                          security_rating,
+                                          security_remediation_effort,
+                                          comment_lines,
+                                          ncloc_language_distribution,
+                                          new_lines,
+                                          cognitive_complexity,
+                                          conditions_to_cover,
+                                          coverage,
+                                          lines_to_cover,
+                                          new_conditions_to_cover,
+                                          new_coverage,
+                                          new_lines_to_cover,
+                                          new_uncovered_conditions,
+                                          new_uncovered_lines,
+                                          uncovered_conditions,
+                                          uncovered_lines,
+                                          new_bugs,
+                                          new_reliability_rating,
+                                          reliability_rating,
+                                          new_code_smells,
+                                          new_sqale_debt_ratio,
+                                          new_technical_debt,
+                                          sqale_debt_ratio,
+                                          sqale_index,
+                                          sqale_rating,
+                                          confirmed_issues,
+                                          false_positive_issues,
+                                          info_violations,
+                                          new_blocker_violations,
+                                          new_critical_violations,
+                                          new_info_violations,
+                                          new_major_violations,
+                                          new_minor_violations,
+                                          new_violations,
+                                          open_issues,
+                                          reopened_issues,
+                                          wont_fix_issues,
+                                          alert_status,
+                                          quality_gate_details,
+                                          new_maintainability_rating
+                                          )
+        VALUES (#{id},
+                #{versionId},
+                NOW(3),
+                #{files},
+                #{classes},
+                #{lines},
+                #{ncloc},
+                #{functions},
+                #{statements},
+                #{complexity},
+                #{fileComplexity},
+                #{classComplexity},
+                #{functionComplexity},
+                #{violations},
+                #{blockerViolations},
+                #{criticalViolations},
+                #{majorViolations},
+                #{minorViolations},
+                #{executableLinesData},
+                #{itConditionsToCover},
+                #{itBranchCoverage},
+                #{itConditionsByLine},
+                #{itCoverage},
+                #{itCoverageLineHitsData},
+                #{itCoveredConditionsByLine},
+                #{itLineCoverage},
+                #{itLinesToCover},
+                #{commentLinesDensity},
+                #{publicDocumentedApiDensity},
+                #{duplicatedFiles},
+                #{duplicatedLines},
+                #{duplicatedLinesDensity},
+                #{newDuplicatedLines},
+                #{newDuplicatedLinesDensity},
+                #{duplicatedBlocks},
+                #{newDuplicatedBlocks},
+                #{bugs},
+                #{vulnerabilities},
+                #{codeSmells},
+                #{threshold},
+                #{newSecurityHotspots},
+                #{newSecurityRating},
+                #{newSecurityRemediationEffort},
+                #{newVulnerabilities},
+                #{securityHotspots},
+                #{securityRating},
+                #{securityRemediationEffort},
+                #{commentLines},
+                #{nclocLanguageDistribution},
+                #{newLines},
+                #{cognitiveComplexity},
+                #{conditionsToCover},
+                #{coverage},
+                #{linesToCover},
+                #{newConditionsToCover},
+                #{newCoverage},
+                #{newLinesToCover},
+                #{newUncoveredConditions},
+                #{newUncoveredLines},
+                #{uncoveredConditions},
+                #{uncoveredLines},
+                #{newBugs},
+                #{newReliabilityRating},
+                #{reliabilityRating},
+                #{newCodeSmells},
+                #{newSqaleDebtRatio},
+                #{newTechnicalDebt},
+                #{sqaleDebtRatio},
+                #{sqaleIndex},
+                #{sqaleRating},
+                #{confirmedIssues},
+                #{falsePositiveIssues},
+                #{infoViolations},
+                #{newBlockerViolations},
+                #{newCriticalViolations},
+                #{newInfoViolations},
+                #{newMajorViolations},
+                #{newMinorViolations},
+                #{newViolations},
+                #{openIssues},
+                #{reopenedIssues},
+                #{wontFixIssues},
+                #{alertStatus},
+                #{qualityGateDetails},
+                #{newMaintainabilityRating}
+                )
+    </insert>
+
+    <insert id="insertDeployVersionUnitTest"
+            parameterType="neatlogic.framework.deploy.dto.version.DeployVersionUnitTestVo">
+        INSERT INTO deploy_version_unit_test (
+                                              id,
+                                              version_id,
+                                              build_time,
+                                              tests,
+                                              test_success_density,
+                                              test_errors,
+                                              branch_coverage,
+                                              new_branch_coverage,
+                                              line_coverage,
+                                              new_line_coverage
+                                              )
+        VALUES (#{id},
+                #{versionId},
+                NOW(3),
+                #{tests},
+                #{testSuccessDensity},
+                #{testErrors},
+                #{branchCoverage},
+                #{newBranchCoverage},
+                #{lineCoverage},
+                #{newLineCoverage}
+                )
+    </insert>
+
+    <insert id="insertDeployVersionDependency"
+            parameterType="neatlogic.framework.deploy.dto.version.DeployVersionDependencyVo">
+        insert into deploy_version_dependency(
+        id,
+        version_id,
+        package_id,
+        `scope`,
+        <if test="parentId != null">
+            parent_id,
+        </if>
+        build_time
+        ) values (
+        #{id},
+        #{versionId},
+        #{packageId},
+        #{scope},
+        <if test="parentId != null">
+            #{parentId},
+        </if>
+        now(3)
+        )
+    </insert>
+
+    <insert id="insertDeployedInstance">
+        insert into deploy_version_deployed_instance(
+            id,
+            resource_id,
+            version_id,
+            env_id,
+            deploy_user,
+            deploy_time
+        ) values (
+            #{id},
+            #{resourceId},
+            #{versionId},
+            #{envId},
+            #{deployUser},
+            #{deployTime}
+        ) ON DUPLICATE KEY UPDATE
+            deploy_user = #{deployUser},
+            deploy_time = #{deployTime}
+    </insert>
+
+    <delete id="deleteDeployVersionById">
+        delete
+        from deploy_version
+        where id = #{id}
+    </delete>
+
+    <delete id="deleteDeployVersionBuildNoByVersionId" parameterType="java.lang.Long">
+        delete
+        from deploy_version_buildno
+        where version_id = #{value}
+    </delete>
+
+    <delete id="deleteDeployVersionEnvByVersionId" parameterType="java.lang.Long">
+        delete
+        from deploy_version_env
+        where version_id = #{value}
+    </delete>
+
+    <delete id="deleteDeployVersionBuildNoByVersionIdAndBuildNo">
+        delete
+        from deploy_version_buildno
+        where version_id = #{versionId}
+          and build_no = #{buildNo}
+    </delete>
+
+    <sql id="deleteDeployVersionDependency">
+        delete
+        from deploy_version_dependency
+        where version_id = #{versionId}
+    </sql>
+
+    <delete id="deleteDeployVersionDependencyByVersionIdAndPackageIdList">
+        <include refid="deleteDeployVersionDependency"/>
+        <if test="packageIdList != null and packageIdList.size() > 0">
+            and package_id in
+            <foreach collection="packageIdList" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+    </delete>
+
+    <delete id="deleteDeployVersionDependencyByVersionId" parameterType="java.lang.Long">
+        <include refid="deleteDeployVersionDependency"/>
+    </delete>
+
+    <delete id="deleteDeployedInstanceByVersionId" parameterType="java.lang.Long">
+        delete from deploy_version_deployed_instance where version_id = #{value}
+    </delete>
+
+    <delete id="deleteDeployVersionBuildQualityByVersionId" parameterType="java.lang.Long">
+        delete from deploy_version_build_quality where version_id = #{value}
+    </delete>
+
+    <delete id="deleteDeployVersionUnitTestByVersionId" parameterType="java.lang.Long">
+        delete from deploy_version_unit_test where version_id = #{value}
+    </delete>
+
+</mapper>
