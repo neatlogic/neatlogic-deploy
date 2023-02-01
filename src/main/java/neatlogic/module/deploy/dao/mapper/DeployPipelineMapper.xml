@@ -1,0 +1,425 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright(c) 2022 TechSure Co., Ltd. All Rights Reserved.
+  ~ 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
+  -->
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="neatlogic.module.deploy.dao.mapper.DeployPipelineMapper">
+
+    <select id="getJobTemplateById" parameterType="java.lang.Long"
+            resultType="neatlogic.framework.deploy.dto.pipeline.PipelineJobTemplateVo">
+        SELECT dpj.id,
+               dpj.group_id               as groupId,
+               dpj.app_system_id          as appSystemId,
+               dpj.app_module_id          as appModuleId,
+               dpj.scenario_id            as scenarioId,
+               dpj.round_count            as roundCount,
+               dpj.env_id                 as envId,
+               dpj.config                 as configStr,
+               dpj.sort                   as sort,
+               saa.`name`                 as appSystemName,
+               saa.`abbr_name`            as appSystemAbbrName,
+               cienv.`name`               as envName,
+               saa.`app_module_name`      as appModuleName,
+               saa.`app_module_abbr_name` as appModuleAbbrName,
+               aes.`name`                 as scenarioName
+        FROM deploy_pipeline_jobtemplate AS dpj
+            LEFT JOIN @{DATA_SCHEMA}.scence_appsystem_appmodule AS saa ON saa.id = dpj.app_system_id AND saa.app_module_id = dpj.app_module_id
+            LEFT JOIN cmdb_cientity AS cienv ON dpj.env_id = cienv.id
+            LEFT JOIN autoexec_scenario aes ON dpj.scenario_id = aes.id
+        WHERE dpj.id = #{value}
+    </select>
+
+    <sql id="searchJobTemplateCondition">
+        <where>
+            <if test="keyword != null and keyword != ''">
+                AND name LIKE concat('%',#{keyword},'%')
+            </if>
+            <if test="excludeIdList != null and excludeIdList.size() > 0">
+                AND dpj.id not in
+                <foreach collection="excludeIdList" item="item" open="(" close=")">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </sql>
+
+    <select id="searchJobTemplate" parameterType="neatlogic.framework.deploy.dto.pipeline.PipelineJobTemplateVo"
+            resultType="neatlogic.framework.deploy.dto.pipeline.PipelineJobTemplateVo">
+        SELECT
+        dpj.id,
+        dpj.group_id as groupId,
+        dpj.app_system_id as appSystemId,
+        dpj.app_module_id as appModuleId,
+        dpj.scenario_id as scenarioId,
+        dpj.round_count as roundCount,
+        dpj.env_id as envId,
+        dpj.config as configStr,
+        dpj.sort as sort,
+        ciapp.`name` as appSystemName,
+        cienv.`name` as envName,
+        cimodule.`name` as appModuleName,
+        aes.`name` as scenarioName
+        FROM deploy_pipeline_jobtemplate AS dpj
+        LEFT JOIN cmdb_cientity AS ciapp ON dpj.app_system_id = ciapp.id
+        LEFT JOIN cmdb_cientity AS cimodule ON dpj.app_module_id = cimodule.id
+        LEFT JOIN cmdb_cientity AS cienv ON dpj.env_id = cienv.id
+        LEFT JOIN autoexec_scenario aes ON dpj.scenario_id = aes.id
+        <include refid="searchJobTemplateCondition"/>
+    </select>
+
+    <select id="searchJobTemplateCount" parameterType="neatlogic.framework.deploy.dto.pipeline.PipelineJobTemplateVo"
+            resultType="int">
+        SELECT count(1)
+        FROM deploy_pipeline_jobtemplate
+        <include refid="searchJobTemplateCondition"/>
+    </select>
+
+    <resultMap id="pipelineResultMap" type="neatlogic.framework.deploy.dto.pipeline.PipelineVo">
+        <id column="pipelineId" property="id"/>
+        <result column="pipelineName" property="name"/>
+        <result column="pipelineIsActive" property="isActive"/>
+        <result column="pipelineType" property="type"/>
+        <result column="pipelineAppSystemId" property="appSystemId"/>
+        <result column="pipelineFcd" property="fcd"/>
+        <result column="pipelineFcu" property="fcu"/>
+        <result column="pipelineLcd" property="lcd"/>
+        <result column="pipelineLcu" property="lcu"/>
+        <collection property="authList" ofType="neatlogic.framework.deploy.dto.pipeline.PipelineAuthVo">
+            <result column="authUuid" property="authUuid"/>
+            <result column="authType" property="type"/>
+        </collection>
+        <collection property="laneList" ofType="neatlogic.framework.deploy.dto.pipeline.PipelineLaneVo">
+            <id column="laneId" property="id"/>
+            <result column="sort" property="sort"/>
+            <collection property="groupList" ofType="neatlogic.framework.deploy.dto.pipeline.PipelineGroupVo">
+                <id column="groupId" property="id"/>
+                <result column="groupSort" property="sort"/>
+                <result column="groupNeedWait" property="needWait"/>
+                <collection property="jobTemplateList"
+                            ofType="neatlogic.framework.deploy.dto.pipeline.PipelineJobTemplateVo">
+                    <id column="jobTemplateId" property="id"/>
+                    <result column="jobTemplateAppId" property="appSystemId"/>
+                    <result column="jobTemplateModuleId" property="appModuleId"/>
+                    <result column="jobTemplateEnvId" property="envId"/>
+                    <result column="jobTemplateAppName" property="appSystemName"/>
+                    <result column="jobTemplateAppAbbrName" property="appSystemAbbrName"/>
+                    <result column="jobTemplateModuleName" property="appModuleName"/>
+                    <result column="jobTemplateModuleAbbrName" property="appModuleAbbrName"/>
+                    <result column="jobTemplateEnvName" property="envName"/>
+                    <result column="jobTemplateScenarioId" property="scenarioId"/>
+                    <result column="jobTemplateScenarioName" property="scenarioName"/>
+                    <result column="jobTemplateRoundCount" property="roundCount"/>
+                    <result column="jobTemplateConfigStr" property="configStr"/>
+                    <result column="jobEnvId" property="envId"/>
+                    <result column="jobEnvName" property="envName"/>
+                </collection>
+            </collection>
+        </collection>
+    </resultMap>
+
+    <select id="getPipelineById" parameterType="java.lang.Long" resultMap="pipelineResultMap">
+        SELECT dp.id             as pipelineId,
+               dp.`name`         as pipelineName,
+               dp.is_active      as pipelineIsActive,
+               dp.type           as pipelineType,
+               dp.app_system_id  as pipelineAppSystemId,
+               dp.fcd            as pipelineFcd,
+               dp.fcu            as pipelineFcu,
+               dp.lcd            as pipelineLcd,
+               dp.lcu            as pipelineLcu,
+               dpl.id            as laneId,
+               dpl.sort          as laneSort,
+               dpg.id            as groupId,
+               dpg.need_wait     as groupNeedWait,
+               dpg.sort          as groupSort,
+               dpj.id            as jobTemplateId,
+               dpj.app_system_id as jobTemplateAppId,
+               dpj.app_module_id as jobTemplateModuleId,
+               dpj.env_id        as jobTemplateEnvId,
+               dpj.scenario_id   as jobTemplateScenarioId,
+               aes.name          as jobTemplateScenarioName,
+               dpj.round_count   as jobTemplateRoundCount,
+               dpj.config        as jobTemplateConfigStr,
+               saa.`name` AS jobTemplateAppName,
+               saa.`abbr_name` AS jobTemplateAppAbbrName,
+               saa.`app_module_name` AS jobTemplateModuleName,
+               saa.`app_module_abbr_name` AS jobTemplateModuleAbbrName,
+               cienv.`name`      as jobTemplateEnvName,
+               dpa.auth_uuid     as authUuid,
+               dpa.type          as authType
+        FROM deploy_pipeline AS dp
+                 LEFT JOIN deploy_pipeline_lane AS dpl ON dp.id = dpl.pipeline_id
+                 LEFT JOIN deploy_pipeline_group AS dpg ON dpl.id = dpg.lane_id
+                 LEFT JOIN deploy_pipeline_jobtemplate AS dpj ON dpg.id = dpj.group_id
+                 LEFT JOIN cmdb_cientity AS cienv ON dpj.env_id = cienv.id
+                 LEFT JOIN  @{DATA_SCHEMA}.scence_appsystem_appmodule AS saa ON saa.id = dpj.app_system_id AND saa.app_module_id = dpj.app_module_id
+                 LEFT JOIN deploy_pipeline_auth AS dpa ON dp.id = dpa.pipeline_id
+                 LEFT JOIN autoexec_scenario aes ON dpj.scenario_id = aes.id
+        where dp.id = #{value}
+        order by dpl.sort, dpg.sort, dpj.sort
+    </select>
+
+    <select id="getPipelineBaseInfoByIdAndModuleId" resultMap="pipelineResultMap">
+        SELECT dp.id             as pipelineId,
+               dp.`name`         as pipelineName,
+               dp.is_active      as pipelineIsActive,
+               dp.type           as pipelineType,
+               dp.app_system_id  as pipelineAppSystemId,
+               dp.fcd            as pipelineFcd,
+               dp.fcu            as pipelineFcu,
+               dp.lcd            as pipelineLcd,
+               dp.lcu            as pipelineLcu,
+               dpl.id            as laneId,
+               dpl.sort          as laneSort,
+               dpg.id            as groupId,
+               dpg.need_wait     as groupNeedWait,
+               dpg.sort          as groupSort,
+               dpj.id            as jobTemplateId,
+               dpj.app_system_id as jobTemplateAppId,
+               dpj.app_module_id as jobTemplateModuleId,
+               dpj.env_id        as jobTemplateEnvId,
+               dpj.scenario_id   as jobTemplateScenarioId,
+               dpj.round_count   as jobTemplateRoundCount,
+               dpj.config        as jobTemplateConfigStr,
+               dpa.auth_uuid     as authUuid,
+               dpa.type          as authType
+        FROM deploy_pipeline AS dp
+                 LEFT JOIN deploy_pipeline_lane AS dpl ON dp.id = dpl.pipeline_id
+                 LEFT JOIN deploy_pipeline_group AS dpg ON dpl.id = dpg.lane_id
+                 LEFT JOIN deploy_pipeline_jobtemplate AS dpj ON dpg.id = dpj.group_id
+                 LEFT JOIN deploy_pipeline_auth AS dpa ON dp.id = dpa.pipeline_id
+        where dp.id = #{id} and dpj.app_module_id = #{moduleId}
+        order by dpl.sort, dpg.sort, dpj.sort
+    </select>
+
+    <select id="getPipelineSimpleInfoById" parameterType="java.lang.Long" resultType="neatlogic.framework.deploy.dto.pipeline.PipelineVo">
+        SELECT
+           `id`,
+           `name`,
+           `is_active` as isActive,
+           `type`,
+           `app_system_id` as appSystemId,
+           `fcd`,
+           `fcu`,
+           `lcd`,
+           `lcu`
+        FROM `deploy_pipeline`
+        WHERE `id` = #{value}
+    </select>
+
+    <select id="getPipelineListByIdList" parameterType="java.lang.Long" resultType="neatlogic.framework.deploy.dto.pipeline.PipelineVo">
+        SELECT
+           `id`,
+           `name`,
+           `is_active` as isActive,
+           `type`,
+           `app_system_id` as appSystemId,
+           `fcd`,
+           `fcu`,
+           `lcd`,
+           `lcu`
+        FROM `deploy_pipeline`
+        WHERE `id` IN
+        <foreach collection="list" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
+
+    <select id="getPipelineNameById" parameterType="java.lang.Long" resultType="java.lang.String">
+        SELECT `name` FROM deploy_pipeline WHERE `id` = #{value}
+    </select>
+
+    <sql id="searchPipelineCondition">
+        <where>
+            <if test="keyword != null and keyword != ''">
+                <choose>
+                    <when test="type == 'appsystem'">
+                        AND (a.`name` LIKE CONCAT('%',#{keyword},'%') OR b.`abbr_name` LIKE CONCAT ('%',#{keyword},'%'))
+                    </when>
+                    <otherwise>
+                        AND a.`name` LIKE CONCAT('%',#{keyword},'%')
+                    </otherwise>
+                </choose>
+
+            </if>
+            <if test="type != null and type != ''">
+                AND a.`type` = #{type}
+            </if>
+            <if test="appSystemId != null">
+                AND a.`app_system_id` = #{appSystemId}
+            </if>
+            <if test="isHasAllAuthority != 1">
+                AND c.`auth_uuid` = #{authUuid}
+            </if>
+        </where>
+    </sql>
+
+    <select id="searchPipeline" parameterType="neatlogic.framework.deploy.dto.pipeline.PipelineSearchVo"
+            resultType="neatlogic.framework.deploy.dto.pipeline.PipelineVo">
+        SELECT
+            a.`id`,
+            a.`name`,
+            a.`is_active` as isActive,
+            a.`fcd`,
+            a.`fcu`,
+            a.`lcd`,
+            a.`lcu`,
+            a.`type`,
+            a.`app_system_id` AS appSystemId
+        FROM `deploy_pipeline` a
+        <if test="type == 'appsystem'">
+            JOIN @{DATA_SCHEMA}.`scence_appsystem` b ON b.`id` = a.`app_system_id`
+        </if>
+        <if test="isHasAllAuthority != 1">
+            JOIN `deploy_pipeline_auth` c on c.`pipeline_id` = a.`id`
+        </if>
+        <include refid="searchPipelineCondition"/>
+        ORDER BY a.`lcu` DESC
+        LIMIT #{startNum}, #{pageSize}
+    </select>
+
+    <select id="searchPipelineCount" parameterType="neatlogic.framework.deploy.dto.pipeline.PipelineSearchVo"
+            resultType="int">
+        select count(1) from deploy_pipeline a
+        <if test="type == 'appsystem'">
+            JOIN @{DATA_SCHEMA}.`scence_appsystem` b ON b.`id` = a.`app_system_id`
+        </if>
+        <if test="isHasAllAuthority != 1">
+            JOIN `deploy_pipeline_auth` c ON c.`pipeline_id` = a.`id`
+        </if>
+        <include refid="searchPipelineCondition"/>
+    </select>
+
+    <select id="checkPipelineNameIsExists" parameterType="neatlogic.framework.deploy.dto.pipeline.PipelineVo" resultType="int">
+        SELECT
+               count(1)
+        FROM `deploy_pipeline`
+        WHERE `name` = #{name}
+          AND `type` = #{type}
+          <if test="appSystemId != null">
+              `app_system_id` = #{appSystemId}
+          </if>
+          AND `id` != #{id}
+    </select>
+
+    <select id="checkHasAuthPipelineIdList" resultType="java.lang.Long">
+        SELECT
+            `pipeline_id`
+        FROM `deploy_pipeline_auth`
+        WHERE `auth_uuid` = #{authUuid}
+          AND `pipeline_id` IN
+        <foreach collection="pipelineIdList" item="pipelineId" open="(" separator="," close=")">
+            #{pipelineId}
+        </foreach>
+    </select>
+
+    <update id="updatePipeline" parameterType="neatlogic.framework.deploy.dto.pipeline.PipelineVo">
+        UPDATE deploy_pipeline
+        SET `name`      = #{name},
+            `is_active` = #{isActive},
+            `lcu`= #{lcu},
+            `lcd`=NOW(3)
+        WHERE `id` = #{id}
+    </update>
+
+    <insert id="insertPipelineAuth" parameterType="neatlogic.framework.deploy.dto.pipeline.PipelineAuthVo">
+        INSERT INTO `deploy_pipeline_auth` (`pipeline_id`, `type`, `auth_uuid`)
+        VALUES (#{pipelineId}, #{type}, #{authUuid})
+    </insert>
+
+    <insert id="insertLane" parameterType="neatlogic.framework.deploy.dto.pipeline.PipelineLaneVo">
+        INSERT INTO `deploy_pipeline_lane` (`id`, `pipeline_id`, `sort`)
+        VALUES (#{id}, #{pipelineId}, #{sort})
+    </insert>
+
+    <insert id="insertLaneGroup" parameterType="neatlogic.framework.deploy.dto.pipeline.PipelineGroupVo">
+        INSERT INTO `deploy_pipeline_group` (`id`, `lane_id`, `need_wait`, `sort`)
+        VALUES (#{id}, #{laneId}, #{needWait}, #{sort})
+    </insert>
+
+    <insert id="insertJobTemplate" parameterType="neatlogic.framework.deploy.dto.pipeline.PipelineJobTemplateVo">
+        INSERT INTO `deploy_pipeline_jobtemplate` (`id`,
+                                                   `group_id`,
+                                                   `app_system_id`,
+                                                   `app_module_id`,
+                                                   `env_id`,
+                                                   `scenario_id`,
+                                                   `round_count`,
+                                                   `config`,
+                                                   `sort`)
+        VALUES (#{id},
+                #{groupId},
+                #{appSystemId},
+                #{appModuleId},
+                #{envId},
+                #{scenarioId},
+                #{roundCount},
+                #{configStr,typeHandler=CompressHandler},
+                #{sort})
+    </insert>
+
+    <insert id="insertPipeline" parameterType="neatlogic.framework.deploy.dto.pipeline.PipelineVo">
+        INSERT INTO deploy_pipeline(`id`,
+                                    `name`,
+                                    `is_active`,
+                                    `type`,
+                                    `app_system_id`,
+                                    `fcd`,
+                                    `fcu`,
+                                    `lcd`,
+                                    `lcu`)
+        VALUES (#{id},
+                #{name},
+                #{isActive},
+                #{type},
+                #{appSystemId},
+                NOW(3),
+                #{fcu},
+                NOW(3),
+                #{fcu})
+    </insert>
+
+    <insert id="insertPipelineJobTemplate"
+            parameterType="neatlogic.framework.deploy.dto.pipeline.PipelineJobTemplateVo">
+        insert into deploy_pipeline_jobtemplate (id,
+                                                 group_id,
+                                                 app_system_id,
+                                                 app_module_id,
+                                                 scenario_id,
+                                                 round_count,
+                                                 env_id,
+                                                 config,
+                                                 sort)
+        values (#{id},
+                #{groupId},
+                #{appSystemId},
+                #{appModuleId},
+                #{scenarioId},
+                #{roundCount},
+                #{envId},
+                #{configStr,typeHandler=CompressHandler},
+                #{sort})
+    </insert>
+
+    <delete id="deletePipelineById" parameterType="java.lang.Long">
+        DELETE
+        FROM `deploy_pipeline`
+        WHERE id = #{value}
+    </delete>
+
+    <delete id="deletePipelineAuthByPipelineId" parameterType="java.lang.Long">
+        DELETE
+        FROM `deploy_pipeline_auth`
+        WHERE pipeline_id = #{value}
+    </delete>
+
+    <delete id="deleteLaneGroupJobTemplateByPipelineId" parameterType="java.lang.Long">
+        DELETE a,b,c
+        FROM `deploy_pipeline_lane` a
+                 LEFT JOIN deploy_pipeline_group b ON a.id = b.lane_id
+                 LEFT JOIN deploy_pipeline_jobtemplate c ON b.id = c.group_id
+        WHERE a.pipeline_id = #{value}
+    </delete>
+</mapper>
