@@ -1,0 +1,1902 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+Copyright(c) $today.year NeatLogic Co., Ltd. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+  -->
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="neatlogic.module.deploy.dao.mapper.DeployAppConfigMapper">
+
+    <cache type="neatlogic.framework.dao.cache.NeatLogicCache" flushInterval="30000" size="100"></cache>
+
+    <select id="getAppSystemIdList" parameterType="neatlogic.framework.cmdb.dto.resourcecenter.ResourceSearchVo"
+            resultType="java.lang.Long" useCache="false">
+        SELECT DISTINCT id from
+        (
+        SELECT a.`id`
+        FROM @{DATA_SCHEMA}.`scence_appsystem_appmodule` a
+        left join deploy_app_config_user dacu on a.`id` = dacu.app_system_id and dacu.user_uuid = #{userUuid}
+        <if test="searchVo.isHasAllAuthority == 0">
+            LEFT JOIN deploy_app_config_authority daca ON daca.app_system_id = a.id
+        </if>
+        <if test="searchVo.isConfig != null">
+            left join deploy_app_config dac on a.`id` = dac.app_system_id and dac.app_module_id = 0 and dac.env_id = 0
+        </if>
+        <where>
+            <if test="searchVo.keyword != null and searchVo.keyword != ''">
+                ( a.`name` LIKE concat('%', #{searchVo.keyword}, '%') or a.`app_module_name` LIKE
+                concat('%',#{searchVo.keyword}, '%')
+                or a.`abbr_name` LIKE concat('%', #{searchVo.keyword}, '%')or a.`app_module_abbr_name` LIKE
+                concat('%',#{searchVo.keyword}, '%'))
+            </if>
+            <if test="searchVo.appSystemIdList != null and searchVo.appSystemIdList.size() > 0">
+                AND a.`id` IN
+                <foreach collection="searchVo.appSystemIdList" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="searchVo.isHasAllAuthority == 0">
+                AND IF(
+                daca.app_system_id > 0,
+                daca.action_type = 'operation'
+                AND daca.action IN
+                ('all'
+                <if test="searchVo.authorityActionList != null and searchVo.authorityActionList.size() > 0">,
+                    <foreach collection="searchVo.authorityActionList" item="item" separator=",">
+                        #{item}
+                    </foreach>
+                </if>
+                )
+                AND daca.auth_uuid IN
+                (
+                'alluser'
+                <if test="searchVo.authUuidList != null and searchVo.authUuidList.size() > 0">
+                    ,
+                    <foreach collection="searchVo.authUuidList" item="item" separator=",">
+                        #{item}
+                    </foreach>
+                </if>
+                ),
+                1 = 1)
+            </if>
+            <choose>
+                <when test="searchVo.isConfig != null and searchVo.isConfig == 1">
+                    and dac.`config` is not NULL
+                </when>
+                <when test="searchVo.isConfig != null and searchVo.isConfig == 0">
+                    and dac.`config` is NULL
+                </when>
+                <otherwise>
+                </otherwise>
+            </choose>
+        </where>
+        order by if(dacu.user_uuid = #{userUuid},1,0) desc,
+        CONVERT(a.`abbr_name` USING gbk) COLLATE gbk_chinese_ci ASC) a
+        <if test="searchVo.needPage">
+            limit #{searchVo.startNum}, #{searchVo.pageSize}
+        </if>
+    </select>
+
+    <select id="searchAppSystemList" resultType="neatlogic.framework.deploy.dto.app.DeployAppSystemVo"
+            useCache="false">
+        SELECT DISTINCT `id`, `abbr_name` as abbrName, `name`
+        FROM @{DATA_SCHEMA}.`scence_appsystem_appmodule`
+        <where>
+            <if test="keyword != null and keyword != ''">
+                and (`name` LIKE concat('%', #{keyword}, '%') or `app_module_name` LIKE concat('%', #{keyword}, '%')
+                or `abbr_name` LIKE concat('%', #{keyword}, '%') or `app_module_abbr_name` LIKE concat('%',
+                #{keyword},'%'))
+            </if>
+            <if test="defaultValue != null and defaultValue.size() > 0">
+                AND `id` IN
+                <foreach collection="defaultValue" item="id" open="(" separator="," close=")">
+                    #{id}
+                </foreach>
+            </if>
+        </where>
+        order by CONVERT(`abbr_name` USING gbk) COLLATE gbk_chinese_ci ASC
+        <if test="needPage">
+            limit #{startNum}, #{pageSize}
+        </if>
+    </select>
+
+    <resultMap id="appConfigSystemMap" type="neatlogic.framework.deploy.dto.app.DeployAppSystemVo">
+        <result column="appSystemId" property="id"/>
+        <result column="appSystemName" property="name"/>
+        <result column="appSystemNameAbbrName" property="abbrName"/>
+        <result column="isFavorite" property="isFavorite"/>
+        <result column="isConfig" property="isConfig"/>
+        <result column="isConfigAuthority" property="isConfigAuthority"/>
+        <collection property="appModuleList" ofType="neatlogic.framework.deploy.dto.app.DeployAppModuleVo">
+            <id column="appModuleId" property="id"/>
+            <result column="appModuleName" property="name"/>
+            <result column="appModuleNameAbbrName" property="abbrName"/>
+        </collection>
+        <collection property="authActionVoList"
+                    ofType="neatlogic.framework.deploy.dto.app.DeployAppConfigAuthorityActionVo">
+            <result column="authAction" property="action"/>
+            <result column="authActionType" property="type"/>
+        </collection>
+    </resultMap>
+
+    <select id="getAppSystemListIncludeModuleByIdList" resultMap="appConfigSystemMap" useCache="false">
+        select
+        saa.id as appSystemId,
+        saa.`name` as appSystemName,
+        saa.`abbr_name` as appSystemNameAbbrName,
+        saa.app_module_id as appModuleId,
+        saa.`app_module_name` as appModuleName,
+        saa.`app_module_abbr_name` as appModuleNameAbbrName,
+        if(dacu.user_uuid is null,0,1) as isFavorite,
+        if(dac.config is null,0,1) as isConfig,
+        if( daca.app_system_id IS NULL, 0, 1 ) AS isConfigAuthority,
+        daca.auth_type as authType,
+        daca.auth_uuid as authUuid,
+        daca.`action` as authAction,
+        daca.action_type authActionType
+        from @{DATA_SCHEMA}.`scence_appsystem_appmodule` saa
+        left join deploy_app_config_user dacu on saa.id = dacu.app_system_id and dacu.user_uuid = #{userUuid}
+        left join deploy_app_config dac on saa.id = dac.app_system_id and dac.app_module_id = 0 and dac.env_id = 0
+        LEFT JOIN deploy_app_config_authority daca ON daca.app_system_id = saa.id
+        where saa.id in
+        <foreach collection="idList" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+        order by if(dacu.user_uuid = #{userUuid},1,0) desc,
+        CONVERT(saa.abbr_name USING gbk) COLLATE gbk_chinese_ci ASC,
+        CONVERT(saa.app_module_abbr_name USING gbk) COLLATE gbk_chinese_ci ASC
+    </select>
+
+    <select id="getAppSystemListByIdList" resultMap="appConfigSystemMap" useCache="false">
+        select
+        sa.id as appSystemId,
+        sa.`name` as appSystemName,
+        sa.`abbr_name` as appSystemNameAbbrName,
+        if(dacu.user_uuid is null,0,1) as isFavorite,
+        if(dac.config is null,0,1) as isConfig,
+        if( daca.app_system_id IS NULL, 0, 1 ) AS isConfigAuthority,
+        daca.auth_type as authType,
+        daca.auth_uuid as authUuid,
+        daca.`action` as authAction,
+        daca.action_type authActionType
+        from @{DATA_SCHEMA}.`scence_appsystem` sa
+        left join deploy_app_config_user dacu on sa.id = dacu.app_system_id and dacu.user_uuid = #{userUuid}
+        left join deploy_app_config dac on sa.id = dac.app_system_id and dac.app_module_id = 0 and dac.env_id = 0
+        LEFT JOIN deploy_app_config_authority daca ON daca.app_system_id = sa.id
+        where sa.id in
+        <foreach collection="idList" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+        order by if(dacu.user_uuid = #{userUuid},1,0) desc,
+        CONVERT(sa.abbr_name USING gbk) COLLATE gbk_chinese_ci ASC
+    </select>
+
+    <select id="getAppSystemModuleListBySystemIdList" resultMap="appConfigSystemMap" useCache="false">
+        select a.`id` as appSystemId,a.`name` as appSystemName,
+        a.`app_module_id` AS appModuleId,
+        a.`app_module_name` AS appModuleName,
+        a.`app_module_abbr_name` AS appModuleNameAbbrName
+        from @{DATA_SCHEMA}.`scence_appsystem_appmodule` a
+        <if test="isConfig != null">
+            left join deploy_app_config b on a.id = b.app_system_id and b.app_module_id = 0 and b.env_id = 0
+        </if>
+        where a.`app_module_id` is not null
+        and a.`id` in
+        <foreach collection="idList" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+        <choose>
+            <when test="isConfig != null and isConfig == 1">
+                and b.`config` is not NULL
+            </when>
+            <when test="isConfig != null and isConfig == 0">
+                and b.`config` is NULL
+            </when>
+            <otherwise>
+            </otherwise>
+        </choose>
+    </select>
+
+    <select id="getAppSystemListByUserUuid" resultMap="appConfigSystemMap" useCache="false">
+        select cc.id as appSystemId,
+        cc.name as appSystemName,
+        if(dacu.user_uuid is null, 0, 1) as isFavorite,
+        if(dac.config is null, 0, 1) as isConfig
+        FROM cmdb_cientity cc
+        JOIN cmdb_ci cci ON cc.ci_id = cci.id AND cci.name = 'APP'
+        left join deploy_app_config_user dacu on cc.id = dacu.app_system_id and dacu.user_uuid = #{userUuid}
+        left join deploy_app_config dac on cc.id = dac.app_system_id and dac.app_module_id = 0 and dac.env_id = 0
+        <where>
+            <choose>
+                <when test="searchVo.isConfig != null and searchVo.isConfig == 1">
+                    dac.`config` is not NULL
+                </when>
+                <when test="searchVo.isConfig != null and searchVo.isConfig == 0">
+                    dac.`config` is NULL
+                </when>
+                <otherwise>
+                </otherwise>
+            </choose>
+        </where>
+        order by if(dacu.user_uuid = #{userUuid}, 1, 0) desc,
+        CONVERT(cc.name USING gbk) COLLATE gbk_chinese_ci ASC
+        limit #{searchVo.startNum}, #{searchVo.pageSize}
+    </select>
+
+    <select id="getViewableAppSystemIdList" resultType="java.lang.Long" useCache="false">
+        SELECT
+        `app_system_id`
+        FROM `deploy_app_config_authority`
+        WHERE `action` IN ('view', 'edit')
+        AND (
+        (`auth_type` = 'common' AND `auth_uuid` = 'alluser')
+        <if test="userUuid != null and userUuid != ''">
+            OR (`auth_type` = 'user' AND `auth_uuid` = #{userUuid})
+        </if>
+        <if test="teamUuidList != null and teamUuidList.size() > 0">
+            OR (`auth_type` = 'team' AND `auth_uuid` IN
+            <foreach collection="teamUuidList" item="teamUuid" open="(" separator="," close=")">
+                #{teamUuid}
+            </foreach>
+            )
+        </if>
+        <if test="roleUuidList != null and roleUuidList.size() > 0">
+            OR (`auth_type` = 'role' AND `auth_uuid` IN
+            <foreach collection="roleUuidList" item="roleUuid" open="(" separator="," close=")">
+                #{roleUuid}
+            </foreach>
+            )
+        </if>
+        )
+    </select>
+
+    <select id="getAppConfigAuthorityCount" resultType="java.lang.Integer" useCache="false">
+        select count(distinct `app_system_id`,`auth_uuid`)
+        from deploy_app_config_authority
+        <include refid="appConfigAuthorityWhere"/>
+    </select>
+
+    <select id="getAppConfigAuthorityList" resultType="neatlogic.framework.deploy.dto.app.DeployAppConfigAuthorityVo"
+            useCache="false">
+        select distinct `app_system_id` as appSystemId,`auth_type` as authType,`auth_uuid` as authUuid
+        from deploy_app_config_authority
+        <include refid="appConfigAuthorityWhere"/>
+        order by auth_uuid
+        limit #{startNum}, #{pageSize}
+    </select>
+
+    <sql id="appConfigAuthorityWhere">
+        <where>
+            app_system_id = #{appSystemId}
+            <if test="authUuidList != null and authUuidList.size() > 0">
+                and auth_uuid in
+                <foreach collection="authUuidList" item="authUuid" close=")" separator="," open="(">
+                    #{authUuid}
+                </foreach>
+            </if>
+            <if test="actionList != null and actionList.size() > 0">
+                <foreach collection="actionList" item="vo" separator=",">
+                    and`action_type` = #{vo.type}
+                    and (`action` = #{vo.action}
+                    or `action` = 'all')
+                </foreach>
+            </if>
+        </where>
+    </sql>
+    <resultMap id="appConfigAuthorityMap" type="neatlogic.framework.deploy.dto.app.DeployAppConfigAuthorityVo">
+        <result column="app_system_id" property="appSystemId"/>
+        <result column="auth_type" property="authType"/>
+        <result column="auth_uuid" property="authUuid"/>
+        <collection property="actionList" ofType="neatlogic.framework.deploy.dto.app.DeployAppConfigAuthorityActionVo">
+            <result column="action" property="action"/>
+            <result column="action_type" property="type"/>
+        </collection>
+    </resultMap>
+
+    <select id="getAppConfigAuthorityDetailList" resultMap="appConfigAuthorityMap" useCache="false">
+        select app_system_id,auth_type,auth_uuid,`action`,action_type
+        from deploy_app_config_authority
+        where
+        <foreach collection="appConfigAuthList" item="appConfigAuth" open="(" separator=")or(" close=")">
+            app_system_id = #{appConfigAuth.appSystemId}
+            and auth_uuid = #{appConfigAuth.authUuid}
+        </foreach>
+    </select>
+
+    <select id="getAppConfigAuthorityListByAppSystemId"
+            resultMap="appConfigAuthorityMap" useCache="false">
+        select app_system_id, auth_type, auth_uuid, `action`, action_type
+        from deploy_app_config_authority
+        where app_system_id = #{value}
+    </select>
+
+    <select id="getAppConfig" parameterType="neatlogic.framework.deploy.dto.app.DeployAppConfigVo"
+            resultType="java.lang.String" useCache="false">
+        SELECT `config`
+        FROM `deploy_app_config`
+        WHERE `app_system_id` = #{appSystemId}
+          and `app_module_id` = #{appModuleId}
+          and `env_id` = #{envId}
+    </select>
+
+    <select id="getAppConfigVo" parameterType="neatlogic.framework.deploy.dto.app.DeployAppConfigVo"
+            resultType="neatlogic.framework.deploy.dto.app.DeployAppConfigVo" useCache="true">
+        SELECT `id`            as id,
+               `app_system_id` as appSystemId,
+               `app_module_id` as appModuleId,
+               `env_id`        as envId,
+               `config`        as configStr,
+               `fcd`,
+               `fcu`,
+               `lcd`,
+               `lcu`
+        FROM `deploy_app_config`
+        WHERE `app_system_id` = #{appSystemId}
+          and `app_module_id` = #{appModuleId}
+          and `env_id` = #{envId}
+    </select>
+
+    <select id="getAppConfigDraft" parameterType="neatlogic.framework.deploy.dto.app.DeployAppConfigVo"
+            resultType="neatlogic.framework.deploy.dto.app.DeployAppConfigVo" useCache="true">
+        SELECT `app_system_id` as appSystemId,
+               `app_module_id` as appModuleId,
+               `env_id`        as envId,
+               `config`        as configStr,
+               `fcd`,
+               `fcu`,
+               `lcd`,
+               `lcu`
+        FROM `deploy_app_config_draft`
+        WHERE `app_system_id` = #{appSystemId}
+          and `app_module_id` = #{appModuleId}
+          and `env_id` = #{envId}
+    </select>
+
+    <resultMap id="appEnvMap" type="neatlogic.framework.deploy.dto.app.DeployAppEnvironmentVo">
+        <result column="envId" property="id"/>
+        <result column="envName" property="name"/>
+        <collection property="appModuleList" ofType="neatlogic.framework.cmdb.dto.resourcecenter.entity.AppModuleVo">
+            <id column="appModuleId" property="id"/>
+            <result column="appModuleName" property="name"/>
+        </collection>
+    </resultMap>
+
+    <select id="getDeployAppEnvListByAppSystemIdAndModuleIdList"
+            resultMap="appEnvMap" useCache="false">
+        (
+        SELECT
+        a.`env_id` AS envId,
+        a.`env_name` AS envName,
+        a.`app_module_id` AS appModuleId,
+        a.`app_module_name` AS appModuleName
+        FROM @{DATA_SCHEMA}.`scence_appinstance_env_appmodule_appsystem` a
+        <where>
+            a.`env_id` is not null
+            <choose>
+                <when test="appSystemId != null">
+                    AND a.`app_system_id` = #{appSystemId}
+                </when>
+                <otherwise>
+                    and a.`app_system_id` is not null
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="appModuleIdList != null and appModuleIdList.size() > 0">
+                    and a.`app_module_id` in
+                    <foreach collection="appModuleIdList" item="appModuleId" separator="," open="(" close=")">
+                        #{appModuleId}
+                    </foreach>
+                </when>
+                <otherwise>
+                    and a.`app_module_id` is not null
+                </otherwise>
+            </choose>
+        </where>
+        ) UNION
+        (
+        SELECT
+        cc.id AS envId,
+        cc.name AS envName,
+        cce.id AS appModuleId,
+        cce.name AS appModuleName
+        FROM
+        deploy_app_config_env dace
+        JOIN cmdb_cientity cc ON cc.id = dace.env_id
+        JOIN cmdb_cientity cce ON cce.id = dace.app_module_id
+        <where>
+            <if test="appSystemId != null">
+                dace.app_system_id = #{appSystemId}
+            </if>
+            <if test="appModuleIdList != null and appModuleIdList.size() > 0">
+                and dace.app_module_id in
+                <foreach collection="appModuleIdList" item="id" separator="," open="(" close=")">
+                    #{id}
+                </foreach>
+            </if>
+        </where>
+        )
+    </select>
+
+    <select id="getDeployAppEnvIdListByAppSystemId" parameterType="java.lang.Long"
+            resultType="long" useCache="false">
+        (
+        SELECT
+        a.`env_id` AS envId
+        FROM @{DATA_SCHEMA}.`scence_appinstance_env_appmodule_appsystem` a
+        <where>
+            a.`env_id` is not null
+            <choose>
+                <when test="value != null">
+                    AND a.`app_system_id` = #{value}
+                </when>
+                <otherwise>
+                    and a.`app_system_id` is not null
+                </otherwise>
+            </choose>
+            and a.`app_module_id` is not null
+        </where>
+        ) UNION
+        (
+        SELECT
+        cc.id AS envId
+        FROM
+        deploy_app_config_env dace
+        JOIN cmdb_cientity cc ON cc.id = dace.env_id
+        JOIN cmdb_cientity cce ON cce.id = dace.app_module_id
+        <where>
+            <if test="value != null">
+                dace.app_system_id = #{value}
+            </if>
+        </where>
+        )
+    </select>
+
+    <resultMap id="deployAppModuleEnvMap" type="neatlogic.framework.deploy.dto.app.DeployAppModuleEnvVo">
+        <result column="appModuleId" property="id"/>
+        <collection property="envList" ofType="neatlogic.framework.cmdb.dto.resourcecenter.entity.AppEnvironmentVo">
+            <id column="envId" property="envId"/>
+            <result column="envName" property="envName"/>
+        </collection>
+    </resultMap>
+
+    <select id="getDeployAppModuleEnvListByAppSystemId"
+            resultMap="deployAppModuleEnvMap" useCache="false">
+        SELECT a.`env_id`        AS envId,
+               a.`env_name`      AS envName,
+               a.`app_module_id` AS appModuleId
+        FROM @{DATA_SCHEMA}.`scence_appinstance_env_appmodule_appsystem` a
+        where a.`env_id` is not null
+          and a.`app_system_id` = #{appSystemId}
+        UNION
+        SELECT cc.id              AS envId,
+               cc.name            AS envName,
+               dace.app_module_id AS appModuleId
+        FROM deploy_app_config_env dace
+                 JOIN cmdb_cientity cc ON cc.id = dace.env_id
+        where dace.app_system_id = #{value}
+    </select>
+
+    <resultMap id="appModuleIncludeEnvIdListMap" type="neatlogic.framework.deploy.dto.app.DeployAppModuleEnvVo">
+        <result column="appModuleId" property="id"/>
+        <collection property="envIdList" ofType="java.lang.Long">
+            <id column="envId"/>
+        </collection>
+    </resultMap>
+
+    <select id="getDeployAppModuleEnvListByAppSystemIdAndAppModuleIdList"
+            resultMap="appModuleIncludeEnvIdListMap" useCache="false">
+        SELECT a.`env_id` AS envId,
+        a.`app_module_id` AS appModuleId
+        FROM @{DATA_SCHEMA}.`scence_appinstance_env_appmodule_appsystem` a
+        where a.`env_id` is not null
+        and a.`app_system_id` = #{appSystemId}
+        and a.app_module_id in
+        <foreach collection="appModuleIdList" separator="," item="appModuleId" open="(" close=")">
+            #{appModuleId}
+        </foreach>
+        UNION
+        SELECT cc.id AS envId,
+        dace.app_module_id AS appModuleId
+        FROM deploy_app_config_env dace
+        JOIN cmdb_cientity cc ON cc.id = dace.env_id
+        where dace.app_system_id = #{appSystemId}
+        and dace.app_module_id in
+        <foreach collection="appModuleIdList" separator="," item="appModuleId" open="(" close=")">
+            #{appModuleId}
+        </foreach>
+    </select>
+
+    <select id="getDeployAppModuleEnvListByAppSystemIdAndModuleId"
+            resultType="neatlogic.framework.cmdb.dto.resourcecenter.entity.AppEnvironmentVo" useCache="false">
+        SELECT a.`env_id` AS envId,
+        a.`env_name` AS envName
+        FROM @{DATA_SCHEMA}.`scence_appinstance_env_appmodule_appsystem` a
+        where a.`env_id` is not null
+        and a.`app_system_id` = #{systemId}
+        and a.`app_module_id` = #{moduleId}
+        UNION
+        SELECT cc.id AS envId,
+        cc.name AS envName
+        FROM deploy_app_config_env dace
+        JOIN cmdb_cientity cc ON cc.id = dace.env_id
+        where dace.app_system_id = #{systemId}
+          and dace.app_module_id = #{moduleId}
+    </select>
+
+    <resultMap id="appEnvIncludeSchemaListAndAutoCfgKeyListMap" type="neatlogic.framework.deploy.dto.app.DeployAppEnvironmentVo">
+        <result column="envId" property="id"/>
+        <result column="envName" property="name"/>
+        <collection property="dbSchemaList" ofType="neatlogic.framework.deploy.dto.app.DeployAppConfigEnvDBConfigVo">
+            <result column="dbSchema" property="dbSchema"/>
+            <result column="configStr" property="configStr"/>
+        </collection>
+        <collection property="autoCfgKeyValueList" ofType="neatlogic.framework.deploy.dto.app.DeployAppEnvAutoConfigKeyValueVo">
+            <result column="key" property="key"/>
+            <result column="value" property="value"/>
+        </collection>
+    </resultMap>
+
+    <select id="getAppConfigEnvListIncludeDBCSchemaListAndAutoCfgKeyListByAppSystemIdAndAppModuleIdAndEnvId"
+            resultMap="appEnvIncludeSchemaListAndAutoCfgKeyListMap" useCache="false">
+        SELECT a.app_system_id as appSystemId,
+        a.app_module_id as appModuleId,
+        a.env_id as envId,
+        daced.db_schema as dbSchema,
+        daced.config as configStr,
+        daeac.key,
+        daeac.value
+        FROM @{DATA_SCHEMA}.`scence_appinstance_env_appmodule_appsystem` a
+        LEFT JOIN deploy_app_config_env_db daced
+        on a.app_system_id = daced.app_system_id and a.app_module_id = daced.app_module_id and a.env_id = daced.env_id
+        LEFT JOIN deploy_app_env_auto_config daeac
+        on a.app_system_id = daeac.app_system_id and a.app_module_id = daeac.app_module_id and a.env_id = daeac.env_id
+        and daeac.instance_id = 0
+        WHERE a.app_system_id = #{appSystemId}
+        AND a.app_module_id = #{appModuleId}
+        AND a.env_id in
+        <foreach collection="envIdList" separator="," item="envId" open="(" close=")">
+            #{envId}
+        </foreach>
+        UNION
+        SELECT dace.app_system_id as appSystemId,
+        dace.app_module_id as appModuleId,
+        dace.env_id as envId,
+        daced.db_schema as dbSchema,
+        daced.config as configStr,
+        daeac.key,
+        daeac.value
+        FROM deploy_app_config_env dace
+        LEFT JOIN deploy_app_config_env_db daced
+        on dace.app_system_id = daced.app_system_id and dace.app_module_id = daced.app_module_id and dace.env_id =
+        daced.env_id
+        LEFT JOIN deploy_app_env_auto_config daeac
+        on dace.app_system_id = daeac.app_system_id and dace.app_module_id = daeac.app_module_id and dace.env_id =
+        daeac.env_id
+        and daeac.instance_id = 0
+        WHERE dace.app_system_id = #{appSystemId}
+        AND dace.app_module_id = #{appModuleId}
+        AND dace.env_id in
+        <foreach collection="envIdList" separator="," item="envId" open="(" close=")">
+            #{envId}
+        </foreach>
+    </select>
+
+    <select id="getDeployAppHasNotEnvListByAppSystemIdAndModuleIdList"
+            resultType="neatlogic.framework.deploy.dto.app.DeployAppEnvironmentVo" useCache="false">
+        SELECT a.`id`,
+        a.`name`
+        FROM @{DATA_SCHEMA}.`scence_env` a
+        where a.id not in(
+        (
+        SELECT
+        a.`env_id`
+        FROM @{DATA_SCHEMA}.`scence_appinstance_env_appmodule_appsystem` a
+        <where>
+            a.`env_id` is not null
+            <choose>
+                <when test="appSystemId != null">
+                    AND a.`app_system_id` = #{appSystemId}
+                </when>
+                <otherwise>
+                    and a.`app_system_id` is not null
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="appModuleId != null">
+                    and a.`app_module_id` = #{appModuleId}
+                </when>
+                <otherwise>
+                    and a.`app_module_id` is not null
+                </otherwise>
+            </choose>
+        </where>
+        ) UNION
+        (
+        SELECT
+        cc.id
+        FROM
+        deploy_app_config_env dace
+        JOIN cmdb_cientity cc ON cc.id = dace.env_id
+        JOIN cmdb_cientity cce ON cce.id = dace.app_module_id
+        <where>
+            <if test="appSystemId != null">
+                dace.app_system_id = #{appSystemId}
+            </if>
+            <if test="appModuleId != null">
+                and dace.app_module_id = #{appModuleId}
+            </if>
+        </where>
+        )
+        )
+    </select>
+
+    <select id="getCmdbEnvListByAppSystemIdAndModuleId"
+            resultType="neatlogic.framework.deploy.dto.app.DeployAppEnvironmentVo" useCache="false">
+        SELECT distinct
+        a.`env_id` AS id,
+        a.`env_name` AS name,
+        0 AS isDeletable
+        FROM @{DATA_SCHEMA}.`scence_appinstance_env_appmodule_appsystem` a
+        <where>
+            a.`env_id` is not null
+            <choose>
+                <when test="appSystemId != null">
+                    AND a.`app_system_id` = #{appSystemId}
+                </when>
+                <otherwise>
+                    AND a.app_system_id is not null
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="appModuleId != null">
+                    and a.`app_module_id` = #{appModuleId}
+                </when>
+                <otherwise>
+                    and a.`app_module_id` is not null
+                </otherwise>
+            </choose>
+        </where>
+    </select>
+
+    <select id="getDeployAppEnvListByAppSystemIdAndModuleId"
+            resultType="neatlogic.framework.deploy.dto.app.DeployAppEnvironmentVo" useCache="false">
+        SELECT
+        cc.id AS id,
+        cc.name AS name,
+        1 AS isDeletable
+        FROM
+        deploy_app_config_env dace
+        JOIN cmdb_cientity cc ON cc.id = dace.env_id
+        JOIN cmdb_cientity cce ON cce.id = dace.app_module_id
+        <where>
+            <if test="appSystemId != null">
+                and dace.app_system_id = #{appSystemId}
+            </if>
+            <if test="appModuleId != null">
+                and dace.app_module_id = #{appModuleId}
+            </if>
+        </where>
+    </select>
+
+    <select id="getHasEnvAppModuleIdListByAppSystemIdAndModuleIdList"
+            resultType="java.lang.Long" useCache="false">
+        (
+        SELECT
+        a.`app_module_id`
+        FROM @{DATA_SCHEMA}.`scence_appinstance_env_appmodule_appsystem` a
+        <where>
+            a.`env_id` IS NOT NULL
+            <choose>
+                <when test="appSystemId != null">
+                    AND a.`app_system_id` = #{appSystemId}
+                </when>
+                <otherwise>
+                    and a.`app_system_id` IS NOT NULL
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="appModuleIdList != null and appModuleIdList.size() > 0">
+                    and a.`app_module_id` in
+                    <foreach collection="appModuleIdList" item="appModuleId" open="(" close=")" separator=",">
+                        #{appModuleId}
+                    </foreach>
+                </when>
+                <otherwise>
+                    and a.`app_module_id` IS NOT NULL
+                </otherwise>
+            </choose>
+        </where>
+        ) UNION
+        (
+        SELECT
+        dace.app_module_id
+        FROM
+        deploy_app_config_env dace
+        JOIN cmdb_cientity cc ON cc.id = dace.env_id
+        <where>
+            <if test="appSystemId != null">
+                dace.app_system_id = #{appSystemId}
+            </if>
+            <if test="appModuleIdList != null and appModuleIdList.size() > 0">
+                and dace.app_module_id in
+                <foreach collection="appModuleIdList" item="appModuleId" open="(" close=")" separator=",">
+                    #{appModuleId}
+                </foreach>
+            </if>
+        </where>
+        )
+    </select>
+
+    <select id="getAppEnvAutoConfigKeyValueList"
+            parameterType="neatlogic.framework.deploy.dto.app.DeployAppEnvAutoConfigVo"
+            resultType="neatlogic.framework.deploy.dto.app.DeployAppEnvAutoConfigKeyValueVo" useCache="false">
+        select `key`,
+               `value`
+        from deploy_app_env_auto_config
+        WHERE `app_system_id` = #{appSystemId}
+          and `app_module_id` = #{appModuleId}
+          and `env_id` = #{envId}
+          and `instance_id` = #{instanceId}
+    </select>
+
+    <resultMap id="runnerGroupMap" type="neatlogic.framework.dto.runner.RunnerGroupVo">
+        <id column="groupId" property="id"/>
+        <result column="groupName" property="name"/>
+        <result column="groupDescription" property="description"/>
+        <collection property="runnerList" ofType="neatlogic.framework.dto.runner.RunnerVo">
+            <id column="runnerId" property="id"/>
+            <result column="runnerName" property="name"/>
+            <result column="runnerUrl" property="url"/>
+            <result column="runnerAccessKey" property="accessKey"/>
+            <result column="runnerAccessSecret" property="accessSecret"/>
+            <result column="runnerAuthType" property="authType"/>
+            <result column="runnerNettyIp" property="nettyIp"/>
+            <result column="runnerNettyPort" property="nettyPort"/>
+            <result column="runnerHost" property="host"/>
+            <result column="runnerPort" property="port"/>
+        </collection>
+        <collection property="runnerMapList" ofType="neatlogic.framework.dto.runner.RunnerMapVo">
+            <id column="runnerId" property="id"/>
+            <result column="runnerName" property="name"/>
+            <result column="runnerMapId" property="runnerMapId"/>
+            <result column="runnerUrl" property="url"/>
+            <result column="runnerAccessKey" property="accessKey"/>
+            <result column="runnerAccessSecret" property="accessSecret"/>
+            <result column="runnerAuthType" property="authType"/>
+            <result column="runnerNettyIp" property="nettyIp"/>
+            <result column="runnerNettyPort" property="nettyPort"/>
+            <result column="runnerHost" property="host"/>
+            <result column="runnerPort" property="port"/>
+        </collection>
+    </resultMap>
+
+    <select id="getAppModuleRunnerGroupByAppSystemIdAndModuleId"
+            resultMap="runnerGroupMap" useCache="false">
+        SELECT rg.id             AS groupId,
+               rg.name           AS groupName,
+               rg.description    AS groupDescription,
+               r.`id`            AS runnerId,
+               r.`name`          AS runnerName,
+               r.`url`           AS runnerUrl,
+               r.`access_key`    AS runnerAccessKey,
+               r.`access_secret` AS runnerAccessSecret,
+               r.`auth_type`     AS runnerAuthType,
+               r.`netty_ip`      AS runnerNettyIp,
+               r.`netty_port`    AS runnerNettyPort,
+               r.`host`          AS runnerHost,
+               r.`port`          AS runnerPort,
+               rm.id             as runnerMapId
+        FROM deploy_app_module_runner_group damrg
+                 JOIN runnergroup rg ON rg.id = damrg.runner_group_id
+                 LEFT JOIN runnergroup_runner rgr ON rg.`id` = rgr.`runnergroup_id`
+                 LEFT JOIN runner r ON r.`id` = rgr.`runner_id`
+                 LEFT JOIN `runner_map` rm ON r.`id` = rm.`runner_id`
+        WHERE damrg.app_system_id = #{appSystemId}
+          AND damrg.app_module_id = #{appModuleId}
+    </select>
+
+    <select id="getAppModuleIdListHasRunnerByAppSystemIdAndModuleIdList"
+            resultType="long" useCache="false">
+        SELECT distinct damrg.app_module_id
+        FROM deploy_app_module_runner_group damrg
+        JOIN runnergroup rg ON rg.id = damrg.runner_group_id
+        JOIN runnergroup_runner rgr ON rg.`id` = rgr.`runnergroup_id`
+        JOIN runner r ON r.`id` = rgr.`runner_id`
+        WHERE damrg.app_system_id = #{appSystemId}
+        AND damrg.app_module_id in
+        <foreach collection="appModuleIdList" item="appModuleId" separator="," open="(" close=")">
+            #{appModuleId}
+        </foreach>
+    </select>
+
+    <select id="getAppEnvAutoConfigListBySystemIdAndModuleIdAndEnvIdAndInstanceIdList"
+            resultMap="appEnvAutoConfigMap" useCache="false">
+        SELECT
+        daeac.`app_system_id` AS appSystemId,
+        daeac.`app_module_id` AS appModuleId,
+        daeac.`env_id` AS envId,
+        daeac.`instance_id` AS instanceId,
+        daeac.`key`,
+        daeac.`value`
+        FROM
+        deploy_app_env_auto_config daeac
+        WHERE daeac.`app_system_id` = #{appSystemId}
+        and daeac.`app_module_id` = #{appModuleId}
+        and daeac.`env_id` = #{envId}
+        and daeac.`instance_id` in
+        <foreach collection="instanceIdList" item="instanceId" open="(" close=")" separator=",">
+            #{instanceId}
+        </foreach>
+    </select>
+
+    <sql id="searchAppModuleEnvConfigInstance">
+        FROM @{DATA_SCHEMA}.`scence_appinstance_env_appmodule_appsystem` a
+        WHERE a.`app_system_id` = #{appSystemId}
+        AND a.`app_module_id` = #{appModuleId}
+        AND a.`env_id` = #{envId}
+        <if test="isAutoConfig != null">
+            AND a.`id`
+            <if test="isAutoConfig == 1">
+                in
+            </if>
+            <if test="isAutoConfig == 0">
+                not in
+            </if>
+            (select `instance_id`
+            from `deploy_app_env_auto_config`
+            WHERE `app_system_id` = #{appSystemId}
+            and `app_module_id` = #{appModuleId}
+            and `env_id` = #{envId})
+        </if>
+        <if test="keyword != null and keyword != ''">
+            AND (a.`ip` LIKE concat('%', #{keyword}, '%') or a.`port` LIKE concat('%', #{keyword},'%'))
+        </if>
+    </sql>
+
+    <select id="getAppModuleEnvAutoConfigInstanceIdCount" parameterType="neatlogic.framework.deploy.dto.app.DeployAppEnvAutoConfigVo" resultType="int" useCache="false">
+        SELECT count(a.id)
+        <include refid="searchAppModuleEnvConfigInstance"></include>
+    </select>
+
+    <select id="getAppModuleEnvAutoConfigInstanceIdList" parameterType="neatlogic.framework.deploy.dto.app.DeployAppEnvAutoConfigVo" resultType="java.lang.Long" useCache="false">
+        SELECT a.id
+        <include refid="searchAppModuleEnvConfigInstance"></include>
+        ORDER BY a.id DESC
+        LIMIT #{startNum}, #{pageSize}
+    </select>
+
+    <sql id="searchAppConfigEnvInstance">
+        FROM @{DATA_SCHEMA}.`scence_appinstance_ip_port_env_appmodule` a
+        WHERE
+        (( a.`app_module_id` IS NULL AND a.`env_id` IS NULL )
+        OR ( a.`app_module_id` IS NULL AND a.`env_id` = #{envId} )
+        OR (a.`app_module_id` = #{appModuleId} AND a.`env_id` IS NULL))
+        <if test="keyword != null and keyword != ''">
+            AND (a.`ip` LIKE concat('%', #{keyword}, '%') or a.`port` LIKE concat('%', #{keyword},'%'))
+        </if>
+    </sql>
+
+    <select id="getAppConfigEnvInstanceCount" parameterType="neatlogic.framework.deploy.dto.app.DeployAppConfigInstanceVo" resultType="int" useCache="false">
+        SELECT count(a.`id`)
+        <include refid="searchAppConfigEnvInstance"></include>
+    </select>
+
+    <select id="searchAppConfigEnvInstanceList"
+            resultType="neatlogic.framework.deploy.dto.app.DeployAppConfigInstanceVo" useCache="false">
+        SELECT a.`id`,
+        a.`ip`,
+        a.`port`,
+        a.`name`
+        <include refid="searchAppConfigEnvInstance"></include>
+        ORDER BY a.`id` DESC
+        LIMIT #{startNum}, #{pageSize}
+    </select>
+
+    <select id="getAppSystemIdListCount" resultType="java.lang.Integer" useCache="false">
+        SELECT count(distinct a.`id`)
+        FROM @{DATA_SCHEMA}.`scence_appsystem_appmodule` a
+        <if test="isHasAllAuthority == 0">
+            LEFT JOIN deploy_app_config_authority daca ON daca.app_system_id = a.id
+        </if>
+        <if test="isConfig != null">
+            left join deploy_app_config b on a.`id` = b.`app_system_id` and b.`app_module_id` = 0 and b.`env_id` = 0
+        </if>
+        <where>
+            <if test="keyword != null and keyword != ''">
+                ( a.`name` LIKE concat('%', #{keyword}, '%') or a.`app_module_name` LIKE concat('%', #{keyword}, '%')
+                or a.`abbr_name` LIKE concat('%', #{keyword}, '%')or a.`app_module_abbr_name` LIKE concat('%',
+                #{keyword}, '%'))
+            </if>
+            <if test="appSystemIdList != null and appSystemIdList.size() > 0">
+                AND a.`id` IN
+                <foreach collection="appSystemIdList" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <include refid="checkDeployAuthority"/>
+            <choose>
+                <when test="isConfig != null and isConfig == 1">
+                    and b.`config` is not NULL
+                </when>
+                <when test="isConfig != null and isConfig == 0">
+                    and b.`config` is NULL
+                </when>
+                <otherwise>
+                </otherwise>
+            </choose>
+        </where>
+    </select>
+
+    <sql id="checkDeployAuthority">
+        <if test="isHasAllAuthority == 0">
+            AND IF(
+            daca.app_system_id > 0,
+            daca.action_type = 'operation'
+            AND daca.action IN
+            ('all'
+            <if test="authorityActionList != null and authorityActionList.size() > 0">,
+                <foreach collection="authorityActionList" item="item" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            )
+            AND daca.auth_uuid IN
+            (
+            'alluser'
+            <if test="authUuidList != null and authUuidList.size() > 0">
+                ,
+                <foreach collection="authUuidList" item="item" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            ),
+            1 = 1)
+        </if>
+    </sql>
+
+    <select id="getCiEntityIdListCount" resultType="java.lang.Integer" useCache="false">
+        SELECT COUNT(a.id)
+        FROM `cmdb_cientity` a
+        JOIN `cmdb_ci` b ON a.ci_id = b.id
+        <if test="isConfig != null">
+            left join deploy_app_config dac on a.id = dac.app_system_id and dac.app_module_id = 0 and dac.env_id = 0
+        </if>
+        where b.name = 'APP'
+        <choose>
+            <when test="isConfig != null and isConfig == 1">
+                and dac.`config` is not NULL
+            </when>
+            <when test="isConfig != null and isConfig == 0">
+                and dac.`config` is NULL
+            </when>
+            <otherwise>
+            </otherwise>
+        </choose>
+    </select>
+    <select id="getAppConfigListByAppSystemId"
+            resultType="neatlogic.framework.deploy.dto.app.DeployAppConfigVo" useCache="false">
+        SELECT `id`,
+               `app_system_id` as appSystemId,
+               `app_module_id` as appModuleId,
+               `env_id`        as envId,
+               `config`        as configStr,
+               `fcd`,
+               `fcu`,
+               `lcd`,
+               `lcu`
+        FROM `deploy_app_config`
+        WHERE `app_system_id` = #{appSystemId}
+    </select>
+
+    <select id="getAppConfigCountByAppSystemId" resultType="int" useCache="false">
+        SELECT count(1) FROM `deploy_app_config` WHERE `app_system_id` = #{appSystemId}
+    </select>
+
+    <select id="getAppConfigList" resultType="neatlogic.framework.deploy.dto.app.DeployAppConfigVo">
+        SELECT
+        `id`,
+        `app_system_id` as appSystemId,
+        `app_module_id` as appModuleId,
+        `env_id` as envId,
+        `config` as configStr,
+        `fcd`,
+        `fcu`,
+        `lcd`,
+        `lcu`
+        FROM `deploy_app_config`
+        WHERE `app_system_id` = #{appSystemId}
+        <if test="appModuleId != 0L">
+            AND `app_module_id` = #{appModuleId}
+        </if>
+        <if test="envId != 0L">
+            AND `env_id` = #{envId}
+        </if>
+    </select>
+
+    <select id="getAllDeployAppConfigCount" resultType="int">
+        SELECT COUNT(1) FROM `deploy_app_config`
+    </select>
+
+    <select id="getAllAppConfigListByPage" resultType="neatlogic.framework.deploy.dto.app.DeployAppConfigVo">
+        SELECT
+        `id`,
+        `app_system_id` as appSystemId,
+        `app_module_id` as appModuleId,
+        `env_id` as envId,
+        `config` as configStr,
+        `fcd`,
+        `fcu`,
+        `lcd`,
+        `lcu`
+        FROM `deploy_app_config`
+        ORDER BY `id`
+        LIMIT #{startNum}, #{pageSize}
+    </select>
+
+    <select id="getAppConfigByAppSystemIdAndAppModuleIdAndEnvId"
+            resultType="neatlogic.framework.deploy.dto.app.DeployAppConfigVo" useCache="false">
+        SELECT `app_system_id` as appSystemId,
+               `app_module_id` as appModuleId,
+               `env_id`        as envId,
+               `config`        as configStr,
+               `fcd`,
+               `fcu`,
+               `lcd`,
+               `lcu`
+        FROM `deploy_app_config`
+        WHERE `app_system_id` = #{appSystemId}
+          and `app_module_id` = #{appModuleId}
+          and `env_id` = #{envId}
+    </select>
+
+    <select id="getAppConfigEnv" resultType="int" useCache="false">
+        SELECT count(1)
+        FROM deploy_app_config_env
+        <where>
+            <if test="appSystemId != null">
+                AND `app_system_id` = #{appSystemId}
+            </if>
+            <if test="appModuleId !=  0L">
+                AND `app_module_id` = #{appModuleId}
+            </if>
+            <if test="envId != 0L">
+                AND `env_id` = #{envId}
+            </if>
+        </where>
+    </select>
+
+    <resultMap id="DBConfigMap" type="neatlogic.framework.deploy.dto.app.DeployAppConfigEnvDBConfigVo">
+        <id column="id" property="id"/>
+        <result column="appSystemId" property="appSystemId"/>
+        <result column="appModuleId" property="appModuleId"/>
+        <result column="envId" property="envId"/>
+        <result column="dbSchema" property="dbSchema"/>
+        <result column="dbResourceId" property="dbResourceId"/>
+        <result column="dbResourceName" property="dbResourceName"/>
+        <result column="configStr" property="configStr"/>
+        <result column="accountId" property="accountId"/>
+        <result column="account" property="account"/>
+        <result column="passwordCipher" property="passwordCipher"/>
+    </resultMap>
+
+    <select id="getAppConfigEnvDBConfigById"
+            resultType="neatlogic.framework.deploy.dto.app.DeployAppConfigEnvDBConfigVo" useCache="false">
+        SELECT a.id,
+               a.app_system_id  as appSystemId,
+               a.app_module_id  as appModuleId,
+               a.env_id         as envId,
+               a.db_schema      as dbSchema,
+               a.db_resource_id as dbResourceId,
+               a.config         as configStr,
+               a.account_id     as accountId,
+               b.account        as account,
+               a.config         as config
+        FROM deploy_app_config_env_db a
+                 LEFT JOIN cmdb_resourcecenter_account b ON b.id = a.account_id
+        WHERE a.id = #{id}
+    </select>
+
+    <select id="getAppConfigEnvDBConfigListByAppSystemIdAndAppModuleIdAndEnvId"
+            resultType="neatlogic.framework.deploy.dto.app.DeployAppConfigEnvDBConfigVo" useCache="false">
+        SELECT a.id,
+               a.app_system_id  as appSystemId,
+               a.app_module_id  as appModuleId,
+               a.env_id         as envId,
+               a.db_schema      as dbSchema,
+               a.db_resource_id as dbResourceId,
+               cc.name          as dbResourceName,
+               a.config         as configStr,
+               a.account_id     as accountId,
+               b.account        as account,
+               b.password       as passwordCipher
+        FROM deploy_app_config_env_db a
+                 LEFT JOIN cmdb_resourcecenter_account b ON b.id = a.account_id
+                 LEFT JOIN cmdb_cientity cc ON cc.id = a.db_resource_id
+        WHERE a.app_system_id = #{appSystemId}
+          AND a.app_module_id = #{appModuleId}
+          AND a.env_id = #{envId}
+        group by a.id
+    </select>
+
+    <resultMap id="appEnvAutoConfigMap" type="neatlogic.framework.deploy.dto.app.DeployAppEnvAutoConfigVo">
+        <result column="appSystemId" property="appSystemId"/>
+        <result column="appModuleId" property="appModuleId"/>
+        <result column="envId" property="envId"/>
+        <result column="instanceId" property="instanceId"/>
+        <collection property="keyValueList"
+                    ofType="neatlogic.framework.deploy.dto.app.DeployAppEnvAutoConfigKeyValueVo">
+            <id column="key" property="key"/>
+            <result column="value" property="value"/>
+        </collection>
+    </resultMap>
+
+    <resultMap id="DatabaseResourceMap" type="neatlogic.framework.cmdb.dto.resourcecenter.ResourceVo">
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="type_name" property="typeName"/>
+        <result column="ip" property="ip"/>
+        <result column="port" property="port"/>
+    </resultMap>
+
+    <select id="getAppConfigEnvDatabaseCount" parameterType="neatlogic.framework.deploy.dto.app.DeployResourceSearchVo" resultType="java.lang.Integer"
+            useCache="false">
+        SELECT count(a.id)
+        <include refid="searchDatabase"></include>
+    </select>
+    <sql id="searchDatabase">
+        FROM @{DATA_SCHEMA}.`scence_database_ip_port_env_appmodule` a
+        <where>
+            (a.env_id = #{envId} OR a.env_id IS NULL)
+            AND (
+            a.app_module_id = #{appModuleId}
+            OR a.app_module_id IS NULL
+            )
+            <if test="defaultValue != null and defaultValue.size() > 0">
+                AND a.`id` IN
+                <foreach collection="defaultValue" item="id" open="(" separator="," close=")">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="keyword != null and keyword != ''">
+                AND (a.`name` LIKE concat('%', #{keyword}, '%') OR a.`ip` LIKE concat('%', #{keyword},
+                '%') OR a.`port`
+                LIKE concat('%', #{keyword}, '%'))
+            </if>
+        </where>
+    </sql>
+
+    <select id="getAppConfigEnvDatabaseResourceIdList" parameterType="neatlogic.framework.deploy.dto.app.DeployResourceSearchVo" resultType="java.lang.Long"
+            useCache="false">
+        SELECT a.id
+        <include refid="searchDatabase"></include>
+        <if test="needPage">
+            LIMIT #{startNum}, #{pageSize}
+        </if>
+    </select>
+
+    <select id="getHasEnvAppSystemIdListByAppSystemIdList"
+            resultType="java.lang.Long" useCache="false">
+        (
+        SELECT
+        a.`app_system_id` as id
+        FROM
+        @{DATA_SCHEMA}.`scence_appinstance_env_appmodule_appsystem` a
+        <where>
+            a.`env_id` is not null
+            and a.`app_module_id` is not null
+            and a.`app_system_id` in
+            <foreach collection="list" item="id" separator="," open="(" close=")">
+                #{id}
+            </foreach>
+        </where>
+        ) UNION
+        (
+        SELECT
+        dace.app_system_id as id
+        FROM
+        deploy_app_config_env dace
+        where dace.app_system_id
+        in
+        <foreach collection="list" item="id" separator="," open="(" close=")">
+            #{id}
+        </foreach>
+        )
+    </select>
+
+    <resultMap id="AppModuleMap" type="neatlogic.framework.deploy.dto.app.DeployAppModuleVo">
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="abbr_name" property="abbrName"/>
+    </resultMap>
+
+    <select id="getAppConfigAppSystemIdListByAppSystemIdList" parameterType="java.lang.Long"
+            resultType="java.lang.Long" useCache="false">
+        SELECT
+        `app_system_id`
+        FROM `deploy_app_config`
+        WHERE `app_module_id` = 0
+        AND `env_id` = 0
+        <if test="list != null and list.size() > 0">
+            AND `app_system_id` IN
+            <foreach collection="list" item="appSystemId" open="(" separator="," close=")">
+                #{appSystemId}
+            </foreach>
+        </if>
+    </select>
+
+    <select id="getAppConfigUserAppSystemIdList" resultType="java.lang.Long" useCache="false">
+        SELECT
+        `app_system_id`
+        FROM `deploy_app_config_user`
+        WHERE `user_uuid` = #{userUuid}
+        <if test="appSystemIdList != null and appSystemIdList.size() > 0">
+            AND `app_system_id` IN
+            <foreach collection="appSystemIdList" item="appSystemId" open="(" separator="," close=")">
+                #{appSystemId}
+            </foreach>
+        </if>
+    </select>
+
+    <select id="checkDeployAppConfigEnvDBSchemaIsRepeat" resultType="java.lang.Integer" useCache="false">
+        select count(1)
+        from deploy_app_config_env_db
+        where id != #{id}
+          and db_schema = #{dbSchema}
+          and `app_system_id` = #{appSystemId}
+          and `app_module_id` = #{appModuleId}
+          and `env_id` = #{envId}
+    </select>
+
+    <select id="getAppModuleListBySystemIdAndEnvId"
+            resultType="neatlogic.framework.deploy.dto.app.DeployAppModuleVo" useCache="false">
+        (SELECT sieaa.app_module_id        as id,
+                sieaa.app_module_name      as name,
+                sieaa.app_module_abbr_name as abbrName
+         FROM @{DATA_SCHEMA}.scence_ipobject_env_appmodule_appsystem sieaa
+         WHERE sieaa.app_system_id = #{appSystemId}
+           AND sieaa.env_id = #{envId}
+           AND sieaa.`app_module_id` IS NOT NULL)
+        union
+        (
+            SELECT dace.app_module_id as id,
+                   ra.name,
+                   ra.abbr_name       as abbrName
+            FROM deploy_app_config_env dace
+                     LEFT JOIN @{DATA_SCHEMA}.scence_appmodule ra ON ra.id = dace.app_module_id
+            WHERE dace.app_system_id = #{appSystemId}
+              AND dace.env_id = #{envId}
+        )
+    </select>
+
+    <select id="getDeployHasNotConfigAppModuleListByAppSystemIdAndAppModuleId"
+            resultType="neatlogic.framework.deploy.dto.app.DeployAppModuleVo" useCache="false">
+        SELECT saa.app_module_id        AS id,
+               saa.app_module_name      AS NAME,
+               saa.app_module_abbr_name AS abbrName
+        FROM @{DATA_SCHEMA}.scence_appsystem_appmodule saa
+        WHERE saa.app_module_id NOT IN
+              (SELECT dac.app_module_id
+               FROM @{DATA_SCHEMA}.scence_appsystem_appmodule sa
+                        JOIN deploy_app_config dac ON dac.app_system_id = sa.id
+                   AND dac.app_module_id = sa.app_module_id
+               WHERE sa.id = #{appSystemId})
+          AND saa.id = #{appSystemId}
+          AND saa.app_module_id != #{appModuleId}
+    </select>
+
+    <select id="getDeployHasNotConfigAppEnvListByAppSystemIdAndAppModuleIdAndEnvId"
+            resultType="neatlogic.framework.deploy.dto.app.DeployAppEnvironmentVo" useCache="false">
+        select a.id, a.name
+        from ((
+                  SELECT a.`env_id`   AS id,
+                         a.`env_name` AS name
+                  FROM @{DATA_SCHEMA}.`scence_appinstance_env_appmodule_appsystem` a
+                  where a.`env_id` is not null
+                    AND a.`app_system_id` = #{appSystemId}
+                    and a.`app_module_id` = #{appModuleId}
+                    and a.`env_id` != #{envId}
+              )
+              UNION
+              (
+                  SELECT cc.id   AS envId,
+                         cc.name AS envName
+                  FROM deploy_app_config_env dace
+                           JOIN cmdb_cientity cc ON cc.id = dace.env_id
+                  where dace.app_system_id = #{appSystemId}
+                    and dace.app_module_id = #{appModuleId}
+                    and dace.env_id != #{envId}
+              )) a
+        where a.id not in (select dac.env_id
+                           from deploy_app_config dac
+                           where dac.app_system_id = #{appSystemId}
+                             and dac.app_module_id = #{appModuleId}
+        )
+    </select>
+
+    <select id="getAppModuleCountBySystemIdAndEnvId" resultType="java.lang.Integer" useCache="false">
+        select count(a.app_module_id)
+        from ((SELECT sieaa.app_module_id
+               FROM @{DATA_SCHEMA}.scence_ipobject_env_appmodule_appsystem sieaa
+               WHERE sieaa.app_system_id = #{appSystemId}
+                 AND sieaa.env_id = #{envId}
+                 AND sieaa.`app_module_id` IS NOT NULL)
+              union
+              (
+                  SELECT dace.app_module_id
+                  FROM deploy_app_config_env dace
+                           LEFT JOIN @{DATA_SCHEMA}.scence_appmodule ra ON ra.id = dace.app_module_id
+                  WHERE dace.app_system_id = #{appSystemId}
+                    AND dace.env_id = #{envId}
+              )) a
+
+    </select>
+
+    <select id="getAppEnvAutoConfigBySystemIdAndModuleIdAndEnvId"
+            resultMap="appEnvAutoConfigMap" useCache="false">
+        select `app_system_id` AS appSystemId,
+               `app_module_id` AS appModuleId,
+               `env_id`        AS envId,
+               `instance_id`   AS instanceId,
+               `key`,
+               `value`
+        from `deploy_app_env_auto_config`
+        where `app_system_id` = #{systemId}
+          and `app_module_id` = #{moduleId}
+          and `env_id` = #{envId}
+          and `value` IS NOT NULL
+    </select>
+
+    <select id="getDeployAppAuthorityActionList"
+            resultType="neatlogic.framework.deploy.dto.app.DeployAppConfigAuthorityActionVo" useCache="false">
+        select `action`,action_type as type
+        from deploy_app_config_authority
+        <where>
+            app_system_id = #{appSystemId}
+            AND `action` IN
+            ('all'
+            <if test="authorityActionList != null and authorityActionList.size() > 0">,
+                <foreach collection="authorityActionList" item="item" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            )
+            AND auth_uuid IN
+            (
+            'alluser'
+            <if test="authUuidList != null and authUuidList.size() > 0">
+                ,
+                <foreach collection="authUuidList" item="item" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            )
+        </where>
+    </select>
+
+    <select id="getDeployAppAllAuthorityActionListByAppSystemIdAndAuthUuidList"
+            resultType="neatlogic.framework.deploy.dto.app.DeployAppConfigAuthorityActionVo" useCache="false">
+        select `action`,action_type as type
+        from deploy_app_config_authority
+        <where>
+            app_system_id = #{appSystemId}
+            AND auth_uuid IN
+            (
+            'alluser'
+            <if test="authUuidList != null and authUuidList.size() > 0">
+                ,
+                <foreach collection="authUuidList" item="item" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            )
+        </where>
+    </select>
+
+    <resultMap id="DeployAppAuthCheckVoMap" type="neatlogic.framework.deploy.dto.app.DeployAppAuthCheckVo">
+        <result column="appSystemId" property="appSystemId"/>
+        <collection property="actionVoList"
+                    ofType="neatlogic.framework.deploy.dto.app.DeployAppConfigAuthorityActionVo">
+            <result column="actionType" property="type"/>
+            <result column="action" property="action"/>
+        </collection>
+    </resultMap>
+
+    <select id="getBatchDeployAppAuthorityActionList" resultMap="DeployAppAuthCheckVoMap" useCache="false">
+        select app_system_id as appSystemId,`action`,action_type as actionType
+        from deploy_app_config_authority
+        <where>
+            <foreach collection="list" item="vo" separator="or">
+                ( app_system_id = #{vo.appSystemId}
+                AND `action` IN
+                ('all'
+                <if test="vo.authorityActionList != null and vo.authorityActionList.size() > 0">,
+                    <foreach collection="vo.authorityActionList" item="action" separator=",">
+                        #{action}
+                    </foreach>
+                </if>
+                )
+                AND auth_uuid IN
+                (
+                'alluser'
+                <if test="vo.authUuidList != null and vo.authUuidList.size() > 0">
+                    ,
+                    <foreach collection="vo.authUuidList" item="uuid" separator=",">
+                        #{uuid}
+                    </foreach>
+                </if>
+                ))
+            </foreach>
+        </where>
+    </select>
+
+    <resultMap id="appConfigSystemMapNew" type="neatlogic.framework.deploy.dto.app.DeployAppSystemVo">
+        <result column="appSystemId" property="id"/>
+        <result column="appSystemName" property="name"/>
+        <result column="appSystemNameAbbrName" property="abbrName"/>
+        <result column="isFavorite" property="isFavorite"/>
+        <result column="isConfig" property="isConfig"/>
+        <result column="isConfigAuthority" property="isConfigAuthority"/>
+        <collection property="appModuleList" ofType="neatlogic.framework.deploy.dto.app.DeployAppModuleVo">
+            <id column="appModuleId" property="id"/>
+            <result column="appModuleName" property="name"/>
+            <result column="appModuleNameAbbrName" property="abbrName"/>
+        </collection>
+        <collection property="authList" ofType="neatlogic.framework.deploy.dto.app.DeployAppConfigAuthorityVo">
+            <result column="authType" property="authType"/>
+            <result column="authUuid" property="authUuid"/>
+            <collection property="actionList"
+                        ofType="neatlogic.framework.deploy.dto.app.DeployAppConfigAuthorityActionVo">
+                <result column="authAction" property="action"/>
+                <result column="authActionType" property="type"/>
+            </collection>
+        </collection>
+    </resultMap>
+
+    <select id="getBatchAppConfigAuthorityListByAppSystemIdList" parameterType="java.lang.Long" resultMap="appConfigSystemMapNew" useCache="false">
+        select a.id as appSystemId,
+        b.auth_uuid as authUuid ,
+        b.auth_type as authType,
+        b.`action` as authAction,
+        b.action_type as authActionType
+        FROM @{DATA_SCHEMA}.`scence_appsystem_appmodule` a
+        left join deploy_app_config_authority b on a.id =b.app_system_id
+        where a.id in
+        <foreach collection="list" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </select>
+
+    <select id="getDeployAppHasAuthorityAppSystemIdListByAppSystemIdList" resultType="java.lang.Long" useCache="false">
+        select app_system_id
+        from deploy_app_config_authority
+        where
+        app_system_id in
+        <foreach collection="appSystemIdSet" open="(" separator="," close=")" item="appSystemId">
+            #{appSystemId}
+        </foreach>
+    </select>
+
+    <select id="getAppSystemNotifyPolicyIdByAppSystemId" resultType="java.lang.Long" useCache="false">
+        select notify_policy_id
+        from deploy_job_notify_policy
+        where app_system_id = #{appSystemId}
+    </select>
+
+    <select id="getAppSystemById" parameterType="java.lang.Long" resultType="neatlogic.framework.deploy.dto.app.DeployAppSystemVo">
+        SELECT
+            `id`,
+            `name`,
+            `abbr_name` AS abbrName
+        FROM @{DATA_SCHEMA}.`scence_appsystem`
+        WHERE `id` = #{value}
+    </select>
+
+    <select id="getAppModuleListBySystemId" parameterType="java.lang.Long" resultType="neatlogic.framework.deploy.dto.app.DeployAppModuleVo">
+        SELECT
+            `app_module_id` AS id,
+            `app_module_name` AS name,
+            `app_module_abbr_name` AS abbrName
+        FROM @{DATA_SCHEMA}.`scence_appsystem_appmodule`
+        WHERE `id` = #{value} AND `app_module_id` IS NOT NULL
+    </select>
+
+    <insert id="insertAppConfigAuthority">
+        INSERT INTO `deploy_app_config_authority` (`app_system_id`,
+        `auth_type`,
+        `auth_uuid`,
+        `action`,
+        `action_type`,
+        `lcd`,
+        `lcu`)
+        VALUES
+        <foreach collection="actionList" separator="," item="vo">
+            (#{appSystemId},
+            #{authType},
+            #{authUuid},
+            #{vo.action},
+            #{vo.type},
+            #{lcd},
+            #{lcu})
+        </foreach>
+        ON DUPLICATE KEY UPDATE `lcd` = #{lcd},
+        `lcu` = #{lcu};
+    </insert>
+
+    <insert id="insertAppModuleRunnerGroup">
+        INSERT INTO `deploy_app_module_runner_group` (`app_system_id`, `app_module_id`, `runner_group_id`)
+        VALUES (#{appSystemId}, #{appModuleId}, #{runnerGroupId}) ON DUPLICATE KEY
+        UPDATE `runner_group_id` = #{runnerGroupId}
+    </insert>
+
+    <insert id="insertAppModuleRunnerGroupList">
+        INSERT INTO `deploy_app_module_runner_group`
+        (`app_system_id`, `app_module_id`, `runner_group_id`)
+        VALUES
+        <foreach collection="runnerGroupVoList" separator="," item="vo">
+            (#{vo.appSystemId}, #{vo.appModuleId}, #{vo.runnerGroupId})
+        </foreach>
+    </insert>
+
+    <insert id="insertAppEnvAutoConfig">
+        INSERT INTO deploy_app_env_auto_config
+        (`app_system_id`,`app_module_id`,`env_id`,`instance_id`,`key`,`value`,`lcd`,`lcu`)
+        VALUES
+        <foreach collection="keyValueList" item="keyValue" separator="),(" open="(" close=")">
+            #{appSystemId},#{appModuleId},#{envId},#{instanceId},#{keyValue.key},#{keyValue.value},#{lcd},#{lcu}
+        </foreach>
+        ON DUPLICATE KEY UPDATE `key` = VALUES(`key`),`value` = VALUES(`value`),`lcd`= VALUES(`lcd`),`lcu` =
+        VALUES(`lcu`)
+    </insert>
+
+    <insert id="insertAppEnvAutoConfigNew">
+        INSERT INTO deploy_app_env_auto_config
+        (`app_system_id`,`app_module_id`,`env_id`,`instance_id`,`key`,`value`,`lcd`,`lcu`)
+        VALUES
+        <foreach collection="keyValueList" item="keyValue" separator="),(" open="(" close=")">
+            #{appSystemId},#{appModuleId},#{envId},#{instanceId},#{keyValue.key},#{keyValue.value},now(3),#{lcu}
+        </foreach>
+        ON DUPLICATE KEY UPDATE `key` = VALUES(`key`)
+    </insert>
+
+    <insert id="insertBatchAppEnvAutoConfig">
+        INSERT INTO deploy_app_env_auto_config
+        (`app_system_id`,`app_module_id`,`env_id`,`instance_id`,`key`,`value`,`lcd`,`lcu`)
+        VALUES
+        <foreach collection="appEnvAutoConfigVoList" item="vo" separator=",">
+            <foreach collection="vo.keyValueList" item="keyValue" separator="),(" open="(" close=")">
+                #{vo.appSystemId},#{vo.appModuleId},#{vo.envId},#{vo.instanceId},#{keyValue.key},#{keyValue.value},now(3),#{vo.lcu}
+            </foreach>
+        </foreach>
+        ON DUPLICATE KEY UPDATE `key` = VALUES(`key`)
+    </insert>
+
+    <insert id="insertAppConfig" parameterType="neatlogic.framework.deploy.dto.app.DeployAppConfigVo">
+        INSERT INTO `deploy_app_config` (`id`,
+                                         `app_system_id`,
+                                         `app_module_id`,
+                                         `env_id`,
+                                         `config`,
+                                         `fcd`,
+                                         `fcu`,
+                                         `lcd`,
+                                         `lcu`)
+        VALUES (#{id},
+                #{appSystemId},
+                #{appModuleId},
+                #{envId},
+                #{configStr},
+                NOW(3),
+                #{fcu},
+                NOW(3),
+                #{fcu})
+    </insert>
+
+    <insert id="insertBatchAppConfig" parameterType="neatlogic.framework.deploy.dto.app.DeployAppConfigVo">
+        INSERT INTO `deploy_app_config` (`id`,
+        `app_system_id`,
+        `app_module_id`,
+        `env_id`,
+        `config`,
+        `fcd`,
+        `fcu`,
+        `lcd`,
+        `lcu`)
+        VALUES
+        <foreach collection="configList" item="vo" separator=",">
+            (#{vo.id},
+            #{vo.appSystemId},
+            #{vo.appModuleId},
+            #{vo.envId},
+            #{vo.configStr},
+            NOW(3),
+            #{vo.fcu},
+            NOW(3),
+            #{vo.fcu})
+        </foreach>
+        ON DUPLICATE KEY UPDATE `config` = VALUES ( config )
+    </insert>
+
+    <insert id="insertAppConfigDraft" parameterType="neatlogic.framework.deploy.dto.app.DeployAppConfigVo">
+        INSERT INTO `deploy_app_config_draft` (`app_system_id`,
+                                               `app_module_id`,
+                                               `env_id`,
+                                               `config`,
+                                               `fcd`,
+                                               `fcu`,
+                                               `lcd`,
+                                               `lcu`)
+        VALUES (#{appSystemId},
+                #{appModuleId},
+                #{envId},
+                #{configStr},
+                NOW(3),
+                #{fcu},
+                NOW(3),
+                #{fcu})
+    </insert>
+
+    <insert id="insertAppConfigEnv">
+        insert into deploy_app_config_env(`app_system_id`, `app_module_id`, `env_id`)
+        VALUES
+        <foreach collection="envIdList" separator="," item="envId">
+            (#{appSystemId},
+            #{appModuleId},
+            #{envId})
+        </foreach>
+        ON DUPLICATE KEY
+        UPDATE `app_system_id` = VALUES(app_system_id),
+        `app_module_id` = VALUES(app_module_id),
+        `env_id` = VALUES(env_id)
+    </insert>
+
+    <insert id="insertAppConfigSystemFavorite">
+        insert into deploy_app_config_user(`app_system_id`, `user_uuid`)
+        VALUES (#{appSystemId},
+                #{userUuid}) ON DUPLICATE KEY
+        UPDATE `app_system_id` = #{appSystemId},
+            `user_uuid` = #{userUuid}
+    </insert>
+
+    <insert id="insertAppConfigEnvDBConfig"
+            parameterType="neatlogic.framework.deploy.dto.app.DeployAppConfigEnvDBConfigVo">
+        INSERT INTO deploy_app_config_env_db (id, db_schema, app_system_id, app_module_id, env_id, db_resource_id,
+                                              account_id,
+                                              config)
+        VALUES (#{id},
+                #{dbSchema},
+                #{appSystemId},
+                #{appModuleId},
+                #{envId},
+                #{dbResourceId},
+                #{accountId},
+                #{configStr})
+
+    </insert>
+
+    <insert id="insertBatchAppConfigEnvDBConfig">
+        insert INTO
+        deploy_app_config_env_db (id, db_schema, app_system_id, app_module_id, env_id, config)
+        VALUES
+        <foreach collection="dbConfigVoList" item="dbConfigVo" separator=",">
+            (
+            #{dbConfigVo.id},
+            #{dbConfigVo.dbSchema},
+            #{dbConfigVo.appSystemId},
+            #{dbConfigVo.appModuleId},
+            #{dbConfigVo.envId},
+            #{dbConfigVo.configStr}
+            )
+        </foreach>
+        ON DUPLICATE KEY UPDATE `db_schema` = VALUES ( db_schema ),
+        `app_system_id` = VALUES ( app_system_id ),
+        `app_module_id` = VALUES ( app_module_id ),
+        `env_id` = VALUES ( env_id ),
+        `config` = VALUES ( config )
+    </insert>
+
+    <update id="updateAppConfig" parameterType="neatlogic.framework.deploy.dto.app.DeployAppConfigVo">
+        UPDATE `deploy_app_config`
+        SET `config` = #{configStr},
+            `lcu`    = #{lcu},
+            `lcd`    = NOW(3)
+        WHERE `app_system_id` = #{appSystemId}
+          and `app_module_id` = #{appModuleId}
+          and `env_id` = #{envId}
+    </update>
+
+    <update id="updateAppConfigDraft" parameterType="neatlogic.framework.deploy.dto.app.DeployAppConfigVo">
+        UPDATE `deploy_app_config_draft`
+        SET `config` = #{configStr},
+            `lcu`    = #{lcu},
+            `lcd`    = NOW(3)
+        WHERE `app_system_id` = #{appSystemId}
+          and `app_module_id` = #{appModuleId}
+          and `env_id` = #{envId}
+    </update>
+
+    <update id="updateDeployAppConfigEnvDBConfig">
+        update deploy_app_config_env_db
+        set db_schema= #{dbSchema},
+            db_resource_id = #{dbResourceId},
+            account_id = #{accountId},
+            config = #{configStr}
+        where id = #{id}
+    </update>
+
+    <delete id="deleteAppConfigAuthorityByAppIdAndAuthUuidListAndLcd">
+        delete
+        from `deploy_app_config_authority`
+        where `app_system_id` = #{appSystemId}
+        and `auth_uuid` in
+        <foreach collection="authUuidList" open="(" close=")" separator="," item="authUuid">
+            #{authUuid}
+        </foreach>
+        and `lcd` != #{lcd}
+    </delete>
+
+    <delete id="deleteAppConfigAuthorityByAppIdAndAuthUuidList">
+        delete
+        from `deploy_app_config_authority`
+        where `app_system_id` = #{appSystemId}
+        and `auth_uuid` in
+        <foreach collection="uuidList" item="uuid" separator="," open="(" close=")">
+            #{uuid}
+        </foreach>
+    </delete>
+
+    <delete id="deleteAppEnvAutoConfig">
+        delete
+        from deploy_app_env_auto_config
+        <where>
+            <if test="appSystemId != null">
+                AND `app_system_id` = #{appSystemId}
+            </if>
+            <if test="appModuleId != 0L">
+                AND `app_module_id` = #{appModuleId}
+            </if>
+            <if test="envId != 0L">
+                AND `env_id` = #{envId}
+            </if>
+            <if test="instanceId != null">
+                and `instance_id` = #{instanceId}
+            </if>
+            <if test="lcd != null">
+                and `lcd` != #{lcd}
+            </if>
+        </where>
+    </delete>
+
+    <delete id="deleteAppEnvAutoConfigByAppSystemIdAndAppModuleIdAndEnvId">
+        delete
+        from deploy_app_env_auto_config
+        <where>
+            `app_system_id` = #{appSystemId}
+            <if test="appModuleId != 0L">
+                AND `app_module_id` = #{appModuleId}
+            </if>
+            <if test="envId != 0L">
+                AND `env_id` = #{envId}
+            </if>
+        </where>
+    </delete>
+
+    <delete id="deleteAppConfigDraft" parameterType="neatlogic.framework.deploy.dto.app.DeployAppConfigVo">
+        DELETE
+        FROM `deploy_app_config_draft`
+        <where>
+            `app_system_id` = #{appSystemId}
+            <if test="appModuleId != 0L">
+                AND `app_module_id` = #{appModuleId}
+            </if>
+            <if test="envId != 0L">
+                AND `env_id` = #{envId}
+            </if>
+        </where>
+    </delete>
+
+    <delete id="deleteAppConfigEnv">
+        DELETE FROM `deploy_app_config_env`
+        <where>
+            `app_system_id` = #{appSystemId}
+            <if test="appModuleId != 0L">
+                AND `app_module_id` = #{appModuleId}
+            </if>
+            <if test="envId != 0L">
+                AND `env_id` = #{envId}
+            </if>
+        </where>
+    </delete>
+
+    <delete id="deleteAppConfigSystemFavoriteByAppSystemIdAndUserUuid">
+        DELETE
+        FROM `deploy_app_config_user`
+        WHERE `app_system_id` = #{appSystemId}
+          and `user_uuid` = #{userUuid}
+    </delete>
+
+    <delete id="deleteAppConfig">
+        DELETE FROM `deploy_app_config`
+        <where>
+            `app_system_id` = #{appSystemId}
+            <if test="appModuleId != 0L">
+                AND `app_module_id` = #{appModuleId}
+            </if>
+            <if test="envId != 0L">
+                AND `env_id` = #{envId}
+            </if>
+        </where>
+    </delete>
+
+    <delete id="deleteAppConfigAuthorityByAppSystemId">
+        delete
+        from `deploy_app_config_authority`
+        where `app_system_id` = #{appSystemId}
+    </delete>
+
+    <delete id="deleteAppModuleRunnerGroup">
+        DELETE FROM `deploy_app_module_runner_group`
+        <where>
+            `app_system_id` = #{appSystemId}
+            <if test="appModuleId != 0L">
+                AND `app_module_id` = #{appModuleId}
+            </if>
+        </where>
+    </delete>
+
+    <delete id="deleteAppConfigDBConfig">
+        delete
+        from deploy_app_config_env_db
+        <where>
+            `app_system_id` = #{appSystemId}
+            <if test="appModuleId != 0L">
+                AND `app_module_id` = #{appModuleId}
+            </if>
+            <if test="envId != 0L">
+                AND `env_id` = #{envId}
+            </if>
+        </where>
+    </delete>
+
+    <delete id="deleteAppConfigDBConfigById">
+        delete
+        from deploy_app_config_env_db
+        where id = #{id}
+    </delete>
+
+    <delete id="deleteAppConfigEnvByAppSystemIdAndAppModuleIdAndEnvIdList">
+        DELETE FROM `deploy_app_config_env`
+        <where>
+            `app_system_id` = #{appSystemId}
+            <if test="appModuleId != 0L">
+                AND `app_module_id` = #{appModuleId}
+            </if>
+            <if test="envIdList != null and envIdList.size() > 0">
+                AND `env_id` IN
+                <foreach collection="envIdList" item="envId" open="(" separator="," close=")">
+                    #{envId}
+                </foreach>
+            </if>
+        </where>
+    </delete>
+
+    <delete id="deleteAppConfigDBConfigByIdList">
+        delete
+        from deploy_app_config_env_db
+        where id in
+        <foreach collection="list" open="(" close=")" item="id" separator=",">
+            #{id}
+        </foreach>
+    </delete>
+
+</mapper>

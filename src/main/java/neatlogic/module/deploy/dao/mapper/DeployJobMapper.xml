@@ -1,0 +1,709 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+Copyright(c) $today.year NeatLogic Co., Ltd. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+  -->
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="neatlogic.module.deploy.dao.mapper.DeployJobMapper">
+
+    <select id="getDeployJobByJobId" resultType="neatlogic.framework.deploy.dto.job.DeployJobVo">
+        select a.id,
+               a.app_system_id as appSystemId,
+               b.name          as appSystemName,
+               a.app_module_id as appModuleId,
+               c.name          as appModuleName,
+               a.env_id        as envId,
+               d.name          as envName,
+               a.scenario_id   as scenarioId,
+               e.name          as scenarioName,
+               a.version,
+               a.version_id    as versionId,
+               a.build_no      as buildNo,
+               a.runner_map_id as runnerMapId
+        from deploy_job a
+                 left join cmdb_cientity b ON a.app_system_id = b.id
+                 left join cmdb_cientity c ON a.app_module_id = c.id
+                 left join cmdb_cientity d ON a.env_id = d.id
+                 left join autoexec_scenario e on e.id = a.scenario_id
+        where a.id = #{value}
+    </select>
+
+    <select id="getDeployJobInfoByJobId" resultType="neatlogic.framework.deploy.dto.job.DeployJobVo">
+        select aj.`id`,
+               aj.`name`,
+               aj.`status`,
+               aj.`plan_start_time` as planStartTime,
+               aj.`start_time`      as startTime,
+               aj.`end_time`        as endTime,
+               aj.`operation_id`    as operationId,
+               aj.`operation_type`  as operationType,
+               aj.`exec_user`       as execUser,
+               aj.`exec_user_type`  as execUserType,
+               aj.`source`,
+               aj.`round_count`     as roundCount,
+               aj.`param_hash`      as paramHash,
+               aj.`config_hash`     as configHash,
+               aj.`lncd`,
+               aj.`parent_id`       as parentId,
+               aj.`trigger_type`    as triggerType,
+               aj.`scenario_id`     as scenarioId,
+               a.app_system_id      as appSystemId,
+               a.app_module_id      as appModuleId,
+               a.env_id             as envId,
+               d.name               as envName,
+               a.scenario_id        as scenarioId,
+               e.name               as scenarioName,
+               a.version,
+               a.version_id         as versionId,
+               a.build_no           as buildNo,
+               a.runner_map_id      as runnerMapId
+        FROM `autoexec_job` aj
+                 join deploy_job a on aj.id = a.id
+                 left join cmdb_cientity d ON a.env_id = d.id
+                 left join autoexec_scenario e on e.id = a.scenario_id
+        where a.id = #{value}
+    </select>
+
+    <select id="getDeployJobByJobIdList" resultType="neatlogic.framework.deploy.dto.job.DeployJobVo">
+        select a.id,
+        app_system_id as appSystemId,
+        b.name as appSystemName,
+        app_module_id as appModuleId,
+        c.name as appModuleName,
+        env_id as envId,
+        d.name as envName,
+        version,
+        build_no as buildNo,
+        runner_map_id as runnerMapId
+        from deploy_job a
+        left join cmdb_cientity b ON a.app_system_id = b.id
+        left join cmdb_cientity c ON a.app_module_id = c.id
+        left join cmdb_cientity d ON a.env_id = d.id
+        where a.id in
+        <foreach collection="list" item="id" separator="," open="(" close=")">
+            #{id}
+        </foreach>
+    </select>
+
+    <sql id="searchJobSql">
+        left join autoexec_job ajj on ajj.parent_id = aj.id
+        LEFT JOIN deploy_job dj ON dj.id = aj.id
+        <if test="(typeIdList != null and typeIdList.size() > 0) or (combopName != null and combopName != '' )">
+            LEFT JOIN `autoexec_combop` ac ON aj.`operation_id` = ac.`id`
+        </if>
+        <if test="(invokeIdList != null and invokeIdList.size() > 0) or (sourceType != null and sourceType != '')">
+            JOIN `autoexec_job_invoke` aji ON aj.`id` = aji.`job_id`
+        </if>
+        <if test="pipelineId != null">
+            JOIN `autoexec_job_invoke` aji_pipeline ON aj.`id` = aji_pipeline.`job_id` AND aji_pipeline.`invoke_id` =
+            #{pipelineId} AND aji_pipeline.`source` = 'pipeline'
+        </if>
+        <if test="isHasAllAuthority == 0">
+            LEFT JOIN deploy_app_config_authority daca ON daca.app_system_id = dj.app_system_id
+        </if>
+        <where>
+            <if test="combopName != null and combopName != ''">
+                ac.name like concat('%', #{combopName}, '%')
+            </if>
+            <if test="excludeIdList != null and excludeIdList.size() > 0">
+                AND aj.id not in
+                <foreach collection="excludeIdList" item="item" open="(" close=")" separator=",">#{item}</foreach>
+            </if>
+            <if test="keyword != null and keyword != ''">
+                and (aj.name like concat('%', #{keyword}, '%') OR aj.id = #{keyword} OR ajj.name like concat('%',
+                #{keyword}, '%'))
+            </if>
+            <if test="operationId != null">
+                and aj.operation_id = #{operationId}
+            </if>
+            <if test="statusList != null and statusList.size() > 0 ">
+                and (aj.`status` in
+                <foreach collection="statusList" item="status" open="(" close=")" separator=",">
+                    #{status}
+                </foreach>
+                or ajj.`status` in
+                <foreach collection="statusList" item="status" open="(" close=")" separator=",">
+                    #{status}
+                </foreach>)
+            </if>
+            <if test="sourceType != null and sourceType != ''">
+                and aji.`type` = #{sourceType}
+            </if>
+            <if test="sourceList != null and sourceList.size() > 0 ">
+                and aj.`source` in
+                <foreach collection="sourceList" item="source" open="(" close=")" separator=",">
+                    #{source}
+                </foreach>
+            </if>
+            <if test="hasParent != null">
+                <choose>
+                    <when test="hasParent == true">
+                        AND aj.parent_id is not null
+                    </when>
+                    <otherwise>
+                        AND aj.parent_id is null
+                    </otherwise>
+                </choose>
+            </if>
+            <if test="typeIdList != null and typeIdList.size() > 0 ">
+                and ac.`type_id` in
+                <foreach collection="typeIdList" item="typeId" open="(" close=")"
+                         separator=",">
+                    #{typeId}
+                </foreach>
+            </if>
+            <if test="execUserList != null and execUserList.size() > 0 ">
+                and (aj.`exec_user` in
+                <foreach collection="execUserList" item="execUser" open="(" close=")" separator=",">
+                    #{execUser}
+                </foreach>
+                or ajj.`exec_user` in
+                <foreach collection="execUserList" item="execUser" open="(" close=")" separator=",">
+                    #{execUser}
+                </foreach>)
+            </if>
+            <if test="idList != null and idList.size() > 0">
+                and aj.`id` in
+                <foreach collection="idList" item="item" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="startTimeRange != null">
+                <if test="startTimeRange.size() > 0">
+                    and (aj.start_time &gt;= STR_TO_DATE(#{startTimeRange[0]},'%Y-%m-%d')
+                    or ajj.start_time &gt;= STR_TO_DATE(#{startTimeRange[0]},'%Y-%m-%d'))
+                </if>
+                <if test="startTimeRange.size() > 1">
+                    and (aj.start_time &lt;= STR_TO_DATE(#{startTimeRange[1]},'%Y-%m-%d')
+                    or ajj.start_time &lt;= STR_TO_DATE(#{startTimeRange[1]},'%Y-%m-%d'))
+                </if>
+            </if>
+            <if test="endTimeRange != null">
+                <if test="endTimeRange.size() > 0">
+                    and (aj.end_time &gt;= STR_TO_DATE(#{endTimeRange[0]},'%Y-%m-%d')
+                    or ajj.end_time &gt;= STR_TO_DATE(#{endTimeRange[0]},'%Y-%m-%d'))
+                </if>
+                <if test="endTimeRange.size() > 1">
+                    and (aj.end_time &lt;= STR_TO_DATE(#{endTimeRange[1]},'%Y-%m-%d')
+                    or ajj.end_time &lt;= STR_TO_DATE(#{endTimeRange[1]},'%Y-%m-%d'))
+                </if>
+            </if>
+            <if test="planStartTimeRange != null">
+                <if test="planStartTimeRange.size() > 0">
+                    and (aj.plan_start_time &gt;= STR_TO_DATE(#{planStartTimeRange[0]},'%Y-%m-%d')
+                    or ajj.plan_start_time &gt;= STR_TO_DATE(#{planStartTimeRange[0]},'%Y-%m-%d'))
+                </if>
+                <if test="planStartTimeRange.size() > 1">
+                    and (aj.plan_start_time &lt;= STR_TO_DATE(#{planStartTimeRange[1]},'%Y-%m-%d')
+                    or ajj.plan_start_time &lt;= STR_TO_DATE(#{planStartTimeRange[1]},'%Y-%m-%d'))
+                </if>
+            </if>
+            <if test="invokeIdList != null and invokeIdList.size() > 0">
+                and aji.`invoke_id` in
+                <foreach collection="invokeIdList" open="(" item="invokeId" close=")" separator=",">
+                    #{invokeId}
+                </foreach>
+            </if>
+            <if test="appSystemId != null">
+                and dj.`app_system_id` = #{appSystemId}
+            </if>
+            <if test="appModuleId != null">
+                and dj.`app_module_id` = #{appModuleId}
+            </if>
+            <include refid="neatlogic.module.deploy.dao.mapper.DeployAppConfigMapper.checkDeployAuthority"/>
+        </where>
+    </sql>
+
+    <select id="searchDeployJobCount" resultType="int"
+            parameterType="neatlogic.framework.deploy.dto.job.DeployJobVo">
+        SELECT
+        count(distinct aj.`id`)
+        FROM
+        `autoexec_job` aj
+        <include refid="searchJobSql"/>
+    </select>
+
+    <select id="searchDeployJobId" parameterType="neatlogic.framework.deploy.dto.job.DeployJobVo"
+            resultType="java.lang.Long">
+        SELECT
+         aj.`id`
+        FROM
+        `autoexec_job` aj
+        <include refid="searchJobSql"/>
+        GROUP BY aj.`id`
+        <if test="sortOrder != null">
+            order by aj.${sortOrder.key} ${sortOrder.type}
+        </if>
+        <if test="sortOrder == null">
+            order by aj.`plan_start_time` desc
+        </if>
+        limit #{startNum}, #{pageSize}
+    </select>
+
+    <select id="getJobIdListByParentId" parameterType="java.lang.Long" resultType="java.lang.Long">
+        SELECT id
+        FROM autoexec_job
+        WHERE parent_id = #{value}
+    </select>
+
+    <select id="searchDeployJob" parameterType="neatlogic.framework.deploy.dto.job.DeployJobVo"
+            resultType="neatlogic.framework.deploy.dto.job.DeployJobVo">
+        SELECT
+        aj.`id` as id,
+        aj.`name` as name,
+        aj.`status` as status,
+        aj.`plan_start_time` as planStartTime,
+        aj.`start_time` as startTime,
+        aj.`end_time` as endTime,
+        aj.`operation_id` as operationId,
+        aj.`operation_type` as operationType,
+        aj.`exec_user` as execUser,
+        aj.`exec_user_type` as execUserType,
+        aj.`source` as source,
+        aj.`round_count` as roundCount,
+        aj.`trigger_type` as triggerType,
+        aj.`parent_id` as parentId,
+        aj.`reviewer` as reviewer,
+        aj.`review_status` as reviewStatus,
+        aj.`review_time` as reviewTime,
+        a.`app_system_id` as appSystemId,
+        a.`app_module_id` as appModuleId,
+        <if test="isNeedNameAndAbbrName ==1">
+            saa.`name` as appSystemName,
+            saa.`abbr_name` as appSystemAbbrName,
+            saa.`app_module_name` as appModuleName,
+            saa.`app_module_abbr_name` as appModuleAbbrName,
+        </if>
+        a.`env_id` as envId,
+        d.`name` as envName,
+        a.`version`,
+        e.`name` as scenarioName
+        FROM
+        `autoexec_job` aj
+        left join deploy_job a on aj.id = a.id
+        <if test="isNeedNameAndAbbrName ==1">
+            left join @{DATA_SCHEMA}.scence_appsystem_appmodule saa on saa.id = a.app_system_id AND saa.app_module_id = a.app_module_id
+        </if>
+        left join cmdb_cientity d ON a.env_id = d.id
+        left join autoexec_scenario e on a.scenario_id = e.id
+        WHERE aj.`id` in
+        <foreach collection="idList" item="jobId" open="(" close=")" separator=",">
+            #{jobId}
+        </foreach>
+        <if test="sortOrder != null">
+            order by aj.${sortOrder.key} ${sortOrder.type}
+        </if>
+        <if test="sortOrder == null">
+            order by aj.`plan_start_time` desc
+        </if>
+    </select>
+
+
+    <select id="getRecentlyJobRunnerMapIdByAppSystemIdAndAppModuleId" resultType="java.lang.Long">
+        select runner_map_id
+        from deploy_job
+        where app_system_id = #{appSystemId}
+          and app_module_id = #{appModuleId}
+        order by id desc
+        limit 1
+    </select>
+
+    <select id="getDeployJobListByAppSystemIdAndAppModuleId"
+            resultType="neatlogic.framework.deploy.dto.job.DeployJobVo">
+        select
+        id,
+        app_system_id as appSystemId,
+        app_module_id as appModuleId,
+        env_id as envId,
+        version,
+        runner_map_id as runnerMapId
+        from deploy_job
+        <where>
+            <if test="appSystemId != null">
+                app_system_id = #{appSystemId}
+            </if>
+            <if test="appModuleId != null">
+                and app_module_id = #{appModuleId}
+            </if>
+        </where>
+    </select>
+
+    <select id="getDeployJobListByAppSystemIdAndAppModuleIdAndEnvId"
+            resultType="neatlogic.framework.deploy.dto.job.DeployJobVo">
+        select
+        id,
+        app_system_id as appSystemId,
+        app_module_id as appModuleId,
+        env_id as envId,
+        version,
+        runner_map_id as runnerMapId
+        from deploy_job
+        <where>
+            <if test="appSystemId != null">
+                app_system_id = #{appSystemId}
+            </if>
+            <if test="appModuleId != null">
+                and app_module_id = #{appModuleId}
+            </if>
+            <if test="envId != null">
+                and env_id = #{envId}
+            </if>
+        </where>
+    </select>
+
+    <select id="getDeployJobContentLock"
+            resultType="neatlogic.framework.deploy.dto.job.DeployJobContentVo">
+        SELECT `hash`,
+               `content`
+        FROM `autoexec_job_content`
+        where `hash` = #{value} for
+        update
+    </select>
+
+    <resultMap id="deployBatchJobResultMap" type="neatlogic.framework.deploy.dto.job.DeployJobVo">
+        <id column="batchJobId" property="id"/>
+        <result column="batchJobName" property="name"/>
+        <result column="batchJobStatus" property="status"/>
+        <result column="batchJobErrorMsg" property="errorMsg"/>
+        <result column="batchJobPlanStartTime" property="planStartTime"/>
+        <result column="batchJobStartTime" property="startTime"/>
+        <result column="batchJobEndTime" property="endTime"/>
+        <result column="batchJobSource" property="source"/>
+        <result column="batchJobReviewer" property="reviewer"/>
+        <result column="batchJobReviewStatus" property="reviewStatus"/>
+        <result column="batchJobReviewTime" property="reviewTime"/>
+        <result column="batchJobTriggerType" property="triggerType"/>
+        <result column="batchJobExecUser" property="execUser"/>
+        <collection property="authList" ofType="neatlogic.framework.deploy.dto.job.DeployJobAuthVo">
+            <result column="jobAuthType" property="type"/>
+            <result column="jobAuthUuid" property="authUuid"/>
+        </collection>
+        <collection property="laneList" ofType="neatlogic.framework.deploy.dto.job.LaneVo">
+            <id column="laneId" property="id"/>
+            <result column="sort" property="sort"/>
+            <collection property="groupList" ofType="neatlogic.framework.deploy.dto.job.LaneGroupVo">
+                <id column="groupId" property="id"/>
+                <result column="groupSort" property="sort"/>
+                <result column="groupStatus" property="status"/>
+                <result column="groupNeedWait" property="needWait"/>
+                <collection property="jobList" ofType="neatlogic.framework.deploy.dto.job.DeployJobVo">
+                    <id column="jobId" property="id"/>
+                    <result column="jobName" property="name"/>
+                    <result column="jobStatus" property="status"/>
+                    <result column="jobTriggerType" property="triggerType"/>
+                    <result column="jobErrorMsg" property="errorMsg"/>
+                    <result column="jobPlanStartTime" property="planStartTime"/>
+                    <result column="jobStartTime" property="startTime"/>
+                    <result column="jobEndTime" property="endTime"/>
+                    <result column="jobSource" property="source"/>
+                    <result column="jobVersion" property="version"/>
+                    <result column="jobAppSystemId" property="appSystemId"/>
+                    <result column="jobAppSystemName" property="appSystemName"/>
+                    <result column="jobAppSystemAbbrName" property="appSystemAbbrName"/>
+                    <result column="jobAppModuleId" property="appModuleId"/>
+                    <result column="jobAppModuleName" property="appModuleName"/>
+                    <result column="jobAppModuleAbbrName" property="appModuleAbbrName"/>
+                    <result column="jobEnvId" property="envId"/>
+                    <result column="jobEnvName" property="envName"/>
+                    <result column="scenarioId" property="scenarioId"/>
+                    <result column="scenarioName" property="scenarioName"/>
+                    <collection property="phaseList" ofType="neatlogic.framework.autoexec.dto.job.AutoexecJobPhaseVo">
+                        <id column="jobPhaseId" property="id"/>
+                        <result column="jobPhaseName" property="name"/>
+                        <result column="jobPhaseStatus" property="status"/>
+                        <result column="jobPhaseSort" property="sort"/>
+                    </collection>
+                </collection>
+            </collection>
+        </collection>
+    </resultMap>
+
+    <select id="getJobBaseInfoById" parameterType="java.lang.Long"
+            resultType="neatlogic.framework.deploy.dto.job.DeployJobVo">
+        SELECT id,
+               name,
+               status,
+               parent_id as parentId
+        FROM autoexec_job
+        WHERE id = #{value}
+    </select>
+
+    <select id="getBatchDeployJobById" parameterType="java.lang.Long"
+            resultMap="deployBatchJobResultMap">
+        SELECT a.id              as batchJobId,
+               a.`name`          as batchJobName,
+               a.`status`        as batchJobStatus,
+               a.plan_start_time as batchJobPlanStartTime,
+               a.start_time      as batchJobStartTime,
+               a.end_time        as batchJobEndTime,
+               a.source          as batchJobSource,
+               a.reviewer        as batchJobReviewer,
+               a.review_status   as batchJobReviewStatus,
+               a.review_time     as batchJobReviewTime,
+               a.trigger_type    as batchJobTriggerType,
+               a.exec_user       as batchJobExecUser,
+               b.id              as laneId,
+               b.sort            as laneSort,
+               b.`status`        as laneStatus,
+               c.id              as groupId,
+               c.need_wait       as groupNeedWait,
+               c.sort            as groupSort,
+               c.`status`        as groupStatus,
+               d.`sort`          as jobSort,
+               e.id              as jobId,
+               e.`name`          as jobName,
+               e.`status`        as jobStatus,
+               e.plan_start_time as jobPlanStartTime,
+               e.start_time      as jobStartTime,
+               e.end_time        as jobEndTime,
+               e.source          as jobSource,
+               e.trigger_type    as jobTriggerType,
+               f.`scenario_id`   as scenarioId,
+               m.`name`          as scenarioName,
+               f.`app_system_id` as jobAppSystemId,
+               saa.`name` AS jobAppSystemName,
+               saa.`abbr_name` AS jobAppSystemAbbrName,
+               f.`app_module_id` AS jobAppModuleId,
+               f.`version` AS jobVersion,
+               saa.`app_module_name` AS jobAppModuleName,
+               saa.`app_module_abbr_name` AS jobAppModuleAbbrName,
+               f.`env_id`        as jobEnvId,
+               i.`name`          as jobEnvName,
+               j.`sort`          AS jobGroupSort,
+               k.`id`            AS jobPhaseId,
+               k.`name`          AS jobPhaseName,
+               k.`sort`          AS jobPhaseSort,
+               k.`status`        AS jobPhaseStatus,
+               l.`type`          AS jobAuthType,
+               l.`auth_uuid`     AS jobAuthUuid
+        FROM autoexec_job AS a
+                 LEFT JOIN deploy_job_lane AS b ON a.id = b.batch_job_id
+                 LEFT JOIN deploy_job_lane_group AS c ON b.id = c.lane_id
+                 LEFT JOIN deploy_job_lane_group_job AS d ON c.id = d.group_id
+                 LEFT JOIN autoexec_job e ON d.job_id = e.id
+                 LEFT JOIN deploy_job f ON e.id = f.id
+                 LEFT JOIN @{DATA_SCHEMA}.scence_appsystem_appmodule AS saa ON saa.id = f.app_system_id AND saa.app_module_id = f.app_module_id
+                 LEFT JOIN cmdb_cientity i ON f.env_id = i.id
+                 LEFT JOIN autoexec_job_group j ON e.id = j.job_id
+                 LEFT JOIN autoexec_job_phase k ON j.id = k.group_id
+                 LEFT JOIN deploy_job_auth l ON a.id = l.job_id
+                 LEFT JOIN autoexec_scenario m on f.scenario_id = m.id
+        where a.id = #{value}
+        order by laneSort, groupSort, jobSort, jobGroupSort, jobPhaseSort, jobPhaseName
+    </select>
+
+    <resultMap id="deployGroupJobResultMap" type="neatlogic.framework.deploy.dto.job.LaneGroupVo">
+        <id column="groupId" property="id"/>
+        <result column="groupStatus" property="status"/>
+        <collection property="jobList" ofType="neatlogic.framework.deploy.dto.job.DeployJobVo">
+            <id column="jobId" property="id"/>
+            <result column="jobName" property="name"/>
+            <result column="jobStatus" property="status"/>
+            <result column="jobErrorMsg" property="errorMsg"/>
+            <result column="jobStartTime" property="startTime"/>
+            <result column="jobEndTime" property="endTime"/>
+            <collection property="phaseList" ofType="neatlogic.framework.autoexec.dto.job.AutoexecJobPhaseVo">
+                <id column="jobPhaseId" property="id"/>
+                <result column="jobPhaseName" property="name"/>
+                <result column="jobPhaseStatus" property="status"/>
+            </collection>
+        </collection>
+    </resultMap>
+
+    <select id="getDeployJobGroupByJobIdList" parameterType="java.lang.Long"
+            resultMap="deployGroupJobResultMap">
+        SELECT
+        c.id as groupId,
+        c.`status` as groupStatus,
+        e.id as jobId,
+        e.`name` as jobName,
+        e.`status` as jobStatus,
+        e.start_time as jobStartTime,
+        e.end_time as jobEndTime,
+        k.`id` AS jobPhaseId,
+        k.`name` AS jobPhaseName,
+        k.`status` AS jobPhaseStatus
+        FROM
+        deploy_job_lane_group c
+        LEFT JOIN deploy_job_lane_group_job d ON c.id = d.group_id
+        LEFT JOIN autoexec_job e ON d.job_id = e.id
+        LEFT JOIN autoexec_job_group j ON e.id = j.job_id
+        LEFT JOIN autoexec_job_phase k ON j.id = k.group_id
+        where e.id in
+        <foreach collection="idList" item="item" open="(" close=")" separator=",">#{item}</foreach>
+    </select>
+
+    <select id="getDeployJobContent"
+            resultType="neatlogic.framework.deploy.dto.job.DeployJobContentVo">
+        SELECT `hash`,
+               `content`
+        FROM `autoexec_job_content`
+        where `hash` = #{value}
+    </select>
+    <select id="getDeployJobAuthCountByJobIdAndUuid"
+            resultType="java.lang.Integer">
+        select count(1)
+        from deploy_job_auth
+        where auth_uuid = #{userUuid}
+          and job_id = #{jobId}
+    </select>
+
+    <insert id="insertDeployJob">
+        insert into deploy_job (`id`, `app_system_id`, `app_module_id`, `env_id`, `version`, `version_id`,
+                                `runner_map_id`,
+                                `config_hash`,
+                                `scenario_id`,
+                                `build_no`)
+        values (#{id},
+                #{appSystemId},
+                #{appModuleId},
+                #{envId},
+                #{version},
+                #{versionId},
+                #{runnerMapId},
+                #{configHash},
+                #{scenarioId},
+                #{buildNo})
+    </insert>
+
+    <insert id="insertAutoExecJob" parameterType="neatlogic.framework.deploy.dto.job.DeployJobVo">
+        INSERT INTO `autoexec_job` (`id`,
+                                    `name`,
+                                    `status`,
+                                    `source`,
+                                    `exec_user`,
+                                    `trigger_type`,
+                                    `review_status`,
+                                    `plan_start_time`)
+        VALUES (#{id},
+                #{name},
+                #{status},
+                #{source},
+                #{execUser},
+                #{triggerType},
+                #{reviewStatus},
+                #{planStartTime})
+    </insert>
+
+    <insert id="insertIgnoreDeployJobContent"
+            parameterType="neatlogic.framework.deploy.dto.job.DeployJobContentVo">
+        INSERT IGNORE INTO `deploy_job_content` (`hash`, `content`)
+        VALUES (#{hash}, #{content});
+    </insert>
+
+    <insert id="insertLane" parameterType="neatlogic.framework.deploy.dto.job.LaneVo">
+        INSERT INTO `deploy_job_lane` (`id`, `batch_job_id`, `sort`, `status`)
+        VALUES (#{id}, #{batchJobId}, #{sort}, #{status})
+    </insert>
+
+    <insert id="insertDeployJobAuth" parameterType="neatlogic.framework.deploy.dto.job.DeployJobAuthVo">
+        INSERT INTO `deploy_job_auth` (`job_id`, `type`, `auth_uuid`)
+        VALUES (#{jobId}, #{type}, #{authUuid})
+    </insert>
+
+    <insert id="insertLaneGroup" parameterType="neatlogic.framework.deploy.dto.job.LaneGroupVo">
+        INSERT INTO `deploy_job_lane_group` (`id`, `lane_id`, `need_wait`, `sort`, `status`)
+        VALUES (#{id}, #{laneId}, #{needWait}, #{sort}, #{status})
+    </insert>
+
+    <insert id="insertGroupJob">
+        INSERT INTO `deploy_job_lane_group_job` (`group_id`, `job_id`, `sort`)
+        VALUES (#{groupId}, #{jobId}, #{sort})
+    </insert>
+
+    <insert id="insertJobInvoke">
+        INSERT INTO `autoexec_job_invoke` (`job_id`, `invoke_id`, `source`, `type`)
+        VALUES (#{jobId}, #{invokeId}, #{source}, 'deploy')
+    </insert>
+
+    <update id="updateDeployJobReviewStatusById" parameterType="neatlogic.framework.deploy.dto.job.DeployJobVo">
+        UPDATE `autoexec_job`
+        SET
+        <choose>
+            <when test="reviewStatus == 'waiting'">
+                reviewer = null,
+                review_time = null,
+            </when>
+            <otherwise>
+                reviewer = #{reviewer},
+                review_time = NOW(3),
+            </otherwise>
+        </choose>
+        review_status = #{reviewStatus}
+        WHERE id = #{id}
+    </update>
+
+    <update id="resetAutoexecJobParentId" parameterType="java.lang.Long">
+        update `autoexec_job`
+        set `parent_id` = null
+        where `parent_id` = #{value}
+    </update>
+
+    <update id="updateAutoExecJob" parameterType="neatlogic.framework.deploy.dto.job.DeployJobVo">
+        UPDATE `autoexec_job`
+        SET name            = #{name},
+            status          = #{status},
+            exec_user       = #{execUser},
+            trigger_type    = #{triggerType},
+            plan_start_time = #{planStartTime},
+            review_status   = #{reviewStatus}
+        WHERE id = #{id}
+    </update>
+
+    <update id="updateDeployJobRunnerMapId">
+        update deploy_job
+        set `runner_map_id` = #{runnerMapId}
+        where `id` = #{jobId}
+    </update>
+
+    <update id="updateAutoExecJobParentIdById" parameterType="neatlogic.framework.deploy.dto.job.DeployJobVo">
+        update `autoexec_job`
+        set `parent_id` = #{parentId}
+        where `id` = #{id}
+    </update>
+
+    <delete id="deleteJobInvokeByJobId" parameterType="java.lang.Long">
+        DELETE
+        FROM `autoexec_job_invoke`
+        WHERE job_id = #{value}
+    </delete>
+
+    <delete id="deleteJobAuthByJobId" parameterType="java.lang.Long">
+        DELETE
+        FROM `deploy_job_auth`
+        WHERE job_id = #{value}
+    </delete>
+
+    <delete id="deleteDeployJobContentByHash" parameterType="java.lang.String">
+        DELETE
+        FROM `deploy_job_content`
+        WHERE `hash` = #{value};
+    </delete>
+
+    <delete id="deleteLaneGroupJobByJobId" parameterType="java.lang.Long">
+        DELETE a,b,c
+        FROM `deploy_job_lane` a
+                 LEFT JOIN deploy_job_lane_group b ON a.id = b.lane_id
+                 LEFT JOIN deploy_job_lane_group_job c ON b.id = c.group_id
+        WHERE a.batch_job_id = #{value}
+    </delete>
+
+    <delete id="deleteJobById" parameterType="java.lang.Long">
+        DELETE
+        FROM `autoexec_job`
+        WHERE `id` = #{value}
+    </delete>
+
+</mapper>

@@ -1,0 +1,416 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+Copyright(c) $today.year NeatLogic Co., Ltd. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+  -->
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="neatlogic.module.deploy.dao.mapper.DeploySqlMapper">
+
+    <insert id="insertDeploySqlDetail">
+        insert into `deploy_sql_detail`(`id`,
+        `system_id`,
+        `module_id`,
+        `env_id`,
+        `version`,
+        `sql_file`,
+        `status`,
+        `md5`,
+        `host`,
+        `port`,
+        `resource_id`,
+        `node_name`,
+        `node_type`,
+        `user_name`,
+        `runner_id`,
+        `is_delete`,
+        `sort`,
+        `is_modified`,
+        `warn_count`
+        <if test="sqlVo.status == 'running'">
+            ,`start_time`
+        </if>
+        )
+        values (#{sqlVo.id},
+        #{sysId},
+        #{moduleId},
+        #{envId},
+        #{version},
+        #{sqlVo.sqlFile},
+        <choose>
+            <when test="sqlVo.status != null">
+                #{sqlVo.status},
+            </when>
+            <otherwise>
+                'pending',
+            </otherwise>
+        </choose>
+        #{sqlVo.md5},
+        #{sqlVo.host},
+        #{sqlVo.port},
+        #{sqlVo.resourceId},
+        #{sqlVo.nodeName},
+        #{sqlVo.nodeType},
+        #{sqlVo.username},
+        #{runnerId},
+        #{sqlVo.isDelete},
+        #{sqlVo.sort},
+        <choose>
+            <when test="sqlVo.isModified != null">
+                #{sqlVo.isModified},
+            </when>
+            <otherwise>
+                0,
+            </otherwise>
+        </choose>
+        <choose>
+            <when test="sqlVo.warnCount != null">
+                #{sqlVo.warnCount}
+            </when>
+            <otherwise>
+                0
+            </otherwise>
+        </choose>
+        <if test="sqlVo.status == 'running'">
+            ,now(3)
+        </if>
+        )
+    </insert>
+
+    <insert id="insertDeploySql">
+        insert into deploy_sql_job_phase(`id`, `job_id`, `job_phase_name`, `job_phase_id`, `sql_id`)
+        values (#{id},
+                #{jobId},
+                #{phaseName},
+                #{phaseId},
+                #{sqlId})
+    </insert>
+
+    <select id="getDeploySqlDetail" resultType="neatlogic.framework.deploy.dto.sql.DeploySqlNodeDetailVo">
+        SELECT dsd.id,
+               dsd.`md5`,
+               dsd.`status`,
+               dsd.`sql_file` as sqlFile,
+               dsjp.job_id    as jobId
+        FROM deploy_sql_detail dsd
+                 JOIN deploy_sql_job_phase dsjp ON dsjp.sql_id = dsd.id
+        WHERE dsd.system_id = #{sysId}
+          AND dsd.module_id = #{moduleId}
+          AND dsd.env_id = #{envId}
+          AND dsd.version = #{version}
+          AND dsd.sql_file = #{sqlFile}
+          and dsjp.job_id = #{jobId}
+          and dsjp.job_phase_name = #{phaseName}
+          and dsd.resource_id = #{resourceId}
+    </select>
+
+    <select id="getDeploySqlDetailList"
+            resultType="neatlogic.framework.deploy.dto.sql.DeploySqlNodeDetailVo">
+        SELECT dsd.`id`,
+        dsd.`md5`,
+        dsd.`status`,
+        dsd.`runner_id` as runnerId,
+        dsd.`sql_file` as sqlFile,
+        dsd.system_id as sysId,
+        dsd.module_id as moduleId,
+        dsd.env_id as envId,
+        dsd.version as version,
+        dsd.resource_id as resourceId,
+        dsd.node_name as nodeName
+        from
+        deploy_sql_detail dsd
+        WHERE
+        <foreach collection="sqlFileDetailVoList" item="vo" separator="or">
+            (
+            dsd.system_id = #{vo.sysId}
+            AND dsd.module_id = #{vo.moduleId}
+            AND dsd.env_id = #{vo.envId}
+            AND dsd.version = #{vo.version}
+            <if test="vo.sqlFile != null and vo.sqlFile != ''">
+                AND dsd.sql_file = #{vo.sqlFile}
+            </if>
+            <if test="vo.sqlFiles != null and vo.sqlFiles.size() > 0">
+                AND dsd.`sql_file` IN
+                <foreach collection="vo.sqlFiles" item="sqlFile" open="(" separator="," close=")">
+                    #{sqlFile}
+                </foreach>
+            </if>
+            )
+            AND dsd.is_delete = 0
+        </foreach>
+    </select>
+
+    <select id="getAllDeploySqlDetailList" parameterType="neatlogic.framework.deploy.dto.sql.DeploySqlNodeDetailVo"
+            resultType="neatlogic.framework.deploy.dto.sql.DeploySqlNodeDetailVo">
+        SELECT dsd.`id`,
+               dsd.`md5`,
+               dsd.`status`,
+               dsd.`sql_file`      as sqlFile,
+               dsd.system_id       as sysId,
+               dsd.module_id       as moduleId,
+               dsd.env_id          as envId,
+               dsd.version         as version,
+               dsd.resource_id     as resourceId,
+               dsd.`is_delete`     as isDelete,
+               asjp.job_id         as jobId,
+               asjp.job_phase_id   as phaseId,
+               asjp.job_phase_name as phaseName
+        FROM deploy_sql_job_phase asjp
+                 join deploy_sql_detail dsd ON dsd.id = asjp.sql_id
+        WHERE dsd.system_id = #{sysId}
+          AND dsd.module_id = #{moduleId}
+          AND dsd.env_id = #{envId}
+          AND dsd.version = #{version}
+    </select>
+
+    <select id="searchDeploySqlCount" resultType="int">
+        SELECT
+        count(dsd.id)
+        <include refid="searchDeploySql"></include>
+    </select>
+
+    <select id="searchDeploySql" resultType="neatlogic.framework.deploy.dto.sql.DeploySqlNodeDetailVo">
+        SELECT
+        dsd.id,
+        dsd.status,
+        dsd.start_time,
+        dsd.end_time,
+        dsd.sql_file AS sqlFile,
+        dsd.host,
+        dsd.`port`,
+        dsd.runner_id AS runnerId,
+        dsd.is_delete AS isDelete,
+        dsd.is_modified AS isModified,
+        dsd.warn_count AS warnCount,
+        dsd.start_time AS startTime,
+        dsd.end_time AS endTime,
+        dsd.resource_id AS resourceId,
+        r.`host` AS runnerHost,
+        r.`port` AS runnerPort,
+        r.`url` AS runnerUrl,
+        dsd.`node_name` AS nodeName
+        <include refid="searchDeploySql"></include>
+        ORDER BY dsd.`sort` ASC, CONVERT( dsd.sql_file USING gbk) COLLATE gbk_chinese_ci ASC
+        <if test="needPage">
+            LIMIT #{startNum}, #{pageSize}
+        </if>
+    </select>
+
+    <select id="getDeployJobSqlIdListByJobIdAndJobPhaseNameList" resultType="java.lang.Long">
+        SELECT sql_id
+        FROM deploy_sql_job_phase
+        WHERE job_id = #{jobId}
+        AND job_phase_name IN
+        <foreach collection="jobPhaseNameList" item="name" separator="," open="(" close=")">
+            #{name}
+        </foreach>
+    </select>
+
+    <select id="getDeployJobSqlIdListByJobIdAndJobPhaseName" resultType="java.lang.Long">
+        SELECT sql_id
+        FROM deploy_sql_job_phase
+        WHERE job_id = #{jobId}
+          AND job_phase_name = #{phaseName}
+    </select>
+
+    <select id="getDeployJobSqlDetailById" resultType="neatlogic.framework.deploy.dto.sql.DeploySqlNodeDetailVo">
+        SELECT dsd.`id`,
+               dsd.`md5`,
+               dsd.`status`,
+               dsd.`runner_id` as runnerId,
+               dsd.`host`,
+               dsd.`port`,
+               dsd.`sql_file`  as sqlFile,
+               dsd.system_id   as sysId,
+               dsd.module_id   as moduleId,
+               dsd.env_id      as envId,
+               dsd.version     as version,
+               dsd.resource_id as resourceId,
+               dsd.node_name   as nodeName
+        from deploy_sql_detail dsd
+        WHERE dsd.`id` = #{id}
+    </select>
+
+    <select id="getDeployJobPhaseNodeListBySqlIdList"
+            resultType="neatlogic.framework.autoexec.dto.job.AutoexecJobPhaseNodeVo">
+        SELECT
+        ajsd.`host`,
+        ajsd.`port`,
+        ajsd.`node_name`as nodeName,
+        ajsd.`start_time` AS startTime,
+        ajsd.`end_time` AS endTime,
+        ajsd.`resource_id` as resourceId,
+        ajsd.`status`,
+        ajsd.`node_type` as nodeType,
+        ajsd.runner_id as runnerMapId,
+        ajsd.sql_file as sqlFile,
+        ajsd.user_name as userName,
+        r.url as runnerUrl
+        from deploy_sql_detail ajsd
+        left join runner_map rm on rm.id = ajsd.runner_id
+        left join runner r on r.id = rm.runner_id
+        where ajsd.id in
+        <foreach collection="sqlIdList" item="sqlId" close=")" open="(" separator=",">
+            #{sqlId}
+        </foreach>
+    </select>
+    <select id="getDeployJobSqlDetailByExceptStatusListAndRunnerMapId"
+            resultType="neatlogic.framework.deploy.dto.sql.DeploySqlNodeDetailVo">
+        SELECT
+        dsd.`host`,
+        dsd.`port`,
+        dsd.`node_name` AS nodeName,
+        dsd.`start_time` AS startTime,
+        dsd.`end_time` AS endTime,
+        dsd.`resource_id` AS resourceId,
+        dsd.`status`,
+        dsd.`node_type` AS nodeType,
+        dsd.runner_id AS runnerMapId,
+        dsd.sql_file AS sqlFile,
+        dsd.user_name AS userName
+        FROM
+        deploy_sql_job_phase dsjp
+        LEFT JOIN deploy_sql_detail dsd ON dsjp.sql_id = dsd.id
+        WHERE dsjp.job_id = #{jobId}
+        and dsjp.job_phase_name = #{jobPhaseName}
+        and dsd.runner_id = #{runnerMapId}
+        and dsd.`status` not in
+        <foreach collection="statusList" item="status" separator="," close=")" open="(">
+            #{status}
+        </foreach>
+    </select>
+
+    <sql id="searchDeploySql">
+        FROM
+        deploy_sql_detail dsd
+        JOIN deploy_sql_job_phase dsjp ON dsd.id = dsjp.sql_id
+        LEFT JOIN runner r ON r.id = dsd.runner_id
+        <where>
+            <if test="statusList != null and statusList.size() > 0 ">
+                and dsd.`status` in
+                <foreach collection="statusList" item="status" open="(" close=")" separator=",">
+                    #{status}
+                </foreach>
+            </if>
+            <if test="keyword != null and keyword != ''">
+                and (dsd.`name` like concat('%',#{keyword},'%') or dsd.`host` like concat('%',#{keyword},'%'))
+            </if>
+            <if test="isDelete != null">
+                and dsd.`is_delete` = #{isDelete}
+            </if>
+            and dsjp.job_id= #{jobId}
+            and dsjp.job_phase_name= #{jobPhaseName}
+        </where>
+    </sql>
+
+    <update id="updateDeploySqlDetailIsDeleteAndStatusAndMd5ById">
+        UPDATE deploy_sql_detail
+        SET `md5` = #{md5},
+        `status` = #{status},
+        <choose>
+            <when test="status == 'pending'">
+            </when>
+            <when test="status == 'running'">
+                `start_time`=now(3),
+            </when>
+            <otherwise>
+                `end_time`=now(3),
+            </otherwise>
+        </choose>
+        `is_delete` = 0
+        WHERE id = #{id}
+    </update>
+
+    <update id="updateDeploySqlIsDeleteByIdList">
+        UPDATE deploy_sql_detail
+        SET
+        is_delete = 1,
+        sort = 999999
+        WHERE id in
+        <foreach collection="idList" item="id" separator="," open="(" close=")">
+            #{id}
+        </foreach>
+    </update>
+
+    <update id="updateDeploySqlSortList">
+        <foreach collection="needDeleteSqlIdList" item="sqlId" separator=";">
+            UPDATE deploy_sql_job_phase
+            SET
+            sort = 999999
+            where
+            job_id = #{jobId}
+            and sql_id = #{sqlId}
+            and job_phase_id = #{phaseId}
+        </foreach>
+    </update>
+
+    <update id="resetDeploySqlStatusBySqlIdList">
+        UPDATE deploy_sql_detail
+        SET `status` = "pending",
+        `start_time` = null,
+        `end_time` = null
+        WHERE id IN
+        <foreach collection="idList" item="id" separator="," open="(" close=")">
+            #{id}
+        </foreach>
+    </update>
+
+    <update id="updateDeploySqlDetail">
+        update deploy_sql_detail
+        set
+        <if test="status != null">
+            `status` = #{status},
+        </if>
+        `md5` = #{md5},
+        `is_delete` = #{isDelete}
+        <if test="sort != null">
+            ,sort = #{sort}
+        </if>
+        <choose>
+            <when test="status == 'pending'">
+                ,`start_time`= null
+                ,`end_time`= null
+            </when>
+            <when test="status == 'running'">
+                ,`start_time`=now(3)
+                ,`end_time`= null
+            </when>
+            <when test="status == 'aborted' || status == 'succeed' || status == 'failed' || status == 'ignored'">
+                ,`end_time`=now(3)
+            </when>
+            <otherwise>
+            </otherwise>
+        </choose>
+        <if test="isModified != null">
+            ,is_modified = #{isModified}
+        </if>
+        <if test="warnCount != null">
+            ,warn_count = #{warnCount}
+        </if>
+        where id = #{id}
+    </update>
+    <update id="updateDeploySqlStatusByIdList">
+        update deploy_sql_detail
+        set `status` = #{status}
+        where id in
+        <foreach collection="idList" item="id" close=")" open="(" separator=",">
+            #{id}
+        </foreach>
+    </update>
+    <delete id="deleteDeploySqlDetailByJobId">
+        delete
+        from deploy_sql_detail
+        where id = #{value}
+    </delete>
+</mapper>
