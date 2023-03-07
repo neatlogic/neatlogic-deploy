@@ -1,11 +1,16 @@
 package neatlogic.module.deploy.api.ci;
 
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.common.util.RC4Util;
 import neatlogic.framework.deploy.auth.DEPLOY_BASE;
 import neatlogic.framework.deploy.constvalue.DeployCiGitlabAuthMode;
 import neatlogic.framework.deploy.constvalue.DeployCiRepoEvent;
+import neatlogic.framework.deploy.exception.DeployGitlabHookLessRepoNameException;
+import neatlogic.framework.deploy.exception.DeployGitlabHookRepoNameLessParamException;
+import neatlogic.framework.deploy.exception.DeployGitlabHookRepoNameUnknownActionException;
 import neatlogic.framework.exception.core.ApiRuntimeException;
 import neatlogic.framework.integration.authentication.enums.AuthenticateType;
 import neatlogic.framework.restful.annotation.Description;
@@ -15,8 +20,6 @@ import neatlogic.framework.restful.annotation.Param;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.framework.util.HttpRequestUtil;
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -82,24 +85,24 @@ public class BatchUpdateGitlabHookApi extends PrivateApiComponentBase {
             String password = config.getString("password");
             String action = config.getString("action");
             if (StringUtils.isBlank(repoName)) {
-                throw new ApiRuntimeException("第：" + (i + 1) + "个缺少repoName");
+                throw new DeployGitlabHookLessRepoNameException(i + 1);
             }
             if (CollectionUtils.isEmpty(callbackUrl)) {
                 config.put("callbackUrl", globalCallbackUrl);
                 if (CollectionUtils.isEmpty(globalCallbackUrl)) {
-                    throw new ApiRuntimeException(repoName + "缺少callbackUrl");
+                    throw new DeployGitlabHookRepoNameLessParamException(repoName, "callbackUrl");
                 }
             }
             if (StringUtils.isBlank(username)) {
                 config.put("username", globalUsername);
                 if (StringUtils.isBlank(globalUsername)) {
-                    throw new ApiRuntimeException(repoName + "缺少username");
+                    throw new DeployGitlabHookRepoNameLessParamException(repoName, "username");
                 }
             }
             if (StringUtils.isBlank(password)) {
                 config.put("password", encPassword);
                 if (StringUtils.isBlank(encPassword)) {
-                    throw new ApiRuntimeException(repoName + "缺少password");
+                    throw new DeployGitlabHookRepoNameLessParamException(repoName, "password");
                 }
             } else {
                 config.put("password", RC4Util.encrypt(password));
@@ -111,11 +114,11 @@ public class BatchUpdateGitlabHookApi extends PrivateApiComponentBase {
                 config.put("action", globalAction);
                 action = globalAction;
                 if (StringUtils.isBlank(globalAction)) {
-                    throw new ApiRuntimeException(repoName + "缺少action");
+                    throw new DeployGitlabHookRepoNameLessParamException(repoName, "action");
                 }
             }
             if (!"insert".equals(action) && !"delete".equals(action)) {
-                throw new ApiRuntimeException(repoName + "未知的action：" + action);
+                throw new DeployGitlabHookRepoNameUnknownActionException(repoName , action);
             }
             config.put("repoServerAddress", globalRepoServerAddress);
             config.put("authMode", DeployCiGitlabAuthMode.ACCESS_TOKEN.getValue());
