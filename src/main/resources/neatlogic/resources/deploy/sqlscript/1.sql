@@ -1,7 +1,7 @@
 -- ----------------------------
 -- Table structure for deploy_app_config
 -- ----------------------------
-CREATE TABLE `deploy_app_config` (
+CREATE TABLE IF NOT EXISTS `deploy_app_config` (
   `id` bigint NOT NULL COMMENT 'id',
   `app_system_id` bigint NOT NULL COMMENT '应用系统id',
   `app_module_id` bigint NOT NULL DEFAULT '0' COMMENT '模块id',
@@ -18,7 +18,7 @@ CREATE TABLE `deploy_app_config` (
 -- ----------------------------
 -- Table structure for deploy_app_config_authority
 -- ----------------------------
-CREATE TABLE `deploy_app_config_authority` (
+CREATE TABLE IF NOT EXISTS `deploy_app_config_authority` (
   `app_system_id` bigint NOT NULL COMMENT '应用资产id',
   `auth_type` enum('team','user','role','common') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '授权类型 user|team|role',
   `auth_uuid` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '授权用户对象',
@@ -33,7 +33,7 @@ CREATE TABLE `deploy_app_config_authority` (
 -- ----------------------------
 -- Table structure for deploy_app_config_draft
 -- ----------------------------
-CREATE TABLE `deploy_app_config_draft` (
+CREATE TABLE IF NOT EXISTS `deploy_app_config_draft` (
   `app_system_id` bigint NOT NULL COMMENT '应用系统id',
   `app_module_id` bigint NOT NULL COMMENT '模块id',
   `env_id` bigint NOT NULL DEFAULT '0' COMMENT '环境id',
@@ -48,7 +48,7 @@ CREATE TABLE `deploy_app_config_draft` (
 -- ----------------------------
 -- Table structure for deploy_app_config_env
 -- ----------------------------
-CREATE TABLE `deploy_app_config_env` (
+CREATE TABLE IF NOT EXISTS `deploy_app_config_env` (
   `app_system_id` bigint NOT NULL COMMENT '应用系统id',
   `app_module_id` bigint NOT NULL COMMENT '应用模块id',
   `env_id` bigint NOT NULL COMMENT '环境id',
@@ -58,7 +58,7 @@ CREATE TABLE `deploy_app_config_env` (
 -- ----------------------------
 -- Table structure for deploy_app_config_env_db
 -- ----------------------------
-CREATE TABLE `deploy_app_config_env_db` (
+CREATE TABLE IF NOT EXISTS `deploy_app_config_env_db` (
   `id` bigint NOT NULL COMMENT 'id',
   `db_schema` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '数据库schema',
   `app_system_id` bigint NOT NULL COMMENT '应用系统id',
@@ -74,7 +74,7 @@ CREATE TABLE `deploy_app_config_env_db` (
 -- ----------------------------
 -- Table structure for deploy_app_config_env_db_account
 -- ----------------------------
-CREATE TABLE `deploy_app_config_env_db_account` (
+CREATE TABLE IF NOT EXISTS `deploy_app_config_env_db_account` (
   `id` bigint NOT NULL COMMENT 'id',
   `db_config_id` bigint NOT NULL COMMENT 'DB配置id',
   `account_alias` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '用户别名',
@@ -85,7 +85,7 @@ CREATE TABLE `deploy_app_config_env_db_account` (
 -- ----------------------------
 -- Table structure for deploy_app_config_user
 -- ----------------------------
-CREATE TABLE `deploy_app_config_user` (
+CREATE TABLE IF NOT EXISTS `deploy_app_config_user` (
   `app_system_id` bigint NOT NULL COMMENT '应用资产id',
   `user_uuid` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '收藏人',
   PRIMARY KEY (`app_system_id`,`user_uuid`) USING BTREE
@@ -94,7 +94,7 @@ CREATE TABLE `deploy_app_config_user` (
 -- ----------------------------
 -- Table structure for deploy_app_env_auto_config
 -- ----------------------------
-CREATE TABLE `deploy_app_env_auto_config` (
+CREATE TABLE IF NOT EXISTS `deploy_app_env_auto_config` (
   `app_system_id` bigint NOT NULL COMMENT '应用id',
   `app_module_id` bigint NOT NULL COMMENT '模块id',
   `env_id` bigint NOT NULL COMMENT '环境资产id',
@@ -109,7 +109,7 @@ CREATE TABLE `deploy_app_env_auto_config` (
 -- ----------------------------
 -- Table structure for deploy_app_module_runner_group
 -- ----------------------------
-CREATE TABLE `deploy_app_module_runner_group` (
+CREATE TABLE IF NOT EXISTS `deploy_app_module_runner_group` (
   `app_system_id` bigint NOT NULL COMMENT '应用id',
   `app_module_id` bigint NOT NULL COMMENT '模块资产id',
   `runner_group_id` bigint DEFAULT NULL COMMENT 'runner组id',
@@ -119,7 +119,7 @@ CREATE TABLE `deploy_app_module_runner_group` (
 -- ----------------------------
 -- Table structure for deploy_ci
 -- ----------------------------
-CREATE TABLE `deploy_ci` (
+CREATE TABLE IF NOT EXISTS `deploy_ci` (
   `id` bigint NOT NULL COMMENT 'id',
   `name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '名称',
   `is_active` tinyint(1) NOT NULL COMMENT '是否激活',
@@ -147,7 +147,7 @@ CREATE TABLE `deploy_ci` (
 -- ----------------------------
 -- Table structure for deploy_ci_audit
 -- ----------------------------
-CREATE TABLE `deploy_ci_audit` (
+CREATE TABLE IF NOT EXISTS `deploy_ci_audit` (
   `id` bigint NOT NULL COMMENT 'id',
   `ci_id` bigint NOT NULL COMMENT '持续集成配置id',
   `commit_id` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '提交id',
@@ -164,7 +164,7 @@ CREATE TABLE `deploy_ci_audit` (
 -- ----------------------------
 -- Table structure for deploy_env_version
 -- ----------------------------
-CREATE TABLE `deploy_env_version` (
+CREATE TABLE IF NOT EXISTS `deploy_env_version` (
   `app_system_id` bigint NOT NULL COMMENT '应用id',
   `app_module_id` bigint NOT NULL COMMENT '模块id',
   `env_id` bigint NOT NULL COMMENT '环境id',
@@ -178,7 +178,7 @@ CREATE TABLE `deploy_env_version` (
 -- ----------------------------
 -- Table structure for deploy_env_version_audit
 -- ----------------------------
-CREATE TABLE `deploy_env_version_audit` (
+CREATE TABLE IF NOT EXISTS `deploy_env_version_audit` (
   `id` bigint NOT NULL COMMENT 'id',
   `app_system_id` bigint NOT NULL COMMENT '应用id',
   `app_module_id` bigint NOT NULL COMMENT '模块id',
@@ -197,7 +197,7 @@ CREATE TABLE `deploy_env_version_audit` (
 -- ----------------------------
 -- Table structure for deploy_instance_version
 -- ----------------------------
-CREATE TABLE `deploy_instance_version` (
+CREATE TABLE IF NOT EXISTS `deploy_instance_version` (
   `app_system_id` bigint NOT NULL COMMENT '应用id',
   `app_module_id` bigint NOT NULL COMMENT '模块id',
   `env_id` bigint NOT NULL COMMENT '环境id',
@@ -212,7 +212,7 @@ CREATE TABLE `deploy_instance_version` (
 -- ----------------------------
 -- Table structure for deploy_instance_version_audit
 -- ----------------------------
-CREATE TABLE `deploy_instance_version_audit` (
+CREATE TABLE IF NOT EXISTS `deploy_instance_version_audit` (
   `id` bigint NOT NULL COMMENT 'id',
   `app_system_id` bigint NOT NULL COMMENT '应用id',
   `app_module_id` bigint NOT NULL COMMENT '模块id',
@@ -232,7 +232,7 @@ CREATE TABLE `deploy_instance_version_audit` (
 -- ----------------------------
 -- Table structure for deploy_job
 -- ----------------------------
-CREATE TABLE `deploy_job` (
+CREATE TABLE IF NOT EXISTS `deploy_job` (
   `id` bigint NOT NULL COMMENT 'id',
   `app_system_id` bigint NOT NULL COMMENT '系统id',
   `app_module_id` bigint NOT NULL COMMENT '系统模块id',
@@ -253,7 +253,7 @@ CREATE TABLE `deploy_job` (
 -- ----------------------------
 -- Table structure for deploy_job_auth
 -- ----------------------------
-CREATE TABLE `deploy_job_auth` (
+CREATE TABLE IF NOT EXISTS `deploy_job_auth` (
   `job_id` bigint DEFAULT NULL COMMENT '作业id',
   `auth_uuid` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '授权对象',
   `type` enum('user','team','role') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '授权类型',
@@ -263,7 +263,7 @@ CREATE TABLE `deploy_job_auth` (
 -- ----------------------------
 -- Table structure for deploy_job_content
 -- ----------------------------
-CREATE TABLE `deploy_job_content` (
+CREATE TABLE IF NOT EXISTS `deploy_job_content` (
   `hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '配置hash',
   `content` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT '配置',
   PRIMARY KEY (`hash`) USING BTREE
@@ -272,7 +272,7 @@ CREATE TABLE `deploy_job_content` (
 -- ----------------------------
 -- Table structure for deploy_job_lane
 -- ----------------------------
-CREATE TABLE `deploy_job_lane` (
+CREATE TABLE IF NOT EXISTS `deploy_job_lane` (
   `id` bigint NOT NULL COMMENT '批量作业泳道id',
   `batch_job_id` bigint DEFAULT NULL COMMENT '批量作业id',
   `sort` int DEFAULT NULL COMMENT '排序',
@@ -283,7 +283,7 @@ CREATE TABLE `deploy_job_lane` (
 -- ----------------------------
 -- Table structure for deploy_job_lane_group
 -- ----------------------------
-CREATE TABLE `deploy_job_lane_group` (
+CREATE TABLE IF NOT EXISTS `deploy_job_lane_group` (
   `id` bigint NOT NULL COMMENT '组id',
   `lane_id` bigint DEFAULT NULL COMMENT '泳道id',
   `need_wait` tinyint(1) DEFAULT NULL COMMENT '是否需要等待',
@@ -295,7 +295,7 @@ CREATE TABLE `deploy_job_lane_group` (
 -- ----------------------------
 -- Table structure for deploy_job_lane_group_job
 -- ----------------------------
-CREATE TABLE `deploy_job_lane_group_job` (
+CREATE TABLE IF NOT EXISTS `deploy_job_lane_group_job` (
   `group_id` bigint NOT NULL COMMENT '泳道组id',
   `job_id` bigint NOT NULL COMMENT '作业id',
   `sort` int DEFAULT NULL COMMENT '顺序',
@@ -305,7 +305,7 @@ CREATE TABLE `deploy_job_lane_group_job` (
 -- ----------------------------
 -- Table structure for deploy_job_notify_policy
 -- ----------------------------
-CREATE TABLE `deploy_job_notify_policy` (
+CREATE TABLE IF NOT EXISTS `deploy_job_notify_policy` (
   `app_system_id` bigint NOT NULL COMMENT '应用系统id',
   `notify_policy_id` bigint NOT NULL COMMENT '通知策略id',
   PRIMARY KEY (`app_system_id`) USING BTREE
@@ -314,7 +314,7 @@ CREATE TABLE `deploy_job_notify_policy` (
 -- ----------------------------
 -- Table structure for deploy_job_trigger
 -- ----------------------------
-CREATE TABLE `deploy_job_trigger` (
+CREATE TABLE IF NOT EXISTS `deploy_job_trigger` (
   `id` bigint NOT NULL COMMENT 'id',
   `name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '名称',
   `is_active` tinyint(1) DEFAULT NULL COMMENT '是否激活',
@@ -332,7 +332,7 @@ CREATE TABLE `deploy_job_trigger` (
 -- ----------------------------
 -- Table structure for deploy_job_webhook
 -- ----------------------------
-CREATE TABLE `deploy_job_webhook` (
+CREATE TABLE IF NOT EXISTS `deploy_job_webhook` (
   `id` bigint NOT NULL COMMENT 'id',
   `name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '名称',
   `is_active` tinyint(1) DEFAULT NULL COMMENT '是否激活',
@@ -350,7 +350,7 @@ CREATE TABLE `deploy_job_webhook` (
 -- ----------------------------
 -- Table structure for deploy_job_webhook_app_module
 -- ----------------------------
-CREATE TABLE `deploy_job_webhook_app_module` (
+CREATE TABLE IF NOT EXISTS `deploy_job_webhook_app_module` (
   `webhook_id` bigint NOT NULL COMMENT '触发器id',
   `app_system_id` bigint NOT NULL COMMENT '应用系统id',
   `app_module_id` bigint NOT NULL COMMENT '应用模块id',
@@ -360,7 +360,7 @@ CREATE TABLE `deploy_job_webhook_app_module` (
 -- ----------------------------
 -- Table structure for deploy_job_webhook_audit
 -- ----------------------------
-CREATE TABLE `deploy_job_webhook_audit` (
+CREATE TABLE IF NOT EXISTS `deploy_job_webhook_audit` (
   `id` bigint NOT NULL COMMENT 'id',
   `webhook_id` bigint DEFAULT NULL COMMENT '触发器id',
   `name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '名称',
@@ -375,7 +375,7 @@ CREATE TABLE `deploy_job_webhook_audit` (
 -- ----------------------------
 -- Table structure for deploy_package
 -- ----------------------------
-CREATE TABLE `deploy_package` (
+CREATE TABLE IF NOT EXISTS `deploy_package` (
   `id` bigint NOT NULL COMMENT '主键',
   `group_id` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '工程组标识，在一个组织或者项目中通常是唯一的',
   `artifact_id` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '工程标识，通常是工程的名称，groupId 和 artifact_id 一起定义了 artifact在仓库中的位置',
@@ -390,7 +390,7 @@ CREATE TABLE `deploy_package` (
 -- ----------------------------
 -- Table structure for deploy_pipeline
 -- ----------------------------
-CREATE TABLE `deploy_pipeline` (
+CREATE TABLE IF NOT EXISTS `deploy_pipeline` (
   `id` bigint NOT NULL,
   `name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '名称',
   `is_active` tinyint DEFAULT NULL,
@@ -406,7 +406,7 @@ CREATE TABLE `deploy_pipeline` (
 -- ----------------------------
 -- Table structure for deploy_pipeline_auth
 -- ----------------------------
-CREATE TABLE `deploy_pipeline_auth` (
+CREATE TABLE IF NOT EXISTS `deploy_pipeline_auth` (
   `pipeline_id` bigint DEFAULT NULL COMMENT '作业id',
   `auth_uuid` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '授权对象',
   `type` enum('user','team','role') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '授权类型',
@@ -416,7 +416,7 @@ CREATE TABLE `deploy_pipeline_auth` (
 -- ----------------------------
 -- Table structure for deploy_pipeline_group
 -- ----------------------------
-CREATE TABLE `deploy_pipeline_group` (
+CREATE TABLE IF NOT EXISTS `deploy_pipeline_group` (
   `id` bigint NOT NULL COMMENT '组id',
   `lane_id` bigint DEFAULT NULL COMMENT '泳道id',
   `need_wait` tinyint(1) DEFAULT NULL COMMENT '是否需要等待',
@@ -427,7 +427,7 @@ CREATE TABLE `deploy_pipeline_group` (
 -- ----------------------------
 -- Table structure for deploy_pipeline_jobtemplate
 -- ----------------------------
-CREATE TABLE `deploy_pipeline_jobtemplate` (
+CREATE TABLE IF NOT EXISTS `deploy_pipeline_jobtemplate` (
   `id` bigint NOT NULL COMMENT 'id',
   `group_id` bigint DEFAULT NULL COMMENT '分组id',
   `app_system_id` bigint NOT NULL COMMENT '系统id',
@@ -446,7 +446,7 @@ CREATE TABLE `deploy_pipeline_jobtemplate` (
 -- ----------------------------
 -- Table structure for deploy_pipeline_lane
 -- ----------------------------
-CREATE TABLE `deploy_pipeline_lane` (
+CREATE TABLE IF NOT EXISTS `deploy_pipeline_lane` (
   `id` bigint NOT NULL COMMENT '流水线泳道id',
   `pipeline_id` bigint DEFAULT NULL COMMENT '流水线id',
   `sort` int DEFAULT NULL COMMENT '排序',
@@ -456,7 +456,7 @@ CREATE TABLE `deploy_pipeline_lane` (
 -- ----------------------------
 -- Table structure for deploy_schedule
 -- ----------------------------
-CREATE TABLE `deploy_schedule` (
+CREATE TABLE IF NOT EXISTS `deploy_schedule` (
   `id` bigint NOT NULL COMMENT '全局唯一id，跨环境导入用',
   `uuid` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '全局唯一uuid',
   `name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '名称',
@@ -481,7 +481,7 @@ CREATE TABLE `deploy_schedule` (
 -- ----------------------------
 -- Table structure for deploy_sql_detail
 -- ----------------------------
-CREATE TABLE `deploy_sql_detail` (
+CREATE TABLE IF NOT EXISTS `deploy_sql_detail` (
   `id` bigint NOT NULL COMMENT '主键 id',
   `system_id` bigint DEFAULT NULL COMMENT '系统 id',
   `module_id` bigint DEFAULT NULL COMMENT '模块 id',
@@ -511,7 +511,7 @@ CREATE TABLE `deploy_sql_detail` (
 -- ----------------------------
 -- Table structure for deploy_sql_job_phase
 -- ----------------------------
-CREATE TABLE `deploy_sql_job_phase` (
+CREATE TABLE IF NOT EXISTS `deploy_sql_job_phase` (
   `id` bigint NOT NULL COMMENT '主键 id',
   `job_id` bigint DEFAULT NULL COMMENT '作业 id',
   `sql_id` bigint DEFAULT NULL COMMENT '执行sql详情 id',
@@ -524,7 +524,7 @@ CREATE TABLE `deploy_sql_job_phase` (
 -- ----------------------------
 -- Table structure for deploy_type_status
 -- ----------------------------
-CREATE TABLE `deploy_type_status` (
+CREATE TABLE IF NOT EXISTS `deploy_type_status` (
   `type_id` bigint NOT NULL COMMENT '工具类型id',
   `is_active` int NOT NULL COMMENT '是否激活(0:禁用，1：激活)',
   PRIMARY KEY (`type_id`) USING BTREE
@@ -533,7 +533,7 @@ CREATE TABLE `deploy_type_status` (
 -- ----------------------------
 -- Table structure for deploy_version
 -- ----------------------------
-CREATE TABLE `deploy_version` (
+CREATE TABLE IF NOT EXISTS `deploy_version` (
   `id` bigint NOT NULL COMMENT '主键',
   `version` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '版本',
   `app_system_id` bigint NOT NULL COMMENT '应用id',
@@ -567,7 +567,7 @@ CREATE TABLE `deploy_version` (
 -- ----------------------------
 -- Table structure for deploy_version_appbuild_credential
 -- ----------------------------
-CREATE TABLE `deploy_version_appbuild_credential` (
+CREATE TABLE IF NOT EXISTS `deploy_version_appbuild_credential` (
   `proxy_to_url` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '跳转url',
   `user_uuid` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '跳转认证用户',
   PRIMARY KEY (`proxy_to_url`) USING BTREE
@@ -576,7 +576,7 @@ CREATE TABLE `deploy_version_appbuild_credential` (
 -- ----------------------------
 -- Table structure for deploy_version_build_quality
 -- ----------------------------
-CREATE TABLE `deploy_version_build_quality` (
+CREATE TABLE IF NOT EXISTS `deploy_version_build_quality` (
   `id` bigint NOT NULL COMMENT 'id',
   `version_id` bigint NOT NULL COMMENT '版本id',
   `build_time` timestamp(3) NULL DEFAULT NULL COMMENT '编译时间',
@@ -669,7 +669,7 @@ CREATE TABLE `deploy_version_build_quality` (
 -- ----------------------------
 -- Table structure for deploy_version_buildno
 -- ----------------------------
-CREATE TABLE `deploy_version_buildno` (
+CREATE TABLE IF NOT EXISTS `deploy_version_buildno` (
   `version_id` bigint NOT NULL COMMENT '发布版本表关联id',
   `build_no` int NOT NULL COMMENT '编译号',
   `job_id` bigint NOT NULL COMMENT '作业id',
@@ -691,7 +691,7 @@ CREATE TABLE `deploy_version_buildno` (
 -- ----------------------------
 -- Table structure for deploy_version_dependency
 -- ----------------------------
-CREATE TABLE `deploy_version_dependency` (
+CREATE TABLE IF NOT EXISTS `deploy_version_dependency` (
   `id` bigint NOT NULL COMMENT '主键',
   `version_id` bigint NOT NULL COMMENT '版本id',
   `package_id` bigint NOT NULL COMMENT '关联deploy_pkg表中id',
@@ -706,7 +706,7 @@ CREATE TABLE `deploy_version_dependency` (
 -- ----------------------------
 -- Table structure for deploy_version_deployed_instance
 -- ----------------------------
-CREATE TABLE `deploy_version_deployed_instance` (
+CREATE TABLE IF NOT EXISTS `deploy_version_deployed_instance` (
   `id` bigint NOT NULL COMMENT 'id',
   `resource_id` bigint NOT NULL COMMENT '实例id',
   `version_id` bigint NOT NULL COMMENT '版本id',
@@ -720,7 +720,7 @@ CREATE TABLE `deploy_version_deployed_instance` (
 -- ----------------------------
 -- Table structure for deploy_version_env
 -- ----------------------------
-CREATE TABLE `deploy_version_env` (
+CREATE TABLE IF NOT EXISTS `deploy_version_env` (
   `version_id` bigint NOT NULL COMMENT '发布版本表关联id',
   `env_id` bigint NOT NULL COMMENT '环境id',
   `job_id` bigint NOT NULL COMMENT '作业id',
@@ -738,7 +738,7 @@ CREATE TABLE `deploy_version_env` (
 -- ----------------------------
 -- Table structure for deploy_version_unit_test
 -- ----------------------------
-CREATE TABLE `deploy_version_unit_test` (
+CREATE TABLE IF NOT EXISTS `deploy_version_unit_test` (
   `id` bigint NOT NULL COMMENT 'id',
   `version_id` bigint NOT NULL COMMENT '版本id',
   `build_time` timestamp(3) NULL DEFAULT NULL COMMENT '编译时间',
