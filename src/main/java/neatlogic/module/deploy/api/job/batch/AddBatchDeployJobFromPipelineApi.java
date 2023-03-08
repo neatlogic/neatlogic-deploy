@@ -94,7 +94,7 @@ public class AddBatchDeployJobFromPipelineApi extends PrivateApiComponentBase {
     public Object myDoService(JSONObject jsonObj) throws Exception {
         JSONArray appSystemModuleVersionList = jsonObj.getJSONArray("appSystemModuleVersionList");
         if (CollectionUtils.isEmpty(appSystemModuleVersionList)) {
-            throw new DeployJobParamIrregularException("应用模块版本列表");
+            throw new DeployJobParamIrregularException("appSystemModuleVersionList");
         }
         Long pipelineId = jsonObj.getLong("pipelineId");
         PipelineVo pipelineVo = deployPipelineMapper.getPipelineById(pipelineId);
@@ -104,7 +104,7 @@ public class AddBatchDeployJobFromPipelineApi extends PrivateApiComponentBase {
         DeployJobVo deployJobVo = JSONObject.toJavaObject(jsonObj, DeployJobVo.class);
         if (deployJobVo.getTriggerType().equals(JobTriggerType.AUTO.getValue())) {
             if (deployJobVo.getPlanStartTime() == null) {
-                throw new DeployJobParamIrregularException("计划开始时间");
+                throw new DeployJobParamIrregularException("planStartTime");
             }
             deployJobVo.setStatus(JobStatus.READY.getValue());
         } else if (deployJobVo.getTriggerType().equals(JobTriggerType.MANUAL.getValue())) {
