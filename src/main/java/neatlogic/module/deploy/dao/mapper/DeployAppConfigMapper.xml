@@ -1511,6 +1511,18 @@ limitations under the License.
         WHERE `id` = #{value} AND `app_module_id` IS NOT NULL
     </select>
 
+    <select id="getDeployAppConfigListForUpdateConfig" parameterType="neatlogic.framework.common.dto.BasePageVo" resultType="java.util.HashMap">
+        SELECT
+            `id`,
+            `config`
+        FROM `deploy_app_config`
+        LIMIT #{startNum}, #{pageSize}
+    </select>
+
+    <update id="updateDeployAppConfigById" parameterType="java.util.Map">
+        UPDATE `deploy_app_config` SET `config` = #{configStr} WHERE `id` = #{id}
+    </update>
+
     <insert id="insertAppConfigAuthority">
         INSERT INTO `deploy_app_config_authority` (`app_system_id`,
         `auth_type`,
