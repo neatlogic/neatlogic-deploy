@@ -57,7 +57,7 @@ public class UpdateDeployAppPipelineExecuteUserFieldApi extends PrivateApiCompon
 
     @Override
     public String getName() {
-        return "更新应用流水线阶段操作的描述字段值";
+        return "更新应用流水线的执行用户字段值";
     }
 
     @Override
@@ -66,7 +66,7 @@ public class UpdateDeployAppPipelineExecuteUserFieldApi extends PrivateApiCompon
     }
 
     @Input({})
-    @Description(desc = "更新应用流水线阶段操作的描述字段值")
+    @Description(desc = "更新应用流水线的执行用户字段值")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         JSONObject resultObj = new JSONObject();
