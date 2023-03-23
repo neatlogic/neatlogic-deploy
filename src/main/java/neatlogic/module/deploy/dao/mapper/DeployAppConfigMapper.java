@@ -9,6 +9,7 @@ import org.apache.ibatis.annotations.Param;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -205,6 +206,10 @@ public interface DeployAppConfigMapper {
     List<DeployAppAuthCheckVo> getBatchDeployAppAuthorityActionList(List<DeployAppAuthCheckVo> deployAppAuthCheckVoList);
 
     List<DeployAppSystemVo> getBatchAppConfigAuthorityListByAppSystemIdList(List<Long> appSystemIdList);
+
+    List<Map<String, Object>> getDeployAppConfigListForUpdateConfig(BasePageVo searchVo);
+
+    void updateDeployAppConfigById(@Param("id") Long id, @Param("configStr") String configStr);
 
     void deleteAppConfigSystemFavoriteByAppSystemIdAndUserUuid(@Param("appSystemId") Long appSystemId, @Param("userUuid") String userUuid);
 
