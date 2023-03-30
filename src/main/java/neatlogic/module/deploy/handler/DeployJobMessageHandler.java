@@ -30,12 +30,12 @@ public class DeployJobMessageHandler extends MessageHandlerBase {
 
     @Override
     public String getName() {
-        return "发布作业";
+        return "handler.message.deploy";
     }
 
     @Override
     public String getDescription() {
-        return "实时显示发布作业相关信息";
+        return "handler.message.deploy.description";
     }
 
     @Override
