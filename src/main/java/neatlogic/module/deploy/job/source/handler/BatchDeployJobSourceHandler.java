@@ -19,12 +19,20 @@ package neatlogic.module.deploy.job.source.handler;
 import neatlogic.framework.autoexec.source.IAutoexecJobSource;
 import neatlogic.framework.common.dto.ValueTextVo;
 import neatlogic.framework.deploy.constvalue.JobSource;
+import neatlogic.framework.deploy.dto.job.DeployJobVo;
+import neatlogic.module.deploy.dao.mapper.DeployJobMapper;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.List;
 
 @Component
 public class BatchDeployJobSourceHandler implements IAutoexecJobSource {
+
+    @Resource
+    private DeployJobMapper deployJobMapper;
 
     @Override
     public String getValue() {
@@ -38,6 +46,14 @@ public class BatchDeployJobSourceHandler implements IAutoexecJobSource {
 
     @Override
     public List<ValueTextVo> getListByIdList(List<Long> idList) {
-        return null;
+        if (CollectionUtils.isEmpty(idList)) {
+            return null;
+        }
+        List<ValueTextVo> resultList = new ArrayList<>();
+        List<DeployJobVo> list = deployJobMapper.getDeployJobByJobIdList(idList);
+        for (DeployJobVo deployJobVo : list) {
+            resultList.add(new ValueTextVo(deployJobVo.getId(), deployJobVo.getName()));
+        }
+        return resultList;
     }
 }
