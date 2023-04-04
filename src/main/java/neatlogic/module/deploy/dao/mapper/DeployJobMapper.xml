@@ -624,8 +624,8 @@ limitations under the License.
     </insert>
 
     <insert id="insertJobInvoke">
-        INSERT INTO `autoexec_job_invoke` (`job_id`, `invoke_id`, `source`, `type`)
-        VALUES (#{jobId}, #{invokeId}, #{source}, 'deploy')
+        INSERT INTO `autoexec_job_invoke` (`job_id`, `invoke_id`, `source`, `type`, `route_id`)
+        VALUES (#{jobId}, #{invokeId}, #{source}, 'deploy', #{routeId})
     </insert>
 
     <update id="updateDeployJobReviewStatusById" parameterType="neatlogic.framework.deploy.dto.job.DeployJobVo">

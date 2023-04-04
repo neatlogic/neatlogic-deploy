@@ -151,7 +151,10 @@ public class SaveBatchDeployJobApi extends PrivateApiComponentBase {
                                 jobVo.setParentId(deployJobVo.getId());
                                 deployJobMapper.updateAutoExecJobParentIdById(jobVo);
                                 deployJobMapper.insertGroupJob(groupVo.getId(), jobVo.getId(), k + 1);
-                                deployJobMapper.insertJobInvoke(deployJobVo.getId(), jobVo.getId(), JobSource.BATCHDEPLOY.getValue());
+                                if (deployJobVo.getRouteId() == null) {
+                                    System.out.println("2");
+                                }
+                                deployJobMapper.insertJobInvoke(deployJobVo.getId(), jobVo.getId(), JobSource.BATCHDEPLOY.getValue(), deployJobVo.getRouteId());
                             }
                         }
                         if (hasGroupJob) {

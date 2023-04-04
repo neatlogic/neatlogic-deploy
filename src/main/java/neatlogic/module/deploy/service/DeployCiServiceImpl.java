@@ -180,7 +180,10 @@ public class DeployCiServiceImpl implements DeployCiService {
         }
         DeployJobVo deployJobVo = getBatchDeployJobVo(ci, deployVersion != null ? deployVersion.getId() : null);
         deployBatchJobService.creatBatchJob(deployJobVo, pipeline, false);
-        deployJobMapper.insertJobInvoke(deployJobVo.getId(), pipelineId, JobSource.PIPELINE.getValue());
+        if (deployJobVo.getRouteId() == null) {
+            System.out.println("4");
+        }
+        deployJobMapper.insertJobInvoke(deployJobVo.getId(), pipelineId, JobSource.PIPELINE.getValue(), deployJobVo.getRouteId());
 
         //补充定时执行逻辑
         if (Objects.equals(deployJobVo.getTriggerType(), JobTriggerType.AUTO.getValue())) {
