@@ -22,8 +22,6 @@ public interface DeploySqlMapper extends IDeploySqlCrossoverMapper {
 
     List<DeploySqlNodeDetailVo> getDeploySqlDetailList(@Param("sqlFileDetailVoList") List<DeploySqlNodeDetailVo> sqlFileDetailVoList);
 
-    List<DeploySqlNodeDetailVo> getAllDeploySqlDetailListWithJob(DeploySqlNodeDetailVo deployVersionSql);
-
     List<DeploySqlNodeDetailVo> getAllDeploySqlDetailList(DeploySqlNodeDetailVo deployVersionSql);
 
     List<DeploySqlNodeDetailVo> getDeployJobSqlDetailByExceptStatusListAndRunnerMapId(@Param("jobId") Long jobId, @Param("jobPhaseName") String name, @Param("statusList") List<String> statusList, @Param("runnerMapId") Long runnerMapId);
