@@ -151,7 +151,8 @@ limitations under the License.
         </foreach>
     </select>
 
-    <select id="getAllDeploySqlDetailList" parameterType="neatlogic.framework.deploy.dto.sql.DeploySqlNodeDetailVo"
+    <select id="getAllDeploySqlDetailListWithJob"
+            parameterType="neatlogic.framework.deploy.dto.sql.DeploySqlNodeDetailVo"
             resultType="neatlogic.framework.deploy.dto.sql.DeploySqlNodeDetailVo">
         SELECT dsd.`id`,
                dsd.`md5`,
@@ -168,6 +169,26 @@ limitations under the License.
                asjp.job_phase_name as phaseName
         FROM deploy_sql_job_phase asjp
                  join deploy_sql_detail dsd ON dsd.id = asjp.sql_id
+        WHERE dsd.system_id = #{sysId}
+          AND dsd.module_id = #{moduleId}
+          AND dsd.env_id = #{envId}
+          AND dsd.version = #{version}
+    </select>
+
+    <select id="getAllDeploySqlDetailList" parameterType="neatlogic.framework.deploy.dto.sql.DeploySqlNodeDetailVo"
+            resultType="neatlogic.framework.deploy.dto.sql.DeploySqlNodeDetailVo">
+        SELECT dsd.`id`,
+               dsd.`md5`,
+               dsd.`status`,
+               dsd.`sql_file`  as sqlFile,
+               dsd.system_id   as sysId,
+               dsd.module_id   as moduleId,
+               dsd.env_id      as envId,
+               dsd.version     as version,
+               dsd.resource_id as resourceId,
+               dsd.runner_id   as runnerId,
+               dsd.`is_delete` as isDelete
+        FROM deploy_sql_detail dsd
         WHERE dsd.system_id = #{sysId}
           AND dsd.module_id = #{moduleId}
           AND dsd.env_id = #{envId}
