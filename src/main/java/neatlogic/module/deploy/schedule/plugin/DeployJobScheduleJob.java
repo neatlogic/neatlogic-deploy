@@ -132,7 +132,9 @@ public class DeployJobScheduleJob  extends JobBase {
             deployJobVo.setSource(JobSource.DEPLOY_SCHEDULE_PIPELINE.getValue());
             deployJobVo.setName("定时作业/" + pipelineVo.getName());
             deployBatchJobService.creatBatchJob(deployJobVo, pipelineVo, true);
-            deployJobMapper.insertJobInvoke(deployJobVo.getId(), deployJobVo.getInvokeId(), deployJobVo.getSource(), deployJobVo.getRouteId());
+
+            System.out.println("d=" + deployJobVo.getId());
+//            deployJobMapper.insertJobInvoke(deployJobVo.getId(), deployJobVo.getInvokeId(), deployJobVo.getSource(), deployJobVo.getRouteId());
         }
     }
 
@@ -144,6 +146,7 @@ public class DeployJobScheduleJob  extends JobBase {
         deployJobVo.setEnvId(config.getEnvId());
         deployJobVo.setParam(config.getParam());
         deployJobVo.setInvokeId(scheduleVo.getId());
+        deployJobVo.setRouteId(scheduleVo.getId().toString());
         deployJobVo.setRoundCount(config.getRoundCount());
         deployJobVo.setPipelineId(scheduleVo.getPipelineId());
         deployJobVo.setAppSystemModuleVersionList(config.getAppSystemModuleVersionList());
