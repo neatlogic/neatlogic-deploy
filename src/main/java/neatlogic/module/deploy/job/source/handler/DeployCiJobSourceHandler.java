@@ -16,8 +16,9 @@
 
 package neatlogic.module.deploy.job.source.handler;
 
+import com.alibaba.fastjson.JSONObject;
+import neatlogic.framework.autoexec.dto.job.AutoexecJobRouteVo;
 import neatlogic.framework.autoexec.source.IAutoexecJobSource;
-import neatlogic.framework.common.dto.ValueTextVo;
 import neatlogic.framework.deploy.constvalue.JobSource;
 import neatlogic.framework.deploy.dto.ci.DeployCiVo;
 import neatlogic.module.deploy.dao.mapper.DeployCiMapper;
@@ -45,14 +46,22 @@ public class DeployCiJobSourceHandler implements IAutoexecJobSource {
     }
 
     @Override
-    public List<ValueTextVo> getListByIdList(List<Long> idList) {
-        if (CollectionUtils.isEmpty(idList)) {
+    public List<AutoexecJobRouteVo> getListByUniqueKeyList(List<String> uniqueKeyList) {
+        if (CollectionUtils.isEmpty(uniqueKeyList)) {
             return null;
         }
-        List<ValueTextVo> resultList = new ArrayList<>();
+        List<Long> idList = new ArrayList<>();
+        for (String str : uniqueKeyList) {
+            idList.add(Long.valueOf(str));
+        }
+        List<AutoexecJobRouteVo> resultList = new ArrayList<>();
         List<DeployCiVo> list = deployCiMapper.getDeployCiListByIdList(idList);
         for (DeployCiVo ciVo : list) {
-            resultList.add(new ValueTextVo(ciVo.getId(), ciVo.getName()));
+            JSONObject config = new JSONObject();
+            config.put("id", ciVo.getId());
+            config.put("appSystemId", ciVo.getAppSystemId());
+            config.put("appModuleId", ciVo.getAppModuleId());
+            resultList.add(new AutoexecJobRouteVo(ciVo.getId(), ciVo.getName(), config));
         }
         return resultList;
     }

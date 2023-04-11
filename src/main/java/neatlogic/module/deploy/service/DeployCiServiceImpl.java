@@ -142,6 +142,7 @@ public class DeployCiServiceImpl implements DeployCiService {
         deployJobParam.setModuleList(Collections.singletonList(moduleVo));
         deployJobParam.setSource(JobSource.DEPLOY_CI.getValue());
         deployJobParam.setInvokeId(ci.getId());
+        deployJobParam.setRouteId(ci.getId().toString());
         if (!Objects.equals(ci.getTriggerType(), DeployCiTriggerType.INSTANT.getValue())) {
             deployJobService.createJobAndSchedule(deployJobParam, moduleVo);
         } else {
