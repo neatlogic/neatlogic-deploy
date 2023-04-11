@@ -88,7 +88,8 @@ limitations under the License.
         e.plan_start_time as planStartTime,
         e.start_time as startTime,
         e.end_time as endTime,
-        e.source as source
+        e.source as source,
+        e.config_hash as configHash
         from deploy_job_lane_group_job AS d
         LEFT JOIN autoexec_job AS e ON d.job_id = e.id
         where d.group_id = #{groupId}
