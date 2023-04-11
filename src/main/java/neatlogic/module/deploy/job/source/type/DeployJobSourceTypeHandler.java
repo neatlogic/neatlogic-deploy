@@ -206,7 +206,7 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
         Long jobId = paramObj.getLong("jobId");
         JSONArray paramSqlVoArray = paramObj.getJSONArray("sqlInfoList");
 
-        List<DeploySqlNodeDetailVo> oldDeploySqlList = deploySqlMapper.getAllDeploySqlDetailList(new DeploySqlNodeDetailVo(paramObj.getLong("sysId"), paramObj.getLong("moduleId"), paramObj.getLong("envId"), paramObj.getString("version")));
+        List<DeploySqlNodeDetailVo> oldDeploySqlList = deploySqlMapper.getAllDeploySqlDetailListWithJob(new DeploySqlNodeDetailVo(paramObj.getLong("sysId"), paramObj.getLong("moduleId"), paramObj.getLong("envId"), paramObj.getString("version")));
 
         Map<String, DeploySqlNodeDetailVo> jobPhaseAndSqlDetailMap = new HashMap<>();
         Map<String, DeploySqlNodeDetailVo> sqlDetailMap = new HashMap<>();
@@ -316,36 +316,46 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
         AutoexecJobPhaseVo jobPhaseVo = jobVo.getCurrentPhase();
         DeployJobVo deployJobVo = deployJobMapper.getDeployJobByJobId(jobVo.getId());
         //如果是sqlfile ｜ local ，则保证一个作业使用同一个runner
-        if (Arrays.asList(ExecMode.SQL.getValue(), ExecMode.RUNNER.getValue()).contains(jobPhaseVo.getExecMode()) && deployJobVo.getRunnerMapId() != null) {
-            RunnerMapVo runnerMapVo = runnerMapper.getRunnerMapByRunnerMapId(deployJobVo.getRunnerMapId());
-            if (runnerMapVo == null) {
-                throw new RunnerNotFoundByRunnerMapIdException(deployJobVo.getRunnerMapId());
+        if (Arrays.asList(ExecMode.SQL.getValue(), ExecMode.RUNNER.getValue()).contains(jobPhaseVo.getExecMode())) {
+            Long runnerMapId = deployJobVo.getRunnerMapId();
+            if (runnerMapId == null) {
+                //sql 优先使用历史runner TODO 如果切换runner组会有问题
+                List<DeploySqlNodeDetailVo> sqlNodeDetailVos = deploySqlMapper.getAllDeploySqlDetailList(new DeploySqlNodeDetailVo(deployJobVo.getAppSystemId(), deployJobVo.getAppModuleId(), deployJobVo.getEnvId(), deployJobVo.getVersion()));
+                if (CollectionUtils.isNotEmpty(sqlNodeDetailVos)) {
+                    runnerMapId = sqlNodeDetailVos.get(0).getRunnerId();
+                }
             }
-            runnerMapVos = Collections.singletonList(runnerMapVo);
-        } else {
-            //其它则根据模块均衡分配runner
-            ICiEntityCrossoverMapper iCiEntityCrossoverMapper = CrossoverServiceFactory.getApi(ICiEntityCrossoverMapper.class);
-            CiEntityVo appSystemEntity = iCiEntityCrossoverMapper.getCiEntityBaseInfoById(deployJobVo.getAppSystemId());
-            if (appSystemEntity == null) {
-                throw new CiEntityNotFoundException(deployJobVo.getAppSystemId());
+            if (runnerMapId != null) {
+                RunnerMapVo runnerMapVo = runnerMapper.getRunnerMapByRunnerMapId(runnerMapId);
+                if (runnerMapVo == null) {
+                    throw new RunnerNotFoundByRunnerMapIdException(deployJobVo.getRunnerMapId());
+                }
+                return Collections.singletonList(runnerMapVo);
             }
-            CiEntityVo appModuleEntity = iCiEntityCrossoverMapper.getCiEntityBaseInfoById(deployJobVo.getAppModuleId());
-            if (appModuleEntity == null) {
-                throw new CiEntityNotFoundException(deployJobVo.getAppModuleId());
-            }
-            RunnerGroupVo appModuleRunnerGroup = deployAppConfigMapper.getAppModuleRunnerGroupByAppSystemIdAndModuleId(deployJobVo.getAppSystemId(), deployJobVo.getAppModuleId());
-            if (appModuleRunnerGroup == null) {
-                throw new DeployAppConfigModuleRunnerGroupNotFoundException(appSystemEntity.getName() + "(" + deployJobVo.getAppSystemId() + ")", appModuleEntity.getName() + "(" + deployJobVo.getAppModuleId() + ")");
-            }
-            RunnerGroupVo groupVo = runnerMapper.getRunnerMapGroupById(appModuleRunnerGroup.getId());
-            if (groupVo == null) {
-                throw new RunnerGroupRunnerNotFoundException(appModuleRunnerGroup.getId().toString());
-            }
-            if (CollectionUtils.isEmpty(groupVo.getRunnerMapList())) {
-                throw new RunnerGroupRunnerNotFoundException(groupVo.getName() + "(" + groupVo.getId() + ") ");
-            }
-            runnerMapVos = groupVo.getRunnerMapList();
         }
+        //其它则根据模块均衡分配runner
+        ICiEntityCrossoverMapper iCiEntityCrossoverMapper = CrossoverServiceFactory.getApi(ICiEntityCrossoverMapper.class);
+        CiEntityVo appSystemEntity = iCiEntityCrossoverMapper.getCiEntityBaseInfoById(deployJobVo.getAppSystemId());
+        if (appSystemEntity == null) {
+            throw new CiEntityNotFoundException(deployJobVo.getAppSystemId());
+        }
+        CiEntityVo appModuleEntity = iCiEntityCrossoverMapper.getCiEntityBaseInfoById(deployJobVo.getAppModuleId());
+        if (appModuleEntity == null) {
+            throw new CiEntityNotFoundException(deployJobVo.getAppModuleId());
+        }
+        RunnerGroupVo appModuleRunnerGroup = deployAppConfigMapper.getAppModuleRunnerGroupByAppSystemIdAndModuleId(deployJobVo.getAppSystemId(), deployJobVo.getAppModuleId());
+        if (appModuleRunnerGroup == null) {
+            throw new DeployAppConfigModuleRunnerGroupNotFoundException(appSystemEntity.getName() + "(" + deployJobVo.getAppSystemId() + ")", appModuleEntity.getName() + "(" + deployJobVo.getAppModuleId() + ")");
+        }
+        RunnerGroupVo groupVo = runnerMapper.getRunnerMapGroupById(appModuleRunnerGroup.getId());
+        if (groupVo == null) {
+            throw new RunnerGroupRunnerNotFoundException(appModuleRunnerGroup.getId().toString());
+        }
+        if (CollectionUtils.isEmpty(groupVo.getRunnerMapList())) {
+            throw new RunnerGroupRunnerNotFoundException(groupVo.getName() + "(" + groupVo.getId() + ") ");
+        }
+        runnerMapVos = groupVo.getRunnerMapList();
+
         return runnerMapVos;
     }
 
