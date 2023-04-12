@@ -117,6 +117,7 @@ public class AddBatchDeployJobFromPipelineApi extends PrivateApiComponentBase {
             deployJobVo.setReviewStatus(ReviewStatus.PASSED.getValue());
         }
         deployJobVo.setSource(JobSource.BATCHDEPLOY.getValue());
+        deployJobVo.setParentId(-1L);
         deployJobVo.setInvokeId(pipelineId);
         deployJobVo.setRouteId(pipelineId.toString());
         deployJobVo.setExecUser(UserContext.get().getUserUuid());

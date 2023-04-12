@@ -121,6 +121,7 @@ public class SaveBatchDeployJobApi extends PrivateApiComponentBase {
             }
         }
         deployJobVo.setSource(JobSource.BATCHDEPLOY.getValue());
+        deployJobVo.setParentId(-1L);
         deployJobVo.setExecUser(UserContext.get().getUserUuid());
         if (id == null) {
             deployJobMapper.insertAutoExecJob(deployJobVo);
