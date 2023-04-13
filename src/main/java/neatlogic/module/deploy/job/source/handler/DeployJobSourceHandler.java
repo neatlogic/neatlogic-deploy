@@ -19,8 +19,8 @@ package neatlogic.module.deploy.job.source.handler;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.autoexec.dto.job.AutoexecJobRouteVo;
 import neatlogic.framework.autoexec.source.IAutoexecJobSource;
-import neatlogic.framework.cmdb.crossover.IAppSystemMapper;
-import neatlogic.framework.cmdb.dto.resourcecenter.entity.AppSystemVo;
+import neatlogic.framework.cmdb.crossover.IResourceCrossoverMapper;
+import neatlogic.framework.cmdb.dto.resourcecenter.AppSystemVo;
 import neatlogic.framework.crossover.CrossoverServiceFactory;
 import neatlogic.framework.deploy.constvalue.JobSource;
 import org.apache.commons.collections4.CollectionUtils;
@@ -53,8 +53,8 @@ public class DeployJobSourceHandler implements IAutoexecJobSource {
             idList.add(Long.valueOf(str));
         }
         List<AutoexecJobRouteVo> resultList = new ArrayList<>();
-        IAppSystemMapper appSystemMapper = CrossoverServiceFactory.getApi(IAppSystemMapper.class);
-        List<AppSystemVo> list = appSystemMapper.getAppSystemListByIdList(idList);
+        IResourceCrossoverMapper resourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
+        List<AppSystemVo> list = resourceCrossoverMapper.getAppSystemListByIdList(idList);
         for (AppSystemVo appSystemVo : list) {
             JSONObject config = new JSONObject();
             config.put("appSystemId", appSystemVo.getId());
@@ -70,15 +70,6 @@ public class DeployJobSourceHandler implements IAutoexecJobSource {
             }
             resultList.add(new AutoexecJobRouteVo(appSystemVo.getId(), label, config));
         }
-//        List<DeployJobVo> list = deployJobMapper.getDeployJobByJobIdList(idList);
-//        for (DeployJobVo deployJobVo : list) {
-//            JSONObject config = new JSONObject();
-//            config.put("id", deployJobVo.getId());
-//            config.put("appSystemId", deployJobVo.getAppSystemId());
-//            config.put("appModuleId", deployJobVo.getAppModuleId());
-//            config.put("envId", deployJobVo.getEnvId());
-//            resultList.add(new AutoexecJobRouteVo(deployJobVo.getId(), deployJobVo.getName(), config));
-//        }
         return resultList;
     }
 }
