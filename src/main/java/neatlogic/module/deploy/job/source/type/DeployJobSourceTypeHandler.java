@@ -55,6 +55,7 @@ import neatlogic.framework.deploy.exception.DeployAppConfigModuleRunnerGroupNotF
 import neatlogic.framework.deploy.exception.DeployJobCannotExecuteException;
 import neatlogic.framework.deploy.exception.DeployPipelineConfigNotFoundException;
 import neatlogic.framework.deploy.exception.DeployVersionNotFoundException;
+import neatlogic.framework.dto.globallock.GlobalLockVo;
 import neatlogic.framework.dto.runner.RunnerGroupVo;
 import neatlogic.framework.dto.runner.RunnerMapVo;
 import neatlogic.framework.exception.runner.RunnerGroupRunnerNotFoundException;
@@ -62,6 +63,8 @@ import neatlogic.framework.exception.runner.RunnerHttpRequestException;
 import neatlogic.framework.exception.runner.RunnerNotFoundByRunnerMapIdException;
 import neatlogic.framework.exception.type.ParamIrregularException;
 import neatlogic.framework.globallock.core.GlobalLockHandlerFactory;
+import neatlogic.framework.globallock.core.IGlobalLockHandler;
+import neatlogic.framework.globallock.dao.mapper.GlobalLockMapper;
 import neatlogic.framework.integration.authentication.enums.AuthenticateType;
 import neatlogic.framework.util.HttpRequestUtil;
 import neatlogic.framework.util.TableResultUtil;
@@ -106,6 +109,9 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
 
     @Resource
     DeployVersionMapper deployVersionMapper;
+
+    @Resource
+    GlobalLockMapper globalLockMapper;
 
     @Override
     public String getName() {
@@ -618,6 +624,13 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
     public void deleteJob(AutoexecJobVo jobVo) {
         deploySqlMapper.deleteDeploySqlDetailByJobId(jobVo.getId());
         deployJobMapper.deleteJobById(jobVo.getId());
+        GlobalLockVo globalLockVo = new GlobalLockVo();
+        JSONObject keywordParam = new JSONObject();
+        keywordParam.put("jobId", jobVo.getId());
+        globalLockVo.setKeywordParam(keywordParam);
+        IGlobalLockHandler globalLockHandler = GlobalLockHandlerFactory.getHandler(JobSourceType.DEPLOY.getValue());
+        globalLockHandler.initSearchParam(globalLockVo);
+        globalLockMapper.deleteLockByUuidList(globalLockVo.getUuidList());
     }
 
     @Override
