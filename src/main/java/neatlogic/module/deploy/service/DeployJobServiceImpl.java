@@ -115,37 +115,38 @@ public class DeployJobServiceImpl implements DeployJobService {
                 }
             }
         }
-
-        Map<String, Set<String>> sourceKeyInvokeIdSetMap = new HashMap<>();
-        Map<Long, String> jobIdToRouteIdMap = new HashMap<>();
-        List<Long> jobIdList = returnList.stream().map(DeployJobVo::getId).collect(Collectors.toList());
-        List<AutoexecJobInvokeVo> jobInvokeList = autoexecJobMapper.getJobInvokeListByJobIdList(jobIdList);
-        for (AutoexecJobInvokeVo jobInvokeVo : jobInvokeList) {
-            if (jobInvokeVo.getRouteId() != null) {
-                sourceKeyInvokeIdSetMap.computeIfAbsent(jobInvokeVo.getSource(), key -> new HashSet<>()).add(jobInvokeVo.getRouteId());
+        if (CollectionUtils.isNotEmpty(returnList)) {
+            Map<String, Set<String>> sourceKeyInvokeIdSetMap = new HashMap<>();
+            Map<Long, String> jobIdToRouteIdMap = new HashMap<>();
+            List<Long> jobIdList = returnList.stream().map(DeployJobVo::getId).collect(Collectors.toList());
+            List<AutoexecJobInvokeVo> jobInvokeList = autoexecJobMapper.getJobInvokeListByJobIdList(jobIdList);
+            for (AutoexecJobInvokeVo jobInvokeVo : jobInvokeList) {
+                if (jobInvokeVo.getRouteId() != null) {
+                    sourceKeyInvokeIdSetMap.computeIfAbsent(jobInvokeVo.getSource(), key -> new HashSet<>()).add(jobInvokeVo.getRouteId());
+                }
+                jobIdToRouteIdMap.put(jobInvokeVo.getJobId(), jobInvokeVo.getRouteId());
             }
-            jobIdToRouteIdMap.put(jobInvokeVo.getJobId(), jobInvokeVo.getRouteId());
-        }
-        Map<String, AutoexecJobRouteVo> routeMap = new HashMap<>();
-        for (Map.Entry<String, Set<String>> entry : sourceKeyInvokeIdSetMap.entrySet()) {
-            IAutoexecJobSource sourceHandler = AutoexecJobSourceFactory.getHandler(entry.getKey());
-            if (sourceHandler == null) {
-                continue;
-            }
-            List<AutoexecJobRouteVo> list = sourceHandler.getListByUniqueKeyList(new ArrayList<>(entry.getValue()));
-            if (CollectionUtils.isNotEmpty(list)) {
-                for (AutoexecJobRouteVo jobRouteVo : list) {
-                    routeMap.put(jobRouteVo.getId().toString(), jobRouteVo);
+            Map<String, AutoexecJobRouteVo> routeMap = new HashMap<>();
+            for (Map.Entry<String, Set<String>> entry : sourceKeyInvokeIdSetMap.entrySet()) {
+                IAutoexecJobSource sourceHandler = AutoexecJobSourceFactory.getHandler(entry.getKey());
+                if (sourceHandler == null) {
+                    continue;
+                }
+                List<AutoexecJobRouteVo> list = sourceHandler.getListByUniqueKeyList(new ArrayList<>(entry.getValue()));
+                if (CollectionUtils.isNotEmpty(list)) {
+                    for (AutoexecJobRouteVo jobRouteVo : list) {
+                        routeMap.put(jobRouteVo.getId().toString(), jobRouteVo);
+                    }
                 }
             }
-        }
-        for (DeployJobVo vo : returnList) {
-            String routeId = jobIdToRouteIdMap.get(vo.getId());
-            if (routeId != null) {
-                vo.setRouteId(routeId);
-                AutoexecJobRouteVo routeVo = routeMap.get(routeId);
-                if (routeVo != null) {
-                    vo.setRoute(routeVo);
+            for (DeployJobVo vo : returnList) {
+                String routeId = jobIdToRouteIdMap.get(vo.getId());
+                if (routeId != null) {
+                    vo.setRouteId(routeId);
+                    AutoexecJobRouteVo routeVo = routeMap.get(routeId);
+                    if (routeVo != null) {
+                        vo.setRoute(routeVo);
+                    }
                 }
             }
         }
