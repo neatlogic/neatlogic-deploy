@@ -16,7 +16,8 @@
 
 package neatlogic.module.deploy.api.appconfig.system;
 
-import neatlogic.framework.asynchronization.threadlocal.TenantContext;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.autoexec.dto.combop.AutoexecCombopScenarioVo;
 import neatlogic.framework.common.constvalue.ApiParamType;
@@ -24,16 +25,18 @@ import neatlogic.framework.common.dto.BasePageVo;
 import neatlogic.framework.deploy.auth.DEPLOY_BASE;
 import neatlogic.framework.deploy.constvalue.DeployAppConfigAction;
 import neatlogic.framework.deploy.constvalue.DeployAppConfigActionType;
-import neatlogic.framework.deploy.dto.app.*;
+import neatlogic.framework.deploy.dto.app.DeployAppConfigAuthorityActionVo;
+import neatlogic.framework.deploy.dto.app.DeployAppConfigAuthorityVo;
+import neatlogic.framework.deploy.dto.app.DeployAppEnvironmentVo;
+import neatlogic.framework.deploy.dto.app.DeployPipelineConfigVo;
 import neatlogic.framework.deploy.exception.DeployAppConfigNotFoundException;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
+import neatlogic.framework.util.I18nUtils;
 import neatlogic.framework.util.TableResultUtil;
 import neatlogic.module.deploy.dao.mapper.DeployAppConfigMapper;
 import neatlogic.module.deploy.util.DeployPipelineConfigManager;
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
@@ -53,7 +56,6 @@ import java.util.stream.Collectors;
 @AuthAction(action = DEPLOY_BASE.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
 public class SearchDeployAppConfigAuthorityApi extends PrivateApiComponentBase {
-    List<JSONObject> theadList = new ArrayList<>();
     @Resource
     private DeployAppConfigMapper deployAppConfigMapper;
 
@@ -72,20 +74,6 @@ public class SearchDeployAppConfigAuthorityApi extends PrivateApiComponentBase {
         return null;
     }
 
-    //拼装默认theadList
-    {
-        theadList.add(new JSONObject() {{
-            put("name", "user");
-            put("displayName", "用户");
-        }});
-        for (DeployAppConfigAction action : DeployAppConfigAction.values()) {
-            JSONObject thead = new JSONObject();
-            thead.put("name", action.getValue());
-            thead.put("displayName", action.getText());
-            theadList.add(thead);
-        }
-    }
-
     @Input({
             @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "应用资产id"),
             @Param(name = "authorityStrList", type = ApiParamType.JSONARRAY, desc = "用户列表"),
@@ -102,6 +90,17 @@ public class SearchDeployAppConfigAuthorityApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject paramObj) {
         DeployAppConfigAuthorityVo searchVo = paramObj.toJavaObject(DeployAppConfigAuthorityVo.class);
+        List<JSONObject> theadList = new ArrayList<>();
+        theadList.add(new JSONObject() {{
+            put("name", "user");
+            put("displayName", I18nUtils.getMessage("deploy.appconfig.displayname.user"));
+        }});
+        for (DeployAppConfigAction action : DeployAppConfigAction.values()) {
+            JSONObject thead = new JSONObject();
+            thead.put("name", action.getValue());
+            thead.put("displayName", action.getText());
+            theadList.add(thead);
+        }
         JSONArray finalTheadList = JSONArray.parseArray(theadList.toString());
 
         //获取当前应用下的所有环境
