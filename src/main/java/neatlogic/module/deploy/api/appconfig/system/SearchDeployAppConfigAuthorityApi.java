@@ -74,20 +74,6 @@ public class SearchDeployAppConfigAuthorityApi extends PrivateApiComponentBase {
         return null;
     }
 
-    //拼装默认theadList
-//    {
-//        theadList.add(new JSONObject() {{
-//            put("name", "user");
-//            put("displayName", "用户");
-//        }});
-//        for (DeployAppConfigAction action : DeployAppConfigAction.values()) {
-//            JSONObject thead = new JSONObject();
-//            thead.put("name", action.getValue());
-//            thead.put("displayName", action.getText());
-//            theadList.add(thead);
-//        }
-//    }
-
     @Input({
             @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "应用资产id"),
             @Param(name = "authorityStrList", type = ApiParamType.JSONARRAY, desc = "用户列表"),
