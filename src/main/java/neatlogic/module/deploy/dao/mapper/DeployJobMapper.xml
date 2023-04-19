@@ -150,10 +150,10 @@ limitations under the License.
             <if test="hasParent != null">
                 <choose>
                     <when test="hasParent == true">
-                        AND aj.parent_id is not null
+                        AND (aj.parent_id is not null AND aj.parent_id != -1)
                     </when>
                     <otherwise>
-                        AND aj.parent_id is null
+                        AND (aj.parent_id is null OR aj.parent_id = -1)
                     </otherwise>
                 </choose>
             </if>
