@@ -2,7 +2,7 @@
 
 ## about
 
-Neatlogic-deploy is a publishing module that mainly includes functions such as application configuration, version center, and one click publishing.
+Neatlogic deploy is a publishing module that can solve the scenario of one click publishing in application environments, mainly including application configuration, version center, one click publishing, and other functions.
 
 ## Feature
 
