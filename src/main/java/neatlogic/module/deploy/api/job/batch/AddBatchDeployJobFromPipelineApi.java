@@ -122,12 +122,6 @@ public class AddBatchDeployJobFromPipelineApi extends PrivateApiComponentBase {
         deployJobVo.setRouteId(pipelineId.toString());
         deployJobVo.setExecUser(UserContext.get().getUserUuid());
         deployBatchJobService.creatBatchJob(deployJobVo, pipelineVo, false);
-        if (deployJobVo.getRouteId() == null) {
-            System.out.println("1");
-        }
-
-        System.out.println("b=" + deployJobVo.getId());
-//        deployJobMapper.insertJobInvoke(deployJobVo.getId(), pipelineId, JobSource.PIPELINE.getValue(), deployJobVo.getRouteId());
 
         //补充定时执行逻辑
         if (Objects.equals(deployJobVo.getTriggerType(), JobTriggerType.AUTO.getValue())) {

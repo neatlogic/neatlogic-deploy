@@ -132,9 +132,6 @@ public class DeployJobScheduleJob  extends JobBase {
             deployJobVo.setSource(JobSource.DEPLOY_SCHEDULE_PIPELINE.getValue());
             deployJobVo.setName("定时作业/" + pipelineVo.getName());
             deployBatchJobService.creatBatchJob(deployJobVo, pipelineVo, true);
-
-            System.out.println("d=" + deployJobVo.getId());
-//            deployJobMapper.insertJobInvoke(deployJobVo.getId(), deployJobVo.getInvokeId(), deployJobVo.getSource(), deployJobVo.getRouteId());
         }
     }
 

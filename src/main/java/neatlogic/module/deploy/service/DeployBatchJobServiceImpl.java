@@ -104,11 +104,6 @@ public class DeployBatchJobServiceImpl implements DeployBatchJobService, IDeploy
                                     deployJobService.createJob(jobVo);
                                 }
                                 deployJobMapper.insertGroupJob(groupVo.getId(), jobVo.getId(), k + 1);
-
-                                if (deployJobVo.getRouteId() == null) {
-                                    System.out.println("3");
-                                }
-                                System.out.println("a=" + jobVo.getId());
                                 deployJobMapper.updateAutoExecJobParentIdById(jobVo);
 
                             }
