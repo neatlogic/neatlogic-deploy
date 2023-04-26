@@ -19,14 +19,21 @@ package neatlogic.module.deploy.api.job;
 import neatlogic.framework.asynchronization.threadlocal.UserContext;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.batch.BatchRunner;
+import neatlogic.framework.cmdb.crossover.IAppSystemMapper;
+import neatlogic.framework.cmdb.crossover.ICiEntityCrossoverMapper;
+import neatlogic.framework.cmdb.dto.resourcecenter.entity.AppSystemVo;
+import neatlogic.framework.cmdb.exception.cientity.CiEntityNotFoundException;
 import neatlogic.framework.common.constvalue.ApiParamType;
+import neatlogic.framework.crossover.CrossoverServiceFactory;
 import neatlogic.framework.dao.mapper.UserMapper;
 import neatlogic.framework.deploy.auth.DEPLOY_BASE;
+import neatlogic.framework.deploy.constvalue.JobSource;
 import neatlogic.framework.deploy.dto.job.DeployJobModuleVo;
 import neatlogic.framework.deploy.dto.job.DeployJobVo;
 import neatlogic.framework.deploy.exception.DeployVersionRedirectUrlCredentialUserNotFoundException;
 import neatlogic.framework.dto.UserVo;
 import neatlogic.framework.exception.core.ApiRuntimeException;
+import neatlogic.framework.exception.type.ParamIrregularException;
 import neatlogic.framework.filter.core.LoginAuthHandlerBase;
 import neatlogic.framework.integration.authentication.enums.AuthenticateType;
 import neatlogic.framework.restful.annotation.*;
@@ -85,7 +92,6 @@ public class CreateMultiDeployJobApi extends PrivateApiComponentBase {
             @Param(name = "envId", type = ApiParamType.LONG, desc = "环境id"),
             @Param(name = "envName", type = ApiParamType.STRING, desc = "环境id，如果入参也有envId，则会以envName为准"),
             @Param(name = "param", type = ApiParamType.JSONOBJECT, desc = "执行参数"),
-            @Param(name = "source", type = ApiParamType.STRING, desc = "来源 itsm|human|deploy   ITSM|人工发起的等，不传默认是发布发起的"),
             @Param(name = "roundCount", type = ApiParamType.LONG, isRequired = true, desc = "分组数 "),
             @Param(name = "executeConfig", type = ApiParamType.JSONOBJECT, desc = "执行目标"),
             @Param(name = "planStartTime", type = ApiParamType.LONG, desc = "计划时间"),
@@ -104,11 +110,34 @@ public class CreateMultiDeployJobApi extends PrivateApiComponentBase {
         }
         JSONArray result = new JSONArray();
         DeployJobVo deployJobParam = JSONObject.toJavaObject(jsonObj, DeployJobVo.class);
+        ICiEntityCrossoverMapper iCiEntityCrossoverMapper = CrossoverServiceFactory.getApi(ICiEntityCrossoverMapper.class);
+        IAppSystemMapper iAppSystemMapper = CrossoverServiceFactory.getApi(IAppSystemMapper.class);
+        if (StringUtils.isNotBlank(deployJobParam.getAppSystemName())) {
+            AppSystemVo appSystem = iAppSystemMapper.getAppSystemByAbbrName(deployJobParam.getAppSystemAbbrName());
+            if (appSystem == null) {
+                throw new CiEntityNotFoundException(deployJobParam.getAppSystemName());
+            }
+            deployJobParam.setAppSystemId(appSystem.getId());
+            deployJobParam.setAppSystemAbbrName(appSystem.getAbbrName());
+        } else if (deployJobParam.getAppSystemId() != null) {
+            AppSystemVo appSystem = iAppSystemMapper.getAppSystemById(deployJobParam.getAppSystemId());
+            if (iCiEntityCrossoverMapper.getCiEntityBaseInfoById(deployJobParam.getAppSystemId()) == null) {
+                throw new CiEntityNotFoundException(deployJobParam.getAppSystemId());
+            }
+            deployJobParam.setAppSystemName(appSystem.getName());
+            deployJobParam.setAppSystemAbbrName(appSystem.getAbbrName());
+        } else {
+            throw new ParamIrregularException("appSystemId | appSystemName");
+        }
+        Long invokeId = deployJobParam.getAppSystemId();
         BatchRunner<DeployJobModuleVo> runner = new BatchRunner<>();
         runner.execute(deployJobParam.getModuleList(), 3, module -> {
             if (module != null) {
                 //防止后续多个作业用的同一个作业
                 DeployJobVo deployJob = JSONObject.toJavaObject(jsonObj, DeployJobVo.class);
+                deployJob.setSource(JobSource.DEPLOY.getValue());
+                deployJob.setInvokeId(invokeId);
+                deployJob.setRouteId(invokeId.toString());
                 try {
                     if (jsonObj.containsKey("triggerType")) {
                         result.add(deployJobService.createJobAndSchedule(deployJob, module));

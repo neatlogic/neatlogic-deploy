@@ -16,23 +16,22 @@
 
 package neatlogic.module.deploy.job.source.handler;
 
+import com.alibaba.fastjson.JSONObject;
+import neatlogic.framework.autoexec.dto.job.AutoexecJobRouteVo;
 import neatlogic.framework.autoexec.source.IAutoexecJobSource;
-import neatlogic.framework.common.dto.ValueTextVo;
+import neatlogic.framework.cmdb.crossover.IResourceCrossoverMapper;
+import neatlogic.framework.cmdb.dto.resourcecenter.AppSystemVo;
+import neatlogic.framework.crossover.CrossoverServiceFactory;
 import neatlogic.framework.deploy.constvalue.JobSource;
-import neatlogic.framework.deploy.dto.job.DeployJobVo;
-import neatlogic.module.deploy.dao.mapper.DeployJobMapper;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
 
 @Component
 public class DeployJobSourceHandler implements IAutoexecJobSource {
-
-    @Resource
-    private DeployJobMapper deployJobMapper;
 
     @Override
     public String getValue() {
@@ -45,14 +44,31 @@ public class DeployJobSourceHandler implements IAutoexecJobSource {
     }
 
     @Override
-    public List<ValueTextVo> getListByIdList(List<Long> idList) {
-        if (CollectionUtils.isEmpty(idList)) {
+    public List<AutoexecJobRouteVo> getListByUniqueKeyList(List<String> uniqueKeyList) {
+        if (CollectionUtils.isEmpty(uniqueKeyList)) {
             return null;
         }
-        List<ValueTextVo> resultList = new ArrayList<>();
-        List<DeployJobVo> list = deployJobMapper.getDeployJobByJobIdList(idList);
-        for (DeployJobVo deployJobVo : list) {
-            resultList.add(new ValueTextVo(deployJobVo.getId(), deployJobVo.getName()));
+        List<Long> idList = new ArrayList<>();
+        for (String str : uniqueKeyList) {
+            idList.add(Long.valueOf(str));
+        }
+        List<AutoexecJobRouteVo> resultList = new ArrayList<>();
+        IResourceCrossoverMapper resourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
+        List<AppSystemVo> list = resourceCrossoverMapper.getAppSystemListByIdList(idList);
+        for (AppSystemVo appSystemVo : list) {
+            JSONObject config = new JSONObject();
+            config.put("appSystemId", appSystemVo.getId());
+            String label = "";
+            if (appSystemVo != null) {
+                if (StringUtils.isNotBlank(appSystemVo.getAbbrName()) && StringUtils.isNotBlank(appSystemVo.getName())) {
+                    label = appSystemVo.getAbbrName() + "(" + appSystemVo.getName() + ")";
+                } else if (StringUtils.isNotBlank(appSystemVo.getAbbrName())) {
+                    label = appSystemVo.getAbbrName();
+                } else if (StringUtils.isNotBlank(appSystemVo.getName())) {
+                    label = appSystemVo.getName();
+                }
+            }
+            resultList.add(new AutoexecJobRouteVo(appSystemVo.getId(), label, config));
         }
         return resultList;
     }

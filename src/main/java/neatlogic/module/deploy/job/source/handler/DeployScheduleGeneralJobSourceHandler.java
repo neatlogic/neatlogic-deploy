@@ -16,8 +16,9 @@
 
 package neatlogic.module.deploy.job.source.handler;
 
+import com.alibaba.fastjson.JSONObject;
+import neatlogic.framework.autoexec.dto.job.AutoexecJobRouteVo;
 import neatlogic.framework.autoexec.source.IAutoexecJobSource;
-import neatlogic.framework.common.dto.ValueTextVo;
 import neatlogic.framework.deploy.constvalue.JobSource;
 import neatlogic.framework.deploy.dto.schedule.DeployScheduleVo;
 import neatlogic.module.deploy.dao.mapper.DeployScheduleMapper;
@@ -45,14 +46,20 @@ public class DeployScheduleGeneralJobSourceHandler implements IAutoexecJobSource
     }
 
     @Override
-    public List<ValueTextVo> getListByIdList(List<Long> idList) {
-        if (CollectionUtils.isEmpty(idList)) {
+    public List<AutoexecJobRouteVo> getListByUniqueKeyList(List<String> uniqueKeyList) {
+        if (CollectionUtils.isEmpty(uniqueKeyList)) {
             return null;
         }
-        List<ValueTextVo> resultList = new ArrayList<>();
+        List<Long> idList = new ArrayList<>();
+        for (String str : uniqueKeyList) {
+            idList.add(Long.valueOf(str));
+        }
+        List<AutoexecJobRouteVo> resultList = new ArrayList<>();
         List<DeployScheduleVo> list = deployScheduleMapper.getScheduleListByIdList(idList);
-        for (DeployScheduleVo serviceVo : list) {
-            resultList.add(new ValueTextVo(serviceVo.getId(), serviceVo.getName()));
+        for (DeployScheduleVo deployScheduleVo : list) {
+            JSONObject config = new JSONObject();
+            config.put("id", deployScheduleVo.getId());
+            resultList.add(new AutoexecJobRouteVo(deployScheduleVo.getId(), deployScheduleVo.getName(), config));
         }
         return resultList;
     }

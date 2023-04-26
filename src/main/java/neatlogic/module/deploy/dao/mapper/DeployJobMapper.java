@@ -80,7 +80,7 @@ public interface DeployJobMapper {
 
     void insertGroupJob(@Param("groupId") Long groupId, @Param("jobId") Long jobId, @Param("sort") Integer sort);
 
-    void insertJobInvoke(@Param("jobId") Long jobId, @Param("invokeId") Long invokeId, @Param("source") String source);
+    void insertJobInvoke(@Param("jobId") Long jobId, @Param("invokeId") Long invokeId, @Param("source") String source, @Param("routeId") String routeId);
 
     void updateAutoExecJob(DeployJobVo deployJobVo);
 

@@ -96,13 +96,14 @@ public class DeployBatchJobServiceImpl implements DeployBatchJobService, IDeploy
                                 Long versionId = getVersionId(deployJobVo.getAppSystemModuleVersionList(), jobTemplateVo);
                                 jobVo.setVersionId(versionId);
                                 jobVo.setParentId(deployJobVo.getId());
+                                jobVo.setInvokeId(deployJobVo.getId());
+                                jobVo.setRouteId(deployJobVo.getInvokeId().toString());
                                 if (isFire) {
                                     deployJobService.createJobAndFire(jobVo);
                                 } else {
                                     deployJobService.createJob(jobVo);
                                 }
                                 deployJobMapper.insertGroupJob(groupVo.getId(), jobVo.getId(), k + 1);
-                                deployJobMapper.insertJobInvoke(deployJobVo.getId(), jobVo.getId(), JobSource.BATCHDEPLOY.getValue());
                                 deployJobMapper.updateAutoExecJobParentIdById(jobVo);
 
                             }
@@ -124,6 +125,9 @@ public class DeployBatchJobServiceImpl implements DeployBatchJobService, IDeploy
             }
         }
 
+        deployJobMapper.insertJobInvoke(deployJobVo.getId(), deployJobVo.getInvokeId(), deployJobVo.getSource(), deployJobVo.getRouteId());
+        // parentId为-1时，代表该作业是父作业
+        deployJobVo.setParentId(-1L);
         deployJobMapper.insertAutoExecJob(deployJobVo);
         if (CollectionUtils.isNotEmpty(pipelineVo.getAuthList())) {
             for (PipelineAuthVo authVo : pipelineVo.getAuthList()) {

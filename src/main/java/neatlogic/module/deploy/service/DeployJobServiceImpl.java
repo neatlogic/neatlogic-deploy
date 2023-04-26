@@ -24,12 +24,16 @@ import neatlogic.framework.autoexec.crossover.IAutoexecScenarioCrossoverMapper;
 import neatlogic.framework.autoexec.dao.mapper.AutoexecJobMapper;
 import neatlogic.framework.autoexec.dto.combop.AutoexecCombopExecuteConfigVo;
 import neatlogic.framework.autoexec.dto.combop.AutoexecCombopExecuteNodeConfigVo;
+import neatlogic.framework.autoexec.dto.job.AutoexecJobInvokeVo;
+import neatlogic.framework.autoexec.dto.job.AutoexecJobRouteVo;
 import neatlogic.framework.autoexec.dto.job.AutoexecJobVo;
 import neatlogic.framework.autoexec.dto.node.AutoexecNodeVo;
 import neatlogic.framework.autoexec.dto.scenario.AutoexecScenarioVo;
 import neatlogic.framework.autoexec.exception.AutoexecScenarioIsNotFoundException;
 import neatlogic.framework.autoexec.job.action.core.AutoexecJobActionHandlerFactory;
 import neatlogic.framework.autoexec.job.action.core.IAutoexecJobActionHandler;
+import neatlogic.framework.autoexec.source.AutoexecJobSourceFactory;
+import neatlogic.framework.autoexec.source.IAutoexecJobSource;
 import neatlogic.framework.cmdb.crossover.IAppSystemMapper;
 import neatlogic.framework.cmdb.crossover.ICiEntityCrossoverMapper;
 import neatlogic.framework.cmdb.crossover.IResourceCrossoverMapper;
@@ -64,9 +68,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -109,6 +111,41 @@ public class DeployJobServiceImpl implements DeployJobService {
                         if (StringUtils.equals(jobVo.getSource(), JobSource.BATCHDEPLOY.getValue())) {
                             jobVo.setChildren(parentJobChildrenListMap.get(jobVo.getId()));
                         }
+                    }
+                }
+            }
+        }
+        if (CollectionUtils.isNotEmpty(returnList)) {
+            Map<String, Set<String>> sourceKeyInvokeIdSetMap = new HashMap<>();
+            Map<Long, String> jobIdToRouteIdMap = new HashMap<>();
+            List<Long> jobIdList = returnList.stream().map(DeployJobVo::getId).collect(Collectors.toList());
+            List<AutoexecJobInvokeVo> jobInvokeList = autoexecJobMapper.getJobInvokeListByJobIdList(jobIdList);
+            for (AutoexecJobInvokeVo jobInvokeVo : jobInvokeList) {
+                if (jobInvokeVo.getRouteId() != null) {
+                    sourceKeyInvokeIdSetMap.computeIfAbsent(jobInvokeVo.getSource(), key -> new HashSet<>()).add(jobInvokeVo.getRouteId());
+                }
+                jobIdToRouteIdMap.put(jobInvokeVo.getJobId(), jobInvokeVo.getRouteId());
+            }
+            Map<String, AutoexecJobRouteVo> routeMap = new HashMap<>();
+            for (Map.Entry<String, Set<String>> entry : sourceKeyInvokeIdSetMap.entrySet()) {
+                IAutoexecJobSource sourceHandler = AutoexecJobSourceFactory.getHandler(entry.getKey());
+                if (sourceHandler == null) {
+                    continue;
+                }
+                List<AutoexecJobRouteVo> list = sourceHandler.getListByUniqueKeyList(new ArrayList<>(entry.getValue()));
+                if (CollectionUtils.isNotEmpty(list)) {
+                    for (AutoexecJobRouteVo jobRouteVo : list) {
+                        routeMap.put(jobRouteVo.getId().toString(), jobRouteVo);
+                    }
+                }
+            }
+            for (DeployJobVo vo : returnList) {
+                String routeId = jobIdToRouteIdMap.get(vo.getId());
+                if (routeId != null) {
+                    vo.setRouteId(routeId);
+                    AutoexecJobRouteVo routeVo = routeMap.get(routeId);
+                    if (routeVo != null) {
+                        vo.setRoute(routeVo);
                     }
                 }
             }

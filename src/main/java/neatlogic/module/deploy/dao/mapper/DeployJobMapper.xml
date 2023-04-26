@@ -150,10 +150,10 @@ limitations under the License.
             <if test="hasParent != null">
                 <choose>
                     <when test="hasParent == true">
-                        AND aj.parent_id is not null
+                        AND (aj.parent_id is not null AND aj.parent_id != -1)
                     </when>
                     <otherwise>
-                        AND aj.parent_id is null
+                        AND (aj.parent_id is null OR aj.parent_id = -1)
                     </otherwise>
                 </choose>
             </if>
@@ -582,6 +582,7 @@ limitations under the License.
         INSERT INTO `autoexec_job` (`id`,
                                     `name`,
                                     `status`,
+                                    `parent_id`,
                                     `source`,
                                     `exec_user`,
                                     `trigger_type`,
@@ -590,6 +591,7 @@ limitations under the License.
         VALUES (#{id},
                 #{name},
                 #{status},
+                #{parentId},
                 #{source},
                 #{execUser},
                 #{triggerType},
@@ -624,8 +626,8 @@ limitations under the License.
     </insert>
 
     <insert id="insertJobInvoke">
-        INSERT INTO `autoexec_job_invoke` (`job_id`, `invoke_id`, `source`, `type`)
-        VALUES (#{jobId}, #{invokeId}, #{source}, 'deploy')
+        INSERT INTO `autoexec_job_invoke` (`job_id`, `invoke_id`, `source`, `type`, `route_id`)
+        VALUES (#{jobId}, #{invokeId}, #{source}, 'deploy', #{routeId})
     </insert>
 
     <update id="updateDeployJobReviewStatusById" parameterType="neatlogic.framework.deploy.dto.job.DeployJobVo">

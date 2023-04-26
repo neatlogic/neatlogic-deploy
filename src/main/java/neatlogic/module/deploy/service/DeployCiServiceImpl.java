@@ -142,6 +142,7 @@ public class DeployCiServiceImpl implements DeployCiService {
         deployJobParam.setModuleList(Collections.singletonList(moduleVo));
         deployJobParam.setSource(JobSource.DEPLOY_CI.getValue());
         deployJobParam.setInvokeId(ci.getId());
+        deployJobParam.setRouteId(ci.getId().toString());
         if (!Objects.equals(ci.getTriggerType(), DeployCiTriggerType.INSTANT.getValue())) {
             deployJobService.createJobAndSchedule(deployJobParam, moduleVo);
         } else {
@@ -180,7 +181,6 @@ public class DeployCiServiceImpl implements DeployCiService {
         }
         DeployJobVo deployJobVo = getBatchDeployJobVo(ci, deployVersion != null ? deployVersion.getId() : null);
         deployBatchJobService.creatBatchJob(deployJobVo, pipeline, false);
-        deployJobMapper.insertJobInvoke(deployJobVo.getId(), pipelineId, JobSource.PIPELINE.getValue());
 
         //补充定时执行逻辑
         if (Objects.equals(deployJobVo.getTriggerType(), JobTriggerType.AUTO.getValue())) {
@@ -247,7 +247,7 @@ public class DeployCiServiceImpl implements DeployCiService {
         }
         deployJobVo.setAppSystemModuleVersionList(Collections.singletonList(new DeploySystemModuleVersionVo(ci.getAppSystemId(), ci.getAppModuleId(), deployVersionId)));
         deployJobVo.setReviewStatus(ReviewStatus.PASSED.getValue());
-        deployJobVo.setSource(JobSource.BATCHDEPLOY.getValue());
+        deployJobVo.setSource(JobSource.DEPLOY_CI.getValue());// 可能是
         deployJobVo.setExecUser(UserContext.get().getUserUuid());
         return deployJobVo;
     }
