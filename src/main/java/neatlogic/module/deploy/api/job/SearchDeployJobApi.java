@@ -102,4 +102,9 @@ public class SearchDeployJobApi extends PrivateApiComponentBase {
         return TableResultUtil.getResult(deployJobList, deployJobVo);
     }
 
+    @Override
+    public boolean disableReturnCircularReferenceDetect() {
+        return true;
+    }
+
 }
