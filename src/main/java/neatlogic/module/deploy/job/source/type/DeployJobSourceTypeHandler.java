@@ -295,6 +295,20 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
         }
     }
 
+    /**
+     * 工具库工具deploy/dpsqlexec会调用此方法
+     * 若sql不存在，则新增，存在则更新
+     *    新增时：
+     *      status默认pending
+     *      isModified默认0
+     *      wornCount默认为0
+     *      sort为插入的顺序
+     *    更新时：
+     *      status为pending时，start_time为null、end_time为null
+     *      status为running时，start_time为now(3)、end_time为null
+     *      status为aborted、succeed、failed、ignored时，end_time为now(3)
+     * @param paramObj 单条sql的信息
+     */
     @Override
     public void updateSqlStatus(JSONObject paramObj) {
         DeploySqlNodeDetailVo paramDeploySqlVo = new DeploySqlNodeDetailVo(paramObj.getJSONObject("sqlStatus"));
