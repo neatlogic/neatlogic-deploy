@@ -60,7 +60,7 @@ public class DeployJobNotifyPolicyHandler extends NotifyPolicyHandlerBase {
     protected List<NotifyTriggerVo> myNotifyTriggerList() {
         List<NotifyTriggerVo> returnList = new ArrayList<>();
         for (DeployJobNotifyTriggerType triggerType : DeployJobNotifyTriggerType.values()) {
-            returnList.add(new NotifyTriggerVo(triggerType.getTrigger(), I18nUtils.getMessage(triggerType.getText()), I18nUtils.getMessage(triggerType.getDescription())));
+            returnList.add(new NotifyTriggerVo(triggerType));
         }
         return returnList;
     }
