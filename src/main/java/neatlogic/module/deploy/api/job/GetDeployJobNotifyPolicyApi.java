@@ -17,12 +17,17 @@ package neatlogic.module.deploy.api.job;
 
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.common.constvalue.ApiParamType;
+import neatlogic.framework.crossover.CrossoverServiceFactory;
 import neatlogic.framework.deploy.auth.DEPLOY_BASE;
+import neatlogic.framework.notify.crossover.INotifyServiceCrossoverService;
+import neatlogic.framework.notify.dto.InvokeNotifyPolicyConfigVo;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.module.deploy.dao.mapper.DeployAppConfigMapper;
 import com.alibaba.fastjson.JSONObject;
+import neatlogic.module.deploy.notify.handler.DeployJobNotifyPolicyHandler;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -53,12 +58,20 @@ public class GetDeployJobNotifyPolicyApi extends PrivateApiComponentBase {
             @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "应用系统id")
     })
     @Output({
-            @Param(name = "notifyPolicyId", type = ApiParamType.LONG, desc = "通知策略id")
+            @Param(explode = InvokeNotifyPolicyConfigVo.class, desc = "通知策略配置信息")
     })
     @Description(desc = "获取发布应用的通知策略id")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
-        return deployAppConfigMapper.getAppSystemNotifyPolicyIdByAppSystemId(paramObj.getLong("appSystemId"));
+        Long appSystemId = paramObj.getLong("appSystemId");
+        String configStr = deployAppConfigMapper.getAppSystemNotifyPolicyConfigByAppSystemId(appSystemId);
+        if (StringUtils.isBlank(configStr)) {
+            return null;
+        }
+        JSONObject config = JSONObject.parseObject(configStr);
+        INotifyServiceCrossoverService notifyServiceCrossoverService = CrossoverServiceFactory.getApi(INotifyServiceCrossoverService.class);
+        InvokeNotifyPolicyConfigVo invokeNotifyPolicyConfigVo = notifyServiceCrossoverService.regulateNotifyPolicyConfig(config, DeployJobNotifyPolicyHandler.class);
+        return invokeNotifyPolicyConfigVo;
     }
 
     @Override
