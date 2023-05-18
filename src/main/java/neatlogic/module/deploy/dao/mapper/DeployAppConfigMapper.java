@@ -153,7 +153,7 @@ public interface DeployAppConfigMapper {
 
     Integer getAppSystemIdListCount(DeployResourceSearchVo searchVo);
 
-    Long getAppSystemNotifyPolicyIdByAppSystemId(Long appSystemId);
+    String getAppSystemNotifyPolicyConfigByAppSystemId(Long appSystemId);
 
     int getCiEntityIdListCount(Integer isConfig);
 

@@ -31,6 +31,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -61,7 +62,7 @@ public class NotifyPolicyDeployJobDependencyHandler extends CustomTableDependenc
 
     @Override
     protected List<String> getToFieldList() {
-        return null;
+        return Arrays.asList("app_system_id", "config");
     }
 
     @Override

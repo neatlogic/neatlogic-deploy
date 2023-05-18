@@ -1487,10 +1487,8 @@ limitations under the License.
         </foreach>
     </select>
 
-    <select id="getAppSystemNotifyPolicyIdByAppSystemId" resultType="java.lang.Long" useCache="false">
-        select notify_policy_id
-        from deploy_job_notify_policy
-        where app_system_id = #{appSystemId}
+    <select id="getAppSystemNotifyPolicyConfigByAppSystemId" resultType="java.lang.String" useCache="false">
+        SELECT `config` FROM `deploy_job_notify_policy` WHERE `app_system_id` = #{value}
     </select>
 
     <select id="getAppSystemById" parameterType="java.lang.Long" resultType="neatlogic.framework.deploy.dto.app.DeployAppSystemVo">
