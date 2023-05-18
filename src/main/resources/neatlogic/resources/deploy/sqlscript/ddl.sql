@@ -308,6 +308,7 @@ CREATE TABLE IF NOT EXISTS `deploy_job_lane_group_job` (
 CREATE TABLE IF NOT EXISTS `deploy_job_notify_policy` (
   `app_system_id` bigint NOT NULL COMMENT '应用系统id',
   `notify_policy_id` bigint NOT NULL COMMENT '通知策略id',
+  `config` mediumtext COMMENT '通知策略个性化配置',
   PRIMARY KEY (`app_system_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='发布作业引用通知策略表';
 
