@@ -26,7 +26,7 @@ import neatlogic.framework.deploy.constvalue.DeployAppConfigAction;
 import neatlogic.framework.deploy.exception.DeployAppEnvAuthException;
 import neatlogic.framework.deploy.exception.DeployAppOperationAuthException;
 import neatlogic.framework.deploy.exception.DeployAppScenarioAuthException;
-import neatlogic.module.deploy.auth.core.DeployAppAuthChecker;
+import neatlogic.framework.deploy.auth.core.DeployAppAuthChecker;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

@@ -15,7 +15,6 @@
  */
 package neatlogic.module.deploy.api.appconfig.module;
 
-import neatlogic.framework.asynchronization.threadlocal.TenantContext;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.cmdb.dto.resourcecenter.entity.AppEnvironmentVo;
 import neatlogic.framework.common.constvalue.ApiParamType;

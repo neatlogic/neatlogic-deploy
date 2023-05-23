@@ -38,7 +38,7 @@ import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.framework.util.TableResultUtil;
-import neatlogic.module.deploy.auth.core.DeployAppAuthChecker;
+import neatlogic.framework.deploy.auth.core.DeployAppAuthChecker;
 import neatlogic.module.deploy.dao.mapper.DeployPipelineMapper;
 import neatlogic.module.deploy.dao.mapper.DeployScheduleMapper;
 import com.alibaba.fastjson.JSONObject;

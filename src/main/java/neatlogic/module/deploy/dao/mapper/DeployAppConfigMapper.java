@@ -2,6 +2,7 @@ package neatlogic.module.deploy.dao.mapper;
 
 import neatlogic.framework.cmdb.dto.resourcecenter.entity.AppEnvironmentVo;
 import neatlogic.framework.common.dto.BasePageVo;
+import neatlogic.framework.deploy.crossover.IDeployAppConfigCrossoverMapper;
 import neatlogic.framework.deploy.dto.app.*;
 import neatlogic.framework.dto.AuthenticationInfoVo;
 import neatlogic.framework.dto.runner.RunnerGroupVo;
@@ -16,7 +17,7 @@ import java.util.Set;
  * @author lvzk
  * @date 2022/5/23 12:19 下午
  */
-public interface DeployAppConfigMapper {
+public interface DeployAppConfigMapper extends IDeployAppConfigCrossoverMapper {
 
     List<Long> getAppSystemIdList(@Param("searchVo") DeployResourceSearchVo searchVo, @Param("userUuid") String userUuid);
 

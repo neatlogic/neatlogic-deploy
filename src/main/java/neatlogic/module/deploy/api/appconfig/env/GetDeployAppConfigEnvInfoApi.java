@@ -16,7 +16,6 @@ limitations under the License.
 
 package neatlogic.module.deploy.api.appconfig.env;
 
-import neatlogic.framework.asynchronization.threadlocal.TenantContext;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.cmdb.crossover.ICiEntityCrossoverMapper;
 import neatlogic.framework.cmdb.crossover.IResourceCrossoverMapper;

@@ -68,7 +68,7 @@ import neatlogic.framework.globallock.dao.mapper.GlobalLockMapper;
 import neatlogic.framework.integration.authentication.enums.AuthenticateType;
 import neatlogic.framework.util.HttpRequestUtil;
 import neatlogic.framework.util.TableResultUtil;
-import neatlogic.module.deploy.auth.core.DeployAppAuthChecker;
+import neatlogic.framework.deploy.auth.core.DeployAppAuthChecker;
 import neatlogic.module.deploy.dao.mapper.DeployAppConfigMapper;
 import neatlogic.module.deploy.dao.mapper.DeployJobMapper;
 import neatlogic.module.deploy.dao.mapper.DeploySqlMapper;

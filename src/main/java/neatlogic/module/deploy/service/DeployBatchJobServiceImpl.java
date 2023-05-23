@@ -26,7 +26,6 @@ import neatlogic.framework.autoexec.dao.mapper.AutoexecJobMapper;
 import neatlogic.framework.autoexec.dto.job.AutoexecJobVo;
 import neatlogic.framework.autoexec.job.action.core.AutoexecJobActionHandlerFactory;
 import neatlogic.framework.autoexec.job.action.core.IAutoexecJobActionHandler;
-import neatlogic.framework.deploy.constvalue.JobSource;
 import neatlogic.framework.deploy.crossover.IDeployBatchJobCrossoverService;
 import neatlogic.framework.deploy.dto.job.DeployJobAuthVo;
 import neatlogic.framework.deploy.dto.job.DeployJobVo;

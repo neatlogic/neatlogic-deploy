@@ -17,15 +17,11 @@ limitations under the License.
 package neatlogic.module.deploy.dependency.handler;
 
 import neatlogic.framework.asynchronization.threadlocal.TenantContext;
-import neatlogic.framework.autoexec.dao.mapper.AutoexecCombopMapper;
 import neatlogic.framework.autoexec.dto.AutoexecParamVo;
-import neatlogic.framework.autoexec.dto.combop.AutoexecCombopParamVo;
-import neatlogic.framework.autoexec.dto.combop.AutoexecCombopVo;
 import neatlogic.framework.cmdb.crossover.ICiEntityCrossoverMapper;
 import neatlogic.framework.cmdb.dto.cientity.CiEntityVo;
 import neatlogic.framework.crossover.CrossoverServiceFactory;
 import neatlogic.framework.dependency.constvalue.FrameworkFromType;
-import neatlogic.framework.dependency.core.CustomTableDependencyHandlerBase;
 import neatlogic.framework.dependency.core.FixedTableDependencyHandlerBase;
 import neatlogic.framework.dependency.core.IFromType;
 import neatlogic.framework.dependency.dto.DependencyInfoVo;
@@ -41,7 +37,6 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 
 /**

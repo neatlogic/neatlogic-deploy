@@ -35,7 +35,7 @@ import neatlogic.framework.deploy.dto.app.DeployPipelinePhaseVo;
 import neatlogic.framework.deploy.dto.pipeline.PipelineJobTemplateVo;
 import neatlogic.framework.deploy.dto.pipeline.PipelineSearchVo;
 import neatlogic.framework.deploy.dto.pipeline.PipelineVo;
-import neatlogic.module.deploy.auth.core.DeployAppAuthChecker;
+import neatlogic.framework.deploy.auth.core.DeployAppAuthChecker;
 import neatlogic.module.deploy.dao.mapper.DeployPipelineMapper;
 import neatlogic.module.deploy.dependency.handler.AutoexecGlobalParam2DeployAppPipelinePhaseOperationArgumentParamDependencyHandler;
 import neatlogic.module.deploy.dependency.handler.AutoexecGlobalParam2DeployAppPipelinePhaseOperationInputParamDependencyHandler;

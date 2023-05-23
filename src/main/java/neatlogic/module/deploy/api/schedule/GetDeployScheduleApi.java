@@ -31,7 +31,7 @@ import neatlogic.framework.deploy.exception.DeployScheduleNotFoundException;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
-import neatlogic.module.deploy.auth.core.DeployAppAuthChecker;
+import neatlogic.framework.deploy.auth.core.DeployAppAuthChecker;
 import neatlogic.module.deploy.dao.mapper.DeployScheduleMapper;
 import neatlogic.module.deploy.dao.mapper.DeployPipelineMapper;
 import com.alibaba.fastjson.JSONObject;
