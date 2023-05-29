@@ -1,14 +1,25 @@
-[Chinese](README.md) / English
+[中文](README.md) / English
 
-## about
+<p align="left">
+    <a href="https://opensource.org/licenses/Apache-2.0" alt="License">
+        <img src="https://img.shields.io/badge/License-Apache%202.0-blue.svg" /></a>
+<a target="_blank" href="https://join.slack.com/t/neatlogichome/shared_invite/zt-1w037axf8-r_i2y4pPQ1Z8FxOkAbb64w">
+<img src="https://img.shields.io/badge/Slack-Neatlogic-orange" /></a>
+</p>
 
-Neatlogic deploy is a publishing module that can solve the scenario of one click publishing in application environments, mainly including application configuration, version center, one click publishing, and other functions.
+---
+
+## About
+
+Neatlogic deploy is a publishing module that can solve the scenario of one click publishing in application environments,
+mainly including application configuration, version center, one click publishing, and other functions.
 
 ## Feature
 
 ### Application Configuration
 
-Application configuration mainly manages the configuration of pipeline scripts and parameters for application, module layer, and environment layer.
+Application configuration mainly manages the configuration of pipeline scripts and parameters for application, module
+layer, and environment layer.
 ![img.png](README_IMAGES/img1.png)
 ![img.png](README_IMAGES/img.png)
 - Support configuration application continuous integration.
