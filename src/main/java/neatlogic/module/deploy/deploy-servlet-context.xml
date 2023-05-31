@@ -15,7 +15,7 @@
 		http://neatlogic.com/schema/neatlogic
 		http://neatlogic.com/schema/neatlogic.xsd">
 
-	<neatlogic:module id="deploy" name="自动发布" groupName="modulegroup.deploy" group="deploy" groupSort="15" groupDescription="modulegroup.deploy.desc" />
+	<neatlogic:module id="deploy" name="自动发布" groupName="modulegroup.deploy.a" group="deploy" groupSort="15" groupDescription="modulegroup.deploy.desc" />
 
 	<context:component-scan base-package="neatlogic.module.deploy" />
 

@@ -30,7 +30,7 @@ public class DeployJobMessageHandler extends MessageHandlerBase {
 
     @Override
     public String getName() {
-        return "handler.message.deploy";
+        return "handler.message.deploy.a";
     }
 
     @Override
