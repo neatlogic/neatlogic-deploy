@@ -93,7 +93,7 @@ public class SearchDeployAppConfigAuthorityApi extends PrivateApiComponentBase {
         List<JSONObject> theadList = new ArrayList<>();
         theadList.add(new JSONObject() {{
             put("name", "user");
-            put("displayName", I18nUtils.getMessage("deploy.appconfig.displayname.user"));
+            put("displayName", I18nUtils.getMessage("common.user"));
         }});
         for (DeployAppConfigAction action : DeployAppConfigAction.values()) {
             JSONObject thead = new JSONObject();
