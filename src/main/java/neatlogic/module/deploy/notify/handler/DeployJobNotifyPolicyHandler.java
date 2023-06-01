@@ -40,7 +40,7 @@ import java.util.List;
 public class DeployJobNotifyPolicyHandler extends NotifyPolicyHandlerBase {
     @Override
     public String getName() {
-        return "handler.notify.deploy.job";
+        return "发布作业";
     }
 
     /**
