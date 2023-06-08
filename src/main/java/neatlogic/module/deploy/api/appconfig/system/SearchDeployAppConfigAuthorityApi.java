@@ -33,7 +33,7 @@ import neatlogic.framework.deploy.exception.DeployAppConfigNotFoundException;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
-import neatlogic.framework.util.I18nUtils;
+import neatlogic.framework.util.$;
 import neatlogic.framework.util.TableResultUtil;
 import neatlogic.module.deploy.dao.mapper.DeployAppConfigMapper;
 import neatlogic.module.deploy.util.DeployPipelineConfigManager;
@@ -93,7 +93,7 @@ public class SearchDeployAppConfigAuthorityApi extends PrivateApiComponentBase {
         List<JSONObject> theadList = new ArrayList<>();
         theadList.add(new JSONObject() {{
             put("name", "user");
-            put("displayName", I18nUtils.getMessage("用户"));
+            put("displayName", $.t("用户"));
         }});
         for (DeployAppConfigAction action : DeployAppConfigAction.values()) {
             JSONObject thead = new JSONObject();
