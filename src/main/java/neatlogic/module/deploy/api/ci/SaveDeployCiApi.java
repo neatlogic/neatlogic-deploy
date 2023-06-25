@@ -6,13 +6,12 @@ import neatlogic.framework.cmdb.dto.cientity.CiEntityVo;
 import neatlogic.framework.cmdb.exception.cientity.CiEntityNotFoundException;
 import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.common.util.RC4Util;
+import neatlogic.framework.config.ConfigManager;
 import neatlogic.framework.crossover.CrossoverServiceFactory;
-import neatlogic.framework.dao.mapper.ConfigMapper;
 import neatlogic.framework.deploy.auth.DEPLOY_BASE;
 import neatlogic.framework.deploy.constvalue.*;
 import neatlogic.framework.deploy.dto.ci.DeployCiVo;
 import neatlogic.framework.deploy.exception.*;
-import neatlogic.framework.dto.ConfigVo;
 import neatlogic.framework.dto.FieldValidResultVo;
 import neatlogic.framework.dto.runner.RunnerVo;
 import neatlogic.framework.integration.authentication.enums.AuthenticateType;
@@ -25,6 +24,7 @@ import neatlogic.framework.restful.core.IValid;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.framework.util.HttpRequestUtil;
 import neatlogic.framework.util.RegexUtils;
+import neatlogic.framework.deploy.constvalue.DeployTenantConfig;
 import neatlogic.module.deploy.dao.mapper.DeployCiMapper;
 import neatlogic.module.deploy.service.DeployAppAuthorityService;
 import neatlogic.module.deploy.service.DeployCiService;
@@ -48,9 +48,6 @@ public class SaveDeployCiApi extends PrivateApiComponentBase {
 
     @Resource
     DeployCiMapper deployCiMapper;
-
-    @Resource
-    ConfigMapper configMapper;
 
     @Resource
     DeployCiService deployCiService;
@@ -127,15 +124,15 @@ public class SaveDeployCiApi extends PrivateApiComponentBase {
                     deployCiService.deleteGitlabWebHook(ci, runnerVo.getUrl());
                 }
             }
-            ConfigVo gitlabWebHookCallbackHost = configMapper.getConfigByKey("gitlabWebHookCallbackHost");
-            if (gitlabWebHookCallbackHost == null || StringUtils.isBlank(gitlabWebHookCallbackHost.getValue())) {
+            String gitlabWebHookCallbackHostValue = ConfigManager.getConfig(DeployTenantConfig.GITLAB_WEB_HOOK_CALLBACK_HOST);
+            if (StringUtils.isBlank(gitlabWebHookCallbackHostValue)) {
                 throw new DeployGitlabWebHookCallbackHostLostException();
             }
             // gitlabWebHookCallbackHost格式形如：http://192.168.0.25:8080/neatlogic
-            if (!RegexUtils.isMatch(gitlabWebHookCallbackHost.getValue(), RegexUtils.CONNECT_URL)) {
+            if (!RegexUtils.isMatch(gitlabWebHookCallbackHostValue, RegexUtils.CONNECT_URL)) {
                 throw new DeployGitlabWebHookCallbackHostIlegalException();
             }
-            param.put("callbackHost", gitlabWebHookCallbackHost.getValue());
+            param.put("callbackHost", gitlabWebHookCallbackHostValue);
             param.put("repoServerAddress", deployCiVo.getRepoServerAddress());
             param.put("repoName", deployCiVo.getRepoName());
             param.put("branchFilter", deployCiVo.getBranchFilter());
