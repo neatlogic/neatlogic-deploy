@@ -57,7 +57,7 @@ public class SaveDeployCiApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "保存持续集成配置";
+        return "nmdac.savedeployciapi.getname";
     }
 
     @Override
@@ -71,24 +71,24 @@ public class SaveDeployCiApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "id", desc = "id", type = ApiParamType.LONG),
-            @Param(name = "name", desc = "名称", rule = RegexUtils.NAME, maxLength = 50, type = ApiParamType.REGEX, isRequired = true),
-            @Param(name = "isActive", desc = "是否激活", type = ApiParamType.ENUM, rule = "0,1", isRequired = true),
-            @Param(name = "appSystemId", desc = "应用ID", type = ApiParamType.LONG, isRequired = true),
-            @Param(name = "appModuleId", desc = "模块ID", type = ApiParamType.LONG, isRequired = true),
-            @Param(name = "repoType", desc = "仓库类型", member = DeployCiRepoType.class, type = ApiParamType.ENUM, isRequired = true),
-            @Param(name = "repoServerAddress", desc = "仓库服务器地址", rule = RegexUtils.CONNECT_URL, type = ApiParamType.REGEX, maxLength = 100, isRequired = true),
-            @Param(name = "repoName", desc = "仓库名称", rule = RegexUtils.NAME_WITH_SLASH, maxLength = 50, type = ApiParamType.REGEX, isRequired = true),
-            @Param(name = "branchFilter", desc = "分支", type = ApiParamType.STRING),
-            @Param(name = "event", desc = "事件", member = DeployCiRepoEvent.class, type = ApiParamType.ENUM, isRequired = true),
-            @Param(name = "action", desc = "动作类型", member = DeployCiActionType.class, type = ApiParamType.ENUM, isRequired = true),
-            @Param(name = "triggerType", member = DeployCiTriggerType.class, desc = "触发类型", type = ApiParamType.ENUM, isRequired = true),
-            @Param(name = "triggerTime", desc = "触发时间", type = ApiParamType.STRING),
-            @Param(name = "delayTime", desc = "延迟时间", type = ApiParamType.INTEGER),
-            @Param(name = "versionRule", desc = "版本号规则", type = ApiParamType.JSONOBJECT),
-            @Param(name = "config", desc = "配置", type = ApiParamType.JSONOBJECT),
+            @Param(name = "id", desc = "common.id", type = ApiParamType.LONG),
+            @Param(name = "name", desc = "common.name", rule = RegexUtils.NAME, maxLength = 50, type = ApiParamType.REGEX, isRequired = true),
+            @Param(name = "isActive", desc = "common.isactive", type = ApiParamType.ENUM, rule = "0,1", isRequired = true),
+            @Param(name = "appSystemId", desc = "term.cmdb.appsystemid", type = ApiParamType.LONG, isRequired = true),
+            @Param(name = "appModuleId", desc = "term.cmdb.moduleid", type = ApiParamType.LONG, isRequired = true),
+            @Param(name = "repoType", desc = "nmdac.savedeployciapi.input.param.desc.repotype", member = DeployCiRepoType.class, type = ApiParamType.ENUM, isRequired = true),
+            @Param(name = "repoServerAddress", desc = "nmdac.savedeployciapi.input.param.desc.reposerveraddress", rule = RegexUtils.CONNECT_URL, type = ApiParamType.REGEX, maxLength = 100, isRequired = true),
+            @Param(name = "repoName", desc = "nmdac.savedeployciapi.input.param.desc.reponame", rule = RegexUtils.NAME_WITH_SLASH, maxLength = 50, type = ApiParamType.REGEX, isRequired = true),
+            @Param(name = "branchFilter", desc = "common.branch", type = ApiParamType.STRING),
+            @Param(name = "event", desc = "common.event", member = DeployCiRepoEvent.class, type = ApiParamType.ENUM, isRequired = true),
+            @Param(name = "action", desc = "common.action", member = DeployCiActionType.class, type = ApiParamType.ENUM, isRequired = true),
+            @Param(name = "triggerType", member = DeployCiTriggerType.class, desc = "common.triggertype", type = ApiParamType.ENUM, isRequired = true),
+            @Param(name = "triggerTime", desc = "common.triggertime", type = ApiParamType.STRING),
+            @Param(name = "delayTime", desc = "common.delaytime", type = ApiParamType.INTEGER),
+            @Param(name = "versionRule", desc = "nmdac.savedeployciapi.input.param.desc.versionrule", type = ApiParamType.JSONOBJECT),
+            @Param(name = "config", desc = "common.config", type = ApiParamType.JSONOBJECT),
     })
-    @Description(desc = "保存持续集成配置")
+    @Description(desc = "nmdac.savedeployciapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         DeployCiVo deployCiVo = paramObj.toJavaObject(DeployCiVo.class);
