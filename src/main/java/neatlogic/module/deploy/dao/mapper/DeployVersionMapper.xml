@@ -702,7 +702,29 @@ limitations under the License.
         limit #{limit}
     </select>
 
+    <select id="searchDeployVersionCveCount" parameterType="neatlogic.framework.deploy.dto.version.DeployVersionCveVo"
+            resultType="int">
+        SELECT COUNT(1)
+        FROM `deploy_version_cve`
+        WHERE `version_id` = #{versionId}
+    </select>
 
+    <select id="searchDeployVersionCveList" parameterType="neatlogic.framework.deploy.dto.version.DeployVersionCveVo"
+            resultType="neatlogic.framework.deploy.dto.version.DeployVersionCveVo">
+        SELECT
+            `id`,
+            `version_id` AS versionId,
+            `dependency`,
+            `vulnerability_ids` AS vulnerabilityIds,
+            `package_name` AS packageName,
+            `highest_severity` AS highestSeverity,
+            `cve_count` AS cveCount,
+            `confidence`,
+            `evidence_count` AS evidenceCount
+        FROM `deploy_version_cve`
+        WHERE `version_id` = #{versionId}
+        LIMIT #{startNum}, #{pageSize}
+    </select>
     <update id="unFreezeDeployVersionById">
         update deploy_version
         set is_freeze = #{isFreeze}
@@ -1227,6 +1249,32 @@ limitations under the License.
             deploy_time = #{deployTime}
     </insert>
 
+    <insert id="insertDeployVersionCve">
+        INSERT INTO `deploy_version_cve` (
+            `id`,
+            `version_id`,
+            `dependency`,
+            `vulnerability_ids`,
+            `package_name`,
+            `highest_severity`,
+            `cve_count`,
+            `confidence`,
+            `evidence_count`
+        )
+        VALUES
+            (
+                #{id},
+                #{versionId},
+                #{dependency},
+                #{vulnerabilityIds},
+                #{packageName},
+                #{highestSeverity},
+                #{cveCount},
+                #{confidence},
+                #{evidenceCount}
+            )
+    </insert>
+
     <delete id="deleteDeployVersionById">
         delete
         from deploy_version
@@ -1284,4 +1332,7 @@ limitations under the License.
         delete from deploy_version_unit_test where version_id = #{value}
     </delete>
 
+    <delete id="deleteDeployVersionCveByVersionId" parameterType="java.lang.Long">
+        DELETE FROM `deploy_version_cve` WHERE `version_id` = #{value}
+    </delete>
 </mapper>
