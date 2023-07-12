@@ -768,4 +768,4 @@ CREATE TABLE `deploy_version_cve` (
   `confidence` varchar(250) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '信心',
   `evidence_count` int DEFAULT NULL COMMENT '证据计数',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='发版版本CVE漏洞';
