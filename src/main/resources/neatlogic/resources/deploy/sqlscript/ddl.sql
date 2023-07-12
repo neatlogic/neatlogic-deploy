@@ -753,3 +753,19 @@ CREATE TABLE IF NOT EXISTS `deploy_version_unit_test` (
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE KEY `version_build_time` (`version_id`,`build_time`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='发版版本单元测试';
+
+-- ----------------------------
+-- Table structure for deploy_version_cve
+-- ----------------------------
+CREATE TABLE `deploy_version_cve` (
+  `id` bigint NOT NULL COMMENT '主键ID',
+  `version_id` bigint NOT NULL COMMENT '版本id',
+  `dependency` varchar(250) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '依赖',
+  `vulnerability_ids` varchar(250) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '脆弱性id',
+  `package_name` varchar(250) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '包名',
+  `highest_severity` varchar(250) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '最高严重程度',
+  `cve_count` int DEFAULT NULL COMMENT 'CVE计数',
+  `confidence` varchar(250) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '信心',
+  `evidence_count` int DEFAULT NULL COMMENT '证据计数',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='发版版本CVE漏洞';

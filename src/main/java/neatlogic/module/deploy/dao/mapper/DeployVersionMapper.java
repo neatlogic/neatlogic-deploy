@@ -65,6 +65,10 @@ public interface DeployVersionMapper {
 
     List<DeployVersionUnitTestVo> getDeployVersionUnitTestListByVersionIdWithLimit(@Param("versionId") Long versionId, @Param("limit") Integer limit);
 
+    int searchDeployVersionCveCount(DeployVersionCveVo searchVo);
+
+    List<DeployVersionCveVo> searchDeployVersionCveList(DeployVersionCveVo searchVo);
+
     int unFreezeDeployVersionById(@Param("id") Long id, @Param("isFreeze") Long isFreeze);
 
     int updateDeployVersionDependencyBuildTimeById(Long id);
@@ -91,6 +95,8 @@ public interface DeployVersionMapper {
 
     int insertDeployedInstance(DeployVersionEnvInstanceVo vo);
 
+    int insertDeployVersionCve(DeployVersionCveVo deployVersionCveVo);
+
     int deleteDeployVersionById(Long id);
 
     int deleteDeployVersionBuildNoByVersionId(Long versionId);
@@ -109,4 +115,5 @@ public interface DeployVersionMapper {
 
     int deleteDeployVersionUnitTestByVersionId(Long versionId);
 
+    int deleteDeployVersionCveByVersionId(Long versionId);
 }
