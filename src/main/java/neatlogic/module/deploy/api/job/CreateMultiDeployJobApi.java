@@ -31,6 +31,7 @@ import neatlogic.framework.deploy.constvalue.JobSource;
 import neatlogic.framework.deploy.dto.job.DeployJobModuleVo;
 import neatlogic.framework.deploy.dto.job.DeployJobVo;
 import neatlogic.framework.deploy.exception.DeployVersionRedirectUrlCredentialUserNotFoundException;
+import neatlogic.framework.dto.AuthenticationInfoVo;
 import neatlogic.framework.dto.UserVo;
 import neatlogic.framework.exception.core.ApiRuntimeException;
 import neatlogic.framework.exception.type.ParamIrregularException;
@@ -39,6 +40,7 @@ import neatlogic.framework.integration.authentication.enums.AuthenticateType;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
+import neatlogic.framework.service.AuthenticationInfoService;
 import neatlogic.framework.util.HttpRequestUtil;
 import neatlogic.module.deploy.dao.mapper.DeployVersionMapper;
 import neatlogic.module.deploy.service.DeployJobService;
@@ -71,10 +73,12 @@ public class CreateMultiDeployJobApi extends PrivateApiComponentBase {
     UserMapper userMapper;
     @Resource
     private DeployJobService deployJobService;
+    @Resource
+    AuthenticationInfoService authenticationInfoService;
 
     @Override
     public String getName() {
-        return "创建并执行发布作业";
+        return "nmdaj.createmultideployjobapi.getname";
     }
 
     @Override
@@ -83,25 +87,25 @@ public class CreateMultiDeployJobApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "scenarioId", type = ApiParamType.LONG, desc = "场景id"),
-            @Param(name = "scenarioName", type = ApiParamType.STRING, desc = "场景名, 如果入参也有scenarioId，则会以scenarioName为准"),
-            @Param(name = "appSystemId", type = ApiParamType.LONG, desc = "应用系统id"),
-            @Param(name = "appSystemName", type = ApiParamType.STRING, desc = "应用系统名，如果入参也有appSystemId，则会以appSystemName为准"),
-            @Param(name = "sysName", type = ApiParamType.STRING, desc = "应用系统名，如果入参也有appSystemId，则会以sysName为准"),
-            @Param(name = "moduleList", type = ApiParamType.JSONARRAY, isRequired = true, desc = "模块列表"),
-            @Param(name = "envId", type = ApiParamType.LONG, desc = "环境id"),
-            @Param(name = "envName", type = ApiParamType.STRING, desc = "环境id，如果入参也有envId，则会以envName为准"),
-            @Param(name = "param", type = ApiParamType.JSONOBJECT, desc = "执行参数"),
-            @Param(name = "roundCount", type = ApiParamType.LONG, isRequired = true, desc = "分组数 "),
-            @Param(name = "executeConfig", type = ApiParamType.JSONOBJECT, desc = "执行目标"),
-            @Param(name = "planStartTime", type = ApiParamType.LONG, desc = "计划时间"),
-            @Param(name = "triggerType", type = ApiParamType.ENUM, rule = "auto,manual", desc = "触发方式"),
-            @Param(name = "assignExecUser", type = ApiParamType.STRING, desc = "指定执行用户"),
-            @Param(name = "parentId", type = ApiParamType.LONG, desc = "父作业id"),
-            @Param(name = "proxyToUrl", type = ApiParamType.STRING, desc = "不从当前环境runner下载,则需要传跳转url，即协议+IP地址（域名）+端口号")
+            @Param(name = "scenarioId", type = ApiParamType.LONG, desc = "term.autoexec.scenarioid"),
+            @Param(name = "scenarioName", type = ApiParamType.STRING, desc = "term.autoexec.scenarioname", help = "如果入参也有scenarioId，则会以scenarioName为准"),
+            @Param(name = "appSystemId", type = ApiParamType.LONG, desc = "term.cmdb.appsystemid"),
+            @Param(name = "appSystemName", type = ApiParamType.STRING, desc = "term.cmdb.appsystemname", help = "如果入参也有appSystemId，则会以appSystemName为准"),
+            @Param(name = "sysName", type = ApiParamType.STRING, desc = "term.cmdb.sysname", help = "如果入参也有appSystemId，则会以sysName为准"),
+            @Param(name = "moduleList", type = ApiParamType.JSONARRAY, isRequired = true, desc = "nfd.licensevo.entityfield.name.modules"),
+            @Param(name = "envId", type = ApiParamType.LONG, desc = "term.cmdb.envid"),
+            @Param(name = "envName", type = ApiParamType.STRING, desc = "term.cmdb.envname", help = "如果入参也有envId，则会以envName为准"),
+            @Param(name = "param", type = ApiParamType.JSONOBJECT, desc = "term.autoexec.executeparam"),
+            @Param(name = "roundCount", type = ApiParamType.LONG, isRequired = true, desc = "term.autoexec.roundcount"),
+            @Param(name = "executeConfig", type = ApiParamType.JSONOBJECT, desc = "term.autoexec.executeconfig"),
+            @Param(name = "planStartTime", type = ApiParamType.LONG, desc = "common.planstarttime"),
+            @Param(name = "triggerType", type = ApiParamType.ENUM, rule = "auto,manual", desc = "common.triggertype"),
+            @Param(name = "assignExecUser", type = ApiParamType.STRING, desc = "term.autoexec.assignexecuser"),
+            @Param(name = "parentId", type = ApiParamType.LONG, desc = "common.parentid"),
+            @Param(name = "proxyToUrl", type = ApiParamType.STRING, desc = "term.deploy.proxytourl", help = "不从当前环境runner下载,则需要传跳转url，即协议+IP地址（域名）+端口号")
 
     })
-    @Description(desc = "创建并执行发布作业接口")
+    @Description(desc = "nmdaj.createmultideployjobapi.getname")
     @ResubmitInterval(value = 2)
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
@@ -170,9 +174,10 @@ public class CreateMultiDeployJobApi extends PrivateApiComponentBase {
         if (credentialUser == null) {
             throw new DeployVersionRedirectUrlCredentialUserNotFoundException(credentialUserUuid);
         }
+        AuthenticationInfoVo authenticationInfo = authenticationInfoService.getAuthenticationInfo(credentialUserUuid);
         HttpServletRequest request = UserContext.get().getRequest();
         HttpServletResponse response = UserContext.get().getResponse();
-        UserContext.init(credentialUser, "+8:00", request, response);
+        UserContext.init(credentialUser, authenticationInfo, "+8:00", request, response);
         UserContext.get().setToken("GZIP_" + LoginAuthHandlerBase.buildJwt(credentialUser).getCc());
         String requestURI = request.getRequestURI();
         String url = proxyToUrl + requestURI;

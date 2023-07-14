@@ -67,7 +67,7 @@ public class CallbackDeployCiSvnEventApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "svn hook回调api";
+        return "nmdac.callbackdeploycisvneventapi.getname";
     }
 
     @Override
@@ -86,19 +86,19 @@ public class CallbackDeployCiSvnEventApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "ip", desc = "svn服务器ip", type = ApiParamType.STRING, isRequired = true),
-            @Param(name = "repo", desc = "仓库名称", type = ApiParamType.STRING, isRequired = true),
-            @Param(name = "event", desc = "事件", type = ApiParamType.STRING, isRequired = true),
-            @Param(name = "dirsChanged", desc = "受影响的目录", type = ApiParamType.STRING, isRequired = true),
-            @Param(name = "revision", desc = "提交id", type = ApiParamType.STRING, isRequired = true),
-            @Param(name = "author", desc = "提交者", type = ApiParamType.STRING, isRequired = true),
-            @Param(name = "date", desc = "提交日期，格式yyyy-MM-dd hh:mm:ss", type = ApiParamType.STRING, isRequired = true),
-            @Param(name = "message", desc = "提交信息，包含'--nodeploy'时不会执行动作", type = ApiParamType.STRING),
-            @Param(name = "added", desc = "本次提交新增的文件，多个“,”分割", type = ApiParamType.STRING),
-            @Param(name = "modified", desc = "本次提交修改的文件，多个“,”分割", type = ApiParamType.STRING),
-            @Param(name = "deleted", desc = "本次提交删除的文件，多个“,”分割", type = ApiParamType.STRING)
+            @Param(name = "ip", desc = "nmdac.callbackdeploycisvneventapi.input.param.desc.ip", type = ApiParamType.STRING, isRequired = true),
+            @Param(name = "repo", desc = "nmdac.savedeployciapi.input.param.desc.reponame", type = ApiParamType.STRING, isRequired = true),
+            @Param(name = "event", desc = "common.event", type = ApiParamType.STRING, isRequired = true),
+            @Param(name = "dirsChanged", desc = "nmdac.callbackdeploycisvneventapi.input.param.desc.dirschanged", type = ApiParamType.STRING, isRequired = true),
+            @Param(name = "revision", desc = "nmdac.callbackdeploycisvneventapi.input.param.desc.revision", type = ApiParamType.STRING, isRequired = true),
+            @Param(name = "author", desc = "nmdac.callbackdeploycisvneventapi.input.param.desc.author", type = ApiParamType.STRING, isRequired = true),
+            @Param(name = "date", desc = "nmdac.callbackdeploycisvneventapi.input.param.desc.date", help = "格式yyyy-MM-dd hh:mm:ss", type = ApiParamType.STRING, isRequired = true),
+            @Param(name = "message", desc = "nmdac.callbackdeploycisvneventapi.input.param.desc.message", help = "包含'--nodeploy'时不会执行动作", type = ApiParamType.STRING),
+            @Param(name = "added", desc = "nmdac.callbackdeploycisvneventapi.input.param.desc.added", help = "多个“,”分割", type = ApiParamType.STRING),
+            @Param(name = "modified", desc = "nmdac.callbackdeploycisvneventapi.input.param.desc.modified", help = "多个“,”分割", type = ApiParamType.STRING),
+            @Param(name = "deleted", desc = "nmdac.callbackdeploycisvneventapi.input.param.desc.deleted", help = "多个“,”分割", type = ApiParamType.STRING)
     })
-    @Description(desc = "svn hook回调api")
+    @Description(desc = "nmdac.callbackdeploycisvneventapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         logger.info("Svn callback triggered, callback param: {}", paramObj.toJSONString());
@@ -203,7 +203,7 @@ public class CallbackDeployCiSvnEventApi extends PrivateApiComponentBase {
                     int useCommitId = versionRule.getInteger("useCommitId") != null ? versionRule.getInteger("useCommitId") : 0;
                     String versionName = getVersionName(repo, dirsChanged, revision, versionRegex, versionPrefix, useCommitId);
                     DeployVersionVo deployVersion = deployVersionMapper.getDeployVersionBaseInfoBySystemIdAndModuleIdAndVersion(new DeployVersionVo(versionName, ci.getAppSystemId(), ci.getAppModuleId()));
-                    UserContext.init(SystemUser.SYSTEM.getUserVo(), SystemUser.SYSTEM.getTimezone());
+                    UserContext.init(SystemUser.SYSTEM);
                     UserContext.get().setToken("GZIP_" + LoginAuthHandlerBase.buildJwt(SystemUser.SYSTEM.getUserVo()).getCc());
                     Long jobId = null;
 
