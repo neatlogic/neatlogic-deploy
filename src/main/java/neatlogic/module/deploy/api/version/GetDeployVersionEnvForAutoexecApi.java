@@ -10,6 +10,7 @@ import neatlogic.framework.deploy.dto.version.DeployVersionVo;
 import neatlogic.framework.deploy.exception.DeployVersionEnvNotFoundException;
 import neatlogic.framework.deploy.exception.DeployVersionNotFoundException;
 import neatlogic.framework.deploy.exception.DeployVersionRedirectUrlCredentialUserNotFoundException;
+import neatlogic.framework.dto.AuthenticationInfoVo;
 import neatlogic.framework.dto.UserVo;
 import neatlogic.framework.exception.core.ApiRuntimeException;
 import neatlogic.framework.filter.core.LoginAuthHandlerBase;
@@ -20,6 +21,7 @@ import neatlogic.framework.restful.annotation.OperationType;
 import neatlogic.framework.restful.annotation.Param;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
+import neatlogic.framework.service.AuthenticationInfoService;
 import neatlogic.framework.util.HttpRequestUtil;
 import neatlogic.framework.util.RegexUtils;
 import neatlogic.module.deploy.dao.mapper.DeployVersionMapper;
@@ -40,9 +42,12 @@ public class GetDeployVersionEnvForAutoexecApi extends PrivateApiComponentBase {
     @Resource
     UserMapper userMapper;
 
+    @Resource
+    AuthenticationInfoService authenticationInfoService;
+
     @Override
     public String getName() {
-        return "获取发布版本环境信息";
+        return "nmdav.getdeployversionenvforautoexecapi.getname";
     }
 
     @Override
@@ -56,13 +61,13 @@ public class GetDeployVersionEnvForAutoexecApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "sysId", desc = "应用ID", isRequired = true, type = ApiParamType.LONG),
-            @Param(name = "moduleId", desc = "应用系统id", isRequired = true, type = ApiParamType.LONG),
-            @Param(name = "envId", desc = "环境id", isRequired = true, type = ApiParamType.LONG),
-            @Param(name = "version", desc = "版本号", isRequired = true, type = ApiParamType.STRING),
-            @Param(name = "proxyToUrl", desc = "地址（可选，如果有则表示去其他环境获取）", rule = RegexUtils.CONNECT_URL, type = ApiParamType.REGEX),
+            @Param(name = "sysId", desc = "term.cmdb.appsystemid", isRequired = true, type = ApiParamType.LONG),
+            @Param(name = "moduleId", desc = "erm.cmdb.moduleid", isRequired = true, type = ApiParamType.LONG),
+            @Param(name = "envId", desc = "term.cmdb.envid", isRequired = true, type = ApiParamType.LONG),
+            @Param(name = "version", desc = "common.versionnum", isRequired = true, type = ApiParamType.STRING),
+            @Param(name = "proxyToUrl", desc = "term.deploy.proxytourl", help = "可选，如果有则表示去其他环境获取", rule = RegexUtils.CONNECT_URL, type = ApiParamType.REGEX),
     })
-    @Description(desc = "获取发布版本环境信息")
+    @Description(desc = "nmdav.getdeployversionenvforautoexecapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         JSONObject result = new JSONObject();
@@ -90,8 +95,9 @@ public class GetDeployVersionEnvForAutoexecApi extends PrivateApiComponentBase {
             if (credentialUser == null) {
                 throw new DeployVersionRedirectUrlCredentialUserNotFoundException(credentialUserUuid);
             }
+            AuthenticationInfoVo authenticationInfo = authenticationInfoService.getAuthenticationInfo(credentialUserUuid);
             String url = proxyToUrl + UserContext.get().getRequest().getRequestURI();
-            UserContext.init(credentialUser, "+8:00");
+            UserContext.init(credentialUser, authenticationInfo, "+8:00");
             UserContext.get().setToken("GZIP_" + LoginAuthHandlerBase.buildJwt(credentialUser).getCc());
             HttpRequestUtil httpRequestUtil = HttpRequestUtil.post(url)
                     .setPayload(paramObj.toJSONString()).setAuthType(AuthenticateType.BUILDIN)

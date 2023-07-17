@@ -65,7 +65,7 @@ public class CallbackDeployCiGitlabEventApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "gitlab webhook回调api";
+        return "nmdac.callbackdeploycigitlabeventapi.getname";
     }
 
     @Override
@@ -84,9 +84,9 @@ public class CallbackDeployCiGitlabEventApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "ciId", desc = "持续集成配置id", isRequired = true, type = ApiParamType.LONG),
+            @Param(name = "ciId", desc = "term.deploy.ciid", isRequired = true, type = ApiParamType.LONG),
     })
-    @Description(desc = "gitlab webhook回调api")
+    @Description(desc = "nmdac.callbackdeploycigitlabeventapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         logger.info("Gitlab callback triggered, callback param: {}", paramObj.toJSONString());
@@ -160,7 +160,7 @@ public class CallbackDeployCiGitlabEventApi extends PrivateApiComponentBase {
             int useCommitId = versionRule.getInteger("useCommitId") != null ? versionRule.getInteger("useCommitId") : 0;
             String versionName = getVersionName(branchName, versionRegex, versionPrefix, commitId, useCommitId);
             DeployVersionVo deployVersion = deployVersionMapper.getDeployVersionBaseInfoBySystemIdAndModuleIdAndVersion(new DeployVersionVo(versionName, ci.getAppSystemId(), ci.getAppModuleId()));
-            UserContext.init(SystemUser.SYSTEM.getUserVo(), SystemUser.SYSTEM.getTimezone());
+            UserContext.init(SystemUser.SYSTEM);
             UserContext.get().setToken("GZIP_" + LoginAuthHandlerBase.buildJwt(SystemUser.SYSTEM.getUserVo()).getCc());
             Long jobId = null;
             if (DeployCiActionType.CREATE_JOB.getValue().equals(ci.getAction())) {

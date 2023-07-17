@@ -36,6 +36,7 @@ import neatlogic.framework.deploy.dto.version.DeployVersionBuildNoVo;
 import neatlogic.framework.deploy.dto.version.DeployVersionEnvVo;
 import neatlogic.framework.deploy.dto.version.DeployVersionVo;
 import neatlogic.framework.deploy.exception.*;
+import neatlogic.framework.dto.AuthenticationInfoVo;
 import neatlogic.framework.dto.UserVo;
 import neatlogic.framework.dto.runner.RunnerGroupVo;
 import neatlogic.framework.dto.runner.RunnerMapVo;
@@ -49,6 +50,7 @@ import neatlogic.framework.integration.authentication.enums.AuthenticateType;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateBinaryStreamApiComponentBase;
+import neatlogic.framework.service.AuthenticationInfoService;
 import neatlogic.framework.store.mysql.DatasourceManager;
 import neatlogic.framework.store.mysql.NeatLogicBasicDataSource;
 import neatlogic.framework.util.HttpRequestUtil;
@@ -81,11 +83,12 @@ public class DownloadDeployAppBuildApi extends PrivateBinaryStreamApiComponentBa
     DeployVersionMapper deployVersionMapper;
     @Resource
     UserMapper userMapper;
-
+    @Resource
+    AuthenticationInfoService authenticationInfoService;
 
     @Override
     public String getName() {
-        return "下载 appbuild";
+        return "nmdaa.downloaddeployappbuildapi.getname";
     }
 
     @Override
@@ -99,19 +102,19 @@ public class DownloadDeployAppBuildApi extends PrivateBinaryStreamApiComponentBa
     }
 
     @Input({
-            @Param(name = "version", type = ApiParamType.STRING, isRequired = true, desc = "版本名称"),
-            @Param(name = "sysName", type = ApiParamType.STRING, isRequired = true, desc = "系统简称"),
-            @Param(name = "moduleName", type = ApiParamType.STRING, isRequired = true, desc = "模块简称"),
-            @Param(name = "envName", type = ApiParamType.STRING, isRequired = true, desc = "环境简称"),
-            @Param(name = "buildNo", type = ApiParamType.INTEGER, desc = "build no, 如果是空的，那么就要到版本对应的envName找到buildNo"),
-            @Param(name = "subDirs", type = ApiParamType.JSONARRAY, desc = "subDirs 子目录"),
-            @Param(name = "runnerId", type = ApiParamType.LONG, desc = "执行器id,-1则根据应用和模块对应的group随意选择一个runner"),
-            @Param(name = "proxyToUrl", type = ApiParamType.STRING, desc = "不从当前环境runner下载,则需要传跳转url，即协议+IP地址（域名）+端口号，不传默认本地环境"),
+            @Param(name = "version", type = ApiParamType.STRING, isRequired = true, desc = "common.versionname"),
+            @Param(name = "sysName", type = ApiParamType.STRING, isRequired = true, desc = "term.cmdb.sysname"),
+            @Param(name = "moduleName", type = ApiParamType.STRING, isRequired = true, desc = "term.cmdb.modulename"),
+            @Param(name = "envName", type = ApiParamType.STRING, isRequired = true, desc = "term.cmdb.envname"),
+            @Param(name = "buildNo", type = ApiParamType.INTEGER, desc = "build no", help = "如果是空的，那么就要到版本对应的envName找到buildNo"),
+            @Param(name = "subDirs", type = ApiParamType.JSONARRAY, desc = "nmdaa.downloaddeployappbuildapi.input.param.desc.subdirs"),
+            @Param(name = "runnerId", type = ApiParamType.LONG, desc = "term.deploy.runnerid", help = "-1则根据应用和模块对应的group随意选择一个runner"),
+            @Param(name = "proxyToUrl", type = ApiParamType.STRING, desc = "term.deploy.proxytourl", help = "不从当前环境runner下载,则需要传跳转url，即协议+IP地址（域名）+端口号，不传默认本地环境"),
             @Param(name = "proxyTenantJdbcUrl", type = ApiParamType.STRING, desc = "proxy license"),
     })
     @Output({
     })
-    @Description(desc = "下载 appbuild接口")
+    @Description(desc = "nmdaa.downloaddeployappbuildapi.getname")
     @Override
     public Object myDoService(JSONObject jsonObj, HttpServletRequest request, HttpServletResponse response) throws Exception {
         String proxyTenantJdbcUrl = jsonObj.getString("proxyTenantJdbcUrl");
@@ -217,7 +220,8 @@ public class DownloadDeployAppBuildApi extends PrivateBinaryStreamApiComponentBa
         if (credentialUser == null) {
             throw new DeployVersionRedirectUrlCredentialUserNotFoundException(credentialUserUuid);
         }
-        UserContext.init(credentialUser, "+8:00", request, response);
+        AuthenticationInfoVo authenticationInfo = authenticationInfoService.getAuthenticationInfo(credentialUserUuid);
+        UserContext.init(credentialUser, authenticationInfo, "+8:00", request, response);
         UserContext.get().setToken("GZIP_" + LoginAuthHandlerBase.buildJwt(credentialUser).getCc());
         String requestURI = request.getRequestURI();
         jsonObj.put("isCurrentEnvRunner", 1);
