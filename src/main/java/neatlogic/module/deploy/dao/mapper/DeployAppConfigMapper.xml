@@ -940,9 +940,7 @@ limitations under the License.
 
     <sql id="checkDeployAuthority">
         <if test="isHasAllAuthority == 0">
-            AND IF(
-            daca.app_system_id > 0,
-            daca.action_type = 'operation'
+            AND daca.action_type = 'operation'
             AND daca.action IN
             ('all'
             <if test="authorityActionList != null and authorityActionList.size() > 0">,
@@ -960,8 +958,7 @@ limitations under the License.
                     #{item}
                 </foreach>
             </if>
-            ),
-            1 = 1)
+            )
         </if>
     </sql>
 
