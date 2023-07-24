@@ -16,6 +16,7 @@
 
 package neatlogic.module.deploy.api.appconfig.system;
 
+import neatlogic.framework.asynchronization.threadlocal.UserContext;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.cmdb.crossover.ICiCrossoverMapper;
 import neatlogic.framework.cmdb.crossover.ICiEntityCrossoverService;
@@ -26,12 +27,17 @@ import neatlogic.framework.cmdb.enums.EditModeType;
 import neatlogic.framework.cmdb.enums.TransactionActionType;
 import neatlogic.framework.cmdb.exception.cientity.CiEntityNotFoundException;
 import neatlogic.framework.common.constvalue.ApiParamType;
+import neatlogic.framework.common.constvalue.GroupSearch;
 import neatlogic.framework.crossover.CrossoverServiceFactory;
-import neatlogic.framework.deploy.auth.DEPLOY_BASE;
+import neatlogic.framework.deploy.auth.APP_CONFIG_MODIFY;
 import neatlogic.framework.deploy.constvalue.DeployAppConfigAction;
+import neatlogic.framework.deploy.constvalue.DeployAppConfigActionType;
+import neatlogic.framework.deploy.dto.app.DeployAppConfigAuthorityActionVo;
+import neatlogic.framework.deploy.dto.app.DeployAppConfigAuthorityVo;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
+import neatlogic.module.deploy.dao.mapper.DeployAppConfigMapper;
 import neatlogic.module.deploy.service.DeployAppAuthorityService;
 import neatlogic.module.deploy.service.DeployAppConfigService;
 import com.alibaba.fastjson.JSONArray;
@@ -43,6 +49,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -51,9 +58,11 @@ import java.util.List;
  */
 @Service
 @Transactional
-@AuthAction(action = DEPLOY_BASE.class)
+@AuthAction(action = APP_CONFIG_MODIFY.class)
 @OperationType(type = OperationTypeEnum.UPDATE)
 public class SaveDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
+    @Resource
+    private DeployAppConfigMapper deployAppConfigMapper;
 
     @Resource
     DeployAppConfigService deployAppConfigService;
@@ -63,7 +72,7 @@ public class SaveDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "保存发布应用配置的应用系统";
+        return "nmdaas.savedeployappconfigappsystemapi.getname";
     }
 
     @Override
@@ -77,16 +86,16 @@ public class SaveDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "id", type = ApiParamType.LONG, desc = "id"),
-            @Param(name = "abbrName", type = ApiParamType.STRING, isRequired = true, desc = "简称"),
-            @Param(name = "name", type = ApiParamType.STRING, desc = "名称"),
-            @Param(name = "state", type = ApiParamType.JSONARRAY, desc = "状态"),
-            @Param(name = "owner", type = ApiParamType.JSONARRAY, desc = "负责人"),
-            @Param(name = "maintenanceWindow", type = ApiParamType.STRING, desc = "维护窗口"),
-            @Param(name = "description", type = ApiParamType.STRING, desc = "备注")
+            @Param(name = "id", type = ApiParamType.LONG, desc = "common.id"),
+            @Param(name = "abbrName", type = ApiParamType.STRING, isRequired = true, desc = "term.cmdb.sysname"),
+            @Param(name = "name", type = ApiParamType.STRING, desc = "common.name"),
+            @Param(name = "state", type = ApiParamType.JSONARRAY, desc = "common.status"),
+            @Param(name = "owner", type = ApiParamType.JSONARRAY, desc = "common.maintenanceman"),
+            @Param(name = "maintenanceWindow", type = ApiParamType.STRING, desc = "term.cmdb.maintenancewindow"),
+            @Param(name = "description", type = ApiParamType.STRING, desc = "common.description")
     })
-    @Output({@Param(name = "Return", type = ApiParamType.LONG, desc = "应用id")})
-    @Description(desc = "保存发布应用配置的应用系统")
+    @Output({@Param(name = "Return", type = ApiParamType.LONG, desc = "term.cmdb.appsystemid")})
+    @Description(desc = "nmdaas.savedeployappconfigappsystemapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
 
@@ -151,6 +160,22 @@ public class SaveDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
         List<CiEntityTransactionVo> ciEntityTransactionList = new ArrayList<>();
         ciEntityTransactionList.add(ciEntityTransactionVo);
         ciEntityService.saveCiEntity(ciEntityTransactionList);
+
+        // 添加应用时，给创建用户添加全部的操作权限，包括查看作业/配置、编辑配置、版本&制品管理、超级流水线权限
+        if (appSystemId == null) {
+            DeployAppConfigAuthorityVo deployAppConfigAuthorityVo = new DeployAppConfigAuthorityVo();
+            deployAppConfigAuthorityVo.setAppSystemId(ciEntityTransactionVo.getCiEntityId());
+            deployAppConfigAuthorityVo.setAuthType(GroupSearch.USER.getValue());
+            deployAppConfigAuthorityVo.setAuthUuid(UserContext.get().getUserUuid());
+            deployAppConfigAuthorityVo.setLcd(new Date());
+            deployAppConfigAuthorityVo.setLcu(UserContext.get().getUserUuid());
+            List<DeployAppConfigAuthorityActionVo> actionList = new ArrayList<>();
+            for (DeployAppConfigAction deployAppConfigAction : DeployAppConfigAction.values()) {
+                actionList.add(new DeployAppConfigAuthorityActionVo(deployAppConfigAction.getValue(), DeployAppConfigActionType.OPERATION.getValue()));
+            }
+            deployAppConfigAuthorityVo.setActionList(actionList);
+            deployAppConfigMapper.insertAppConfigAuthority(deployAppConfigAuthorityVo);
+        }
         return ciEntityTransactionVo.getCiEntityId();
     }
 }
