@@ -16,9 +16,7 @@
 
 package neatlogic.module.deploy.api.job;
 
-import neatlogic.framework.asynchronization.threadlocal.UserContext;
 import neatlogic.framework.auth.core.AuthAction;
-import neatlogic.framework.auth.core.AuthActionChecker;
 import neatlogic.framework.autoexec.dto.combop.AutoexecCombopScenarioVo;
 import neatlogic.framework.cmdb.crossover.IAppSystemMapper;
 import neatlogic.framework.cmdb.crossover.IResourceCrossoverMapper;
@@ -28,9 +26,7 @@ import neatlogic.framework.cmdb.exception.cientity.CiEntityNotFoundException;
 import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.crossover.CrossoverServiceFactory;
 import neatlogic.framework.deploy.auth.DEPLOY_BASE;
-import neatlogic.framework.deploy.auth.DEPLOY_MODIFY;
-import neatlogic.framework.deploy.constvalue.DeployAppConfigActionType;
-import neatlogic.framework.deploy.dto.app.DeployAppConfigAuthorityActionVo;
+import neatlogic.framework.deploy.auth.core.DeployAppAuthChecker;
 import neatlogic.framework.deploy.dto.app.DeployAppConfigVo;
 import neatlogic.framework.deploy.dto.app.DeployAppEnvironmentVo;
 import neatlogic.framework.deploy.dto.app.DeployPipelineConfigVo;
@@ -48,6 +44,8 @@ import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * @author lvzk
@@ -70,6 +68,11 @@ public class GetDeployJobCreateInfoApi extends PrivateApiComponentBase {
     @Override
     public String getConfig() {
         return null;
+    }
+
+    @Override
+    public boolean disableReturnCircularReferenceDetect() {
+        return true;
     }
 
     @Input({
@@ -131,50 +134,44 @@ public class GetDeployJobCreateInfoApi extends PrivateApiComponentBase {
         result.put("appModuleList", appModuleList);
 
         // 找出当前用户在该应用系统中拥护授权的场景id列表和环境id列表
-        List<Long> hasAuthorityEnvIdList = new ArrayList<>();
-        List<Long> hasAuthorityScenarioIdList = new ArrayList<>();
-        if (AuthActionChecker.check(DEPLOY_MODIFY.class)) {
-            // 拥有DEPLOY_MODIFY授权的用户，拥有所有授权
-            for (AutoexecCombopScenarioVo autoexecCombopScenarioVo : pipelineConfigVo.getScenarioList()) {
-                hasAuthorityScenarioIdList.add(autoexecCombopScenarioVo.getScenarioId());
-            }
-            for (DeployAppEnvironmentVo appEnvironmentVo : envList) {
-                hasAuthorityEnvIdList.add(appEnvironmentVo.getId());
-            }
-        } else {
-            // 查询出当前用户拥有的权限
-            List<DeployAppConfigAuthorityActionVo> actionList = deployAppConfigMapper.getDeployAppAllAuthorityActionListByAppSystemIdAndAuthUuidList(appSystemId, UserContext.get().getUuidList());
-            for (DeployAppConfigAuthorityActionVo actionVo : actionList) {
-                if (Objects.equals(actionVo.getType(), DeployAppConfigActionType.SCENARIO.getValue())) {
-                    if (Objects.equals(actionVo.getAction(), "all")) {
-                        for (AutoexecCombopScenarioVo autoexecCombopScenarioVo : pipelineConfigVo.getScenarioList()) {
-                            if (!hasAuthorityScenarioIdList.contains(autoexecCombopScenarioVo.getScenarioId())) {
-                                hasAuthorityScenarioIdList.add(autoexecCombopScenarioVo.getScenarioId());
-                            }
-                        }
-                        break;
-                    } else {
-                        hasAuthorityScenarioIdList.add(Long.valueOf(actionVo.getAction()));
-                    }
+        AutoexecCombopScenarioVo firstEnableScenario = null;
+        AutoexecCombopScenarioVo defaultScenario = null;
+        boolean defaultScenarioIdIsEnable = false;
+        List<AutoexecCombopScenarioVo> scenarioList = pipelineConfigVo.getScenarioList();
+        List<Long> scenarioIdList = scenarioList.stream().map(AutoexecCombopScenarioVo::getScenarioId).collect(Collectors.toList());
+        List<Long> envIdList = envList.stream().map(DeployAppEnvironmentVo::getId).collect(Collectors.toList());
+        Set<String> actionList = DeployAppAuthChecker.builder(appSystemId).addScenarioActionList(scenarioIdList).addEnvActionList(envIdList).check();
+        for (AutoexecCombopScenarioVo scenarioVo : scenarioList) {
+            if (actionList.contains(scenarioVo.getScenarioId().toString())) {
+                scenarioVo.setIsEnable(true);
+                if (firstEnableScenario == null) {
+                    firstEnableScenario = scenarioVo;
                 }
-            }
-            for (DeployAppConfigAuthorityActionVo actionVo : actionList) {
-                if (Objects.equals(actionVo.getType(), DeployAppConfigActionType.ENV.getValue())) {
-                    if (Objects.equals(actionVo.getAction(), "all")) {
-                        for (DeployAppEnvironmentVo appEnvironmentVo : envList) {
-                            if (!hasAuthorityEnvIdList.contains(appEnvironmentVo.getId())) {
-                                hasAuthorityEnvIdList.add(appEnvironmentVo.getId());
-                            }
-                        }
-                        break;
-                    } else {
-                        hasAuthorityEnvIdList.add(Long.valueOf(actionVo.getAction()));
-                    }
+                if (!defaultScenarioIdIsEnable && Objects.equals(scenarioVo.getScenarioId(), pipelineConfigVo.getDefaultScenarioId())) {
+                    defaultScenarioIdIsEnable = true;
+                    defaultScenario = scenarioVo;
                 }
+            } else {
+                scenarioVo.setIsEnable(false);
             }
         }
-        result.put("hasAuthorityScenarioIdList", hasAuthorityScenarioIdList);
-        result.put("hasAuthorityEnvIdList", hasAuthorityEnvIdList);
+        if (defaultScenarioIdIsEnable) {
+            result.put("defaultSelectScenario", defaultScenario);
+        } else {
+            result.put("defaultSelectScenario", firstEnableScenario);
+        }
+        Long firstEnableEnvId = null;
+        for (DeployAppEnvironmentVo environmentVo : envList) {
+            if (actionList.contains(environmentVo.getId().toString())) {
+                environmentVo.setIsEnable(true);
+                if (firstEnableEnvId == null) {
+                    firstEnableEnvId = environmentVo.getId();
+                    result.put("defaultSelectEnv", environmentVo);
+                }
+            } else {
+                environmentVo.setIsEnable(false);
+            }
+        }
         return result;
     }
 
