@@ -27,7 +27,7 @@ import neatlogic.framework.deploy.constvalue.PipelineType;
 import neatlogic.framework.deploy.constvalue.ScheduleType;
 import neatlogic.framework.deploy.dto.schedule.DeployScheduleConfigVo;
 import neatlogic.framework.deploy.dto.schedule.DeployScheduleVo;
-import neatlogic.framework.deploy.exception.DeployScheduleNotFoundException;
+import neatlogic.framework.deploy.exception.schedule.DeployScheduleNotFoundEditTargetException;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
@@ -80,7 +80,7 @@ public class GetDeployScheduleApi extends PrivateApiComponentBase {
         Long id = paramObj.getLong("id");
         DeployScheduleVo scheduleVo = deployScheduleMapper.getScheduleById(id);
         if (scheduleVo == null) {
-            throw new DeployScheduleNotFoundException(id);
+            throw new DeployScheduleNotFoundEditTargetException(id);
         }
         String userUuid = UserContext.get().getUserUuid(true);
         String type = scheduleVo.getType();

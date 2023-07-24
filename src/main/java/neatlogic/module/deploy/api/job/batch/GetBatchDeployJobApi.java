@@ -20,6 +20,7 @@ import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.deploy.auth.DEPLOY_BASE;
 import neatlogic.framework.deploy.dto.job.DeployJobVo;
+import neatlogic.framework.deploy.exception.job.DeployBatchJobNotFoundEditTargetException;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
@@ -58,7 +59,11 @@ public class GetBatchDeployJobApi extends PrivateApiComponentBase {
     @Description(desc = "获取单个批量作业信息接口")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
-        DeployJobVo deployJobVo = deployJobMapper.getBatchDeployJobById(jsonObj.getLong("id"));
+        Long id = jsonObj.getLong("id");
+        DeployJobVo deployJobVo = deployJobMapper.getBatchDeployJobById(id);
+        if (deployJobVo == null) {
+            throw new DeployBatchJobNotFoundEditTargetException(id);
+        }
         deployJobVo.setIsCanExecute(BatchDeployAuthChecker.isCanExecute(deployJobVo) ? 1 : 0);
         deployJobVo.setIsCanTakeOver(BatchDeployAuthChecker.isCanTakeOver(deployJobVo) ? 1 : 0);
         deployJobVo.setIsCanEdit(BatchDeployAuthChecker.isCanEdit(deployJobVo) ? 1 : 0);

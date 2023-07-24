@@ -64,6 +64,9 @@ public class GetDeployVersionCveListApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         DeployVersionCveVo searchVo = paramObj.toJavaObject(DeployVersionCveVo.class);
+        if(deployVersionMapper.getDeployVersionBaseInfoById(searchVo.getVersionId()) == null) {
+
+        }
         int rowNum = deployVersionMapper.searchDeployVersionCveCount(searchVo);
         if (rowNum == 0) {
             return TableResultUtil.getResult(new ArrayList(), searchVo);

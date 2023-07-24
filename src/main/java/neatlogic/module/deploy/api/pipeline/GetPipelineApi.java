@@ -20,6 +20,7 @@ import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.deploy.auth.DEPLOY_BASE;
 import neatlogic.framework.deploy.dto.pipeline.PipelineVo;
+import neatlogic.framework.deploy.exception.pipeline.DeployPipelineNotFoundEditTargetException;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
@@ -58,7 +59,12 @@ public class GetPipelineApi extends PrivateApiComponentBase {
     @Description(desc = "获取超级流水线详细信息接口")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
-        return deployPipelineMapper.getPipelineById(jsonObj.getLong("id"));
+        Long id = jsonObj.getLong("id");
+        PipelineVo pipelineVo = deployPipelineMapper.getPipelineById(id);
+        if (pipelineVo == null) {
+            throw new DeployPipelineNotFoundEditTargetException(id);
+        }
+        return pipelineVo;
     }
 
 }
