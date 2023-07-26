@@ -22,7 +22,7 @@ import neatlogic.framework.cmdb.crossover.IAppSystemMapper;
 import neatlogic.framework.cmdb.crossover.IResourceCrossoverMapper;
 import neatlogic.framework.cmdb.dto.resourcecenter.ResourceVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.entity.AppSystemVo;
-import neatlogic.framework.cmdb.exception.cientity.CiEntityNotFoundException;
+import neatlogic.framework.cmdb.exception.resourcecenter.AppSystemNotFoundEditTargetException;
 import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.crossover.CrossoverServiceFactory;
 import neatlogic.framework.deploy.auth.DEPLOY_BASE;
@@ -95,7 +95,7 @@ public class GetDeployJobCreateInfoApi extends PrivateApiComponentBase {
         IAppSystemMapper iAppSystemMapper = CrossoverServiceFactory.getApi(IAppSystemMapper.class);
         AppSystemVo appSystemVo = iAppSystemMapper.getAppSystemById(appSystemId);
         if (appSystemVo == null) {
-            throw new CiEntityNotFoundException(appSystemId);
+            throw new AppSystemNotFoundEditTargetException(appSystemId);
         }
         result.put("appSystemName", appSystemVo.getName());
         result.put("appSystemAbbrName", appSystemVo.getAbbrName());

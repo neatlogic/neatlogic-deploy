@@ -27,7 +27,7 @@ import neatlogic.framework.deploy.constvalue.PipelineType;
 import neatlogic.framework.deploy.constvalue.ScheduleType;
 import neatlogic.framework.deploy.dto.schedule.DeployScheduleConfigVo;
 import neatlogic.framework.deploy.dto.schedule.DeployScheduleVo;
-import neatlogic.framework.deploy.exception.DeployScheduleNotFoundException;
+import neatlogic.framework.deploy.exception.schedule.DeployScheduleNotFoundEditTargetException;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
@@ -60,7 +60,7 @@ public class GetDeployScheduleApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return null;
+        return "nmaas.autoexecschedulegetapi.getname";
     }
 
     @Override
@@ -69,18 +69,18 @@ public class GetDeployScheduleApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "id", type = ApiParamType.LONG, isRequired = true, desc = "定时作业id")
+            @Param(name = "id", type = ApiParamType.LONG, isRequired = true, desc = "common.id")
     })
-    @Description(desc = "获取定时作业信息")
+    @Description(desc = "nmaas.autoexecschedulegetapi.getname")
     @Output({
-            @Param(name = "Return", explode = DeployScheduleVo.class, desc = "定时作业信息")
+            @Param(name = "Return", explode = DeployScheduleVo.class, desc = "term.deploy.scheduleinfo")
     })
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         Long id = paramObj.getLong("id");
         DeployScheduleVo scheduleVo = deployScheduleMapper.getScheduleById(id);
         if (scheduleVo == null) {
-            throw new DeployScheduleNotFoundException(id);
+            throw new DeployScheduleNotFoundEditTargetException(id);
         }
         String userUuid = UserContext.get().getUserUuid(true);
         String type = scheduleVo.getType();

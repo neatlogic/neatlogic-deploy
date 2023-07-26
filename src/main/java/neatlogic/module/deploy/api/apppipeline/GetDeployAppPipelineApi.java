@@ -19,9 +19,7 @@ package neatlogic.module.deploy.api.apppipeline;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.cmdb.crossover.IResourceCrossoverMapper;
 import neatlogic.framework.cmdb.dto.resourcecenter.ResourceVo;
-import neatlogic.framework.cmdb.exception.resourcecenter.AppEnvNotFoundException;
-import neatlogic.framework.cmdb.exception.resourcecenter.AppModuleNotFoundException;
-import neatlogic.framework.cmdb.exception.resourcecenter.AppSystemNotFoundException;
+import neatlogic.framework.cmdb.exception.resourcecenter.*;
 import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.crossover.CrossoverServiceFactory;
 import neatlogic.framework.deploy.auth.DEPLOY_BASE;
@@ -41,7 +39,7 @@ public class GetDeployAppPipelineApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "获取应用流水线";
+        return "nmdaa.getdeployapppipelineapi.getname";
     }
 
     @Override
@@ -55,22 +53,22 @@ public class GetDeployAppPipelineApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "应用系统ID"),
-            @Param(name = "appModuleId", type = ApiParamType.LONG, desc = "模块ID"),
-            @Param(name = "envId", type = ApiParamType.LONG, desc = "环境ID"),
-            @Param(name = "isDeleteDisabledPhase", type = ApiParamType.BOOLEAN, defaultValue = "false", desc = "是否删除禁用阶段")
+            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.appsystemid"),
+            @Param(name = "appModuleId", type = ApiParamType.LONG, desc = "term.cmdb.appmoduleid"),
+            @Param(name = "envId", type = ApiParamType.LONG, desc = "term.cmdb.envid"),
+            @Param(name = "isDeleteDisabledPhase", type = ApiParamType.BOOLEAN, defaultValue = "false", desc = "nmdaa.getdeployapppipelineapi.input.param.desc.isdeletedisabledphase")
     })
     @Output({
-            @Param(name = "Return", explode = DeployAppConfigVo.class, desc = "应用流水线配置信息")
+            @Param(name = "Return", explode = DeployAppConfigVo.class, desc = "term.deploy.apppipelineinfo")
     })
-    @Description(desc = "获取应用流水线")
+    @Description(desc = "nmdaa.getdeployapppipelineapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         DeployAppConfigVo searchVo = paramObj.toJavaObject(DeployAppConfigVo.class);
         IResourceCrossoverMapper resourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
         ResourceVo appSystem = resourceCrossoverMapper.getAppSystemById(searchVo.getAppSystemId());
         if (appSystem == null) {
-            throw new AppSystemNotFoundException(searchVo.getAppSystemId());
+            throw new AppSystemNotFoundEditTargetException(searchVo.getAppSystemId());
         }
         searchVo.setAppSystemName(appSystem.getName());
         searchVo.setAppSystemAbbrName(appSystem.getAbbrName());
@@ -78,7 +76,7 @@ public class GetDeployAppPipelineApi extends PrivateApiComponentBase {
         if (appModuleId != null && appModuleId != 0) {
             ResourceVo appModule = resourceCrossoverMapper.getAppModuleById(appModuleId);
             if (appModule == null) {
-                throw new AppModuleNotFoundException(appModuleId);
+                throw new AppModuleNotFoundEditTargetException(appModuleId);
             }
             searchVo.setAppModuleName(appModule.getName());
             searchVo.setAppModuleAbbrName(appModule.getAbbrName());
@@ -87,7 +85,7 @@ public class GetDeployAppPipelineApi extends PrivateApiComponentBase {
         if (envId != null && envId != 0) {
             ResourceVo env = resourceCrossoverMapper.getAppEnvById(envId);
             if (env == null) {
-                throw new AppEnvNotFoundException(envId);
+                throw new AppEnvNotFoundEditTargetException(envId);
             }
             searchVo.setEnvName(env.getName());
         }
