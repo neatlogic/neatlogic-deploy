@@ -22,6 +22,7 @@ import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.common.dto.BasePageVo;
 import neatlogic.framework.deploy.auth.DEPLOY_BASE;
 import neatlogic.framework.deploy.dto.version.DeployVersionCveVo;
+import neatlogic.framework.deploy.exception.verison.DeployVersionNotFoundEditTargetException;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
@@ -65,7 +66,7 @@ public class GetDeployVersionCveListApi extends PrivateApiComponentBase {
     public Object myDoService(JSONObject paramObj) throws Exception {
         DeployVersionCveVo searchVo = paramObj.toJavaObject(DeployVersionCveVo.class);
         if(deployVersionMapper.getDeployVersionBaseInfoById(searchVo.getVersionId()) == null) {
-
+            throw new DeployVersionNotFoundEditTargetException(searchVo.getVersionId());
         }
         int rowNum = deployVersionMapper.searchDeployVersionCveCount(searchVo);
         if (rowNum == 0) {
