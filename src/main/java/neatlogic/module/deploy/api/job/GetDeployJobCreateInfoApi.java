@@ -17,6 +17,7 @@
 package neatlogic.module.deploy.api.job;
 
 import neatlogic.framework.auth.core.AuthAction;
+import neatlogic.framework.autoexec.dto.combop.AutoexecCombopScenarioVo;
 import neatlogic.framework.cmdb.crossover.IAppSystemMapper;
 import neatlogic.framework.cmdb.crossover.IResourceCrossoverMapper;
 import neatlogic.framework.cmdb.dto.resourcecenter.ResourceVo;
@@ -25,6 +26,7 @@ import neatlogic.framework.cmdb.exception.cientity.CiEntityNotFoundException;
 import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.crossover.CrossoverServiceFactory;
 import neatlogic.framework.deploy.auth.DEPLOY_BASE;
+import neatlogic.framework.deploy.auth.core.DeployAppAuthChecker;
 import neatlogic.framework.deploy.dto.app.DeployAppConfigVo;
 import neatlogic.framework.deploy.dto.app.DeployAppEnvironmentVo;
 import neatlogic.framework.deploy.dto.app.DeployPipelineConfigVo;
@@ -41,6 +43,9 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * @author lvzk
@@ -57,7 +62,7 @@ public class GetDeployJobCreateInfoApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "获取创建发布作业初始化信息";
+        return "nmdaj.getdeployjobcreateinfoapi.getname";
     }
 
     @Override
@@ -65,20 +70,27 @@ public class GetDeployJobCreateInfoApi extends PrivateApiComponentBase {
         return null;
     }
 
+    @Override
+    public boolean disableReturnCircularReferenceDetect() {
+        return true;
+    }
+
     @Input({
-            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "应用系统id"),
-            @Param(name = "appModuleId", type = ApiParamType.LONG, desc = "模块id")
+            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.appsystemid"),
+            @Param(name = "appModuleId", type = ApiParamType.LONG, desc = "term.cmdb.appmoduleid")
     })
     @Output({
     })
-    @Description(desc = "获取创建发布作业初始化信息接口")
+    @Description(desc = "nmdaj.getdeployjobcreateinfoapi.getname")
     @ResubmitInterval(value = 2)
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         JSONObject result = new JSONObject();
         Long appSystemId = jsonObj.getLong("appSystemId");
-        Long appModuleId = jsonObj.getLong("appModuleId") == null ? 0L : jsonObj.getLong("appModuleId");
-
+        Long appModuleId = jsonObj.getLong("appModuleId");
+        if (appModuleId == null) {
+            appModuleId = 0L;
+        }
         //查询系统名称、简称
         IAppSystemMapper iAppSystemMapper = CrossoverServiceFactory.getApi(IAppSystemMapper.class);
         AppSystemVo appSystemVo = iAppSystemMapper.getAppSystemById(appSystemId);
@@ -120,6 +132,46 @@ public class GetDeployJobCreateInfoApi extends PrivateApiComponentBase {
         }
         result.put("envList", envList);
         result.put("appModuleList", appModuleList);
+
+        // 找出当前用户在该应用系统中拥护授权的场景id列表和环境id列表
+        AutoexecCombopScenarioVo firstEnableScenario = null;
+        AutoexecCombopScenarioVo defaultScenario = null;
+        boolean defaultScenarioIdIsEnable = false;
+        List<AutoexecCombopScenarioVo> scenarioList = pipelineConfigVo.getScenarioList();
+        List<Long> scenarioIdList = scenarioList.stream().map(AutoexecCombopScenarioVo::getScenarioId).collect(Collectors.toList());
+        List<Long> envIdList = envList.stream().map(DeployAppEnvironmentVo::getId).collect(Collectors.toList());
+        Set<String> actionList = DeployAppAuthChecker.builder(appSystemId).addScenarioActionList(scenarioIdList).addEnvActionList(envIdList).check();
+        for (AutoexecCombopScenarioVo scenarioVo : scenarioList) {
+            if (actionList.contains(scenarioVo.getScenarioId().toString())) {
+                scenarioVo.setIsEnable(true);
+                if (firstEnableScenario == null) {
+                    firstEnableScenario = scenarioVo;
+                }
+                if (!defaultScenarioIdIsEnable && Objects.equals(scenarioVo.getScenarioId(), pipelineConfigVo.getDefaultScenarioId())) {
+                    defaultScenarioIdIsEnable = true;
+                    defaultScenario = scenarioVo;
+                }
+            } else {
+                scenarioVo.setIsEnable(false);
+            }
+        }
+        if (defaultScenarioIdIsEnable) {
+            result.put("defaultSelectScenario", defaultScenario);
+        } else {
+            result.put("defaultSelectScenario", firstEnableScenario);
+        }
+        Long firstEnableEnvId = null;
+        for (DeployAppEnvironmentVo environmentVo : envList) {
+            if (actionList.contains(environmentVo.getId().toString())) {
+                environmentVo.setIsEnable(true);
+                if (firstEnableEnvId == null) {
+                    firstEnableEnvId = environmentVo.getId();
+                    result.put("defaultSelectEnv", environmentVo);
+                }
+            } else {
+                environmentVo.setIsEnable(false);
+            }
+        }
         return result;
     }
 
