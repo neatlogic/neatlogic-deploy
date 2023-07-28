@@ -82,7 +82,6 @@ public class GetDeployJobCreateInfoApi extends PrivateApiComponentBase {
     @Output({
     })
     @Description(desc = "nmdaj.getdeployjobcreateinfoapi.getname")
-    @ResubmitInterval(value = 2)
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         JSONObject result = new JSONObject();
