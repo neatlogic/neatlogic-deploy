@@ -11,6 +11,7 @@ import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.crossover.CrossoverServiceFactory;
 import codedriver.framework.crossover.IFileCrossoverService;
 import codedriver.framework.deploy.auth.DEPLOY_BASE;
+import codedriver.framework.exception.file.FilePathIllegalException;
 import codedriver.framework.file.dto.AuditFilePathVo;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
@@ -54,6 +55,9 @@ public class GetDeployCiAuditDetailApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         String filePath = paramObj.getString("filePath");
+        if (!filePath.contains("deploycicallbackaudit")) {
+            throw new FilePathIllegalException(filePath);
+        }
         AuditFilePathVo auditFilePathVo = new AuditFilePathVo(filePath);
         IFileCrossoverService fileCrossoverService = CrossoverServiceFactory.getApi(IFileCrossoverService.class);
         if (Objects.equals(auditFilePathVo.getServerId(), Config.SCHEDULE_SERVER_ID)) {
