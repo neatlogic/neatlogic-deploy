@@ -276,7 +276,7 @@ public class DeployCiServiceImpl implements DeployCiService {
         String errorMsg = request.getErrorMsg();
         if (StringUtils.isNotBlank(errorMsg)) {
             logger.error("Gitlab webhook delete failed. Request url: {}; params: {}; errorMsg: {}", url, param.toJSONString(), errorMsg);
-            throw new DeployCiGitlabWebHookDeleteFailedException(ci.getRepoServerAddress(), ci.getRepoName());
+            //throw new DeployCiGitlabWebHookDeleteFailedException(ci.getRepoServerAddress(), ci.getRepoName());
         }
     }
 }
