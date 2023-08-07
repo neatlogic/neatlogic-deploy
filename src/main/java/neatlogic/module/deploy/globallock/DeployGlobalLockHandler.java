@@ -16,13 +16,14 @@ limitations under the License.
 
 package neatlogic.module.deploy.globallock;
 
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.autoexec.dao.mapper.AutoexecJobMapper;
 import neatlogic.framework.autoexec.dto.job.AutoexecJobVo;
 import neatlogic.framework.dao.mapper.runner.RunnerMapper;
 import neatlogic.framework.deploy.constvalue.JobSourceType;
 import neatlogic.framework.dto.globallock.GlobalLockVo;
 import neatlogic.framework.dto.runner.RunnerMapVo;
-import neatlogic.framework.exception.core.ApiRuntimeException;
 import neatlogic.framework.exception.runner.RunnerHttpRequestException;
 import neatlogic.framework.exception.runner.RunnerNotFoundByRunnerMapIdException;
 import neatlogic.framework.exception.type.ParamIrregularException;
@@ -33,8 +34,6 @@ import neatlogic.framework.integration.authentication.enums.AuthenticateType;
 import neatlogic.framework.util.HttpRequestUtil;
 import neatlogic.framework.util.TableResultUtil;
 import neatlogic.framework.util.TimeUtil;
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -111,11 +110,13 @@ public class DeployGlobalLockHandler extends GlobalLockHandlerBase {
         //预防如果不存在，需重新insert lock
         String jobId = paramJson.getString("jobId");
         GlobalLockVo globalLockVo = new GlobalLockVo(lockId, JobSourceType.DEPLOY.getValue(), paramJson.getString("lockOwner") + "/" + paramJson.getString("lockTarget"), paramJson.toJSONString(), paramJson.getString("lockOwnerName"));
-        GlobalLockManager.retryLock(globalLockVo);
+        globalLockVo = GlobalLockManager.retryLock(globalLockVo);
         if (globalLockVo.getIsLock() == 1) {
+            jsonObject.put("wait", 0);
             jsonObject.put("lockId", globalLockVo.getId());
         } else {
-            throw new ApiRuntimeException(globalLockVo.getWaitReason());
+            jsonObject.put("wait", 1);
+            jsonObject.put("message", globalLockVo.getWaitReason());
         }
         return jsonObject;
     }
