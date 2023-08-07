@@ -93,12 +93,12 @@ public class DeployGlobalLockHandler extends GlobalLockHandlerBase {
         GlobalLockVo globalLockVo = new GlobalLockVo(JobSourceType.DEPLOY.getValue(), paramJson.getString("jobId") + "/" + paramJson.getString("runnerId") + "/" + paramJson.getString("lockOwner") + "/" + paramJson.getString("lockTarget"), paramJson.toJSONString(), paramJson.getString("lockOwnerName"));
         GlobalLockManager.getLock(globalLockVo);
         if (globalLockVo.getIsLock() == 1) {
-            jsonObject.put("lockId", globalLockVo.getId());
             jsonObject.put("wait", 0);
         } else {
             jsonObject.put("wait", 1);
             jsonObject.put("message", globalLockVo.getWaitReason());
         }
+        jsonObject.put("lockId", globalLockVo.getId());
         return jsonObject;
     }
 
