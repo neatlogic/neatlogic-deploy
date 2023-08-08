@@ -36,7 +36,7 @@ public class SaveDeployVersionCommitAnalyzeApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "保存版本分析数据";
+        return "nmdav.savedeployversioncommitanalyzeapi.description.desc";
     }
 
     @Override
@@ -50,23 +50,23 @@ public class SaveDeployVersionCommitAnalyzeApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "repo", desc = "项目源地址", isRequired = true, type = ApiParamType.STRING),
-            @Param(name = "user", desc = "账号", isRequired = true, type = ApiParamType.STRING),
-            @Param(name = "password", desc = "密码", isRequired = true, type = ApiParamType.STRING),
-            @Param(name = "type", desc = "类型", isRequired = true, type = ApiParamType.STRING),
-            @Param(name = "appSystemId", desc = "密码", isRequired = true, type = ApiParamType.LONG),
-            @Param(name = "appModuleId", desc = "密码", isRequired = true, type = ApiParamType.LONG),
-            @Param(name = "version", desc = "版本", isRequired = true, type = ApiParamType.STRING),
-            @Param(name = "commitList", desc = "提交列表", isRequired = true, type = ApiParamType.JSONARRAY),
-            @Param(name = "fileAddCount", desc = "文件增加数", isRequired = true, type = ApiParamType.INTEGER),
-            @Param(name = "fileDeleteCount", desc = "文件删除数", isRequired = true, type = ApiParamType.INTEGER),
-            @Param(name = "fileModifyCount", desc = "文件修改数", isRequired = true, type = ApiParamType.INTEGER),
-            @Param(name = "lineDeleteCount", desc = "代码行减少数", isRequired = true, type = ApiParamType.INTEGER),
-            @Param(name = "lineAddCount", desc = "代码行增加数", isRequired = true, type = ApiParamType.INTEGER)
+            @Param(name = "repo", desc = "nmdav.savedeployversioncommitanalyzeapi.input.param.desc.repo", isRequired = true, type = ApiParamType.STRING),
+            @Param(name = "user", desc = "common.account", isRequired = true, type = ApiParamType.STRING),
+            @Param(name = "password", desc = "common.password", isRequired = true, type = ApiParamType.STRING),
+            @Param(name = "type", desc = "common.type", isRequired = true, type = ApiParamType.STRING),
+            @Param(name = "appSystemId", desc = "term.cmdb.appsystemid", isRequired = true, type = ApiParamType.LONG),
+            @Param(name = "appModuleId", desc = "term.cmdb.appmoduleid", isRequired = true, type = ApiParamType.LONG),
+            @Param(name = "version", desc = "term.deploy.version", isRequired = true, type = ApiParamType.STRING),
+            @Param(name = "commitList", desc = "nmdav.savedeployversioncommitanalyzeapi.input.param.desc.commitlist", isRequired = true, type = ApiParamType.JSONARRAY),
+            @Param(name = "fileAddCount", desc = "nmdav.savedeployversioncommitanalyzeapi.input.param.desc.fileaddcount", isRequired = true, type = ApiParamType.INTEGER),
+            @Param(name = "fileDeleteCount", desc = "nmdav.savedeployversioncommitanalyzeapi.input.param.desc.filedeletecount", isRequired = true, type = ApiParamType.INTEGER),
+            @Param(name = "fileModifyCount", desc = "nmdav.savedeployversioncommitanalyzeapi.input.param.desc.filemodifycount", isRequired = true, type = ApiParamType.INTEGER),
+            @Param(name = "lineDeleteCount", desc = "nmdav.savedeployversioncommitanalyzeapi.input.param.desc.linedeletecount", isRequired = true, type = ApiParamType.INTEGER),
+            @Param(name = "lineAddCount", desc = "nmdav.savedeployversioncommitanalyzeapi.input.param.desc.lineaddcount", isRequired = true, type = ApiParamType.INTEGER)
     })
     @Output({
     })
-    @Description(desc = "保存版本分析数据")
+    @Description(desc = "nmdav.savedeployversioncommitanalyzeapi.description.desc")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         //更新版本commit统计数据
