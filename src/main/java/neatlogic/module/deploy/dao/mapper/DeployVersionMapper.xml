@@ -22,71 +22,73 @@ limitations under the License.
         select count(id)
         from deploy_version
         where id != #{id}
-          and app_system_id = #{appSystemId}
-          and app_module_id = #{appModuleId}
-          and version = #{version}
+        and app_system_id = #{appSystemId}
+        and app_module_id = #{appModuleId}
+        and version = #{version}
     </select>
 
     <select id="getDeployVersionById" resultType="neatlogic.framework.deploy.dto.version.DeployVersionVo">
         select dv.id,
-               dv.version,
-               dv.app_system_id as appSystemId,
-               cc.name          as appSystemName,
-               dv.app_module_id as appModuleId,
-               cce.name         as appModuleName,
-               dv.is_freeze     as isFreeze,
-               dv.runner_map_id   as runnerMapId,
-               dv.runner_group    as runnerGroupStr,
-               dv.fcu,
-               dv.fcd,
-               dv.lcu,
-               dv.lcd
+        dv.version,
+        dv.app_system_id as appSystemId,
+        cc.name as appSystemName,
+        dv.app_module_id as appModuleId,
+        cce.name as appModuleName,
+        dv.is_freeze as isFreeze,
+        dv.runner_map_id as runnerMapId,
+        dv.runner_group as runnerGroupStr,
+        dv.fcu,
+        dv.fcd,
+        dv.lcu,
+        dv.lcd
         from deploy_version dv
-                 left join cmdb_cientity cc on cc.id = dv.app_system_id
-                 left join cmdb_cientity cce on cce.id = dv.app_module_id
+        left join cmdb_cientity cc on cc.id = dv.app_system_id
+        left join cmdb_cientity cce on cce.id = dv.app_module_id
         where dv.id = #{id}
 
     </select>
 
     <select id="getDeployVersionBaseInfoById" resultType="neatlogic.framework.deploy.dto.version.DeployVersionVo">
         select id,
-               version,
-               app_system_id   as appSystemId,
-               app_system_name as appSystemName,
-               app_module_id   as appModuleId,
-               app_module_name as appModuleName,
-               is_freeze       as isFreeze,
-               repo_type       as repoType,
-               repo            as repo,
-               trunk           as trunk,
-               branch          as branch,
-               tag             as tag,
-               tags_dir        as tagsDir,
-               start_rev       as startRev,
-               end_rev         as endRev,
-               fcu,
-               fcd,
-               lcu,
-               lcd
+        version,
+        app_system_id as appSystemId,
+        app_system_name as appSystemName,
+        app_module_id as appModuleId,
+        app_module_name as appModuleName,
+        is_freeze as isFreeze,
+        repo_type as repoType,
+        repo as repo,
+        trunk as trunk,
+        branch as branch,
+        tag as tag,
+        tags_dir as tagsDir,
+        start_rev as startRev,
+        end_rev as endRev,
+        fcu,
+        fcd,
+        lcu,
+        lcd
         from deploy_version
         where id = #{value}
     </select>
 
-    <select id="getDeployVersionLockById" parameterType="java.lang.Long" resultType="neatlogic.framework.deploy.dto.version.DeployVersionVo">
+    <select id="getDeployVersionLockById" parameterType="java.lang.Long"
+            resultType="neatlogic.framework.deploy.dto.version.DeployVersionVo">
         select id,
-               version,
-               app_system_id   as appSystemId,
-               app_system_name as appSystemName,
-               app_module_id   as appModuleId,
-               app_module_name as appModuleName,
-               is_freeze       as isFreeze,
-               fcu,
-               fcd,
-               lcu,
-               lcd
+        version,
+        app_system_id as appSystemId,
+        app_system_name as appSystemName,
+        app_module_id as appModuleId,
+        app_module_name as appModuleName,
+        is_freeze as isFreeze,
+        fcu,
+        fcd,
+        lcu,
+        lcd
         from deploy_version
         where id = #{value}
-        for update
+        for
+        update
     </select>
 
     <select id="searchDeployVersionCount" resultType="java.lang.Integer">
@@ -185,16 +187,16 @@ limitations under the License.
     <select id="getDeployVersionBaseInfoByIdList" parameterType="java.util.List"
             resultType="neatlogic.framework.deploy.dto.version.DeployVersionVo">
         select id,
-               version,
-               app_system_id   as appSystemId,
-               app_system_name as appSystemName,
-               app_module_id   as appModuleId,
-               app_module_name as appModuleName,
-               is_freeze       as isFreeze,
-               fcu,
-               fcd,
-               lcu,
-               lcd
+        version,
+        app_system_id as appSystemId,
+        app_system_name as appSystemName,
+        app_module_id as appModuleId,
+        app_module_name as appModuleName,
+        is_freeze as isFreeze,
+        fcu,
+        fcd,
+        lcu,
+        lcd
         from deploy_version
         where id in
         <foreach collection="list" item="item" open="(" separator="," close=")">
@@ -228,7 +230,8 @@ limitations under the License.
         dv.lcu,
         dv.lcd
         from deploy_version dv
-        left join @{DATA_SCHEMA}.scence_appsystem_appmodule a on a.id = dv.app_system_id and a.app_module_id = dv.app_module_id
+        left join @{DATA_SCHEMA}.scence_appsystem_appmodule a on a.id = dv.app_system_id and a.app_module_id =
+        dv.app_module_id
         left join deploy_version_buildno dvb on dvb.version_id = dv.id
         left join deploy_version_env dve on dve.version_id = dv.id
         left join cmdb_cientity cc on cc.id = dve.env_id
@@ -239,7 +242,8 @@ limitations under the License.
         ORDER BY dv.fcd DESC, dvb.compile_start_time DESC,dvb.build_no DESC
     </select>
 
-    <select id="getDeployVersionIncludeEnvListByVersionIdList" parameterType="java.lang.Long" resultMap="deployVersionMap">
+    <select id="getDeployVersionIncludeEnvListByVersionIdList" parameterType="java.lang.Long"
+            resultMap="deployVersionMap">
         (SELECT dv.id,
         dv.version,
         a.env_id AS envId,
@@ -274,35 +278,35 @@ limitations under the License.
         SELECT `job_id`
         FROM `deploy_version_buildno`
         WHERE `version_id` = #{versionId}
-          AND `build_no` = #{buildNo}
+        AND `build_no` = #{buildNo}
     </select>
 
     <select id="getJobIdByDeployVersionIdAndEnvId" resultType="java.lang.Long">
         SELECT `job_id`
         FROM `deploy_version_env`
         WHERE `version_id` = #{versionId}
-          AND `env_id` = #{envId}
+        AND `env_id` = #{envId}
     </select>
 
     <select id="getVersionByAppSystemIdAndAppModuleIdAndVersion"
             resultType="neatlogic.framework.deploy.dto.version.DeployVersionVo">
         select dv.id,
-               dv.version,
-               dv.app_system_id as appSystemId,
-               cc.name          as appSystemName,
-               dv.app_module_id as appModuleId,
-               cce.name         as appModuleName,
-               dv.is_freeze     as isFreeze,
-               dv.fcu,
-               dv.fcd,
-               dv.lcu,
-               dv.lcd
+        dv.version,
+        dv.app_system_id as appSystemId,
+        cc.name as appSystemName,
+        dv.app_module_id as appModuleId,
+        cce.name as appModuleName,
+        dv.is_freeze as isFreeze,
+        dv.fcu,
+        dv.fcd,
+        dv.lcu,
+        dv.lcd
         from deploy_version dv
-                 left join cmdb_cientity cc on cc.id = dv.app_system_id
-                 left join cmdb_cientity cce on cce.id = dv.app_module_id
+        left join cmdb_cientity cc on cc.id = dv.app_system_id
+        left join cmdb_cientity cce on cce.id = dv.app_module_id
         where dv.app_system_id = #{appSystemId}
-          and dv.app_module_id = #{appModuleId}
-          and dv.version = #{version}
+        and dv.app_module_id = #{appModuleId}
+        and dv.version = #{version}
 
     </select>
 
@@ -317,78 +321,78 @@ limitations under the License.
             parameterType="neatlogic.framework.deploy.dto.version.DeployVersionVo"
             resultType="neatlogic.framework.deploy.dto.version.DeployVersionVo">
         select id,
-               version,
-               app_system_id   as appSystemId,
-               app_system_name as appSystemName,
-               app_module_id   as appModuleId,
-               app_module_name as appModuleName,
-               is_freeze       as isFreeze,
-               repo_type       as repoType,
-               repo            as repo,
-               trunk           as trunk,
-               branch          as branch,
-               tag             as tag,
-               tags_dir        as tagsDir,
-               start_rev       as startRev,
-               end_rev         as endRev,
-               fcu,
-               fcd,
-               lcu,
-               lcd
+        version,
+        app_system_id as appSystemId,
+        app_system_name as appSystemName,
+        app_module_id as appModuleId,
+        app_module_name as appModuleName,
+        is_freeze as isFreeze,
+        repo_type as repoType,
+        repo as repo,
+        trunk as trunk,
+        branch as branch,
+        tag as tag,
+        tags_dir as tagsDir,
+        start_rev as startRev,
+        end_rev as endRev,
+        fcu,
+        fcd,
+        lcu,
+        lcd
         from deploy_version
         where version = #{version}
-          and app_system_id = #{appSystemId}
-          and app_module_id = #{appModuleId}
+        and app_system_id = #{appSystemId}
+        and app_module_id = #{appModuleId}
     </select>
 
     <select id="getDeployVersionBySystemIdAndModuleIdAndVersion"
             resultType="neatlogic.framework.deploy.dto.version.DeployVersionVo">
         select dv.id,
-               dv.version,
-               dv.app_system_id as appSystemId,
-               dv.app_module_id as appModuleId,
-               dv.is_freeze     as isFreeze,
-               dv.repo_type     as repoType,
-               dv.repo          as repo,
-               dv.trunk         as trunk,
-               dv.branch        as branch,
-               dv.tag           as tag,
-               dv.tags_dir      as tagsDir,
-               dv.start_rev     as startRev,
-               dv.end_rev       as endRev,
-               dv.fcu,
-               dv.fcd,
-               dv.lcu,
-               dv.lcd
+        dv.version,
+        dv.app_system_id as appSystemId,
+        dv.app_module_id as appModuleId,
+        dv.is_freeze as isFreeze,
+        dv.repo_type as repoType,
+        dv.repo as repo,
+        dv.trunk as trunk,
+        dv.branch as branch,
+        dv.tag as tag,
+        dv.tags_dir as tagsDir,
+        dv.start_rev as startRev,
+        dv.end_rev as endRev,
+        dv.fcu,
+        dv.fcd,
+        dv.lcu,
+        dv.lcd
         from deploy_version dv
         where dv.version = #{version}
-          and dv.app_system_id = #{appSystemId}
-          and dv.app_module_id = #{appModuleId}
+        and dv.app_system_id = #{appSystemId}
+        and dv.app_module_id = #{appModuleId}
     </select>
 
     <select id="getDeployVersionBySystemIdAndModuleIdAndVersionId"
             resultType="neatlogic.framework.deploy.dto.version.DeployVersionVo">
         select dv.id,
-               dv.version,
-               dv.app_system_id as appSystemId,
-               dv.app_module_id as appModuleId,
-               dv.is_freeze     as isFreeze,
-               dv.repo_type     as repoType,
-               dv.repo          as repo,
-               dv.trunk         as trunk,
-               dv.branch        as branch,
-               dv.tag           as tag,
-               dv.tags_dir      as tagsDir,
-               dv.start_rev     as startRev,
-               dv.end_rev       as endRev,
-               dv.fcu,
-               dv.fcd,
-               dv.lcu,
-               dv.lcd
+        dv.version,
+        dv.app_system_id as appSystemId,
+        dv.app_module_id as appModuleId,
+        dv.is_freeze as isFreeze,
+        dv.repo_type as repoType,
+        dv.repo as repo,
+        dv.trunk as trunk,
+        dv.branch as branch,
+        dv.tag as tag,
+        dv.tags_dir as tagsDir,
+        dv.start_rev as startRev,
+        dv.end_rev as endRev,
+        dv.fcu,
+        dv.fcd,
+        dv.lcu,
+        dv.lcd
         from deploy_version dv
         where dv.id = #{versionId}
-          and dv.app_system_id = #{appSystemId}
-          and dv.app_module_id = #{appModuleId}
+        and dv.app_system_id = #{appSystemId}
+        and dv.app_module_id = #{appModuleId}
     </select>
 
     <select id="getDeployVersionBuildNoListCount" resultType="java.lang.Integer">
@@ -443,50 +447,50 @@ limitations under the License.
 
     <select id="getDeployVersionBuildNoByVersionIdAndBuildNo"
             resultType="neatlogic.framework.deploy.dto.version.DeployVersionBuildNoVo">
-        select version_id         as versionId,
-               build_no           as buildNo,
-               job_id             as jobId,
-               status,
-               compile_start_time as compileStartTime,
-               compile_end_time   as compileEndTime,
-               compile_end_time   as compileEndTime,
-               runner_map_id      as runnerMapId,
-               runner_group       as runnerGroupStr,
-               end_rev            as endRev
+        select version_id as versionId,
+        build_no as buildNo,
+        job_id as jobId,
+        status,
+        compile_start_time as compileStartTime,
+        compile_end_time as compileEndTime,
+        compile_end_time as compileEndTime,
+        runner_map_id as runnerMapId,
+        runner_group as runnerGroupStr,
+        end_rev as endRev
         from deploy_version_buildno
         where version_id = #{versionId}
-          and build_no = #{buildNo}
+        and build_no = #{buildNo}
     </select>
 
     <select id="getDeployVersionEnvByVersionIdAndEnvId"
             resultType="neatlogic.framework.deploy.dto.version.DeployVersionEnvVo">
-        select version_id    as versionId,
-               env_id        as envId,
-               job_id        as jobId,
-               status        as status,
-               runner_map_id as runnerMapId,
-               runner_group  as runnerGroupStr,
-               build_no      as buildNo,
-               is_mirror     as isMirror
+        select version_id as versionId,
+        env_id as envId,
+        job_id as jobId,
+        status as status,
+        runner_map_id as runnerMapId,
+        runner_group as runnerGroupStr,
+        build_no as buildNo,
+        is_mirror as isMirror
         from deploy_version_env
         where version_id = #{versionId}
-          and env_id = #{envId}
+        and env_id = #{envId}
     </select>
 
     <select id="getDeployVersionEnvByVersionIdAndEnvIdAndBuildNo"
             resultType="neatlogic.framework.deploy.dto.version.DeployVersionEnvVo">
-        select version_id    as versionId,
-               env_id        as envId,
-               job_id        as jobId,
-               status        as status,
-               runner_map_id as runnerMapId,
-               runner_group  as runnerGroupStr,
-               build_no      as buildNo,
-               is_mirror     as isMirror
+        select version_id as versionId,
+        env_id as envId,
+        job_id as jobId,
+        status as status,
+        runner_map_id as runnerMapId,
+        runner_group as runnerGroupStr,
+        build_no as buildNo,
+        is_mirror as isMirror
         from deploy_version_env
         where version_id = #{versionId}
-          and env_id = #{envId}
-          and build_no = #{buildNo}
+        and env_id = #{envId}
+        and build_no = #{buildNo}
     </select>
 
     <resultMap id="DeployVersionDependencyMap" type="neatlogic.framework.deploy.dto.version.DeployVersionDependencyVo">
@@ -510,33 +514,33 @@ limitations under the License.
     <select id="getDeployVersionDependencyListByVersionId" parameterType="java.lang.Long"
             resultMap="DeployVersionDependencyMap">
         SELECT a.id,
-               a.version_id,
-               a.`scope`,
-               a.parent_id,
-               a.build_time,
-               b.id AS package_id,
-               b.group_id,
-               b.artifact_id,
-               b.version,
-               b.type,
-               b.license,
-               b.url
+        a.version_id,
+        a.`scope`,
+        a.parent_id,
+        a.build_time,
+        b.id AS package_id,
+        b.group_id,
+        b.artifact_id,
+        b.version,
+        b.type,
+        b.license,
+        b.url
         FROM deploy_version_dependency a
-                 JOIN deploy_package b ON a.package_id = b.id
+        JOIN deploy_package b ON a.package_id = b.id
         WHERE a.version_id = #{versionId}
     </select>
 
     <select id="getDeployVersionDependencyByVersionIdAndPackageId"
             resultType="neatlogic.framework.deploy.dto.version.DeployVersionDependencyVo">
         SELECT id,
-               version_id as versionId,
-               package_id as packageId,
-               `scope`,
-               parent_id  as parentId,
-               build_time as buildTime
+        version_id as versionId,
+        package_id as packageId,
+        `scope`,
+        parent_id as parentId,
+        build_time as buildTime
         FROM deploy_version_dependency
         WHERE version_id = #{versionId}
-          and package_id = #{packageId}
+        and package_id = #{packageId}
     </select>
 
     <select id="getDeployVersionAppbuildCredentialByProxyToUrl" resultType="java.lang.String">
@@ -545,7 +549,8 @@ limitations under the License.
         where proxy_to_url = #{value}
     </select>
 
-    <resultMap id="DeployVersionEnvInstanceVoMap" type="neatlogic.framework.deploy.dto.version.DeployVersionEnvInstanceVo">
+    <resultMap id="DeployVersionEnvInstanceVoMap"
+               type="neatlogic.framework.deploy.dto.version.DeployVersionEnvInstanceVo">
         <result column="id" property="id"/>
         <result column="resourceId" property="resourceId"/>
         <result column="versionId" property="versionId"/>
@@ -560,123 +565,122 @@ limitations under the License.
 
     <select id="getDeployedInstanceByVersionIdAndEnvId"
             resultMap="DeployVersionEnvInstanceVoMap">
-        select
-            a.id,
-            a.resource_id as resourceId,
-            a.version_id as versionId,
-            a.env_id as envId,
-            a.deploy_user as deployUser,
-            a.deploy_time as deployTime,
-            b.user_name as deployUserName
+        select a.id,
+        a.resource_id as resourceId,
+        a.version_id as versionId,
+        a.env_id as envId,
+        a.deploy_user as deployUser,
+        a.deploy_time as deployTime,
+        b.user_name as deployUserName
         from deploy_version_deployed_instance a
         left join `user` b on a.deploy_user = b.uuid
-        where a.version_id = #{versionId} and a.env_id = #{envId}
+        where a.version_id = #{versionId}
+        and a.env_id = #{envId}
     </select>
 
     <select id="getDeployVersionBySystemId" parameterType="java.lang.Long"
             resultType="neatlogic.framework.deploy.dto.version.DeployVersionVo">
         select id,
-               version,
-               app_system_id   as appSystemId,
-               app_module_id   as appModuleId,
-               compile_success_count as compileSuccessCount,
-               compile_fail_count as compileFailCount,
-               fcu,
-               fcd,
-               lcu,
-               lcd
+        version,
+        app_system_id as appSystemId,
+        app_module_id as appModuleId,
+        compile_success_count as compileSuccessCount,
+        compile_fail_count as compileFailCount,
+        fcu,
+        fcd,
+        lcu,
+        lcd
         from deploy_version
         where app_system_id = #{value}
     </select>
 
     <select id="getDeployVersionBuildQualityListByVersionIdWithLimit"
             resultType="neatlogic.framework.deploy.dto.version.DeployVersionBuildQualityVo">
-        select
-            id,
-            version_id as versionId,
-            build_time as buildTime,
-            files,
-            classes,
-            `lines`,
-            ncloc,
-            functions,
-            statements,
-            complexity,
-            file_complexity as fileComplexity,
-            class_complexity as classComplexity,
-            function_complexity as functionComplexity,
-            violations,
-            blocker_violations as blockerViolations,
-            critical_violations as criticalViolations,
-            major_violations as majorViolations,
-            minor_violations as minorViolations,
-            executable_lines_data as executableLinesData,
-            it_conditions_to_cover as itConditionsToCover,
-            it_branch_coverage as itBranchCoverage,
-            it_conditions_by_line as itConditionsByLine,
-            it_coverage as itCoverage,
-            it_coverage_line_hits_data as itCoverageLineHitsData,
-            it_covered_conditions_by_line as itCoveredConditionsByLine,
-            it_line_coverage as itLineCoverage,
-            it_lines_to_cover as itLinesToCover,
-            comment_lines_density as commentLinesDensity,
-            public_documented_api_density as publicDocumentedApiDensity,
-            duplicated_files as duplicatedFiles,
-            duplicated_lines as duplicatedLines,
-            duplicated_lines_density as duplicatedLinesDensity,
-            new_duplicated_lines as newDuplicatedLines,
-            new_duplicated_lines_density as newDuplicatedLinesDensity,
-            duplicated_blocks as duplicatedBlocks,
-            new_duplicated_blocks as newDuplicatedBlocks,
-            bugs,
-            vulnerabilities,
-            code_smells as codeSmells,
-            threshold,
-            new_security_hotspots as newSecurityHotspots,
-            new_security_rating as newSecurityRating,
-            new_security_remediation_effort as newSecurityRemediationEffort,
-            new_vulnerabilities as newVulnerabilities,
-            security_hotspots as securityHotspots,
-            security_rating as securityRating,
-            security_remediation_effort as securityRemediationEffort,
-            comment_lines as commentLines,
-            ncloc_language_distribution as nclocLanguageDistribution,
-            new_lines as newLines,
-            cognitive_complexity as cognitiveComplexity,
-            conditions_to_cover as conditionsToCover,
-            coverage,
-            lines_to_cover as linesToCover,
-            new_conditions_to_cover as newConditionsToCover,
-            new_coverage as newCoverage,
-            new_lines_to_cover as newLinesToCover,
-            new_uncovered_conditions as newUncoveredConditions,
-            new_uncovered_lines as newUncoveredLines,
-            uncovered_conditions as uncoveredConditions,
-            uncovered_lines as uncoveredLines,
-            new_bugs as newBugs,
-            new_reliability_rating as newReliabilityRating,
-            reliability_rating as reliabilityRating,
-            new_code_smells as newCodeSmells,
-            new_sqale_debt_ratio as newSqaleDebtRatio,
-            new_technical_debt as newTechnicalDebt,
-            sqale_debt_ratio as sqaleDebtRatio,
-            sqale_index as sqaleIndex,
-            sqale_rating as sqaleRating,
-            confirmed_issues as confirmedIssues,
-            false_positive_issues as falsePositiveIssues,
-            info_violations as infoViolations,
-            new_blocker_violations as newBlockerViolations,
-            new_critical_violations as newCriticalViolations,
-            new_info_violations as newInfoViolations,
-            new_major_violations as newMajorViolations,
-            new_minor_violations as newMinorViolations,
-            new_violations as newViolations,
-            open_issues as openIssues,
-            reopened_issues as reopenedIssues,
-            wont_fix_issues as wontFixIssues,
-            alert_status as alertStatus,
-            quality_gate_details as qualityGateDetails,
-            new_maintainability_rating as newMaintainabilityRating
+        select id,
+        version_id as versionId,
+        build_time as buildTime,
+        files,
+        classes,
+        `lines`,
+        ncloc,
+        functions,
+        statements,
+        complexity,
+        file_complexity as fileComplexity,
+        class_complexity as classComplexity,
+        function_complexity as functionComplexity,
+        violations,
+        blocker_violations as blockerViolations,
+        critical_violations as criticalViolations,
+        major_violations as majorViolations,
+        minor_violations as minorViolations,
+        executable_lines_data as executableLinesData,
+        it_conditions_to_cover as itConditionsToCover,
+        it_branch_coverage as itBranchCoverage,
+        it_conditions_by_line as itConditionsByLine,
+        it_coverage as itCoverage,
+        it_coverage_line_hits_data as itCoverageLineHitsData,
+        it_covered_conditions_by_line as itCoveredConditionsByLine,
+        it_line_coverage as itLineCoverage,
+        it_lines_to_cover as itLinesToCover,
+        comment_lines_density as commentLinesDensity,
+        public_documented_api_density as publicDocumentedApiDensity,
+        duplicated_files as duplicatedFiles,
+        duplicated_lines as duplicatedLines,
+        duplicated_lines_density as duplicatedLinesDensity,
+        new_duplicated_lines as newDuplicatedLines,
+        new_duplicated_lines_density as newDuplicatedLinesDensity,
+        duplicated_blocks as duplicatedBlocks,
+        new_duplicated_blocks as newDuplicatedBlocks,
+        bugs,
+        vulnerabilities,
+        code_smells as codeSmells,
+        threshold,
+        new_security_hotspots as newSecurityHotspots,
+        new_security_rating as newSecurityRating,
+        new_security_remediation_effort as newSecurityRemediationEffort,
+        new_vulnerabilities as newVulnerabilities,
+        security_hotspots as securityHotspots,
+        security_rating as securityRating,
+        security_remediation_effort as securityRemediationEffort,
+        comment_lines as commentLines,
+        ncloc_language_distribution as nclocLanguageDistribution,
+        new_lines as newLines,
+        cognitive_complexity as cognitiveComplexity,
+        conditions_to_cover as conditionsToCover,
+        coverage,
+        lines_to_cover as linesToCover,
+        new_conditions_to_cover as newConditionsToCover,
+        new_coverage as newCoverage,
+        new_lines_to_cover as newLinesToCover,
+        new_uncovered_conditions as newUncoveredConditions,
+        new_uncovered_lines as newUncoveredLines,
+        uncovered_conditions as uncoveredConditions,
+        uncovered_lines as uncoveredLines,
+        new_bugs as newBugs,
+        new_reliability_rating as newReliabilityRating,
+        reliability_rating as reliabilityRating,
+        new_code_smells as newCodeSmells,
+        new_sqale_debt_ratio as newSqaleDebtRatio,
+        new_technical_debt as newTechnicalDebt,
+        sqale_debt_ratio as sqaleDebtRatio,
+        sqale_index as sqaleIndex,
+        sqale_rating as sqaleRating,
+        confirmed_issues as confirmedIssues,
+        false_positive_issues as falsePositiveIssues,
+        info_violations as infoViolations,
+        new_blocker_violations as newBlockerViolations,
+        new_critical_violations as newCriticalViolations,
+        new_info_violations as newInfoViolations,
+        new_major_violations as newMajorViolations,
+        new_minor_violations as newMinorViolations,
+        new_violations as newViolations,
+        open_issues as openIssues,
+        reopened_issues as reopenedIssues,
+        wont_fix_issues as wontFixIssues,
+        alert_status as alertStatus,
+        quality_gate_details as qualityGateDetails,
+        new_maintainability_rating as newMaintainabilityRating
         from deploy_version_build_quality
         where version_id = #{versionId}
         order by build_time desc
@@ -685,17 +689,16 @@ limitations under the License.
 
     <select id="getDeployVersionUnitTestListByVersionIdWithLimit"
             resultType="neatlogic.framework.deploy.dto.version.DeployVersionUnitTestVo">
-        select
-            id,
-            version_id as versionId,
-            build_time as buildTime,
-            tests,
-            test_success_density as testSuccessDensity,
-            test_errors as testErrors,
-            branch_coverage as branchCoverage,
-            new_branch_coverage as newBranchCoverage,
-            line_coverage as lineCoverage,
-            new_line_coverage as newLineCoverage
+        select id,
+        version_id as versionId,
+        build_time as buildTime,
+        tests,
+        test_success_density as testSuccessDensity,
+        test_errors as testErrors,
+        branch_coverage as branchCoverage,
+        new_branch_coverage as newBranchCoverage,
+        line_coverage as lineCoverage,
+        new_line_coverage as newLineCoverage
         from deploy_version_unit_test
         where version_id = #{versionId}
         order by build_time desc
@@ -711,19 +714,97 @@ limitations under the License.
 
     <select id="searchDeployVersionCveList" parameterType="neatlogic.framework.deploy.dto.version.DeployVersionCveVo"
             resultType="neatlogic.framework.deploy.dto.version.DeployVersionCveVo">
-        SELECT
-            `id`,
-            `version_id` AS versionId,
-            `dependency`,
-            `vulnerability_ids` AS vulnerabilityIds,
-            `package_name` AS packageName,
-            `highest_severity` AS highestSeverity,
-            `cve_count` AS cveCount,
-            `confidence`,
-            `evidence_count` AS evidenceCount
+        SELECT `id`,
+        `version_id` AS versionId,
+        `dependency`,
+        `vulnerability_ids` AS vulnerabilityIds,
+        `package_name` AS packageName,
+        `highest_severity` AS highestSeverity,
+        `cve_count` AS cveCount,
+        `confidence`,
+        `evidence_count` AS evidenceCount
         FROM `deploy_version_cve`
         WHERE `version_id` = #{versionId}
         LIMIT #{startNum}, #{pageSize}
+    </select>
+
+    <resultMap id="RepositoryServiceMap"
+               type="neatlogic.framework.deploy.dto.codehub.RepositoryServiceVo">
+        <result column="id" jdbcType="BIGINT" property="id"/>
+        <result column="name" property="name"/>
+        <result column="type" jdbcType="CHAR" property="type"/>
+        <result column="address" jdbcType="VARCHAR" property="address"/>
+        <result column="username" jdbcType="VARCHAR" property="username"/>
+        <result column="password" jdbcType="VARCHAR" property="password"/>
+        <result column="status" jdbcType="CHAR" property="status"/>
+        <result column="fcd" jdbcType="TIMESTAMP" property="fcd"/>
+        <result column="lcd" jdbcType="TIMESTAMP" property="lcd"/>
+        <result column="fcu" jdbcType="VARCHAR" property="fcu"/>
+        <result column="lcu" jdbcType="VARCHAR" property="lcu"/>
+        <result column="codehub_agent_id" jdbcType="BIGINT" property="codehubAgentId"/>
+    </resultMap>
+    <select id="getRepositoryServiceByAddress"
+            resultMap="RepositoryServiceMap">
+        select id,
+        name,
+        type,
+        address,
+        username,
+        password,
+        status,
+        fcd,
+        lcd,
+        fcu,
+        lcu,
+        codehub_agent_id
+        from codehub_repository_service
+        where address = #{value}
+    </select>
+
+    <resultMap id="RepositoryMap" type="neatlogic.framework.deploy.dto.codehub.RepositoryVo">
+        <result column="id" jdbcType="BIGINT" property="id"/>
+        <result column="repo_service_id" jdbcType="BIGINT" property="repoServiceId"/>
+        <result column="name" property="name"/>
+        <result column="type" property="type"/>
+        <result column="address" jdbcType="VARCHAR" property="address"/>
+        <result column="main_branch" jdbcType="VARCHAR" property="mainBranch"/>
+        <result column="default_branch" jdbcType="VARCHAR" property="defaultBranch"/>
+        <result column="branches_path" jdbcType="VARCHAR" property="branchesPath"/>
+        <result column="tags_path" jdbcType="VARCHAR" property="tagsPath"/>
+        <result column="app_module_id" jdbcType="BIGINT" property="appModuleId"/>
+        <result column="create_mode" jdbcType="CHAR" property="createMode"/>
+        <result column="fcd" jdbcType="TIMESTAMP" property="fcd"/>
+        <result column="lcd" jdbcType="TIMESTAMP" property="lcd"/>
+        <result column="fcu" jdbcType="VARCHAR" property="fcu"/>
+        <result column="lcu" jdbcType="VARCHAR" property="lcu"/>
+        <result column="description" property="description"/>
+        <result column="sync_status" jdbcType="CHAR" property="syncStatus"/>
+        <result column="sync_time" jdbcType="TIMESTAMP" property="syncTime"/>
+        <result column="runner_id" jdbcType="BIGINT" property="runnerId"/>
+        <result column="runnerName" jdbcType="VARCHAR" property="runnerName"/>
+    </resultMap>
+    <select id="getRepositoryByAppModuleId" resultMap="RepositoryMap">
+        select
+        id,
+        repo_service_id,
+        `name`,
+        address,
+        main_branch,
+        default_branch,
+        branches_path,
+        tags_path,
+        app_module_id,
+        create_mode,
+        fcd,
+        lcd,
+        fcu,
+        lcu,
+        description,
+        sync_status,
+        sync_time,
+        app_system_id,
+        runner_id
+        from codehub_repository where app_module_id = #{value}
     </select>
     <update id="unFreezeDeployVersionById">
         update deploy_version
@@ -828,382 +909,385 @@ limitations under the License.
         set build_time = now(3)
         where id = #{value}
     </update>
+    <update id="updateDeployVersionAnalyzeCount" parameterType="neatlogic.framework.deploy.dto.version.DeployVersionVo">
+        update deploy_version
+        set `file_add_count` = #{fileAddCount},
+        `file_modify_count` =#{fileModifyCount},
+        `file_delete_count` = #{fileDeleteCount},
+        `line_add_count` = #{lineAddCount},
+        `line_delete_count` =#{lineDeleteCount}
+        where `app_system_id` = #{appSystemId} and `app_module_id` = #{appModuleId} and `id` = #{id}
+    </update>
 
     <insert id="insertDeployVersion">
         insert into deploy_version(
-            id,
-            version,
-            app_system_id,
-            app_module_id,
-            description,
-            is_freeze,
-            <if test="repoType != null and repoType != ''">
-                repo_type,
-            </if>
-            <if test="repo != null and repo != ''">
-                repo,
-            </if>
-            <if test="trunk != null and trunk != ''">
-                trunk,
-            </if>
-            <if test="branch != null and branch != ''">
-                branch,
-            </if>
-            <if test="tag != null and tag != ''">
-                tag,
-            </if>
-            <if test="tagsDir != null and tagsDir != ''">
-                tags_dir,
-            </if>
-            <if test="startRev != null and startRev != ''">
-                start_rev,
-            </if>
-            <if test="endRev != null and endRev != ''">
-                end_rev,
-            </if>
-            <if test="runnerMapId != null">
-                runner_map_id,
-            </if>
-            <if test="runnerGroupStr != null and runnerGroupStr != ''">
-                runner_group,
-            </if>
-            <if test="compileSuccessCount != null">
-                compile_success_count,
-            </if>
-            <if test="compileFailCount != null">
-                compile_fail_count,
-            </if>
-            fcu,
-            fcd,
-            lcu,
-            lcd
-         )
+        id,
+        version,
+        app_system_id,
+        app_module_id,
+        description,
+        is_freeze,
+        <if test="repoType != null and repoType != ''">
+            repo_type,
+        </if>
+        <if test="repo != null and repo != ''">
+            repo,
+        </if>
+        <if test="trunk != null and trunk != ''">
+            trunk,
+        </if>
+        <if test="branch != null and branch != ''">
+            branch,
+        </if>
+        <if test="tag != null and tag != ''">
+            tag,
+        </if>
+        <if test="tagsDir != null and tagsDir != ''">
+            tags_dir,
+        </if>
+        <if test="startRev != null and startRev != ''">
+            start_rev,
+        </if>
+        <if test="endRev != null and endRev != ''">
+            end_rev,
+        </if>
+        <if test="runnerMapId != null">
+            runner_map_id,
+        </if>
+        <if test="runnerGroupStr != null and runnerGroupStr != ''">
+            runner_group,
+        </if>
+        <if test="compileSuccessCount != null">
+            compile_success_count,
+        </if>
+        <if test="compileFailCount != null">
+            compile_fail_count,
+        </if>
+        fcu,
+        fcd,
+        lcu,
+        lcd
+        )
         values (
-            #{id},
-            #{version},
-            #{appSystemId},
-            #{appModuleId},
-            #{description},
-            #{isFreeze},
-            <if test="repoType != null and repoType != ''">
-                #{repoType},
-            </if>
-            <if test="repo != null and repo != ''">
-                #{repo},
-            </if>
-            <if test="trunk != null and trunk != ''">
-                #{trunk},
-            </if>
-            <if test="branch != null and branch != ''">
-                #{branch},
-            </if>
-            <if test="tag != null and tag != ''">
-                #{tag},
-            </if>
-            <if test="tagsDir != null and tagsDir != ''">
-                #{tagsDir},
-            </if>
-            <if test="startRev != null and startRev != ''">
-                #{startRev},
-            </if>
-            <if test="endRev != null and endRev != ''">
-                #{endRev},
-            </if>
-            <if test="runnerMapId != null">
-                #{runnerMapId},
-            </if>
-            <if test="runnerGroupStr != null and runnerGroupStr != ''">
-                #{runnerGroupStr},
-            </if>
-            <if test="compileSuccessCount != null">
-                #{compileSuccessCount},
-            </if>
-            <if test="compileFailCount != null">
-                #{compileFailCount},
-            </if>
-            #{fcu},
-            now(3),
-            #{lcu},
-            now(3)
+        #{id},
+        #{version},
+        #{appSystemId},
+        #{appModuleId},
+        #{description},
+        #{isFreeze},
+        <if test="repoType != null and repoType != ''">
+            #{repoType},
+        </if>
+        <if test="repo != null and repo != ''">
+            #{repo},
+        </if>
+        <if test="trunk != null and trunk != ''">
+            #{trunk},
+        </if>
+        <if test="branch != null and branch != ''">
+            #{branch},
+        </if>
+        <if test="tag != null and tag != ''">
+            #{tag},
+        </if>
+        <if test="tagsDir != null and tagsDir != ''">
+            #{tagsDir},
+        </if>
+        <if test="startRev != null and startRev != ''">
+            #{startRev},
+        </if>
+        <if test="endRev != null and endRev != ''">
+            #{endRev},
+        </if>
+        <if test="runnerMapId != null">
+            #{runnerMapId},
+        </if>
+        <if test="runnerGroupStr != null and runnerGroupStr != ''">
+            #{runnerGroupStr},
+        </if>
+        <if test="compileSuccessCount != null">
+            #{compileSuccessCount},
+        </if>
+        <if test="compileFailCount != null">
+            #{compileFailCount},
+        </if>
+        #{fcu},
+        now(3),
+        #{lcu},
+        now(3)
         )
     </insert>
 
     <insert id="insertDeployVersionEnv" parameterType="neatlogic.framework.deploy.dto.version.DeployVersionEnvVo">
         insert into deploy_version_env(version_id,
-                                       env_id,
-                                       job_id,
-                                       status,
-                                       runner_map_id,
-                                       runner_group,
-                                       build_no,
-                                       is_mirror,
-                                       lcu,
-                                       lcd)
+        env_id,
+        job_id,
+        status,
+        runner_map_id,
+        runner_group,
+        build_no,
+        is_mirror,
+        lcu,
+        lcd)
         values (#{versionId},
-                #{envId},
-                #{jobId},
-                #{status},
-                #{runnerMapId},
-                #{runnerGroupStr},
-                #{buildNo},
-                #{isMirror},
-                #{lcu},
-                now(3))
+        #{envId},
+        #{jobId},
+        #{status},
+        #{runnerMapId},
+        #{runnerGroupStr},
+        #{buildNo},
+        #{isMirror},
+        #{lcu},
+        now(3))
     </insert>
 
     <insert id="insertDeployVersionBuildNo">
         INSERT INTO `deploy_version_buildno` (
-            `version_id`,
-            `build_no`,
-            `job_id`,
-            `status`,
-            <if test="runnerMapId != null">
-                runner_map_id,
-            </if>
-            <if test="runnerGroupStr != null and runnerGroupStr != ''">
-                runner_group,
-            </if>
-            <if test="endRev != null and endRev != ''">
-                end_rev,
-            </if>
-            lcu,
-            lcd
+        `version_id`,
+        `build_no`,
+        `job_id`,
+        `status`,
+        <if test="runnerMapId != null">
+            runner_map_id,
+        </if>
+        <if test="runnerGroupStr != null and runnerGroupStr != ''">
+            runner_group,
+        </if>
+        <if test="endRev != null and endRev != ''">
+            end_rev,
+        </if>
+        lcu,
+        lcd
         )
         values (
-            #{versionId},
-            #{buildNo},
-            #{jobId},
-            #{status},
-            <if test="runnerMapId != null">
-                #{runnerMapId},
-            </if>
-            <if test="runnerGroupStr != null and runnerGroupStr != ''">
-                #{runnerGroupStr},
-            </if>
-            <if test="endRev != null and endRev != ''">
-                #{endRev},
-            </if>
-            #{lcu},
-            now(3)
+        #{versionId},
+        #{buildNo},
+        #{jobId},
+        #{status},
+        <if test="runnerMapId != null">
+            #{runnerMapId},
+        </if>
+        <if test="runnerGroupStr != null and runnerGroupStr != ''">
+            #{runnerGroupStr},
+        </if>
+        <if test="endRev != null and endRev != ''">
+            #{endRev},
+        </if>
+        #{lcu},
+        now(3)
         )
         ON DUPLICATE KEY UPDATE
-            `job_id` = #{jobId},
-            `status` = #{status},
-            <if test="runnerMapId != null">
-                `runner_map_id` = #{runnerMapId},
-            </if>
-            <if test="runnerGroupStr != null and runnerGroupStr != ''">
-                `runner_group` = #{runnerGroupStr},
-            </if>
-            <if test="endRev != null and endRev != ''">
-                `end_rev` = #{endRev},
-            </if>
-            `lcu` = #{lcu},
-            `lcd` = now(3)
+        `job_id` = #{jobId},
+        `status` = #{status},
+        <if test="runnerMapId != null">
+            `runner_map_id` = #{runnerMapId},
+        </if>
+        <if test="runnerGroupStr != null and runnerGroupStr != ''">
+            `runner_group` = #{runnerGroupStr},
+        </if>
+        <if test="endRev != null and endRev != ''">
+            `end_rev` = #{endRev},
+        </if>
+        `lcu` = #{lcu},
+        `lcd` = now(3)
     </insert>
 
     <insert id="insertDeployVersionBuildQuality"
             parameterType="neatlogic.framework.deploy.dto.version.DeployVersionBuildQualityVo">
-        INSERT INTO deploy_version_build_quality (
-                                          id,
-                                          version_id,
-                                          build_time,
-                                          files,
-                                          classes,
-                                          `lines`,
-                                          ncloc,
-                                          functions,
-                                          statements,
-                                          complexity,
-                                          file_complexity,
-                                          class_complexity,
-                                          function_complexity,
-                                          violations,
-                                          blocker_violations,
-                                          critical_violations,
-                                          major_violations,
-                                          minor_violations,
-                                          executable_lines_data,
-                                          it_conditions_to_cover,
-                                          it_branch_coverage,
-                                          it_conditions_by_line,
-                                          it_coverage,
-                                          it_coverage_line_hits_data,
-                                          it_covered_conditions_by_line,
-                                          it_line_coverage,
-                                          it_lines_to_cover,
-                                          comment_lines_density,
-                                          public_documented_api_density,
-                                          duplicated_files,
-                                          duplicated_lines,
-                                          duplicated_lines_density,
-                                          new_duplicated_lines,
-                                          new_duplicated_lines_density,
-                                          duplicated_blocks,
-                                          new_duplicated_blocks,
-                                          bugs,
-                                          vulnerabilities,
-                                          code_smells,
-                                          threshold,
-                                          new_security_hotspots,
-                                          new_security_rating,
-                                          new_security_remediation_effort,
-                                          new_vulnerabilities,
-                                          security_hotspots,
-                                          security_rating,
-                                          security_remediation_effort,
-                                          comment_lines,
-                                          ncloc_language_distribution,
-                                          new_lines,
-                                          cognitive_complexity,
-                                          conditions_to_cover,
-                                          coverage,
-                                          lines_to_cover,
-                                          new_conditions_to_cover,
-                                          new_coverage,
-                                          new_lines_to_cover,
-                                          new_uncovered_conditions,
-                                          new_uncovered_lines,
-                                          uncovered_conditions,
-                                          uncovered_lines,
-                                          new_bugs,
-                                          new_reliability_rating,
-                                          reliability_rating,
-                                          new_code_smells,
-                                          new_sqale_debt_ratio,
-                                          new_technical_debt,
-                                          sqale_debt_ratio,
-                                          sqale_index,
-                                          sqale_rating,
-                                          confirmed_issues,
-                                          false_positive_issues,
-                                          info_violations,
-                                          new_blocker_violations,
-                                          new_critical_violations,
-                                          new_info_violations,
-                                          new_major_violations,
-                                          new_minor_violations,
-                                          new_violations,
-                                          open_issues,
-                                          reopened_issues,
-                                          wont_fix_issues,
-                                          alert_status,
-                                          quality_gate_details,
-                                          new_maintainability_rating
-                                          )
+        INSERT INTO deploy_version_build_quality (id,
+        version_id,
+        build_time,
+        files,
+        classes,
+        `lines`,
+        ncloc,
+        functions,
+        statements,
+        complexity,
+        file_complexity,
+        class_complexity,
+        function_complexity,
+        violations,
+        blocker_violations,
+        critical_violations,
+        major_violations,
+        minor_violations,
+        executable_lines_data,
+        it_conditions_to_cover,
+        it_branch_coverage,
+        it_conditions_by_line,
+        it_coverage,
+        it_coverage_line_hits_data,
+        it_covered_conditions_by_line,
+        it_line_coverage,
+        it_lines_to_cover,
+        comment_lines_density,
+        public_documented_api_density,
+        duplicated_files,
+        duplicated_lines,
+        duplicated_lines_density,
+        new_duplicated_lines,
+        new_duplicated_lines_density,
+        duplicated_blocks,
+        new_duplicated_blocks,
+        bugs,
+        vulnerabilities,
+        code_smells,
+        threshold,
+        new_security_hotspots,
+        new_security_rating,
+        new_security_remediation_effort,
+        new_vulnerabilities,
+        security_hotspots,
+        security_rating,
+        security_remediation_effort,
+        comment_lines,
+        ncloc_language_distribution,
+        new_lines,
+        cognitive_complexity,
+        conditions_to_cover,
+        coverage,
+        lines_to_cover,
+        new_conditions_to_cover,
+        new_coverage,
+        new_lines_to_cover,
+        new_uncovered_conditions,
+        new_uncovered_lines,
+        uncovered_conditions,
+        uncovered_lines,
+        new_bugs,
+        new_reliability_rating,
+        reliability_rating,
+        new_code_smells,
+        new_sqale_debt_ratio,
+        new_technical_debt,
+        sqale_debt_ratio,
+        sqale_index,
+        sqale_rating,
+        confirmed_issues,
+        false_positive_issues,
+        info_violations,
+        new_blocker_violations,
+        new_critical_violations,
+        new_info_violations,
+        new_major_violations,
+        new_minor_violations,
+        new_violations,
+        open_issues,
+        reopened_issues,
+        wont_fix_issues,
+        alert_status,
+        quality_gate_details,
+        new_maintainability_rating)
         VALUES (#{id},
-                #{versionId},
-                NOW(3),
-                #{files},
-                #{classes},
-                #{lines},
-                #{ncloc},
-                #{functions},
-                #{statements},
-                #{complexity},
-                #{fileComplexity},
-                #{classComplexity},
-                #{functionComplexity},
-                #{violations},
-                #{blockerViolations},
-                #{criticalViolations},
-                #{majorViolations},
-                #{minorViolations},
-                #{executableLinesData},
-                #{itConditionsToCover},
-                #{itBranchCoverage},
-                #{itConditionsByLine},
-                #{itCoverage},
-                #{itCoverageLineHitsData},
-                #{itCoveredConditionsByLine},
-                #{itLineCoverage},
-                #{itLinesToCover},
-                #{commentLinesDensity},
-                #{publicDocumentedApiDensity},
-                #{duplicatedFiles},
-                #{duplicatedLines},
-                #{duplicatedLinesDensity},
-                #{newDuplicatedLines},
-                #{newDuplicatedLinesDensity},
-                #{duplicatedBlocks},
-                #{newDuplicatedBlocks},
-                #{bugs},
-                #{vulnerabilities},
-                #{codeSmells},
-                #{threshold},
-                #{newSecurityHotspots},
-                #{newSecurityRating},
-                #{newSecurityRemediationEffort},
-                #{newVulnerabilities},
-                #{securityHotspots},
-                #{securityRating},
-                #{securityRemediationEffort},
-                #{commentLines},
-                #{nclocLanguageDistribution},
-                #{newLines},
-                #{cognitiveComplexity},
-                #{conditionsToCover},
-                #{coverage},
-                #{linesToCover},
-                #{newConditionsToCover},
-                #{newCoverage},
-                #{newLinesToCover},
-                #{newUncoveredConditions},
-                #{newUncoveredLines},
-                #{uncoveredConditions},
-                #{uncoveredLines},
-                #{newBugs},
-                #{newReliabilityRating},
-                #{reliabilityRating},
-                #{newCodeSmells},
-                #{newSqaleDebtRatio},
-                #{newTechnicalDebt},
-                #{sqaleDebtRatio},
-                #{sqaleIndex},
-                #{sqaleRating},
-                #{confirmedIssues},
-                #{falsePositiveIssues},
-                #{infoViolations},
-                #{newBlockerViolations},
-                #{newCriticalViolations},
-                #{newInfoViolations},
-                #{newMajorViolations},
-                #{newMinorViolations},
-                #{newViolations},
-                #{openIssues},
-                #{reopenedIssues},
-                #{wontFixIssues},
-                #{alertStatus},
-                #{qualityGateDetails},
-                #{newMaintainabilityRating}
-                )
+        #{versionId},
+        NOW(3),
+        #{files},
+        #{classes},
+        #{lines},
+        #{ncloc},
+        #{functions},
+        #{statements},
+        #{complexity},
+        #{fileComplexity},
+        #{classComplexity},
+        #{functionComplexity},
+        #{violations},
+        #{blockerViolations},
+        #{criticalViolations},
+        #{majorViolations},
+        #{minorViolations},
+        #{executableLinesData},
+        #{itConditionsToCover},
+        #{itBranchCoverage},
+        #{itConditionsByLine},
+        #{itCoverage},
+        #{itCoverageLineHitsData},
+        #{itCoveredConditionsByLine},
+        #{itLineCoverage},
+        #{itLinesToCover},
+        #{commentLinesDensity},
+        #{publicDocumentedApiDensity},
+        #{duplicatedFiles},
+        #{duplicatedLines},
+        #{duplicatedLinesDensity},
+        #{newDuplicatedLines},
+        #{newDuplicatedLinesDensity},
+        #{duplicatedBlocks},
+        #{newDuplicatedBlocks},
+        #{bugs},
+        #{vulnerabilities},
+        #{codeSmells},
+        #{threshold},
+        #{newSecurityHotspots},
+        #{newSecurityRating},
+        #{newSecurityRemediationEffort},
+        #{newVulnerabilities},
+        #{securityHotspots},
+        #{securityRating},
+        #{securityRemediationEffort},
+        #{commentLines},
+        #{nclocLanguageDistribution},
+        #{newLines},
+        #{cognitiveComplexity},
+        #{conditionsToCover},
+        #{coverage},
+        #{linesToCover},
+        #{newConditionsToCover},
+        #{newCoverage},
+        #{newLinesToCover},
+        #{newUncoveredConditions},
+        #{newUncoveredLines},
+        #{uncoveredConditions},
+        #{uncoveredLines},
+        #{newBugs},
+        #{newReliabilityRating},
+        #{reliabilityRating},
+        #{newCodeSmells},
+        #{newSqaleDebtRatio},
+        #{newTechnicalDebt},
+        #{sqaleDebtRatio},
+        #{sqaleIndex},
+        #{sqaleRating},
+        #{confirmedIssues},
+        #{falsePositiveIssues},
+        #{infoViolations},
+        #{newBlockerViolations},
+        #{newCriticalViolations},
+        #{newInfoViolations},
+        #{newMajorViolations},
+        #{newMinorViolations},
+        #{newViolations},
+        #{openIssues},
+        #{reopenedIssues},
+        #{wontFixIssues},
+        #{alertStatus},
+        #{qualityGateDetails},
+        #{newMaintainabilityRating})
     </insert>
 
     <insert id="insertDeployVersionUnitTest"
             parameterType="neatlogic.framework.deploy.dto.version.DeployVersionUnitTestVo">
-        INSERT INTO deploy_version_unit_test (
-                                              id,
-                                              version_id,
-                                              build_time,
-                                              tests,
-                                              test_success_density,
-                                              test_errors,
-                                              branch_coverage,
-                                              new_branch_coverage,
-                                              line_coverage,
-                                              new_line_coverage
-                                              )
+        INSERT INTO deploy_version_unit_test (id,
+        version_id,
+        build_time,
+        tests,
+        test_success_density,
+        test_errors,
+        branch_coverage,
+        new_branch_coverage,
+        line_coverage,
+        new_line_coverage)
         VALUES (#{id},
-                #{versionId},
-                NOW(3),
-                #{tests},
-                #{testSuccessDensity},
-                #{testErrors},
-                #{branchCoverage},
-                #{newBranchCoverage},
-                #{lineCoverage},
-                #{newLineCoverage}
-                )
+        #{versionId},
+        NOW(3),
+        #{tests},
+        #{testSuccessDensity},
+        #{testErrors},
+        #{branchCoverage},
+        #{newBranchCoverage},
+        #{lineCoverage},
+        #{newLineCoverage})
     </insert>
 
     <insert id="insertDeployVersionDependency"
@@ -1230,49 +1314,65 @@ limitations under the License.
     </insert>
 
     <insert id="insertDeployedInstance">
-        insert into deploy_version_deployed_instance(
-            id,
-            resource_id,
-            version_id,
-            env_id,
-            deploy_user,
-            deploy_time
-        ) values (
-            #{id},
-            #{resourceId},
-            #{versionId},
-            #{envId},
-            #{deployUser},
-            #{deployTime}
-        ) ON DUPLICATE KEY UPDATE
-            deploy_user = #{deployUser},
-            deploy_time = #{deployTime}
+        insert into deploy_version_deployed_instance(id,
+        resource_id,
+        version_id,
+        env_id,
+        deploy_user,
+        deploy_time)
+        values (#{id},
+        #{resourceId},
+        #{versionId},
+        #{envId},
+        #{deployUser},
+        #{deployTime})
+        ON DUPLICATE KEY UPDATE deploy_user = #{deployUser},
+        deploy_time = #{deployTime}
     </insert>
 
     <insert id="insertDeployVersionCve">
-        INSERT INTO `deploy_version_cve` (
-            `id`,
-            `version_id`,
-            `dependency`,
-            `vulnerability_ids`,
-            `package_name`,
-            `highest_severity`,
-            `cve_count`,
-            `confidence`,
-            `evidence_count`
+        INSERT INTO `deploy_version_cve` (`id`,
+        `version_id`,
+        `dependency`,
+        `vulnerability_ids`,
+        `package_name`,
+        `highest_severity`,
+        `cve_count`,
+        `confidence`,
+        `evidence_count`)
+        VALUES (#{id},
+        #{versionId},
+        #{dependency},
+        #{vulnerabilityIds},
+        #{packageName},
+        #{highestSeverity},
+        #{cveCount},
+        #{confidence},
+        #{evidenceCount})
+    </insert>
+    <insert id="insertRepositoryService">
+        INSERT INTO `codehub_repository_service` (`id`, `name`, `type`, `address`, `username`, `password`, `status`,
+        `codehub_agent_id`, `fcd`, `lcd`, `fcu`, `lcu`)
+        VALUES (#{id},
+        #{name}, #{type}, #{address}, #{username}, #{password}, #{status}, #{codehubAgentId}, now(), #{lcd},
+        #{fcu}, #{lcu});
+    </insert>
+    <insert id="insertRepository">
+        INSERT INTO `neatlogic_develop`.`codehub_repository` (`id`, `repo_service_id`, `name`, `address`, `main_branch`,
+        `app_module_id`, `create_mode`, `fcd`, `lcd`, `fcu`, `lcu`, `description`, `sync_status`, `sync_time`,
+        `app_system_id`, `default_branch`, `branches_path`, `tags_path`, `runner_id`) VALUES (
+        #{id},#{repoServiceId},#{name},#{address},#{mainBranch},#{appModuleId},#{createMode},now(),#{lcd},#{fcu},#{lcu},#{description},#{syncStatus},#{syncTime},#{appSystemId},#{defaultBranch},#{branchesPath},#{tagsPath},#{runnerId}
+        );
+    </insert>
+    <insert id="insertDeployVersionIssue">
+        insert ignore into `deploy_version_issue` (`version_id`,`issue_id`) values (
+        #{versionId},#{issueId}
         )
-        VALUES
-            (
-                #{id},
-                #{versionId},
-                #{dependency},
-                #{vulnerabilityIds},
-                #{packageName},
-                #{highestSeverity},
-                #{cveCount},
-                #{confidence},
-                #{evidenceCount}
-            )
+    </insert>
+    <insert id="insertDeployVersionCommit">
+        insert ignore into `deploy_version_commit` (`version_id`,`commit_id`,`repository_id`) values (
+        #{versionId},#{commitId},#{repositoryId}
+        )
     </insert>
 
     <delete id="deleteDeployVersionById">
@@ -1297,7 +1397,7 @@ limitations under the License.
         delete
         from deploy_version_buildno
         where version_id = #{versionId}
-          and build_no = #{buildNo}
+        and build_no = #{buildNo}
     </delete>
 
     <sql id="deleteDeployVersionDependency">
@@ -1321,18 +1421,26 @@ limitations under the License.
     </delete>
 
     <delete id="deleteDeployedInstanceByVersionId" parameterType="java.lang.Long">
-        delete from deploy_version_deployed_instance where version_id = #{value}
+        delete
+        from deploy_version_deployed_instance
+        where version_id = #{value}
     </delete>
 
     <delete id="deleteDeployVersionBuildQualityByVersionId" parameterType="java.lang.Long">
-        delete from deploy_version_build_quality where version_id = #{value}
+        delete
+        from deploy_version_build_quality
+        where version_id = #{value}
     </delete>
 
     <delete id="deleteDeployVersionUnitTestByVersionId" parameterType="java.lang.Long">
-        delete from deploy_version_unit_test where version_id = #{value}
+        delete
+        from deploy_version_unit_test
+        where version_id = #{value}
     </delete>
 
     <delete id="deleteDeployVersionCveByVersionId" parameterType="java.lang.Long">
-        DELETE FROM `deploy_version_cve` WHERE `version_id` = #{value}
+        DELETE
+        FROM `deploy_version_cve`
+        WHERE `version_id` = #{value}
     </delete>
 </mapper>

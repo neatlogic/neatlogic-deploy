@@ -1,5 +1,7 @@
 package neatlogic.module.deploy.dao.mapper;
 
+import neatlogic.framework.deploy.dto.codehub.RepositoryServiceVo;
+import neatlogic.framework.deploy.dto.codehub.RepositoryVo;
 import neatlogic.framework.deploy.dto.version.*;
 import org.apache.ibatis.annotations.Param;
 
@@ -69,6 +71,10 @@ public interface DeployVersionMapper {
 
     List<DeployVersionCveVo> searchDeployVersionCveList(DeployVersionCveVo searchVo);
 
+    RepositoryServiceVo getRepositoryServiceByAddress(String address);
+
+    RepositoryVo getRepositoryByAppModuleId(Long appModuleId);
+
     int unFreezeDeployVersionById(@Param("id") Long id, @Param("isFreeze") Long isFreeze);
 
     int updateDeployVersionDependencyBuildTimeById(Long id);
@@ -80,6 +86,8 @@ public interface DeployVersionMapper {
     int updateDeployVersionBuildNoByVersionIdAndBuildNo(DeployVersionBuildNoVo vo);
 
     int updateDeployVersionEnvInfo(DeployVersionEnvVo vo);
+
+    int updateDeployVersionAnalyzeCount(DeployVersionVo versionVo);
 
     int insertDeployVersion(DeployVersionVo versionVo);
 
@@ -96,6 +104,14 @@ public interface DeployVersionMapper {
     int insertDeployedInstance(DeployVersionEnvInstanceVo vo);
 
     int insertDeployVersionCve(DeployVersionCveVo deployVersionCveVo);
+
+    int insertRepositoryService(RepositoryServiceVo repositoryServiceVo);
+
+    int insertRepository(RepositoryVo repositoryVo);
+
+    int insertDeployVersionIssue(@Param("versionId") Long versionId,@Param("issueId") String issueId);
+
+    int insertDeployVersionCommit(@Param("versionId") Long id,@Param("commitId") String commitId,@Param("repositoryId") Long repositoryId);
 
     int deleteDeployVersionById(Long id);
 
@@ -116,4 +132,5 @@ public interface DeployVersionMapper {
     int deleteDeployVersionUnitTestByVersionId(Long versionId);
 
     int deleteDeployVersionCveByVersionId(Long versionId);
+
 }
