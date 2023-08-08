@@ -28,7 +28,7 @@ import java.util.regex.Pattern;
 @AuthAction(action = DEPLOY_MODIFY.class)
 @OperationType(type = OperationTypeEnum.UPDATE)
 public class SaveDeployVersionCommitAnalyzeApi extends PrivateApiComponentBase {
-    //static Pattern pattern =  Pattern.compile("^(https|http?:\\/\\/[^\\/]+\\/)([^.])+");
+    static Pattern pattern =  Pattern.compile("(https|http?://[^/]+/)([^.]+)");
 
 
     @Resource
@@ -79,7 +79,6 @@ public class SaveDeployVersionCommitAnalyzeApi extends PrivateApiComponentBase {
         deployVersionMapper.updateDeployVersionAnalyzeCount(versionVo);
         //跟新仓库服务和仓库
         String repo = paramObj.getString("repo");
-        Pattern pattern =  Pattern.compile("(https|http?://[^/]+/)([^.]+)");
         Matcher matcher = pattern.matcher(repo);
         RepositoryVo repositoryVo = null;
         if (!matcher.find()) {
