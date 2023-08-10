@@ -1374,7 +1374,44 @@ limitations under the License.
         #{versionId},#{commitId},#{repositoryId}
         )
     </insert>
-
+    
+    <insert id="insertCommit" parameterType="neatlogic.framework.deploy.dto.codehub.CommitVo">
+			INSERT ignore INTO codehub_commit (
+	                `commit_id`,
+	                `repository_id`,
+	                `author`,
+	                `author_email`,
+	                `author_date`,
+	                `committer`,
+	                `committer_email`,
+	                `committer_date`,
+	                `message`,
+	                `file_add_count`,
+	                `file_delete_count`,
+	                `file_modify_count`,
+	                `line_add_count`,
+	                `line_delete_count`
+			)
+			VALUES
+				(
+                    #{commitId},
+                    #{repositoryId},
+                    #{author},
+                    #{authorEmail},
+                    #{authorDate},
+                    #{committer},
+                    #{committerEmail},
+                    #{committerDate},
+                    #{message},
+                    #{fileAddCount},
+                    #{fileDeleteCount},
+                    #{fileModifyCount},
+                    #{lineAddCount},
+                    #{lineDeleteCount}
+            )
+      
+    </insert>
+    
     <delete id="deleteDeployVersionById">
         delete
         from deploy_version

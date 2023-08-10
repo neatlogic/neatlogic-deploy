@@ -1,5 +1,6 @@
 package neatlogic.module.deploy.dao.mapper;
 
+import neatlogic.framework.deploy.dto.codehub.CommitVo;
 import neatlogic.framework.deploy.dto.codehub.RepositoryServiceVo;
 import neatlogic.framework.deploy.dto.codehub.RepositoryVo;
 import neatlogic.framework.deploy.dto.version.*;
@@ -112,6 +113,8 @@ public interface DeployVersionMapper {
     int insertDeployVersionIssue(@Param("versionId") Long versionId,@Param("issueId") String issueId);
 
     int insertDeployVersionCommit(@Param("versionId") Long id,@Param("commitId") String commitId,@Param("repositoryId") Long repositoryId);
+    
+    int insertCommit(CommitVo commitVo);
 
     int deleteDeployVersionById(Long id);
 
