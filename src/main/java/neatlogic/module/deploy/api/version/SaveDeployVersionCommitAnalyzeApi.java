@@ -2,9 +2,12 @@ package neatlogic.module.deploy.api.version;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import neatlogic.framework.asynchronization.threadlocal.RequestContext;
+import neatlogic.framework.asynchronization.threadlocal.UserContext;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.deploy.auth.DEPLOY_MODIFY;
+import neatlogic.framework.deploy.dto.codehub.CommitVo;
 import neatlogic.framework.deploy.dto.codehub.RepositoryServiceVo;
 import neatlogic.framework.deploy.dto.codehub.RepositoryVo;
 import neatlogic.framework.deploy.dto.version.DeployVersionVo;
@@ -99,6 +102,8 @@ public class SaveDeployVersionCommitAnalyzeApi extends PrivateApiComponentBase {
             repositoryServiceVo.setUsername(paramObj.getString("user"));
             repositoryServiceVo.setPassword(paramObj.getString("password"));
             repositoryServiceVo.setStatus("none");
+            repositoryServiceVo.setFcu(UserContext.get().getUserUuid());
+            repositoryServiceVo.setLcu(UserContext.get().getUserUuid());
             deployVersionMapper.insertRepositoryService(repositoryServiceVo);
         }
         //更新仓库
@@ -111,6 +116,8 @@ public class SaveDeployVersionCommitAnalyzeApi extends PrivateApiComponentBase {
             repositoryVo.setCreateMode("import");
             repositoryVo.setSyncStatus("none");
             repositoryVo.setAppModuleId(versionVo.getAppModuleId());
+            repositoryVo.setFcu(UserContext.get().getUserUuid());
+            repositoryVo.setLcu(UserContext.get().getUserUuid());
             deployVersionMapper.insertRepository(repositoryVo);
         }
 
@@ -119,9 +126,15 @@ public class SaveDeployVersionCommitAnalyzeApi extends PrivateApiComponentBase {
         if (CollectionUtils.isNotEmpty(commitArray)) {
             for (int i = 0; i < commitArray.size(); i++) {
                 JSONObject commit = commitArray.getJSONObject(i);
-                String issueNo = commit.getString("issueNo");
-                deployVersionMapper.insertDeployVersionIssue(versionTmp.getId(), issueNo);
-                deployVersionMapper.insertDeployVersionCommit(versionTmp.getId(), commit.getString("commitId"), repositoryVo.getId());
+
+                CommitVo commitVo = commit.toJavaObject(CommitVo.class);
+                commitVo.setRepositoryId(repositoryVo.getId());
+                deployVersionMapper.insertCommit(commitVo);
+                String issueNo = commitVo.getIssueNo();
+                if (StringUtils.isNotEmpty(issueNo)) {
+                    deployVersionMapper.insertDeployVersionIssue(versionTmp.getId(), issueNo);
+                }
+                deployVersionMapper.insertDeployVersionCommit(versionTmp.getId(), commitVo.getCommitId(), repositoryVo.getId());
             }
         }
         //
