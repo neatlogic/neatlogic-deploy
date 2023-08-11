@@ -71,6 +71,10 @@ public interface DeployVersionMapper {
     int searchDeployVersionCveCount(DeployVersionCveVo searchVo);
 
     List<DeployVersionCveVo> searchDeployVersionCveList(DeployVersionCveVo searchVo);
+    
+    int searchDeployVersionIssueCount(DeployVersionIssueVo searchVo);
+
+    List<DeployVersionIssueVo> searchDeployVersionIssueList(DeployVersionIssueVo searchVo);
 
     RepositoryServiceVo getRepositoryServiceByAddress(String address);
 
