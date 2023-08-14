@@ -70,7 +70,7 @@ public class GetDeployVersionCommitDiffApi extends PrivateApiComponentBase {
         if(runnerMapVo == null){
             throw new RunnerNotFoundByRunnerMapIdException(version.getRunnerMapId());
         }
-        HttpRequestUtil requestUtil = HttpRequestUtil.post(runnerMapVo.getUrl()).setPayload(JSONObject.toJSONString(version)).setAuthType(AuthenticateType.BUILDIN).setConnectTimeout(5000).setReadTimeout(5000).sendRequest();
+        HttpRequestUtil requestUtil = HttpRequestUtil.post(runnerMapVo.getUrl()+"api/rest/deploy/version/commit/diff/get").setPayload(JSONObject.toJSONString(version)).setAuthType(AuthenticateType.BUILDIN).setConnectTimeout(5000).setReadTimeout(5000).sendRequest();
         if (StringUtils.isNotBlank(requestUtil.getError())) {
             throw new RunnerHttpRequestException(runnerMapVo.getUrl() + ":" + requestUtil.getError());
         }
