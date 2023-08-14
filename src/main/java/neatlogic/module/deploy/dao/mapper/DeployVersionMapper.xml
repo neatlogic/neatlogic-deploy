@@ -728,6 +728,42 @@ limitations under the License.
         WHERE `version_id` = #{versionId}
         LIMIT #{startNum}, #{pageSize}
     </select>
+    
+    <select id="searchDeployVersionIssueCount" parameterType="neatlogic.framework.deploy.dto.version.DeployVersionIssueVo"
+            resultType="int">
+        SELECT COUNT(1)
+        FROM `deploy_version_issue`
+        WHERE `version_id` = #{versionId}
+    </select>
+    
+    <select id="searchDeployVersionIssueList" parameterType="neatlogic.framework.deploy.dto.version.DeployVersionIssueVo"
+            resultType="neatlogic.framework.deploy.dto.version.DeployVersionIssueVo">
+        SELECT
+        vi.version_id as versionId,
+        issue.id,
+		issue.`no`,
+		issue.`name`,
+		issue.`type`,
+		issue.`status`,
+		issue.source_id as sourceId,
+		issue.description,
+		issue.handle_user_id as handleUserId,
+		issue.`issue_create_time` as issueCreateTime,
+        issue.`issue_update_time` as issueUpdateTime,
+        issue.`issue_last_sync_time` as issueLastSyncTime,
+        issue.`issue_creator` as issueCreator,
+        issue.`issue_update_user` as issueUpdateUser,
+        issue.`issue_person_incharge` as issuePersonIncharge,
+        issue.`issue_sync_user` as issueSyncUser,
+		issue.fcd,
+		issue.fcu,
+		issue.lcd,
+		issue.lcu
+        FROM deploy_version_issue vi
+        LEFT JOIN codehub_issue issue ON issue.no=vi.issue_id 
+        WHERE vi.`version_id` = #{versionId}
+        LIMIT #{startNum}, #{pageSize}
+    </select>
 
     <resultMap id="RepositoryServiceMap"
                type="neatlogic.framework.deploy.dto.codehub.RepositoryServiceVo">
