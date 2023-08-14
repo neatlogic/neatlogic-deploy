@@ -62,6 +62,7 @@ limitations under the License.
         branch as branch,
         tag as tag,
         tags_dir as tagsDir,
+        runner_map_id as runnerMapId,
         start_rev as startRev,
         end_rev as endRev,
         fcu,
