@@ -16,6 +16,7 @@
 package neatlogic.module.deploy.api.version;
 
 
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.dao.mapper.runner.RunnerMapper;
@@ -35,6 +36,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
+import java.util.Collections;
+import java.util.Objects;
 
 /**
  * @author lvzk
@@ -54,13 +57,15 @@ public class GetDeployVersionCommitDiffApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "versionId", type = ApiParamType.LONG, isRequired = true, desc = "版本id")
+            @Param(name = "versionId", type = ApiParamType.LONG, isRequired = true, desc = "版本id"),
+            @Param(name = "commitId", type = ApiParamType.STRING, desc = "提交id")
 
     })
     @Output({
     })
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
+        String commitId = jsonObj.getString("commitId");
         Long versionId = jsonObj.getLong("versionId");
         DeployVersionVo version = deployVersionMapper.getDeployVersionBaseInfoById(versionId);
         if (version == null) {
@@ -78,7 +83,20 @@ public class GetDeployVersionCommitDiffApi extends PrivateApiComponentBase {
         if (!resultJson.containsKey("Status") || !"OK".equals(resultJson.getString("Status"))) {
             throw new RunnerHttpRequestException(runnerMapVo.getUrl() + ":" + requestUtil.getError());
         }
-        return resultJson.getJSONObject("Return");
+
+        JSONObject diffJson = resultJson.getJSONObject("Return");
+        //如果有commitId入参,则仅返回这个commitId的数据
+        if(StringUtils.isNotBlank(commitId)) {
+            JSONArray commitList = diffJson.getJSONArray("commitList");
+            for (int i = 0; i < commitList.size(); i++) {
+                JSONObject commit = commitList.getJSONObject(i);
+                if (Objects.equals(commitId,commit.getString("commitId"))){
+                    diffJson.put("commitList", Collections.singletonList(commit));
+                    break;
+                }
+            }
+        }
+        return diffJson;
     }
 
     @Override
