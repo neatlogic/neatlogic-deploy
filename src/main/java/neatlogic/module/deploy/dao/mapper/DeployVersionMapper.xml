@@ -168,6 +168,11 @@ limitations under the License.
         <result column="isFreeze" property="isFreeze"/>
         <result column="compileSuccessCount" property="compileSuccessCount"/>
         <result column="compileFailCount" property="compileFailCount"/>
+        <result column="fileAddCount" property="fileAddCount"/>
+        <result column="fileModifyCount" property="fileModifyCount"/>
+        <result column="fileDeleteCount" property="fileDeleteCount"/>
+        <result column="lineAddCount" property="lineAddCount"/>
+        <result column="lineDeleteCount" property="lineDeleteCount"/>
         <result column="fcu" property="fcu"/>
         <result column="fcd" property="fcd"/>
         <result column="lcu" property="lcu"/>
@@ -226,6 +231,11 @@ limitations under the License.
         dve.build_no as envBuildNo,
         dv.compile_success_count as compileSuccessCount,
         dv.compile_fail_count as compileFailCount,
+        dv.file_add_count as fileAddCount,
+        dv.file_modify_count as fileModifyCount,
+        dv.file_delete_count as fileDeleteCount,
+        dv.line_add_count as lineAddCount,
+        dv.line_delete_count as lineDeleteCount,
         dv.fcu,
         dv.fcd,
         dv.lcu,
