@@ -19,7 +19,12 @@ package neatlogic.module.deploy.api.version;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
+import neatlogic.framework.cmdb.crossover.IResourceCrossoverMapper;
+import neatlogic.framework.cmdb.dto.resourcecenter.ResourceVo;
+import neatlogic.framework.cmdb.exception.resourcecenter.AppModuleNotFoundException;
+import neatlogic.framework.cmdb.exception.resourcecenter.AppSystemNotFoundException;
 import neatlogic.framework.common.constvalue.ApiParamType;
+import neatlogic.framework.crossover.CrossoverServiceFactory;
 import neatlogic.framework.deploy.auth.DEPLOY_BASE;
 import neatlogic.framework.deploy.dto.version.DeployVersionCveVo;
 import neatlogic.framework.deploy.dto.version.DeployVersionVo;
@@ -54,23 +59,36 @@ public class SaveDeployVersionCveListApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "versionId", type = ApiParamType.LONG, isRequired = true, desc = "common.versionid"),
+            @Param(name = "appModuleId", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.appmoduleid"),
+            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.appsystemid"),
+            @Param(name = "version", type = ApiParamType.LONG, isRequired = true, desc = "common.versionname"),
             @Param(name = "cveList", type = ApiParamType.JSONARRAY, isRequired = true, minSize = 1, desc = "term.deploy.cvelist")
     })
     @Output({})
     @Description(desc = "nmdav.savedeployversioncvelistapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
-        Long versionId = paramObj.getLong("versionId");
-        DeployVersionVo deployVersionVo = deployVersionMapper.getDeployVersionById(versionId);
-        if (deployVersionVo == null) {
-            throw new DeployVersionNotFoundException(versionId);
+        Long appSystemId = paramObj.getLong("appSystemId");
+        Long appModuleId = paramObj.getLong("appModuleId");
+        String version = paramObj.getString("version");
+        IResourceCrossoverMapper resourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
+        ResourceVo appSystem = resourceCrossoverMapper.getAppSystemById(appSystemId);
+        if (appSystem == null) {
+            throw new AppSystemNotFoundException(appSystemId);
         }
-        deployVersionMapper.deleteDeployVersionCveByVersionId(versionId);
+        ResourceVo appModule = resourceCrossoverMapper.getAppModuleById(appModuleId);
+        if (appModule == null) {
+            throw new AppModuleNotFoundException(appModuleId);
+        }
+        DeployVersionVo deployVersionVo = deployVersionMapper.getDeployVersionBaseInfoBySystemIdAndModuleIdAndVersion(new DeployVersionVo(version, appSystemId, appModuleId));
+        if (deployVersionVo == null) {
+            throw new DeployVersionNotFoundException(appSystem.getName(), appModule.getName(), version);
+        }
+        deployVersionMapper.deleteDeployVersionCveByVersionId(deployVersionVo.getId());
         JSONArray cveArray = paramObj.getJSONArray("cveList");
         List<DeployVersionCveVo> deployVersionCveList = cveArray.toJavaList(DeployVersionCveVo.class);
         for (DeployVersionCveVo deployVersionCveVo : deployVersionCveList) {
-            deployVersionCveVo.setVersionId(versionId);
+            deployVersionCveVo.setVersionId(deployVersionVo.getId());
             deployVersionMapper.insertDeployVersionCve(deployVersionCveVo);
         }
         return null;
