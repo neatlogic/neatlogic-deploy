@@ -61,7 +61,7 @@ public class SaveDeployVersionCveListApi extends PrivateApiComponentBase {
     @Input({
             @Param(name = "appModuleId", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.appmoduleid"),
             @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.appsystemid"),
-            @Param(name = "version", type = ApiParamType.LONG, isRequired = true, desc = "common.versionname"),
+            @Param(name = "version", type = ApiParamType.STRING, isRequired = true, desc = "common.versionname"),
             @Param(name = "cveList", type = ApiParamType.JSONARRAY, isRequired = true, minSize = 1, desc = "term.deploy.cvelist")
     })
     @Output({})
