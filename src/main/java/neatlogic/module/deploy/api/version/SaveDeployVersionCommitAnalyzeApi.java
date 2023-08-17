@@ -23,6 +23,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -79,7 +81,6 @@ public class SaveDeployVersionCommitAnalyzeApi extends PrivateApiComponentBase {
             throw new DeployVersionNotFoundException(versionVo.getAppSystemId().toString(), versionVo.getAppModuleId().toString(), versionVo.getVersion());
         }
         versionVo.setId(versionTmp.getId());
-        deployVersionMapper.updateDeployVersionAnalyzeCount(versionVo);
         //跟新仓库服务和仓库
         String repo = paramObj.getString("repo");
         Matcher matcher = pattern.matcher(repo);
@@ -121,6 +122,7 @@ public class SaveDeployVersionCommitAnalyzeApi extends PrivateApiComponentBase {
             deployVersionMapper.insertRepository(repositoryVo);
         }
 
+        Set<String> issueSet = new HashSet<>();
         //更新 版本与需求关联&&版本与commit关联
         JSONArray commitArray = paramObj.getJSONArray("commitList");
         if (CollectionUtils.isNotEmpty(commitArray)) {
@@ -132,11 +134,14 @@ public class SaveDeployVersionCommitAnalyzeApi extends PrivateApiComponentBase {
                 deployVersionMapper.insertCommit(commitVo);
                 String issueNo = commitVo.getIssueNo();
                 if (StringUtils.isNotEmpty(issueNo)) {
+                    issueSet.add(issueNo);
                     deployVersionMapper.insertDeployVersionIssue(versionTmp.getId(), issueNo);
                 }
                 deployVersionMapper.insertDeployVersionCommit(versionTmp.getId(), commitVo.getCommitId(), repositoryVo.getId());
             }
         }
+        versionVo.setIssueCount(issueSet.size());
+        deployVersionMapper.updateDeployVersionAnalyzeCount(versionVo);
         //
         return null;
     }

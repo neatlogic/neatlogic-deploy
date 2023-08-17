@@ -173,6 +173,7 @@ limitations under the License.
         <result column="fileDeleteCount" property="fileDeleteCount"/>
         <result column="lineAddCount" property="lineAddCount"/>
         <result column="lineDeleteCount" property="lineDeleteCount"/>
+        <result column="issueCount" property="issueCount"/>
         <result column="fcu" property="fcu"/>
         <result column="fcd" property="fcd"/>
         <result column="lcu" property="lcu"/>
@@ -236,6 +237,7 @@ limitations under the License.
         dv.file_delete_count as fileDeleteCount,
         dv.line_add_count as lineAddCount,
         dv.line_delete_count as lineDeleteCount,
+        dv.issue_count as issueCount,
         dv.fcu,
         dv.fcd,
         dv.lcu,
@@ -750,6 +752,7 @@ limitations under the License.
             resultType="neatlogic.framework.deploy.dto.version.DeployVersionIssueVo">
         SELECT
         vi.version_id as versionId,
+        s.name as source,
         issue.id,
 		issue.`no`,
 		issue.`name`,
@@ -771,6 +774,7 @@ limitations under the License.
 		issue.lcu
         FROM deploy_version_issue vi
         LEFT JOIN codehub_issue issue ON issue.no=vi.issue_id 
+        LEFT JOIN codehub_sync_source s ON issue.source_id=s.id 
         WHERE vi.`version_id` = #{versionId}
         LIMIT #{startNum}, #{pageSize}
     </select>
@@ -962,7 +966,8 @@ limitations under the License.
         `file_modify_count` =#{fileModifyCount},
         `file_delete_count` = #{fileDeleteCount},
         `line_add_count` = #{lineAddCount},
-        `line_delete_count` =#{lineDeleteCount}
+        `line_delete_count` =#{lineDeleteCount},
+        `issue_count` =#{issueCount}
         where `app_system_id` = #{appSystemId} and `app_module_id` = #{appModuleId} and `id` = #{id}
     </update>
 
