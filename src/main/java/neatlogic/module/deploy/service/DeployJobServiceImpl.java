@@ -161,10 +161,10 @@ public class DeployJobServiceImpl implements DeployJobService {
     private void initDeployJobParam(DeployJobVo deployJobParam) {
         ICiEntityCrossoverMapper iCiEntityCrossoverMapper = CrossoverServiceFactory.getApi(ICiEntityCrossoverMapper.class);
         IAppSystemMapper iAppSystemMapper = CrossoverServiceFactory.getApi(IAppSystemMapper.class);
-        if (StringUtils.isNotBlank(deployJobParam.getAppSystemName())) {
+        if (StringUtils.isNotBlank(deployJobParam.getAppSystemAbbrName())) {
             AppSystemVo appSystem = iAppSystemMapper.getAppSystemByAbbrName(deployJobParam.getAppSystemAbbrName());
             if (appSystem == null) {
-                throw new CiEntityNotFoundException(deployJobParam.getAppSystemName());
+                throw new CiEntityNotFoundException(deployJobParam.getAppSystemAbbrName());
             }
             deployJobParam.setAppSystemId(appSystem.getId());
             deployJobParam.setAppSystemAbbrName(appSystem.getAbbrName());
@@ -230,7 +230,7 @@ public class DeployJobServiceImpl implements DeployJobService {
         }
         IAppSystemMapper iAppSystemMapper = CrossoverServiceFactory.getApi(IAppSystemMapper.class);
         AppModuleVo appModuleVo;
-        if (StringUtils.isNotBlank(moduleVo.getName())) {
+        if (StringUtils.isNotBlank(moduleVo.getAbbrName())) {
             appModuleVo = iAppSystemMapper.getAppModuleByAbbrName(moduleVo.getAbbrName());
             if (appModuleVo == null) {
                 throw new CiEntityNotFoundException(moduleVo.getAbbrName());
