@@ -91,7 +91,7 @@ public class ListDeployJobModuleApi extends PrivateApiComponentBase {
         Long scenarioId = paramObj.getLong("scenarioId");
         List<ResourceVo> moduleResourceList = new ArrayList<>();
         IResourceCrossoverMapper resourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
-        List<Long> moduleIdList = resourceCrossoverMapper.getAppSystemModuleIdListByAppSystemIdAndAppModuleIdList(paramObj.getLong("appSystemId"), paramObj.getJSONArray("appModuleIdList"));
+        List<Long> moduleIdList = resourceCrossoverMapper.getAppSystemModuleIdListByAppSystemIdAndAppModuleIdListAndEnvId(paramObj.getLong("appSystemId"),paramObj.getLong("envId"), paramObj.getJSONArray("appModuleIdList"));
         if (CollectionUtils.isNotEmpty(moduleIdList)) {
             moduleResourceList = resourceCrossoverMapper.getAppModuleListByIdListSimple(moduleIdList, true);
         }
