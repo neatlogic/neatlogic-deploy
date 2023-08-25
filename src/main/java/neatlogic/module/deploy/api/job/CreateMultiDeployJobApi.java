@@ -90,8 +90,7 @@ public class CreateMultiDeployJobApi extends PrivateApiComponentBase {
             @Param(name = "scenarioId", type = ApiParamType.LONG, desc = "term.autoexec.scenarioid"),
             @Param(name = "scenarioName", type = ApiParamType.STRING, desc = "term.autoexec.scenarioname", help = "如果入参也有scenarioId，则会以scenarioName为准"),
             @Param(name = "appSystemId", type = ApiParamType.LONG, desc = "term.cmdb.appsystemid"),
-            @Param(name = "appSystemName", type = ApiParamType.STRING, desc = "term.cmdb.appsystemname", help = "如果入参也有appSystemId，则会以appSystemName为准"),
-            @Param(name = "sysName", type = ApiParamType.STRING, desc = "term.cmdb.sysname", help = "如果入参也有appSystemId，则会以sysName为准"),
+            @Param(name = "appSystemAbbrName", type = ApiParamType.STRING, desc = "term.cmdb.sysname", help = "如果入参也有appSystemId，则会以appSystemName为准"),
             @Param(name = "moduleList", type = ApiParamType.JSONARRAY, isRequired = true, desc = "nfd.licensevo.entityfield.name.modules"),
             @Param(name = "envId", type = ApiParamType.LONG, desc = "term.cmdb.envid"),
             @Param(name = "envName", type = ApiParamType.STRING, desc = "term.cmdb.envname", help = "如果入参也有envId，则会以envName为准"),
@@ -116,12 +115,13 @@ public class CreateMultiDeployJobApi extends PrivateApiComponentBase {
         DeployJobVo deployJobParam = JSONObject.toJavaObject(jsonObj, DeployJobVo.class);
         ICiEntityCrossoverMapper iCiEntityCrossoverMapper = CrossoverServiceFactory.getApi(ICiEntityCrossoverMapper.class);
         IAppSystemMapper iAppSystemMapper = CrossoverServiceFactory.getApi(IAppSystemMapper.class);
-        if (StringUtils.isNotBlank(deployJobParam.getAppSystemName())) {
+        if (StringUtils.isNotBlank(deployJobParam.getAppSystemAbbrName())) {
             AppSystemVo appSystem = iAppSystemMapper.getAppSystemByAbbrName(deployJobParam.getAppSystemAbbrName());
             if (appSystem == null) {
-                throw new CiEntityNotFoundException(deployJobParam.getAppSystemName());
+                throw new CiEntityNotFoundException(deployJobParam.getAppSystemAbbrName());
             }
             deployJobParam.setAppSystemId(appSystem.getId());
+            deployJobParam.setAppSystemName(appSystem.getName());
             deployJobParam.setAppSystemAbbrName(appSystem.getAbbrName());
         } else if (deployJobParam.getAppSystemId() != null) {
             AppSystemVo appSystem = iAppSystemMapper.getAppSystemById(deployJobParam.getAppSystemId());
