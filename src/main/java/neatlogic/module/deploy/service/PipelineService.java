@@ -30,4 +30,10 @@ public interface PipelineService {
     List<PipelineJobTemplateVo> searchPipelineJobTemplate(PipelineJobTemplateVo pipelineJobTemplateVo);
 
      void deleteDependency(DeployAppConfigVo deployAppConfigVo);
+
+    /**
+     * 删除模块层或环境层重载部分配置的依赖关系
+     * @param deployAppConfigVo
+     */
+    void deleteModifiedPartConfigDependency(DeployAppConfigVo deployAppConfigVo);
 }
