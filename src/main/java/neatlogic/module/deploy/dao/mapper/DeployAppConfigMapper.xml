@@ -1845,6 +1845,20 @@ limitations under the License.
         </where>
     </delete>
 
+    <delete id="deleteAppModuleAppConfig">
+        DELETE FROM `deploy_app_config`
+        where `app_system_id` = #{appSystemId}
+        AND `app_module_id` = #{appModuleId}
+        AND `env_id` = 0
+    </delete>
+
+    <delete id="deleteAppEnvAppConfig">
+        DELETE FROM `deploy_app_config`
+        where `app_system_id` = #{appSystemId}
+          AND `app_module_id` = #{appModuleId}
+          AND `env_id` = #{envId}
+    </delete>
+
     <delete id="deleteAppConfigAuthorityByAppSystemId">
         delete
         from `deploy_app_config_authority`

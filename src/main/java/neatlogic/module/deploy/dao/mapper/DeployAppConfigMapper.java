@@ -216,6 +216,10 @@ public interface DeployAppConfigMapper extends IDeployAppConfigCrossoverMapper {
 
     void deleteAppConfig(DeployAppConfigVo configVo);
 
+    void deleteAppModuleAppConfig(@Param("appSystemId") Long appSystemId, @Param("appModuleId") Long appModuleId);
+
+    void deleteAppEnvAppConfig(@Param("appSystemId") Long appSystemId, @Param("appModuleId") Long appModuleId, @Param("envId") Long envId);
+
     void deleteAppConfigEnv(DeployAppConfigVo deployAppConfigVo);
 
     void deleteAppConfigAuthorityByAppSystemId(Long appSystemId);

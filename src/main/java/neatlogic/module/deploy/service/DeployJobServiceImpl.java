@@ -170,7 +170,7 @@ public class DeployJobServiceImpl implements DeployJobService {
             deployJobParam.setAppSystemAbbrName(appSystem.getAbbrName());
         } else if (deployJobParam.getAppSystemId() != null) {
             AppSystemVo appSystem = iAppSystemMapper.getAppSystemById(deployJobParam.getAppSystemId());
-            if (iCiEntityCrossoverMapper.getCiEntityBaseInfoById(deployJobParam.getAppSystemId()) == null) {
+            if (appSystem == null) {
                 throw new CiEntityNotFoundException(deployJobParam.getAppSystemId());
             }
             deployJobParam.setAppSystemName(appSystem.getName());
