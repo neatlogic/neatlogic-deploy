@@ -829,30 +829,32 @@ public class DeployPipelineConfigManager {
      * @return 目标层配置信息
      */
     private static DeployPipelineConfigVo mergeDeployPipelineConfig2(DeployPipelineConfigVo appConfig, DeployPipelineConfigVo moduleOverrideConfig, DeployPipelineConfigVo envOverrideConfig, String targetLevel, List<Long> profileIdList) {
-        overrideProfileParamSetSource(appConfig.getOverrideProfileList(), "应用");
+//        overrideProfileParamSetSource(appConfig.getOverrideProfileList(), "应用");
         if (Objects.equals(targetLevel, "应用")) {
 
         } else if (Objects.equals(targetLevel, "模块")) {
+            initPipelineAppConfig(appConfig);
             pipelinePhaseSetSource(appConfig.getCombopPhaseList(), "应用");
             if (moduleOverrideConfig != null) {
                 pipelinePhaseSetSource(moduleOverrideConfig.getOverridePhaseList(), "模块");
-                overrideProfileParamSetSource(moduleOverrideConfig.getOverrideProfileList(), "模块");
+//                overrideProfileParamSetSource(moduleOverrideConfig.getOverrideProfileList(), "模块");
                 mergeDeployPipelineConfig(appConfig, moduleOverrideConfig);
             }
         } else if (Objects.equals(targetLevel, "环境")) {
+            initPipelineAppConfig(appConfig);
             pipelinePhaseSetSource(appConfig.getCombopPhaseList(), "应用");
             if (moduleOverrideConfig != null) {
                 pipelinePhaseSetSource(moduleOverrideConfig.getOverridePhaseList(), "模块");
-                overrideProfileParamSetSource(moduleOverrideConfig.getOverrideProfileList(), "模块");
+//                overrideProfileParamSetSource(moduleOverrideConfig.getOverrideProfileList(), "模块");
                 mergeDeployPipelineConfig(appConfig, moduleOverrideConfig);
             }
+            pipelineConfigSetOverrideAndParentIsActiveFieldValue(appConfig.getCombopPhaseList());
             if (envOverrideConfig != null) {
                 pipelinePhaseSetSource(envOverrideConfig.getOverridePhaseList(), "环境");
-                overrideProfileParamSetSource(envOverrideConfig.getOverrideProfileList(), "环境");
+//                overrideProfileParamSetSource(envOverrideConfig.getOverrideProfileList(), "环境");
                 mergeDeployPipelineConfig(appConfig, envOverrideConfig);
             }
         }
-
 
         if (CollectionUtils.isEmpty(profileIdList)) {
             profileIdList = new ArrayList<>(getProfileIdSet(appConfig));
@@ -863,14 +865,100 @@ public class DeployPipelineConfigManager {
             if (CollectionUtils.isNotEmpty(profileList)) {
                 List<DeployProfileVo> deployProfileList = getDeployProfileList(profileList);
                 List<DeployProfileVo> overrideProfileList = appConfig.getOverrideProfileList();
-                finalOverrideProfile(deployProfileList, overrideProfileList);
+                mergeDeployPipelineConfig(deployProfileList, overrideProfileList);
+                if (Objects.equals(targetLevel, "应用")) {
+
+                } else if (Objects.equals(targetLevel, "模块")) {
+                    overrideProfileList = null;
+                    if (moduleOverrideConfig != null) {
+                        overrideProfileList = moduleOverrideConfig.getOverrideProfileList();
+                    }
+                    mergeDeployPipelineConfig(deployProfileList, overrideProfileList);
+                } else if (Objects.equals(targetLevel, "环境")) {
+                    if (moduleOverrideConfig != null) {
+                        overrideProfileList = moduleOverrideConfig.getOverrideProfileList();
+                        if (CollectionUtils.isNotEmpty(overrideProfileList)) {
+                            mergeDeployPipelineConfig(deployProfileList, overrideProfileList);
+                        }
+                    }
+                    overrideProfileList = null;
+                    if (envOverrideConfig != null) {
+                        overrideProfileList = envOverrideConfig.getOverrideProfileList();
+                    }
+                    mergeDeployPipelineConfig(deployProfileList, overrideProfileList);
+                }
                 appConfig.setOverrideProfileList(deployProfileList);
             }
         }
-        overrideProfileParamSetInherit(appConfig.getOverrideProfileList(), targetLevel);
         return appConfig;
     }
 
+    private static void pipelineConfigSetOverrideAndParentIsActiveFieldValue(List<DeployPipelinePhaseVo> pipelinePhaseList) {
+        if (CollectionUtils.isNotEmpty(pipelinePhaseList)) {
+            for (DeployPipelinePhaseVo pipelinePhaseVo : pipelinePhaseList) {
+                pipelinePhaseVo.setOverride(0);
+                if (Objects.equals(pipelinePhaseVo.getIsActive(), 0)) {
+                    pipelinePhaseVo.setParentIsActive(0);
+                }
+            }
+        }
+    }
+
+    private static void initPipelineAppConfig(DeployPipelineConfigVo appConfig) {
+        List<DeployPipelinePhaseVo> pipelinePhaseList = appConfig.getCombopPhaseList();
+        if (CollectionUtils.isNotEmpty(pipelinePhaseList)) {
+            for (DeployPipelinePhaseVo pipelinePhaseVo : pipelinePhaseList) {
+                pipelinePhaseVo.setOverride(0);
+                pipelinePhaseVo.setIsActive(1);
+            }
+        }
+        List<DeployPipelineGroupVo> pipelineGroupList = appConfig.getCombopGroupList();
+        if (CollectionUtils.isNotEmpty(pipelineGroupList)) {
+            for (DeployPipelineGroupVo pipelineGroupVo : pipelineGroupList) {
+                pipelineGroupVo.setInherit(1);
+            }
+        }
+        DeployPipelineExecuteConfigVo executeConfigVo = appConfig.getExecuteConfig();
+        if (executeConfigVo != null) {
+            executeConfigVo.setInherit(1);
+        }
+    }
+
+    private static List<DeployProfileVo> mergeDeployPipelineConfig(List<DeployProfileVo> deployProfileList, List<DeployProfileVo> overrideProfileList) {
+        for (DeployProfileVo deployProfileVo : deployProfileList) {
+            List<DeployProfileParamVo> deployProfileParamList = deployProfileVo.getParamList();
+            for (DeployProfileParamVo deployProfileParamVo : deployProfileParamList) {
+                deployProfileParamVo.setInherit(1);
+            }
+        }
+        if (CollectionUtils.isNotEmpty(overrideProfileList)) {
+            for (DeployProfileVo overrideProfileVo : overrideProfileList) {
+                for (DeployProfileVo deployProfileVo : deployProfileList) {
+                    if (Objects.equals(overrideProfileVo.getProfileId(), deployProfileVo.getProfileId())) {
+                        List<DeployProfileParamVo> overrideProfileParamList = overrideProfileVo.getParamList();
+                        List<DeployProfileParamVo> deployProfileParamList = deployProfileVo.getParamList();
+                        for (DeployProfileParamVo overrideProfileParamVo : overrideProfileParamList) {
+                            if (Objects.equals(overrideProfileParamVo.getInherit(), 1)) {
+                                continue;
+                            }
+                            int index = 0;
+                            for (DeployProfileParamVo deployProfileParamVo : deployProfileParamList) {
+                                if (Objects.equals(overrideProfileParamVo.getId(), deployProfileParamVo.getId())) {
+                                    break;
+                                }
+                                index++;
+                            }
+//                            if (index < deployProfileParamList.size()) {
+                            deployProfileParamList.remove(index);
+                            deployProfileParamList.add(index, overrideProfileParamVo);
+//                            }
+                        }
+                    }
+                }
+            }
+        }
+        return deployProfileList;
+    }
     private static DeployPipelineConfigVo mergeDeployPipelineConfig(DeployPipelineConfigVo appConfig, DeployPipelineConfigVo overrideConfig) {
 
         List<Long> disabledPhaseIdList = new ArrayList<>();
@@ -884,11 +972,8 @@ public class DeployPipelineConfigManager {
                 int index = 0;
                 for (DeployPipelinePhaseVo pipelinePhaseVo : pipelinePhaseList) {
                     if (Objects.equals(overridePhaseVo.getUuid(), pipelinePhaseVo.getUuid())) {
-                        overridePhaseVo.setParentIsActive(1);
+                        overridePhaseVo.setParentIsActive(pipelinePhaseVo.getParentIsActive());
                         if (Objects.equals(overridePhaseVo.getIsActive(), 0)) {
-                            if (Objects.equals(pipelinePhaseVo.getIsActive(), 0)) {
-                                overridePhaseVo.setParentIsActive(0);
-                            }
                             disabledPhaseIdList.remove(overridePhaseVo.getId());
                         }
                         break;
@@ -925,34 +1010,34 @@ public class DeployPipelineConfigManager {
             }
         }
         DeployPipelineExecuteConfigVo executeConfigVo = overrideConfig.getExecuteConfig();
-        if (executeConfigVo != null) {
+        if (executeConfigVo != null && Objects.equals(executeConfigVo.getInherit(), 0)) {
             appConfig.setExecuteConfig(executeConfigVo);
         }
-        List<DeployProfileVo> overrideProfileList = overrideConfig.getOverrideProfileList();
-        if (CollectionUtils.isNotEmpty(overrideProfileList)) {
-            List<DeployProfileVo> deployProfileList = appConfig.getOverrideProfileList();
-            for (DeployProfileVo overrideProfileVo : overrideProfileList) {
-                for (DeployProfileVo deployProfileVo : deployProfileList) {
-                    if (Objects.equals(overrideProfileVo.getProfileId(), deployProfileVo.getProfileId())) {
-                        List<DeployProfileParamVo> overrideProfileParamList = overrideProfileVo.getParamList();
-                        List<DeployProfileParamVo> deployProfileParamList = deployProfileVo.getParamList();
-                        for (DeployProfileParamVo overrideProfileParamVo : overrideProfileParamList) {
-                            int index = 0;
-                            for (DeployProfileParamVo deployProfileParamVo : deployProfileParamList) {
-                                if (Objects.equals(overrideProfileParamVo.getId(), deployProfileParamVo.getId())) {
-                                    break;
-                                }
-                                index++;
-                            }
-//                            if (index < deployProfileParamList.size()) {
-                            deployProfileParamList.remove(index);
-                            deployProfileParamList.add(index, overrideProfileParamVo);
+//        List<DeployProfileVo> overrideProfileList = overrideConfig.getOverrideProfileList();
+//        if (CollectionUtils.isNotEmpty(overrideProfileList)) {
+//            List<DeployProfileVo> deployProfileList = appConfig.getOverrideProfileList();
+//            for (DeployProfileVo overrideProfileVo : overrideProfileList) {
+//                for (DeployProfileVo deployProfileVo : deployProfileList) {
+//                    if (Objects.equals(overrideProfileVo.getProfileId(), deployProfileVo.getProfileId())) {
+//                        List<DeployProfileParamVo> overrideProfileParamList = overrideProfileVo.getParamList();
+//                        List<DeployProfileParamVo> deployProfileParamList = deployProfileVo.getParamList();
+//                        for (DeployProfileParamVo overrideProfileParamVo : overrideProfileParamList) {
+//                            int index = 0;
+//                            for (DeployProfileParamVo deployProfileParamVo : deployProfileParamList) {
+//                                if (Objects.equals(overrideProfileParamVo.getId(), deployProfileParamVo.getId())) {
+//                                    break;
+//                                }
+//                                index++;
 //                            }
-                        }
-                    }
-                }
-            }
-        }
+////                            if (index < deployProfileParamList.size()) {
+//                            deployProfileParamList.remove(index);
+//                            deployProfileParamList.add(index, overrideProfileParamVo);
+////                            }
+//                        }
+//                    }
+//                }
+//            }
+//        }
         return appConfig;
     }
 
