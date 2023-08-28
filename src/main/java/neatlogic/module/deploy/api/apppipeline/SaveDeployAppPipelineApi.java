@@ -149,14 +149,14 @@ public class SaveDeployAppPipelineApi extends PrivateApiComponentBase {
             DeployPipelineConfigVo modifiedPartConfig = pipelineService.getModifiedPartConfig(deployAppConfigVo.getConfig(), null);
             if (modifiedPartConfig == null) {
                 if (oldAppModuleAppConfigVo != null) {
-                    pipelineService.deleteModifiedPartConfigDependency(oldAppModuleAppConfigVo);
+                    pipelineService.deleteDependency(oldAppModuleAppConfigVo);
                     deployAppConfigMapper.deleteAppModuleAppConfig(appSystemId, appModuleId);
                 }
                 return null;
             }
             deployAppConfigVo.setConfig(modifiedPartConfig);
             if (oldAppModuleAppConfigVo != null) {
-                pipelineService.deleteModifiedPartConfigDependency(oldAppModuleAppConfigVo);
+                pipelineService.deleteDependency(oldAppModuleAppConfigVo);
                 deployAppConfigVo.setId(oldAppModuleAppConfigVo.getId());
                 deployAppConfigMapper.updateAppConfig(deployAppConfigVo);
                 saveModifiedPartConfigDependency(deployAppConfigVo);
@@ -177,14 +177,14 @@ public class SaveDeployAppPipelineApi extends PrivateApiComponentBase {
             DeployPipelineConfigVo modifiedPartConfig = pipelineService.getModifiedPartConfig(deployAppConfigVo.getConfig(), appModuleAppConfigConfig);
             if (modifiedPartConfig == null) {
                 if (oldAppEnvAppConfigVo != null) {
-                    pipelineService.deleteModifiedPartConfigDependency(oldAppEnvAppConfigVo);
+                    pipelineService.deleteDependency(oldAppEnvAppConfigVo);
                     deployAppConfigMapper.deleteAppEnvAppConfig(appSystemId, appModuleId, envId);
                 }
                 return null;
             }
             deployAppConfigVo.setConfig(modifiedPartConfig);
             if (oldAppEnvAppConfigVo != null) {
-                pipelineService.deleteModifiedPartConfigDependency(oldAppEnvAppConfigVo);
+                pipelineService.deleteDependency(oldAppEnvAppConfigVo);
                 deployAppConfigVo.setId(oldAppEnvAppConfigVo.getId());
                 deployAppConfigMapper.updateAppConfig(deployAppConfigVo);
                 saveModifiedPartConfigDependency(deployAppConfigVo);

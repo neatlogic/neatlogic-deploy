@@ -33,11 +33,6 @@ public interface PipelineService {
      void deleteDependency(DeployAppConfigVo deployAppConfigVo);
 
     /**
-     * 删除模块层或环境层重载部分配置的依赖关系
-     * @param deployAppConfigVo
-     */
-    void deleteModifiedPartConfigDependency(DeployAppConfigVo deployAppConfigVo);
-    /**
      * 找出修改部分配置信息
      * @param fullConfig 前端传过来的全量配置信息
      * @param parentConfig 如果当前层是环境层，parentConfig表示的是模块层修改部分配置信息；如果当前层是模块层，parentConfig应该为null。
