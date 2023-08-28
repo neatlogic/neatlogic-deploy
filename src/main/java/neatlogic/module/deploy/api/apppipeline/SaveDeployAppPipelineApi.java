@@ -129,15 +129,15 @@ public class SaveDeployAppPipelineApi extends PrivateApiComponentBase {
         deployAppConfigVo.setLcu(UserContext.get().getUserUuid());
         if (appModuleId == 0L && envId == 0L) {
             // 应用层
-            if (Objects.equals(oldAppSystemAppConfigVo.getConfigStr(), deployAppConfigVo.getConfigStr())) {
-                System.out.println("应用层，未修改");
-                return null;
-            }
             if (oldAppSystemAppConfigVo != null) {
-                pipelineService.deleteDependency(oldAppSystemAppConfigVo);
-                deployAppConfigVo.setId(oldAppSystemAppConfigVo.getId());
-                deployAppConfigMapper.updateAppConfig(deployAppConfigVo);
-                saveDependency(deployAppConfigVo);
+                if (Objects.equals(oldAppSystemAppConfigVo.getConfigStr(), deployAppConfigVo.getConfigStr())) {
+                    return null;
+                } else {
+                    pipelineService.deleteDependency(oldAppSystemAppConfigVo);
+                    deployAppConfigVo.setId(oldAppSystemAppConfigVo.getId());
+                    deployAppConfigMapper.updateAppConfig(deployAppConfigVo);
+                    saveDependency(deployAppConfigVo);
+                }
             } else {
                 deployAppConfigMapper.insertAppConfig(deployAppConfigVo);
                 saveDependency(deployAppConfigVo);
@@ -146,16 +146,14 @@ public class SaveDeployAppPipelineApi extends PrivateApiComponentBase {
             // 模块层
             DeployAppConfigVo oldAppModuleAppConfigVo = deployAppConfigMapper.getAppConfigVo(new DeployAppConfigVo(appSystemId, appModuleId));
             // 找出修改部分配置
-            DeployPipelineConfigVo modifiedPartConfig = getModifiedPartConfig(deployAppConfigVo.getConfig(), null);
+            DeployPipelineConfigVo modifiedPartConfig = pipelineService.getModifiedPartConfig(deployAppConfigVo.getConfig(), null);
             if (modifiedPartConfig == null) {
-                System.out.println("模块层，未修改");
                 if (oldAppModuleAppConfigVo != null) {
                     pipelineService.deleteModifiedPartConfigDependency(oldAppModuleAppConfigVo);
                     deployAppConfigMapper.deleteAppModuleAppConfig(appSystemId, appModuleId);
                 }
                 return null;
             }
-            System.out.println("模块层修改:" + JSONObject.toJSONString(modifiedPartConfig));
             deployAppConfigVo.setConfig(modifiedPartConfig);
             if (oldAppModuleAppConfigVo != null) {
                 pipelineService.deleteModifiedPartConfigDependency(oldAppModuleAppConfigVo);
@@ -173,19 +171,20 @@ public class SaveDeployAppPipelineApi extends PrivateApiComponentBase {
             if (oldAppModuleAppConfigVo != null) {
                 appModuleAppConfigConfig = oldAppModuleAppConfigVo.getConfig();
             }
+
+            DeployAppConfigVo oldAppEnvAppConfigVo = deployAppConfigMapper.getAppConfigVo(new DeployAppConfigVo(appSystemId, appModuleId, envId));
             // 找出修改部分配置
-            DeployPipelineConfigVo modifiedPartConfig = getModifiedPartConfig(deployAppConfigVo.getConfig(), appModuleAppConfigConfig);
+            DeployPipelineConfigVo modifiedPartConfig = pipelineService.getModifiedPartConfig(deployAppConfigVo.getConfig(), appModuleAppConfigConfig);
             if (modifiedPartConfig == null) {
-                System.out.println("环境层，未修改");
-                pipelineService.deleteModifiedPartConfigDependency(oldAppModuleAppConfigVo);
-                deployAppConfigMapper.deleteAppEnvAppConfig(appSystemId, appModuleId, envId);
+                if (oldAppEnvAppConfigVo != null) {
+                    pipelineService.deleteModifiedPartConfigDependency(oldAppEnvAppConfigVo);
+                    deployAppConfigMapper.deleteAppEnvAppConfig(appSystemId, appModuleId, envId);
+                }
                 return null;
             }
-            System.out.println("环境层修改:" + JSONObject.toJSONString(modifiedPartConfig));
             deployAppConfigVo.setConfig(modifiedPartConfig);
-            DeployAppConfigVo oldAppEnvAppConfigVo = deployAppConfigMapper.getAppConfigVo(new DeployAppConfigVo(appSystemId, appModuleId, envId));
             if (oldAppEnvAppConfigVo != null) {
-                pipelineService.deleteModifiedPartConfigDependency(oldAppModuleAppConfigVo);
+                pipelineService.deleteModifiedPartConfigDependency(oldAppEnvAppConfigVo);
                 deployAppConfigVo.setId(oldAppEnvAppConfigVo.getId());
                 deployAppConfigMapper.updateAppConfig(deployAppConfigVo);
                 saveModifiedPartConfigDependency(deployAppConfigVo);
@@ -195,77 +194,6 @@ public class SaveDeployAppPipelineApi extends PrivateApiComponentBase {
             }
         }
         deployAppConfigMapper.deleteAppConfigDraft(deployAppConfigVo);
-        return null;
-    }
-
-    /**
-     * 找出修改部分配置信息
-     * @param fullConfig 前端传过来的全量配置信息
-     * @param parentConfig 如果当前层是环境层，parentConfig表示的是模块层修改部分配置信息；如果当前层是模块层，parentConfig应该为null。
-     * @return
-     */
-    private DeployPipelineConfigVo getModifiedPartConfig(DeployPipelineConfigVo fullConfig, DeployPipelineConfigVo parentConfig) {
-        DeployPipelineConfigVo result = new DeployPipelineConfigVo();
-        boolean flag = false;
-        // 阶段
-        List<DeployPipelinePhaseVo> overridePhaseList = new ArrayList<>();
-        List<Long> disabledPhaseIdList = new ArrayList<>();
-        List<DeployPipelinePhaseVo> phaseList = fullConfig.getCombopPhaseList();
-        for (DeployPipelinePhaseVo phaseVo : phaseList) {
-            if (Objects.equals(phaseVo.getOverride(), 1)) {
-                flag = true;
-                overridePhaseList.add(phaseVo);
-            }
-            if (Objects.equals(phaseVo.getIsActive(), 0)) {
-                // 如果当前层是环境层，模块层禁用了该阶段，环境层不能激活该阶段，这时isActive=0也不用加入禁用列表disabledPhaseIdList中
-                if (parentConfig == null || CollectionUtils.isEmpty(parentConfig.getDisabledPhaseIdList()) || !parentConfig.getDisabledPhaseIdList().contains(phaseVo.getId())) {
-                    flag = true;
-                    disabledPhaseIdList.add(phaseVo.getId());
-                }
-            }
-        }
-        result.setOverridePhaseList(overridePhaseList);
-        result.setDisabledPhaseIdList(disabledPhaseIdList);
-        // 阶段组
-        List<DeployPipelineGroupVo> overrideGroupList = new ArrayList<>();
-        List<DeployPipelineGroupVo> groupList = fullConfig.getCombopGroupList();
-        for (DeployPipelineGroupVo groupVo : groupList) {
-            if (Objects.equals(groupVo.getInherit(), 0)) {
-                flag = true;
-                overrideGroupList.add(groupVo);
-            }
-        }
-        result.setOverrideGroupList(overrideGroupList);
-        // 执行账号
-        DeployPipelineExecuteConfigVo executeConfigVo = fullConfig.getExecuteConfig();
-        if (Objects.equals(executeConfigVo.getInherit(), 0)) {
-            flag = true;
-            result.setOverrideExecuteConfig(executeConfigVo);
-        }
-        // 预置参数
-        List<DeployProfileVo> overrideProfileList = new ArrayList<>();
-        List<DeployProfileVo> profileList = fullConfig.getOverrideProfileList();
-        for (DeployProfileVo deployProfileVo : profileList) {
-            List<DeployProfileParamVo> overrideProfileParamList = new ArrayList<>();
-            List<DeployProfileParamVo> profileParamList = deployProfileVo.getParamList();
-            for (DeployProfileParamVo profileParamVo : profileParamList) {
-                if (Objects.equals(profileParamVo.getInherit(), 0)) {
-                    overrideProfileParamList.add(profileParamVo);
-                }
-            }
-            if (CollectionUtils.isNotEmpty(overrideProfileParamList)) {
-                flag = true;
-                DeployProfileVo overrideProfileVo = new DeployProfileVo();
-                overrideProfileVo.setProfileId(deployProfileVo.getProfileId());
-                overrideProfileVo.setProfileName(deployProfileVo.getProfileName());
-                overrideProfileVo.setParamList(overrideProfileParamList);
-                overrideProfileList.add(overrideProfileVo);
-            }
-        }
-        result.setOverrideProfileList(overrideProfileList);
-        if (flag) {
-            return result;
-        }
         return null;
     }
 
@@ -324,27 +252,6 @@ public class SaveDeployAppPipelineApi extends PrivateApiComponentBase {
         }
     }
 
-    /**
-     * 重新生成操作id
-     *
-     * @param deployAppConfigVo
-     */
-//    private void regenerateOperationId(DeployAppConfigVo deployAppConfigVo) {
-//        DeployPipelineConfigVo config = deployAppConfigVo.getConfig();
-//        List<DeployPipelinePhaseVo> combopPhaseList = config.getCombopPhaseList();
-//        if (CollectionUtils.isEmpty(combopPhaseList)) {
-//            return;
-//        }
-//        for (DeployPipelinePhaseVo combopPhaseVo : combopPhaseList) {
-//            if (combopPhaseVo == null) {
-//                continue;
-//            }
-//            if (!Objects.equals(combopPhaseVo.getOverride(), 1)) {
-//                continue;
-//            }
-//            regenerateOperationId(combopPhaseVo);
-//        }
-//    }
 
     /**
      * 重新生成操作id

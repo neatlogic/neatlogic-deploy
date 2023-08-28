@@ -29,9 +29,7 @@ import neatlogic.framework.dependency.core.DependencyManager;
 import neatlogic.framework.deploy.auth.PIPELINE_MODIFY;
 import neatlogic.framework.deploy.constvalue.DeployAppConfigAction;
 import neatlogic.framework.deploy.constvalue.PipelineType;
-import neatlogic.framework.deploy.dto.app.DeployAppConfigVo;
-import neatlogic.framework.deploy.dto.app.DeployPipelineConfigVo;
-import neatlogic.framework.deploy.dto.app.DeployPipelinePhaseVo;
+import neatlogic.framework.deploy.dto.app.*;
 import neatlogic.framework.deploy.dto.pipeline.PipelineJobTemplateVo;
 import neatlogic.framework.deploy.dto.pipeline.PipelineSearchVo;
 import neatlogic.framework.deploy.dto.pipeline.PipelineVo;
@@ -263,5 +261,76 @@ public class PipelineServiceImpl implements PipelineService {
                 }
             }
         }
+    }
+    /**
+     * 找出修改部分配置信息
+     * @param fullConfig 前端传过来的全量配置信息
+     * @param parentConfig 如果当前层是环境层，parentConfig表示的是模块层修改部分配置信息；如果当前层是模块层，parentConfig应该为null。
+     * @return
+     */
+    @Override
+    public DeployPipelineConfigVo getModifiedPartConfig(DeployPipelineConfigVo fullConfig, DeployPipelineConfigVo parentConfig) {
+        DeployPipelineConfigVo result = new DeployPipelineConfigVo();
+        boolean flag = false;
+        // 阶段
+        List<DeployPipelinePhaseVo> overridePhaseList = new ArrayList<>();
+        List<Long> disabledPhaseIdList = new ArrayList<>();
+        List<DeployPipelinePhaseVo> phaseList = fullConfig.getCombopPhaseList();
+        for (DeployPipelinePhaseVo phaseVo : phaseList) {
+            if (Objects.equals(phaseVo.getOverride(), 1)) {
+                flag = true;
+                overridePhaseList.add(phaseVo);
+            }
+            if (Objects.equals(phaseVo.getIsActive(), 0)) {
+                // 如果当前层是环境层，模块层禁用了该阶段，环境层不能激活该阶段，这时isActive=0也不用加入禁用列表disabledPhaseIdList中
+                if (parentConfig == null || CollectionUtils.isEmpty(parentConfig.getDisabledPhaseIdList()) || !parentConfig.getDisabledPhaseIdList().contains(phaseVo.getId())) {
+                    flag = true;
+                    disabledPhaseIdList.add(phaseVo.getId());
+                }
+            }
+        }
+        result.setOverridePhaseList(overridePhaseList);
+        result.setDisabledPhaseIdList(disabledPhaseIdList);
+        // 阶段组
+        List<DeployPipelineGroupVo> overrideGroupList = new ArrayList<>();
+        List<DeployPipelineGroupVo> groupList = fullConfig.getCombopGroupList();
+        for (DeployPipelineGroupVo groupVo : groupList) {
+            if (Objects.equals(groupVo.getInherit(), 0)) {
+                flag = true;
+                overrideGroupList.add(groupVo);
+            }
+        }
+        result.setOverrideGroupList(overrideGroupList);
+        // 执行账号
+        DeployPipelineExecuteConfigVo executeConfigVo = fullConfig.getExecuteConfig();
+        if (Objects.equals(executeConfigVo.getInherit(), 0)) {
+            flag = true;
+            result.setOverrideExecuteConfig(executeConfigVo);
+        }
+        // 预置参数
+        List<DeployProfileVo> overrideProfileList = new ArrayList<>();
+        List<DeployProfileVo> profileList = fullConfig.getOverrideProfileList();
+        for (DeployProfileVo deployProfileVo : profileList) {
+            List<DeployProfileParamVo> overrideProfileParamList = new ArrayList<>();
+            List<DeployProfileParamVo> profileParamList = deployProfileVo.getParamList();
+            for (DeployProfileParamVo profileParamVo : profileParamList) {
+                if (Objects.equals(profileParamVo.getInherit(), 0)) {
+                    overrideProfileParamList.add(profileParamVo);
+                }
+            }
+            if (CollectionUtils.isNotEmpty(overrideProfileParamList)) {
+                flag = true;
+                DeployProfileVo overrideProfileVo = new DeployProfileVo();
+                overrideProfileVo.setProfileId(deployProfileVo.getProfileId());
+                overrideProfileVo.setProfileName(deployProfileVo.getProfileName());
+                overrideProfileVo.setParamList(overrideProfileParamList);
+                overrideProfileList.add(overrideProfileVo);
+            }
+        }
+        result.setOverrideProfileList(overrideProfileList);
+        if (flag) {
+            return result;
+        }
+        return null;
     }
 }
