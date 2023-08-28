@@ -90,7 +90,6 @@ public class SaveDeployAppPipelineDraftApi extends PrivateApiComponentBase {
         Long appSystemId = deployAppConfigDraftVo.getAppSystemId();
         Long appModuleId = deployAppConfigDraftVo.getAppModuleId();
         Long envId = deployAppConfigDraftVo.getEnvId();
-        DeployAppConfigVo oldAppSystemAppConfigVo = deployAppConfigMapper.getAppConfigVo(new DeployAppConfigVo(appSystemId));
         deployAppConfigDraftVo.setFcu(UserContext.get().getUserUuid());
         deployAppConfigDraftVo.setLcu(UserContext.get().getUserUuid());
         if (appModuleId == 0L && envId == 0L) {
