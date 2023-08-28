@@ -848,7 +848,7 @@ public class DeployPipelineConfigManager {
 //                overrideProfileParamSetSource(moduleOverrideConfig.getOverrideProfileList(), "模块");
                 mergeDeployPipelineConfig(appConfig, moduleOverrideConfig);
             }
-            pipelineConfigSetOverrideAndParentIsActiveFieldValue(appConfig.getCombopPhaseList());
+            pipelineConfigReSetOverrideAndParentIsActiveAndInheritFieldValue(appConfig);
             if (envOverrideConfig != null) {
                 pipelinePhaseSetSource(envOverrideConfig.getOverridePhaseList(), "环境");
 //                overrideProfileParamSetSource(envOverrideConfig.getOverrideProfileList(), "环境");
@@ -893,7 +893,12 @@ public class DeployPipelineConfigManager {
         return appConfig;
     }
 
-    private static void pipelineConfigSetOverrideAndParentIsActiveFieldValue(List<DeployPipelinePhaseVo> pipelinePhaseList) {
+    /**
+     * 重置配置信息中override、parentIsActive、inherit字段值
+     * @param appConfig
+     */
+    private static void pipelineConfigReSetOverrideAndParentIsActiveAndInheritFieldValue(DeployPipelineConfigVo appConfig) {
+        List<DeployPipelinePhaseVo> pipelinePhaseList = appConfig.getCombopPhaseList();
         if (CollectionUtils.isNotEmpty(pipelinePhaseList)) {
             for (DeployPipelinePhaseVo pipelinePhaseVo : pipelinePhaseList) {
                 pipelinePhaseVo.setOverride(0);
@@ -901,6 +906,16 @@ public class DeployPipelineConfigManager {
                     pipelinePhaseVo.setParentIsActive(0);
                 }
             }
+        }
+        List<DeployPipelineGroupVo> pipelineGroupList = appConfig.getCombopGroupList();
+        if (CollectionUtils.isNotEmpty(pipelineGroupList)) {
+            for (DeployPipelineGroupVo pipelineGroupVo : pipelineGroupList) {
+                pipelineGroupVo.setInherit(1);
+            }
+        }
+        DeployPipelineExecuteConfigVo executeConfigVo = appConfig.getExecuteConfig();
+        if (executeConfigVo != null) {
+            executeConfigVo.setInherit(1);
         }
     }
 
@@ -1009,7 +1024,7 @@ public class DeployPipelineConfigManager {
                 pipelineGroupList.add(index, overrideGroupVo);
             }
         }
-        DeployPipelineExecuteConfigVo executeConfigVo = overrideConfig.getExecuteConfig();
+        DeployPipelineExecuteConfigVo executeConfigVo = overrideConfig.getOverrideExecuteConfig();
         if (executeConfigVo != null && Objects.equals(executeConfigVo.getInherit(), 0)) {
             appConfig.setExecuteConfig(executeConfigVo);
         }
