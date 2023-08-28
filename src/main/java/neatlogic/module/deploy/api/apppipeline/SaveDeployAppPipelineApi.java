@@ -309,7 +309,7 @@ public class SaveDeployAppPipelineApi extends PrivateApiComponentBase {
         Long moduleId = deployAppConfigVo.getAppModuleId();
         Long envId = deployAppConfigVo.getEnvId();
 
-        List<DeployPipelinePhaseVo> combopPhaseList = config.getOverridePhaseList();
+        List<DeployPipelinePhaseVo> combopPhaseList = config.getCombopPhaseList();
         if (CollectionUtils.isEmpty(combopPhaseList)) {
             return;
         }

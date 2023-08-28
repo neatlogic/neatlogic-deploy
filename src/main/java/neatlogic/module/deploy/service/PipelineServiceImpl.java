@@ -205,7 +205,7 @@ public class PipelineServiceImpl implements PipelineService {
             return;
         }
 
-        List<DeployPipelinePhaseVo> combopPhaseList = config.getOverridePhaseList();
+        List<DeployPipelinePhaseVo> combopPhaseList = config.getCombopPhaseList();
         if (CollectionUtils.isEmpty(combopPhaseList)) {
             return;
         }
@@ -289,7 +289,7 @@ public class PipelineServiceImpl implements PipelineService {
                 }
             }
         }
-        result.setOverridePhaseList(overridePhaseList);
+        result.setCombopPhaseList(overridePhaseList);
         result.setDisabledPhaseIdList(disabledPhaseIdList);
         // 阶段组
         List<DeployPipelineGroupVo> overrideGroupList = new ArrayList<>();
@@ -300,12 +300,12 @@ public class PipelineServiceImpl implements PipelineService {
                 overrideGroupList.add(groupVo);
             }
         }
-        result.setOverrideGroupList(overrideGroupList);
+        result.setCombopGroupList(overrideGroupList);
         // 执行账号
         DeployPipelineExecuteConfigVo executeConfigVo = fullConfig.getExecuteConfig();
         if (Objects.equals(executeConfigVo.getInherit(), 0)) {
             flag = true;
-            result.setOverrideExecuteConfig(executeConfigVo);
+            result.setExecuteConfig(executeConfigVo);
         }
         // 预置参数
         List<DeployProfileVo> overrideProfileList = new ArrayList<>();

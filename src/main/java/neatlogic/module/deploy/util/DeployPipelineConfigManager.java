@@ -480,19 +480,19 @@ public class DeployPipelineConfigManager {
             initPipelineAppConfig(appConfig);
             pipelinePhaseSetSource(appConfig.getCombopPhaseList(), "应用");
             if (moduleOverrideConfig != null) {
-                pipelinePhaseSetSource(moduleOverrideConfig.getOverridePhaseList(), "模块");
+                pipelinePhaseSetSource(moduleOverrideConfig.getCombopPhaseList(), "模块");
                 mergeDeployPipelineConfig(appConfig, moduleOverrideConfig);
             }
         } else if (Objects.equals(targetLevel, "环境")) {
             initPipelineAppConfig(appConfig);
             pipelinePhaseSetSource(appConfig.getCombopPhaseList(), "应用");
             if (moduleOverrideConfig != null) {
-                pipelinePhaseSetSource(moduleOverrideConfig.getOverridePhaseList(), "模块");
+                pipelinePhaseSetSource(moduleOverrideConfig.getCombopPhaseList(), "模块");
                 mergeDeployPipelineConfig(appConfig, moduleOverrideConfig);
             }
             pipelineConfigReSetOverrideAndParentIsActiveAndInheritFieldValue(appConfig);
             if (envOverrideConfig != null) {
-                pipelinePhaseSetSource(envOverrideConfig.getOverridePhaseList(), "环境");
+                pipelinePhaseSetSource(envOverrideConfig.getCombopPhaseList(), "环境");
                 mergeDeployPipelineConfig(appConfig, envOverrideConfig);
             }
         }
@@ -635,11 +635,24 @@ public class DeployPipelineConfigManager {
         List<Long> disabledPhaseIdList = new ArrayList<>();
         if (CollectionUtils.isNotEmpty(overrideConfig.getDisabledPhaseIdList())) {
             disabledPhaseIdList = new ArrayList<>(overrideConfig.getDisabledPhaseIdList());
+        } else {
+            // 这里是为了兼容旧数据
+            List<DeployPipelinePhaseVo> overridePhaseList = overrideConfig.getCombopPhaseList();
+            if (CollectionUtils.isNotEmpty(overridePhaseList)) {
+                for (DeployPipelinePhaseVo overridePhaseVo : overridePhaseList) {
+                    if (Objects.equals(overridePhaseVo.getIsActive(), 0)) {
+                        disabledPhaseIdList.add(overridePhaseVo.getId());
+                    }
+                }
+            }
         }
-        List<DeployPipelinePhaseVo> overridePhaseList = overrideConfig.getOverridePhaseList();
+        List<DeployPipelinePhaseVo> overridePhaseList = overrideConfig.getCombopPhaseList();
         if (CollectionUtils.isNotEmpty(overridePhaseList)) {
             List<DeployPipelinePhaseVo> pipelinePhaseList = appConfig.getCombopPhaseList();
             for (DeployPipelinePhaseVo overridePhaseVo : overridePhaseList) {
+                if (!Objects.equals(overridePhaseVo.getOverride(), 1)) {
+                    continue;
+                }
                 int index = 0;
                 for (DeployPipelinePhaseVo pipelinePhaseVo : pipelinePhaseList) {
                     if (Objects.equals(overridePhaseVo.getUuid(), pipelinePhaseVo.getUuid())) {
@@ -663,10 +676,13 @@ public class DeployPipelineConfigManager {
                 }
             }
         }
-        List<DeployPipelineGroupVo> overrideGroupList = overrideConfig.getOverrideGroupList();
+        List<DeployPipelineGroupVo> overrideGroupList = overrideConfig.getCombopGroupList();
         if (CollectionUtils.isNotEmpty(overrideGroupList)) {
             List<DeployPipelineGroupVo> pipelineGroupList = appConfig.getCombopGroupList();
             for (DeployPipelineGroupVo overrideGroupVo : overrideGroupList) {
+                if (!Objects.equals(overrideGroupVo.getInherit(), 0)) {
+                    continue;
+                }
                 int index = 0;
                 for (DeployPipelineGroupVo pipelineGroupVo : pipelineGroupList) {
                     if (Objects.equals(overrideGroupVo.getUuid(), pipelineGroupVo.getUuid())) {
@@ -678,7 +694,7 @@ public class DeployPipelineConfigManager {
                 pipelineGroupList.add(index, overrideGroupVo);
             }
         }
-        DeployPipelineExecuteConfigVo executeConfigVo = overrideConfig.getOverrideExecuteConfig();
+        DeployPipelineExecuteConfigVo executeConfigVo = overrideConfig.getExecuteConfig();
         if (executeConfigVo != null && Objects.equals(executeConfigVo.getInherit(), 0)) {
             appConfig.setExecuteConfig(executeConfigVo);
         }
