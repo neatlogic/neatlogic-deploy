@@ -67,7 +67,7 @@ public class SaveDeployAppPipelineApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "保存应用流水线";
+        return "nmdaa.savedeployapppipelineapi.getname";
     }
 
     @Override
@@ -81,12 +81,12 @@ public class SaveDeployAppPipelineApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "应用系统ID"),
-            @Param(name = "appModuleId", type = ApiParamType.LONG, desc = "模块ID"),
-            @Param(name = "envId", type = ApiParamType.LONG, desc = "环境ID"),
-            @Param(name = "config", type = ApiParamType.JSONOBJECT, isRequired = true, desc = "流水线配置信息")
+            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.appsystemid"),
+            @Param(name = "appModuleId", type = ApiParamType.LONG, desc = "term.cmdb.appmoduleid"),
+            @Param(name = "envId", type = ApiParamType.LONG, desc = "term.cmdb.envid"),
+            @Param(name = "config", type = ApiParamType.JSONOBJECT, isRequired = true, desc = "common.config")
     })
-    @Description(desc = "保存应用流水线")
+    @Description(desc = "nmdaa.savedeployapppipelineapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
 
