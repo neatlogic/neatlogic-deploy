@@ -17,6 +17,7 @@
 package neatlogic.module.deploy.service;
 
 import neatlogic.framework.deploy.dto.app.DeployAppConfigVo;
+import neatlogic.framework.deploy.dto.app.DeployPipelineConfigVo;
 import neatlogic.framework.deploy.dto.pipeline.PipelineJobTemplateVo;
 import neatlogic.framework.deploy.dto.pipeline.PipelineSearchVo;
 import neatlogic.framework.deploy.dto.pipeline.PipelineVo;
@@ -30,4 +31,12 @@ public interface PipelineService {
     List<PipelineJobTemplateVo> searchPipelineJobTemplate(PipelineJobTemplateVo pipelineJobTemplateVo);
 
      void deleteDependency(DeployAppConfigVo deployAppConfigVo);
+
+    /**
+     * 找出修改部分配置信息
+     * @param fullConfig 前端传过来的全量配置信息
+     * @param parentConfig 如果当前层是环境层，parentConfig表示的是模块层修改部分配置信息；如果当前层是模块层，parentConfig应该为null。
+     * @return
+     */
+    DeployPipelineConfigVo getModifiedPartConfig(DeployPipelineConfigVo fullConfig, DeployPipelineConfigVo parentConfig);
 }
