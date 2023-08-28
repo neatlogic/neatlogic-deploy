@@ -71,7 +71,7 @@ public interface DeployVersionMapper {
     int searchDeployVersionCveCount(DeployVersionCveVo searchVo);
 
     List<DeployVersionCveVo> searchDeployVersionCveList(DeployVersionCveVo searchVo);
-    
+
     int searchDeployVersionIssueCount(DeployVersionIssueVo searchVo);
 
     List<DeployVersionIssueVo> searchDeployVersionIssueList(DeployVersionIssueVo searchVo);
@@ -79,6 +79,8 @@ public interface DeployVersionMapper {
     RepositoryServiceVo getRepositoryServiceByAddress(String address);
 
     RepositoryVo getRepositoryByAppModuleId(Long appModuleId);
+
+    DeployVersionTheadVo getDeployVersionTheadByVersionId(@Param("versionId") Long versionId, @Param("userUuid") String userUuid);
 
     int unFreezeDeployVersionById(@Param("id") Long id, @Param("isFreeze") Long isFreeze);
 
@@ -114,11 +116,13 @@ public interface DeployVersionMapper {
 
     int insertRepository(RepositoryVo repositoryVo);
 
-    int insertDeployVersionIssue(@Param("versionId") Long versionId,@Param("issueId") String issueId);
+    int insertDeployVersionIssue(@Param("versionId") Long versionId, @Param("issueId") String issueId);
 
-    int insertDeployVersionCommit(@Param("versionId") Long id,@Param("commitId") String commitId,@Param("repositoryId") Long repositoryId);
-    
+    int insertDeployVersionCommit(@Param("versionId") Long id, @Param("commitId") String commitId, @Param("repositoryId") Long repositoryId);
+
     int insertCommit(CommitVo commitVo);
+
+    int insertDeployVersionThead(DeployVersionTheadVo theadVo);
 
     int deleteDeployVersionById(Long id);
 

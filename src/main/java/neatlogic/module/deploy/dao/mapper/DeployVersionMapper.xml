@@ -857,6 +857,13 @@ limitations under the License.
         runner_id
         from codehub_repository where app_module_id = #{value}
     </select>
+    <select id="getDeployVersionTheadByVersionId"
+            resultType="neatlogic.framework.deploy.dto.version.DeployVersionTheadVo">
+        select `version_id`, `config` as configStr
+        from deploy_version_thead
+        where version_id = #{versionId}
+          and user_uuid = #{userUuid}
+    </select>
     <update id="unFreezeDeployVersionById">
         update deploy_version
         set is_freeze = #{isFreeze}
@@ -1463,7 +1470,13 @@ limitations under the License.
             )
       
     </insert>
-    
+    <insert id="insertDeployVersionThead">
+        insert into deploy_version_thead (`version_id`, `config`,`user_uuid`)
+        values (#{versionId}, #{configStr}, #{userUuid})
+        ON DUPLICATE KEY
+            UPDATE `config` = #{configStr}
+    </insert>
+
     <delete id="deleteDeployVersionById">
         delete
         from deploy_version
