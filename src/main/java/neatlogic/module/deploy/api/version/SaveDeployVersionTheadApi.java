@@ -5,8 +5,6 @@ import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.deploy.auth.DEPLOY_BASE;
 import neatlogic.framework.deploy.dto.version.DeployVersionTheadVo;
-import neatlogic.framework.deploy.dto.version.DeployVersionVo;
-import neatlogic.framework.deploy.exception.DeployVersionNotFoundException;
 import neatlogic.framework.restful.annotation.Description;
 import neatlogic.framework.restful.annotation.Input;
 import neatlogic.framework.restful.annotation.OperationType;
@@ -42,17 +40,12 @@ public class SaveDeployVersionTheadApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "versionId", desc = "common.versionid", isRequired = true, type = ApiParamType.LONG),
             @Param(name = "config", desc = "nmdav.savedeployversiontheadapi.input.param.desc.config", isRequired = true, type = ApiParamType.STRING),
     })
     @Description(desc = "nmdav.savedeployversiontheadapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         DeployVersionTheadVo deployVersionTheadVo = JSONObject.toJavaObject(paramObj,DeployVersionTheadVo.class);
-        DeployVersionVo deployVersionVo = deployVersionMapper.getDeployVersionById(deployVersionTheadVo.getVersionId());
-        if(deployVersionVo == null){
-            throw new DeployVersionNotFoundException(deployVersionTheadVo.getVersionId());
-        }
         deployVersionMapper.insertDeployVersionThead(deployVersionTheadVo);
         return null;
     }

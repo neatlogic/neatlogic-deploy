@@ -80,7 +80,7 @@ public interface DeployVersionMapper {
 
     RepositoryVo getRepositoryByAppModuleId(Long appModuleId);
 
-    DeployVersionTheadVo getDeployVersionTheadByVersionId(@Param("versionId") Long versionId, @Param("userUuid") String userUuid);
+    DeployVersionTheadVo getDeployVersionTheadByUserUuid(@Param("userUuid") String userUuid);
 
     int unFreezeDeployVersionById(@Param("id") Long id, @Param("isFreeze") Long isFreeze);
 
