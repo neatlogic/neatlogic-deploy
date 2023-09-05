@@ -72,6 +72,8 @@ public interface DeployVersionMapper {
 
     List<DeployVersionCveVo> searchDeployVersionCveList(DeployVersionCveVo searchVo);
 
+    List<DeployVersionCveVulnerabilityVo> getDeployVersionCveVulnerabilityListByCveIdList(List<Long> cveIdList);
+
     int searchDeployVersionIssueCount(DeployVersionIssueVo searchVo);
 
     List<DeployVersionIssueVo> searchDeployVersionIssueList(DeployVersionIssueVo searchVo);
@@ -112,6 +114,8 @@ public interface DeployVersionMapper {
 
     int insertDeployVersionCve(DeployVersionCveVo deployVersionCveVo);
 
+    void insertDeployVersionCveVulnerability(DeployVersionCveVulnerabilityVo vulnerabilityVo);
+
     int insertRepositoryService(RepositoryServiceVo repositoryServiceVo);
 
     int insertRepository(RepositoryVo repositoryVo);
@@ -144,4 +148,5 @@ public interface DeployVersionMapper {
 
     int deleteDeployVersionCveByVersionId(Long versionId);
 
+    int deleteDeployVersionCveVulnerabilityByCveIdList(List<Long> cveIdList);
 }

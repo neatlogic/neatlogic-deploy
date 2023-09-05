@@ -22,17 +22,22 @@ import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.common.dto.BasePageVo;
 import neatlogic.framework.deploy.auth.DEPLOY_BASE;
 import neatlogic.framework.deploy.dto.version.DeployVersionCveVo;
+import neatlogic.framework.deploy.dto.version.DeployVersionCveVulnerabilityVo;
 import neatlogic.framework.deploy.exception.verison.DeployVersionNotFoundEditTargetException;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.framework.util.TableResultUtil;
 import neatlogic.module.deploy.dao.mapper.DeployVersionMapper;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Component
 @AuthAction(action = DEPLOY_BASE.class)
@@ -74,6 +79,19 @@ public class GetDeployVersionCveListApi extends PrivateApiComponentBase {
         }
         searchVo.setRowNum(rowNum);
         List<DeployVersionCveVo> tbodyList = deployVersionMapper.searchDeployVersionCveList(searchVo);
+        List<Long> cveIdList = tbodyList.stream().map(DeployVersionCveVo::getId).collect(Collectors.toList());
+        if (CollectionUtils.isNotEmpty(cveIdList)) {
+            List<DeployVersionCveVulnerabilityVo> vulnerabilityList = deployVersionMapper.getDeployVersionCveVulnerabilityListByCveIdList(cveIdList);
+            if (CollectionUtils.isNotEmpty(vulnerabilityList)) {
+                Map<Long, List<DeployVersionCveVulnerabilityVo>> cveIdToVulnerabilityListMap = new HashMap<>();
+                for (DeployVersionCveVulnerabilityVo vulnerabilityVo : vulnerabilityList) {
+                    cveIdToVulnerabilityListMap.computeIfAbsent(vulnerabilityVo.getCveId(), key -> new ArrayList<>()).add(vulnerabilityVo);
+                }
+                for (DeployVersionCveVo deployVersionCveVo : tbodyList) {
+                    deployVersionCveVo.setVulnerabilityIds(cveIdToVulnerabilityListMap.get(deployVersionCveVo.getId()));
+                }
+            }
+        }
         return TableResultUtil.getResult(tbodyList, searchVo);
     }
 
