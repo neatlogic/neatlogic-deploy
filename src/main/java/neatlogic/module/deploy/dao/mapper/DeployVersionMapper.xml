@@ -764,8 +764,8 @@ limitations under the License.
         SELECT
         vi.version_id as versionId,
         s.name as source,
-        issue.id,
-		issue.`no`,
+        s.browse_url as browseUrl,
+		vi.issue_id as no,
 		issue.`name`,
 		issue.`type`,
 		issue.`status`,
