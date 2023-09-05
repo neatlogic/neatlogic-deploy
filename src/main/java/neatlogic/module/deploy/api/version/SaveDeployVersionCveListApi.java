@@ -103,7 +103,6 @@ public class SaveDeployVersionCveListApi extends PrivateApiComponentBase {
             }
             deployVersionMapper.deleteDeployVersionCveByVersionId(deployVersionVo.getId());
             if (CollectionUtils.isNotEmpty(cveIdList)) {
-                System.out.println(cveIdList);
                 deployVersionMapper.deleteDeployVersionCveVulnerabilityByCveIdList(cveIdList);
             }
         }
