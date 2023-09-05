@@ -27,17 +27,21 @@ import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.crossover.CrossoverServiceFactory;
 import neatlogic.framework.deploy.auth.DEPLOY_BASE;
 import neatlogic.framework.deploy.dto.version.DeployVersionCveVo;
+import neatlogic.framework.deploy.dto.version.DeployVersionCveVulnerabilityVo;
 import neatlogic.framework.deploy.dto.version.DeployVersionVo;
 import neatlogic.framework.deploy.exception.DeployVersionNotFoundException;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.module.deploy.dao.mapper.DeployVersionMapper;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Component
 @Transactional
@@ -84,12 +88,37 @@ public class SaveDeployVersionCveListApi extends PrivateApiComponentBase {
         if (deployVersionVo == null) {
             throw new DeployVersionNotFoundException(appSystem.getName(), appModule.getName(), version);
         }
-        deployVersionMapper.deleteDeployVersionCveByVersionId(deployVersionVo.getId());
+        DeployVersionCveVo searchVo = new DeployVersionCveVo();
+        searchVo.setVersionId(deployVersionVo.getId());
+        int rowNum = deployVersionMapper.searchDeployVersionCveCount(searchVo);
+        if (rowNum > 0) {
+            List<Long> cveIdList = new ArrayList<>();
+            searchVo.setRowNum(rowNum);
+            searchVo.setPageSize(100);
+            int pageCount = searchVo.getPageCount();
+            for (int currentPage = 1; currentPage <= pageCount; currentPage++) {
+                searchVo.setCurrentPage(currentPage);
+                List<DeployVersionCveVo> tbodyList = deployVersionMapper.searchDeployVersionCveList(searchVo);
+                cveIdList.addAll(tbodyList.stream().map(DeployVersionCveVo::getId).collect(Collectors.toList()));
+            }
+            deployVersionMapper.deleteDeployVersionCveByVersionId(deployVersionVo.getId());
+            if (CollectionUtils.isNotEmpty(cveIdList)) {
+                deployVersionMapper.deleteDeployVersionCveVulnerabilityByCveIdList(cveIdList);
+            }
+        }
+
         JSONArray cveArray = paramObj.getJSONArray("cveList");
         List<DeployVersionCveVo> deployVersionCveList = cveArray.toJavaList(DeployVersionCveVo.class);
         for (DeployVersionCveVo deployVersionCveVo : deployVersionCveList) {
             deployVersionCveVo.setVersionId(deployVersionVo.getId());
             deployVersionMapper.insertDeployVersionCve(deployVersionCveVo);
+            List<DeployVersionCveVulnerabilityVo> vulnerabilityIds = deployVersionCveVo.getVulnerabilityIds();
+            if (CollectionUtils.isNotEmpty(vulnerabilityIds)) {
+                for (DeployVersionCveVulnerabilityVo vulnerabilityVo : vulnerabilityIds) {
+                    vulnerabilityVo.setCveId(deployVersionCveVo.getId());
+                    deployVersionMapper.insertDeployVersionCveVulnerability(vulnerabilityVo);
+                }
+            }
         }
         return null;
     }
