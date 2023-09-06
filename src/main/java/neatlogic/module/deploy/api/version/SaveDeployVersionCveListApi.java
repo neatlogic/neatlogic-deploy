@@ -26,6 +26,7 @@ import neatlogic.framework.cmdb.exception.resourcecenter.AppSystemNotFoundExcept
 import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.crossover.CrossoverServiceFactory;
 import neatlogic.framework.deploy.auth.DEPLOY_BASE;
+import neatlogic.framework.deploy.dto.version.DeployVersionCvePackageVo;
 import neatlogic.framework.deploy.dto.version.DeployVersionCveVo;
 import neatlogic.framework.deploy.dto.version.DeployVersionCveVulnerabilityVo;
 import neatlogic.framework.deploy.dto.version.DeployVersionVo;
@@ -104,6 +105,7 @@ public class SaveDeployVersionCveListApi extends PrivateApiComponentBase {
             deployVersionMapper.deleteDeployVersionCveByVersionId(deployVersionVo.getId());
             if (CollectionUtils.isNotEmpty(cveIdList)) {
                 deployVersionMapper.deleteDeployVersionCveVulnerabilityByCveIdList(cveIdList);
+                deployVersionMapper.deleteDeployVersionCvePackageByCveIdList(cveIdList);
             }
         }
 
@@ -117,6 +119,13 @@ public class SaveDeployVersionCveListApi extends PrivateApiComponentBase {
                 for (DeployVersionCveVulnerabilityVo vulnerabilityVo : vulnerabilityIds) {
                     vulnerabilityVo.setCveId(deployVersionCveVo.getId());
                     deployVersionMapper.insertDeployVersionCveVulnerability(vulnerabilityVo);
+                }
+            }
+            List<DeployVersionCvePackageVo> packageList = deployVersionCveVo.getPackageList();
+            if (CollectionUtils.isNotEmpty(packageList)) {
+                for (DeployVersionCvePackageVo packageVo : packageList) {
+                    packageVo.setCveId(deployVersionCveVo.getId());
+                    deployVersionMapper.insertDeployVersionCvePackage(packageVo);
                 }
             }
         }

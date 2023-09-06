@@ -778,11 +778,21 @@ CREATE TABLE `deploy_version_cve` (
 -- ----------------------------
 -- Table structure for deploy_version_cve_vulnerability
 -- ----------------------------
-CREATE TABLE `deploy_version_cve_vulnerability` (
+CREATE TABLE IF NOT EXISTS `deploy_version_cve_vulnerability` (
   `cve_id` bigint NOT NULL COMMENT 'CVE的ID',
   `vulnerability_id` varchar(255) COLLATE utf8mb4_general_ci NOT NULL COMMENT '漏洞 ID',
-  `url` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '漏洞详情页地址',
+  `url` varchar(500) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '漏洞详情页地址',
   PRIMARY KEY (`cve_id`,`vulnerability_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- ----------------------------
+-- Table structure for deploy_version_cve_package
+-- ----------------------------
+CREATE TABLE IF NOT EXISTS `deploy_version_cve_package` (
+  `cve_id` bigint NOT NULL COMMENT 'CVE的ID',
+  `package_name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '包名',
+  `url` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '包详情页地址',
+  PRIMARY KEY (`cve_id`,`package_name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- ----------------------------

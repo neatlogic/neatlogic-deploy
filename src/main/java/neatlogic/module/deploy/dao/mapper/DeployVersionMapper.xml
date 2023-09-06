@@ -751,7 +751,19 @@ limitations under the License.
             #{cveId}
         </foreach>
     </select>
-    
+
+    <select id="getDeployVersionCvePackageListByCveIdList" parameterType="java.util.List" resultType="neatlogic.framework.deploy.dto.version.DeployVersionCvePackageVo">
+        SELECT
+            `cve_id` AS cveId,
+            `package_name` AS packageName,
+            `url`
+        FROM `deploy_version_cve_package`
+        WHERE `cve_id` IN
+        <foreach collection="list" item="cveId" open="(" separator="," close=")">
+            #{cveId}
+        </foreach>
+    </select>
+
     <select id="searchDeployVersionIssueCount" parameterType="neatlogic.framework.deploy.dto.version.DeployVersionIssueVo"
             resultType="int">
         SELECT COUNT(1)
@@ -1403,7 +1415,6 @@ limitations under the License.
         INSERT INTO `deploy_version_cve` (`id`,
         `version_id`,
         `dependency`,
-        `package_name`,
         `highest_severity`,
         `cve_count`,
         `confidence`,
@@ -1411,7 +1422,6 @@ limitations under the License.
         VALUES (#{id},
         #{versionId},
         #{dependency},
-        #{packageName},
         #{highestSeverity},
         #{cveCount},
         #{confidence},
@@ -1428,6 +1438,20 @@ limitations under the License.
             (
                 #{cveId},
                 #{vulnerabilityId},
+                #{url}
+            )
+    </insert>
+
+    <insert id="insertDeployVersionCvePackage" parameterType="neatlogic.framework.deploy.dto.version.DeployVersionCvePackageVo">
+        INSERT INTO `deploy_version_cve_package` (
+            `cve_id`,
+            `package_name`,
+            `url`
+        )
+        VALUES
+            (
+                #{cveId},
+                #{packageName},
                 #{url}
             )
     </insert>
@@ -1572,6 +1596,15 @@ limitations under the License.
     <delete id="deleteDeployVersionCveVulnerabilityByCveIdList" parameterType="java.util.List">
         DELETE
         FROM `deploy_version_cve_vulnerability`
+        WHERE `cve_id` IN
+        <foreach collection="list" item="cveId" open="(" separator="," close=")">
+            #{cveId}
+        </foreach>
+    </delete>
+
+    <delete id="deleteDeployVersionCvePackageByCveIdList" parameterType="java.util.List">
+        DELETE
+        FROM `deploy_version_cve_package`
         WHERE `cve_id` IN
         <foreach collection="list" item="cveId" open="(" separator="," close=")">
             #{cveId}
