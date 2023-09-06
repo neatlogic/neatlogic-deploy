@@ -21,6 +21,7 @@ import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.common.dto.BasePageVo;
 import neatlogic.framework.deploy.auth.DEPLOY_BASE;
+import neatlogic.framework.deploy.dto.version.DeployVersionCvePackageVo;
 import neatlogic.framework.deploy.dto.version.DeployVersionCveVo;
 import neatlogic.framework.deploy.dto.version.DeployVersionCveVulnerabilityVo;
 import neatlogic.framework.deploy.exception.verison.DeployVersionNotFoundEditTargetException;
@@ -89,6 +90,16 @@ public class GetDeployVersionCveListApi extends PrivateApiComponentBase {
                 }
                 for (DeployVersionCveVo deployVersionCveVo : tbodyList) {
                     deployVersionCveVo.setVulnerabilityIds(cveIdToVulnerabilityListMap.get(deployVersionCveVo.getId()));
+                }
+            }
+            List<DeployVersionCvePackageVo> packageList = deployVersionMapper.getDeployVersionCvePackageListByCveIdList(cveIdList);
+            if (CollectionUtils.isNotEmpty(packageList)) {
+                Map<Long, List<DeployVersionCvePackageVo>> cveIdToPackageListMap = new HashMap<>();
+                for (DeployVersionCvePackageVo packageVo : packageList) {
+                    cveIdToPackageListMap.computeIfAbsent(packageVo.getCveId(), key -> new ArrayList<>()).add(packageVo);
+                }
+                for (DeployVersionCveVo deployVersionCveVo : tbodyList) {
+                    deployVersionCveVo.setPackageList(cveIdToPackageListMap.get(deployVersionCveVo.getId()));
                 }
             }
         }
