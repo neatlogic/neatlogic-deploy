@@ -161,23 +161,23 @@ public class DeployJobServiceImpl implements DeployJobService {
     private void initDeployJobParam(DeployJobVo deployJobParam) {
         ICiEntityCrossoverMapper iCiEntityCrossoverMapper = CrossoverServiceFactory.getApi(ICiEntityCrossoverMapper.class);
         IAppSystemMapper iAppSystemMapper = CrossoverServiceFactory.getApi(IAppSystemMapper.class);
+        AppSystemVo appSystem;
         if (StringUtils.isNotBlank(deployJobParam.getAppSystemAbbrName())) {
-            AppSystemVo appSystem = iAppSystemMapper.getAppSystemByAbbrName(deployJobParam.getAppSystemAbbrName());
+            appSystem = iAppSystemMapper.getAppSystemByAbbrName(deployJobParam.getAppSystemAbbrName());
             if (appSystem == null) {
                 throw new CiEntityNotFoundException(deployJobParam.getAppSystemAbbrName());
             }
             deployJobParam.setAppSystemId(appSystem.getId());
-            deployJobParam.setAppSystemAbbrName(appSystem.getAbbrName());
         } else if (deployJobParam.getAppSystemId() != null) {
-            AppSystemVo appSystem = iAppSystemMapper.getAppSystemById(deployJobParam.getAppSystemId());
+            appSystem = iAppSystemMapper.getAppSystemById(deployJobParam.getAppSystemId());
             if (appSystem == null) {
                 throw new CiEntityNotFoundException(deployJobParam.getAppSystemId());
             }
-            deployJobParam.setAppSystemName(appSystem.getName());
-            deployJobParam.setAppSystemAbbrName(appSystem.getAbbrName());
         } else {
             throw new ParamIrregularException("appSystemId | appSystemName");
         }
+        deployJobParam.setAppSystemName(appSystem.getName());
+        deployJobParam.setAppSystemAbbrName(appSystem.getAbbrName());
         if (StringUtils.isNotBlank(deployJobParam.getEnvName())) {
             Long envId = iCiEntityCrossoverMapper.getCiEntityIdByCiNameAndCiEntityName("APPEnv", deployJobParam.getEnvName());
             if (envId == null) {
