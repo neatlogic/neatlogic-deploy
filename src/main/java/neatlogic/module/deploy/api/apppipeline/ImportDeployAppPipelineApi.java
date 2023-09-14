@@ -27,7 +27,6 @@ import neatlogic.framework.deploy.auth.DEPLOY_BASE;
 import neatlogic.framework.deploy.constvalue.DeployImportExportHandlerType;
 import neatlogic.framework.deploy.exception.pipeline.ImportDeployPipelineAppNameInconsistencyException;
 import neatlogic.framework.exception.file.FileNotUploadException;
-import neatlogic.framework.file.dao.mapper.FileMapper;
 import neatlogic.framework.importexport.core.ImportExportHandlerFactory;
 import neatlogic.framework.importexport.dto.ImportDependencyTypeVo;
 import neatlogic.framework.importexport.dto.ImportExportVo;
@@ -38,10 +37,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 
-import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.ByteArrayOutputStream;
@@ -53,12 +52,10 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 @Component
+@Transactional
 @AuthAction(action = DEPLOY_BASE.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
 public class ImportDeployAppPipelineApi extends PrivateBinaryStreamApiComponentBase {
-
-    @Resource
-    private FileMapper fileMapper;
 
     private Logger logger = LoggerFactory.getLogger(ImportDeployAppPipelineApi.class);
 
