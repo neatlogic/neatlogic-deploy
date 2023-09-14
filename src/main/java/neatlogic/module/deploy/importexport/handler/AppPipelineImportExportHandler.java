@@ -44,6 +44,7 @@ import javax.annotation.Resource;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
+import java.util.zip.ZipOutputStream;
 
 @Component
 public class AppPipelineImportExportHandler extends ImportExportHandlerBase {
@@ -223,7 +224,7 @@ public class AppPipelineImportExportHandler extends ImportExportHandlerBase {
     }
 
     @Override
-    public ImportExportVo myExportData(Object primaryKey, List<ImportExportVo> dependencyList) {
+    public ImportExportVo myExportData(Object primaryKey, List<ImportExportBaseInfoVo> dependencyList, ZipOutputStream zipOutputStream) {
         Long appSystemId = (Long) primaryKey;
         IResourceCrossoverMapper resourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
         ResourceVo appSystem = resourceCrossoverMapper.getAppSystemById(appSystemId);
@@ -248,31 +249,31 @@ public class AppPipelineImportExportHandler extends ImportExportHandlerBase {
                 List<DeployPipelinePhaseVo> combopPhaseList = config.getCombopPhaseList();
                 if (CollectionUtils.isNotEmpty(combopPhaseList)) {
                     for (DeployPipelinePhaseVo deployPipelinePhaseVo : combopPhaseList) {
-                        exportHandlerDeployPipelinePhase(deployPipelinePhaseVo, dependencyList);
+                        exportHandlerDeployPipelinePhase(deployPipelinePhaseVo, dependencyList, zipOutputStream);
                     }
                 }
                 // 阶段组
                 List<DeployPipelineGroupVo> combopGroupList = config.getCombopGroupList();
                 if (CollectionUtils.isNotEmpty(combopGroupList)) {
                     for (DeployPipelineGroupVo deployPipelineGroupVo : combopGroupList) {
-                        exportHandlerDeployPipelineGroup(deployPipelineGroupVo, dependencyList);
+                        exportHandlerDeployPipelineGroup(deployPipelineGroupVo, dependencyList, zipOutputStream);
                     }
                 }
                 // 执行账户
                 if (config.getExecuteConfig() != null && config.getExecuteConfig().getProtocolId() != null) {
-                    doExportData(CmdbImportExportHandlerType.PROTOCOL, config.getExecuteConfig().getProtocolId(), dependencyList);
+                    doExportData(CmdbImportExportHandlerType.PROTOCOL, config.getExecuteConfig().getProtocolId(), dependencyList, zipOutputStream);
                 }
                 // 预置参数集
                 List<DeployProfileVo> overrideProfileList = config.getOverrideProfileList();
                 if (CollectionUtils.isNotEmpty(overrideProfileList)) {
                     for (DeployProfileVo deployProfileVo : overrideProfileList) {
-                        doExportData(AutoexecImportExportHandlerType.AUTOEXEC_PROFILE, deployProfileVo.getProfileId(), dependencyList);
+                        doExportData(AutoexecImportExportHandlerType.AUTOEXEC_PROFILE, deployProfileVo.getProfileId(), dependencyList, zipOutputStream);
                     }
                 }
                 // 场景
                 List<AutoexecCombopScenarioVo> scenarioList = config.getScenarioList();
                 for (AutoexecCombopScenarioVo autoexecCombopScenarioVo : scenarioList) {
-                    doExportData(AutoexecImportExportHandlerType.AUTOEXEC_SCENARIO, autoexecCombopScenarioVo.getScenarioId(), dependencyList);
+                    doExportData(AutoexecImportExportHandlerType.AUTOEXEC_SCENARIO, autoexecCombopScenarioVo.getScenarioId(), dependencyList, zipOutputStream);
                 }
             } else if (envId == 0) {
                 // 模块层
@@ -287,25 +288,25 @@ public class AppPipelineImportExportHandler extends ImportExportHandlerBase {
                 List<DeployPipelinePhaseVo> combopPhaseList = config.getCombopPhaseList();
                 if (CollectionUtils.isNotEmpty(combopPhaseList)) {
                     for (DeployPipelinePhaseVo deployPipelinePhaseVo : combopPhaseList) {
-                        exportHandlerDeployPipelinePhase(deployPipelinePhaseVo, dependencyList);
+                        exportHandlerDeployPipelinePhase(deployPipelinePhaseVo, dependencyList, zipOutputStream);
                     }
                 }
                 // 阶段组
                 List<DeployPipelineGroupVo> combopGroupList = config.getCombopGroupList();
                 if (CollectionUtils.isNotEmpty(combopGroupList)) {
                     for (DeployPipelineGroupVo deployPipelineGroupVo : combopGroupList) {
-                        exportHandlerDeployPipelineGroup(deployPipelineGroupVo, dependencyList);
+                        exportHandlerDeployPipelineGroup(deployPipelineGroupVo, dependencyList, zipOutputStream);
                     }
                 }
                 // 执行账户
                 if (config.getExecuteConfig() != null && config.getExecuteConfig().getProtocolId() != null) {
-                    doExportData(CmdbImportExportHandlerType.PROTOCOL, config.getExecuteConfig().getProtocolId(), dependencyList);
+                    doExportData(CmdbImportExportHandlerType.PROTOCOL, config.getExecuteConfig().getProtocolId(), dependencyList, zipOutputStream);
                 }
                 // 预置参数集
                 List<DeployProfileVo> overrideProfileList = config.getOverrideProfileList();
                 if (CollectionUtils.isNotEmpty(overrideProfileList)) {
                     for (DeployProfileVo deployProfileVo : overrideProfileList) {
-                        doExportData(AutoexecImportExportHandlerType.AUTOEXEC_PROFILE, deployProfileVo.getProfileId(), dependencyList);
+                        doExportData(AutoexecImportExportHandlerType.AUTOEXEC_PROFILE, deployProfileVo.getProfileId(), dependencyList, zipOutputStream);
                     }
                 }
             } else {
@@ -327,25 +328,25 @@ public class AppPipelineImportExportHandler extends ImportExportHandlerBase {
                 List<DeployPipelinePhaseVo> combopPhaseList = config.getCombopPhaseList();
                 if (CollectionUtils.isNotEmpty(combopPhaseList)) {
                     for (DeployPipelinePhaseVo deployPipelinePhaseVo : combopPhaseList) {
-                        exportHandlerDeployPipelinePhase(deployPipelinePhaseVo, dependencyList);
+                        exportHandlerDeployPipelinePhase(deployPipelinePhaseVo, dependencyList, zipOutputStream);
                     }
                 }
                 // 阶段组
                 List<DeployPipelineGroupVo> combopGroupList = config.getCombopGroupList();
                 if (CollectionUtils.isNotEmpty(combopGroupList)) {
                     for (DeployPipelineGroupVo deployPipelineGroupVo : combopGroupList) {
-                        exportHandlerDeployPipelineGroup(deployPipelineGroupVo, dependencyList);
+                        exportHandlerDeployPipelineGroup(deployPipelineGroupVo, dependencyList, zipOutputStream);
                     }
                 }
                 // 执行账户
                 if (config.getExecuteConfig() != null && config.getExecuteConfig().getProtocolId() != null) {
-                    doExportData(CmdbImportExportHandlerType.PROTOCOL, config.getExecuteConfig().getProtocolId(), dependencyList);
+                    doExportData(CmdbImportExportHandlerType.PROTOCOL, config.getExecuteConfig().getProtocolId(), dependencyList, zipOutputStream);
                 }
                 // 预置参数集
                 List<DeployProfileVo> overrideProfileList = config.getOverrideProfileList();
                 if (CollectionUtils.isNotEmpty(overrideProfileList)) {
                     for (DeployProfileVo deployProfileVo : overrideProfileList) {
-                        doExportData(AutoexecImportExportHandlerType.AUTOEXEC_PROFILE, deployProfileVo.getProfileId(), dependencyList);
+                        doExportData(AutoexecImportExportHandlerType.AUTOEXEC_PROFILE, deployProfileVo.getProfileId(), dependencyList, zipOutputStream);
                     }
                 }
             }
@@ -360,7 +361,7 @@ public class AppPipelineImportExportHandler extends ImportExportHandlerBase {
         return importExportVo;
     }
 
-    private void exportHandlerDeployPipelinePhase(DeployPipelinePhaseVo deployPipelinePhaseVo, List<ImportExportVo> dependencyList) {
+    private void exportHandlerDeployPipelinePhase(DeployPipelinePhaseVo deployPipelinePhaseVo, List<ImportExportBaseInfoVo> dependencyList, ZipOutputStream zipOutputStream) {
         AutoexecCombopPhaseConfigVo config = deployPipelinePhaseVo.getConfig();
         if (config == null) {
             return;
@@ -370,32 +371,32 @@ public class AppPipelineImportExportHandler extends ImportExportHandlerBase {
         if (executeConfig != null) {
             if (Objects.equals(executeConfig.getIsPresetExecuteConfig(), 1)) {
                 if (executeConfig.getProtocolId() != null) {
-                    doExportData(CmdbImportExportHandlerType.PROTOCOL, executeConfig.getProtocolId(), dependencyList);
+                    doExportData(CmdbImportExportHandlerType.PROTOCOL, executeConfig.getProtocolId(), dependencyList, zipOutputStream);
                 }
             }
         }
         List<AutoexecCombopPhaseOperationVo> phaseOperationList = config.getPhaseOperationList();
         for (AutoexecCombopPhaseOperationVo phaseOperationVo : phaseOperationList) {
-            exportHandlerAutoexecCombopPhaseOperation(phaseOperationVo, dependencyList);
+            exportHandlerAutoexecCombopPhaseOperation(phaseOperationVo, dependencyList, zipOutputStream);
         }
     }
 
-    private void exportHandlerAutoexecCombopPhaseOperation(AutoexecCombopPhaseOperationVo phaseOperationVo, List<ImportExportVo> dependencyList) {
+    private void exportHandlerAutoexecCombopPhaseOperation(AutoexecCombopPhaseOperationVo phaseOperationVo, List<ImportExportBaseInfoVo> dependencyList, ZipOutputStream zipOutputStream) {
         if (Objects.equals(phaseOperationVo.getOperationType(), ToolType.SCRIPT.getValue())) {
-            doExportData(AutoexecImportExportHandlerType.AUTOEXEC_SCRIPT, phaseOperationVo.getOperationId(), dependencyList);
+            doExportData(AutoexecImportExportHandlerType.AUTOEXEC_SCRIPT, phaseOperationVo.getOperationId(), dependencyList, zipOutputStream);
         } else if (Objects.equals(phaseOperationVo.getOperationType(), ToolType.TOOL.getValue())) {
-            doExportData(AutoexecImportExportHandlerType.AUTOEXEC_TOOL, phaseOperationVo.getOperationId(), dependencyList);
+            doExportData(AutoexecImportExportHandlerType.AUTOEXEC_TOOL, phaseOperationVo.getOperationId(), dependencyList, zipOutputStream);
         }
         AutoexecCombopPhaseOperationConfigVo phaseOperationConfig = phaseOperationVo.getConfig();
         if (phaseOperationConfig == null) {
             if (phaseOperationConfig.getProfileId() != null) {
-                doExportData(AutoexecImportExportHandlerType.AUTOEXEC_PROFILE, phaseOperationConfig.getProfileId(), dependencyList);
+                doExportData(AutoexecImportExportHandlerType.AUTOEXEC_PROFILE, phaseOperationConfig.getProfileId(), dependencyList, zipOutputStream);
             }
             List<ParamMappingVo> paramMappingList = phaseOperationConfig.getParamMappingList();
             if (CollectionUtils.isNotEmpty(paramMappingList)) {
                 for (ParamMappingVo paramMappingVo : paramMappingList) {
                     if (Objects.equals(paramMappingVo.getMappingMode(), ParamMappingMode.GLOBAL_PARAM.getValue())) {
-                        doExportData(AutoexecImportExportHandlerType.AUTOEXEC_GLOBAL_PARAM, paramMappingVo.getValue(), dependencyList);
+                        doExportData(AutoexecImportExportHandlerType.AUTOEXEC_GLOBAL_PARAM, paramMappingVo.getValue(), dependencyList, zipOutputStream);
                     }
                 }
             }
@@ -403,26 +404,26 @@ public class AppPipelineImportExportHandler extends ImportExportHandlerBase {
             if (CollectionUtils.isNotEmpty(argumentMappingList)) {
                 for (ParamMappingVo paramMappingVo : argumentMappingList) {
                     if (Objects.equals(paramMappingVo.getMappingMode(), ParamMappingMode.GLOBAL_PARAM.getValue())) {
-                        doExportData(AutoexecImportExportHandlerType.AUTOEXEC_GLOBAL_PARAM, paramMappingVo.getValue(), dependencyList);
+                        doExportData(AutoexecImportExportHandlerType.AUTOEXEC_GLOBAL_PARAM, paramMappingVo.getValue(), dependencyList, zipOutputStream);
                     }
                 }
             }
             List<AutoexecCombopPhaseOperationVo> ifList = phaseOperationConfig.getIfList();
             if (CollectionUtils.isNotEmpty(ifList)) {
                 for (AutoexecCombopPhaseOperationVo ifPhaseOperationVo : ifList) {
-                    exportHandlerAutoexecCombopPhaseOperation(ifPhaseOperationVo, dependencyList);
+                    exportHandlerAutoexecCombopPhaseOperation(ifPhaseOperationVo, dependencyList, zipOutputStream);
                 }
             }
             List<AutoexecCombopPhaseOperationVo> elseList = phaseOperationConfig.getElseList();
             if (CollectionUtils.isNotEmpty(elseList)) {
                 for (AutoexecCombopPhaseOperationVo elsePhaseOperationVo : elseList) {
-                    exportHandlerAutoexecCombopPhaseOperation(elsePhaseOperationVo, dependencyList);
+                    exportHandlerAutoexecCombopPhaseOperation(elsePhaseOperationVo, dependencyList, zipOutputStream);
                 }
             }
         }
     }
 
-    private void exportHandlerDeployPipelineGroup(DeployPipelineGroupVo deployPipelineGroupVo, List<ImportExportVo> dependencyList) {
+    private void exportHandlerDeployPipelineGroup(DeployPipelineGroupVo deployPipelineGroupVo, List<ImportExportBaseInfoVo> dependencyList, ZipOutputStream zipOutputStream) {
         if (Objects.equals(deployPipelineGroupVo.getPolicy(), AutoexecJobGroupPolicy.ONESHOT.getName())) {
             return;
         }
@@ -438,7 +439,7 @@ public class AppPipelineImportExportHandler extends ImportExportHandlerBase {
             return;
         }
         if (executeConfig.getProtocolId() != null) {
-            doExportData(CmdbImportExportHandlerType.PROTOCOL, executeConfig.getProtocolId(), dependencyList);
+            doExportData(CmdbImportExportHandlerType.PROTOCOL, executeConfig.getProtocolId(), dependencyList, zipOutputStream);
         }
     }
 

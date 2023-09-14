@@ -24,7 +24,7 @@ import neatlogic.framework.cmdb.exception.resourcecenter.AppSystemNotFoundEditTa
 import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.crossover.CrossoverServiceFactory;
 import neatlogic.framework.deploy.auth.DEPLOY_BASE;
-import neatlogic.framework.file.dto.FileVo;
+import neatlogic.framework.deploy.constvalue.DeployImportExportHandlerType;
 import neatlogic.framework.importexport.core.ImportExportHandler;
 import neatlogic.framework.importexport.core.ImportExportHandlerFactory;
 import neatlogic.framework.importexport.dto.ImportExportBaseInfoVo;
@@ -34,18 +34,14 @@ import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateBinaryStreamApiComponentBase;
 import neatlogic.framework.util.FileUtil;
-import neatlogic.framework.deploy.constvalue.DeployImportExportHandlerType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -83,47 +79,18 @@ public class ExportDeployAppPipelineApi extends PrivateBinaryStreamApiComponentB
         if (importExportHandler == null) {
             throw new ImportExportHandlerNotFoundException(DeployImportExportHandlerType.APP_PIPELINE.getText());
         }
-        List<ImportExportVo> dependencyList = new ArrayList<>();
-        ImportExportVo importExportVo = importExportHandler.exportData(appSystemId, dependencyList);
-        List<ImportExportVo> fileImportExportList = new ArrayList<>();
-        List<ImportExportBaseInfoVo> dependencyBaseInfoList = new ArrayList<>();
-        for (ImportExportVo dependency : dependencyList) {
-            dependencyBaseInfoList.add(new ImportExportBaseInfoVo(dependency.getType(), dependency.getPrimaryKey(), dependency.getName()));
-            if (Objects.equals(dependency.getType(), "file")) {
-                fileImportExportList.add(dependency);
-            }
-        }
-        importExportVo.setDependencyBaseInfoList(dependencyBaseInfoList);
+
         String fileName = FileUtil.getEncodedFileName("应用系统_" + appSystem.getAbbrName()+ "(" + appSystem.getName() + ")" + ".pak");
         response.setContentType("application/vnd.ms-excel;charset=utf-8");
         response.setHeader("Content-Disposition", " attachment; filename=\"" + fileName + "\"");
-        byte[] buf = new byte[1024];
-        try (ZipOutputStream zipos = new ZipOutputStream(response.getOutputStream());
-             ByteArrayOutputStream out = new ByteArrayOutputStream()
-        ) {
+
+        List<ImportExportBaseInfoVo> dependencyBaseInfoList = new ArrayList<>();
+        try (ZipOutputStream zipos = new ZipOutputStream(response.getOutputStream())) {
+            ImportExportVo importExportVo = importExportHandler.exportData(appSystemId, dependencyBaseInfoList, zipos);
+            importExportVo.setDependencyBaseInfoList(dependencyBaseInfoList);
             zipos.putNextEntry(new ZipEntry(importExportVo.getPrimaryKey() + ".json"));
             zipos.write(JSONObject.toJSONBytes(importExportVo));
             zipos.closeEntry();
-            for (ImportExportVo importExport : dependencyList) {
-                zipos.putNextEntry(new ZipEntry("dependency-folder/" + importExport.getPrimaryKey() + ".json"));
-                zipos.write(JSONObject.toJSONBytes(importExport));
-                zipos.closeEntry();
-            }
-            for (ImportExportVo importExport : fileImportExportList) {
-                FileVo fileVo = importExport.getData().toJavaObject(FileVo.class);
-                InputStream in = neatlogic.framework.common.util.FileUtil.getData(fileVo.getPath());
-                if (in != null) {
-                    int len;
-                    while ((len = in.read(buf)) != -1) {
-                        out.write(buf, 0, len);
-                    }
-                    zipos.putNextEntry(new ZipEntry("attachment-folder/" + fileVo.getId() + "/" + fileVo.getName()));
-                    zipos.write(out.toByteArray());
-                    zipos.closeEntry();
-                    in.close();
-                    out.reset();
-                }
-            }
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
         }
