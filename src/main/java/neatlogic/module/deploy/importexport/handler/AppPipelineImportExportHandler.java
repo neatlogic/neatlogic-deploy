@@ -356,7 +356,7 @@ public class AppPipelineImportExportHandler extends ImportExportHandlerBase {
         deployAppPipelineExportVo.setAppSystemName(appSystem.getName());
         deployAppPipelineExportVo.setAppSystemAbbrName(appSystem.getAbbrName());
         deployAppPipelineExportVo.setAppConfigList(appConfigList);
-        ImportExportVo importExportVo = new ImportExportVo(this.getType().getValue(), primaryKey, appSystem.getName());
+        ImportExportVo importExportVo = new ImportExportVo(this.getType().getValue(), primaryKey, appSystem.getAbbrName());
         importExportVo.setDataWithObject(deployAppPipelineExportVo);
         return importExportVo;
     }

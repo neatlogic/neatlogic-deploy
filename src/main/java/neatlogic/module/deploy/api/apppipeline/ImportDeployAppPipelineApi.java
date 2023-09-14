@@ -24,6 +24,7 @@ import neatlogic.framework.cmdb.exception.resourcecenter.AppSystemNotFoundExcept
 import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.crossover.CrossoverServiceFactory;
 import neatlogic.framework.deploy.auth.DEPLOY_BASE;
+import neatlogic.framework.deploy.constvalue.DeployImportExportHandlerType;
 import neatlogic.framework.deploy.exception.pipeline.ImportDeployPipelineAppNameInconsistencyException;
 import neatlogic.framework.exception.file.FileNotUploadException;
 import neatlogic.framework.file.dao.mapper.FileMapper;
@@ -45,7 +46,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.Objects;
@@ -97,19 +97,17 @@ public class ImportDeployAppPipelineApi extends PrivateBinaryStreamApiComponentB
         }
 
 
-        InputStream inputStream = null;
+        MultipartFile multipartFile = null;
         // 遍历导入文件
         for (Map.Entry<String, MultipartFile> entry : multipartFileMap.entrySet()) {
-            MultipartFile multipartFile = entry.getValue();
-            inputStream = multipartFile.getInputStream();
+            multipartFile = entry.getValue();
             break;
         }
-        if (inputStream != null) {
-            String type = paramObj.getString("type");
+        if (multipartFile != null) {
             String userSelection = paramObj.getString("userSelection");
             // 遍历压缩包，检查导入数据应用系统名称与目标应用系统名称是否相同，不相同抛异常
             if (StringUtils.isBlank(userSelection)) {
-                try (ZipInputStream zipIs = new ZipInputStream(inputStream);
+                try (ZipInputStream zipIs = new ZipInputStream(multipartFile.getInputStream());
                      ByteArrayOutputStream out = new ByteArrayOutputStream()
                 ) {
                     byte[] buf = new byte[1024];
@@ -141,7 +139,7 @@ public class ImportDeployAppPipelineApi extends PrivateBinaryStreamApiComponentB
                     logger.error(e.getMessage(), e);
                 }
             }
-            return ImportExportHandlerFactory.importData(inputStream, type, userSelection);
+            return ImportExportHandlerFactory.importData(multipartFile, DeployImportExportHandlerType.APP_PIPELINE.getValue(), userSelection);
         }
         return null;
     }
