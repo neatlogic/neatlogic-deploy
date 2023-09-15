@@ -29,6 +29,7 @@ import neatlogic.framework.importexport.core.ImportExportHandler;
 import neatlogic.framework.importexport.core.ImportExportHandlerFactory;
 import neatlogic.framework.importexport.dto.ImportExportBaseInfoVo;
 import neatlogic.framework.importexport.dto.ImportExportVo;
+import neatlogic.framework.importexport.exception.ExportNoAuthException;
 import neatlogic.framework.importexport.exception.ImportExportHandlerNotFoundException;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
@@ -79,7 +80,9 @@ public class ExportDeployAppPipelineApi extends PrivateBinaryStreamApiComponentB
         if (importExportHandler == null) {
             throw new ImportExportHandlerNotFoundException(DeployImportExportHandlerType.APP_PIPELINE.getText());
         }
-
+        if (!importExportHandler.checkExportAuth(appSystemId)) {
+            throw new ExportNoAuthException();
+        }
         String fileName = FileUtil.getEncodedFileName("应用系统_" + appSystem.getAbbrName()+ "(" + appSystem.getName() + ")" + ".pak");
         response.setContentType("application/vnd.ms-excel;charset=utf-8");
         response.setHeader("Content-Disposition", " attachment; filename=\"" + fileName + "\"");
