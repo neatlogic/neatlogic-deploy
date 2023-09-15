@@ -55,7 +55,7 @@ public class ExportDeployAppPipelineApi extends PrivateBinaryStreamApiComponentB
 
     @Override
     public String getName() {
-        return "导出应用流水线";
+        return "nmdaa.exportdeployapppipelineapi.getname";
     }
 
     @Override
@@ -64,10 +64,10 @@ public class ExportDeployAppPipelineApi extends PrivateBinaryStreamApiComponentB
     }
 
     @Input({
-            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "应用系统ID")
+            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.appsystemid")
     })
     @Output({})
-    @Description(desc = "导出应用流水线")
+    @Description(desc = "nmdaa.exportdeployapppipelineapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj, HttpServletRequest request, HttpServletResponse response) throws Exception {
         Long appSystemId = paramObj.getLong("appSystemId");
@@ -83,7 +83,7 @@ public class ExportDeployAppPipelineApi extends PrivateBinaryStreamApiComponentB
         if (!importExportHandler.checkExportAuth(appSystemId)) {
             throw new ExportNoAuthException();
         }
-        String fileName = FileUtil.getEncodedFileName("应用系统_" + appSystem.getAbbrName()+ "(" + appSystem.getName() + ")" + ".pak");
+        String fileName = FileUtil.getEncodedFileName("appSystem_" + appSystem.getAbbrName()+ "(" + appSystem.getName() + ")" + ".pak");
         response.setContentType("application/vnd.ms-excel;charset=utf-8");
         response.setHeader("Content-Disposition", " attachment; filename=\"" + fileName + "\"");
 

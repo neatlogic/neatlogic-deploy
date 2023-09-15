@@ -61,7 +61,7 @@ public class ImportDeployAppPipelineApi extends PrivateBinaryStreamApiComponentB
 
     @Override
     public String getName() {
-        return "导入应用流水线";
+        return "nmdaa.importdeployapppipelineapi.getname";
     }
 
     @Override
@@ -70,13 +70,13 @@ public class ImportDeployAppPipelineApi extends PrivateBinaryStreamApiComponentB
     }
 
     @Input({
-            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "应用系统ID"),
-            @Param(name = "userSelection", type = ApiParamType.JSONOBJECT, desc = "用户选择导入的依赖数据")
+            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.appsystemid"),
+            @Param(name = "userSelection", type = ApiParamType.JSONOBJECT, desc = "common.userselectionimportoption")
     })
     @Output({
-            @Param(name = "typeList", explode = ImportDependencyTypeVo[].class, desc = "依赖项列表")
+            @Param(name = "typeList", explode = ImportDependencyTypeVo[].class, desc = "commom.tbodylist")
     })
-    @Description(desc = "导入应用流水线")
+    @Description(desc = "nmdaa.importdeployapppipelineapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj, HttpServletRequest request, HttpServletResponse response) throws Exception {
         Long appSystemId = paramObj.getLong("appSystemId");
