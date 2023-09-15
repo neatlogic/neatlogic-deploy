@@ -168,7 +168,7 @@ public class AppPipelineImportExportHandler extends ImportExportHandlerBase {
                 // 模块层
                 if (StringUtils.isBlank(appModuleAbbrName)) {
                     if (logger.isWarnEnabled()) {
-                        logger.warn("模块简称为空");
+                        logger.warn("The module is simply empty");
                     }
                 }
                 ResourceVo appModule = resourceCrossoverMapper.getAppModuleByName(appModuleAbbrName);
@@ -212,7 +212,7 @@ public class AppPipelineImportExportHandler extends ImportExportHandlerBase {
                 // 环境层
                 if (StringUtils.isBlank(appModuleAbbrName)) {
                     if (logger.isWarnEnabled()) {
-                        logger.warn("模块简称为空");
+                        logger.warn("The module is simply empty");
                     }
                 }
                 ResourceVo appModule = resourceCrossoverMapper.getAppModuleByName(appModuleAbbrName);
@@ -224,7 +224,7 @@ public class AppPipelineImportExportHandler extends ImportExportHandlerBase {
 
                 if (StringUtils.isBlank(envName)) {
                     if (logger.isWarnEnabled()) {
-                        logger.warn("环境名称为空");
+                        logger.warn("The environment name is empty");
                     }
                 }
                 ResourceVo env = resourceCrossoverMapper.getAppEnvByName(envName);
