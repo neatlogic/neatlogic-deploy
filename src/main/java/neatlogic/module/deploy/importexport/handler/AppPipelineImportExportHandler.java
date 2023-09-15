@@ -27,6 +27,8 @@ import neatlogic.framework.cmdb.dto.resourcecenter.ResourceVo;
 import neatlogic.framework.cmdb.enums.CmdbImportExportHandlerType;
 import neatlogic.framework.cmdb.exception.resourcecenter.AppSystemNotFoundException;
 import neatlogic.framework.crossover.CrossoverServiceFactory;
+import neatlogic.framework.deploy.constvalue.DeployAppConfigAction;
+import neatlogic.framework.deploy.constvalue.DeployImportExportHandlerType;
 import neatlogic.framework.deploy.dto.app.*;
 import neatlogic.framework.deploy.exception.DeployAppConfigNotFoundException;
 import neatlogic.framework.importexport.core.ImportExportHandlerBase;
@@ -35,9 +37,12 @@ import neatlogic.framework.importexport.dto.ImportExportBaseInfoVo;
 import neatlogic.framework.importexport.dto.ImportExportPrimaryChangeVo;
 import neatlogic.framework.importexport.dto.ImportExportVo;
 import neatlogic.module.deploy.dao.mapper.DeployAppConfigMapper;
-import neatlogic.framework.deploy.constvalue.DeployImportExportHandlerType;
+import neatlogic.module.deploy.service.DeployAppAuthorityService;
 import neatlogic.module.deploy.service.PipelineService;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
@@ -49,15 +54,41 @@ import java.util.zip.ZipOutputStream;
 @Component
 public class AppPipelineImportExportHandler extends ImportExportHandlerBase {
 
+    private Logger logger = LoggerFactory.getLogger(AppPipelineImportExportHandler.class);
+
     @Resource
     private DeployAppConfigMapper deployAppConfigMapper;
 
     @Resource
     private PipelineService pipelineService;
 
+    @Resource
+    DeployAppAuthorityService deployAppAuthorityService;
+
     @Override
     public ImportExportHandlerType getType() {
         return DeployImportExportHandlerType.APP_PIPELINE;
+    }
+
+    @Override
+    public boolean checkImportAuth(ImportExportVo importExportVo) {
+        IResourceCrossoverMapper resourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
+        ResourceVo appSystem = resourceCrossoverMapper.getAppSystemByName(importExportVo.getName());
+        if (appSystem == null) {
+            throw new AppSystemNotFoundException(importExportVo.getName());
+        }
+        try {
+            deployAppAuthorityService.checkOperationAuth(appSystem.getId(), DeployAppConfigAction.EDIT);
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public boolean checkExportAuth(Object primaryKey) {
+        return true;
     }
 
     @Override
@@ -76,20 +107,22 @@ public class AppPipelineImportExportHandler extends ImportExportHandlerBase {
 
     @Override
     public Long importData(ImportExportVo importExportVo, List<ImportExportPrimaryChangeVo> primaryChangeList) {
+        IResourceCrossoverMapper resourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
+        ResourceVo appSystem = resourceCrossoverMapper.getAppSystemByName(importExportVo.getName());
+        if (appSystem == null) {
+            throw new AppSystemNotFoundException(importExportVo.getName());
+        }
         JSONObject data = importExportVo.getData();
         DeployAppPipelineExportVo deployAppPipelineExportVo = data.toJavaObject(DeployAppPipelineExportVo.class);
-        IResourceCrossoverMapper resourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
-        ResourceVo appSystem = resourceCrossoverMapper.getAppSystemByName(deployAppPipelineExportVo.getAppSystemAbbrName());
-        if (appSystem == null) {
-            throw new AppSystemNotFoundException(deployAppPipelineExportVo.getAppSystemAbbrName());
-        }
         List<DeployAppConfigVo> appConfigList = deployAppPipelineExportVo.getAppConfigList();
         Iterator<DeployAppConfigVo> iterator = appConfigList.iterator();
         while (iterator.hasNext()) {
             DeployAppConfigVo appConfigVo = iterator.next();
             DeployPipelineConfigVo config = appConfigVo.getConfig();
             Long appModuleId = appConfigVo.getAppModuleId();
+            String appModuleAbbrName = appConfigVo.getAppModuleAbbrName();
             Long envId = appConfigVo.getEnvId();
+            String envName = appConfigVo.getEnvName();
             if (appModuleId == 0 && envId == 0) {
                 // 应用层
                 // 阶段
@@ -133,13 +166,17 @@ public class AppPipelineImportExportHandler extends ImportExportHandlerBase {
                 }
             } else if (envId == 0) {
                 // 模块层
-                ResourceVo appModule = resourceCrossoverMapper.getAppModuleById(appModuleId);
+                if (StringUtils.isBlank(appModuleAbbrName)) {
+                    if (logger.isWarnEnabled()) {
+                        logger.warn("模块简称为空");
+                    }
+                }
+                ResourceVo appModule = resourceCrossoverMapper.getAppModuleByName(appModuleAbbrName);
                 if (appModule == null) {
-                    iterator.remove();
                     continue;
                 }
+                appConfigVo.setAppModuleId(appModule.getId());
                 appConfigVo.setAppModuleName(appModule.getName());
-                appConfigVo.setAppModuleAbbrName(appModule.getAbbrName());
                 // 阶段
                 List<DeployPipelinePhaseVo> combopPhaseList = config.getCombopPhaseList();
                 if (CollectionUtils.isNotEmpty(combopPhaseList)) {
@@ -173,19 +210,28 @@ public class AppPipelineImportExportHandler extends ImportExportHandlerBase {
                 }
             } else {
                 // 环境层
-                ResourceVo appModule = resourceCrossoverMapper.getAppModuleById(appModuleId);
+                if (StringUtils.isBlank(appModuleAbbrName)) {
+                    if (logger.isWarnEnabled()) {
+                        logger.warn("模块简称为空");
+                    }
+                }
+                ResourceVo appModule = resourceCrossoverMapper.getAppModuleByName(appModuleAbbrName);
                 if (appModule == null) {
                     iterator.remove();
                 }
+                appConfigVo.setAppModuleId(appModule.getId());
                 appConfigVo.setAppModuleName(appModule.getName());
-                appConfigVo.setAppModuleAbbrName(appModule.getAbbrName());
 
-                ResourceVo env = resourceCrossoverMapper.getAppEnvById(envId);
+                if (StringUtils.isBlank(envName)) {
+                    if (logger.isWarnEnabled()) {
+                        logger.warn("环境名称为空");
+                    }
+                }
+                ResourceVo env = resourceCrossoverMapper.getAppEnvByName(envName);
                 if (env == null) {
-                    iterator.remove();
                     continue;
                 }
-                appConfigVo.setEnvName(appConfigVo.getEnvName());
+                appConfigVo.setEnvId(env.getId());
                 // 阶段
                 List<DeployPipelinePhaseVo> combopPhaseList = config.getCombopPhaseList();
                 if (CollectionUtils.isNotEmpty(combopPhaseList)) {
@@ -323,7 +369,7 @@ public class AppPipelineImportExportHandler extends ImportExportHandlerBase {
                     iterator.remove();
                     continue;
                 }
-                appConfigVo.setEnvName(appConfigVo.getEnvName());
+                appConfigVo.setEnvName(env.getName());
                 // 阶段
                 List<DeployPipelinePhaseVo> combopPhaseList = config.getCombopPhaseList();
                 if (CollectionUtils.isNotEmpty(combopPhaseList)) {
