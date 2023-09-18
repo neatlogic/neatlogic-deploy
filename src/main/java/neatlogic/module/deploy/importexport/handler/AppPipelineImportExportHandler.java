@@ -106,6 +106,16 @@ public class AppPipelineImportExportHandler extends ImportExportHandlerBase {
     }
 
     @Override
+    public Object getPrimaryByName(ImportExportVo importExportVo) {
+        IResourceCrossoverMapper resourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
+        ResourceVo appSystem = resourceCrossoverMapper.getAppSystemByName(importExportVo.getName());
+        if (appSystem == null) {
+            throw new AppSystemNotFoundException(importExportVo.getName());
+        }
+        return appSystem.getId();
+    }
+
+    @Override
     public Long importData(ImportExportVo importExportVo, List<ImportExportPrimaryChangeVo> primaryChangeList) {
         IResourceCrossoverMapper resourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
         ResourceVo appSystem = resourceCrossoverMapper.getAppSystemByName(importExportVo.getName());
@@ -407,6 +417,12 @@ public class AppPipelineImportExportHandler extends ImportExportHandlerBase {
         return importExportVo;
     }
 
+    /**
+     * 导出时处理阶段中配置信息
+     * @param deployPipelinePhaseVo
+     * @param dependencyList
+     * @param zipOutputStream
+     */
     private void exportHandlerDeployPipelinePhase(DeployPipelinePhaseVo deployPipelinePhaseVo, List<ImportExportBaseInfoVo> dependencyList, ZipOutputStream zipOutputStream) {
         AutoexecCombopPhaseConfigVo config = deployPipelinePhaseVo.getConfig();
         if (config == null) {
@@ -427,6 +443,12 @@ public class AppPipelineImportExportHandler extends ImportExportHandlerBase {
         }
     }
 
+    /**
+     * 导出时处理阶段操作中配置信息
+     * @param phaseOperationVo
+     * @param dependencyList
+     * @param zipOutputStream
+     */
     private void exportHandlerAutoexecCombopPhaseOperation(AutoexecCombopPhaseOperationVo phaseOperationVo, List<ImportExportBaseInfoVo> dependencyList, ZipOutputStream zipOutputStream) {
         if (Objects.equals(phaseOperationVo.getOperationType(), ToolType.SCRIPT.getValue())) {
             doExportData(AutoexecImportExportHandlerType.AUTOEXEC_SCRIPT, phaseOperationVo.getOperationId(), dependencyList, zipOutputStream);
@@ -469,6 +491,12 @@ public class AppPipelineImportExportHandler extends ImportExportHandlerBase {
         }
     }
 
+    /**
+     * 导出时处理阶段组中配置信息
+     * @param deployPipelineGroupVo
+     * @param dependencyList
+     * @param zipOutputStream
+     */
     private void exportHandlerDeployPipelineGroup(DeployPipelineGroupVo deployPipelineGroupVo, List<ImportExportBaseInfoVo> dependencyList, ZipOutputStream zipOutputStream) {
         if (Objects.equals(deployPipelineGroupVo.getPolicy(), AutoexecJobGroupPolicy.ONESHOT.getName())) {
             return;
@@ -489,6 +517,11 @@ public class AppPipelineImportExportHandler extends ImportExportHandlerBase {
         }
     }
 
+    /**
+     * 导入时处理阶段中的配置信息，例如，protocolId发生变化时替换成新的值
+     * @param deployPipelinePhaseVo
+     * @param primaryChangeList
+     */
     private void importHandlerDeployPipelinePhase(DeployPipelinePhaseVo deployPipelinePhaseVo, List<ImportExportPrimaryChangeVo> primaryChangeList) {
         AutoexecCombopPhaseConfigVo config = deployPipelinePhaseVo.getConfig();
         if (config == null) {
@@ -512,6 +545,11 @@ public class AppPipelineImportExportHandler extends ImportExportHandlerBase {
         }
     }
 
+    /**
+     * 导入时处理阶段操作中的配置信息，例如，profileId发生变化时替换成新的值
+     * @param phaseOperationVo
+     * @param primaryChangeList
+     */
     private void importHandlerAutoexecCombopPhaseOperation(AutoexecCombopPhaseOperationVo phaseOperationVo, List<ImportExportPrimaryChangeVo> primaryChangeList) {
         if (Objects.equals(phaseOperationVo.getOperationType(), ToolType.SCRIPT.getValue())) {
             Object newPrimaryKey = getNewPrimaryKey(AutoexecImportExportHandlerType.AUTOEXEC_SCRIPT, phaseOperationVo.getOperationId(), primaryChangeList);
@@ -547,6 +585,11 @@ public class AppPipelineImportExportHandler extends ImportExportHandlerBase {
         }
     }
 
+    /**
+     * 导入时处理阶段组中的配置信息，例如，protocolId发生变化时替换成新的值
+     * @param deployPipelineGroupVo
+     * @param primaryChangeList
+     */
     private void importHandlerDeployPipelineGroup(DeployPipelineGroupVo deployPipelineGroupVo, List<ImportExportPrimaryChangeVo> primaryChangeList) {
         if (Objects.equals(deployPipelineGroupVo.getPolicy(), AutoexecJobGroupPolicy.ONESHOT.getName())) {
             return;
