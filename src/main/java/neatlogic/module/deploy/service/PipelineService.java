@@ -39,4 +39,10 @@ public interface PipelineService {
      * @return
      */
     DeployPipelineConfigVo getModifiedPartConfig(DeployPipelineConfigVo fullConfig, DeployPipelineConfigVo parentConfig);
+
+    /**
+     * 保存应用流水线
+     * @param deployAppConfigVo
+     */
+    void saveDeployAppPipeline(DeployAppConfigVo deployAppConfigVo);
 }

@@ -16,30 +16,31 @@
 
 package neatlogic.module.deploy.service;
 
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.asynchronization.threadlocal.UserContext;
 import neatlogic.framework.auth.core.AuthActionChecker;
-import neatlogic.framework.autoexec.dto.combop.AutoexecCombopPhaseConfigVo;
-import neatlogic.framework.autoexec.dto.combop.AutoexecCombopPhaseOperationConfigVo;
-import neatlogic.framework.autoexec.dto.combop.AutoexecCombopPhaseOperationVo;
-import neatlogic.framework.autoexec.dto.combop.AutoexecCombopScenarioVo;
+import neatlogic.framework.autoexec.constvalue.ParamMappingMode;
+import neatlogic.framework.autoexec.crossover.IAutoexecCombopCrossoverService;
+import neatlogic.framework.autoexec.dto.combop.*;
 import neatlogic.framework.cmdb.crossover.IAppSystemMapper;
 import neatlogic.framework.cmdb.dto.resourcecenter.entity.AppSystemVo;
 import neatlogic.framework.crossover.CrossoverServiceFactory;
 import neatlogic.framework.dependency.core.DependencyManager;
 import neatlogic.framework.deploy.auth.PIPELINE_MODIFY;
+import neatlogic.framework.deploy.auth.core.DeployAppAuthChecker;
 import neatlogic.framework.deploy.constvalue.DeployAppConfigAction;
 import neatlogic.framework.deploy.constvalue.PipelineType;
 import neatlogic.framework.deploy.dto.app.*;
 import neatlogic.framework.deploy.dto.pipeline.PipelineJobTemplateVo;
 import neatlogic.framework.deploy.dto.pipeline.PipelineSearchVo;
 import neatlogic.framework.deploy.dto.pipeline.PipelineVo;
-import neatlogic.framework.deploy.auth.core.DeployAppAuthChecker;
+import neatlogic.module.deploy.dao.mapper.DeployAppConfigMapper;
 import neatlogic.module.deploy.dao.mapper.DeployPipelineMapper;
 import neatlogic.module.deploy.dependency.handler.AutoexecGlobalParam2DeployAppPipelinePhaseOperationArgumentParamDependencyHandler;
 import neatlogic.module.deploy.dependency.handler.AutoexecGlobalParam2DeployAppPipelinePhaseOperationInputParamDependencyHandler;
 import neatlogic.module.deploy.dependency.handler.AutoexecProfile2DeployAppPipelinePhaseOperationDependencyHandler;
 import neatlogic.module.deploy.dependency.handler.AutoexecScenarioDeployPipelineDependencyHandler;
-import com.alibaba.fastjson.JSONArray;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -55,6 +56,9 @@ public class PipelineServiceImpl implements PipelineService {
     private final static Logger logger = LoggerFactory.getLogger(PipelineServiceImpl.class);
     @Resource
     DeployPipelineMapper deployPipelineMapper;
+
+    @Resource
+    private DeployAppConfigMapper deployAppConfigMapper;
 
 
     @Override
@@ -268,5 +272,288 @@ public class PipelineServiceImpl implements PipelineService {
             return result;
         }
         return null;
+    }
+
+    @Override
+    public void saveDeployAppPipeline(DeployAppConfigVo deployAppConfigVo) {
+        Long appSystemId = deployAppConfigVo.getAppSystemId();
+        Long appModuleId = deployAppConfigVo.getAppModuleId();
+        Long envId = deployAppConfigVo.getEnvId();
+        String configStr = deployAppConfigVo.getConfigStr();
+        IAutoexecCombopCrossoverService autoexecCombopCrossoverService = CrossoverServiceFactory.getApi(IAutoexecCombopCrossoverService.class);
+        autoexecCombopCrossoverService.verifyAutoexecCombopConfig(deployAppConfigVo.getConfig().getAutoexecCombopConfigVo(), false);
+        deployAppConfigVo.setConfigStr(configStr);
+        deployAppConfigVo.setFcu(UserContext.get().getUserUuid());
+        deployAppConfigVo.setLcu(UserContext.get().getUserUuid());
+        if (appModuleId == 0L && envId == 0L) {
+            // 应用层
+            DeployAppConfigVo oldAppSystemAppConfigVo = deployAppConfigMapper.getAppConfigVo(new DeployAppConfigVo(appSystemId));
+            if (oldAppSystemAppConfigVo != null) {
+                if (Objects.equals(oldAppSystemAppConfigVo.getConfigStr(), deployAppConfigVo.getConfigStr())) {
+                    return;
+                } else {
+                    deleteDependency(oldAppSystemAppConfigVo);
+                    deployAppConfigVo.setId(oldAppSystemAppConfigVo.getId());
+                    deployAppConfigMapper.updateAppConfig(deployAppConfigVo);
+                    saveDependency(deployAppConfigVo);
+                }
+            } else {
+                deployAppConfigMapper.insertAppConfig(deployAppConfigVo);
+                saveDependency(deployAppConfigVo);
+            }
+        } else if (envId == 0L) {
+            // 模块层
+            DeployAppConfigVo oldAppModuleAppConfigVo = deployAppConfigMapper.getAppConfigVo(new DeployAppConfigVo(appSystemId, appModuleId));
+            // 找出修改部分配置
+            DeployPipelineConfigVo modifiedPartConfig = getModifiedPartConfig(deployAppConfigVo.getConfig(), null);
+            if (modifiedPartConfig == null) {
+                if (oldAppModuleAppConfigVo != null) {
+                    deleteDependency(oldAppModuleAppConfigVo);
+                    deployAppConfigMapper.deleteAppModuleAppConfig(appSystemId, appModuleId);
+                }
+                return;
+            }
+            deployAppConfigVo.setConfig(modifiedPartConfig);
+            if (oldAppModuleAppConfigVo != null) {
+                deleteDependency(oldAppModuleAppConfigVo);
+                deployAppConfigVo.setId(oldAppModuleAppConfigVo.getId());
+                deployAppConfigMapper.updateAppConfig(deployAppConfigVo);
+                saveModifiedPartConfigDependency(deployAppConfigVo);
+            } else {
+                deployAppConfigMapper.insertAppConfig(deployAppConfigVo);
+                saveModifiedPartConfigDependency(deployAppConfigVo);
+            }
+        } else {
+            // 环境层
+            DeployPipelineConfigVo appModuleAppConfigConfig = null;
+            DeployAppConfigVo oldAppModuleAppConfigVo = deployAppConfigMapper.getAppConfigVo(new DeployAppConfigVo(appSystemId, appModuleId));
+            if (oldAppModuleAppConfigVo != null) {
+                appModuleAppConfigConfig = oldAppModuleAppConfigVo.getConfig();
+            }
+
+            DeployAppConfigVo oldAppEnvAppConfigVo = deployAppConfigMapper.getAppConfigVo(new DeployAppConfigVo(appSystemId, appModuleId, envId));
+            // 找出修改部分配置
+            DeployPipelineConfigVo modifiedPartConfig = getModifiedPartConfig(deployAppConfigVo.getConfig(), appModuleAppConfigConfig);
+            if (modifiedPartConfig == null) {
+                if (oldAppEnvAppConfigVo != null) {
+                    deleteDependency(oldAppEnvAppConfigVo);
+                    deployAppConfigMapper.deleteAppEnvAppConfig(appSystemId, appModuleId, envId);
+                }
+                return;
+            }
+            deployAppConfigVo.setConfig(modifiedPartConfig);
+            if (oldAppEnvAppConfigVo != null) {
+                deleteDependency(oldAppEnvAppConfigVo);
+                deployAppConfigVo.setId(oldAppEnvAppConfigVo.getId());
+                deployAppConfigMapper.updateAppConfig(deployAppConfigVo);
+                saveModifiedPartConfigDependency(deployAppConfigVo);
+            } else {
+                deployAppConfigMapper.insertAppConfig(deployAppConfigVo);
+                saveModifiedPartConfigDependency(deployAppConfigVo);
+            }
+        }
+    }
+
+    /**
+     * 保存重载部分阶段中操作工具对预置参数集和全局参数的引用关系、流水线对场景的引用关系
+     *
+     * @param deployAppConfigVo
+     */
+    private void saveModifiedPartConfigDependency(DeployAppConfigVo deployAppConfigVo) {
+        DeployPipelineConfigVo config = deployAppConfigVo.getConfig();
+        if (config == null) {
+            return;
+        }
+
+        Long appSystemId = deployAppConfigVo.getAppSystemId();
+        Long moduleId = deployAppConfigVo.getAppModuleId();
+        Long envId = deployAppConfigVo.getEnvId();
+
+        List<DeployPipelinePhaseVo> combopPhaseList = config.getCombopPhaseList();
+        if (CollectionUtils.isEmpty(combopPhaseList)) {
+            return;
+        }
+
+        for (DeployPipelinePhaseVo combopPhaseVo : combopPhaseList) {
+            if (combopPhaseVo == null) {
+                continue;
+            }
+            if (moduleId != null) {
+                //如果是模块层或环境层，没有重载，就不用保存依赖关系
+                Integer override = combopPhaseVo.getOverride();
+                if (Objects.equals(override, 0)) {
+                    continue;
+                }
+            }
+            AutoexecCombopPhaseConfigVo phaseConfig = combopPhaseVo.getConfig();
+            if (phaseConfig == null) {
+                continue;
+            }
+            List<AutoexecCombopPhaseOperationVo> phaseOperationList = phaseConfig.getPhaseOperationList();
+            if (CollectionUtils.isEmpty(phaseOperationList)) {
+                continue;
+            }
+            for (AutoexecCombopPhaseOperationVo phaseOperationVo : phaseOperationList) {
+                if (phaseOperationVo == null) {
+                    continue;
+                }
+                saveDependency(combopPhaseVo, phaseOperationVo, appSystemId, moduleId, envId);
+                AutoexecCombopPhaseOperationConfigVo operationConfig = phaseOperationVo.getConfig();
+                List<AutoexecCombopPhaseOperationVo> ifList = operationConfig.getIfList();
+                if (CollectionUtils.isNotEmpty(ifList)) {
+                    for (AutoexecCombopPhaseOperationVo operationVo : ifList) {
+                        if (operationVo == null) {
+                            continue;
+                        }
+                        saveDependency(combopPhaseVo, operationVo, appSystemId, moduleId, envId);
+                    }
+                }
+                List<AutoexecCombopPhaseOperationVo> elseList = operationConfig.getElseList();
+                if (CollectionUtils.isNotEmpty(elseList)) {
+                    for (AutoexecCombopPhaseOperationVo operationVo : elseList) {
+                        if (operationVo == null) {
+                            continue;
+                        }
+                        saveDependency(combopPhaseVo, operationVo, appSystemId, moduleId, envId);
+                    }
+                }
+            }
+        }
+    }
+    /**
+     * 保存阶段中操作工具对预置参数集和全局参数的引用关系、流水线对场景的引用关系
+     *
+     * @param deployAppConfigVo
+     */
+    private void saveDependency(DeployAppConfigVo deployAppConfigVo) {
+        DeployPipelineConfigVo config = deployAppConfigVo.getConfig();
+        if (config == null) {
+            return;
+        }
+
+        Long appSystemId = deployAppConfigVo.getAppSystemId();
+        Long moduleId = deployAppConfigVo.getAppModuleId();
+        Long envId = deployAppConfigVo.getEnvId();
+
+        JSONObject dependencyConfig = new JSONObject();
+        dependencyConfig.put("appSystemId", appSystemId);
+        dependencyConfig.put("moduleId", moduleId);
+        dependencyConfig.put("envId", envId);
+
+        List<AutoexecCombopScenarioVo> scenarioList = config.getScenarioList();
+        if (CollectionUtils.isNotEmpty(scenarioList)) {
+            for (AutoexecCombopScenarioVo scenarioVo : scenarioList) {
+                dependencyConfig.put("scenarioId", scenarioVo.getScenarioId());
+                dependencyConfig.put("scenarioName", scenarioVo.getScenarioName());
+                DependencyManager.insert(AutoexecScenarioDeployPipelineDependencyHandler.class, scenarioVo.getScenarioId(), deployAppConfigVo.getId(), dependencyConfig);
+            }
+        }
+
+        List<DeployPipelinePhaseVo> combopPhaseList = config.getCombopPhaseList();
+        if (CollectionUtils.isEmpty(combopPhaseList)) {
+            return;
+        }
+
+        for (DeployPipelinePhaseVo combopPhaseVo : combopPhaseList) {
+            if (combopPhaseVo == null) {
+                continue;
+            }
+            if (moduleId != null) {
+                //如果是模块层或环境层，没有重载，就不用保存依赖关系
+                Integer override = combopPhaseVo.getOverride();
+                if (Objects.equals(override, 0)) {
+                    continue;
+                }
+            }
+            AutoexecCombopPhaseConfigVo phaseConfig = combopPhaseVo.getConfig();
+            if (phaseConfig == null) {
+                continue;
+            }
+            List<AutoexecCombopPhaseOperationVo> phaseOperationList = phaseConfig.getPhaseOperationList();
+            if (CollectionUtils.isEmpty(phaseOperationList)) {
+                continue;
+            }
+            for (AutoexecCombopPhaseOperationVo phaseOperationVo : phaseOperationList) {
+                if (phaseOperationVo == null) {
+                    continue;
+                }
+                saveDependency(combopPhaseVo, phaseOperationVo, appSystemId, moduleId, envId);
+                AutoexecCombopPhaseOperationConfigVo operationConfig = phaseOperationVo.getConfig();
+                List<AutoexecCombopPhaseOperationVo> ifList = operationConfig.getIfList();
+                if (CollectionUtils.isNotEmpty(ifList)) {
+                    for (AutoexecCombopPhaseOperationVo operationVo : ifList) {
+                        if (operationVo == null) {
+                            continue;
+                        }
+                        saveDependency(combopPhaseVo, operationVo, appSystemId, moduleId, envId);
+                    }
+                }
+                List<AutoexecCombopPhaseOperationVo> elseList = operationConfig.getElseList();
+                if (CollectionUtils.isNotEmpty(elseList)) {
+                    for (AutoexecCombopPhaseOperationVo operationVo : elseList) {
+                        if (operationVo == null) {
+                            continue;
+                        }
+                        saveDependency(combopPhaseVo, operationVo, appSystemId, moduleId, envId);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * 保存阶段中操作工具对预置参数集和全局参数的引用关系
+     *
+     * @param combopPhaseVo
+     * @param phaseOperationVo
+     * @param appSystemId
+     * @param moduleId
+     * @param envId
+     */
+    private void saveDependency(AutoexecCombopPhaseVo combopPhaseVo, AutoexecCombopPhaseOperationVo phaseOperationVo, Long appSystemId, Long moduleId, Long envId) {
+        AutoexecCombopPhaseOperationConfigVo operationConfigVo = phaseOperationVo.getConfig();
+        if (operationConfigVo == null) {
+            return;
+        }
+        Long profileId = operationConfigVo.getProfileId();
+        if (profileId != null) {
+            JSONObject dependencyConfig = new JSONObject();
+            dependencyConfig.put("appSystemId", appSystemId);
+            dependencyConfig.put("moduleId", moduleId);
+            dependencyConfig.put("envId", envId);
+            dependencyConfig.put("phaseId", combopPhaseVo.getId());
+            dependencyConfig.put("phaseName", combopPhaseVo.getName());
+            DependencyManager.insert(AutoexecProfile2DeployAppPipelinePhaseOperationDependencyHandler.class, profileId, phaseOperationVo.getId(), dependencyConfig);
+        }
+        List<ParamMappingVo> paramMappingList = operationConfigVo.getParamMappingList();
+        if (CollectionUtils.isNotEmpty(paramMappingList)) {
+            for (ParamMappingVo paramMappingVo : paramMappingList) {
+                if (Objects.equals(paramMappingVo.getMappingMode(), ParamMappingMode.GLOBAL_PARAM.getValue())) {
+                    JSONObject dependencyConfig = new JSONObject();
+                    dependencyConfig.put("appSystemId", appSystemId);
+                    dependencyConfig.put("moduleId", moduleId);
+                    dependencyConfig.put("envId", envId);
+                    dependencyConfig.put("phaseId", combopPhaseVo.getId());
+                    dependencyConfig.put("phaseName", combopPhaseVo.getName());
+                    dependencyConfig.put("key", paramMappingVo.getKey());
+                    dependencyConfig.put("name", paramMappingVo.getName());
+                    DependencyManager.insert(AutoexecGlobalParam2DeployAppPipelinePhaseOperationInputParamDependencyHandler.class, paramMappingVo.getValue(), phaseOperationVo.getId(), dependencyConfig);
+                }
+            }
+        }
+        List<ParamMappingVo> argumentMappingList = operationConfigVo.getArgumentMappingList();
+        if (CollectionUtils.isNotEmpty(argumentMappingList)) {
+            for (ParamMappingVo paramMappingVo : argumentMappingList) {
+                if (Objects.equals(paramMappingVo.getMappingMode(), ParamMappingMode.GLOBAL_PARAM.getValue())) {
+                    JSONObject dependencyConfig = new JSONObject();
+                    dependencyConfig.put("appSystemId", appSystemId);
+                    dependencyConfig.put("moduleId", moduleId);
+                    dependencyConfig.put("envId", envId);
+                    dependencyConfig.put("phaseId", combopPhaseVo.getId());
+                    dependencyConfig.put("phaseName", combopPhaseVo.getName());
+                    DependencyManager.insert(AutoexecGlobalParam2DeployAppPipelinePhaseOperationArgumentParamDependencyHandler.class, paramMappingVo.getValue(), phaseOperationVo.getId(), dependencyConfig);
+                }
+            }
+        }
     }
 }
