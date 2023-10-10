@@ -16,6 +16,7 @@
 
 package neatlogic.module.deploy.api.job.batch;
 
+import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.asynchronization.threadlocal.TenantContext;
 import neatlogic.framework.asynchronization.threadlocal.UserContext;
 import neatlogic.framework.auth.core.AuthAction;
@@ -44,8 +45,6 @@ import neatlogic.framework.scheduler.dto.JobObject;
 import neatlogic.framework.scheduler.exception.ScheduleHandlerNotFoundException;
 import neatlogic.module.deploy.dao.mapper.DeployJobMapper;
 import neatlogic.module.deploy.schedule.plugin.DeployBatchJobAutoFireJob;
-import neatlogic.module.deploy.service.DeployJobService;
-import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -61,13 +60,10 @@ public class SaveBatchDeployJobApi extends PrivateApiComponentBase {
     @Resource
     private DeployJobMapper deployJobMapper;
 
-    @Resource
-    private DeployJobService deployJobService;
-
 
     @Override
     public String getName() {
-        return "保存批量发布作业";
+        return "nmdajb.savebatchdeployjobapi.getname";
     }
 
     @Override
@@ -80,16 +76,16 @@ public class SaveBatchDeployJobApi extends PrivateApiComponentBase {
         return "/deploy/batchjob/save";
     }
 
-    @Input({@Param(name = "id", type = ApiParamType.LONG, desc = "作业id，不提供代表添加作业"),
-            @Param(name = "name", type = ApiParamType.STRING, isRequired = true, desc = "作业名称"),
-            @Param(name = "saveMode", type = ApiParamType.ENUM, rule = "save,commit", isRequired = true, desc = "暂存或提交"),
-            @Param(name = "triggerType", type = ApiParamType.ENUM, rule = "manual,auto", desc = "触发方式"),
-            @Param(name = "planStartTime", type = ApiParamType.LONG, desc = "计划开始时间"),
-            @Param(name = "laneList", type = ApiParamType.JSONARRAY, desc = "通道列表"),
-            @Param(name = "authList", type = ApiParamType.JSONARRAY, desc = "授权列表")})
+    @Input({@Param(name = "id", type = ApiParamType.LONG, desc = "common.id", help = "不提供代表添加作业"),
+            @Param(name = "name", type = ApiParamType.STRING, isRequired = true, desc = "common.name"),
+            @Param(name = "saveMode", type = ApiParamType.ENUM, rule = "save,commit", isRequired = true, desc = "common.savemode", help = "暂存或提交"),
+            @Param(name = "triggerType", type = ApiParamType.ENUM, rule = "manual,auto", desc = "common.triggertype"),
+            @Param(name = "planStartTime", type = ApiParamType.LONG, desc = "common.planstarttime"),
+            @Param(name = "laneList", type = ApiParamType.JSONARRAY, desc = "term.deploy.lanelist"),
+            @Param(name = "authList", type = ApiParamType.JSONARRAY, desc = "common.authlist")})
     @Output({@Param(explode = DeployJobVo.class)})
     @ResubmitInterval(3)
-    @Description(desc = "保存批量发布作业接口")
+    @Description(desc = "nmdajb.savebatchdeployjobapi.getname")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         Long id = jsonObj.getLong("id");
@@ -152,7 +148,8 @@ public class SaveBatchDeployJobApi extends PrivateApiComponentBase {
                                 jobVo.setParentId(deployJobVo.getId());
                                 deployJobMapper.updateAutoExecJobParentIdById(jobVo);
                                 deployJobMapper.insertGroupJob(groupVo.getId(), jobVo.getId(), k + 1);
-                                deployJobMapper.insertJobInvoke(deployJobVo.getId(), jobVo.getId(), JobSource.BATCHDEPLOY.getValue(), deployJobVo.getRouteId());
+                                //批量作业没有来源id
+//                                deployJobMapper.insertJobInvoke(deployJobVo.getId(), jobVo.getId(), JobSource.BATCHDEPLOY.getValue(), deployJobVo.getRouteId());
                             }
                         }
                         if (hasGroupJob) {
