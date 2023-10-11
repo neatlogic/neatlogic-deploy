@@ -18,8 +18,10 @@ package neatlogic.module.deploy.api.version;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.dao.mapper.runner.RunnerMapper;
+import neatlogic.framework.deploy.auth.DEPLOY_BASE;
 import neatlogic.framework.deploy.dto.version.DeployVersionVo;
 import neatlogic.framework.deploy.exception.DeployVersionNotFoundException;
 import neatlogic.framework.dto.runner.RunnerMapVo;
@@ -27,8 +29,10 @@ import neatlogic.framework.exception.runner.RunnerHttpRequestException;
 import neatlogic.framework.exception.runner.RunnerNotFoundByRunnerMapIdException;
 import neatlogic.framework.integration.authentication.enums.AuthenticateType;
 import neatlogic.framework.restful.annotation.Input;
+import neatlogic.framework.restful.annotation.OperationType;
 import neatlogic.framework.restful.annotation.Output;
 import neatlogic.framework.restful.annotation.Param;
+import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.framework.util.HttpRequestUtil;
 import neatlogic.module.deploy.dao.mapper.DeployVersionMapper;
@@ -44,6 +48,8 @@ import java.util.Objects;
  * @since 2023/8/14 10:31
  **/
 @Component
+@AuthAction(action = DEPLOY_BASE.class)
+@OperationType(type = OperationTypeEnum.SEARCH)
 public class GetDeployVersionCommitDiffApi extends PrivateApiComponentBase {
 
     @Resource
@@ -53,12 +59,12 @@ public class GetDeployVersionCommitDiffApi extends PrivateApiComponentBase {
     RunnerMapper runnerMapper;
     @Override
     public String getName() {
-        return "获取发布对应版本commit diff内容";
+        return "nmdav.getdeployversioncommitdiffapi.getname";
     }
 
     @Input({
-            @Param(name = "versionId", type = ApiParamType.LONG, isRequired = true, desc = "版本id"),
-            @Param(name = "commitId", type = ApiParamType.STRING, desc = "提交id")
+            @Param(name = "versionId", type = ApiParamType.LONG, isRequired = true, desc = "common.versionid"),
+            @Param(name = "commitId", type = ApiParamType.STRING, desc = "nmdac.callbackdeploycisvneventapi.input.param.desc.revision")
 
     })
     @Output({

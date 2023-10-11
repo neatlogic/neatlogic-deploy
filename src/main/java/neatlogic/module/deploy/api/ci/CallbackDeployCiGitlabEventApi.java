@@ -1,11 +1,13 @@
 package neatlogic.module.deploy.api.ci;
 
 import neatlogic.framework.asynchronization.threadlocal.UserContext;
+import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.autoexec.dao.mapper.AutoexecJobMapper;
 import neatlogic.framework.autoexec.dto.job.AutoexecJobVo;
 import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.common.constvalue.SystemUser;
 import neatlogic.framework.crossover.CrossoverServiceFactory;
+import neatlogic.framework.deploy.auth.DEPLOY_BASE;
 import neatlogic.framework.deploy.constvalue.*;
 import neatlogic.framework.deploy.dto.ci.DeployCiAuditVo;
 import neatlogic.framework.deploy.dto.ci.DeployCiVo;
@@ -46,6 +48,7 @@ import java.util.regex.Pattern;
 
 @Service
 @Transactional
+@AuthAction(action = DEPLOY_BASE.class)
 @OperationType(type = OperationTypeEnum.OPERATE)
 public class CallbackDeployCiGitlabEventApi extends PrivateApiComponentBase {
 
