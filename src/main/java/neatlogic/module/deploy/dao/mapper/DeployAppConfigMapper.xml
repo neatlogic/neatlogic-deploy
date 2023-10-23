@@ -543,6 +543,7 @@ limitations under the License.
         </collection>
         <collection property="autoCfgKeyValueList" ofType="neatlogic.framework.deploy.dto.app.DeployAppEnvAutoConfigKeyValueVo">
             <result column="key" property="key"/>
+            <result column="type" property="type"/>
             <result column="value" property="value"/>
         </collection>
     </resultMap>
@@ -742,6 +743,7 @@ limitations under the License.
             parameterType="neatlogic.framework.deploy.dto.app.DeployAppEnvAutoConfigVo"
             resultType="neatlogic.framework.deploy.dto.app.DeployAppEnvAutoConfigKeyValueVo" useCache="false">
         select `key`,
+               `type`,
                `value`
         from deploy_app_env_auto_config
         WHERE `app_system_id` = #{appSystemId}
@@ -828,6 +830,7 @@ limitations under the License.
         daeac.`env_id` AS envId,
         daeac.`instance_id` AS instanceId,
         daeac.`key`,
+        daeac.`type`,
         daeac.`value`
         FROM
         deploy_app_env_auto_config daeac
@@ -1134,6 +1137,7 @@ limitations under the License.
         <collection property="keyValueList"
                     ofType="neatlogic.framework.deploy.dto.app.DeployAppEnvAutoConfigKeyValueVo">
             <id column="key" property="key"/>
+            <result column="type" property="type"/>
             <result column="value" property="value"/>
         </collection>
     </resultMap>
@@ -1346,6 +1350,7 @@ limitations under the License.
                `env_id`        AS envId,
                `instance_id`   AS instanceId,
                `key`,
+               `type`,
                `value`
         from `deploy_app_env_auto_config`
         where `app_system_id` = #{systemId}
@@ -1557,12 +1562,12 @@ limitations under the License.
 
     <insert id="insertAppEnvAutoConfig">
         INSERT INTO deploy_app_env_auto_config
-        (`app_system_id`,`app_module_id`,`env_id`,`instance_id`,`key`,`value`,`lcd`,`lcu`)
+        (`app_system_id`,`app_module_id`,`env_id`,`instance_id`,`key`,`type`,`value`,`lcd`,`lcu`)
         VALUES
         <foreach collection="keyValueList" item="keyValue" separator="),(" open="(" close=")">
-            #{appSystemId},#{appModuleId},#{envId},#{instanceId},#{keyValue.key},#{keyValue.value},#{lcd},#{lcu}
+            #{appSystemId},#{appModuleId},#{envId},#{instanceId},#{keyValue.key},#{keyValue.type},#{keyValue.value},#{lcd},#{lcu}
         </foreach>
-        ON DUPLICATE KEY UPDATE `key` = VALUES(`key`),`value` = VALUES(`value`),`lcd`= VALUES(`lcd`),`lcu` =
+        ON DUPLICATE KEY UPDATE `key` = VALUES(`key`),`type` = VALUES(`type`),`value` = VALUES(`value`),`lcd`= VALUES(`lcd`),`lcu` =
         VALUES(`lcu`)
     </insert>
 

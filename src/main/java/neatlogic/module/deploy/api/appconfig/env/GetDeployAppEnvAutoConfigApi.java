@@ -1,6 +1,7 @@
 package neatlogic.module.deploy.api.appconfig.env;
 
 import neatlogic.framework.auth.core.AuthAction;
+import neatlogic.framework.autoexec.constvalue.ParamType;
 import neatlogic.framework.cmdb.crossover.IResourceCrossoverMapper;
 import neatlogic.framework.cmdb.dto.resourcecenter.ResourceVo;
 import neatlogic.framework.common.constvalue.ApiParamType;
@@ -20,10 +21,7 @@ import com.alibaba.fastjson.JSONObject;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -61,6 +59,8 @@ public class GetDeployAppEnvAutoConfigApi extends PrivateApiComponentBase {
         JSONObject autoCfg = new JSONObject();
         result.put("autoCfg", autoCfg);
         JSONArray insCfgList = new JSONArray();
+        List<String> passwordKeyList = new ArrayList<>();
+        result.put("passwordKeys", passwordKeyList);
         result.put("insCfgList", insCfgList);
         Long sysId = paramObj.getLong("sysId");
         Long moduleId = paramObj.getLong("moduleId");
@@ -77,6 +77,9 @@ public class GetDeployAppEnvAutoConfigApi extends PrivateApiComponentBase {
                 List<DeployAppEnvAutoConfigKeyValueVo> envConfigList = envConfigOpt.get();
                 for (DeployAppEnvAutoConfigKeyValueVo keyValueVo : envConfigList) {
                     autoCfg.put(keyValueVo.getKey(), keyValueVo.getValue());
+                    if (Objects.equals(ParamType.PASSWORD.getValue(), keyValueVo.getType())) {
+                        passwordKeyList.add(keyValueVo.getKey());
+                    }
                 }
             }
             // 实例配置
