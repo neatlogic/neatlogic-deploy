@@ -148,11 +148,29 @@ public class DeployPipelineConfigManager {
                 // 删除禁用阶段
                 List<DeployPipelinePhaseVo> deployPipelinePhaseList = deployPipelineConfig.getCombopPhaseList();
                 if (CollectionUtils.isNotEmpty(deployPipelinePhaseList)) {
+                    boolean hasRemove = false;
                     Iterator<DeployPipelinePhaseVo> iterator = deployPipelinePhaseList.iterator();
                     while(iterator.hasNext()) {
                         DeployPipelinePhaseVo deployPipelinePhaseVo = iterator.next();
                         if (Objects.equals(deployPipelinePhaseVo.getIsActive(), 0)) {
                             iterator.remove();
+                            hasRemove = true;
+                        }
+                    }
+                    if (hasRemove) {
+                        Set<Long> groupIdSet = new HashSet<>();
+                        for (DeployPipelinePhaseVo deployPipelinePhaseVo : deployPipelinePhaseList) {
+                            groupIdSet.add(deployPipelinePhaseVo.getGroupId());
+                        }
+                        List<DeployPipelineGroupVo> deployPipelineGroupList = deployPipelineConfig.getCombopGroupList();
+                        if (CollectionUtils.isNotEmpty(deployPipelineGroupList)) {
+                            Iterator<DeployPipelineGroupVo> groupIterator = deployPipelineGroupList.iterator();
+                            while(groupIterator.hasNext()) {
+                                DeployPipelineGroupVo deployPipelineGroupVo = groupIterator.next();
+                                if (!groupIdSet.contains(deployPipelineGroupVo.getId())) {
+                                    groupIterator.remove();
+                                }
+                            }
                         }
                     }
                 }
