@@ -16,6 +16,7 @@
 
 package neatlogic.module.deploy.util;
 
+import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.autoexec.constvalue.ToolType;
 import neatlogic.framework.autoexec.crossover.IAutoexecProfileCrossoverService;
 import neatlogic.framework.autoexec.crossover.IAutoexecServiceCrossoverService;
@@ -140,6 +141,13 @@ public class DeployPipelineConfigManager {
         }
 
         public DeployPipelineConfigVo getConfig() {
+            System.out.println("appSystemId = " + appSystemId);
+            System.out.println("appModuleId = " + appModuleId);
+            System.out.println("envId = " + envId);
+            System.out.println("isAppSystemDraft = " + isAppSystemDraft);
+            System.out.println("isAppModuleDraft = " + isAppModuleDraft);
+            System.out.println("isEnvDraft = " + isEnvDraft);
+            System.out.println("profileIdList = " + JSONObject.toJSONString(profileIdList));
             DeployPipelineConfigVo deployPipelineConfig = getDeployPipelineConfig(appSystemId, appModuleId, envId, isAppSystemDraft, isAppModuleDraft, isEnvDraft, profileIdList);
             if (deployPipelineConfig == null) {
                 return null;
@@ -148,11 +156,29 @@ public class DeployPipelineConfigManager {
                 // 删除禁用阶段
                 List<DeployPipelinePhaseVo> deployPipelinePhaseList = deployPipelineConfig.getCombopPhaseList();
                 if (CollectionUtils.isNotEmpty(deployPipelinePhaseList)) {
+                    boolean hasRemove = false;
                     Iterator<DeployPipelinePhaseVo> iterator = deployPipelinePhaseList.iterator();
                     while(iterator.hasNext()) {
                         DeployPipelinePhaseVo deployPipelinePhaseVo = iterator.next();
                         if (Objects.equals(deployPipelinePhaseVo.getIsActive(), 0)) {
                             iterator.remove();
+                            hasRemove = true;
+                        }
+                    }
+                    if (hasRemove) {
+                        Set<Long> groupIdSet = new HashSet<>();
+                        for (DeployPipelinePhaseVo deployPipelinePhaseVo : deployPipelinePhaseList) {
+                            groupIdSet.add(deployPipelinePhaseVo.getGroupId());
+                        }
+                        List<DeployPipelineGroupVo> deployPipelineGroupList = deployPipelineConfig.getCombopGroupList();
+                        if (CollectionUtils.isNotEmpty(deployPipelineGroupList)) {
+                            Iterator<DeployPipelineGroupVo> groupIterator = deployPipelineGroupList.iterator();
+                            while(groupIterator.hasNext()) {
+                                DeployPipelineGroupVo deployPipelineGroupVo = groupIterator.next();
+                                if (!groupIdSet.contains(deployPipelineGroupVo.getId())) {
+                                    groupIterator.remove();
+                                }
+                            }
                         }
                     }
                 }
