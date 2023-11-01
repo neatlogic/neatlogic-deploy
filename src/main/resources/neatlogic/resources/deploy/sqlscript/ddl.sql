@@ -764,7 +764,7 @@ CREATE TABLE IF NOT EXISTS `deploy_version_unit_test` (
 -- ----------------------------
 -- Table structure for deploy_version_cve
 -- ----------------------------
-CREATE TABLE `deploy_version_cve` (
+CREATE TABLE IF NOT EXISTS `deploy_version_cve` (
   `id` bigint NOT NULL COMMENT '主键ID',
   `version_id` bigint NOT NULL COMMENT '版本id',
   `dependency` varchar(250) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '依赖',
