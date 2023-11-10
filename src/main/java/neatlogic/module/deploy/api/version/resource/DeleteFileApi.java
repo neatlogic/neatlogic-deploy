@@ -1,5 +1,6 @@
 package neatlogic.module.deploy.api.version.resource;
 
+import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.deploy.auth.DEPLOY_BASE;
@@ -20,13 +21,13 @@ import neatlogic.framework.util.HttpRequestUtil;
 import neatlogic.module.deploy.dao.mapper.DeployVersionMapper;
 import neatlogic.module.deploy.service.DeployAppAuthorityService;
 import neatlogic.module.deploy.service.DeployVersionService;
-import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.Collections;
 
 /**
  * @author laiwt
@@ -118,6 +119,7 @@ public class DeleteFileApi extends PrivateApiComponentBase {
                 throw new DeleteFileFailedException(error);
             }
         }
+        deployVersionService.syncProjectFile(version, runnerUrl, Collections.singletonList(fullPath));
         return null;
     }
 }

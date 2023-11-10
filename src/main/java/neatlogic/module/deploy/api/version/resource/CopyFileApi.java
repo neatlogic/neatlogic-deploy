@@ -28,6 +28,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.Collections;
 import java.util.Objects;
 
 /**
@@ -132,6 +133,7 @@ public class CopyFileApi extends PrivateApiComponentBase {
                 throw new CopyFileFailedException(error);
             }
         }
+        deployVersionService.syncProjectFile(version, runnerUrl, Collections.singletonList(fullDestPath));
         return null;
     }
 }

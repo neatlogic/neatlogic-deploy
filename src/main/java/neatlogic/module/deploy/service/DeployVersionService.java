@@ -16,9 +16,11 @@ limitations under the License.
 
 package neatlogic.module.deploy.service;
 
+import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.deploy.constvalue.DeployResourceType;
 import neatlogic.framework.deploy.dto.version.DeployVersionVo;
-import com.alibaba.fastjson.JSONObject;
+
+import java.util.List;
 
 public interface DeployVersionService {
 
@@ -88,4 +90,11 @@ public interface DeployVersionService {
      */
     String getEnvName(String version, Long envId);
 
+    /**
+     * 同步工程目录到所有runner
+     * @param version 版本
+     * @param runnerUrl 执行器url
+     * @param targetPath 目标路径
+     */
+    void syncProjectFile(DeployVersionVo version, String runnerUrl, List<String> targetPath);
 }

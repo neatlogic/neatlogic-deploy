@@ -15,6 +15,7 @@
  */
 package neatlogic.module.deploy.api.version.resource;
 
+import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.deploy.auth.DEPLOY_BASE;
@@ -32,7 +33,6 @@ import neatlogic.framework.util.HttpRequestUtil;
 import neatlogic.module.deploy.dao.mapper.DeployVersionMapper;
 import neatlogic.module.deploy.service.DeployAppAuthorityService;
 import neatlogic.module.deploy.service.DeployVersionService;
-import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,6 +44,7 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.InputStream;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -150,6 +151,8 @@ public class UploadloadFileApi extends PrivateBinaryStreamApiComponentBase {
                     throw new UploadFileFailedException(error);
                 }
             }
+            deployVersionService.syncProjectFile(version, runnerUrl, Collections.singletonList(fullPath + "/" + filename));
+
         }
 
         return null;

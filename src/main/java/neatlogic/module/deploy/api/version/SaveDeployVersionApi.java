@@ -1,5 +1,8 @@
 package neatlogic.module.deploy.api.version;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
+import com.alibaba.nacos.common.utils.CollectionUtils;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.cmdb.crossover.ICiEntityCrossoverMapper;
 import neatlogic.framework.cmdb.exception.cientity.CiEntityNotFoundException;
@@ -8,8 +11,12 @@ import neatlogic.framework.crossover.CrossoverServiceFactory;
 import neatlogic.framework.deploy.auth.DEPLOY_BASE;
 import neatlogic.framework.deploy.constvalue.DeployAppConfigAction;
 import neatlogic.framework.deploy.dto.version.DeployVersionVo;
+import neatlogic.framework.deploy.exception.DeployAppConfigModuleRunnerGroupNotFoundException;
 import neatlogic.framework.deploy.exception.DeployVersionIsRepeatException;
 import neatlogic.framework.dto.FieldValidResultVo;
+import neatlogic.framework.dto.runner.RunnerGroupVo;
+import neatlogic.framework.dto.runner.RunnerMapVo;
+import neatlogic.framework.exception.runner.RunnerGroupRunnerNotFoundException;
 import neatlogic.framework.restful.annotation.Description;
 import neatlogic.framework.restful.annotation.Input;
 import neatlogic.framework.restful.annotation.OperationType;
@@ -17,10 +24,9 @@ import neatlogic.framework.restful.annotation.Param;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.IValid;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
+import neatlogic.module.deploy.dao.mapper.DeployAppConfigMapper;
 import neatlogic.module.deploy.dao.mapper.DeployVersionMapper;
 import neatlogic.module.deploy.service.DeployAppAuthorityService;
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -39,6 +45,9 @@ public class SaveDeployVersionApi extends PrivateApiComponentBase {
 
     @Resource
     DeployAppAuthorityService deployAppAuthorityService;
+
+    @Resource
+    DeployAppConfigMapper deployAppConfigMapper;
 
     @Override
     public String getName() {
@@ -83,6 +92,22 @@ public class SaveDeployVersionApi extends PrivateApiComponentBase {
             throw new CiEntityNotFoundException(versionVo.getAppModuleId());
         }
 
+        //分配runner group和runner
+        RunnerGroupVo runnerGroupVo = deployAppConfigMapper.getAppModuleRunnerGroupByAppSystemIdAndModuleId(versionVo.getAppSystemId(), versionVo.getAppModuleId());
+        if (runnerGroupVo == null) {
+            throw new DeployAppConfigModuleRunnerGroupNotFoundException(versionVo.getAppSystemName() + "(" + versionVo.getAppSystemId() + ")", versionVo.getAppModuleName() + "(" + versionVo.getAppModuleId() + ")");
+        }
+        if (CollectionUtils.isEmpty(runnerGroupVo.getRunnerMapList())) {
+            throw new RunnerGroupRunnerNotFoundException(runnerGroupVo.getName() + ":" + runnerGroupVo.getId());
+        }
+        JSONObject runnerMap = new JSONObject();
+        for (RunnerMapVo runnerMapVo : runnerGroupVo.getRunnerMapList()) {
+            runnerMap.put(runnerMapVo.getRunnerMapId().toString(), runnerMapVo.getHost());
+        }
+        versionVo.setRunnerGroup(runnerMap);
+        int runnerMapIndex = (int) (Math.random() * runnerGroupVo.getRunnerMapList().size());
+        RunnerMapVo runnerMapVo = runnerGroupVo.getRunnerMapList().get(runnerMapIndex);
+        versionVo.setRunnerMapId(runnerMapVo.getId());
         deployVersionMapper.insertDeployVersion(versionVo);
         return null;
     }

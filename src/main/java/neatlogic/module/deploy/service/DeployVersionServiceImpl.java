@@ -1,20 +1,27 @@
 package neatlogic.module.deploy.service;
 
+import com.alibaba.nacos.common.utils.CollectionUtils;
 import neatlogic.framework.cmdb.crossover.ICiEntityCrossoverService;
+import neatlogic.framework.cmdb.crossover.IResourceCrossoverMapper;
+import neatlogic.framework.cmdb.dto.resourcecenter.ResourceVo;
+import neatlogic.framework.cmdb.exception.cientity.CiEntityNotFoundException;
 import neatlogic.framework.crossover.CrossoverServiceFactory;
 import neatlogic.framework.deploy.constvalue.DeployResourceType;
 import neatlogic.framework.deploy.constvalue.JobSourceType;
 import neatlogic.framework.deploy.dto.version.DeployVersionBuildNoVo;
 import neatlogic.framework.deploy.dto.version.DeployVersionEnvVo;
 import neatlogic.framework.deploy.dto.version.DeployVersionVo;
-import neatlogic.framework.deploy.exception.DeployVersionBuildNoNotFoundException;
-import neatlogic.framework.deploy.exception.DeployVersionEnvNotFoundException;
-import neatlogic.framework.deploy.exception.DeployVersionResourceHasBeenLockedException;
-import neatlogic.framework.deploy.exception.DeployVersionRunnerNotFoundException;
+import neatlogic.framework.deploy.exception.*;
+import neatlogic.framework.deploy.exception.verison.DeployVersionSyncFailedException;
+import neatlogic.framework.dto.runner.RunnerGroupVo;
 import neatlogic.framework.dto.runner.RunnerMapVo;
+import neatlogic.framework.exception.runner.RunnerGroupRunnerNotFoundException;
 import neatlogic.framework.exception.type.ParamNotExistsException;
 import neatlogic.framework.globallock.core.GlobalLockHandlerFactory;
 import neatlogic.framework.globallock.core.IGlobalLockHandler;
+import neatlogic.framework.integration.authentication.enums.AuthenticateType;
+import neatlogic.framework.util.HttpRequestUtil;
+import neatlogic.module.deploy.dao.mapper.DeployAppConfigMapper;
 import neatlogic.module.deploy.dao.mapper.DeployVersionMapper;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.MapUtils;
@@ -35,6 +42,9 @@ public class DeployVersionServiceImpl implements DeployVersionService {
 
     @Resource
     DeployAppConfigService deployAppConfigService;
+
+    @Resource
+    DeployAppConfigMapper deployAppConfigMapper;
 
     @Override
     public String getVersionRunnerUrl(JSONObject paramObj, DeployVersionVo version, String envName) {
@@ -178,4 +188,48 @@ public class DeployVersionServiceImpl implements DeployVersionService {
         return url;
     }
 
+    @Override
+    public void syncProjectFile(DeployVersionVo version, String runnerUrl, List<String> targetPathList){
+        JSONObject param = new JSONObject();
+        RunnerGroupVo runnerGroupVo = deployAppConfigMapper.getAppModuleRunnerGroupByAppSystemIdAndModuleId(version.getAppSystemId(), version.getAppModuleId());
+        if (runnerGroupVo == null) {
+            throw new DeployAppConfigModuleRunnerGroupNotFoundException(version.getAppSystemName() + "(" + version.getAppSystemId() + ")", version.getAppModuleName() + "(" + version.getAppModuleId() + ")");
+        }
+        if (CollectionUtils.isEmpty(runnerGroupVo.getRunnerMapList())) {
+            throw new RunnerGroupRunnerNotFoundException(runnerGroupVo.getName() + ":" + runnerGroupVo.getId());
+        }
+        JSONObject runnerMap = new JSONObject();
+        for (RunnerMapVo runnerMapVo : runnerGroupVo.getRunnerMapList()) {
+            runnerMap.put(runnerMapVo.getRunnerMapId().toString(), runnerMapVo.getHost());
+        }
+        param.put("runnerGroup",runnerMap);
+        IResourceCrossoverMapper iResourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
+        ResourceVo appSystem = iResourceCrossoverMapper.getAppSystemById(version.getAppSystemId());
+        if (appSystem == null) {
+            throw new CiEntityNotFoundException(version.getAppSystemId());
+        }
+        ResourceVo appModule = iResourceCrossoverMapper.getAppModuleById(version.getAppModuleId());
+        if (appModule == null) {
+            throw new CiEntityNotFoundException(version.getAppModuleId());
+        }
+        param.put("path",appSystem.getAbbrName()+"/"+appModule.getAbbrName());
+        param.put("idPath",version.getAppSystemId()+"/"+version.getAppModuleId());
+        param.put("targetPaths", targetPathList);
+        param.put("version",version.getVersion());
+        String url = runnerUrl + "api/rest/deploy/dpversync";
+        HttpRequestUtil httpRequestUtil = HttpRequestUtil.post(url).setConnectTimeout(5000).setReadTimeout(10000).setAuthType(AuthenticateType.BUILDIN).setPayload(param.toJSONString()).sendRequest();
+        int responseCode = httpRequestUtil.getResponseCode();
+        String error = httpRequestUtil.getError();
+        if (StringUtils.isNotBlank(error)) {
+            if (responseCode == 520) {
+                throw new DeployVersionSyncFailedException(JSONObject.parseObject(error).getString("Message"));
+            } else {
+                throw new DeployVersionSyncFailedException(error);
+            }
+        }
+        JSONObject result = httpRequestUtil.getResultJson();
+        if(result.containsKey("Return") && result.getJSONObject("Return").containsKey("msgError")){
+            throw new DeployVersionSyncFailedException(result.getJSONObject("Return").getString("msgError"));
+        }
+    }
 }
