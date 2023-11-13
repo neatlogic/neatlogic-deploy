@@ -773,7 +773,8 @@ CREATE TABLE IF NOT EXISTS `deploy_version_cve` (
   `cve_count` int DEFAULT NULL COMMENT 'CVE计数',
   `confidence` varchar(250) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '信心',
   `evidence_count` int DEFAULT NULL COMMENT '证据计数',
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  KEY `idx_version_id_highest_severity` (`version_id`,`highest_severity`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='发版版本CVE漏洞';
 
 -- ----------------------------
