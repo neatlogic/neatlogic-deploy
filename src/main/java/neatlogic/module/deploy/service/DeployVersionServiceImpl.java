@@ -65,9 +65,11 @@ public class DeployVersionServiceImpl implements DeployVersionService {
         } else {
             DeployVersionEnvVo envVo = deployVersionMapper.getDeployVersionEnvByVersionIdAndEnvId(id, envId);
             if (envVo == null) {
-                throw new DeployVersionEnvNotFoundException(envId);
+                //则使用工程目录的runner
+                url = getWorkspaceRunnerUrl(version);
+            } else {
+                url = getRunnerUrl(runnerMapList, envVo.getRunnerMapId(), envVo.getRunnerGroup());
             }
-            url = getRunnerUrl(runnerMapList, envVo.getRunnerMapId(), envVo.getRunnerGroup());
             if (StringUtils.isBlank(url)) {
                 throw new DeployVersionRunnerNotFoundException(version.getVersion(), envName);
             }
@@ -186,7 +188,7 @@ public class DeployVersionServiceImpl implements DeployVersionService {
     }
 
     @Override
-    public void syncProjectFile(DeployVersionVo version, String runnerUrl, List<String> targetPathList){
+    public void syncProjectFile(DeployVersionVo version, String runnerUrl, List<String> targetPathList) {
         JSONObject param = new JSONObject();
         RunnerGroupVo runnerGroupVo = deployAppConfigMapper.getAppModuleRunnerGroupByAppSystemIdAndModuleId(version.getAppSystemId(), version.getAppModuleId());
         if (runnerGroupVo == null) {
@@ -199,9 +201,9 @@ public class DeployVersionServiceImpl implements DeployVersionService {
         for (RunnerMapVo runnerMapVo : runnerGroupVo.getRunnerMapList()) {
             runnerMap.put(runnerMapVo.getRunnerMapId().toString(), runnerMapVo.getHost());
         }
-        param.put("runnerGroup",runnerMap);
+        param.put("runnerGroup", runnerMap);
         param.put("targetPaths", targetPathList);
-        param.put("runnerId",version.getRunnerMapId());
+        param.put("runnerId", version.getRunnerMapId());
         String url = runnerUrl + "api/rest/deploy/dpversync";
         HttpRequestUtil httpRequestUtil = HttpRequestUtil.post(url).setConnectTimeout(5000).setReadTimeout(10000).setAuthType(AuthenticateType.BUILDIN).setPayload(param.toJSONString()).sendRequest();
         int responseCode = httpRequestUtil.getResponseCode();
@@ -214,7 +216,7 @@ public class DeployVersionServiceImpl implements DeployVersionService {
             }
         }
         JSONObject result = httpRequestUtil.getResultJson();
-        if(result.containsKey("Return") && result.getJSONObject("Return").containsKey("msgError")){
+        if (result.containsKey("Return") && result.getJSONObject("Return").containsKey("msgError")) {
             throw new DeployVersionSyncFailedException(result.getJSONObject("Return").getString("msgError"));
         }
     }
