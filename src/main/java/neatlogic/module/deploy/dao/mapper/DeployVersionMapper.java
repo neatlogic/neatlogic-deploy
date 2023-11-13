@@ -7,6 +7,7 @@ import neatlogic.framework.deploy.dto.version.*;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author longrf
@@ -85,6 +86,8 @@ public interface DeployVersionMapper {
     RepositoryVo getRepositoryByAppModuleId(Long appModuleId);
 
     DeployVersionTheadVo getDeployVersionTheadByUserUuid(@Param("userUuid") String userUuid);
+
+    List<Map<String, Object>> getVersionHighestSeverityCveCountListByVersionIdListGroupByVersionIdAndHighestSeverity(List<Long> versionIdList);
 
     int unFreezeDeployVersionById(@Param("id") Long id, @Param("isFreeze") Long isFreeze);
 

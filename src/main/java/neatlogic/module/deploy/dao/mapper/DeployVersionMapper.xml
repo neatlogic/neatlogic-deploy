@@ -886,6 +886,20 @@ limitations under the License.
         from deploy_version_thead
         where user_uuid = #{userUuid}
     </select>
+
+    <select id="getVersionHighestSeverityCveCountListByVersionIdListGroupByVersionIdAndHighestSeverity" parameterType="java.util.List" resultType="java.util.Map">
+        SELECT
+            `version_id` AS versionId,
+            `highest_severity` AS highestSeverity,
+            COUNT(1) AS cveCount
+        FROM `deploy_version_cve`
+        WHERE `version_id` IN
+        <foreach collection="list" item="versionId" open="(" separator="," close=")">
+            #{versionId}
+        </foreach>
+        GROUP BY `version_id`, `highest_severity`
+    </select>
+
     <update id="unFreezeDeployVersionById">
         update deploy_version
         set is_freeze = #{isFreeze}
