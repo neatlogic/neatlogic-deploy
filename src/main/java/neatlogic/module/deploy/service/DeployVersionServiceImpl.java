@@ -1,10 +1,8 @@
 package neatlogic.module.deploy.service;
 
+import com.alibaba.fastjson.JSONObject;
 import com.alibaba.nacos.common.utils.CollectionUtils;
 import neatlogic.framework.cmdb.crossover.ICiEntityCrossoverService;
-import neatlogic.framework.cmdb.crossover.IResourceCrossoverMapper;
-import neatlogic.framework.cmdb.dto.resourcecenter.ResourceVo;
-import neatlogic.framework.cmdb.exception.cientity.CiEntityNotFoundException;
 import neatlogic.framework.crossover.CrossoverServiceFactory;
 import neatlogic.framework.deploy.constvalue.DeployResourceType;
 import neatlogic.framework.deploy.constvalue.JobSourceType;
@@ -23,7 +21,6 @@ import neatlogic.framework.integration.authentication.enums.AuthenticateType;
 import neatlogic.framework.util.HttpRequestUtil;
 import neatlogic.module.deploy.dao.mapper.DeployAppConfigMapper;
 import neatlogic.module.deploy.dao.mapper.DeployVersionMapper;
-import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
@@ -203,19 +200,8 @@ public class DeployVersionServiceImpl implements DeployVersionService {
             runnerMap.put(runnerMapVo.getRunnerMapId().toString(), runnerMapVo.getHost());
         }
         param.put("runnerGroup",runnerMap);
-        IResourceCrossoverMapper iResourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
-        ResourceVo appSystem = iResourceCrossoverMapper.getAppSystemById(version.getAppSystemId());
-        if (appSystem == null) {
-            throw new CiEntityNotFoundException(version.getAppSystemId());
-        }
-        ResourceVo appModule = iResourceCrossoverMapper.getAppModuleById(version.getAppModuleId());
-        if (appModule == null) {
-            throw new CiEntityNotFoundException(version.getAppModuleId());
-        }
-        param.put("path",appSystem.getAbbrName()+"/"+appModule.getAbbrName());
-        param.put("idPath",version.getAppSystemId()+"/"+version.getAppModuleId());
         param.put("targetPaths", targetPathList);
-        param.put("version",version.getVersion());
+        param.put("runnerId",version.getRunnerMapId());
         String url = runnerUrl + "api/rest/deploy/dpversync";
         HttpRequestUtil httpRequestUtil = HttpRequestUtil.post(url).setConnectTimeout(5000).setReadTimeout(10000).setAuthType(AuthenticateType.BUILDIN).setPayload(param.toJSONString()).sendRequest();
         int responseCode = httpRequestUtil.getResponseCode();
