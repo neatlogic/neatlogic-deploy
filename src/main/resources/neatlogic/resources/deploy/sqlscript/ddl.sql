@@ -767,15 +767,16 @@ CREATE TABLE IF NOT EXISTS `deploy_version_unit_test` (
 CREATE TABLE IF NOT EXISTS `deploy_version_cve` (
   `id` bigint NOT NULL COMMENT '主键ID',
   `version_id` bigint NOT NULL COMMENT '版本id',
-  `dependency` varchar(250) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '依赖',
-  `package_name` varchar(250) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '包名',
-  `highest_severity` varchar(250) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '最高严重程度',
+  `dependency` varchar(250) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '依赖',
+  `vulnerability_ids` varchar(250) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '脆弱性id',
+  `package_name` varchar(250) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '包名',
+  `highest_severity` varchar(250) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '最高严重程度',
   `cve_count` int DEFAULT NULL COMMENT 'CVE计数',
-  `confidence` varchar(250) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '信心',
+  `confidence` varchar(250) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '信心',
   `evidence_count` int DEFAULT NULL COMMENT '证据计数',
   PRIMARY KEY (`id`),
   KEY `idx_version_id_highest_severity` (`version_id`,`highest_severity`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='发版版本CVE漏洞';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- ----------------------------
 -- Table structure for deploy_version_cve_vulnerability
@@ -800,7 +801,7 @@ CREATE TABLE IF NOT EXISTS `deploy_version_cve_package` (
 -- ----------------------------
 -- Table structure for deploy_version_commit
 -- ----------------------------
-DROP TABLE IF EXISTS `deploy_version_commit`;
+DROP TABLE IF NOT EXISTS `deploy_version_commit`;
 CREATE TABLE `deploy_version_commit` (
   `version_id` bigint NOT NULL COMMENT '版本id',
   `commit_id` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '提交id',
@@ -811,9 +812,15 @@ CREATE TABLE `deploy_version_commit` (
 -- ----------------------------
 -- Table structure for deploy_version_issue
 -- ----------------------------
-DROP TABLE IF EXISTS `deploy_version_issue`;
+DROP TABLE IF NOT EXISTS `deploy_version_issue`;
 CREATE TABLE `deploy_version_issue` (
   `version_id` bigint NOT NULL COMMENT '版本id',
   `issue_id` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '需求id',
   PRIMARY KEY (`version_id`,`issue_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci ROW_FORMAT=DYNAMIC COMMENT='发布版本需求表';
+
+CREATE TABLE IF NOT EXISTS `deploy_version_thead`  (
+  `config` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL COMMENT '表头配置',
+  `user_uuid` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '用户uuid',
+  PRIMARY KEY (`user_uuid`) USING BTREE
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '发布版本表头配置' ROW_FORMAT = Dynamic;
