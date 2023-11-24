@@ -222,6 +222,9 @@ limitations under the License.
             <if test="appModuleId != null">
                 and dj.`app_module_id` = #{appModuleId}
             </if>
+            <if test="envId != null">
+                and dj.`env_id` = #{envId}
+            </if>
             <include refid="neatlogic.module.deploy.dao.mapper.DeployAppConfigMapper.checkDeployAuthority"/>
         </where>
     </sql>
@@ -258,8 +261,44 @@ limitations under the License.
         WHERE parent_id = #{value}
     </select>
 
-    <select id="searchDeployJob" parameterType="neatlogic.framework.deploy.dto.job.DeployJobVo"
-            resultType="neatlogic.framework.deploy.dto.job.DeployJobVo">
+    <resultMap id="deployJobMap" type="neatlogic.framework.deploy.dto.job.DeployJobVo">
+        <id column="id" property="id"/>
+        <result column="parentId" property="parentId"/>
+        <result column="name" property="name"/>
+        <result column="status" property="status"/>
+        <result column="planStartTime" property="planStartTime"/>
+        <result column="startTime" property="startTime"/>
+        <result column="endTime" property="endTime"/>
+        <result column="operationId" property="operationId"/>
+        <result column="operationType" property="operationType"/>
+        <result column="execUser" property="execUser"/>
+        <result column="execUserType" property="execUserType"/>
+        <result column="source" property="source"/>
+        <result column="roundCount" property="roundCount"/>
+        <result column="triggerType" property="triggerType"/>
+        <result column="reviewer" property="reviewer"/>
+        <result column="reviewStatus" property="reviewStatus"/>
+        <result column="reviewTime" property="reviewTime"/>
+        <result column="appSystemId" property="appSystemId"/>
+        <result column="appModuleId" property="appModuleId"/>
+        <result column="appSystemName" property="appSystemName"/>
+        <result column="appSystemAbbrName" property="appSystemAbbrName"/>
+        <result column="appModuleName" property="appModuleName"/>
+        <result column="appModuleAbbrName" property="appModuleAbbrName"/>
+        <result column="envId" property="envId"/>
+        <result column="envName" property="envName"/>
+        <result column="version" property="version"/>
+        <result column="scenarioName" property="scenarioName"/>
+        <collection property="phaseList" ofType="neatlogic.framework.autoexec.dto.job.AutoexecJobPhaseVo">
+            <id column="phaseId" property="id"/>
+            <result column="phaseName" property="name"/>
+            <result column="lncd" property="lncd"/>
+            <result column="lcd" property="lcd"/>
+            <result column="phaseStatus" property="status"/>
+        </collection>
+    </resultMap>
+
+    <select id="searchDeployJob" parameterType="neatlogic.framework.deploy.dto.job.DeployJobVo" resultMap="deployJobMap">
         SELECT
         aj.`id` as id,
         aj.`name` as name,
@@ -278,6 +317,11 @@ limitations under the License.
         aj.`reviewer` as reviewer,
         aj.`review_status` as reviewStatus,
         aj.`review_time` as reviewTime,
+        ajp.id as phaseId,
+        ajp.name as phaseName,
+        ajp.lcd,
+        ajp.lncd,
+        ajp.status as phaseStatus,
         a.`app_system_id` as appSystemId,
         a.`app_module_id` as appModuleId,
         <if test="isNeedNameAndAbbrName ==1">
@@ -292,6 +336,7 @@ limitations under the License.
         e.`name` as scenarioName
         FROM
         `autoexec_job` aj
+        left join `autoexec_job_phase` ajp on aj.id = ajp.job_id
         left join deploy_job a on aj.id = a.id
         <if test="isNeedNameAndAbbrName ==1">
             left join @{DATA_SCHEMA}.scence_appsystem_appmodule saa on saa.id = a.app_system_id AND saa.app_module_id = a.app_module_id
