@@ -16,16 +16,17 @@ limitations under the License.
 
 package neatlogic.module.deploy.api.appconfig.module;
 
+import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
+import neatlogic.framework.codehub.auth.CODEHUB_BASE;
 import neatlogic.framework.common.constvalue.ApiParamType;
-import neatlogic.framework.deploy.auth.DEPLOY_BASE;
+import neatlogic.framework.deploy.auth.APP_CONFIG_MODIFY;
 import neatlogic.framework.deploy.constvalue.DeployAppConfigAction;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.module.deploy.dao.mapper.DeployAppConfigMapper;
 import neatlogic.module.deploy.service.DeployAppAuthorityService;
-import com.alibaba.fastjson.JSONObject;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -35,7 +36,8 @@ import javax.annotation.Resource;
  * @since 2022/5/26 15:04
  **/
 @Service
-@AuthAction(action = DEPLOY_BASE.class)
+@AuthAction(action = APP_CONFIG_MODIFY.class)
+@AuthAction(action = CODEHUB_BASE.class)
 @OperationType(type = OperationTypeEnum.OPERATE)
 public class SaveDeployAppConfigModuleRunnerGroupApi extends PrivateApiComponentBase {
 

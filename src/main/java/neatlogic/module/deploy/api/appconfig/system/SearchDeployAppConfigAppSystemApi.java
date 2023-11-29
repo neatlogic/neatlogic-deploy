@@ -16,13 +16,15 @@
 
 package neatlogic.module.deploy.api.appconfig.system;
 
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.asynchronization.threadlocal.UserContext;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.cmdb.crossover.IResourceCrossoverMapper;
 import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.common.dto.BasePageVo;
 import neatlogic.framework.crossover.CrossoverServiceFactory;
-import neatlogic.framework.deploy.auth.DEPLOY_BASE;
+import neatlogic.framework.deploy.auth.DEPLOY;
 import neatlogic.framework.deploy.constvalue.DeployAppConfigAction;
 import neatlogic.framework.deploy.constvalue.JobSourceType;
 import neatlogic.framework.deploy.dto.app.DeployAppModuleVo;
@@ -35,8 +37,6 @@ import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.framework.util.TableResultUtil;
 import neatlogic.module.deploy.dao.mapper.DeployAppConfigMapper;
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
@@ -53,7 +53,7 @@ import java.util.stream.Collectors;
  * @date 2022/6/20 5:13 下午
  */
 @Service
-@AuthAction(action = DEPLOY_BASE.class)
+@AuthAction(action = DEPLOY.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
 public class SearchDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
 

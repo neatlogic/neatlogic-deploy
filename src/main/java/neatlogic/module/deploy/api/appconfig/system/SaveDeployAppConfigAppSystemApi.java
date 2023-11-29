@@ -16,6 +16,8 @@
 
 package neatlogic.module.deploy.api.appconfig.system;
 
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.asynchronization.threadlocal.UserContext;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.cmdb.crossover.ICiCrossoverMapper;
@@ -26,6 +28,7 @@ import neatlogic.framework.cmdb.dto.transaction.CiEntityTransactionVo;
 import neatlogic.framework.cmdb.enums.EditModeType;
 import neatlogic.framework.cmdb.enums.TransactionActionType;
 import neatlogic.framework.cmdb.exception.cientity.CiEntityNotFoundException;
+import neatlogic.framework.codehub.auth.CODEHUB_BASE;
 import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.common.constvalue.GroupSearch;
 import neatlogic.framework.crossover.CrossoverServiceFactory;
@@ -40,8 +43,6 @@ import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.module.deploy.dao.mapper.DeployAppConfigMapper;
 import neatlogic.module.deploy.service.DeployAppAuthorityService;
 import neatlogic.module.deploy.service.DeployAppConfigService;
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -59,6 +60,7 @@ import java.util.List;
 @Service
 @Transactional
 @AuthAction(action = APP_CONFIG_MODIFY.class)
+@AuthAction(action = CODEHUB_BASE.class)
 @OperationType(type = OperationTypeEnum.UPDATE)
 public class SaveDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
     @Resource

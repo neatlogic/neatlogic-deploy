@@ -1,5 +1,6 @@
 package neatlogic.module.deploy.api.appconfig.module;
 
+import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.cmdb.crossover.ICiEntityCrossoverMapper;
 import neatlogic.framework.cmdb.crossover.ICiEntityCrossoverService;
@@ -8,13 +9,12 @@ import neatlogic.framework.cmdb.exception.cientity.CiEntityNotFoundException;
 import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.common.dto.BasePageVo;
 import neatlogic.framework.crossover.CrossoverServiceFactory;
-import neatlogic.framework.deploy.auth.DEPLOY_BASE;
+import neatlogic.framework.deploy.auth.DEPLOY;
 import neatlogic.framework.dto.runner.RunnerGroupVo;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.module.deploy.dao.mapper.DeployAppConfigMapper;
-import com.alibaba.fastjson.JSONObject;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -24,7 +24,7 @@ import javax.annotation.Resource;
  * @date 2022/6/22 11:44 上午
  */
 @Service
-@AuthAction(action = DEPLOY_BASE.class)
+@AuthAction(action = DEPLOY.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
 public class GetDeployAppConfigAppModuleInfoApi extends PrivateApiComponentBase {
 
