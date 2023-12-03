@@ -28,11 +28,11 @@ import neatlogic.framework.cmdb.dto.transaction.CiEntityTransactionVo;
 import neatlogic.framework.cmdb.enums.EditModeType;
 import neatlogic.framework.cmdb.enums.TransactionActionType;
 import neatlogic.framework.cmdb.exception.cientity.CiEntityNotFoundException;
-import neatlogic.framework.codehub.auth.CODEHUB_BASE;
 import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.common.constvalue.GroupSearch;
 import neatlogic.framework.crossover.CrossoverServiceFactory;
 import neatlogic.framework.deploy.auth.APP_CONFIG_MODIFY;
+import neatlogic.framework.deploy.auth.DEPLOY_BASE;
 import neatlogic.framework.deploy.constvalue.DeployAppConfigAction;
 import neatlogic.framework.deploy.constvalue.DeployAppConfigActionType;
 import neatlogic.framework.deploy.dto.app.DeployAppConfigAuthorityActionVo;
@@ -60,7 +60,7 @@ import java.util.List;
 @Service
 @Transactional
 @AuthAction(action = APP_CONFIG_MODIFY.class)
-@AuthAction(action = CODEHUB_BASE.class)
+@AuthAction(action = DEPLOY_BASE.class)
 @OperationType(type = OperationTypeEnum.UPDATE)
 public class SaveDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
     @Resource
