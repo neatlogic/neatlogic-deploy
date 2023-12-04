@@ -16,6 +16,7 @@
 
 package neatlogic.module.deploy.api.appconfig.system;
 
+import com.alibaba.fastjson.JSONArray;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.autoexec.dto.combop.AutoexecCombopScenarioVo;
 import neatlogic.framework.common.constvalue.ApiParamType;
@@ -64,7 +65,8 @@ public class ListDeployAppConfigAuthorityApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "应用资产id")
+            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "应用资产id"),
+            @Param(name = "isCodehub", type = ApiParamType.INTEGER, desc = "是否来自codehub")
     })
     @Output({
     })
@@ -72,34 +74,48 @@ public class ListDeployAppConfigAuthorityApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject paramObj) {
         Long appSystemId = paramObj.getLong("appSystemId");
+        Integer isCodehub = paramObj.getInteger("isCodehub");
         JSONObject returnObj = new JSONObject();
-        //操作权限
-        returnObj.put("operationAuthList", DeployAppConfigAction.getValueTextList());
+        if (isCodehub != null && isCodehub == 1) {
+            JSONArray operationAuthList = new JSONArray();
+            operationAuthList.add(new JSONObject() {{
+                this.put("text", DeployAppConfigAction.VIEW.getText());
+                this.put("value", DeployAppConfigAction.VIEW.getValue());
+            }});
+            operationAuthList.add(new JSONObject() {{
+                this.put("text", DeployAppConfigAction.EDIT.getText());
+                this.put("value", DeployAppConfigAction.EDIT.getValue());
+            }});
+            returnObj.put("operationAuthList", operationAuthList);
+        } else {
+            //操作权限
+            returnObj.put("operationAuthList", DeployAppConfigAction.getValueTextList());
 
-        //场景权限
-        DeployPipelineConfigVo pipelineConfigVo = DeployPipelineConfigManager.init(appSystemId).getConfig();
-        if (pipelineConfigVo == null) {
-            throw new DeployAppConfigNotFoundException(appSystemId);
-        }
-        List<JSONObject> scenarioAuthList = new ArrayList<>();
-        for (AutoexecCombopScenarioVo scenarioVo : pipelineConfigVo.getScenarioList()) {
-            JSONObject scenarioValueText = new JSONObject();
-            scenarioValueText.put("text", scenarioVo.getScenarioName());
-            scenarioValueText.put("value", scenarioVo.getScenarioId());
-            scenarioAuthList.add(scenarioValueText);
-        }
-        returnObj.put("scenarioAuthList", scenarioAuthList);
+            //场景权限
+            DeployPipelineConfigVo pipelineConfigVo = DeployPipelineConfigManager.init(appSystemId).getConfig();
+            if (pipelineConfigVo == null) {
+                throw new DeployAppConfigNotFoundException(appSystemId);
+            }
+            List<JSONObject> scenarioAuthList = new ArrayList<>();
+            for (AutoexecCombopScenarioVo scenarioVo : pipelineConfigVo.getScenarioList()) {
+                JSONObject scenarioValueText = new JSONObject();
+                scenarioValueText.put("text", scenarioVo.getScenarioName());
+                scenarioValueText.put("value", scenarioVo.getScenarioId());
+                scenarioAuthList.add(scenarioValueText);
+            }
+            returnObj.put("scenarioAuthList", scenarioAuthList);
 
-        //环境权限
-        List<JSONObject> envAuthList = new ArrayList<>();
-        List<DeployAppEnvironmentVo> envList = deployAppConfigMapper.getDeployAppEnvListByAppSystemIdAndModuleIdList(appSystemId, new ArrayList<>());
-        for (DeployAppEnvironmentVo env : envList) {
-            JSONObject envValueText = new JSONObject();
-            envValueText.put("text", env.getName());
-            envValueText.put("value", env.getId());
-            envAuthList.add(envValueText);
+            //环境权限
+            List<JSONObject> envAuthList = new ArrayList<>();
+            List<DeployAppEnvironmentVo> envList = deployAppConfigMapper.getDeployAppEnvListByAppSystemIdAndModuleIdList(appSystemId, new ArrayList<>());
+            for (DeployAppEnvironmentVo env : envList) {
+                JSONObject envValueText = new JSONObject();
+                envValueText.put("text", env.getName());
+                envValueText.put("value", env.getId());
+                envAuthList.add(envValueText);
+            }
+            returnObj.put("envAuthList", envAuthList);
         }
-        returnObj.put("envAuthList", envAuthList);
         return returnObj;
     }
 }
