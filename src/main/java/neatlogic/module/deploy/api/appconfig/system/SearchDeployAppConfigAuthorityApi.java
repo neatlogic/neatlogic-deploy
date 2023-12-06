@@ -90,9 +90,10 @@ public class SearchDeployAppConfigAuthorityApi extends PrivateApiComponentBase {
     @Description(desc = "查询应用配置权限接口")
     @Override
     public Object myDoService(JSONObject paramObj) {
+        JSONArray actionArray = paramObj.getJSONArray("actionList");
+        paramObj.remove("actionList");
         DeployAppConfigAuthorityVo searchVo = paramObj.toJavaObject(DeployAppConfigAuthorityVo.class);
         List<JSONObject> theadList = new ArrayList<>();
-        JSONArray actionArray = paramObj.getJSONArray("actionList");
         boolean isNeedScenario = CollectionUtils.isEmpty(actionArray) || actionArray.contains(DeployAppConfigActionType.SCENARIO.getValue());
         boolean isNeedEnv = CollectionUtils.isEmpty(actionArray) || actionArray.contains(DeployAppConfigActionType.ENV.getValue());
         theadList.add(new JSONObject() {{
