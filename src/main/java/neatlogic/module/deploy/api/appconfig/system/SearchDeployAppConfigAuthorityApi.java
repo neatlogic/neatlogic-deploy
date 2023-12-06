@@ -80,7 +80,8 @@ public class SearchDeployAppConfigAuthorityApi extends PrivateApiComponentBase {
             @Param(name = "actionList", type = ApiParamType.JSONARRAY, desc = "动作列表"),
             @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "当前页"),
             @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "每页数据条目"),
-            @Param(name = "needPage", type = ApiParamType.BOOLEAN, desc = "是否需要分页，默认true")
+            @Param(name = "needPage", type = ApiParamType.BOOLEAN, desc = "是否需要分页，默认true"),
+            @Param(name = "actionList", type = ApiParamType.JSONARRAY, desc = "需要的返回的权限action，如：['view','edit','scenario','env']")
     })
     @Output({
             @Param(explode = BasePageVo.class),
@@ -91,39 +92,59 @@ public class SearchDeployAppConfigAuthorityApi extends PrivateApiComponentBase {
     public Object myDoService(JSONObject paramObj) {
         DeployAppConfigAuthorityVo searchVo = paramObj.toJavaObject(DeployAppConfigAuthorityVo.class);
         List<JSONObject> theadList = new ArrayList<>();
+        JSONArray actionArray = paramObj.getJSONArray("actionList");
+        boolean isNeedScenario = CollectionUtils.isEmpty(actionArray) || actionArray.contains(DeployAppConfigActionType.SCENARIO.getValue());
+        boolean isNeedEnv = CollectionUtils.isEmpty(actionArray) || actionArray.contains(DeployAppConfigActionType.ENV.getValue());
         theadList.add(new JSONObject() {{
             put("name", "user");
             put("displayName", $.t("用户"));
         }});
         for (DeployAppConfigAction action : DeployAppConfigAction.values()) {
-            JSONObject thead = new JSONObject();
-            thead.put("name", action.getValue());
-            thead.put("displayName", action.getText());
-            theadList.add(thead);
+            if (CollectionUtils.isEmpty(actionArray) || actionArray.contains(action.getValue())) {
+                JSONObject thead = new JSONObject();
+                thead.put("name", action.getValue());
+                thead.put("displayName", action.getText());
+                theadList.add(thead);
+            }
         }
         JSONArray finalTheadList = JSONArray.parseArray(theadList.toString());
 
-        //获取当前应用下的所有环境
-        List<DeployAppEnvironmentVo> envList = deployAppConfigMapper.getDeployAppEnvListByAppSystemIdAndModuleIdList(paramObj.getLong("appSystemId"), new ArrayList<>());
-        for (DeployAppEnvironmentVo environmentVo : envList) {
-            JSONObject envKeyValue = new JSONObject();
-            envKeyValue.put("name", environmentVo.getId());
-            envKeyValue.put("displayName", environmentVo.getName());
-            finalTheadList.add(envKeyValue);
-        }
+        //codehub 无需返回环境和场景thead
+        List<DeployAppEnvironmentVo> envList = new ArrayList<>();
+        DeployPipelineConfigVo pipelineConfigVo = new DeployPipelineConfigVo();
+        Map<Long, String> envIdNameMap = new HashMap<>();
+        if (isNeedEnv) {
+            //获取当前应用下的所有环境
+            envList = deployAppConfigMapper.getDeployAppEnvListByAppSystemIdAndModuleIdList(paramObj.getLong("appSystemId"), new ArrayList<>());
+            for (DeployAppEnvironmentVo environmentVo : envList) {
+                JSONObject envKeyValue = new JSONObject();
+                envKeyValue.put("name", environmentVo.getId());
+                envKeyValue.put("displayName", environmentVo.getName());
+                finalTheadList.add(envKeyValue);
+            }
 
-        //根据appSystemId获取对应的场景theadList
-        DeployPipelineConfigVo pipelineConfigVo = DeployPipelineConfigManager.init(paramObj.getLong("appSystemId")).getConfig();
-        if (pipelineConfigVo == null) {
-            throw new DeployAppConfigNotFoundException(paramObj.getLong("appSystemId"));
+            if (CollectionUtils.isNotEmpty(envList)) {
+                envIdNameMap = envList.stream().collect(Collectors.toMap(DeployAppEnvironmentVo::getId, DeployAppEnvironmentVo::getName));
+            }
         }
+        List<Long> scenarioIdList = new ArrayList<>();
+        if (isNeedScenario) {
+            //根据appSystemId获取对应的场景theadList
+            pipelineConfigVo = DeployPipelineConfigManager.init(paramObj.getLong("appSystemId")).getConfig();
+            if (pipelineConfigVo == null) {
+                throw new DeployAppConfigNotFoundException(paramObj.getLong("appSystemId"));
+            }
 
-        if(CollectionUtils.isNotEmpty(pipelineConfigVo.getScenarioList())) {
-            for (AutoexecCombopScenarioVo scenarioVo : pipelineConfigVo.getScenarioList()) {
-                JSONObject scenarioKeyValue = new JSONObject();
-                scenarioKeyValue.put("name", scenarioVo.getScenarioId());
-                scenarioKeyValue.put("displayName", scenarioVo.getScenarioName());
-                finalTheadList.add(scenarioKeyValue);
+            if (CollectionUtils.isNotEmpty(pipelineConfigVo.getScenarioList())) {
+                for (AutoexecCombopScenarioVo scenarioVo : pipelineConfigVo.getScenarioList()) {
+                    JSONObject scenarioKeyValue = new JSONObject();
+                    scenarioKeyValue.put("name", scenarioVo.getScenarioId());
+                    scenarioKeyValue.put("displayName", scenarioVo.getScenarioName());
+                    finalTheadList.add(scenarioKeyValue);
+                }
+            }
+            if (CollectionUtils.isNotEmpty(pipelineConfigVo.getScenarioList())) {
+                scenarioIdList = pipelineConfigVo.getScenarioList().stream().map(AutoexecCombopScenarioVo::getScenarioId).collect(Collectors.toList());
             }
         }
 
@@ -133,18 +154,8 @@ public class SearchDeployAppConfigAuthorityApi extends PrivateApiComponentBase {
         if (count > 0) {
             searchVo.setRowNum(count);
             List<DeployAppConfigAuthorityVo> appConfigAuthList = deployAppConfigMapper.getAppConfigAuthorityList(searchVo);
-            List<DeployAppConfigAuthorityVo> returnList= deployAppConfigMapper.getAppConfigAuthorityDetailList(appConfigAuthList);
+            List<DeployAppConfigAuthorityVo> returnList = deployAppConfigMapper.getAppConfigAuthorityDetailList(appConfigAuthList);
             if (CollectionUtils.isNotEmpty(returnList)) {
-
-                Map<Long, String> envIdNameMap = new HashMap<>();
-                List<Long> scenarioIdList = new ArrayList<>();
-                if (CollectionUtils.isNotEmpty(envList)) {
-                    envIdNameMap = envList.stream().collect(Collectors.toMap(DeployAppEnvironmentVo::getId, DeployAppEnvironmentVo::getName));
-                }
-                if (CollectionUtils.isNotEmpty(pipelineConfigVo.getScenarioList())) {
-                    scenarioIdList = pipelineConfigVo.getScenarioList().stream().map(AutoexecCombopScenarioVo::getScenarioId).collect(Collectors.toList());
-                }
-
                 for (DeployAppConfigAuthorityVo appConfigAuthorityVo : returnList) {
                     List<DeployAppConfigAuthorityActionVo> actionList = appConfigAuthorityVo.getActionList();
                     JSONObject actionAuth = new JSONObject();
@@ -167,7 +178,7 @@ public class SearchDeployAppConfigAuthorityApi extends PrivateApiComponentBase {
                                 }
 
                                 //环境权限
-                            } else if (StringUtils.equals(actionVo.getType(), DeployAppConfigActionType.ENV.getValue())) {
+                            } else if (isNeedEnv && StringUtils.equals(actionVo.getType(), DeployAppConfigActionType.ENV.getValue())) {
                                 if (StringUtils.equals(actionVo.getAction(), "all")) {
                                     for (DeployAppEnvironmentVo env : envList) {
                                         actionAuth.put(env.getId().toString(), 1);
@@ -180,7 +191,7 @@ public class SearchDeployAppConfigAuthorityApi extends PrivateApiComponentBase {
                                 }
 
                                 //场景权限
-                            } else if (StringUtils.equals(actionVo.getType(), DeployAppConfigActionType.SCENARIO.getValue())) {
+                            } else if (isNeedScenario && StringUtils.equals(actionVo.getType(), DeployAppConfigActionType.SCENARIO.getValue())) {
                                 if (StringUtils.equals(actionVo.getAction(), "all")) {
                                     for (AutoexecCombopScenarioVo scenarioVo : pipelineConfigVo.getScenarioList()) {
                                         actionAuth.put(scenarioVo.getScenarioId().toString(), 1);

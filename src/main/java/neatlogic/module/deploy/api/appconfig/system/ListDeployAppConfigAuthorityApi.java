@@ -17,11 +17,13 @@
 package neatlogic.module.deploy.api.appconfig.system;
 
 import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.autoexec.dto.combop.AutoexecCombopScenarioVo;
 import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.deploy.auth.DEPLOY_BASE;
 import neatlogic.framework.deploy.constvalue.DeployAppConfigAction;
+import neatlogic.framework.deploy.constvalue.DeployAppConfigActionType;
 import neatlogic.framework.deploy.dto.app.DeployAppEnvironmentVo;
 import neatlogic.framework.deploy.dto.app.DeployPipelineConfigVo;
 import neatlogic.framework.deploy.exception.DeployAppConfigNotFoundException;
@@ -30,7 +32,6 @@ import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.module.deploy.dao.mapper.DeployAppConfigMapper;
 import neatlogic.module.deploy.util.DeployPipelineConfigManager;
-import com.alibaba.fastjson.JSONObject;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -66,7 +67,7 @@ public class ListDeployAppConfigAuthorityApi extends PrivateApiComponentBase {
 
     @Input({
             @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "应用资产id"),
-            @Param(name = "isCodehub", type = ApiParamType.INTEGER, desc = "是否来自codehub")
+            @Param(name = "actionList", type = ApiParamType.JSONARRAY, desc = "需要的返回的权限action，如：['view','edit','scenario','env']")
     })
     @Output({
     })
@@ -74,24 +75,16 @@ public class ListDeployAppConfigAuthorityApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject paramObj) {
         Long appSystemId = paramObj.getLong("appSystemId");
-        Integer isCodehub = paramObj.getInteger("isCodehub");
+        JSONArray actionArray = paramObj.getJSONArray("actionList");
+        boolean isNeedScenario = org.apache.commons.collections4.CollectionUtils.isEmpty(actionArray) || actionArray.contains(DeployAppConfigActionType.SCENARIO.getValue());
+        boolean isNeedEnv = org.apache.commons.collections4.CollectionUtils.isEmpty(actionArray) || actionArray.contains(DeployAppConfigActionType.ENV.getValue());
         JSONObject returnObj = new JSONObject();
-        if (isCodehub != null && isCodehub == 1) {
-            JSONArray operationAuthList = new JSONArray();
-            operationAuthList.add(new JSONObject() {{
-                this.put("text", DeployAppConfigAction.VIEW.getText());
-                this.put("value", DeployAppConfigAction.VIEW.getValue());
-            }});
-            operationAuthList.add(new JSONObject() {{
-                this.put("text", DeployAppConfigAction.EDIT.getText());
-                this.put("value", DeployAppConfigAction.EDIT.getValue());
-            }});
-            returnObj.put("operationAuthList", operationAuthList);
-        } else {
-            //操作权限
-            returnObj.put("operationAuthList", DeployAppConfigAction.getValueTextList());
 
-            //场景权限
+        //操作权限
+        returnObj.put("operationAuthList", DeployAppConfigAction.getValueTextList(actionArray));
+
+        //场景权限
+        if (isNeedScenario) {
             DeployPipelineConfigVo pipelineConfigVo = DeployPipelineConfigManager.init(appSystemId).getConfig();
             if (pipelineConfigVo == null) {
                 throw new DeployAppConfigNotFoundException(appSystemId);
@@ -105,7 +98,9 @@ public class ListDeployAppConfigAuthorityApi extends PrivateApiComponentBase {
             }
             returnObj.put("scenarioAuthList", scenarioAuthList);
 
-            //环境权限
+        }
+        //环境权限
+        if (isNeedEnv) {
             List<JSONObject> envAuthList = new ArrayList<>();
             List<DeployAppEnvironmentVo> envList = deployAppConfigMapper.getDeployAppEnvListByAppSystemIdAndModuleIdList(appSystemId, new ArrayList<>());
             for (DeployAppEnvironmentVo env : envList) {
