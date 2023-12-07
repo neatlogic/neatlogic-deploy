@@ -57,7 +57,7 @@ public class ListDeployAppConfigAuthorityApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "查询应用系统权限列表";
+        return "nmdaas.listdeployappconfigauthorityapi.getname";
     }
 
     @Override
@@ -66,22 +66,22 @@ public class ListDeployAppConfigAuthorityApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "应用资产id"),
-            @Param(name = "actionList", type = ApiParamType.JSONARRAY, desc = "需要的返回的权限action，如：['view','edit','scenario','env']")
+            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaas.listdeployappconfigauthorityapi.input.param.desc.appid"),
+            @Param(name = "includeActionList", type = ApiParamType.JSONARRAY, desc = "nmdaas.searchdeployappconfigauthorityapi.input.param.desc.includeactionlist")
     })
     @Output({
     })
-    @Description(desc = "查询应用系统权限列表")
+    @Description(desc = "nmdaas.listdeployappconfigauthorityapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj) {
         Long appSystemId = paramObj.getLong("appSystemId");
-        JSONArray actionArray = paramObj.getJSONArray("actionList");
-        boolean isNeedScenario = org.apache.commons.collections4.CollectionUtils.isEmpty(actionArray) || actionArray.contains(DeployAppConfigActionType.SCENARIO.getValue());
-        boolean isNeedEnv = org.apache.commons.collections4.CollectionUtils.isEmpty(actionArray) || actionArray.contains(DeployAppConfigActionType.ENV.getValue());
+        JSONArray includeActionList = paramObj.getJSONArray("includeActionList");
+        boolean isNeedScenario = org.apache.commons.collections4.CollectionUtils.isEmpty(includeActionList) || includeActionList.contains(DeployAppConfigActionType.SCENARIO.getValue());
+        boolean isNeedEnv = org.apache.commons.collections4.CollectionUtils.isEmpty(includeActionList) || includeActionList.contains(DeployAppConfigActionType.ENV.getValue());
         JSONObject returnObj = new JSONObject();
 
         //操作权限
-        returnObj.put("operationAuthList", DeployAppConfigAction.getValueTextList(actionArray));
+        returnObj.put("operationAuthList", DeployAppConfigAction.getValueTextList(includeActionList));
 
         //场景权限
         if (isNeedScenario) {

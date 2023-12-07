@@ -66,7 +66,7 @@ public class SearchDeployAppConfigAuthorityApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "查询应用配置权限";
+        return "nmdaas.searchdeployappconfigauthorityapi.getname";
     }
 
     @Override
@@ -75,13 +75,13 @@ public class SearchDeployAppConfigAuthorityApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "应用资产id"),
-            @Param(name = "authorityStrList", type = ApiParamType.JSONARRAY, desc = "用户列表"),
-            @Param(name = "actionList", type = ApiParamType.JSONARRAY, desc = "动作列表"),
-            @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "当前页"),
-            @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "每页数据条目"),
-            @Param(name = "needPage", type = ApiParamType.BOOLEAN, desc = "是否需要分页，默认true"),
-            @Param(name = "actionList", type = ApiParamType.JSONARRAY, desc = "需要的返回的权限action，如：['view','edit','scenario','env']")
+            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaas.listdeployappconfigauthorityapi.input.param.desc.appid"),
+            @Param(name = "authorityStrList", type = ApiParamType.JSONARRAY, desc = "common.userlist"),
+            @Param(name = "actionList", type = ApiParamType.JSONARRAY, desc = "nmdaas.searchdeployappconfigauthorityapi.input.param.desc.actionlist"),
+            @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "common.currentpage"),
+            @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "common.pagesize"),
+            @Param(name = "needPage", type = ApiParamType.BOOLEAN, desc = "common.needpage"),
+            @Param(name = "includeActionList", type = ApiParamType.JSONARRAY, desc = "nmdaas.searchdeployappconfigauthorityapi.input.param.desc.includeactionlist")
     })
     @Output({
             @Param(explode = BasePageVo.class),
@@ -90,18 +90,18 @@ public class SearchDeployAppConfigAuthorityApi extends PrivateApiComponentBase {
     @Description(desc = "查询应用配置权限接口")
     @Override
     public Object myDoService(JSONObject paramObj) {
-        JSONArray actionArray = paramObj.getJSONArray("actionList");
-        paramObj.remove("actionList");
+        JSONArray includeActionList = paramObj.getJSONArray("includeActionList");
+        paramObj.remove("includeActionList");
         DeployAppConfigAuthorityVo searchVo = paramObj.toJavaObject(DeployAppConfigAuthorityVo.class);
         List<JSONObject> theadList = new ArrayList<>();
-        boolean isNeedScenario = CollectionUtils.isEmpty(actionArray) || actionArray.contains(DeployAppConfigActionType.SCENARIO.getValue());
-        boolean isNeedEnv = CollectionUtils.isEmpty(actionArray) || actionArray.contains(DeployAppConfigActionType.ENV.getValue());
+        boolean isNeedScenario = CollectionUtils.isEmpty(includeActionList) || includeActionList.contains(DeployAppConfigActionType.SCENARIO.getValue());
+        boolean isNeedEnv = CollectionUtils.isEmpty(includeActionList) || includeActionList.contains(DeployAppConfigActionType.ENV.getValue());
         theadList.add(new JSONObject() {{
             put("name", "user");
             put("displayName", $.t("用户"));
         }});
         for (DeployAppConfigAction action : DeployAppConfigAction.values()) {
-            if (CollectionUtils.isEmpty(actionArray) || actionArray.contains(action.getValue())) {
+            if (CollectionUtils.isEmpty(includeActionList) || includeActionList.contains(action.getValue())) {
                 JSONObject thead = new JSONObject();
                 thead.put("name", action.getValue());
                 thead.put("displayName", action.getText());
