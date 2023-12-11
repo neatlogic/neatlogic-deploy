@@ -158,6 +158,7 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
             List<Long> sqlIdList = sqlIdArray.toJavaList(Long.class);
             //批量重置sql文件状态
             if (CollectionUtils.isNotEmpty(sqlIdList)) {
+                jobVo.setJobPhaseNodeSqlList(deploySqlMapper.getDeployJobPhaseNodeListBySqlIdList(sqlIdList));
                 deploySqlMapper.resetDeploySqlStatusBySqlIdList(sqlIdList);
             }
         }
@@ -173,6 +174,7 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
             List<Long> sqlIdList = sqlIdArray.toJavaList(Long.class);
             //批量重置sql文件状态
             if (CollectionUtils.isNotEmpty(sqlIdList)) {
+                jobVo.setJobPhaseNodeSqlList(deploySqlMapper.getDeployJobPhaseNodeListBySqlIdList(sqlIdList));
                 deploySqlMapper.updateDeploySqlStatusByIdList(sqlIdList, JobNodeStatus.IGNORED.getValue());
             }
         }
