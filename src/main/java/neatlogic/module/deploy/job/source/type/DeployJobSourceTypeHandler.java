@@ -160,7 +160,7 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
             //批量重置sql文件状态
             resetSqlIdList = sqlIdArray.toJavaList(Long.class);
         }
-        jobVo.setExecuteJobNodeVoList(deploySqlMapper.getDeployJobPhaseNodeListBySqlIdList(resetSqlIdList));
+        jobVo.setJobPhaseNodeSqlList(deploySqlMapper.getDeployJobPhaseNodeListBySqlIdList(resetSqlIdList));
         return resetSqlIdList;
     }
 
