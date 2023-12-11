@@ -87,7 +87,7 @@ import java.util.stream.Collectors;
 
 /**
  * @author longrf
- * @date 2022/5/31 5:22 下午
+ * @since 2022/5/31 5:22 下午
  */
 @Service
 public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase {
@@ -149,25 +149,33 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
     }
 
     @Override
-    public List<Long> getSqlIdsAndExecuteJobNodes(JSONObject paramObj, AutoexecJobVo jobVo) {
+    public void resetSqlStatus(JSONObject paramObj, AutoexecJobVo jobVo) {
         JSONArray sqlIdArray = paramObj.getJSONArray("sqlIdList");
-        List<Long> resetSqlIdList = null;
+        AutoexecJobPhaseVo currentPhase = jobVo.getCurrentPhase();
         if (paramObj.getInteger("isAll") != null && paramObj.getInteger("isAll") == 1) {
-            List<AutoexecJobPhaseNodeVo> jobPhaseNodeVos = new ArrayList<>();
-            //重置phase的所有sql文件状态
-            resetSqlIdList = deploySqlMapper.getDeployJobSqlIdListByJobIdAndJobPhaseName(paramObj.getLong("jobId"), paramObj.getString("phaseName"));
-        } else if (CollectionUtils.isNotEmpty(sqlIdArray)) {
+            deploySqlMapper.updateDeploySqlStatusByJobIdAndPhaseId(currentPhase.getJobId(), currentPhase.getId(), JobNodeStatus.PENDING.getValue());
+        } else {
+            List<Long> sqlIdList = sqlIdArray.toJavaList(Long.class);
             //批量重置sql文件状态
-            resetSqlIdList = sqlIdArray.toJavaList(Long.class);
+            if (CollectionUtils.isNotEmpty(sqlIdList)) {
+                deploySqlMapper.resetDeploySqlStatusBySqlIdList(sqlIdList);
+            }
         }
-        jobVo.setJobPhaseNodeSqlList(deploySqlMapper.getDeployJobPhaseNodeListBySqlIdList(resetSqlIdList));
-        return resetSqlIdList;
     }
 
     @Override
-    public void resetSqlStatus(JSONObject paramObj, AutoexecJobVo jobVo) {
-        List<Long> resetSqlIdList = getSqlIdsAndExecuteJobNodes(paramObj, jobVo);
-        deploySqlMapper.resetDeploySqlStatusBySqlIdList(resetSqlIdList);
+    public void ignoreSql(JSONObject paramObj, AutoexecJobVo jobVo) {
+        JSONArray sqlIdArray = paramObj.getJSONArray("sqlIdList");
+        AutoexecJobPhaseVo currentPhase = jobVo.getCurrentPhase();
+        if (paramObj.getInteger("isAll") != null && paramObj.getInteger("isAll") == 1) {
+            deploySqlMapper.updateDeploySqlStatusByJobIdAndPhaseId(currentPhase.getJobId(), currentPhase.getId(), JobNodeStatus.IGNORED.getValue());
+        } else {
+            List<Long> sqlIdList = sqlIdArray.toJavaList(Long.class);
+            //批量重置sql文件状态
+            if (CollectionUtils.isNotEmpty(sqlIdList)) {
+                deploySqlMapper.updateDeploySqlStatusByIdList(sqlIdList, JobNodeStatus.IGNORED.getValue());
+            }
+        }
     }
 
     @Override
@@ -201,18 +209,19 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
 
     /**
      * 工具库工具deploy/dpsqlimport会调用此方法
-     *
+     * <p>
      * 1、根据系统id、模块id、环境id、版本获取旧sqlList
      * 2、新旧对比，不存在则新增（注：节点信息新增到deploy_sql_job_phase表），存在则跟新deploy_sql_detail信息，需要删除的逻辑删（is_delete为1、sort为999999）
-     *    新增时：
-     *      status默认pending
-     *      isModified默认0
-     *      wornCount默认为0
-     *      sort为插入的顺序
-     *    更新时：
-     *      status为pending时，start_time为null、end_time为null
-     *      status为running时，start_time为now(3)、end_time为null
-     *      status为aborted、succeed、failed、ignored时，end_time为now(3)
+     * 新增时：
+     * status默认pending
+     * isModified默认0
+     * wornCount默认为0
+     * sort为插入的顺序
+     * 更新时：
+     * status为pending时，start_time为null、end_time为null
+     * status为running时，start_time为now(3)、end_time为null
+     * status为aborted、succeed、failed、ignored时，end_time为now(3)
+     *
      * @param paramObj 当前系统的当前模块的当前环境的当前版本的所有sql信息
      */
     @Override
@@ -298,15 +307,16 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
     /**
      * 工具库工具deploy/dpsqlexec会调用此方法
      * 若sql不存在，则新增，存在则更新
-     *    新增时：
-     *      status默认pending
-     *      isModified默认0
-     *      wornCount默认为0
-     *      sort为插入的顺序
-     *    更新时：
-     *      status为pending时，start_time为null、end_time为null
-     *      status为running时，start_time为now(3)、end_time为null
-     *      status为aborted、succeed、failed、ignored时，end_time为now(3)
+     * 新增时：
+     * status默认pending
+     * isModified默认0
+     * wornCount默认为0
+     * sort为插入的顺序
+     * 更新时：
+     * status为pending时，start_time为null、end_time为null
+     * status为running时，start_time为now(3)、end_time为null
+     * status为aborted、succeed、failed、ignored时，end_time为now(3)
+     *
      * @param paramObj 单条sql的信息
      */
     @Override

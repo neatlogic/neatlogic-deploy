@@ -53,4 +53,6 @@ public interface DeploySqlMapper extends IDeploySqlCrossoverMapper {
     void updateDeploySqlStatusByIdList(@Param("idList") List<Long> sqlIdList, @Param("status") String status);
 
     void deleteDeploySqlDetailByJobId(Long id);
+
+    void updateDeploySqlStatusByJobIdAndPhaseId(@Param("jobId") Long jobId, @Param("phaseId") Long phaseId, @Param("status") String status);
 }

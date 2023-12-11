@@ -429,6 +429,16 @@ limitations under the License.
             #{id}
         </foreach>
     </update>
+    <update id="updateDeploySqlStatusByJobIdAndPhaseId">
+        UPDATE deploy_sql_detail a left join deploy_sql_job_phase b on a.id = b.sql_id
+        SET a.`status` = #{status}
+        <if test="status != null and status == 'pending'">
+            ,a.`start_time` = null,
+            a.`end_time` = null
+        </if>
+        where b.job_id = #{jobId}
+        and b.job_phase_id = #{phaseId}
+    </update>
     <delete id="deleteDeploySqlDetailByJobId">
         delete
         from deploy_sql_detail
