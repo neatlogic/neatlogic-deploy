@@ -596,8 +596,9 @@ limitations under the License.
     <select id="getDeployAppHasNotEnvListByAppSystemIdAndModuleIdList"
             resultType="neatlogic.framework.deploy.dto.app.DeployAppEnvironmentVo" useCache="false">
         SELECT a.`id`,
-        a.`name`
-        FROM @{DATA_SCHEMA}.`scence_env` a
+        a.`value` as name
+        FROM `cmdb_global_attritem` a
+        JOIN `cmdb_global_attr` b ON b.`id` = a.`attr_id` AND b.`name` = 'env'
         where a.id not in(
         (
         SELECT

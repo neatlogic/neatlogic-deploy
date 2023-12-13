@@ -32,6 +32,7 @@ import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.module.deploy.dao.mapper.DeployAppConfigMapper;
 import neatlogic.module.deploy.util.DeployPipelineConfigManager;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -90,11 +91,14 @@ public class ListDeployAppConfigAuthorityApi extends PrivateApiComponentBase {
                 throw new DeployAppConfigNotFoundException(appSystemId);
             }
             List<JSONObject> scenarioAuthList = new ArrayList<>();
-            for (AutoexecCombopScenarioVo scenarioVo : pipelineConfigVo.getScenarioList()) {
-                JSONObject scenarioValueText = new JSONObject();
-                scenarioValueText.put("text", scenarioVo.getScenarioName());
-                scenarioValueText.put("value", scenarioVo.getScenarioId());
-                scenarioAuthList.add(scenarioValueText);
+            List<AutoexecCombopScenarioVo> scenarioList = pipelineConfigVo.getScenarioList();
+            if (CollectionUtils.isNotEmpty(scenarioList)) {
+                for (AutoexecCombopScenarioVo scenarioVo : scenarioList) {
+                    JSONObject scenarioValueText = new JSONObject();
+                    scenarioValueText.put("text", scenarioVo.getScenarioName());
+                    scenarioValueText.put("value", scenarioVo.getScenarioId());
+                    scenarioAuthList.add(scenarioValueText);
+                }
             }
             returnObj.put("scenarioAuthList", scenarioAuthList);
 
