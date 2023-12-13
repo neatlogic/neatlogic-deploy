@@ -598,7 +598,7 @@ limitations under the License.
         SELECT a.`id`,
         a.`value` as name
         FROM `cmdb_global_attritem` a
-        JOIN `cmdb_global_attr` b ON b.`id` = a.`attr_id` AND b.`name` = 'env'
+        JOIN `cmdb_global_attr` b ON b.`id` = a.`attr_id` AND b.`name` = 'app_environment'
         where a.id not in(
         (
         SELECT
