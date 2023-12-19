@@ -216,7 +216,7 @@ public class DownloadDeployAppBuildApi extends PrivateBinaryStreamApiComponentBa
     private void downloadFromOtherEnv(JSONObject jsonObj, HttpServletRequest request, HttpServletResponse response) throws Exception {
         String proxyToUrl = jsonObj.getString("proxyToUrl");
         String credentialUserUuid = deployVersionMapper.getDeployVersionAppbuildCredentialByProxyToUrl(proxyToUrl);
-        UserVo credentialUser = userMapper.getUserByUuid(credentialUserUuid);
+        UserVo credentialUser = userMapper.getUserByUuidAndEnv(credentialUserUuid, UserContext.get().getEnv());
         if (credentialUser == null) {
             throw new DeployVersionRedirectUrlCredentialUserNotFoundException(credentialUserUuid);
         }
