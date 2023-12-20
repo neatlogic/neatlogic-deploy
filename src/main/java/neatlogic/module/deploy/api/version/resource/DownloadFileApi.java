@@ -18,6 +18,7 @@ package neatlogic.module.deploy.api.version.resource;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.cmdb.crossover.ICiEntityCrossoverService;
 import neatlogic.framework.common.constvalue.ApiParamType;
+import neatlogic.framework.common.constvalue.ResponseCode;
 import neatlogic.framework.crossover.CrossoverServiceFactory;
 import neatlogic.framework.deploy.auth.DEPLOY_BASE;
 import neatlogic.framework.deploy.constvalue.DeployResourceType;
@@ -161,7 +162,7 @@ public class DownloadFileApi extends PrivateBinaryStreamApiComponentBase {
             int responseCode = httpRequestUtil.getResponseCode();
             String error = httpRequestUtil.getError();
             if (StringUtils.isNotBlank(error)) {
-                if (responseCode == 520) {
+                if (responseCode == ResponseCode.API_RUNTIME.getCode()) {
                     throw new DownloadFileFailedException(JSONObject.parseObject(error).getString("Message"));
                 } else {
                     throw new DownloadFileFailedException(error);

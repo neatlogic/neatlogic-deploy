@@ -2,6 +2,7 @@ package neatlogic.module.deploy.api.version.resource;
 
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.common.constvalue.ApiParamType;
+import neatlogic.framework.common.constvalue.ResponseCode;
 import neatlogic.framework.deploy.auth.DEPLOY_BASE;
 import neatlogic.framework.deploy.constvalue.DeployResourceType;
 import neatlogic.framework.deploy.dto.version.DeployVersionVo;
@@ -105,7 +106,7 @@ public class GetDirectoryContentApi extends PrivateApiComponentBase {
         JSONObject resultJson = request.getResultJson();
         String error = request.getError();
         if (StringUtils.isNotBlank(error)) {
-            if (responseCode == 520) {
+            if (responseCode == ResponseCode.API_RUNTIME.getCode()) {
                 throw new GetDirectoryFailedException(JSONObject.parseObject(error).getString("Message"));
             } else {
                 throw new GetDirectoryFailedException(error);

@@ -3,6 +3,7 @@ package neatlogic.module.deploy.api.version.resource;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.common.constvalue.ApiParamType;
+import neatlogic.framework.common.constvalue.ResponseCode;
 import neatlogic.framework.deploy.auth.DEPLOY_BASE;
 import neatlogic.framework.deploy.constvalue.DeployAppConfigAction;
 import neatlogic.framework.deploy.constvalue.DeployResourceType;
@@ -113,7 +114,7 @@ public class DeleteFileApi extends PrivateApiComponentBase {
         int responseCode = request.getResponseCode();
         String error = request.getError();
         if (StringUtils.isNotBlank(error)) {
-            if (responseCode == 520) {
+            if (responseCode == ResponseCode.API_RUNTIME.getCode()) {
                 throw new DeleteFileFailedException(JSONObject.parseObject(error).getString("Message"));
             } else {
                 throw new DeleteFileFailedException(error);

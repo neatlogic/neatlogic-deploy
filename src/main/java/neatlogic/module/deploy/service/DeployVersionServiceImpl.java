@@ -3,6 +3,7 @@ package neatlogic.module.deploy.service;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.nacos.common.utils.CollectionUtils;
 import neatlogic.framework.cmdb.crossover.ICiEntityCrossoverService;
+import neatlogic.framework.common.constvalue.ResponseCode;
 import neatlogic.framework.crossover.CrossoverServiceFactory;
 import neatlogic.framework.deploy.constvalue.DeployResourceType;
 import neatlogic.framework.deploy.constvalue.JobSourceType;
@@ -209,7 +210,7 @@ public class DeployVersionServiceImpl implements DeployVersionService {
         int responseCode = httpRequestUtil.getResponseCode();
         String error = httpRequestUtil.getError();
         if (StringUtils.isNotBlank(error)) {
-            if (responseCode == 520) {
+            if (responseCode == ResponseCode.API_RUNTIME.getCode()) {
                 throw new DeployVersionSyncFailedException(JSONObject.parseObject(error).getString("Message"));
             } else {
                 throw new DeployVersionSyncFailedException(error);

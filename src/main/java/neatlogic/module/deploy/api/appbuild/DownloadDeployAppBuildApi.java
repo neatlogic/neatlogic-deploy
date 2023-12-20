@@ -26,6 +26,7 @@ import neatlogic.framework.cmdb.exception.resourcecenter.AppEnvNotFoundException
 import neatlogic.framework.cmdb.exception.resourcecenter.AppModuleNotFoundException;
 import neatlogic.framework.cmdb.exception.resourcecenter.AppSystemNotFoundException;
 import neatlogic.framework.common.constvalue.ApiParamType;
+import neatlogic.framework.common.constvalue.ResponseCode;
 import neatlogic.framework.crossover.CrossoverServiceFactory;
 import neatlogic.framework.dao.mapper.UserMapper;
 import neatlogic.framework.dao.mapper.runner.RunnerMapper;
@@ -245,7 +246,7 @@ public class DownloadDeployAppBuildApi extends PrivateBinaryStreamApiComponentBa
             int responseCode = httpRequestUtil.getResponseCode();
             String error = httpRequestUtil.getError();
             if (StringUtils.isNotBlank(error)) {
-                if (responseCode == 520) {
+                if (responseCode == ResponseCode.API_RUNTIME.getCode()) {
                     throw new DownloadFileFailedException(JSONObject.parseObject(error).getString("Message"));
                 } else {
                     throw new DownloadFileFailedException(error);
@@ -324,7 +325,7 @@ public class DownloadDeployAppBuildApi extends PrivateBinaryStreamApiComponentBa
             int responseCode = httpRequestUtil.getResponseCode();
             String error = httpRequestUtil.getError();
             if (StringUtils.isNotBlank(error)) {
-                if (responseCode == 520) {
+                if (responseCode == ResponseCode.API_RUNTIME.getCode()) {
                     throw new DownloadFileFailedException(JSONObject.parseObject(error).getString("Message"));
                 } else {
                     throw new DownloadFileFailedException(error);

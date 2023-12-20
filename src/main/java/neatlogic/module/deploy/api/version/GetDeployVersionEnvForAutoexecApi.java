@@ -3,6 +3,7 @@ package neatlogic.module.deploy.api.version;
 import neatlogic.framework.asynchronization.threadlocal.UserContext;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.common.constvalue.ApiParamType;
+import neatlogic.framework.common.constvalue.ResponseCode;
 import neatlogic.framework.dao.mapper.UserMapper;
 import neatlogic.framework.deploy.auth.DEPLOY_MODIFY;
 import neatlogic.framework.deploy.dto.version.DeployVersionEnvVo;
@@ -106,7 +107,7 @@ public class GetDeployVersionEnvForAutoexecApi extends PrivateApiComponentBase {
                 int responseCode = httpRequestUtil.getResponseCode();
                 String error = httpRequestUtil.getError();
                 if (StringUtils.isNotBlank(error)) {
-                    if (responseCode == 520) {
+                    if (responseCode == ResponseCode.API_RUNTIME.getCode()) {
                         throw new ApiRuntimeException(JSONObject.parseObject(error).getString("Message"));
                     } else {
                         throw new ApiRuntimeException(error);

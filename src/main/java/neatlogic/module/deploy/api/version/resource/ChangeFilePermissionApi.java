@@ -1,7 +1,9 @@
 package neatlogic.module.deploy.api.version.resource;
 
+import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.common.constvalue.ApiParamType;
+import neatlogic.framework.common.constvalue.ResponseCode;
 import neatlogic.framework.deploy.auth.DEPLOY_BASE;
 import neatlogic.framework.deploy.constvalue.DeployAppConfigAction;
 import neatlogic.framework.deploy.constvalue.DeployResourceType;
@@ -20,7 +22,6 @@ import neatlogic.framework.util.HttpRequestUtil;
 import neatlogic.module.deploy.dao.mapper.DeployVersionMapper;
 import neatlogic.module.deploy.service.DeployAppAuthorityService;
 import neatlogic.module.deploy.service.DeployVersionService;
-import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -114,7 +115,7 @@ public class ChangeFilePermissionApi extends PrivateApiComponentBase {
         int responseCode = request.getResponseCode();
         String error = request.getError();
         if (StringUtils.isNotBlank(error)) {
-            if (responseCode == 520) {
+            if (responseCode == ResponseCode.API_RUNTIME.getCode()) {
                 throw new ChangeFilePermissionFailedException(JSONObject.parseObject(error).getString("Message"));
             } else {
                 throw new ChangeFilePermissionFailedException(error);
