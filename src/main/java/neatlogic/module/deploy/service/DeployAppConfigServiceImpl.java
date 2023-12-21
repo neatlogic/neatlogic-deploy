@@ -314,7 +314,6 @@ public class DeployAppConfigServiceImpl implements DeployAppConfigService {
      */
     void addGlobalAttrEntityData(CiEntityTransactionVo ciEntityTransactionVo, JSONObject attrAndRelObj, List<String> needUpdateGlobalAttrList) {
         JSONObject globalAttrEntityData = new JSONObject();
-//        needUpdateGlobalAttrList.add("app_environment");
         IGlobalAttrCrossoverMapper globalAttrCrossoverMapper = CrossoverServiceFactory.getApi(IGlobalAttrCrossoverMapper.class);
         GlobalAttrVo searchVo = new GlobalAttrVo();
         searchVo.setIsActive(1);
