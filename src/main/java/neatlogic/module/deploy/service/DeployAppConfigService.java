@@ -30,8 +30,9 @@ public interface DeployAppConfigService {
      * @param attrAndRelObj         属性关系Obj
      * @param needUpdateAttrList    需要更新的属性列表
      * @param needUpdateRelList     需要更新的关系列表
+     * @param needUpdateGlobalAttrList     需要更新的全局属性列表
      */
-    void addAttrEntityDataAndRelEntityData(CiEntityTransactionVo ciEntityTransactionVo, Long ciId, JSONObject attrAndRelObj, List<String> needUpdateAttrList, List<String> needUpdateRelList);
+    void addAttrEntityDataAndRelEntityData(CiEntityTransactionVo ciEntityTransactionVo, Long ciId, JSONObject attrAndRelObj, List<String> needUpdateAttrList, List<String> needUpdateRelList, List<String> needUpdateGlobalAttrList);
 
     /**
      * 根据应用模块ID获取runner组

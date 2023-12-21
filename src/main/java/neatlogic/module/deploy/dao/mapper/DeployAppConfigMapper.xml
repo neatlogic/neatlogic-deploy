@@ -1520,6 +1520,14 @@ limitations under the License.
         LIMIT #{startNum}, #{pageSize}
     </select>
 
+    <select id="getAppModuleIdListByAppSystemIdAndEnvId" resultType="java.lang.Long">
+        SELECT
+            `app_module_id`
+        FROM `deploy_app_config_env`
+        WHERE `app_system_id` = #{appSystemId}
+          AND `env_id` = #{envId}
+    </select>
+
     <update id="updateDeployAppConfigById" parameterType="java.util.Map">
         UPDATE `deploy_app_config` SET `config` = #{configStr} WHERE `id` = #{id}
     </update>

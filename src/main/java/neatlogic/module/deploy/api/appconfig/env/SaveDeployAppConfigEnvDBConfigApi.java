@@ -125,7 +125,7 @@ public class SaveDeployAppConfigEnvDBConfigApi extends PrivateApiComponentBase {
         CiEntityVo DBCiEntityInfo = ciEntityService.getCiEntityById(DBCiEntityVo.getCiId(), DBCiEntityVo.getId());
         CiEntityTransactionVo ciEntityTransactionVo = new CiEntityTransactionVo(DBCiEntityInfo);
         ciEntityTransactionVo.setAttrEntityData(DBCiEntityInfo.getAttrEntityData());
-        deployAppConfigService.addAttrEntityDataAndRelEntityData(ciEntityTransactionVo, DBCiEntityInfo.getCiId(), paramObj, Collections.singletonList("app_environment"), Collections.singletonList("APPComponent"));
+        deployAppConfigService.addAttrEntityDataAndRelEntityData(ciEntityTransactionVo, DBCiEntityInfo.getCiId(), paramObj, Collections.singletonList("app_environment"), Collections.singletonList("APPComponent"), Collections.singletonList("app_environment"));
 
         //保存
         ciEntityTransactionVo.setAction(TransactionActionType.UPDATE.getValue());

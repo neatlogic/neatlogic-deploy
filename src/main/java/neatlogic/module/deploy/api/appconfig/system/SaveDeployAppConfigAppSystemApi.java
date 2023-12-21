@@ -136,7 +136,7 @@ public class SaveDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
             /*新增应用系统（配置项）*/
             //1、构建事务vo，并添加属性值
             ciEntityTransactionVo = new CiEntityTransactionVo();
-            deployAppConfigService.addAttrEntityDataAndRelEntityData(ciEntityTransactionVo, appCiVo.getId(), paramObj, needUpdateAttrList, new ArrayList<>());
+            deployAppConfigService.addAttrEntityDataAndRelEntityData(ciEntityTransactionVo, appCiVo.getId(), paramObj, needUpdateAttrList, new ArrayList<>(), new ArrayList<>());
 
             //2、设置事务vo信息
             ciEntityTransactionVo.setEditMode(EditModeType.PARTIAL.getValue());
@@ -152,7 +152,7 @@ public class SaveDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
 
             ciEntityTransactionVo = new CiEntityTransactionVo(systemCiEntityInfo);
             ciEntityTransactionVo.setAttrEntityData(systemCiEntityInfo.getAttrEntityData());
-            deployAppConfigService.addAttrEntityDataAndRelEntityData(ciEntityTransactionVo, appCiVo.getId(), paramObj, needUpdateAttrList, new ArrayList<>());
+            deployAppConfigService.addAttrEntityDataAndRelEntityData(ciEntityTransactionVo, appCiVo.getId(), paramObj, needUpdateAttrList, new ArrayList<>(), new ArrayList<>());
 
             //2、设置事务vo信息
             ciEntityTransactionVo.setAction(TransactionActionType.UPDATE.getValue());
