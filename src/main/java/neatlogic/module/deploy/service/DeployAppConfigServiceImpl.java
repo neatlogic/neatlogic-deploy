@@ -5,10 +5,13 @@ import neatlogic.framework.cmdb.dto.ci.AttrVo;
 import neatlogic.framework.cmdb.dto.ci.CiVo;
 import neatlogic.framework.cmdb.dto.ci.RelVo;
 import neatlogic.framework.cmdb.dto.cientity.CiEntityVo;
+import neatlogic.framework.cmdb.dto.globalattr.GlobalAttrItemVo;
+import neatlogic.framework.cmdb.dto.globalattr.GlobalAttrVo;
 import neatlogic.framework.cmdb.dto.transaction.CiEntityTransactionVo;
 import neatlogic.framework.cmdb.enums.EditModeType;
 import neatlogic.framework.cmdb.enums.TransactionActionType;
 import neatlogic.framework.cmdb.exception.cientity.CiEntityNotFoundException;
+import neatlogic.framework.cmdb.exception.globalattr.GlobalAttrValueIrregularException;
 import neatlogic.framework.crossover.CrossoverServiceFactory;
 import neatlogic.framework.deploy.dto.app.DeployAppConfigEnvDBConfigVo;
 import neatlogic.framework.deploy.dto.app.DeployAppConfigVo;
@@ -72,12 +75,14 @@ public class DeployAppConfigServiceImpl implements DeployAppConfigService {
     }
 
     @Override
-    public void addAttrEntityDataAndRelEntityData(CiEntityTransactionVo ciEntityTransactionVo, Long ciId, JSONObject attrAndRelObj, List<String> needUpdateAttrList, List<String> needUpdateRelList) {
+    public void addAttrEntityDataAndRelEntityData(CiEntityTransactionVo ciEntityTransactionVo, Long ciId, JSONObject attrAndRelObj, List<String> needUpdateAttrList, List<String> needUpdateRelList, List<String> needUpdateGlobalAttrList) {
 
         //添加属性
         addAttrEntityData(ciEntityTransactionVo, attrAndRelObj, needUpdateAttrList, ciId);
         //添加关系
         addRelEntityData(ciEntityTransactionVo, attrAndRelObj, needUpdateRelList, ciId);
+        // 添加全局属性
+        addGlobalAttrEntityData(ciEntityTransactionVo, attrAndRelObj, needUpdateGlobalAttrList);
         //设置基础信息
         ciEntityTransactionVo.setCiId(ciId);
         ciEntityTransactionVo.setAllowCommit(true);
@@ -141,7 +146,7 @@ public class DeployAppConfigServiceImpl implements DeployAppConfigService {
             //1、构建事务vo，并添加属性值
             paramObj.put("needUpdateRelList", new JSONArray(Collections.singletonList("APP")));
             ciEntityTransactionVo = new CiEntityTransactionVo();
-            addAttrEntityDataAndRelEntityData(ciEntityTransactionVo, ciCrossoverMapper.getCiByName("APPComponent").getId(), paramObj, Arrays.asList("state", "name", "owner", "abbrName", "maintenance_window", "description"), Collections.singletonList("APP"));
+            addAttrEntityDataAndRelEntityData(ciEntityTransactionVo, ciCrossoverMapper.getCiByName("APPComponent").getId(), paramObj, Arrays.asList("state", "name", "owner", "abbrName", "maintenance_window", "description"), Collections.singletonList("APP"), new ArrayList<>());
 
             //2、设置事务vo信息
             ciEntityTransactionVo.setEditMode(EditModeType.PARTIAL.getValue());
@@ -157,7 +162,7 @@ public class DeployAppConfigServiceImpl implements DeployAppConfigService {
             //1、构建事务vo，并添加属性值
             ciEntityTransactionVo = new CiEntityTransactionVo(moduleCiEntityInfo);
             ciEntityTransactionVo.setAttrEntityData(moduleCiEntityInfo.getAttrEntityData());
-            addAttrEntityDataAndRelEntityData(ciEntityTransactionVo, moduleCiVo.getId(), paramObj, needUpdateAttrList, new ArrayList<>());
+            addAttrEntityDataAndRelEntityData(ciEntityTransactionVo, moduleCiVo.getId(), paramObj, needUpdateAttrList, new ArrayList<>(), new ArrayList<>());
 
             //2、设置事务vo信息
             ciEntityTransactionVo.setAction(TransactionActionType.UPDATE.getValue());
@@ -298,6 +303,56 @@ public class DeployAppConfigServiceImpl implements DeployAppConfigService {
                 ciEntityTransactionVo.addAttrEntityData(attrVo, attrAndRelObj.getString(attrParam) != null ? attrAndRelObj.getString(attrParam) : "");
             }
         }
+    }
+
+    /**
+     * 添加全局属性
+     *
+     * @param ciEntityTransactionVo 配置项
+     * @param attrAndRelObj         属性信息Obj
+     * @param needUpdateGlobalAttrList    需要更新的全局属性列表
+     */
+    void addGlobalAttrEntityData(CiEntityTransactionVo ciEntityTransactionVo, JSONObject attrAndRelObj, List<String> needUpdateGlobalAttrList) {
+        JSONObject globalAttrEntityData = new JSONObject();
+//        needUpdateGlobalAttrList.add("app_environment");
+        IGlobalAttrCrossoverMapper globalAttrCrossoverMapper = CrossoverServiceFactory.getApi(IGlobalAttrCrossoverMapper.class);
+        GlobalAttrVo searchVo = new GlobalAttrVo();
+        searchVo.setIsActive(1);
+        List<GlobalAttrVo> globalAttrList = globalAttrCrossoverMapper.searchGlobalAttr(searchVo);
+        for (GlobalAttrVo globalAttrVo : globalAttrList) {
+            if (!needUpdateGlobalAttrList.contains(globalAttrVo.getName())) {
+                continue;
+            }
+            String attrParam = getAttrMap().get(globalAttrVo.getName());
+            if (StringUtils.isBlank(attrParam)) {
+                continue;
+            }
+            Long envId = attrAndRelObj.getLong(attrParam);
+            if (envId == null) {
+                continue;
+            }
+            boolean flag = false;
+            JSONArray valueList = new JSONArray();
+            List<GlobalAttrItemVo> itemList = globalAttrVo.getItemList();
+            for (GlobalAttrItemVo item : itemList) {
+                if (Objects.equals(item.getId(), envId)) {
+                    JSONObject jsonObj = new JSONObject();
+                    jsonObj.put("id", item.getId());
+                    jsonObj.put("value", item.getValue());
+                    jsonObj.put("sort", item.getSort());
+                    jsonObj.put("attrId", globalAttrVo.getId());
+                    valueList.add(jsonObj);
+                    flag = true;
+                }
+            }
+            if (!flag) {
+                throw new GlobalAttrValueIrregularException(globalAttrVo, envId.toString());
+            }
+            JSONObject globalAttrEntity = new JSONObject();
+            globalAttrEntity.put("valueList", valueList);
+            globalAttrEntityData.put("global_" + globalAttrVo.getId(), globalAttrEntity);
+        }
+        ciEntityTransactionVo.setGlobalAttrEntityData(globalAttrEntityData);
     }
 
     public static Map<String, String> getAttrMap() {

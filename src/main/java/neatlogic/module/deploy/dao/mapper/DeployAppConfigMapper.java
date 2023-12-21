@@ -210,6 +210,8 @@ public interface DeployAppConfigMapper extends IDeployAppConfigCrossoverMapper {
 
     List<Map<String, Object>> getDeployAppConfigListForUpdateConfig(BasePageVo searchVo);
 
+    List<Long> getAppModuleIdListByAppSystemIdAndEnvId(@Param("appSystemId") Long appSystemId, @Param("envId") Long envId);
+
     void updateDeployAppConfigById(@Param("id") Long id, @Param("configStr") String configStr);
 
     void deleteAppConfigSystemFavoriteByAppSystemIdAndUserUuid(@Param("appSystemId") Long appSystemId, @Param("userUuid") String userUuid);

@@ -91,9 +91,13 @@ public class ListDeployJobModuleApi extends PrivateApiComponentBase {
         Long scenarioId = paramObj.getLong("scenarioId");
         List<ResourceVo> moduleResourceList = new ArrayList<>();
         IResourceCrossoverMapper resourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
+        List<Long> moduleIdSet = new ArrayList<>();
         List<Long> moduleIdList = resourceCrossoverMapper.getAppSystemModuleIdListByAppSystemIdAndAppModuleIdListAndEnvId(paramObj.getLong("appSystemId"),paramObj.getLong("envId"), paramObj.getJSONArray("appModuleIdList"));
-        if (CollectionUtils.isNotEmpty(moduleIdList)) {
-            moduleResourceList = resourceCrossoverMapper.getAppModuleListByIdListSimple(moduleIdList, true);
+        moduleIdSet.addAll(moduleIdList);
+        moduleIdList = deployAppConfigMapper.getAppModuleIdListByAppSystemIdAndEnvId(paramObj.getLong("appSystemId"),paramObj.getLong("envId"));
+        moduleIdSet.addAll(moduleIdList);
+        if (CollectionUtils.isNotEmpty(moduleIdSet)) {
+            moduleResourceList = resourceCrossoverMapper.getAppModuleListByIdListSimple(new ArrayList<>(moduleIdSet), true);
         }
         if (CollectionUtils.isNotEmpty(moduleResourceList)) {
             //判断是否有配流水线
