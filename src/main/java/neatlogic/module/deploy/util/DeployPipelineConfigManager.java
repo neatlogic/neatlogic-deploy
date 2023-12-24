@@ -628,12 +628,11 @@ public class DeployPipelineConfigManager {
                             int index = 0;
                             for (DeployProfileParamVo deployProfileParamVo : deployProfileParamList) {
                                 if (Objects.equals(overrideProfileParamVo.getId(), deployProfileParamVo.getId())) {
+                                    deployProfileParamList.set(index, overrideProfileParamVo);
                                     break;
                                 }
                                 index++;
                             }
-                            deployProfileParamList.remove(index);
-                            deployProfileParamList.add(index, overrideProfileParamVo);
                         }
                     }
                 }
@@ -678,12 +677,11 @@ public class DeployPipelineConfigManager {
                         if (Objects.equals(overridePhaseVo.getIsActive(), 0)) {
                             disabledPhaseIdList.remove(overridePhaseVo.getId());
                         }
+                        pipelinePhaseList.set(index, overridePhaseVo);
                         break;
                     }
                     index++;
                 }
-                pipelinePhaseList.remove(index);
-                pipelinePhaseList.add(index, overridePhaseVo);
             }
         }
         if (CollectionUtils.isNotEmpty(disabledPhaseIdList)) {
@@ -704,12 +702,11 @@ public class DeployPipelineConfigManager {
                 int index = 0;
                 for (DeployPipelineGroupVo pipelineGroupVo : pipelineGroupList) {
                     if (Objects.equals(overrideGroupVo.getUuid(), pipelineGroupVo.getUuid())) {
+                        pipelineGroupList.set(index, overrideGroupVo);
                         break;
                     }
                     index++;
                 }
-                pipelineGroupList.remove(index);
-                pipelineGroupList.add(index, overrideGroupVo);
             }
         }
         DeployPipelineExecuteConfigVo executeConfigVo = overrideConfig.getExecuteConfig();
