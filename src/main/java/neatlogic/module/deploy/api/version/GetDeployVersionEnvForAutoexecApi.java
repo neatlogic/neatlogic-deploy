@@ -92,7 +92,7 @@ public class GetDeployVersionEnvForAutoexecApi extends PrivateApiComponentBase {
             result.put("status", envVo.getStatus());
         } else {
             String credentialUserUuid = deployVersionMapper.getDeployVersionAppbuildCredentialByProxyToUrl(proxyToUrl);
-            UserVo credentialUser = userMapper.getUserByUuidAndEnv(credentialUserUuid, UserContext.get().getEnv());
+            UserVo credentialUser = userMapper.getUserByUuid(credentialUserUuid);
             if (credentialUser == null) {
                 throw new DeployVersionRedirectUrlCredentialUserNotFoundException(credentialUserUuid);
             }
