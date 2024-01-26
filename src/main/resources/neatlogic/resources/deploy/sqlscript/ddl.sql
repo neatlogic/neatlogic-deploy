@@ -801,8 +801,7 @@ CREATE TABLE IF NOT EXISTS `deploy_version_cve_package` (
 -- ----------------------------
 -- Table structure for deploy_version_commit
 -- ----------------------------
-DROP TABLE IF NOT EXISTS `deploy_version_commit`;
-CREATE TABLE `deploy_version_commit` (
+CREATE TABLE IF NOT EXISTS  `deploy_version_commit` (
   `version_id` bigint NOT NULL COMMENT '版本id',
   `commit_id` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '提交id',
   `repository_id` bigint NOT NULL COMMENT '仓库id',
@@ -812,8 +811,7 @@ CREATE TABLE `deploy_version_commit` (
 -- ----------------------------
 -- Table structure for deploy_version_issue
 -- ----------------------------
-DROP TABLE IF NOT EXISTS `deploy_version_issue`;
-CREATE TABLE `deploy_version_issue` (
+CREATE TABLE IF NOT EXISTS `deploy_version_issue` (
   `version_id` bigint NOT NULL COMMENT '版本id',
   `issue_id` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '需求id',
   PRIMARY KEY (`version_id`,`issue_id`) USING BTREE
