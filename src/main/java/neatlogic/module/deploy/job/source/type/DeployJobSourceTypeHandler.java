@@ -378,7 +378,10 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
                 if (runnerMapVo == null) {
                     throw new RunnerNotFoundByRunnerMapIdException(deployJobVo.getRunnerMapId());
                 }
-                return Collections.singletonList(runnerMapVo);
+                //如果runner没有被删除则沿用历史runner
+                if (runnerMapVo.getIsDelete() == 0) {
+                    return Collections.singletonList(runnerMapVo);
+                }
             }
         }
         //其它则根据模块均衡分配runner
