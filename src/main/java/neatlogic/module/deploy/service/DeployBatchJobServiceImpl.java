@@ -16,6 +16,7 @@ limitations under the License.
 
 package neatlogic.module.deploy.service;
 
+import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.asynchronization.threadlocal.TenantContext;
 import neatlogic.framework.asynchronization.threadlocal.UserContext;
 import neatlogic.framework.autoexec.constvalue.JobAction;
@@ -43,7 +44,6 @@ import neatlogic.module.deploy.auth.core.BatchDeployAuthChecker;
 import neatlogic.module.deploy.dao.mapper.DeployBatchJobMapper;
 import neatlogic.module.deploy.dao.mapper.DeployJobMapper;
 import neatlogic.module.deploy.schedule.plugin.DeployBatchJobAutoFireJob;
-import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -71,6 +71,18 @@ public class DeployBatchJobServiceImpl implements DeployBatchJobService, IDeploy
 
     @Override
     public void creatBatchJob(DeployJobVo deployJobVo, PipelineVo pipelineVo, boolean isFire) throws Exception {
+        // parentId为-1时，代表该作业是父作业
+        deployJobVo.setParentId(-1L);
+        deployJobMapper.insertAutoExecJob(deployJobVo);
+        if (CollectionUtils.isNotEmpty(pipelineVo.getAuthList())) {
+            for (PipelineAuthVo authVo : pipelineVo.getAuthList()) {
+                DeployJobAuthVo deployAuthVo = new DeployJobAuthVo();
+                deployAuthVo.setJobId(deployJobVo.getId());
+                deployAuthVo.setAuthUuid(authVo.getAuthUuid());
+                deployAuthVo.setType(authVo.getType());
+                deployJobMapper.insertDeployJobAuth(deployAuthVo);
+            }
+        }
         if (CollectionUtils.isNotEmpty(pipelineVo.getLaneList())) {
             for (int i = 0; i < pipelineVo.getLaneList().size(); i++) {
                 PipelineLaneVo pipelineLaneVo = pipelineVo.getLaneList().get(i);
@@ -125,18 +137,7 @@ public class DeployBatchJobServiceImpl implements DeployBatchJobService, IDeploy
         }
 
         deployJobMapper.insertJobInvoke(deployJobVo.getId(), deployJobVo.getInvokeId(), deployJobVo.getSource(), deployJobVo.getRouteId());
-        // parentId为-1时，代表该作业是父作业
-        deployJobVo.setParentId(-1L);
-        deployJobMapper.insertAutoExecJob(deployJobVo);
-        if (CollectionUtils.isNotEmpty(pipelineVo.getAuthList())) {
-            for (PipelineAuthVo authVo : pipelineVo.getAuthList()) {
-                DeployJobAuthVo deployAuthVo = new DeployJobAuthVo();
-                deployAuthVo.setJobId(deployJobVo.getId());
-                deployAuthVo.setAuthUuid(authVo.getAuthUuid());
-                deployAuthVo.setType(authVo.getType());
-                deployJobMapper.insertDeployJobAuth(deployAuthVo);
-            }
-        }
+
     }
 
     private Long getVersionId(List<DeploySystemModuleVersionVo> appSystemModuleVersionList, PipelineJobTemplateVo jobTemplateVo) {
