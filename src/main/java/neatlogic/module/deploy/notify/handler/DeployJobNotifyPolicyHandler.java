@@ -19,9 +19,7 @@ import neatlogic.framework.deploy.auth.DEPLOY_MODIFY;
 import neatlogic.framework.deploy.constvalue.DeployJobNotifyParam;
 import neatlogic.framework.deploy.constvalue.DeployJobNotifyTriggerType;
 import neatlogic.framework.dto.ConditionParamVo;
-import neatlogic.framework.notify.core.NotifyHandlerType;
 import neatlogic.framework.notify.core.NotifyPolicyHandlerBase;
-import neatlogic.framework.notify.dto.NotifyTriggerTemplateVo;
 import neatlogic.framework.notify.dto.NotifyTriggerVo;
 import org.springframework.stereotype.Component;
 
@@ -48,11 +46,6 @@ public class DeployJobNotifyPolicyHandler extends NotifyPolicyHandlerBase {
         return DEPLOY_MODIFY.class.getSimpleName();
     }
 
-//    @Override
-//    public INotifyPolicyHandlerGroup getGroup() {
-//        return null;
-//    }
-
     @Override
     protected List<NotifyTriggerVo> myNotifyTriggerList() {
         List<NotifyTriggerVo> returnList = new ArrayList<>();
@@ -60,11 +53,6 @@ public class DeployJobNotifyPolicyHandler extends NotifyPolicyHandlerBase {
             returnList.add(new NotifyTriggerVo(triggerType));
         }
         return returnList;
-    }
-
-    @Override
-    protected List<NotifyTriggerTemplateVo> myNotifyTriggerTemplateList(NotifyHandlerType type) {
-        return new ArrayList<>();
     }
 
     @Override
