@@ -594,56 +594,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         </foreach>
     </select>
 
-    <select id="getDeployAppHasNotEnvListByAppSystemIdAndModuleIdList"
-            resultType="neatlogic.framework.deploy.dto.app.DeployAppEnvironmentVo" useCache="false">
-        SELECT a.`id`,
-        a.`value` as name
-        FROM `cmdb_global_attritem` a
-        JOIN `cmdb_global_attr` b ON b.`id` = a.`attr_id` AND b.`name` = 'app_environment'
-        where a.id not in(
-        (
-        SELECT
-        a.`env_id`
-        FROM @{DATA_SCHEMA}.`scence_appinstance_env_appmodule_appsystem` a
-        <where>
-            a.`env_id` is not null
-            <choose>
-                <when test="appSystemId != null">
-                    AND a.`app_system_id` = #{appSystemId}
-                </when>
-                <otherwise>
-                    and a.`app_system_id` is not null
-                </otherwise>
-            </choose>
-            <choose>
-                <when test="appModuleId != null">
-                    and a.`app_module_id` = #{appModuleId}
-                </when>
-                <otherwise>
-                    and a.`app_module_id` is not null
-                </otherwise>
-            </choose>
-        </where>
-        ) UNION
-        (
-        SELECT
-        cc.id
-        FROM
-        deploy_app_config_env dace
-        JOIN cmdb_cientity cc ON cc.id = dace.env_id
-        JOIN cmdb_cientity cce ON cce.id = dace.app_module_id
-        <where>
-            <if test="appSystemId != null">
-                dace.app_system_id = #{appSystemId}
-            </if>
-            <if test="appModuleId != null">
-                and dace.app_module_id = #{appModuleId}
-            </if>
-        </where>
-        )
-        )
-    </select>
-
     <select id="getCmdbEnvListByAppSystemIdAndModuleId"
             resultType="neatlogic.framework.deploy.dto.app.DeployAppEnvironmentVo" useCache="false">
         SELECT distinct
@@ -675,19 +625,17 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
     <select id="getDeployAppEnvListByAppSystemIdAndModuleId"
             resultType="neatlogic.framework.deploy.dto.app.DeployAppEnvironmentVo" useCache="false">
         SELECT
-        cc.id AS id,
-        cc.name AS name,
+        b.`id` AS id,
+        b.`value` AS name,
         1 AS isDeletable
-        FROM
-        deploy_app_config_env dace
-        JOIN cmdb_cientity cc ON cc.id = dace.env_id
-        JOIN cmdb_cientity cce ON cce.id = dace.app_module_id
+        FROM deploy_app_config_env a
+        JOIN `cmdb_global_attritem` b ON b.`id` = a.`env_id`
         <where>
             <if test="appSystemId != null">
-                and dace.app_system_id = #{appSystemId}
+                and a.app_system_id = #{appSystemId}
             </if>
             <if test="appModuleId != null">
-                and dace.app_module_id = #{appModuleId}
+                and a.app_module_id = #{appModuleId}
             </if>
         </where>
     </select>

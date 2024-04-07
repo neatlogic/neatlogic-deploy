@@ -17,8 +17,12 @@ package neatlogic.module.deploy.api.appconfig.module;
 
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
+import neatlogic.framework.cmdb.crossover.IGlobalAttrCrossoverMapper;
+import neatlogic.framework.cmdb.dto.globalattr.GlobalAttrItemVo;
+import neatlogic.framework.cmdb.dto.globalattr.GlobalAttrVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.entity.AppEnvironmentVo;
 import neatlogic.framework.common.constvalue.ApiParamType;
+import neatlogic.framework.crossover.CrossoverServiceFactory;
 import neatlogic.framework.deploy.auth.DEPLOY_BASE;
 import neatlogic.framework.deploy.dto.app.DeployAppEnvironmentVo;
 import neatlogic.framework.restful.annotation.*;
@@ -55,7 +59,7 @@ public class ListDeployAppConfigAppEnvApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "查询发布应用配置的应用系统环境列表";
+        return "nmdaam.listdeployappconfigappenvapi.getname";
     }
 
     @Override
@@ -64,39 +68,53 @@ public class ListDeployAppConfigAppEnvApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "应用系统id"),
-            @Param(name = "appModuleId", type = ApiParamType.LONG, desc = "应用模块id"),
-            @Param(name = "isHasEnv", type = ApiParamType.INTEGER, desc = "是否拥有环境 (0:查找现没有的环境，1：查找现有的环境)"),
+            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.appsystemid"),
+            @Param(name = "appModuleId", type = ApiParamType.LONG, desc = "term.cmdb.appmoduleid"),
+            @Param(name = "isHasEnv", type = ApiParamType.INTEGER, desc = "term.cmdb.isexistingenv", help = "0:查找现没有的环境，1：查找现有的环境"),
     })
     @Output({
-            @Param(explode = AppEnvironmentVo[].class, desc = "发布应用配置的应用系统环境列表"),
+            @Param(explode = AppEnvironmentVo[].class, desc = "common.tbodylist"),
     })
-    @Description(desc = "查询发布应用配置的应用系统环境列表(用于应用树的环境下拉、发布作业时通过模块列表查询环境列表)")
+    @Description(desc = "nmdaam.listdeployappconfigappenvapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj) {
         Long appSystemId = paramObj.getLong("appSystemId");
         Long appModuleId = paramObj.getLong("appModuleId");
-        List<DeployAppEnvironmentVo> returnEnvList = null;
+        List<DeployAppEnvironmentVo> returnEnvList = new ArrayList<>();
+
+        //查找发布的环境
+        List<DeployAppEnvironmentVo> deployEnvList = deployAppConfigMapper.getDeployAppEnvListByAppSystemIdAndModuleId(appSystemId, appModuleId);
+        //查找cmdb的环境
+        List<DeployAppEnvironmentVo> cmdbEnvList = deployAppConfigMapper.getCmdbEnvListByAppSystemIdAndModuleId(appSystemId, appModuleId);
+        List<Long> cmdbEnvIdList = cmdbEnvList.stream().map(DeployAppEnvironmentVo::getId).collect(Collectors.toList());
+        List<Long> deployEnvIdList = deployEnvList.stream().map(DeployAppEnvironmentVo::getId).collect(Collectors.toList());
+
         if (paramObj.getInteger("isHasEnv") != null && paramObj.getInteger("isHasEnv") == 0) {
-            returnEnvList = deployAppConfigMapper.getDeployAppHasNotEnvListByAppSystemIdAndModuleIdList(appSystemId, appModuleId);
+            IGlobalAttrCrossoverMapper globalAttrCrossoverMapper = CrossoverServiceFactory.getApi(IGlobalAttrCrossoverMapper.class);
+            List<GlobalAttrItemVo> globalAttrItemList = new ArrayList<>();
+            GlobalAttrVo globalAttrVo = new GlobalAttrVo();
+            globalAttrVo.setIsActive(1);
+            globalAttrVo.setName("app_environment");
+            List<GlobalAttrVo> globalAttrList = globalAttrCrossoverMapper.searchGlobalAttr(globalAttrVo);
+            if (CollectionUtils.isNotEmpty(globalAttrList)) {
+                globalAttrVo = globalAttrList.get(0);
+                globalAttrItemList = globalAttrVo.getItemList();
+            }
+            for (GlobalAttrItemVo globalAttrItemVo : globalAttrItemList) {
+                Long id = globalAttrItemVo.getId();
+                if (cmdbEnvIdList.contains(id) || deployEnvIdList.contains(id)) {
+                    continue;
+                }
+                returnEnvList.add(new DeployAppEnvironmentVo(id, globalAttrItemVo.getValue()));
+            }
         } else {
-
-            //查找发布的环境
-            List<DeployAppEnvironmentVo> deployEnvList = deployAppConfigMapper.getDeployAppEnvListByAppSystemIdAndModuleId(appSystemId, appModuleId);
-
-            //查找cmdb的环境
-            List<DeployAppEnvironmentVo> cmdbEnvList = deployAppConfigMapper.getCmdbEnvListByAppSystemIdAndModuleId(appSystemId, appModuleId);
-
             //如果有交集，则删除发布多余的环境idList
             if (CollectionUtils.isNotEmpty(cmdbEnvList) && CollectionUtils.isNotEmpty(deployEnvList)) {
-                List<Long> cmdbEnvIdList = cmdbEnvList.stream().map(DeployAppEnvironmentVo::getId).collect(Collectors.toList());
-                List<Long> deployEnvIdList = deployEnvList.stream().map(DeployAppEnvironmentVo::getId).collect(Collectors.toList());
-
                 List<Long> sameEnvIdList = new ArrayList<>(cmdbEnvIdList);
                 sameEnvIdList.retainAll(deployEnvIdList);
                 if (sameEnvIdList.size() > 0) {
                     deployAppConfigMapper.deleteAppConfigEnvByAppSystemIdAndAppModuleIdAndEnvIdList(paramObj.getLong("appSystemId"), appModuleId, sameEnvIdList);
-                    for (int i = 0; i < deployEnvList.size(); i++) {
+                    for (int i = deployEnvList.size() - 1; i >= 0; i--) {
                         DeployAppEnvironmentVo deployAppEnvironmentVo = deployEnvList.get(i);
                         if (sameEnvIdList.contains(deployAppEnvironmentVo.getId())) {
                             deployEnvList.remove(i);
