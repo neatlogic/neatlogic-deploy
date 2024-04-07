@@ -273,12 +273,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         (
         SELECT dv.id,
         dv.version,
-        cc.id AS envId,
-        cc.NAME AS envName
+        cga.id AS envId,
+        cga.value AS envName
         FROM deploy_version dv
         JOIN deploy_app_config_env dace ON dace.app_system_id = dv.app_system_id
         AND dace.app_module_id = dv.app_module_id
-        JOIN cmdb_cientity cc ON cc.id = dace.env_id
+        JOIN cmdb_global_attritem cga ON cga.id = dace.env_id
         WHERE dv.id IN
         <foreach collection="list" item="id" separator="," open="(" close=")">
             #{id}

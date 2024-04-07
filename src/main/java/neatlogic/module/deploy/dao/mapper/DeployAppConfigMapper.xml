@@ -407,13 +407,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         ) UNION
         (
         SELECT
-        cc.id AS envId,
-        cc.name AS envName,
+        cga.id AS envId,
+        cga.value AS envName,
         cce.id AS appModuleId,
         cce.name AS appModuleName
         FROM
         deploy_app_config_env dace
-        JOIN cmdb_cientity cc ON cc.id = dace.env_id
+        JOIN cmdb_global_attritem cga ON cga.id = dace.env_id
         JOIN cmdb_cientity cce ON cce.id = dace.app_module_id
         <where>
             <if test="appSystemId != null">
@@ -450,11 +450,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         ) UNION
         (
         SELECT
-        cc.id AS envId
+        dace.`env_id` AS envId
         FROM
         deploy_app_config_env dace
-        JOIN cmdb_cientity cc ON cc.id = dace.env_id
-        JOIN cmdb_cientity cce ON cce.id = dace.app_module_id
+        JOIN `cmdb_global_attritem` cga ON cga.`id` = dace.`env_id`
         <where>
             <if test="value != null">
                 dace.app_system_id = #{value}
@@ -480,11 +479,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         where a.`env_id` is not null
           and a.`app_system_id` = #{appSystemId}
         UNION
-        SELECT cc.id              AS envId,
-               cc.name            AS envName,
+        SELECT cga.id              AS envId,
+               cga.value            AS envName,
                dace.app_module_id AS appModuleId
         FROM deploy_app_config_env dace
-                 JOIN cmdb_cientity cc ON cc.id = dace.env_id
+                 JOIN cmdb_global_attritem cga ON cga.id = dace.env_id
         where dace.app_system_id = #{value}
     </select>
 
@@ -507,10 +506,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
             #{appModuleId}
         </foreach>
         UNION
-        SELECT cc.id AS envId,
+        SELECT cga.id AS envId,
         dace.app_module_id AS appModuleId
         FROM deploy_app_config_env dace
-        JOIN cmdb_cientity cc ON cc.id = dace.env_id
+        JOIN cmdb_global_attritem cga ON cga.id = dace.env_id
         where dace.app_system_id = #{appSystemId}
         and dace.app_module_id in
         <foreach collection="appModuleIdList" separator="," item="appModuleId" open="(" close=")">
@@ -527,10 +526,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         and a.`app_system_id` = #{systemId}
         and a.`app_module_id` = #{moduleId}
         UNION
-        SELECT cc.id AS envId,
-        cc.name AS envName
+        SELECT cga.id AS envId,
+        cga.value AS envName
         FROM deploy_app_config_env dace
-        JOIN cmdb_cientity cc ON cc.id = dace.env_id
+        JOIN cmdb_global_attritem cga ON cga.id = dace.env_id
         where dace.app_system_id = #{systemId}
           and dace.app_module_id = #{moduleId}
     </select>
@@ -674,7 +673,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         dace.app_module_id
         FROM
         deploy_app_config_env dace
-        JOIN cmdb_cientity cc ON cc.id = dace.env_id
+        JOIN cmdb_global_attritem cga ON cga.id = dace.env_id
         <where>
             <if test="appSystemId != null">
                 dace.app_system_id = #{appSystemId}
@@ -1265,10 +1264,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
               )
               UNION
               (
-                  SELECT cc.id   AS envId,
-                         cc.name AS envName
+                  SELECT cga.id   AS envId,
+                         cga.value AS envName
                   FROM deploy_app_config_env dace
-                           JOIN cmdb_cientity cc ON cc.id = dace.env_id
+                           JOIN cmdb_global_attritem cga ON cga.id = dace.env_id
                   where dace.app_system_id = #{appSystemId}
                     and dace.app_module_id = #{appModuleId}
                     and dace.env_id != #{envId}
