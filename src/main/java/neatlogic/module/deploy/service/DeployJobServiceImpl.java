@@ -37,11 +37,11 @@ import neatlogic.framework.autoexec.source.IAutoexecJobSource;
 import neatlogic.framework.cmdb.crossover.IAppSystemMapper;
 import neatlogic.framework.cmdb.crossover.ICiEntityCrossoverMapper;
 import neatlogic.framework.cmdb.crossover.IResourceCrossoverMapper;
-import neatlogic.framework.cmdb.dto.cientity.CiEntityVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.ResourceVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.entity.AppModuleVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.entity.AppSystemVo;
 import neatlogic.framework.cmdb.exception.cientity.CiEntityNotFoundException;
+import neatlogic.framework.cmdb.exception.resourcecenter.AppEnvNotFoundException;
 import neatlogic.framework.crossover.CrossoverServiceFactory;
 import neatlogic.framework.deploy.constvalue.CombopOperationType;
 import neatlogic.framework.deploy.constvalue.JobSource;
@@ -177,18 +177,19 @@ public class DeployJobServiceImpl implements DeployJobService {
         }
         deployJobParam.setAppSystemName(appSystem.getName());
         deployJobParam.setAppSystemAbbrName(appSystem.getAbbrName());
+        IResourceCrossoverMapper iResourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
         if (StringUtils.isNotBlank(deployJobParam.getEnvName())) {
-            Long envId = iCiEntityCrossoverMapper.getCiEntityIdByCiNameAndCiEntityName("APPEnv", deployJobParam.getEnvName());
-            if (envId == null) {
-                throw new CiEntityNotFoundException(deployJobParam.getEnvName());
+            ResourceVo env = iResourceCrossoverMapper.getAppEnvByName(deployJobParam.getEnvName());
+            if (env == null) {
+                throw new AppEnvNotFoundException(deployJobParam.getEnvName());
             }
-            deployJobParam.setEnvId(envId);
+            deployJobParam.setEnvId(env.getId());
         } else if (deployJobParam.getEnvId() != null) {
-            CiEntityVo envEntity = iCiEntityCrossoverMapper.getCiEntityBaseInfoById(deployJobParam.getEnvId());
-            if (envEntity == null) {
-                throw new CiEntityNotFoundException(deployJobParam.getEnvId());
+            ResourceVo env = iResourceCrossoverMapper.getAppEnvById(deployJobParam.getEnvId());
+            if (env == null) {
+                throw new AppEnvNotFoundException(deployJobParam.getEnvId());
             }
-            deployJobParam.setEnvName(envEntity.getName());
+            deployJobParam.setEnvName(env.getName());
         } else {
             throw new ParamIrregularException("envId | envName");
         }

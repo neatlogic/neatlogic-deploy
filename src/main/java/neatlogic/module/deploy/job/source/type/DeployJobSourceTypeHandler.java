@@ -36,6 +36,7 @@ import neatlogic.framework.cmdb.crossover.IResourceCrossoverMapper;
 import neatlogic.framework.cmdb.dto.cientity.CiEntityVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.ResourceVo;
 import neatlogic.framework.cmdb.exception.cientity.CiEntityNotFoundException;
+import neatlogic.framework.cmdb.exception.resourcecenter.AppEnvNotFoundException;
 import neatlogic.framework.common.constvalue.SystemUser;
 import neatlogic.framework.crossover.CrossoverServiceFactory;
 import neatlogic.framework.dao.mapper.runner.RunnerMapper;
@@ -528,12 +529,11 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
         }
         environment.put("DEPLOY_RUNNERGROUP", runnerMap);
         //_DEPLOY_PATH
-        ICiEntityCrossoverMapper iCiEntityCrossoverMapper = CrossoverServiceFactory.getApi(ICiEntityCrossoverMapper.class);
-        CiEntityVo envEntity = iCiEntityCrossoverMapper.getCiEntityBaseInfoById(deployJobVo.getEnvId());
-        if (envEntity == null) {
-            throw new CiEntityNotFoundException(deployJobVo.getEnvId());
+        ResourceVo env = iResourceCrossoverMapper.getAppEnvById(deployJobVo.getEnvId());
+        if (env == null) {
+            throw new AppEnvNotFoundException(deployJobVo.getEnvId());
         }
-        environment.put("DEPLOY_PATH", appSystem.getAbbrName() + "/" + appModule.getAbbrName() + "/" + envEntity.getName());
+        environment.put("DEPLOY_PATH", appSystem.getAbbrName() + "/" + appModule.getAbbrName() + "/" + env.getName());
         environment.put("DEPLOY_ID_PATH", deployJobVo.getAppSystemId() + "/" + deployJobVo.getAppModuleId() + "/" + deployJobVo.getEnvId());
         environment.put("VERSION", deployJobVo.getVersion());
         environment.put("BUILD_NO", deployJobVo.getBuildNo());
