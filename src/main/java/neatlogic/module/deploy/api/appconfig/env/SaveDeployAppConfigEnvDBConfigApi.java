@@ -3,11 +3,14 @@ package neatlogic.module.deploy.api.appconfig.env;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.cmdb.crossover.ICiEntityCrossoverMapper;
 import neatlogic.framework.cmdb.crossover.ICiEntityCrossoverService;
+import neatlogic.framework.cmdb.crossover.IResourceCrossoverMapper;
 import neatlogic.framework.cmdb.dto.cientity.CiEntityVo;
+import neatlogic.framework.cmdb.dto.resourcecenter.ResourceVo;
 import neatlogic.framework.cmdb.dto.transaction.CiEntityTransactionVo;
 import neatlogic.framework.cmdb.enums.EditModeType;
 import neatlogic.framework.cmdb.enums.TransactionActionType;
 import neatlogic.framework.cmdb.exception.cientity.CiEntityNotFoundException;
+import neatlogic.framework.cmdb.exception.resourcecenter.AppEnvNotFoundException;
 import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.crossover.CrossoverServiceFactory;
 import neatlogic.framework.deploy.auth.DEPLOY_BASE;
@@ -99,8 +102,10 @@ public class SaveDeployAppConfigEnvDBConfigApi extends PrivateApiComponentBase {
         if (iCiEntityCrossoverMapper.getCiEntityBaseInfoById(paramObj.getLong("appModuleId")) == null) {
             throw new CiEntityNotFoundException(paramObj.getLong("appModuleId"));
         }
-        if (iCiEntityCrossoverMapper.getCiEntityBaseInfoById(paramObj.getLong("envId")) == null) {
-            throw new CiEntityNotFoundException(paramObj.getLong("envId"));
+        IResourceCrossoverMapper iResourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
+        ResourceVo env = iResourceCrossoverMapper.getAppEnvById(paramObj.getLong("envId"));
+        if (env == null) {
+            throw new AppEnvNotFoundException(paramObj.getLong("envId"));
         }
         CiEntityVo DBCiEntityVo = iCiEntityCrossoverMapper.getCiEntityBaseInfoById(paramObj.getLong("dbResourceId"));
         if (DBCiEntityVo == null) {

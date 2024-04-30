@@ -18,8 +18,11 @@ import neatlogic.framework.autoexec.crossover.IAutoexecScenarioCrossoverMapper;
 import neatlogic.framework.autoexec.dto.scenario.AutoexecScenarioVo;
 import neatlogic.framework.autoexec.exception.AutoexecScenarioIsNotFoundException;
 import neatlogic.framework.cmdb.crossover.ICiEntityCrossoverMapper;
+import neatlogic.framework.cmdb.crossover.IResourceCrossoverMapper;
 import neatlogic.framework.cmdb.dto.cientity.CiEntityVo;
+import neatlogic.framework.cmdb.dto.resourcecenter.ResourceVo;
 import neatlogic.framework.cmdb.exception.cientity.CiEntityNotFoundException;
+import neatlogic.framework.cmdb.exception.resourcecenter.AppEnvNotFoundException;
 import neatlogic.framework.crossover.CrossoverServiceFactory;
 import neatlogic.framework.deploy.auth.core.DeployAppAuthChecker;
 import neatlogic.framework.deploy.constvalue.DeployAppConfigAction;
@@ -57,11 +60,12 @@ public class DeployAppAuthorityServiceImpl implements DeployAppAuthorityService 
             if (appSystemCiEntity == null) {
                 throw new CiEntityNotFoundException(appSystemId);
             }
-            CiEntityVo envCiEntity = iCiEntityCrossoverMapper.getCiEntityBaseInfoById(envId);
-            if (envCiEntity == null) {
-                throw new CiEntityNotFoundException(envId);
+            IResourceCrossoverMapper iResourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
+            ResourceVo env = iResourceCrossoverMapper.getAppEnvById(envId);
+            if (env == null) {
+                throw new AppEnvNotFoundException(envId);
             }
-            throw new DeployAppEnvAuthException(appSystemCiEntity, envCiEntity);
+            throw new DeployAppEnvAuthException(appSystemCiEntity, env);
         }
     }
 
@@ -94,11 +98,12 @@ public class DeployAppAuthorityServiceImpl implements DeployAppAuthorityService 
                 if (appSystemCiEntity == null) {
                     throw new CiEntityNotFoundException(appSystemId);
                 }
-                CiEntityVo envCiEntity = iCiEntityCrossoverMapper.getCiEntityBaseInfoById(envId);
-                if (envCiEntity == null) {
-                    throw new CiEntityNotFoundException(envId);
+                IResourceCrossoverMapper iResourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
+                ResourceVo env = iResourceCrossoverMapper.getAppEnvById(envId);
+                if (env == null) {
+                    throw new AppEnvNotFoundException(envId);
                 }
-                throw new DeployAppEnvAuthException(appSystemCiEntity, envCiEntity);
+                throw new DeployAppEnvAuthException(appSystemCiEntity, env);
             }
         }
     }
