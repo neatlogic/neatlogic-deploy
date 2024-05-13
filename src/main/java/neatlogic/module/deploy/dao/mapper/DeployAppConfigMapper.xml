@@ -149,7 +149,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         from @{DATA_SCHEMA}.`scence_appsystem_appmodule` saa
         left join deploy_app_config_user dacu on saa.id = dacu.app_system_id and dacu.user_uuid = #{userUuid}
         left join deploy_app_config dac on saa.id = dac.app_system_id and dac.app_module_id = 0 and dac.env_id = 0
-        LEFT JOIN deploy_app_config_authority daca ON daca.app_system_id = saa.id
+        LEFT JOIN deploy_app_config_authority daca ON daca.app_system_id = saa.id and (daca.auth_uuid = #{userUuid} or daca.auth_uuid = 'alluser')
         where saa.id in
         <foreach collection="idList" item="id" open="(" close=")" separator=",">
             #{id}
@@ -174,7 +174,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         from @{DATA_SCHEMA}.`scence_appsystem` sa
         left join deploy_app_config_user dacu on sa.id = dacu.app_system_id and dacu.user_uuid = #{userUuid}
         left join deploy_app_config dac on sa.id = dac.app_system_id and dac.app_module_id = 0 and dac.env_id = 0
-        LEFT JOIN deploy_app_config_authority daca ON daca.app_system_id = sa.id and daca.auth_uuid = #{userUuid}
+        LEFT JOIN deploy_app_config_authority daca ON daca.app_system_id = sa.id and (daca.auth_uuid = #{userUuid} or daca.auth_uuid = 'alluser')
         where sa.id in
         <foreach collection="idList" item="id" open="(" close=")" separator=",">
             #{id}
