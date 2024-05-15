@@ -100,7 +100,6 @@ public class SaveDeployAppConfigEnvApi extends PrivateApiComponentBase {
 
         //校验编辑配置的操作权限
         deployAppAuthorityService.checkOperationAuth(appSystemId, DeployAppConfigAction.EDIT);
-        deployAppAuthorityService.checkEnvAuthList(appSystemId, envIdList);
 
         IGlobalAttrCrossoverMapper globalAttrCrossoverMapper = CrossoverServiceFactory.getApi(IGlobalAttrCrossoverMapper.class);
         List<GlobalAttrItemVo> globalAttrItemList = new ArrayList<>();

@@ -41,10 +41,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -102,8 +99,7 @@ public class SearchDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
             List<DeployAppSystemVo> tbodyList = deployAppConfigMapper.getAppSystemListByIdList(idList, UserContext.get().getUserUuid());
             return TableResultUtil.getResult(tbodyList, searchVo);
         }
-        List<String> authorityActionList = new ArrayList<>();
-        authorityActionList.add(DeployAppConfigAction.VIEW.getValue());
+        List<String> authorityActionList = Arrays.asList(DeployAppConfigAction.VIEW.getValue(), DeployAppConfigAction.EXECUTE.getValue(), DeployAppConfigAction.EDIT.getValue());
         searchVo.setAuthorityActionList(authorityActionList);
         List<DeployAppSystemVo> returnAppSystemList = new ArrayList<>();
         Integer count = deployAppConfigMapper.getAppSystemIdListCount(searchVo);

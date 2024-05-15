@@ -20,7 +20,8 @@ import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.crossover.CrossoverServiceFactory;
 import neatlogic.framework.dependency.core.DependencyManager;
-import neatlogic.framework.deploy.auth.DEPLOY_MODIFY;
+import neatlogic.framework.deploy.auth.APP_CONFIG_MODIFY;
+import neatlogic.framework.deploy.constvalue.DeployAppConfigAction;
 import neatlogic.framework.notify.crossover.INotifyServiceCrossoverService;
 import neatlogic.framework.notify.dto.InvokeNotifyPolicyConfigVo;
 import neatlogic.framework.restful.annotation.*;
@@ -28,8 +29,11 @@ import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.module.deploy.dependency.handler.NotifyPolicyDeployJobDependencyHandler;
 import neatlogic.module.deploy.notify.handler.DeployJobNotifyPolicyHandler;
+import neatlogic.module.deploy.service.DeployAppAuthorityService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import javax.annotation.Resource;
 
 /**
  * @author longrf
@@ -37,7 +41,7 @@ import org.springframework.transaction.annotation.Transactional;
  */
 @Service
 @Transactional
-@AuthAction(action = DEPLOY_MODIFY.class)
+@AuthAction(action = APP_CONFIG_MODIFY.class)
 @OperationType(type = OperationTypeEnum.UPDATE)
 public class SaveDeployJobNotifyPolicyApi extends PrivateApiComponentBase {
 
@@ -50,6 +54,9 @@ public class SaveDeployJobNotifyPolicyApi extends PrivateApiComponentBase {
     public String getConfig() {
         return null;
     }
+
+    @Resource
+    DeployAppAuthorityService deployAppAuthorityService;
 
     @Input({
             @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "应用系统id"),
@@ -64,6 +71,7 @@ public class SaveDeployJobNotifyPolicyApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         Long appSystemId = paramObj.getLong("appSystemId");
+        deployAppAuthorityService.checkOperationAuth(appSystemId, DeployAppConfigAction.EDIT);
         DependencyManager.delete(NotifyPolicyDeployJobDependencyHandler.class, appSystemId);
         Long policyId = paramObj.getLong("policyId");
         if (policyId != null) {
