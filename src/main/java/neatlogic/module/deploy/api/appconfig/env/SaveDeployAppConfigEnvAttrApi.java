@@ -32,6 +32,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.Date;
 
 /**
  * @author lvzk
@@ -81,6 +82,7 @@ public class SaveDeployAppConfigEnvAttrApi extends PrivateApiComponentBase {
         DeployAppConfigEnvAttrVo appEnvAttrVo = JSON.toJavaObject(paramObj, DeployAppConfigEnvAttrVo.class);
         Long nowDate = System.currentTimeMillis();
         appEnvAttrVo.setUpdateTime(nowDate);
+        appEnvAttrVo.setLcd(new Date());
         if (CollectionUtils.isNotEmpty(appEnvAttrVo.getKeyValueList())) {
             deployAppConfigMapper.insertAppConfigEnvAttr(appEnvAttrVo);
         }

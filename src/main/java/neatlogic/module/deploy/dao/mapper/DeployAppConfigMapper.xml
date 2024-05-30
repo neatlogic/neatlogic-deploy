@@ -719,6 +719,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                 </foreach>
             </if>
         </where>
+        order by `key` asc
     </select>
 
     <resultMap id="runnerGroupMap" type="neatlogic.framework.dto.runner.RunnerGroupVo">
