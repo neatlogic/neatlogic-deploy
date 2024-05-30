@@ -701,6 +701,26 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
           and `instance_id` = #{instanceId}
     </select>
 
+    <select id="getAppEnvAttrList"
+            parameterType="neatlogic.framework.deploy.dto.app.DeployAppConfigEnvAttrVo"
+            resultType="neatlogic.framework.deploy.dto.app.DeployAppEnvAutoConfigKeyValueVo" useCache="false">
+        select `key`,
+               `type`,
+               `value`
+        from deploy_app_config_env_attr
+        <where>
+          `app_system_id` = #{appSystemId}
+          and `app_module_id` = #{appModuleId}
+          and `env_id` = #{envId}
+            <if test="keyList != null and keyList.size() > 0">
+                and `key` in
+                <foreach collection="keyList" item="key" separator="," open="(" close=")">
+                    #{key}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
     <resultMap id="runnerGroupMap" type="neatlogic.framework.dto.runner.RunnerGroupVo">
         <id column="groupId" property="id"/>
         <result column="groupName" property="name"/>
@@ -1533,6 +1553,17 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         VALUES(`lcu`)
     </insert>
 
+    <insert id="insertAppConfigEnvAttr">
+        INSERT INTO deploy_app_config_env_attr
+        (`app_system_id`,`app_module_id`,`env_id`,`key`,`type`,`value`,`lcd`,`lcu`,`update_time`)
+        VALUES
+        <foreach collection="keyValueList" item="keyValue" separator="),(" open="(" close=")">
+            #{appSystemId},#{appModuleId},#{envId},#{keyValue.key},#{keyValue.type},#{keyValue.value},#{lcd},#{lcu},#{updateTime}
+        </foreach>
+        ON DUPLICATE KEY UPDATE `key` = VALUES(`key`),`type` = VALUES(`type`),`value` = VALUES(`value`),`lcd`= VALUES(`lcd`),`lcu` =
+        VALUES(`lcu`),`update_time`= VALUES(`update_time`)
+    </insert>
+
     <insert id="insertAppEnvAutoConfigNew">
         INSERT INTO deploy_app_env_auto_config
         (`app_system_id`,`app_module_id`,`env_id`,`instance_id`,`key`,`value`,`lcd`,`lcu`)
@@ -1747,6 +1778,25 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
             </if>
             <if test="lcd != null">
                 and `lcd` != #{lcd}
+            </if>
+        </where>
+    </delete>
+
+    <delete id="deleteAppConfigEnvAttr">
+        delete
+        from deploy_app_config_env_attr
+        <where>
+            <if test="appSystemId != null">
+                AND `app_system_id` = #{appSystemId}
+            </if>
+            <if test="appModuleId != 0L">
+                AND `app_module_id` = #{appModuleId}
+            </if>
+            <if test="envId != 0L">
+                AND `env_id` = #{envId}
+            </if>
+            <if test="updateTime != null">
+                and `update_time` != #{updateTime}
             </if>
         </where>
     </delete>

@@ -45,6 +45,8 @@ public interface DeployAppConfigMapper extends IDeployAppConfigCrossoverMapper {
 
     List<DeployAppEnvAutoConfigKeyValueVo> getAppEnvAutoConfigKeyValueList(DeployAppEnvAutoConfigVo envAutoConfigVo);
 
+    List<DeployAppEnvAutoConfigKeyValueVo> getAppEnvAttrList(DeployAppConfigEnvAttrVo envAutoConfigVo);
+
     String getAppConfig(DeployAppConfigVo deployAppConfigVo);
 
     DeployAppConfigVo getAppConfigVo(DeployAppConfigVo deployAppConfigVo);
@@ -111,6 +113,8 @@ public interface DeployAppConfigMapper extends IDeployAppConfigCrossoverMapper {
 
     Integer insertAppEnvAutoConfig(DeployAppEnvAutoConfigVo appEnvAutoConfigVo);
 
+    Integer insertAppConfigEnvAttr(DeployAppConfigEnvAttrVo appConfigEnvAttrVo);
+
     /**
      * 插入autoCfg时 DUPLICATE 只update key
      *
@@ -145,6 +149,8 @@ public interface DeployAppConfigMapper extends IDeployAppConfigCrossoverMapper {
     Integer deleteAppConfigAuthorityByAppIdAndAuthUuidList(@Param("appSystemId") Long appSystemId, @Param("uuidList") List<String> uuidList);
 
     Integer deleteAppEnvAutoConfig(DeployAppEnvAutoConfigVo deployAppEnvAutoConfigVo);
+
+    Integer deleteAppConfigEnvAttr(DeployAppConfigEnvAttrVo deployAppConfigEnvAttrVo);
 
     Integer deleteAppEnvAutoConfigByAppSystemIdAndAppModuleIdAndEnvId(@Param("appSystemId") Long appSystemId, @Param("appModuleId") Long appModuleId, @Param("envId") Long envId);
 
