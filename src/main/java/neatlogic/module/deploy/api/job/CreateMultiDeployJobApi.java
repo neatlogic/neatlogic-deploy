@@ -15,6 +15,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 
 package neatlogic.module.deploy.api.job;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.asynchronization.threadlocal.UserContext;
@@ -135,10 +136,10 @@ public class CreateMultiDeployJobApi extends PrivateApiComponentBase {
         }
         Long invokeId = deployJobParam.getAppSystemId();
         BatchRunner<DeployJobModuleVo> runner = new BatchRunner<>();
-        runner.execute(deployJobParam.getModuleList(), 3, module -> {
+        runner.execute(deployJobParam.getModuleList(), 3, (threadIndex, dataIndex, module) -> {
             if (module != null) {
                 //防止后续多个作业用的同一个作业
-                DeployJobVo deployJob = JSONObject.toJavaObject(jsonObj, DeployJobVo.class);
+                DeployJobVo deployJob = JSON.toJavaObject(jsonObj, DeployJobVo.class);
                 deployJob.setSource(JobSource.DEPLOY.getValue());
                 deployJob.setInvokeId(invokeId);
                 deployJob.setRouteId(invokeId.toString());
