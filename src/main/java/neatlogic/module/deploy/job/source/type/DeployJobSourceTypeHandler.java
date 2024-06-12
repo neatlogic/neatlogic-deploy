@@ -15,6 +15,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 
 package neatlogic.module.deploy.job.source.type;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.nacos.common.utils.CollectionUtils;
@@ -23,6 +24,7 @@ import neatlogic.framework.auth.core.AuthActionChecker;
 import neatlogic.framework.autoexec.constvalue.ExecMode;
 import neatlogic.framework.autoexec.constvalue.JobNodeStatus;
 import neatlogic.framework.autoexec.dao.mapper.AutoexecJobMapper;
+import neatlogic.framework.autoexec.dto.AutoexecParamVo;
 import neatlogic.framework.autoexec.dto.ISqlNodeDetail;
 import neatlogic.framework.autoexec.dto.combop.AutoexecCombopPhaseVo;
 import neatlogic.framework.autoexec.dto.combop.AutoexecCombopVo;
@@ -47,6 +49,7 @@ import neatlogic.framework.deploy.constvalue.BuildNoStatus;
 import neatlogic.framework.deploy.constvalue.JobSource;
 import neatlogic.framework.deploy.constvalue.JobSourceType;
 import neatlogic.framework.deploy.dto.app.DeployPipelineConfigVo;
+import neatlogic.framework.deploy.dto.app.DeployProfileVo;
 import neatlogic.framework.deploy.dto.job.DeployJobContentVo;
 import neatlogic.framework.deploy.dto.job.DeployJobVo;
 import neatlogic.framework.deploy.dto.pipeline.PipelineJobTemplateVo;
@@ -55,10 +58,7 @@ import neatlogic.framework.deploy.dto.sql.DeploySqlNodeDetailVo;
 import neatlogic.framework.deploy.dto.version.DeployVersionBuildNoVo;
 import neatlogic.framework.deploy.dto.version.DeployVersionEnvVo;
 import neatlogic.framework.deploy.dto.version.DeployVersionVo;
-import neatlogic.framework.deploy.exception.DeployAppConfigModuleRunnerGroupNotFoundException;
-import neatlogic.framework.deploy.exception.DeployJobCannotExecuteException;
-import neatlogic.framework.deploy.exception.DeployPipelineConfigNotFoundException;
-import neatlogic.framework.deploy.exception.DeployVersionNotFoundException;
+import neatlogic.framework.deploy.exception.*;
 import neatlogic.framework.dto.globallock.GlobalLockVo;
 import neatlogic.framework.dto.runner.RunnerGroupVo;
 import neatlogic.framework.dto.runner.RunnerMapVo;
@@ -176,6 +176,38 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
             if (CollectionUtils.isNotEmpty(sqlIdList)) {
                 jobVo.setJobPhaseNodeSqlList(deploySqlMapper.getDeployJobPhaseNodeListBySqlIdList(sqlIdList));
                 deploySqlMapper.updateDeploySqlStatusByIdList(sqlIdList, JobNodeStatus.IGNORED.getValue());
+            }
+        }
+    }
+
+    @Override
+    public void overrideProfile(AutoexecJobVo autoexecJobVo, Map<String, Object> returnMap, Long profileId) {
+        if (MapUtils.isEmpty(returnMap)) {
+            return;
+        }
+        DeployJobVo deployJobVo = deployJobMapper.getDeployJobByJobId(autoexecJobVo.getId());
+        if (deployJobVo == null) {
+            throw new DeployJobNotFoundException(autoexecJobVo.getId());
+        }
+        DeployPipelineConfigVo deployPipelineConfigVo = DeployPipelineConfigManager.init(deployJobVo.getAppSystemId())
+                .withAppModuleId(deployJobVo.getAppModuleId())
+                .withEnvId(deployJobVo.getEnvId())
+                .withDeleteDisabledPhase(true) // 删除禁用阶段
+                .getConfig();
+        if (deployPipelineConfigVo == null) {
+            throw new DeployPipelineConfigNotFoundException();
+        }
+        List<DeployProfileVo> overrideProfileList = deployPipelineConfigVo.getOverrideProfileList();
+        if (CollectionUtils.isNotEmpty(overrideProfileList)) {
+            Optional<DeployProfileVo> optionalDeployProfileVo = overrideProfileList.stream().filter(p -> Objects.equals(p.getProfileId(), profileId)).findFirst();
+            if (optionalDeployProfileVo.isPresent() && CollectionUtils.isNotEmpty(optionalDeployProfileVo.get().getParamList())) {
+                Map<String, Object> overrideProfileMap = optionalDeployProfileVo.get().getParamList().stream().collect(Collectors.toMap(AutoexecParamVo::getKey, AutoexecParamVo::getDefaultValue));
+                for (Map.Entry<String, Object> entry : returnMap.entrySet()) {
+                    String key = entry.getKey();
+                    if (overrideProfileMap.containsKey(key)) {
+                        returnMap.put(key, overrideProfileMap.get(key));
+                    }
+                }
             }
         }
     }
@@ -498,7 +530,7 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
     @Override
     public boolean getIsCanUpdatePhaseRunner(AutoexecJobPhaseVo jobPhaseVo, Long runnerMapId) {
         List<DeploySqlNodeDetailVo> deploySqlDetailVos = deploySqlMapper.getDeployJobSqlDetailByExceptStatusListAndRunnerMapId(jobPhaseVo.getJobId(), jobPhaseVo.getName(), Arrays.asList(JobNodeStatus.SUCCEED.getValue(), JobNodeStatus.IGNORED.getValue()), runnerMapId);
-        return deploySqlDetailVos.size() == 0;
+        return deploySqlDetailVos.isEmpty();
     }
 
     @Override
@@ -607,7 +639,7 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
             module.put("version", deployJobVo.getVersion());
             module.put("buildNo", deployJobVo.getBuildNo());
             AutoexecJobContentVo configContentVo = autoexecJobMapper.getJobContent(jobVo.getConfigHash());
-            JSONObject jobConfig = JSONObject.parseObject(configContentVo.getContent());
+            JSONObject jobConfig = JSON.parseObject(configContentVo.getContent());
             JSONObject executeConfig = jobConfig.getJSONObject("executeConfig");
             if (MapUtils.isNotEmpty(executeConfig)) {
                 JSONObject executeNodeConfig = executeConfig.getJSONObject("executeNodeConfig");
