@@ -225,7 +225,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         dvb.build_no as buildNo,
         dvb.status as buildNoStatus,
         dve.env_id as envId,
-        cc.name as envName,
+        cga.`value` as envName,
         dve.status as envStatus,
         dve.is_mirror as isMirror,
         dve.build_no as envBuildNo,
@@ -246,7 +246,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         dv.app_module_id
         left join deploy_version_buildno dvb on dvb.version_id = dv.id
         left join deploy_version_env dve on dve.version_id = dv.id
-        left join cmdb_cientity cc on cc.id = dve.env_id
+        left join cmdb_global_attritem cga on cga.id = dve.env_id
         where dv.id IN
         <foreach collection="idList" item="id" open="(" separator="," close=")">
             #{id}
