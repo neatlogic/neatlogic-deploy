@@ -181,8 +181,8 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
     }
 
     @Override
-    public void overrideProfile(AutoexecJobVo autoexecJobVo, Map<String, Object> returnMap, Long profileId) {
-        if (MapUtils.isEmpty(returnMap)) {
+    public void overrideProfile(AutoexecJobVo autoexecJobVo, Map<String, AutoexecParamVo> autoexecProfileParamVoMap, Long profileId) {
+        if (MapUtils.isEmpty(autoexecProfileParamVoMap)) {
             return;
         }
         DeployJobVo deployJobVo = deployJobMapper.getDeployJobByJobId(autoexecJobVo.getId());
@@ -201,11 +201,11 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
         if (CollectionUtils.isNotEmpty(overrideProfileList)) {
             Optional<DeployProfileVo> optionalDeployProfileVo = overrideProfileList.stream().filter(p -> Objects.equals(p.getProfileId(), profileId)).findFirst();
             if (optionalDeployProfileVo.isPresent() && CollectionUtils.isNotEmpty(optionalDeployProfileVo.get().getParamList())) {
-                Map<String, Object> overrideProfileMap = optionalDeployProfileVo.get().getParamList().stream().collect(Collectors.toMap(AutoexecParamVo::getKey, AutoexecParamVo::getDefaultValue));
-                for (Map.Entry<String, Object> entry : returnMap.entrySet()) {
+                Map<String, AutoexecParamVo> overrideProfileParamMap = optionalDeployProfileVo.get().getParamList().stream().collect(Collectors.toMap(AutoexecParamVo::getKey, e -> e));
+                for (Map.Entry<String, AutoexecParamVo> entry : autoexecProfileParamVoMap.entrySet()) {
                     String key = entry.getKey();
-                    if (overrideProfileMap.containsKey(key)) {
-                        returnMap.put(key, overrideProfileMap.get(key));
+                    if (overrideProfileParamMap.containsKey(key)) {
+                        autoexecProfileParamVoMap.put(key, overrideProfileParamMap.get(key));
                     }
                 }
             }
