@@ -2,7 +2,9 @@ package neatlogic.module.deploy.service;
 
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.nacos.common.utils.CollectionUtils;
-import neatlogic.framework.cmdb.crossover.ICiEntityCrossoverService;
+import neatlogic.framework.cmdb.crossover.IResourceCrossoverMapper;
+import neatlogic.framework.cmdb.dto.resourcecenter.ResourceVo;
+import neatlogic.framework.cmdb.exception.resourcecenter.AppEnvNotFoundException;
 import neatlogic.framework.common.constvalue.ResponseCode;
 import neatlogic.framework.crossover.CrossoverServiceFactory;
 import neatlogic.framework.deploy.constvalue.DeployResourceType;
@@ -10,7 +12,10 @@ import neatlogic.framework.deploy.constvalue.JobSourceType;
 import neatlogic.framework.deploy.dto.version.DeployVersionBuildNoVo;
 import neatlogic.framework.deploy.dto.version.DeployVersionEnvVo;
 import neatlogic.framework.deploy.dto.version.DeployVersionVo;
-import neatlogic.framework.deploy.exception.*;
+import neatlogic.framework.deploy.exception.DeployAppConfigModuleRunnerGroupNotFoundException;
+import neatlogic.framework.deploy.exception.DeployVersionBuildNoNotFoundException;
+import neatlogic.framework.deploy.exception.DeployVersionResourceHasBeenLockedException;
+import neatlogic.framework.deploy.exception.DeployVersionRunnerNotFoundException;
 import neatlogic.framework.deploy.exception.verison.DeployVersionSyncFailedException;
 import neatlogic.framework.dto.runner.RunnerGroupVo;
 import neatlogic.framework.dto.runner.RunnerMapVo;
@@ -152,11 +157,12 @@ public class DeployVersionServiceImpl implements DeployVersionService {
     public String getEnvName(String version, Long envId) {
         String envName = null;
         if (envId != null) {
-            ICiEntityCrossoverService ciEntityCrossoverService = CrossoverServiceFactory.getApi(ICiEntityCrossoverService.class);
-            envName = ciEntityCrossoverService.getCiEntityNameByCiEntityId(envId);
-            if (StringUtils.isBlank(envName)) {
-                throw new DeployVersionEnvNotFoundException(version, envId);
+            IResourceCrossoverMapper iResourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
+            ResourceVo env = iResourceCrossoverMapper.getAppEnvById(envId);
+            if (env == null) {
+                throw new AppEnvNotFoundException(envId);
             }
+            envName = env.getName();
         }
         return envName;
     }
