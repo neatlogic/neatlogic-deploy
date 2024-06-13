@@ -91,8 +91,6 @@ public class SaveDeployAppPipelineApi extends PrivateApiComponentBase {
 
         DeployAppConfigVo deployAppConfigVo = paramObj.toJavaObject(DeployAppConfigVo.class);
         Long appSystemId = deployAppConfigVo.getAppSystemId();
-//        Long appModuleId = deployAppConfigVo.getAppModuleId();
-//        Long envId = deployAppConfigVo.getEnvId();
         DeployAppConfigVo oldAppSystemAppConfigVo = deployAppConfigMapper.getAppConfigVo(new DeployAppConfigVo(appSystemId));
         if (oldAppSystemAppConfigVo == null) {
             // 在首次保存时需要重新生成阶段id和操作id
@@ -115,78 +113,6 @@ public class SaveDeployAppPipelineApi extends PrivateApiComponentBase {
         }
         setPhaseGroupId(deployAppConfigVo);
         pipelineService.saveDeployAppPipeline(deployAppConfigVo);
-//        String configStr = deployAppConfigVo.getConfigStr();
-//        IAutoexecCombopCrossoverService autoexecCombopCrossoverService = CrossoverServiceFactory.getApi(IAutoexecCombopCrossoverService.class);
-//        autoexecCombopCrossoverService.verifyAutoexecCombopConfig(deployAppConfigVo.getConfig().getAutoexecCombopConfigVo(), false);
-//        deployAppConfigVo.setConfigStr(configStr);
-//        deployAppConfigVo.setFcu(UserContext.get().getUserUuid());
-//        deployAppConfigVo.setLcu(UserContext.get().getUserUuid());
-//        if (appModuleId == 0L && envId == 0L) {
-//            // 应用层
-//            if (oldAppSystemAppConfigVo != null) {
-//                if (Objects.equals(oldAppSystemAppConfigVo.getConfigStr(), deployAppConfigVo.getConfigStr())) {
-//                    return null;
-//                } else {
-//                    pipelineService.deleteDependency(oldAppSystemAppConfigVo);
-//                    deployAppConfigVo.setId(oldAppSystemAppConfigVo.getId());
-//                    deployAppConfigMapper.updateAppConfig(deployAppConfigVo);
-//                    saveDependency(deployAppConfigVo);
-//                }
-//            } else {
-//                deployAppConfigMapper.insertAppConfig(deployAppConfigVo);
-//                saveDependency(deployAppConfigVo);
-//            }
-//        } else if (envId == 0L) {
-//            // 模块层
-//            DeployAppConfigVo oldAppModuleAppConfigVo = deployAppConfigMapper.getAppConfigVo(new DeployAppConfigVo(appSystemId, appModuleId));
-//            // 找出修改部分配置
-//            DeployPipelineConfigVo modifiedPartConfig = pipelineService.getModifiedPartConfig(deployAppConfigVo.getConfig(), null);
-//            if (modifiedPartConfig == null) {
-//                if (oldAppModuleAppConfigVo != null) {
-//                    pipelineService.deleteDependency(oldAppModuleAppConfigVo);
-//                    deployAppConfigMapper.deleteAppModuleAppConfig(appSystemId, appModuleId);
-//                }
-//                return null;
-//            }
-//            deployAppConfigVo.setConfig(modifiedPartConfig);
-//            if (oldAppModuleAppConfigVo != null) {
-//                pipelineService.deleteDependency(oldAppModuleAppConfigVo);
-//                deployAppConfigVo.setId(oldAppModuleAppConfigVo.getId());
-//                deployAppConfigMapper.updateAppConfig(deployAppConfigVo);
-//                saveModifiedPartConfigDependency(deployAppConfigVo);
-//            } else {
-//                deployAppConfigMapper.insertAppConfig(deployAppConfigVo);
-//                saveModifiedPartConfigDependency(deployAppConfigVo);
-//            }
-//        } else {
-//            // 环境层
-//            DeployPipelineConfigVo appModuleAppConfigConfig = null;
-//            DeployAppConfigVo oldAppModuleAppConfigVo = deployAppConfigMapper.getAppConfigVo(new DeployAppConfigVo(appSystemId, appModuleId));
-//            if (oldAppModuleAppConfigVo != null) {
-//                appModuleAppConfigConfig = oldAppModuleAppConfigVo.getConfig();
-//            }
-//
-//            DeployAppConfigVo oldAppEnvAppConfigVo = deployAppConfigMapper.getAppConfigVo(new DeployAppConfigVo(appSystemId, appModuleId, envId));
-//            // 找出修改部分配置
-//            DeployPipelineConfigVo modifiedPartConfig = pipelineService.getModifiedPartConfig(deployAppConfigVo.getConfig(), appModuleAppConfigConfig);
-//            if (modifiedPartConfig == null) {
-//                if (oldAppEnvAppConfigVo != null) {
-//                    pipelineService.deleteDependency(oldAppEnvAppConfigVo);
-//                    deployAppConfigMapper.deleteAppEnvAppConfig(appSystemId, appModuleId, envId);
-//                }
-//                return null;
-//            }
-//            deployAppConfigVo.setConfig(modifiedPartConfig);
-//            if (oldAppEnvAppConfigVo != null) {
-//                pipelineService.deleteDependency(oldAppEnvAppConfigVo);
-//                deployAppConfigVo.setId(oldAppEnvAppConfigVo.getId());
-//                deployAppConfigMapper.updateAppConfig(deployAppConfigVo);
-//                saveModifiedPartConfigDependency(deployAppConfigVo);
-//            } else {
-//                deployAppConfigMapper.insertAppConfig(deployAppConfigVo);
-//                saveModifiedPartConfigDependency(deployAppConfigVo);
-//            }
-//        }
         deployAppConfigMapper.deleteAppConfigDraft(deployAppConfigVo);
         return null;
     }
