@@ -18,6 +18,7 @@ import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.module.deploy.dao.mapper.DeployAppConfigMapper;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -65,24 +66,24 @@ public class GetDeployAppEnvAutoConfigApi extends PrivateApiComponentBase {
         Long sysId = paramObj.getLong("sysId");
         Long moduleId = paramObj.getLong("moduleId");
         Long envId = paramObj.getLong("envId");
-        IResourceCrossoverMapper resourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
-        List<Long> instanceIdList = resourceCrossoverMapper.getResourceIdListByAppSystemIdAndModuleIdAndEnvId(new ResourceVo(sysId, moduleId, envId));
-        if (instanceIdList.size() > 0) {
-            List<ResourceVo> instanceList = resourceCrossoverMapper.getResourceListByIdList(instanceIdList);
-            List<DeployAppEnvAutoConfigVo> configVoList = deployAppConfigMapper.getAppEnvAutoConfigBySystemIdAndModuleIdAndEnvId(sysId, moduleId, envId);
-            // env配置
-            Optional<List<DeployAppEnvAutoConfigKeyValueVo>> envConfigOpt = configVoList.stream().filter(o -> Objects.equals(o.getInstanceId(), 0L))
-                    .map(DeployAppEnvAutoConfigVo::getKeyValueList).findFirst();
-            if (envConfigOpt.isPresent()) {
-                List<DeployAppEnvAutoConfigKeyValueVo> envConfigList = envConfigOpt.get();
-                for (DeployAppEnvAutoConfigKeyValueVo keyValueVo : envConfigList) {
-                    autoCfg.put(keyValueVo.getKey(), keyValueVo.getValue());
-                    if (Objects.equals(ParamType.PASSWORD.getValue(), keyValueVo.getType())) {
-                        passwordKeyList.add(keyValueVo.getKey());
-                    }
+        List<DeployAppEnvAutoConfigVo> configVoList = deployAppConfigMapper.getAppEnvAutoConfigBySystemIdAndModuleIdAndEnvId(sysId, moduleId, envId);
+        // env配置
+        Optional<List<DeployAppEnvAutoConfigKeyValueVo>> envConfigOpt = configVoList.stream().filter(o -> Objects.equals(o.getInstanceId(), 0L))
+                .map(DeployAppEnvAutoConfigVo::getKeyValueList).findFirst();
+        if (envConfigOpt.isPresent()) {
+            List<DeployAppEnvAutoConfigKeyValueVo> envConfigList = envConfigOpt.get();
+            for (DeployAppEnvAutoConfigKeyValueVo keyValueVo : envConfigList) {
+                autoCfg.put(keyValueVo.getKey(), keyValueVo.getValue());
+                if (Objects.equals(ParamType.PASSWORD.getValue(), keyValueVo.getType())) {
+                    passwordKeyList.add(keyValueVo.getKey());
                 }
             }
-            // 实例配置
+        }
+        // 实例配置
+        IResourceCrossoverMapper resourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
+        List<Long> instanceIdList = resourceCrossoverMapper.getResourceIdListByAppSystemIdAndModuleIdAndEnvId(new ResourceVo(sysId, moduleId, envId));
+        if (CollectionUtils.isNotEmpty(instanceIdList)) {
+            List<ResourceVo> instanceList = resourceCrossoverMapper.getResourceListByIdList(instanceIdList);
             Map<Long, Map<String, String>> configMap = configVoList.stream().filter(o -> !Objects.equals(o.getInstanceId(), 0L))
                     .collect(Collectors.toMap(DeployAppEnvAutoConfigVo::getInstanceId, o -> o.getKeyValueList().stream().collect(Collectors.toMap(DeployAppEnvAutoConfigKeyValueVo::getKey, DeployAppEnvAutoConfigKeyValueVo::getValue))));
             for (ResourceVo vo : instanceList) {
