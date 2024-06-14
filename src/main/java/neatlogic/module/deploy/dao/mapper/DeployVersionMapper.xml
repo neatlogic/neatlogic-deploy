@@ -1477,7 +1477,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         #{fcu}, #{lcu});
     </insert>
     <insert id="insertRepository">
-        INSERT INTO `neatlogic_develop`.`codehub_repository` (`id`, `repo_service_id`, `name`, `address`, `main_branch`,
+        INSERT INTO `codehub_repository` (`id`, `repo_service_id`, `name`, `address`, `main_branch`,
         `app_module_id`, `create_mode`, `fcd`, `lcd`, `fcu`, `lcu`, `description`, `sync_status`, `sync_time`,
         `app_system_id`, `default_branch`, `branches_path`, `tags_path`, `runner_id`) VALUES (
         #{id},#{repoServiceId},#{name},#{address},#{mainBranch},#{appModuleId},#{createMode},now(),#{lcd},#{fcu},#{lcu},#{description},#{syncStatus},#{syncTime},#{appSystemId},#{defaultBranch},#{branchesPath},#{tagsPath},#{runnerId}
