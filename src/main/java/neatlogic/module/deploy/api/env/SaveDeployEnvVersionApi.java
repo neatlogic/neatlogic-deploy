@@ -1,7 +1,9 @@
 package neatlogic.module.deploy.api.env;
 
+import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
-import neatlogic.framework.cmdb.crossover.ICiEntityCrossoverService;
+import neatlogic.framework.cmdb.crossover.IResourceCrossoverMapper;
+import neatlogic.framework.cmdb.dto.resourcecenter.ResourceVo;
 import neatlogic.framework.cmdb.exception.resourcecenter.AppEnvNotFoundException;
 import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.common.constvalue.SystemUser;
@@ -20,7 +22,6 @@ import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.module.deploy.dao.mapper.DeployEnvVersionMapper;
 import neatlogic.module.deploy.dao.mapper.DeployVersionMapper;
-import com.alibaba.fastjson.JSONObject;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -81,8 +82,9 @@ public class SaveDeployEnvVersionApi extends PrivateApiComponentBase {
         if (userMapper.checkUserIsExists(execUser) == 0 && !Objects.equals(execUser, SystemUser.SYSTEM.getUserUuid())) {
             throw new UserNotFoundException(execUser);
         }
-        ICiEntityCrossoverService ciEntityCrossoverService = CrossoverServiceFactory.getApi(ICiEntityCrossoverService.class);
-        if (ciEntityCrossoverService.getCiEntityNameByCiEntityId(envId) == null) {
+        IResourceCrossoverMapper iResourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
+        ResourceVo env = iResourceCrossoverMapper.getAppEnvById(envId);
+        if (env == null) {
             throw new AppEnvNotFoundException(envId);
         }
         DeployVersionVo versionVo = deployVersionMapper.getDeployVersionBaseInfoBySystemIdAndModuleIdAndVersion(new DeployVersionVo(version, sysId, moduleId));

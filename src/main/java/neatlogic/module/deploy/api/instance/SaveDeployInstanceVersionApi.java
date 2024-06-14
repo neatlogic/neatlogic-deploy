@@ -1,7 +1,7 @@
 package neatlogic.module.deploy.api.instance;
 
+import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
-import neatlogic.framework.cmdb.crossover.ICiEntityCrossoverService;
 import neatlogic.framework.cmdb.crossover.IResourceCrossoverMapper;
 import neatlogic.framework.cmdb.dto.resourcecenter.ResourceVo;
 import neatlogic.framework.cmdb.exception.resourcecenter.AppEnvNotFoundException;
@@ -24,7 +24,7 @@ import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.module.deploy.dao.mapper.DeployInstanceVersionMapper;
 import neatlogic.module.deploy.dao.mapper.DeployVersionMapper;
-import com.alibaba.fastjson.JSONObject;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -89,14 +89,15 @@ public class SaveDeployInstanceVersionApi extends PrivateApiComponentBase {
         if (userMapper.checkUserIsExists(execUser) == 0 && !Objects.equals(execUser, SystemUser.SYSTEM.getUserUuid())) {
             throw new UserNotFoundException(execUser);
         }
-        ICiEntityCrossoverService ciEntityCrossoverService = CrossoverServiceFactory.getApi(ICiEntityCrossoverService.class);
-        String envName = ciEntityCrossoverService.getCiEntityNameByCiEntityId(envId);
-        if (envName == null) {
+        IResourceCrossoverMapper iResourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
+        ResourceVo env = iResourceCrossoverMapper.getAppEnvById(envId);
+        if (env == null) {
             throw new AppEnvNotFoundException(envId);
         }
+        String envName = env.getName();
         IResourceCrossoverMapper resourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
         List<Long> instanceIdList = resourceCrossoverMapper.getAppInstanceResourceIdListByAppSystemIdAndModuleIdAndEnvId(new ResourceVo(sysId, moduleId, envId));
-        if (instanceIdList.size() == 0 || !instanceIdList.contains(resourceId)) {
+        if (CollectionUtils.isEmpty(instanceIdList) || !instanceIdList.contains(resourceId)) {
             throw new DeployInstanceInEnvNotFoundException(paramObj.getString("sysName"), paramObj.getString("moduleName"), envName, resourceId);
         }
         DeployVersionVo versionVo = deployVersionMapper.getDeployVersionBaseInfoBySystemIdAndModuleIdAndVersion(new DeployVersionVo(version, sysId, moduleId));

@@ -1,8 +1,7 @@
 package neatlogic.module.deploy.api.instance;
 
-import neatlogic.framework.asynchronization.threadlocal.TenantContext;
+import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
-import neatlogic.framework.cmdb.crossover.ICiEntityCrossoverService;
 import neatlogic.framework.cmdb.crossover.IResourceCrossoverMapper;
 import neatlogic.framework.cmdb.dto.resourcecenter.ResourceVo;
 import neatlogic.framework.cmdb.exception.resourcecenter.AppEnvNotFoundException;
@@ -19,7 +18,7 @@ import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.module.deploy.dao.mapper.DeployInstanceVersionMapper;
-import com.alibaba.fastjson.JSONObject;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -66,14 +65,15 @@ public class RollbackDeployInstanceVersionApi extends PrivateApiComponentBase {
         Long moduleId = paramObj.getLong("moduleId");
         Long envId = paramObj.getLong("envId");
         Long resourceId = paramObj.getLong("resourceId");
-        ICiEntityCrossoverService ciEntityCrossoverService = CrossoverServiceFactory.getApi(ICiEntityCrossoverService.class);
-        String envName = ciEntityCrossoverService.getCiEntityNameByCiEntityId(envId);
-        if (envName == null) {
+        IResourceCrossoverMapper iResourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
+        ResourceVo env = iResourceCrossoverMapper.getAppEnvById(envId);
+        if (env == null) {
             throw new AppEnvNotFoundException(envId);
         }
+        String envName = env.getName();
         IResourceCrossoverMapper resourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
         List<Long> instanceIdList = resourceCrossoverMapper.getAppInstanceResourceIdListByAppSystemIdAndModuleIdAndEnvId(new ResourceVo(sysId, moduleId, envId));
-        if (instanceIdList.size() == 0 || !instanceIdList.contains(resourceId)) {
+        if (CollectionUtils.isEmpty(instanceIdList) || !instanceIdList.contains(resourceId)) {
             throw new DeployInstanceInEnvNotFoundException(paramObj.getString("sysName"), paramObj.getString("moduleName"), envName, resourceId);
         }
         // 找到实例的当前版本，回退到当前版本第一次出现在audit表时记录的old_version
