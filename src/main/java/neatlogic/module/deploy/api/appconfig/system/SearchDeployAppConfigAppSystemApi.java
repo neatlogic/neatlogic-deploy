@@ -96,7 +96,8 @@ public class SearchDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
         JSONArray defaultValue = searchVo.getDefaultValue();
         if (CollectionUtils.isNotEmpty(defaultValue)) {
             List<Long> idList = defaultValue.toJavaList(Long.class);
-            List<DeployAppSystemVo> tbodyList = deployAppConfigMapper.getAppSystemListByIdList(idList, UserContext.get().getUserUuid());
+            searchVo.setAppSystemIdList(idList);
+            List<DeployAppSystemVo> tbodyList = deployAppConfigMapper.getAppSystemListByIdList(searchVo, UserContext.get().getUserUuid());
             return TableResultUtil.getResult(tbodyList, searchVo);
         }
         List<String> authorityActionList = Arrays.asList(DeployAppConfigAction.VIEW.getValue(), DeployAppConfigAction.EXECUTE.getValue(), DeployAppConfigAction.EDIT.getValue());
@@ -105,15 +106,17 @@ public class SearchDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
         Integer count = deployAppConfigMapper.getAppSystemIdListCount(searchVo);
         if (count > 0) {
             searchVo.setRowNum(count);
-
+            //过滤出有查看权限的系统
             List<Long> appSystemIdList = deployAppConfigMapper.getAppSystemIdList(searchVo, UserContext.get().getUserUuid());
             if (CollectionUtils.isEmpty(appSystemIdList)) {
                 return TableResultUtil.getResult(returnAppSystemList, searchVo);
             }
+            searchVo.setAppSystemIdList(appSystemIdList);
+            //补充上述系统的所有权限
             if (StringUtils.isNotEmpty(searchVo.getKeyword())) {
-                returnAppSystemList = deployAppConfigMapper.getAppSystemListIncludeModuleByIdList(appSystemIdList, UserContext.get().getUserUuid());
+                returnAppSystemList = deployAppConfigMapper.getAppSystemListIncludeModuleByIdList(searchVo, UserContext.get().getUserUuid());
             } else {
-                returnAppSystemList = deployAppConfigMapper.getAppSystemListByIdList(appSystemIdList, UserContext.get().getUserUuid());
+                returnAppSystemList = deployAppConfigMapper.getAppSystemListByIdList(searchVo, UserContext.get().getUserUuid());
             }
 
             /*补充系统是否有模块、是否有环境、是否有配置权限 ,补充模块是否配置、是否有环境、是否含有资源锁*/
@@ -123,7 +126,7 @@ public class SearchDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
 
             Set<String> globalLockKeySet = new HashSet<>();
             List<GlobalLockVo> globalLockVoList = globalLockMapper.getLockListByKeyListAndHandler(appSystemIdList.stream().map(Object::toString).collect(Collectors.toList()), JobSourceType.DEPLOY.getValue());
-            if(CollectionUtils.isNotEmpty(globalLockVoList)){
+            if (CollectionUtils.isNotEmpty(globalLockVoList)) {
                 globalLockKeySet = globalLockVoList.stream().map(GlobalLockVo::getKey).collect(Collectors.toSet());
             }
             for (DeployAppSystemVo returnSystemVo : returnAppSystemList) {
@@ -151,7 +154,7 @@ public class SearchDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
                 }
 
                 //补充isHasResourceLock
-                if(globalLockKeySet.stream().anyMatch(o->o.contains(returnSystemVo.getId().toString()))){
+                if (globalLockKeySet.stream().anyMatch(o -> o.contains(returnSystemVo.getId().toString()))) {
                     returnSystemVo.setIsHasResourceLock(1);
                 }
             }

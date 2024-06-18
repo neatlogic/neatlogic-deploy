@@ -49,8 +49,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                 AND
                 (daca.app_system_id is null
                 OR
-                (daca.action_type = 'operation'
-                AND daca.action IN
+                ( daca.action IN
                 ('all'
                 <if test="searchVo.authorityActionList != null and searchVo.authorityActionList.size() > 0">,
                     <foreach collection="searchVo.authorityActionList" item="item" separator=",">
@@ -150,10 +149,27 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         left join deploy_app_config_user dacu on saa.id = dacu.app_system_id and dacu.user_uuid = #{userUuid}
         left join deploy_app_config dac on saa.id = dac.app_system_id and dac.app_module_id = 0 and dac.env_id = 0
         LEFT JOIN deploy_app_config_authority daca ON daca.app_system_id = saa.id
-        where saa.id in
-        <foreach collection="idList" item="id" open="(" close=")" separator=",">
-            #{id}
-        </foreach>
+        <where>
+            saa.id in
+            <foreach collection="searchVo.appSystemIdList" item="id" open="(" close=")" separator=",">
+                #{id}
+            </foreach>
+            <if test="searchVo.isHasAllAuthority == 0">
+                AND
+                (daca.app_system_id is null
+                OR daca.auth_uuid IN
+                (
+                'alluser'
+                <if test="searchVo.authUuidList != null and searchVo.authUuidList.size() > 0">
+                    ,
+                    <foreach collection="searchVo.authUuidList" item="item" separator=",">
+                        #{item}
+                    </foreach>
+                </if>
+                )
+                )
+            </if>
+        </where>
         order by if(dacu.user_uuid = #{userUuid},1,0) desc,
         CONVERT(saa.abbr_name USING gbk) COLLATE gbk_chinese_ci ASC,
         CONVERT(saa.app_module_abbr_name USING gbk) COLLATE gbk_chinese_ci ASC
@@ -175,10 +191,26 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         left join deploy_app_config_user dacu on sa.id = dacu.app_system_id and dacu.user_uuid = #{userUuid}
         left join deploy_app_config dac on sa.id = dac.app_system_id and dac.app_module_id = 0 and dac.env_id = 0
         LEFT JOIN deploy_app_config_authority daca ON daca.app_system_id = sa.id
-        where sa.id in
-        <foreach collection="idList" item="id" open="(" close=")" separator=",">
-            #{id}
-        </foreach>
+        <where>sa.id in
+            <foreach collection="searchVo.appSystemIdList" item="id" open="(" close=")" separator=",">
+                #{id}
+            </foreach>
+            <if test="searchVo.isHasAllAuthority == 0">
+                AND
+                (daca.app_system_id is null
+                OR daca.auth_uuid IN
+                (
+                'alluser'
+                <if test="searchVo.authUuidList != null and searchVo.authUuidList.size() > 0">
+                    ,
+                    <foreach collection="searchVo.authUuidList" item="item" separator=",">
+                        #{item}
+                    </foreach>
+                </if>
+                )
+                )
+            </if>
+        </where>
         order by if(dacu.user_uuid = #{userUuid},1,0) desc,
         CONVERT(sa.abbr_name USING gbk) COLLATE gbk_chinese_ci ASC
     </select>
