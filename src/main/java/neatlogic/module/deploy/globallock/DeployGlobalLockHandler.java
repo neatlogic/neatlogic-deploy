@@ -88,7 +88,7 @@ public class DeployGlobalLockHandler extends GlobalLockHandlerBase {
     @Override
     public JSONObject getLock(JSONObject paramJson) {
         JSONObject jsonObject = new JSONObject();
-        GlobalLockVo globalLockVo = new GlobalLockVo(JobSourceType.DEPLOY.getValue(), paramJson.getString("jobId") + "/" + paramJson.getString("runnerId") + "/" + paramJson.getString("lockOwner") + "/" + paramJson.getString("lockTarget"), paramJson.toJSONString(), paramJson.getString("lockOwnerName"));
+        GlobalLockVo globalLockVo = new GlobalLockVo(JobSourceType.DEPLOY.getValue(), paramJson.getString("lockOwner") + "/" + paramJson.getString("lockTarget"), paramJson.toJSONString(), paramJson.getString("lockOwnerName"));
         GlobalLockManager.getLock(globalLockVo);
         if (globalLockVo.getIsLock() == 1) {
             jsonObject.put("wait", 0);
@@ -107,7 +107,6 @@ public class DeployGlobalLockHandler extends GlobalLockHandlerBase {
             throw new ParamIrregularException("lockId");
         }
         //预防如果不存在，需重新insert lock
-        String jobId = paramJson.getString("jobId");
         GlobalLockVo globalLockVo = new GlobalLockVo(lockId, JobSourceType.DEPLOY.getValue(), paramJson.getString("lockOwner") + "/" + paramJson.getString("lockTarget"), paramJson.toJSONString(), paramJson.getString("lockOwnerName"));
         globalLockVo = GlobalLockManager.retryLock(globalLockVo);
         if (globalLockVo.getIsLock() == 1) {
