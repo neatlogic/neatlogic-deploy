@@ -100,8 +100,9 @@ public class SearchDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
             List<DeployAppSystemVo> tbodyList = deployAppConfigMapper.getAppSystemListByIdList(searchVo, UserContext.get().getUserUuid());
             return TableResultUtil.getResult(tbodyList, searchVo);
         }
-        List<String> authorityActionList = Arrays.asList(DeployAppConfigAction.VIEW.getValue(), DeployAppConfigAction.EXECUTE.getValue(), DeployAppConfigAction.EDIT.getValue());
-        searchVo.setAuthorityActionList(authorityActionList);
+        if(CollectionUtils.isNotEmpty(searchVo.getAuthorityActionList()) && searchVo.getAuthorityActionList().contains(DeployAppConfigAction.VIEW.getValue())){
+            searchVo.getAuthorityActionList().addAll(Arrays.asList(DeployAppConfigAction.EXECUTE.getValue(), DeployAppConfigAction.EDIT.getValue(), DeployAppConfigAction.AUTH.getValue()));
+        }
         List<DeployAppSystemVo> returnAppSystemList = new ArrayList<>();
         Integer count = deployAppConfigMapper.getAppSystemIdListCount(searchVo);
         if (count > 0) {

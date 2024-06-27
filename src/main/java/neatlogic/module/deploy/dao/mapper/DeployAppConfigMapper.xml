@@ -49,7 +49,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                 AND
                 (daca.app_system_id is null
                 OR
-                ( daca.action IN
+                (
+                daca.action_type = 'operation'
+                and daca.action IN
                 ('all'
                 <if test="searchVo.authorityActionList != null and searchVo.authorityActionList.size() > 0">,
                     <foreach collection="searchVo.authorityActionList" item="item" separator=",">

@@ -104,6 +104,7 @@ public class SearchDeployAppConfigAuthorityApi extends PrivateApiComponentBase {
                 JSONObject thead = new JSONObject();
                 thead.put("name", action.getValue());
                 thead.put("displayName", action.getText());
+                thead.put("description", action.getDescription());
                 theadList.add(thead);
             }
         }
