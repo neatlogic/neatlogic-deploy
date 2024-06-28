@@ -687,9 +687,9 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
                 }
             }
             result.put("roundCount", jobVo.getRoundCount());
-
+            result.put("jobId", jobVo.getId());
             //补充是否有资源锁
-            boolean isHasLock = GlobalLockHandlerFactory.getHandler(JobSourceType.DEPLOY.getValue()).getIsHasLockByKey(jobVo.getId().toString());
+            boolean isHasLock = GlobalLockHandlerFactory.getHandler(JobSourceType.DEPLOY.getValue()).getIsHasLockByKey(result);
             result.put("isHasLock", isHasLock ? 1 : 0);
 
         }
@@ -711,11 +711,7 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
 
     @Override
     public JSONObject getExtraRefreshJobInfo(AutoexecJobVo jobVo) {
-        JSONObject result = new JSONObject();
-        //补充是否有资源锁
-        boolean isHasLock = GlobalLockHandlerFactory.getHandler(JobSourceType.DEPLOY.getValue()).getIsHasLockByKey(jobVo.getId().toString());
-        result.put("isHasLock", isHasLock ? 1 : 0);
-        return result;
+        return getExtraJobInfo(jobVo);
     }
 
 }

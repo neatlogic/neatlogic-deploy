@@ -15,6 +15,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 
 package neatlogic.module.deploy.globallock;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.autoexec.dao.mapper.AutoexecJobMapper;
@@ -149,16 +150,18 @@ public class DeployGlobalLockHandler extends GlobalLockHandlerBase {
             jobMap = jobVoList.stream().collect(Collectors.toMap(AutoexecJobVo::getId, o -> o));
         }
         for (GlobalLockVo globalLock : globalLockList) {
-            tbody.add(JSONObject.parseObject(JSONObject.toJSONString(globalLock)));
+            tbody.add(JSON.parseObject(JSON.toJSONString(globalLock)));
         }
         JSONObject result = TableResultUtil.getResult(tbody, globalLockVo);
         for (int i = 0; i < tbody.size(); i++) {
             JSONObject data = tbody.getJSONObject(i);
             AutoexecJobVo jobVo = jobMap.get(data.getJSONObject("handlerParam").getLong("jobId"));
-            data.put("jobStatusName", jobVo.getStatusName());
-            data.put("jobStatus", jobVo.getStatus());
-            data.put("jobName", jobVo.getName());
-            data.put("jobId", jobVo.getId());
+            if (jobVo != null) {
+                data.put("jobStatusName", jobVo.getStatusName());
+                data.put("jobStatus", jobVo.getStatus());
+                data.put("jobName", jobVo.getName());
+                data.put("jobId", jobVo.getId());
+            }
             if (data.getInteger("isLock") == 1) {
                 data.put("lockCostTime", TimeUtil.millisecondsTransferMaxTimeUnit(System.currentTimeMillis() - data.getLong("fcd")));
             }
@@ -171,14 +174,11 @@ public class DeployGlobalLockHandler extends GlobalLockHandlerBase {
     public void initSearchParam(GlobalLockVo globalLockVo) {
         JSONObject keywordParam = globalLockVo.getKeywordParam();
         if (MapUtils.isNotEmpty(keywordParam)) {
-            if (keywordParam.containsKey("appSystemId")) {
-                globalLockVo.setKeyword(keywordParam.getString("appSystemId") + "/");
-                if (keywordParam.containsKey("appModuleId")) {
-                    globalLockVo.setKeyword(globalLockVo.getKeyword() + keywordParam.getString("appModuleId"));
-                }
-            }
+
+            String key = String.format("%s/%s/workspace", keywordParam.getString("appSystemId"), keywordParam.getString("appModuleId"));
+
             if (keywordParam.containsKey("jobId")) {
-                List<String> uuidList = globalLockMapper.getGlobalLockUuidByKey(getHandler(), keywordParam.getString("jobId"));
+                List<String> uuidList = globalLockMapper.getGlobalLockUuidByKey(getHandler(), key, keywordParam.getString("jobId"));
                 if (CollectionUtils.isNotEmpty(uuidList)) {
                     globalLockVo.setUuidList(uuidList.stream().collect(collectingAndThen(toCollection(() -> new TreeSet<>(Comparator.comparing(r -> r))), ArrayList::new)));
                 } else {
@@ -210,7 +210,7 @@ public class DeployGlobalLockHandler extends GlobalLockHandlerBase {
                 .sendRequest().getError();
         if (StringUtils.isNotBlank(result)) {
             //如果是进程不存在导致没法写入的问题，则跳过，直接解锁
-            if(!result.contains("No such file")) {
+            if (!result.contains("No such file")) {
                 throw new RunnerHttpRequestException(url + ":" + result);
             }
         }
@@ -218,9 +218,11 @@ public class DeployGlobalLockHandler extends GlobalLockHandlerBase {
     }
 
     @Override
-    public boolean getIsHasLockByKey(String key){
+    public boolean getIsHasLockByKey(JSONObject param) {
         GlobalLockVo globalLockVo = new GlobalLockVo();
-        List<String> uuidList = globalLockMapper.getGlobalLockUuidByKey(JobSourceType.DEPLOY.getValue(), key);
+        Long appSystemId = param.getLong("appSystemId");
+        Long appModuleId = param.getLong("appModuleId");
+        List<String> uuidList = globalLockMapper.getGlobalLockUuidByKey(JobSourceType.DEPLOY.getValue(), String.format("%s/%s/workspace", appSystemId, appModuleId),param.getString("jobId"));
         if (CollectionUtils.isNotEmpty(uuidList)) {
             globalLockVo.setUuidList(uuidList.stream().collect(collectingAndThen(toCollection(() -> new TreeSet<>(Comparator.comparing(r -> r))), ArrayList::new)));
         } else {
