@@ -175,15 +175,15 @@ public class DeployGlobalLockHandler extends GlobalLockHandlerBase {
         JSONObject keywordParam = globalLockVo.getKeywordParam();
         if (MapUtils.isNotEmpty(keywordParam)) {
 
-            String key = String.format("%s/%s/workspace", keywordParam.getString("appSystemId"), keywordParam.getString("appModuleId"));
+            String key = String.format("%s/%s/", keywordParam.getString("appSystemId"), keywordParam.getString("appModuleId"));
 
             if (keywordParam.containsKey("jobId")) {
-                List<String> uuidList = globalLockMapper.getGlobalLockUuidByKey(getHandler(), key, keywordParam.getString("jobId"));
-                if (CollectionUtils.isNotEmpty(uuidList)) {
-                    globalLockVo.setUuidList(uuidList.stream().collect(collectingAndThen(toCollection(() -> new TreeSet<>(Comparator.comparing(r -> r))), ArrayList::new)));
+                List<Long> idList = globalLockMapper.getGlobalLockIdByKey(getHandler(), key, keywordParam.getString("jobId"));
+                if (CollectionUtils.isNotEmpty(idList)) {
+                    globalLockVo.setIdList(idList.stream().collect(collectingAndThen(toCollection(() -> new TreeSet<>(Comparator.comparing(r -> r))), ArrayList::new)));
                 } else {
                     //不存在则没有资源锁
-                    globalLockVo.setUuidList(Collections.singletonList("-1"));
+                    globalLockVo.setIdList(Collections.singletonList(-1L));
                 }
             }
         }
@@ -199,7 +199,7 @@ public class DeployGlobalLockHandler extends GlobalLockHandlerBase {
         }
         JSONObject jsonObj = new JSONObject();
         jsonObj.put("jobId", jobId);
-        jsonObj.put("socketFileName", "client" + globalLockVo.getHandlerParam().getLong("pid"));
+        jsonObj.put("socketFileName", "job" + globalLockVo.getHandlerParam().getLong("execId"));
         JSONObject informParam = new JSONObject();
         informParam.put("action", "globalLockNotify");
         informParam.put("lockId", globalLockVo.getId());
@@ -222,7 +222,7 @@ public class DeployGlobalLockHandler extends GlobalLockHandlerBase {
         GlobalLockVo globalLockVo = new GlobalLockVo();
         Long appSystemId = param.getLong("appSystemId");
         Long appModuleId = param.getLong("appModuleId");
-        List<String> uuidList = globalLockMapper.getGlobalLockUuidByKey(JobSourceType.DEPLOY.getValue(), String.format("%s/%s/workspace", appSystemId, appModuleId),param.getString("jobId"));
+        List<String> uuidList = globalLockMapper.getGlobalLockUuidByKey(JobSourceType.DEPLOY.getValue(), String.format("%s/%s/", appSystemId, appModuleId),param.getString("jobId"));
         if (CollectionUtils.isNotEmpty(uuidList)) {
             globalLockVo.setUuidList(uuidList.stream().collect(collectingAndThen(toCollection(() -> new TreeSet<>(Comparator.comparing(r -> r))), ArrayList::new)));
         } else {

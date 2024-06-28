@@ -701,12 +701,11 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
         deploySqlMapper.deleteDeploySqlDetailByJobId(jobVo.getId());
         deployJobMapper.deleteJobById(jobVo.getId());
         GlobalLockVo globalLockVo = new GlobalLockVo();
-        JSONObject keywordParam = new JSONObject();
-        keywordParam.put("jobId", jobVo.getId());
+        JSONObject keywordParam = getExtraJobInfo(jobVo);
         globalLockVo.setKeywordParam(keywordParam);
         IGlobalLockHandler globalLockHandler = GlobalLockHandlerFactory.getHandler(JobSourceType.DEPLOY.getValue());
         globalLockHandler.initSearchParam(globalLockVo);
-        globalLockMapper.deleteLockByUuidList(globalLockVo.getUuidList());
+        globalLockMapper.deleteLockByIdList(globalLockVo.getIdList());
     }
 
     @Override
