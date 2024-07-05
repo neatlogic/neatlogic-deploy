@@ -82,6 +82,12 @@ public class ExportDeployAppPipelineApi extends PrivateBinaryStreamApiComponentB
         if (!importExportHandler.checkExportAuth(appSystemId)) {
             throw new ExportNoAuthException();
         }
+        // 先检查导出对象及依赖对象有没有找不到数据，如果有就抛异常
+        {
+            List<ImportExportBaseInfoVo> dependencyBaseInfoList = new ArrayList<>();
+            dependencyBaseInfoList.add(new ImportExportBaseInfoVo(DeployImportExportHandlerType.APP_PIPELINE.getValue(), appSystemId));
+            ImportExportVo importExportVo = importExportHandler.exportData(appSystemId, dependencyBaseInfoList, null);
+        }
         String fileName = FileUtil.getEncodedFileName("appSystem_" + appSystem.getAbbrName()+ "(" + appSystem.getName() + ")" + ".pak");
         response.setContentType("application/vnd.ms-excel;charset=utf-8");
         response.setHeader("Content-Disposition", " attachment; filename=\"" + fileName + "\"");
