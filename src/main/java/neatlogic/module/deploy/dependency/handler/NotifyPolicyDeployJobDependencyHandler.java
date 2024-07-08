@@ -20,7 +20,7 @@ import neatlogic.framework.cmdb.crossover.IAppSystemMapper;
 import neatlogic.framework.cmdb.dto.resourcecenter.entity.AppSystemVo;
 import neatlogic.framework.crossover.CrossoverServiceFactory;
 import neatlogic.framework.dependency.constvalue.FrameworkFromType;
-import neatlogic.framework.dependency.core.CustomTableDependencyHandlerBase;
+import neatlogic.framework.dependency.core.CustomDependencyHandlerBase;
 import neatlogic.framework.dependency.core.IFromType;
 import neatlogic.framework.dependency.dto.DependencyInfoVo;
 import neatlogic.framework.deploy.dto.app.DeployAppConfigVo;
@@ -39,7 +39,7 @@ import java.util.Map;
  * @date 2022/12/29 16:36
  */
 @Service
-public class NotifyPolicyDeployJobDependencyHandler extends CustomTableDependencyHandlerBase {
+public class NotifyPolicyDeployJobDependencyHandler extends CustomDependencyHandlerBase {
 
     @Resource
     DeployAppConfigMapper deployAppConfigMapper;

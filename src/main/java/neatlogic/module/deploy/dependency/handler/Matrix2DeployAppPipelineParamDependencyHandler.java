@@ -22,7 +22,7 @@ import neatlogic.framework.cmdb.crossover.ICiEntityCrossoverMapper;
 import neatlogic.framework.cmdb.dto.cientity.CiEntityVo;
 import neatlogic.framework.crossover.CrossoverServiceFactory;
 import neatlogic.framework.dependency.constvalue.FrameworkFromType;
-import neatlogic.framework.dependency.core.FixedTableDependencyHandlerBase;
+import neatlogic.framework.dependency.core.DefaultDependencyHandlerBase;
 import neatlogic.framework.dependency.core.IFromType;
 import neatlogic.framework.dependency.dto.DependencyInfoVo;
 import neatlogic.framework.dependency.dto.DependencyVo;
@@ -42,7 +42,7 @@ import java.util.Objects;
  * 发布应用流水线作业参数引用矩阵关系处理器
  **/
 @Service
-public class Matrix2DeployAppPipelineParamDependencyHandler extends FixedTableDependencyHandlerBase {
+public class Matrix2DeployAppPipelineParamDependencyHandler extends DefaultDependencyHandlerBase {
 
     @Resource
     private DeployAppConfigMapper deployAppConfigMapper;

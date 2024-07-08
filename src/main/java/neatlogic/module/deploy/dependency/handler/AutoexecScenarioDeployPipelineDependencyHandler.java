@@ -20,7 +20,7 @@ import neatlogic.framework.autoexec.constvalue.AutoexecFromType;
 import neatlogic.framework.cmdb.crossover.ICiEntityCrossoverMapper;
 import neatlogic.framework.cmdb.dto.cientity.CiEntityVo;
 import neatlogic.framework.crossover.CrossoverServiceFactory;
-import neatlogic.framework.dependency.core.FixedTableDependencyHandlerBase;
+import neatlogic.framework.dependency.core.DefaultDependencyHandlerBase;
 import neatlogic.framework.dependency.core.IFromType;
 import neatlogic.framework.dependency.dto.DependencyInfoVo;
 import neatlogic.framework.dependency.dto.DependencyVo;
@@ -36,7 +36,7 @@ import java.util.List;
  */
 
 @Component
-public class AutoexecScenarioDeployPipelineDependencyHandler extends FixedTableDependencyHandlerBase {
+public class AutoexecScenarioDeployPipelineDependencyHandler extends DefaultDependencyHandlerBase {
     @Override
     protected DependencyInfoVo parse(DependencyVo dependencyVo) {
         /*暂时前端没有需要依赖跳转，此方法暂时不会被调用*/

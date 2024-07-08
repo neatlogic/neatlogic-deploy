@@ -24,7 +24,7 @@ import neatlogic.framework.autoexec.dto.combop.AutoexecCombopPhaseOperationVo;
 import neatlogic.framework.cmdb.crossover.ICiEntityCrossoverMapper;
 import neatlogic.framework.cmdb.dto.cientity.CiEntityVo;
 import neatlogic.framework.crossover.CrossoverServiceFactory;
-import neatlogic.framework.dependency.core.FixedTableDependencyHandlerBase;
+import neatlogic.framework.dependency.core.DefaultDependencyHandlerBase;
 import neatlogic.framework.dependency.core.IFromType;
 import neatlogic.framework.dependency.dto.DependencyInfoVo;
 import neatlogic.framework.dependency.dto.DependencyVo;
@@ -45,7 +45,7 @@ import java.util.Objects;
  * 发布应用流水线阶段操作引用预置参数集处理器
  */
 @Component
-public class AutoexecProfile2DeployAppPipelinePhaseOperationDependencyHandler extends FixedTableDependencyHandlerBase {
+public class AutoexecProfile2DeployAppPipelinePhaseOperationDependencyHandler extends DefaultDependencyHandlerBase {
 
     @Resource
     private DeployAppConfigMapper deployAppConfigMapper;
