@@ -128,6 +128,11 @@ public class AppPipelineImportExportHandler extends ImportExportHandlerBase {
         while (iterator.hasNext()) {
             DeployAppConfigVo appConfigVo = iterator.next();
             DeployPipelineConfigVo config = appConfigVo.getConfig();
+            String appSystemAbbrName = appConfigVo.getAppSystemAbbrName();
+            appSystem = resourceCrossoverMapper.getAppSystemByName(appSystemAbbrName);
+            if (appSystem != null) {
+                appConfigVo.setAppSystemId(appSystem.getId());
+            }
             Long appModuleId = appConfigVo.getAppModuleId();
             String appModuleAbbrName = appConfigVo.getAppModuleAbbrName();
             Long envId = appConfigVo.getEnvId();

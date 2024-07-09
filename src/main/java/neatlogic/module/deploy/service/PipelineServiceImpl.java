@@ -297,6 +297,7 @@ public class PipelineServiceImpl implements PipelineService {
                     saveDependency(deployAppConfigVo);
                 }
             } else {
+                deployAppConfigVo.setId(null);
                 deployAppConfigMapper.insertAppConfig(deployAppConfigVo);
                 saveDependency(deployAppConfigVo);
             }
@@ -319,6 +320,7 @@ public class PipelineServiceImpl implements PipelineService {
                 deployAppConfigMapper.updateAppConfig(deployAppConfigVo);
                 saveModifiedPartConfigDependency(deployAppConfigVo);
             } else {
+                deployAppConfigVo.setId(null);
                 deployAppConfigMapper.insertAppConfig(deployAppConfigVo);
                 saveModifiedPartConfigDependency(deployAppConfigVo);
             }
@@ -347,6 +349,7 @@ public class PipelineServiceImpl implements PipelineService {
                 deployAppConfigMapper.updateAppConfig(deployAppConfigVo);
                 saveModifiedPartConfigDependency(deployAppConfigVo);
             } else {
+                deployAppConfigVo.setId(null);
                 deployAppConfigMapper.insertAppConfig(deployAppConfigVo);
                 saveModifiedPartConfigDependency(deployAppConfigVo);
             }
