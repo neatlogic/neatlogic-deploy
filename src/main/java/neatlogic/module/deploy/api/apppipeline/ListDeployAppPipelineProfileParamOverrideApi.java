@@ -15,26 +15,22 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 
 package neatlogic.module.deploy.api.apppipeline;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.autoexec.crossover.IAutoexecProfileCrossoverService;
 import neatlogic.framework.autoexec.dto.AutoexecParamVo;
 import neatlogic.framework.autoexec.dto.profile.AutoexecProfileParamVo;
-import neatlogic.framework.cmdb.crossover.IAppSystemMapper;
 import neatlogic.framework.cmdb.crossover.IResourceCrossoverMapper;
 import neatlogic.framework.cmdb.dto.resourcecenter.ResourceSearchVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.ResourceVo;
-import neatlogic.framework.cmdb.dto.resourcecenter.entity.AppEnvironmentVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.entity.ModuleVo;
 import neatlogic.framework.cmdb.exception.resourcecenter.AppSystemNotFoundException;
 import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.common.dto.ValueTextVo;
 import neatlogic.framework.crossover.CrossoverServiceFactory;
 import neatlogic.framework.deploy.auth.DEPLOY_BASE;
-import neatlogic.framework.deploy.dto.app.DeployAppConfigVo;
-import neatlogic.framework.deploy.dto.app.DeployPipelineConfigVo;
-import neatlogic.framework.deploy.dto.app.DeployProfileParamVo;
-import neatlogic.framework.deploy.dto.app.DeployProfileVo;
+import neatlogic.framework.deploy.dto.app.*;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
@@ -112,11 +108,11 @@ public class ListDeployAppPipelineProfileParamOverrideApi extends PrivateApiComp
         String configStr = deployAppConfigMapper.getAppConfig(new DeployAppConfigVo(appSystemId));
         AutoexecParamVo paramVo = null;
         Map<String, AutoexecParamVo> paramMap = new HashMap<>();
-        String appSystemName = appSystem.getName();
+        String appSystemName = StringUtils.isBlank(appSystem.getName()) ? appSystem.getAbbrName() : appSystem.getName();
         if (StringUtils.isNotBlank(configStr)) {
-            DeployPipelineConfigVo config = JSONObject.parseObject(configStr, DeployPipelineConfigVo.class);
+            DeployPipelineConfigVo config = JSON.parseObject(configStr, DeployPipelineConfigVo.class);
             paramVo = findDeployProfileParamByProfileIdAndKey(config, profileId, key);
-            if (paramVo != null) {
+            if (paramVo != null && originalProfileParamVo != null) {
                 DeployProfileParamVo deployProfileParamVo = new DeployProfileParamVo(originalProfileParamVo);
                 deployProfileParamVo.setDefaultValue(paramVo.getDefaultValue());
                 paramVo = deployProfileParamVo;
@@ -124,7 +120,7 @@ public class ListDeployAppPipelineProfileParamOverrideApi extends PrivateApiComp
 
         }
         paramMap.put(appSystemId.toString(), paramVo);
-        ValueTextVo valueTextVo = new ValueTextVo(paramVo, appSystemName);
+        ValueTextVo valueTextVo = new ValueTextVo(paramVo,appSystemName);
         tbodyList.add(valueTextVo);
 
         //查询应用层下游的配置信息
@@ -136,7 +132,7 @@ public class ListDeployAppPipelineProfileParamOverrideApi extends PrivateApiComp
                     continue;
                 }
                 paramVo = findDeployProfileParamByProfileIdAndKey(config, profileId, key);
-                if (paramVo != null) {
+                if (paramVo != null && originalProfileParamVo != null) {
                     DeployProfileParamVo deployProfileParamVo = new DeployProfileParamVo(originalProfileParamVo);
                     deployProfileParamVo.setDefaultValue(paramVo.getDefaultValue());
                     paramVo = deployProfileParamVo;
@@ -155,7 +151,7 @@ public class ListDeployAppPipelineProfileParamOverrideApi extends PrivateApiComp
             }
         }
         // 查询出当前应用下游节点
-        Map<Long, String> nameMap = new HashMap();
+        Map<Long, String> nameMap = new HashMap<>();
         List<DeployAppConfigVo> allDeployAppConfigList = new ArrayList<>();
         List<Long> appSystemIdList = new ArrayList<>();
         appSystemIdList.add(appSystemId);
@@ -163,15 +159,16 @@ public class ListDeployAppPipelineProfileParamOverrideApi extends PrivateApiComp
         searchVo.setAppSystemIdList(appSystemIdList);
         List<ModuleVo> appModuleList = resourceCrossoverMapper.getAppModuleListByAppSystemIdList(searchVo);
         if (CollectionUtils.isNotEmpty(appModuleList)) {
-            IAppSystemMapper appSystemMapper = CrossoverServiceFactory.getApi(IAppSystemMapper.class);
             for (ModuleVo appModule : appModuleList) {
                 allDeployAppConfigList.add(new DeployAppConfigVo(appSystemId, appModule.getAppModuleId()));
-                nameMap.put(appModule.getAppModuleId(), appModule.getAppModuleName());
-                List<AppEnvironmentVo> envList = appSystemMapper.getAppEnvListByAppSystemIdAndModuleIdList(appSystemId, Arrays.asList(appModule.getAppModuleId()));
+                nameMap.put(appModule.getAppModuleId(), StringUtils.isNotBlank(appModule.getAppModuleName()) ? appModule.getAppModuleName() : appModule.getAppModuleAbbrName());
+                List<DeployAppEnvironmentVo> envList = deployAppConfigMapper.getCmdbEnvListByAppSystemIdAndModuleId(appSystemId, appModule.getAppModuleId());
+                List<DeployAppEnvironmentVo> deployEnvList = deployAppConfigMapper.getDeployAppEnvListByAppSystemIdAndModuleId(appSystemId, appModule.getAppModuleId());
+                envList.addAll(deployEnvList);
                 if (CollectionUtils.isNotEmpty(envList)) {
-                    for (AppEnvironmentVo appEnvironmentVo : envList) {
-                        nameMap.put(appEnvironmentVo.getEnvId(), appEnvironmentVo.getEnvName());
-                        allDeployAppConfigList.add(new DeployAppConfigVo(appSystemId, appModule.getAppModuleId(), appEnvironmentVo.getEnvId()));
+                    for (DeployAppEnvironmentVo appEnvironmentVo : envList) {
+                        nameMap.put(appEnvironmentVo.getId(), appEnvironmentVo.getName());
+                        allDeployAppConfigList.add(new DeployAppConfigVo(appSystemId, appModule.getAppModuleId(), appEnvironmentVo.getId()));
                     }
                 }
             }
@@ -218,9 +215,10 @@ public class ListDeployAppPipelineProfileParamOverrideApi extends PrivateApiComp
 
     /**
      * 从流水线配置信息中找出某预置参数数据
-     * @param config 流水线配置信息
+     *
+     * @param config    流水线配置信息
      * @param profileId 预置参数集ID
-     * @param key 参数key
+     * @param key       参数key
      * @return
      */
     public DeployProfileParamVo findDeployProfileParamByProfileIdAndKey(DeployPipelineConfigVo config, Long profileId, String key) {
@@ -230,7 +228,7 @@ public class ListDeployAppPipelineProfileParamOverrideApi extends PrivateApiComp
         }
         for (DeployProfileVo deployProfileVo : overrideProfileList) {
             if (Objects.equals(deployProfileVo.getProfileId(), profileId)) {
-                List<DeployProfileParamVo> paramList =  deployProfileVo.getParamList();
+                List<DeployProfileParamVo> paramList = deployProfileVo.getParamList();
                 if (CollectionUtils.isNotEmpty(paramList)) {
                     for (DeployProfileParamVo paramVo : paramList) {
                         if (Objects.equals(paramVo.getInherit(), 1)) {
