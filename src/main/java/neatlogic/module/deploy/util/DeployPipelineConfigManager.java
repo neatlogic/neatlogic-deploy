@@ -676,6 +676,7 @@ public class DeployPipelineConfigManager {
                         if (Objects.equals(overridePhaseVo.getIsActive(), 0)) {
                             disabledPhaseIdList.remove(overridePhaseVo.getId());
                         }
+                        overridePhaseVo.setGroupSort(pipelinePhaseVo.getGroupSort());
                         pipelinePhaseList.set(index, overridePhaseVo);
                         break;
                     }
