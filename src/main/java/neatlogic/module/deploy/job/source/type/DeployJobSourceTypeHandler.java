@@ -201,7 +201,7 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
         if (CollectionUtils.isNotEmpty(overrideProfileList)) {
             Optional<DeployProfileVo> optionalDeployProfileVo = overrideProfileList.stream().filter(p -> Objects.equals(p.getProfileId(), profileId)).findFirst();
             if (optionalDeployProfileVo.isPresent() && CollectionUtils.isNotEmpty(optionalDeployProfileVo.get().getParamList())) {
-                Map<String, AutoexecParamVo> overrideProfileParamMap = optionalDeployProfileVo.get().getParamList().stream().collect(Collectors.toMap(AutoexecParamVo::getKey, e -> e));
+                Map<String, AutoexecParamVo> overrideProfileParamMap = optionalDeployProfileVo.get().getParamList().stream().collect(Collectors.toMap(e -> Objects.equals(e.getType(), "argument") ? ("argument" + e.getKey()) : e.getKey(), e -> e));
                 for (Map.Entry<String, AutoexecParamVo> entry : autoexecProfileParamVoMap.entrySet()) {
                     String key = entry.getKey();
                     if (overrideProfileParamMap.containsKey(key)) {
