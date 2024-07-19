@@ -492,24 +492,26 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
                 DeployPipelineConfigManager.setIsJobTemplateVoHasBuildDeployType(jobTemplateVo, new HashMap<>());
                 if (jobTemplateVo.getIsHasBuildTypeTool() == 1) {
                     deployJobVo.setBuildNo(-1);
-                }
-                if (jobTemplateVo.getIsHasBuildTypeTool() != 1 && jobTemplateVo.getIsHasDeployTypeTool() != 1) {
-                    deployJobVo.setVersionId(null);
-                    deployJobVo.setVersion(null);
+                } else {
+                    if (jobTemplateVo.getIsHasDeployTypeTool() != 1) {
+                        deployJobVo.setVersionId(null);
+                        deployJobVo.setVersion(null);
+                    } else {
+                        //根据版本和环境获取buildNo,比如：制品部署
+                        DeployVersionEnvVo versionEnvVo = deployVersionMapper.getDeployVersionEnvByVersionIdAndEnvId(deployVersionVo.getId(), deployJobVo.getEnvId());
+                        if (versionEnvVo != null) {
+                            deployJobVo.setBuildNo(versionEnvVo.getBuildNo());
+                        }
+                    }
                 }
             }
-            if (deployJobVo.getBuildNo() != null) {
-                //如果buildNo是-1，表示新建buildNo
-                if (deployJobVo.getBuildNo() == -1) {
-                    Integer maxBuildNo = deployVersionMapper.getDeployVersionMaxBuildNoByVersionIdLock(deployVersionVo.getId());
-                    if (maxBuildNo == null) {
-                        deployJobVo.setBuildNo(1);
-                    } else {
-                        deployJobVo.setBuildNo(maxBuildNo + 1);
-                    }
-                    deployVersionMapper.insertDeployVersionBuildNo(new DeployVersionBuildNoVo(deployVersionVo.getId(), deployJobVo.getBuildNo(), deployJobVo.getId(), BuildNoStatus.PENDING.getValue()));
-                } else if (deployJobVo.getBuildNo() > 0) {
-                    deployJobVo.setBuildNo(deployJobVo.getBuildNo());
+            //如果buildNo是-1，表示新建buildNo
+            if (deployJobVo.getBuildNo() == -1) {
+                Integer maxBuildNo = deployVersionMapper.getDeployVersionMaxBuildNoByVersionIdLock(deployVersionVo.getId());
+                if (maxBuildNo == null) {
+                    deployJobVo.setBuildNo(1);
+                } else {
+                    deployJobVo.setBuildNo(maxBuildNo + 1);
                 }
                 deployVersionMapper.insertDeployVersionBuildNo(new DeployVersionBuildNoVo(deployVersionVo.getId(), deployJobVo.getBuildNo(), deployJobVo.getId(), BuildNoStatus.PENDING.getValue()));
             }

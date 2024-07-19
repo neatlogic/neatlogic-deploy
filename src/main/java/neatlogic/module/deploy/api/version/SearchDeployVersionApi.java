@@ -17,10 +17,7 @@ import org.apache.commons.collections4.MapUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -57,6 +54,7 @@ public class SearchDeployVersionApi extends PrivateApiComponentBase {
             @Param(name = "appSystemIdList", desc = "term.appsystemidlist", type = ApiParamType.JSONARRAY),
             @Param(name = "appModuleIdList", desc = "term.cmdb.appmoduleidlist", type = ApiParamType.JSONARRAY),
             @Param(name = "statusList", desc = "common.status", type = ApiParamType.JSONARRAY),
+            @Param(name = "envId", desc = "term.cmdb.envid", type = ApiParamType.LONG),
             @Param(name = "currentPage", desc = "common.currentpage", type = ApiParamType.INTEGER),
             @Param(name = "pageSize", desc = "common.pagesize", type = ApiParamType.INTEGER)
     })
@@ -99,6 +97,9 @@ public class SearchDeployVersionApi extends PrivateApiComponentBase {
                                 envVo = envListIncludeStatus.get(envVo.getEnvId());
                             }
                             returnVersionEnvList.add(envVo);
+                            if(Objects.equals(envVo.getEnvId(), paramVersionVo.getEnvId())){
+                                returnVersion.setCurrentEnvBuildNo(envVo.getBuildNo());
+                            }
                         }
                     }
                     returnVersion.setEnvList(returnVersionEnvList);

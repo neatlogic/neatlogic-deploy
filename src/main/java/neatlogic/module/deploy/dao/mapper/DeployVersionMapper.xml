@@ -259,9 +259,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         (SELECT dv.id,
         dv.version,
         a.env_id AS envId,
-        a.env_name AS envName
+        a.env_name AS envName,
+        dve.build_no as envBuildNo
         FROM @{DATA_SCHEMA}.`scence_appinstance_env_appmodule_appsystem` a
         JOIN deploy_version dv ON a.app_system_id = dv.app_system_id
+        left join deploy_version_env dve on dve.version_id = dv.id and a.env_id = dve.env_id
         AND a.app_module_id = dv.app_module_id
         AND a.`env_id` IS NOT NULL
         WHERE dv.id IN
@@ -274,7 +276,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         SELECT dv.id,
         dv.version,
         cga.id AS envId,
-        cga.value AS envName
+        cga.value AS envName,
+        null as envBuildNo
         FROM deploy_version dv
         JOIN deploy_app_config_env dace ON dace.app_system_id = dv.app_system_id
         AND dace.app_module_id = dv.app_module_id
