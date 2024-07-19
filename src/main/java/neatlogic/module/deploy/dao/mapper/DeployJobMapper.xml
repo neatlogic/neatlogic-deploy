@@ -719,6 +719,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         set `parent_id` = #{parentId}
         where `id` = #{id}
     </update>
+    <update id="updateDeployJobBuildNoById">
+        update `deploy_job`
+        set `build_no` = #{buildNo}
+        where `id` = #{jobId}
+    </update>
 
     <delete id="deleteJobInvokeByJobId" parameterType="java.lang.Long">
         DELETE

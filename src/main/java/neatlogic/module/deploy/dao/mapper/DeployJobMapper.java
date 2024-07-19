@@ -91,6 +91,8 @@ public interface DeployJobMapper {
 
     void updateAutoExecJobParentIdById(DeployJobVo deployJobVo);
 
+    void updateDeployJobBuildNoById(@Param("jobId") Long jobId,@Param("buildNo")String buildNo);
+
     void deleteDeployJobContentByHash(String contentHash);
 
     void deleteLaneGroupJobByJobId(Long jobId);

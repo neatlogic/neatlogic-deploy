@@ -4,8 +4,10 @@ import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.deploy.auth.DEPLOY_MODIFY;
 import neatlogic.framework.deploy.constvalue.VersionEnvStatus;
+import neatlogic.framework.deploy.dto.job.DeployJobVo;
 import neatlogic.framework.deploy.dto.version.DeployVersionEnvVo;
 import neatlogic.framework.deploy.dto.version.DeployVersionVo;
+import neatlogic.framework.deploy.exception.DeployJobNotFoundException;
 import neatlogic.framework.deploy.exception.DeployVersionNotFoundException;
 import neatlogic.framework.exception.type.ParamNotExistsException;
 import neatlogic.framework.restful.annotation.Description;
@@ -14,6 +16,7 @@ import neatlogic.framework.restful.annotation.OperationType;
 import neatlogic.framework.restful.annotation.Param;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
+import neatlogic.module.deploy.dao.mapper.DeployJobMapper;
 import neatlogic.module.deploy.dao.mapper.DeployVersionMapper;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.lang3.StringUtils;
@@ -30,6 +33,9 @@ public class UpdateDeployVersionEnvForAutoexecApi extends PrivateApiComponentBas
 
     @Resource
     DeployVersionMapper deployVersionMapper;
+
+    @Resource
+    DeployJobMapper deployJobMapper;
 
     @Override
     public String getName() {
@@ -66,11 +72,18 @@ public class UpdateDeployVersionEnvForAutoexecApi extends PrivateApiComponentBas
         Long moduleId = paramObj.getLong("moduleId");
         Long envId = paramObj.getLong("envId");
         String version = paramObj.getString("version");
+        Long jobId = paramObj.getLong("jobId");
+        String buildNo = paramObj.getString("buildNo");
+        DeployJobVo deployJobVo = deployJobMapper.getDeployJobByJobId(jobId);
+        if (deployJobVo == null) {
+            throw new DeployJobNotFoundException(jobId);
+        }
         DeployVersionVo versionVo = deployVersionMapper.getDeployVersionBaseInfoBySystemIdAndModuleIdAndVersion(new DeployVersionVo(version, sysId, moduleId));
         if (versionVo == null) {
             throw new DeployVersionNotFoundException(version);
         }
         deployVersionMapper.getDeployVersionLockById(versionVo.getId());
+        deployJobMapper.updateDeployJobBuildNoById(jobId, buildNo);
         DeployVersionEnvVo envVo = paramObj.toJavaObject(DeployVersionEnvVo.class);
         envVo.setVersionId(versionVo.getId());
         envVo.setRunnerMapId(runnerId);
