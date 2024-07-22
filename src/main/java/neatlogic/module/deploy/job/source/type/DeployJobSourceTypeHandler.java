@@ -50,6 +50,7 @@ import neatlogic.framework.deploy.constvalue.JobSource;
 import neatlogic.framework.deploy.constvalue.JobSourceType;
 import neatlogic.framework.deploy.dto.app.DeployPipelineConfigVo;
 import neatlogic.framework.deploy.dto.app.DeployProfileVo;
+import neatlogic.framework.deploy.dto.instance.DeployInstanceVersionVo;
 import neatlogic.framework.deploy.dto.job.DeployJobContentVo;
 import neatlogic.framework.deploy.dto.job.DeployJobVo;
 import neatlogic.framework.deploy.dto.pipeline.PipelineJobTemplateVo;
@@ -76,6 +77,7 @@ import neatlogic.module.deploy.dao.mapper.DeployAppConfigMapper;
 import neatlogic.module.deploy.dao.mapper.DeployJobMapper;
 import neatlogic.module.deploy.dao.mapper.DeploySqlMapper;
 import neatlogic.module.deploy.dao.mapper.DeployVersionMapper;
+import neatlogic.module.deploy.dao.mapper.DeployInstanceVersionMapper;
 import neatlogic.module.deploy.util.DeployPipelineConfigManager;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -112,6 +114,9 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
 
     @Resource
     GlobalLockMapper globalLockMapper;
+
+    @Resource
+    DeployInstanceVersionMapper deployInstanceVersionMapper;
 
     @Override
     public String getName() {
@@ -715,4 +720,26 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
         return getExtraJobInfo(jobVo);
     }
 
+    @Override
+    public void addExtraJobPhaseNodeInfoByList(Long jobId, List<AutoexecJobPhaseNodeVo> jobPhaseNodeVoList) {
+        if (jobId != null && CollectionUtils.isNotEmpty(jobPhaseNodeVoList)) {
+            DeployJobVo deployJobVo = deployJobMapper.getDeployJobByJobId(jobId);
+            if (deployJobVo != null) {
+                Long appSystemId = deployJobVo.getAppSystemId();
+                Long appModuleId = deployJobVo.getAppModuleId();
+                Long envId = deployJobVo.getEnvId();
+                List<Long> instanceIdList = jobPhaseNodeVoList.stream().map(AutoexecJobPhaseNodeVo::getResourceId).filter(Objects::nonNull).collect(Collectors.toList());
+                if (CollectionUtils.isNotEmpty(instanceIdList)) {
+                    List<DeployInstanceVersionVo> instanceVersionVoList = deployInstanceVersionMapper.getDeployInstanceVersionByEnvIdAndInstanceIdList(appSystemId, appModuleId, envId, instanceIdList);
+                    Map<Long, DeployInstanceVersionVo> versionMap = instanceVersionVoList.stream().collect(Collectors.toMap(DeployInstanceVersionVo::getResourceId, e -> e));
+                    for (AutoexecJobPhaseNodeVo jobPhaseNodeVo : jobPhaseNodeVoList) {
+                        JSONObject extraInfo = new JSONObject();
+                        extraInfo.put("version", versionMap.containsKey(jobPhaseNodeVo.getResourceId()) ? versionMap.get(jobPhaseNodeVo.getResourceId()).getVersion() : "");
+                        extraInfo.put("instanceVersion", versionMap.get(jobPhaseNodeVo.getResourceId()));
+                        jobPhaseNodeVo.setExtraInfo(extraInfo);
+                    }
+                }
+            }
+        }
+    }
 }

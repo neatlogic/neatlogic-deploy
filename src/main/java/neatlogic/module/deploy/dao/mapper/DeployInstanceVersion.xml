@@ -34,6 +34,28 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         for update
     </select>
 
+    <select id="getDeployInstanceVersionByEnvIdAndInstanceIdList"
+            resultType="neatlogic.framework.deploy.dto.instance.DeployInstanceVersionVo">
+        select
+            iv.app_system_id as appSystemId,
+            iv.app_module_id as appModuleId,
+            iv.env_id as envId,
+            iv.resource_id as resourceId,
+            iv.version_id as versionId,
+            iv.build_no as buildNo,
+            iv.lcu,
+            iv.lcd,
+            v.version
+        from deploy_instance_version iv
+        join deploy_version v ON v.id = iv.version_id
+        where iv.app_system_id = #{appSystemId} and iv.app_module_id = #{appModuleId}
+          and iv.env_id = #{envId}
+          and iv.resource_id in
+        <foreach collection="instanceIdList" item="item" open="(" close=")" separator=",">
+            #{item}
+        </foreach>
+    </select>
+
     <select id="getDeployInstanceOldestVersionByInstanceIdAndNewVersionId"
             resultType="neatlogic.framework.deploy.dto.instance.DeployInstanceVersionAuditVo">
         select

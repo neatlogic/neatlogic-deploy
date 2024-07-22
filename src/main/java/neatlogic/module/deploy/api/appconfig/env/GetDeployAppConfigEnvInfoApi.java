@@ -15,6 +15,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 
 package neatlogic.module.deploy.api.appconfig.env;
 
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.nacos.common.utils.CollectionUtils;
 import neatlogic.framework.auth.core.AuthAction;
@@ -29,10 +30,12 @@ import neatlogic.framework.deploy.auth.DEPLOY_BASE;
 import neatlogic.framework.deploy.dto.app.DeployAppConfigEnvDBConfigVo;
 import neatlogic.framework.deploy.dto.app.DeployAppEnvAutoConfigKeyValueVo;
 import neatlogic.framework.deploy.dto.app.DeployAppEnvAutoConfigVo;
+import neatlogic.framework.deploy.dto.instance.DeployInstanceVersionVo;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.module.deploy.dao.mapper.DeployAppConfigMapper;
+import neatlogic.module.deploy.dao.mapper.DeployInstanceVersionMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -54,6 +57,9 @@ public class GetDeployAppConfigEnvInfoApi extends PrivateApiComponentBase {
 
     @Resource
     private DeployAppConfigMapper deployAppConfigMapper;
+
+    @Resource
+    DeployInstanceVersionMapper deployInstanceVersionMapper;
 
     @Override
     public String getToken() {
@@ -96,7 +102,21 @@ public class GetDeployAppConfigEnvInfoApi extends PrivateApiComponentBase {
         if (CollectionUtils.isNotEmpty(instanceIdList)) {
 
             List<ResourceVo> instanceList = resourceCrossoverMapper.getAppInstanceResourceListByIdList(instanceIdList);
-            envInfo.put("instanceList", instanceList);
+            // 补充实例当前版本信息
+            List<DeployInstanceVersionVo> instanceVersionVoList = deployInstanceVersionMapper.getDeployInstanceVersionByEnvIdAndInstanceIdList(envAutoConfigVo.getAppSystemId(), envAutoConfigVo.getAppModuleId(), envAutoConfigVo.getEnvId(), instanceIdList);
+            if (CollectionUtils.isNotEmpty(instanceVersionVoList)) {
+                Map<Long, DeployInstanceVersionVo> versionMap = instanceVersionVoList.stream().collect(Collectors.toMap(DeployInstanceVersionVo::getResourceId, e -> e));
+                JSONArray instanceArray = new JSONArray();
+                for (ResourceVo resourceVo : instanceList) {
+                    JSONObject instanceObj = (JSONObject) JSONObject.toJSON(resourceVo);
+                    instanceObj.put("version", versionMap.containsKey(resourceVo.getId()) ? versionMap.get(resourceVo.getId()).getVersion() : "");
+                    instanceObj.put("instanceVersion", versionMap.get(resourceVo.getId()));
+                    instanceArray.add(instanceObj);
+                }
+                envInfo.put("instanceList", instanceArray);
+            } else {
+                envInfo.put("instanceList", instanceList);
+            }
             List<DeployAppEnvAutoConfigVo> instanceAutoConfigList = deployAppConfigMapper.getAppEnvAutoConfigListBySystemIdAndModuleIdAndEnvIdAndInstanceIdList(paramObj.getLong("appSystemId"), paramObj.getLong("appModuleId"), paramObj.getLong("envId"), instanceIdList);
             envInfo.put("instanceAutoConfigList", instanceAutoConfigList);
 
