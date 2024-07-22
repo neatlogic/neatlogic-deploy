@@ -732,8 +732,12 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
                 if (CollectionUtils.isNotEmpty(instanceIdList)) {
                     List<DeployInstanceVersionVo> instanceVersionVoList = deployInstanceVersionMapper.getDeployInstanceVersionByEnvIdAndInstanceIdList(appSystemId, appModuleId, envId, instanceIdList);
                     Map<Long, DeployInstanceVersionVo> versionMap = instanceVersionVoList.stream().collect(Collectors.toMap(DeployInstanceVersionVo::getResourceId, e -> e));
+                    JSONObject extraInfo = null;
                     for (AutoexecJobPhaseNodeVo jobPhaseNodeVo : jobPhaseNodeVoList) {
-                        JSONObject extraInfo = new JSONObject();
+                        extraInfo = jobPhaseNodeVo.getExtraInfo();
+                        if (extraInfo == null) {
+                            extraInfo = new JSONObject();
+                        }
                         extraInfo.put("version", versionMap.containsKey(jobPhaseNodeVo.getResourceId()) ? versionMap.get(jobPhaseNodeVo.getResourceId()).getVersion() : "");
                         extraInfo.put("instanceVersion", versionMap.get(jobPhaseNodeVo.getResourceId()));
                         jobPhaseNodeVo.setExtraInfo(extraInfo);
