@@ -5,6 +5,7 @@ import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.common.dto.BasePageVo;
 import neatlogic.framework.deploy.auth.DEPLOY_BASE;
+import neatlogic.framework.deploy.constvalue.DeployAppConfigAction;
 import neatlogic.framework.deploy.dto.version.DeployVersionEnvVo;
 import neatlogic.framework.deploy.dto.version.DeployVersionVo;
 import neatlogic.framework.restful.annotation.*;
@@ -67,7 +68,7 @@ public class SearchDeployVersionApi extends PrivateApiComponentBase {
     public Object myDoService(JSONObject paramObj) throws Exception {
         DeployVersionVo paramVersionVo = paramObj.toJavaObject(DeployVersionVo.class);
         List<DeployVersionVo> returnVersionList = new ArrayList<>();
-
+        paramVersionVo.setAuthorityActionList(Arrays.asList(DeployAppConfigAction.VERSION_AND_PRODUCT_MANAGER.getValue(),DeployAppConfigAction.EXECUTE.getValue(),DeployAppConfigAction.EDIT.getValue()));
         int count = deployVersionMapper.searchDeployVersionCount(paramVersionVo);
         if (count > 0) {
             paramVersionVo.setRowNum(count);
