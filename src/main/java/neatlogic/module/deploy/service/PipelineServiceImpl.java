@@ -163,47 +163,36 @@ public class PipelineServiceImpl implements PipelineService {
             if (phaseConfig == null) {
                 continue;
             }
-            List<AutoexecCombopPhaseOperationVo> phaseOperationList = phaseConfig.getPhaseOperationList();
-            if (CollectionUtils.isEmpty(phaseOperationList)) {
-                continue;
-            }
-            for (AutoexecCombopPhaseOperationVo phaseOperationVo : phaseOperationList) {
-                if (phaseOperationVo == null) {
+            deleteOperationDependency(phaseConfig.getPhaseOperationList());
+        }
+    }
+
+    /**
+     * 删除工具依赖
+     *
+     * @param operationList 工具列表
+     */
+    private void deleteOperationDependency(List<AutoexecCombopPhaseOperationVo> operationList) {
+        if (CollectionUtils.isNotEmpty(operationList)) {
+            for (AutoexecCombopPhaseOperationVo operation : operationList) {
+                if (operation == null) {
                     continue;
                 }
-                DependencyManager.delete(AutoexecProfile2DeployAppPipelinePhaseOperationDependencyHandler.class, phaseOperationVo.getId());
-                DependencyManager.delete(AutoexecGlobalParam2DeployAppPipelinePhaseOperationInputParamDependencyHandler.class, phaseOperationVo.getId());
-                DependencyManager.delete(AutoexecGlobalParam2DeployAppPipelinePhaseOperationArgumentParamDependencyHandler.class, phaseOperationVo.getId());
-                AutoexecCombopPhaseOperationConfigVo operationConfig = phaseOperationVo.getConfig();
-                List<AutoexecCombopPhaseOperationVo> ifList = operationConfig.getIfList();
-                if (CollectionUtils.isNotEmpty(ifList)) {
-                    for (AutoexecCombopPhaseOperationVo operationVo : ifList) {
-                        if (operationVo == null) {
-                            continue;
-                        }
-                        DependencyManager.delete(AutoexecProfile2DeployAppPipelinePhaseOperationDependencyHandler.class, operationVo.getId());
-                        DependencyManager.delete(AutoexecGlobalParam2DeployAppPipelinePhaseOperationInputParamDependencyHandler.class, operationVo.getId());
-                        DependencyManager.delete(AutoexecGlobalParam2DeployAppPipelinePhaseOperationArgumentParamDependencyHandler.class, operationVo.getId());
-                    }
-                }
-                List<AutoexecCombopPhaseOperationVo> elseList = operationConfig.getElseList();
-                if (CollectionUtils.isNotEmpty(elseList)) {
-                    for (AutoexecCombopPhaseOperationVo operationVo : elseList) {
-                        if (operationVo == null) {
-                            continue;
-                        }
-                        DependencyManager.delete(AutoexecProfile2DeployAppPipelinePhaseOperationDependencyHandler.class, operationVo.getId());
-                        DependencyManager.delete(AutoexecGlobalParam2DeployAppPipelinePhaseOperationInputParamDependencyHandler.class, operationVo.getId());
-                        DependencyManager.delete(AutoexecGlobalParam2DeployAppPipelinePhaseOperationArgumentParamDependencyHandler.class, operationVo.getId());
-                    }
-                }
+                DependencyManager.delete(AutoexecProfile2DeployAppPipelinePhaseOperationDependencyHandler.class, operation.getId());
+                DependencyManager.delete(AutoexecGlobalParam2DeployAppPipelinePhaseOperationInputParamDependencyHandler.class, operation.getId());
+                DependencyManager.delete(AutoexecGlobalParam2DeployAppPipelinePhaseOperationArgumentParamDependencyHandler.class, operation.getId());
+                AutoexecCombopPhaseOperationConfigVo operationConfig = operation.getConfig();
+                deleteOperationDependency(operationConfig.getIfList());
+                deleteOperationDependency(operationConfig.getElseList());
+                deleteOperationDependency(operationConfig.getOperations());
             }
         }
     }
 
     /**
      * 找出修改部分配置信息
-     * @param fullConfig 前端传过来的全量配置信息
+     *
+     * @param fullConfig   前端传过来的全量配置信息
      * @param parentConfig 如果当前层是环境层，parentConfig表示的是模块层修改部分配置信息；如果当前层是模块层，parentConfig应该为null。
      * @return
      */
@@ -391,37 +380,34 @@ public class PipelineServiceImpl implements PipelineService {
             if (phaseConfig == null) {
                 continue;
             }
-            List<AutoexecCombopPhaseOperationVo> phaseOperationList = phaseConfig.getPhaseOperationList();
-            if (CollectionUtils.isEmpty(phaseOperationList)) {
-                continue;
-            }
-            for (AutoexecCombopPhaseOperationVo phaseOperationVo : phaseOperationList) {
-                if (phaseOperationVo == null) {
+            saveOperationDependency(phaseConfig.getPhaseOperationList(), combopPhaseVo, appSystemId, moduleId, envId);
+        }
+    }
+
+    /**
+     * 保存工具依赖
+     *
+     * @param operationVos  工具列表
+     * @param combopPhaseVo 组合工具阶段
+     * @param appSystemId   应用id
+     * @param moduleId      模块id
+     * @param envId         环境id
+     */
+    private void saveOperationDependency(List<AutoexecCombopPhaseOperationVo> operationVos, AutoexecCombopPhaseVo combopPhaseVo, Long appSystemId, Long moduleId, Long envId) {
+        if (CollectionUtils.isNotEmpty(operationVos)) {
+            for (AutoexecCombopPhaseOperationVo operationVo : operationVos) {
+                if (operationVo == null) {
                     continue;
                 }
-                saveDependency(combopPhaseVo, phaseOperationVo, appSystemId, moduleId, envId);
-                AutoexecCombopPhaseOperationConfigVo operationConfig = phaseOperationVo.getConfig();
-                List<AutoexecCombopPhaseOperationVo> ifList = operationConfig.getIfList();
-                if (CollectionUtils.isNotEmpty(ifList)) {
-                    for (AutoexecCombopPhaseOperationVo operationVo : ifList) {
-                        if (operationVo == null) {
-                            continue;
-                        }
-                        saveDependency(combopPhaseVo, operationVo, appSystemId, moduleId, envId);
-                    }
-                }
-                List<AutoexecCombopPhaseOperationVo> elseList = operationConfig.getElseList();
-                if (CollectionUtils.isNotEmpty(elseList)) {
-                    for (AutoexecCombopPhaseOperationVo operationVo : elseList) {
-                        if (operationVo == null) {
-                            continue;
-                        }
-                        saveDependency(combopPhaseVo, operationVo, appSystemId, moduleId, envId);
-                    }
-                }
+                saveDependency(combopPhaseVo, operationVo, appSystemId, moduleId, envId);
+                AutoexecCombopPhaseOperationConfigVo operationConfig = operationVo.getConfig();
+                saveOperationDependency(operationConfig.getIfList(), combopPhaseVo, appSystemId, moduleId, envId);
+                saveOperationDependency(operationConfig.getElseList(), combopPhaseVo, appSystemId, moduleId, envId);
+                saveOperationDependency(operationConfig.getOperations(), combopPhaseVo, appSystemId, moduleId, envId);
             }
         }
     }
+
     /**
      * 保存阶段中操作工具对预置参数集和全局参数的引用关系、流水线对场景的引用关系
      *
@@ -471,35 +457,7 @@ public class PipelineServiceImpl implements PipelineService {
             if (phaseConfig == null) {
                 continue;
             }
-            List<AutoexecCombopPhaseOperationVo> phaseOperationList = phaseConfig.getPhaseOperationList();
-            if (CollectionUtils.isEmpty(phaseOperationList)) {
-                continue;
-            }
-            for (AutoexecCombopPhaseOperationVo phaseOperationVo : phaseOperationList) {
-                if (phaseOperationVo == null) {
-                    continue;
-                }
-                saveDependency(combopPhaseVo, phaseOperationVo, appSystemId, moduleId, envId);
-                AutoexecCombopPhaseOperationConfigVo operationConfig = phaseOperationVo.getConfig();
-                List<AutoexecCombopPhaseOperationVo> ifList = operationConfig.getIfList();
-                if (CollectionUtils.isNotEmpty(ifList)) {
-                    for (AutoexecCombopPhaseOperationVo operationVo : ifList) {
-                        if (operationVo == null) {
-                            continue;
-                        }
-                        saveDependency(combopPhaseVo, operationVo, appSystemId, moduleId, envId);
-                    }
-                }
-                List<AutoexecCombopPhaseOperationVo> elseList = operationConfig.getElseList();
-                if (CollectionUtils.isNotEmpty(elseList)) {
-                    for (AutoexecCombopPhaseOperationVo operationVo : elseList) {
-                        if (operationVo == null) {
-                            continue;
-                        }
-                        saveDependency(combopPhaseVo, operationVo, appSystemId, moduleId, envId);
-                    }
-                }
-            }
+            saveOperationDependency(phaseConfig.getPhaseOperationList(), combopPhaseVo, appSystemId, moduleId, envId);
         }
     }
 

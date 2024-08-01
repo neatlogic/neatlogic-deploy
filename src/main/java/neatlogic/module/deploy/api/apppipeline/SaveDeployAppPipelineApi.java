@@ -171,47 +171,37 @@ public class SaveDeployAppPipelineApi extends PrivateApiComponentBase {
             regenerateOperationId(combopPhaseVo);
         }
     }
-
+    /**
+     * 重置工具为null
+     *
+     * @param operationList 工具列表
+     */
+    private void resetOperationNull(List<AutoexecCombopPhaseOperationVo> operationList) {
+        if (CollectionUtils.isNotEmpty(operationList)) {
+            for (AutoexecCombopPhaseOperationVo operationVo : operationList) {
+                if (operationVo == null) {
+                    continue;
+                }
+                operationVo.setId(null);
+                AutoexecCombopPhaseOperationConfigVo operationConfig = operationVo.getConfig();
+                resetOperationNull(operationConfig.getIfList());
+                resetOperationNull(operationConfig.getElseList());
+                resetOperationNull(operationConfig.getOperations());
+            }
+        }
+    }
 
     /**
      * 重新生成操作id
      *
-     * @param combopPhaseVo
+     * @param combopPhaseVo 组合工具阶段
      */
     private void regenerateOperationId(AutoexecCombopPhaseVo combopPhaseVo) {
         AutoexecCombopPhaseConfigVo phaseConfig = combopPhaseVo.getConfig();
         if (phaseConfig == null) {
             return;
         }
-        List<AutoexecCombopPhaseOperationVo> operationList = phaseConfig.getPhaseOperationList();
-        if (CollectionUtils.isEmpty(operationList)) {
-            return;
-        }
-        for (AutoexecCombopPhaseOperationVo phaseOperationVo : operationList) {
-            if (phaseOperationVo == null) {
-                continue;
-            }
-            phaseOperationVo.setId(null);
-            AutoexecCombopPhaseOperationConfigVo operationConfig = phaseOperationVo.getConfig();
-            List<AutoexecCombopPhaseOperationVo> ifList = operationConfig.getIfList();
-            if (CollectionUtils.isNotEmpty(ifList)) {
-                for (AutoexecCombopPhaseOperationVo operationVo : ifList) {
-                    if (operationVo == null) {
-                        continue;
-                    }
-                    operationVo.setId(null);
-                }
-            }
-            List<AutoexecCombopPhaseOperationVo> elseList = operationConfig.getElseList();
-            if (CollectionUtils.isNotEmpty(elseList)) {
-                for (AutoexecCombopPhaseOperationVo operationVo : elseList) {
-                    if (operationVo == null) {
-                        continue;
-                    }
-                    operationVo.setId(null);
-                }
-            }
-        }
+        resetOperationNull(phaseConfig.getPhaseOperationList());
     }
 
 //    /**

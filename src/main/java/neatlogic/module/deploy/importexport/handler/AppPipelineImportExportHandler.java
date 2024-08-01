@@ -492,6 +492,12 @@ public class AppPipelineImportExportHandler extends ImportExportHandlerBase {
                     exportHandlerAutoexecCombopPhaseOperation(elsePhaseOperationVo, dependencyList, zipOutputStream);
                 }
             }
+            List<AutoexecCombopPhaseOperationVo> operations = phaseOperationConfig.getOperations();
+            if (CollectionUtils.isNotEmpty(operations)) {
+                for (AutoexecCombopPhaseOperationVo loopPhaseOperationVo : operations) {
+                    exportHandlerAutoexecCombopPhaseOperation(loopPhaseOperationVo, dependencyList, zipOutputStream);
+                }
+            }
         }
     }
 
@@ -584,6 +590,12 @@ public class AppPipelineImportExportHandler extends ImportExportHandlerBase {
             if (CollectionUtils.isNotEmpty(elseList)) {
                 for (AutoexecCombopPhaseOperationVo elsePhaseOperationVo : elseList) {
                     importHandlerAutoexecCombopPhaseOperation(elsePhaseOperationVo, primaryChangeList);
+                }
+            }
+            List<AutoexecCombopPhaseOperationVo> operations = phaseOperationConfig.getOperations();
+            if (CollectionUtils.isNotEmpty(operations)) {
+                for (AutoexecCombopPhaseOperationVo loopOperation : operations) {
+                    importHandlerAutoexecCombopPhaseOperation(loopOperation, primaryChangeList);
                 }
             }
         }
