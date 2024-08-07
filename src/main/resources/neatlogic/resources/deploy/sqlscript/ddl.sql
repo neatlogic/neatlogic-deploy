@@ -490,7 +490,7 @@ CREATE TABLE `deploy_sql_detail`  (
   `env_id` bigint NULL DEFAULT NULL COMMENT '环境 id',
   `version` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '版本',
   `status` enum('pending','running','aborting','aborted','succeed','failed','ignored','waitInput') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '状态',
-  `sql_file` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT 'sql文件名称',
+  `sql_file` varchar(300) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT 'sql文件名称',
   `md5` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT 'sql文件md5',
   `host` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT 'ip',
   `port` int NULL DEFAULT NULL COMMENT '端口',
