@@ -127,158 +127,15 @@ public class AppPipelineImportExportHandler extends ImportExportHandlerBase {
         Iterator<DeployAppConfigVo> iterator = appConfigList.iterator();
         while (iterator.hasNext()) {
             DeployAppConfigVo appConfigVo = iterator.next();
-            DeployPipelineConfigVo config = appConfigVo.getConfig();
             String appSystemAbbrName = appConfigVo.getAppSystemAbbrName();
             appSystem = resourceCrossoverMapper.getAppSystemByName(appSystemAbbrName);
             if (appSystem != null) {
                 appConfigVo.setAppSystemId(appSystem.getId());
             }
-            Long appModuleId = appConfigVo.getAppModuleId();
-            String appModuleAbbrName = appConfigVo.getAppModuleAbbrName();
-            Long envId = appConfigVo.getEnvId();
-            String envName = appConfigVo.getEnvName();
-            if (appModuleId == 0 && envId == 0) {
-                // 应用层
-                // 阶段
-                List<DeployPipelinePhaseVo> combopPhaseList = config.getCombopPhaseList();
-                if (CollectionUtils.isNotEmpty(combopPhaseList)) {
-                    for (DeployPipelinePhaseVo deployPipelinePhaseVo : combopPhaseList) {
-                        importHandlerDeployPipelinePhase(deployPipelinePhaseVo, primaryChangeList);
-                    }
-                }
-                // 阶段组
-                List<DeployPipelineGroupVo> combopGroupList = config.getCombopGroupList();
-                if (CollectionUtils.isNotEmpty(combopGroupList)) {
-                    for (DeployPipelineGroupVo deployPipelineGroupVo : combopGroupList) {
-                        importHandlerDeployPipelineGroup(deployPipelineGroupVo, primaryChangeList);
-                    }
-                }
-                // 执行账户
-                if (config.getExecuteConfig() != null && config.getExecuteConfig().getProtocolId() != null) {
-                    Object newPrimaryKey = getNewPrimaryKey(CmdbImportExportHandlerType.PROTOCOL, config.getExecuteConfig().getProtocolId(), primaryChangeList);
-                    if (newPrimaryKey != null) {
-                        config.getExecuteConfig().setProtocolId((Long) newPrimaryKey);
-                    }
-                }
-                // 预置参数集
-                List<DeployProfileVo> overrideProfileList = config.getOverrideProfileList();
-                if (CollectionUtils.isNotEmpty(overrideProfileList)) {
-                    for (DeployProfileVo deployProfileVo : overrideProfileList) {
-                        Object newPrimaryKey = getNewPrimaryKey(AutoexecImportExportHandlerType.AUTOEXEC_PROFILE, deployProfileVo.getProfileId(), primaryChangeList);
-                        if (newPrimaryKey != null) {
-                            deployProfileVo.setProfileId((Long) newPrimaryKey);
-                        }
-                    }
-                }
-                // 场景
-                List<AutoexecCombopScenarioVo> scenarioList = config.getScenarioList();
-                for (AutoexecCombopScenarioVo autoexecCombopScenarioVo : scenarioList) {
-                    Object newPrimaryKey = getNewPrimaryKey(AutoexecImportExportHandlerType.AUTOEXEC_SCENARIO, autoexecCombopScenarioVo.getScenarioId(), primaryChangeList);
-                    if (newPrimaryKey != null) {
-                        autoexecCombopScenarioVo.setScenarioId((Long) newPrimaryKey);
-                    }
-                }
-            } else if (envId == 0) {
-                // 模块层
-                if (StringUtils.isBlank(appModuleAbbrName)) {
-                    if (logger.isWarnEnabled()) {
-                        logger.warn("The module is simply empty");
-                    }
-                }
-                ResourceVo appModule = resourceCrossoverMapper.getAppModuleByName(appModuleAbbrName);
-                if (appModule == null) {
-                    continue;
-                }
-                appConfigVo.setAppModuleId(appModule.getId());
-                appConfigVo.setAppModuleName(appModule.getName());
-                // 阶段
-                List<DeployPipelinePhaseVo> combopPhaseList = config.getCombopPhaseList();
-                if (CollectionUtils.isNotEmpty(combopPhaseList)) {
-                    for (DeployPipelinePhaseVo deployPipelinePhaseVo : combopPhaseList) {
-                        importHandlerDeployPipelinePhase(deployPipelinePhaseVo, primaryChangeList);
-                    }
-                }
-                // 阶段组
-                List<DeployPipelineGroupVo> combopGroupList = config.getCombopGroupList();
-                if (CollectionUtils.isNotEmpty(combopGroupList)) {
-                    for (DeployPipelineGroupVo deployPipelineGroupVo : combopGroupList) {
-                        importHandlerDeployPipelineGroup(deployPipelineGroupVo, primaryChangeList);
-                    }
-                }
-                // 执行账户
-                if (config.getExecuteConfig() != null && config.getExecuteConfig().getProtocolId() != null) {
-                    Object newPrimaryKey = getNewPrimaryKey(CmdbImportExportHandlerType.PROTOCOL, config.getExecuteConfig().getProtocolId(), primaryChangeList);
-                    if (newPrimaryKey != null) {
-                        config.getExecuteConfig().setProtocolId((Long) newPrimaryKey);
-                    }
-                }
-                // 预置参数集
-                List<DeployProfileVo> overrideProfileList = config.getOverrideProfileList();
-                if (CollectionUtils.isNotEmpty(overrideProfileList)) {
-                    for (DeployProfileVo deployProfileVo : overrideProfileList) {
-                        Object newPrimaryKey = getNewPrimaryKey(AutoexecImportExportHandlerType.AUTOEXEC_PROFILE, deployProfileVo.getProfileId(), primaryChangeList);
-                        if (newPrimaryKey != null) {
-                            deployProfileVo.setProfileId((Long) newPrimaryKey);
-                        }
-                    }
-                }
-            } else {
-                // 环境层
-                if (StringUtils.isBlank(appModuleAbbrName)) {
-                    if (logger.isWarnEnabled()) {
-                        logger.warn("The module is simply empty");
-                    }
-                }
-                ResourceVo appModule = resourceCrossoverMapper.getAppModuleByName(appModuleAbbrName);
-                if (appModule == null) {
-                    iterator.remove();
-                }
-                appConfigVo.setAppModuleId(appModule.getId());
-                appConfigVo.setAppModuleName(appModule.getName());
-
-                if (StringUtils.isBlank(envName)) {
-                    if (logger.isWarnEnabled()) {
-                        logger.warn("The environment name is empty");
-                    }
-                }
-                ResourceVo env = resourceCrossoverMapper.getAppEnvByName(envName);
-                if (env == null) {
-                    continue;
-                }
-                appConfigVo.setEnvId(env.getId());
-                // 阶段
-                List<DeployPipelinePhaseVo> combopPhaseList = config.getCombopPhaseList();
-                if (CollectionUtils.isNotEmpty(combopPhaseList)) {
-                    for (DeployPipelinePhaseVo deployPipelinePhaseVo : combopPhaseList) {
-                        importHandlerDeployPipelinePhase(deployPipelinePhaseVo, primaryChangeList);
-                    }
-                }
-                // 阶段组
-                List<DeployPipelineGroupVo> combopGroupList = config.getCombopGroupList();
-                if (CollectionUtils.isNotEmpty(combopGroupList)) {
-                    for (DeployPipelineGroupVo deployPipelineGroupVo : combopGroupList) {
-                        importHandlerDeployPipelineGroup(deployPipelineGroupVo, primaryChangeList);
-                    }
-                }
-                // 执行账户
-                if (config.getExecuteConfig() != null && config.getExecuteConfig().getProtocolId() != null) {
-                    Object newPrimaryKey = getNewPrimaryKey(CmdbImportExportHandlerType.PROTOCOL, config.getExecuteConfig().getProtocolId(), primaryChangeList);
-                    if (newPrimaryKey != null) {
-                        config.getExecuteConfig().setProtocolId((Long) newPrimaryKey);
-                    }
-                }
-                // 预置参数集
-                List<DeployProfileVo> overrideProfileList = config.getOverrideProfileList();
-                if (CollectionUtils.isNotEmpty(overrideProfileList)) {
-                    for (DeployProfileVo deployProfileVo : overrideProfileList) {
-                        Object newPrimaryKey = getNewPrimaryKey(AutoexecImportExportHandlerType.AUTOEXEC_PROFILE, deployProfileVo.getProfileId(), primaryChangeList);
-                        if (newPrimaryKey != null) {
-                            deployProfileVo.setProfileId((Long) newPrimaryKey);
-                        }
-                    }
-                }
+            boolean flag = dependencyHandle(IMPORT, appConfigVo, null, null, primaryChangeList);
+            if (flag) {
+                pipelineService.saveDeployAppPipeline(appConfigVo);
             }
-            pipelineService.saveDeployAppPipeline(appConfigVo);
         }
         return null;
     }
@@ -300,115 +157,9 @@ public class AppPipelineImportExportHandler extends ImportExportHandlerBase {
             DeployAppConfigVo appConfigVo = iterator.next();
             appConfigVo.setAppSystemName(appSystem.getName());
             appConfigVo.setAppSystemAbbrName(appSystem.getAbbrName());
-            DeployPipelineConfigVo config = appConfigVo.getConfig();
-            Long appModuleId = appConfigVo.getAppModuleId();
-            Long envId = appConfigVo.getEnvId();
-            if (appModuleId == 0 && envId == 0) {
-                // 应用层
-                // 阶段
-                List<DeployPipelinePhaseVo> combopPhaseList = config.getCombopPhaseList();
-                if (CollectionUtils.isNotEmpty(combopPhaseList)) {
-                    for (DeployPipelinePhaseVo deployPipelinePhaseVo : combopPhaseList) {
-                        exportHandlerDeployPipelinePhase(deployPipelinePhaseVo, dependencyList, zipOutputStream);
-                    }
-                }
-                // 阶段组
-                List<DeployPipelineGroupVo> combopGroupList = config.getCombopGroupList();
-                if (CollectionUtils.isNotEmpty(combopGroupList)) {
-                    for (DeployPipelineGroupVo deployPipelineGroupVo : combopGroupList) {
-                        exportHandlerDeployPipelineGroup(deployPipelineGroupVo, dependencyList, zipOutputStream);
-                    }
-                }
-                // 执行账户
-                if (config.getExecuteConfig() != null && config.getExecuteConfig().getProtocolId() != null) {
-                    doExportData(CmdbImportExportHandlerType.PROTOCOL, config.getExecuteConfig().getProtocolId(), dependencyList, zipOutputStream);
-                }
-                // 预置参数集
-                List<DeployProfileVo> overrideProfileList = config.getOverrideProfileList();
-                if (CollectionUtils.isNotEmpty(overrideProfileList)) {
-                    for (DeployProfileVo deployProfileVo : overrideProfileList) {
-                        doExportData(AutoexecImportExportHandlerType.AUTOEXEC_PROFILE, deployProfileVo.getProfileId(), dependencyList, zipOutputStream);
-                    }
-                }
-                // 场景
-                List<AutoexecCombopScenarioVo> scenarioList = config.getScenarioList();
-                for (AutoexecCombopScenarioVo autoexecCombopScenarioVo : scenarioList) {
-                    doExportData(AutoexecImportExportHandlerType.AUTOEXEC_SCENARIO, autoexecCombopScenarioVo.getScenarioId(), dependencyList, zipOutputStream);
-                }
-            } else if (envId == 0) {
-                // 模块层
-                ResourceVo appModule = resourceCrossoverMapper.getAppModuleById(appModuleId);
-                if (appModule == null) {
-                    iterator.remove();
-                    continue;
-                }
-                appConfigVo.setAppModuleName(appModule.getName());
-                appConfigVo.setAppModuleAbbrName(appModule.getAbbrName());
-                // 阶段
-                List<DeployPipelinePhaseVo> combopPhaseList = config.getCombopPhaseList();
-                if (CollectionUtils.isNotEmpty(combopPhaseList)) {
-                    for (DeployPipelinePhaseVo deployPipelinePhaseVo : combopPhaseList) {
-                        exportHandlerDeployPipelinePhase(deployPipelinePhaseVo, dependencyList, zipOutputStream);
-                    }
-                }
-                // 阶段组
-                List<DeployPipelineGroupVo> combopGroupList = config.getCombopGroupList();
-                if (CollectionUtils.isNotEmpty(combopGroupList)) {
-                    for (DeployPipelineGroupVo deployPipelineGroupVo : combopGroupList) {
-                        exportHandlerDeployPipelineGroup(deployPipelineGroupVo, dependencyList, zipOutputStream);
-                    }
-                }
-                // 执行账户
-                if (config.getExecuteConfig() != null && config.getExecuteConfig().getProtocolId() != null) {
-                    doExportData(CmdbImportExportHandlerType.PROTOCOL, config.getExecuteConfig().getProtocolId(), dependencyList, zipOutputStream);
-                }
-                // 预置参数集
-                List<DeployProfileVo> overrideProfileList = config.getOverrideProfileList();
-                if (CollectionUtils.isNotEmpty(overrideProfileList)) {
-                    for (DeployProfileVo deployProfileVo : overrideProfileList) {
-                        doExportData(AutoexecImportExportHandlerType.AUTOEXEC_PROFILE, deployProfileVo.getProfileId(), dependencyList, zipOutputStream);
-                    }
-                }
-            } else {
-                // 环境层
-                ResourceVo appModule = resourceCrossoverMapper.getAppModuleById(appModuleId);
-                if (appModule == null) {
-                    iterator.remove();
-                }
-                appConfigVo.setAppModuleName(appModule.getName());
-                appConfigVo.setAppModuleAbbrName(appModule.getAbbrName());
-
-                ResourceVo env = resourceCrossoverMapper.getAppEnvById(envId);
-                if (env == null) {
-                    iterator.remove();
-                    continue;
-                }
-                appConfigVo.setEnvName(env.getName());
-                // 阶段
-                List<DeployPipelinePhaseVo> combopPhaseList = config.getCombopPhaseList();
-                if (CollectionUtils.isNotEmpty(combopPhaseList)) {
-                    for (DeployPipelinePhaseVo deployPipelinePhaseVo : combopPhaseList) {
-                        exportHandlerDeployPipelinePhase(deployPipelinePhaseVo, dependencyList, zipOutputStream);
-                    }
-                }
-                // 阶段组
-                List<DeployPipelineGroupVo> combopGroupList = config.getCombopGroupList();
-                if (CollectionUtils.isNotEmpty(combopGroupList)) {
-                    for (DeployPipelineGroupVo deployPipelineGroupVo : combopGroupList) {
-                        exportHandlerDeployPipelineGroup(deployPipelineGroupVo, dependencyList, zipOutputStream);
-                    }
-                }
-                // 执行账户
-                if (config.getExecuteConfig() != null && config.getExecuteConfig().getProtocolId() != null) {
-                    doExportData(CmdbImportExportHandlerType.PROTOCOL, config.getExecuteConfig().getProtocolId(), dependencyList, zipOutputStream);
-                }
-                // 预置参数集
-                List<DeployProfileVo> overrideProfileList = config.getOverrideProfileList();
-                if (CollectionUtils.isNotEmpty(overrideProfileList)) {
-                    for (DeployProfileVo deployProfileVo : overrideProfileList) {
-                        doExportData(AutoexecImportExportHandlerType.AUTOEXEC_PROFILE, deployProfileVo.getProfileId(), dependencyList, zipOutputStream);
-                    }
-                }
+            boolean flag = dependencyHandle(EXPORT, appConfigVo, dependencyList, zipOutputStream, null);
+            if (!flag) {
+                iterator.remove();
             }
         }
         DeployAppPipelineExportVo deployAppPipelineExportVo = new DeployAppPipelineExportVo();
@@ -422,117 +173,216 @@ public class AppPipelineImportExportHandler extends ImportExportHandlerBase {
     }
 
     /**
-     * 导出时处理阶段中配置信息
-     * @param deployPipelinePhaseVo
+     * 导出处理，先导出依赖组件
+     * 导入处理，更新依赖组件的唯一标识
+     * @param action
+     * @param appConfigVo
      * @param dependencyList
      * @param zipOutputStream
+     * @param primaryChangeList
      */
-    private void exportHandlerDeployPipelinePhase(DeployPipelinePhaseVo deployPipelinePhaseVo, List<ImportExportBaseInfoVo> dependencyList, ZipOutputStream zipOutputStream) {
-        AutoexecCombopPhaseConfigVo config = deployPipelinePhaseVo.getConfig();
-        if (config == null) {
-            return;
-        }
-        // 执行目标配置
-        AutoexecCombopExecuteConfigVo executeConfig = config.getExecuteConfig();
-        if (executeConfig != null) {
-            if (Objects.equals(executeConfig.getIsPresetExecuteConfig(), 1)) {
-                if (executeConfig.getProtocolId() != null) {
-                    doExportData(CmdbImportExportHandlerType.PROTOCOL, executeConfig.getProtocolId(), dependencyList, zipOutputStream);
+    private boolean dependencyHandle(
+            String action,
+            DeployAppConfigVo appConfigVo,
+            List<ImportExportBaseInfoVo> dependencyList,
+            ZipOutputStream zipOutputStream,
+            List<ImportExportPrimaryChangeVo> primaryChangeList
+    ) {
+        IResourceCrossoverMapper resourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
+        DeployPipelineConfigVo config = appConfigVo.getConfig();
+        Long appModuleId = appConfigVo.getAppModuleId();
+        String appModuleAbbrName = appConfigVo.getAppModuleAbbrName();
+        Long envId = appConfigVo.getEnvId();
+        String envName = appConfigVo.getEnvName();
+        if (appModuleId == 0 && envId == 0) {
+            // 应用层
+            // 阶段
+            List<DeployPipelinePhaseVo> combopPhaseList = config.getCombopPhaseList();
+            if (CollectionUtils.isNotEmpty(combopPhaseList)) {
+                for (DeployPipelinePhaseVo deployPipelinePhaseVo : combopPhaseList) {
+                    dependencyHandleDeployPipelinePhase(action, deployPipelinePhaseVo, dependencyList, zipOutputStream, primaryChangeList);
                 }
             }
-        }
-        List<AutoexecCombopPhaseOperationVo> phaseOperationList = config.getPhaseOperationList();
-        for (AutoexecCombopPhaseOperationVo phaseOperationVo : phaseOperationList) {
-            exportHandlerAutoexecCombopPhaseOperation(phaseOperationVo, dependencyList, zipOutputStream);
-        }
-    }
-
-    /**
-     * 导出时处理阶段操作中配置信息
-     * @param phaseOperationVo
-     * @param dependencyList
-     * @param zipOutputStream
-     */
-    private void exportHandlerAutoexecCombopPhaseOperation(AutoexecCombopPhaseOperationVo phaseOperationVo, List<ImportExportBaseInfoVo> dependencyList, ZipOutputStream zipOutputStream) {
-        if (Objects.equals(phaseOperationVo.getOperationType(), ToolType.SCRIPT.getValue())) {
-            doExportData(AutoexecImportExportHandlerType.AUTOEXEC_SCRIPT, phaseOperationVo.getOperationId(), dependencyList, zipOutputStream);
-        } else if (Objects.equals(phaseOperationVo.getOperationType(), ToolType.TOOL.getValue())) {
-            doExportData(AutoexecImportExportHandlerType.AUTOEXEC_TOOL, phaseOperationVo.getOperationId(), dependencyList, zipOutputStream);
-        }
-        AutoexecCombopPhaseOperationConfigVo phaseOperationConfig = phaseOperationVo.getConfig();
-        if (phaseOperationConfig == null) {
-            if (phaseOperationConfig.getProfileId() != null) {
-                doExportData(AutoexecImportExportHandlerType.AUTOEXEC_PROFILE, phaseOperationConfig.getProfileId(), dependencyList, zipOutputStream);
+            // 阶段组
+            List<DeployPipelineGroupVo> combopGroupList = config.getCombopGroupList();
+            if (CollectionUtils.isNotEmpty(combopGroupList)) {
+                for (DeployPipelineGroupVo deployPipelineGroupVo : combopGroupList) {
+                    dependencyHandleDeployPipelineGroup(action, deployPipelineGroupVo, dependencyList, zipOutputStream, primaryChangeList);
+                }
             }
-            List<ParamMappingVo> paramMappingList = phaseOperationConfig.getParamMappingList();
-            if (CollectionUtils.isNotEmpty(paramMappingList)) {
-                for (ParamMappingVo paramMappingVo : paramMappingList) {
-                    if (Objects.equals(paramMappingVo.getMappingMode(), ParamMappingMode.GLOBAL_PARAM.getValue())) {
-                        doExportData(AutoexecImportExportHandlerType.AUTOEXEC_GLOBAL_PARAM, paramMappingVo.getValue(), dependencyList, zipOutputStream);
+            // 执行账户
+            if (config.getExecuteConfig() != null && config.getExecuteConfig().getProtocolId() != null) {
+                if (action == IMPORT) {
+                    Object newPrimaryKey = getNewPrimaryKey(CmdbImportExportHandlerType.PROTOCOL, config.getExecuteConfig().getProtocolId(), primaryChangeList);
+                    if (newPrimaryKey != null) {
+                        config.getExecuteConfig().setProtocolId((Long) newPrimaryKey);
+                    }
+                } else if (action == EXPORT) {
+                    doExportData(CmdbImportExportHandlerType.PROTOCOL, config.getExecuteConfig().getProtocolId(), dependencyList, zipOutputStream);
+                }
+            }
+            // 预置参数集
+            List<DeployProfileVo> overrideProfileList = config.getOverrideProfileList();
+            if (CollectionUtils.isNotEmpty(overrideProfileList)) {
+                for (DeployProfileVo deployProfileVo : overrideProfileList) {
+                    if (action == IMPORT) {
+                        Object newPrimaryKey = getNewPrimaryKey(AutoexecImportExportHandlerType.AUTOEXEC_PROFILE, deployProfileVo.getProfileId(), primaryChangeList);
+                        if (newPrimaryKey != null) {
+                            deployProfileVo.setProfileId((Long) newPrimaryKey);
+                        }
+                    } else if (action == EXPORT) {
+                        doExportData(AutoexecImportExportHandlerType.AUTOEXEC_PROFILE, deployProfileVo.getProfileId(), dependencyList, zipOutputStream);
                     }
                 }
             }
-            List<ParamMappingVo> argumentMappingList = phaseOperationConfig.getArgumentMappingList();
-            if (CollectionUtils.isNotEmpty(argumentMappingList)) {
-                for (ParamMappingVo paramMappingVo : argumentMappingList) {
-                    if (Objects.equals(paramMappingVo.getMappingMode(), ParamMappingMode.GLOBAL_PARAM.getValue())) {
-                        doExportData(AutoexecImportExportHandlerType.AUTOEXEC_GLOBAL_PARAM, paramMappingVo.getValue(), dependencyList, zipOutputStream);
+            // 场景
+            List<AutoexecCombopScenarioVo> scenarioList = config.getScenarioList();
+            for (AutoexecCombopScenarioVo autoexecCombopScenarioVo : scenarioList) {
+                if (action == IMPORT) {
+                    Object newPrimaryKey = getNewPrimaryKey(AutoexecImportExportHandlerType.AUTOEXEC_SCENARIO, autoexecCombopScenarioVo.getScenarioId(), primaryChangeList);
+                    if (newPrimaryKey != null) {
+                        autoexecCombopScenarioVo.setScenarioId((Long) newPrimaryKey);
+                    }
+                } else if (action == EXPORT) {
+                    doExportData(AutoexecImportExportHandlerType.AUTOEXEC_SCENARIO, autoexecCombopScenarioVo.getScenarioId(), dependencyList, zipOutputStream);
+                }
+            }
+        } else if (envId == 0) {
+            // 模块层
+            if (StringUtils.isBlank(appModuleAbbrName)) {
+                if (logger.isWarnEnabled()) {
+                    logger.warn("The module is simply empty");
+                }
+            }
+            ResourceVo appModule = resourceCrossoverMapper.getAppModuleByName(appModuleAbbrName);
+            if (appModule == null) {
+                return false;
+            }
+            appConfigVo.setAppModuleId(appModule.getId());
+            appConfigVo.setAppModuleName(appModule.getName());
+            // 阶段
+            List<DeployPipelinePhaseVo> combopPhaseList = config.getCombopPhaseList();
+            if (CollectionUtils.isNotEmpty(combopPhaseList)) {
+                for (DeployPipelinePhaseVo deployPipelinePhaseVo : combopPhaseList) {
+                    dependencyHandleDeployPipelinePhase(action, deployPipelinePhaseVo, dependencyList, zipOutputStream, primaryChangeList);
+                }
+            }
+            // 阶段组
+            List<DeployPipelineGroupVo> combopGroupList = config.getCombopGroupList();
+            if (CollectionUtils.isNotEmpty(combopGroupList)) {
+                for (DeployPipelineGroupVo deployPipelineGroupVo : combopGroupList) {
+                    dependencyHandleDeployPipelineGroup(action, deployPipelineGroupVo, dependencyList, zipOutputStream, primaryChangeList);
+                }
+            }
+            // 执行账户
+            if (config.getExecuteConfig() != null && config.getExecuteConfig().getProtocolId() != null) {
+                if (action == IMPORT) {
+                    Object newPrimaryKey = getNewPrimaryKey(CmdbImportExportHandlerType.PROTOCOL, config.getExecuteConfig().getProtocolId(), primaryChangeList);
+                    if (newPrimaryKey != null) {
+                        config.getExecuteConfig().setProtocolId((Long) newPrimaryKey);
+                    }
+                } else if (action == EXPORT) {
+                    doExportData(CmdbImportExportHandlerType.PROTOCOL, config.getExecuteConfig().getProtocolId(), dependencyList, zipOutputStream);
+                }
+            }
+            // 预置参数集
+            List<DeployProfileVo> overrideProfileList = config.getOverrideProfileList();
+            if (CollectionUtils.isNotEmpty(overrideProfileList)) {
+                for (DeployProfileVo deployProfileVo : overrideProfileList) {
+                    if (action == IMPORT) {
+                        Object newPrimaryKey = getNewPrimaryKey(AutoexecImportExportHandlerType.AUTOEXEC_PROFILE, deployProfileVo.getProfileId(), primaryChangeList);
+                        if (newPrimaryKey != null) {
+                            deployProfileVo.setProfileId((Long) newPrimaryKey);
+                        }
+                    } else if (action == EXPORT) {
+                        doExportData(AutoexecImportExportHandlerType.AUTOEXEC_PROFILE, deployProfileVo.getProfileId(), dependencyList, zipOutputStream);
                     }
                 }
             }
-            List<AutoexecCombopPhaseOperationVo> ifList = phaseOperationConfig.getIfList();
-            if (CollectionUtils.isNotEmpty(ifList)) {
-                for (AutoexecCombopPhaseOperationVo ifPhaseOperationVo : ifList) {
-                    exportHandlerAutoexecCombopPhaseOperation(ifPhaseOperationVo, dependencyList, zipOutputStream);
+        } else {
+            // 环境层
+            if (StringUtils.isBlank(appModuleAbbrName)) {
+                if (logger.isWarnEnabled()) {
+                    logger.warn("The module is simply empty");
                 }
             }
-            List<AutoexecCombopPhaseOperationVo> elseList = phaseOperationConfig.getElseList();
-            if (CollectionUtils.isNotEmpty(elseList)) {
-                for (AutoexecCombopPhaseOperationVo elsePhaseOperationVo : elseList) {
-                    exportHandlerAutoexecCombopPhaseOperation(elsePhaseOperationVo, dependencyList, zipOutputStream);
-                }
+            ResourceVo appModule = resourceCrossoverMapper.getAppModuleByName(appModuleAbbrName);
+            if (appModule == null) {
+                return false;
             }
-            List<AutoexecCombopPhaseOperationVo> operations = phaseOperationConfig.getOperations();
-            if (CollectionUtils.isNotEmpty(operations)) {
-                for (AutoexecCombopPhaseOperationVo loopPhaseOperationVo : operations) {
-                    exportHandlerAutoexecCombopPhaseOperation(loopPhaseOperationVo, dependencyList, zipOutputStream);
-                }
-            }
-        }
-    }
+            appConfigVo.setAppModuleId(appModule.getId());
+            appConfigVo.setAppModuleName(appModule.getName());
 
-    /**
-     * 导出时处理阶段组中配置信息
-     * @param deployPipelineGroupVo
-     * @param dependencyList
-     * @param zipOutputStream
-     */
-    private void exportHandlerDeployPipelineGroup(DeployPipelineGroupVo deployPipelineGroupVo, List<ImportExportBaseInfoVo> dependencyList, ZipOutputStream zipOutputStream) {
-        if (Objects.equals(deployPipelineGroupVo.getPolicy(), AutoexecJobGroupPolicy.ONESHOT.getName())) {
-            return;
+            if (StringUtils.isBlank(envName)) {
+                if (logger.isWarnEnabled()) {
+                    logger.warn("The environment name is empty");
+                }
+            }
+            ResourceVo env = resourceCrossoverMapper.getAppEnvByName(envName);
+            if (env == null) {
+                return false;
+            }
+            appConfigVo.setEnvId(env.getId());
+            // 阶段
+            List<DeployPipelinePhaseVo> combopPhaseList = config.getCombopPhaseList();
+            if (CollectionUtils.isNotEmpty(combopPhaseList)) {
+                for (DeployPipelinePhaseVo deployPipelinePhaseVo : combopPhaseList) {
+                    dependencyHandleDeployPipelinePhase(action, deployPipelinePhaseVo, dependencyList, zipOutputStream, primaryChangeList);
+                }
+            }
+            // 阶段组
+            List<DeployPipelineGroupVo> combopGroupList = config.getCombopGroupList();
+            if (CollectionUtils.isNotEmpty(combopGroupList)) {
+                for (DeployPipelineGroupVo deployPipelineGroupVo : combopGroupList) {
+                    dependencyHandleDeployPipelineGroup(action, deployPipelineGroupVo, dependencyList, zipOutputStream, primaryChangeList);
+                }
+            }
+            // 执行账户
+            if (config.getExecuteConfig() != null && config.getExecuteConfig().getProtocolId() != null) {
+                if (action == IMPORT) {
+                    Object newPrimaryKey = getNewPrimaryKey(CmdbImportExportHandlerType.PROTOCOL, config.getExecuteConfig().getProtocolId(), primaryChangeList);
+                    if (newPrimaryKey != null) {
+                        config.getExecuteConfig().setProtocolId((Long) newPrimaryKey);
+                    }
+                } else if (action == EXPORT) {
+                    doExportData(CmdbImportExportHandlerType.PROTOCOL, config.getExecuteConfig().getProtocolId(), dependencyList, zipOutputStream);
+                }
+
+            }
+            // 预置参数集
+            List<DeployProfileVo> overrideProfileList = config.getOverrideProfileList();
+            if (CollectionUtils.isNotEmpty(overrideProfileList)) {
+                for (DeployProfileVo deployProfileVo : overrideProfileList) {
+                    if (action == IMPORT) {
+                        Object newPrimaryKey = getNewPrimaryKey(AutoexecImportExportHandlerType.AUTOEXEC_PROFILE, deployProfileVo.getProfileId(), primaryChangeList);
+                        if (newPrimaryKey != null) {
+                            deployProfileVo.setProfileId((Long) newPrimaryKey);
+                        }
+                    } else if (action == EXPORT) {
+                        doExportData(AutoexecImportExportHandlerType.AUTOEXEC_PROFILE, deployProfileVo.getProfileId(), dependencyList, zipOutputStream);
+                    }
+                }
+            }
         }
-        AutoexecCombopGroupConfigVo config = deployPipelineGroupVo.getConfig();
-        if (config == null) {
-            return;
-        }
-        AutoexecCombopExecuteConfigVo executeConfig = config.getExecuteConfig();
-        if (executeConfig == null) {
-            return;
-        }
-        if (!Objects.equals(executeConfig.getIsPresetExecuteConfig(), 1)) {
-            return;
-        }
-        if (executeConfig.getProtocolId() != null) {
-            doExportData(CmdbImportExportHandlerType.PROTOCOL, executeConfig.getProtocolId(), dependencyList, zipOutputStream);
-        }
+        return true;
     }
 
     /**
      * 导入时处理阶段中的配置信息，例如，protocolId发生变化时替换成新的值
+     * 导出时处理阶段中配置信息
+     * @param action
      * @param deployPipelinePhaseVo
+     * @param dependencyList
+     * @param zipOutputStream
      * @param primaryChangeList
      */
-    private void importHandlerDeployPipelinePhase(DeployPipelinePhaseVo deployPipelinePhaseVo, List<ImportExportPrimaryChangeVo> primaryChangeList) {
+    private void dependencyHandleDeployPipelinePhase(
+            String action,
+            DeployPipelinePhaseVo deployPipelinePhaseVo,
+            List<ImportExportBaseInfoVo> dependencyList,
+            ZipOutputStream zipOutputStream,
+            List<ImportExportPrimaryChangeVo> primaryChangeList
+    ) {
         AutoexecCombopPhaseConfigVo config = deployPipelinePhaseVo.getConfig();
         if (config == null) {
             return;
@@ -542,71 +392,39 @@ public class AppPipelineImportExportHandler extends ImportExportHandlerBase {
         if (executeConfig != null) {
             if (Objects.equals(executeConfig.getIsPresetExecuteConfig(), 1)) {
                 if (executeConfig.getProtocolId() != null) {
-                    Object newPrimaryKey = getNewPrimaryKey(CmdbImportExportHandlerType.PROTOCOL, executeConfig.getProtocolId(), primaryChangeList);
-                    if (newPrimaryKey != null) {
-                        executeConfig.setProtocolId((Long) newPrimaryKey);
+                    if (action == IMPORT) {
+                        Object newPrimaryKey = getNewPrimaryKey(CmdbImportExportHandlerType.PROTOCOL, executeConfig.getProtocolId(), primaryChangeList);
+                        if (newPrimaryKey != null) {
+                            executeConfig.setProtocolId((Long) newPrimaryKey);
+                        }
+                    } else if (action == EXPORT)  {
+                        doExportData(CmdbImportExportHandlerType.PROTOCOL, executeConfig.getProtocolId(), dependencyList, zipOutputStream);
                     }
                 }
             }
         }
         List<AutoexecCombopPhaseOperationVo> phaseOperationList = config.getPhaseOperationList();
         for (AutoexecCombopPhaseOperationVo phaseOperationVo : phaseOperationList) {
-            importHandlerAutoexecCombopPhaseOperation(phaseOperationVo, primaryChangeList);
-        }
-    }
-
-    /**
-     * 导入时处理阶段操作中的配置信息，例如，profileId发生变化时替换成新的值
-     * @param phaseOperationVo
-     * @param primaryChangeList
-     */
-    private void importHandlerAutoexecCombopPhaseOperation(AutoexecCombopPhaseOperationVo phaseOperationVo, List<ImportExportPrimaryChangeVo> primaryChangeList) {
-        if (Objects.equals(phaseOperationVo.getOperationType(), ToolType.SCRIPT.getValue())) {
-            Object newPrimaryKey = getNewPrimaryKey(AutoexecImportExportHandlerType.AUTOEXEC_SCRIPT, phaseOperationVo.getOperationId(), primaryChangeList);
-            if (newPrimaryKey != null) {
-                phaseOperationVo.setOperationId((Long) newPrimaryKey);
-            }
-        } else if (Objects.equals(phaseOperationVo.getOperationType(), ToolType.TOOL.getValue())) {
-            Object newPrimaryKey = getNewPrimaryKey(AutoexecImportExportHandlerType.AUTOEXEC_TOOL, phaseOperationVo.getOperationId(), primaryChangeList);
-            if (newPrimaryKey != null) {
-                phaseOperationVo.setOperationId((Long) newPrimaryKey);
-            }
-        }
-        AutoexecCombopPhaseOperationConfigVo phaseOperationConfig = phaseOperationVo.getConfig();
-        if (phaseOperationConfig == null) {
-            if (phaseOperationConfig.getProfileId() != null) {
-                Object newPrimaryKey = getNewPrimaryKey(AutoexecImportExportHandlerType.AUTOEXEC_PROFILE, phaseOperationConfig.getProfileId(), primaryChangeList);
-                if (newPrimaryKey != null) {
-                    phaseOperationConfig.setProfileId((Long) newPrimaryKey);
-                }
-            }
-            List<AutoexecCombopPhaseOperationVo> ifList = phaseOperationConfig.getIfList();
-            if (CollectionUtils.isNotEmpty(ifList)) {
-                for (AutoexecCombopPhaseOperationVo ifPhaseOperationVo : ifList) {
-                    importHandlerAutoexecCombopPhaseOperation(ifPhaseOperationVo, primaryChangeList);
-                }
-            }
-            List<AutoexecCombopPhaseOperationVo> elseList = phaseOperationConfig.getElseList();
-            if (CollectionUtils.isNotEmpty(elseList)) {
-                for (AutoexecCombopPhaseOperationVo elsePhaseOperationVo : elseList) {
-                    importHandlerAutoexecCombopPhaseOperation(elsePhaseOperationVo, primaryChangeList);
-                }
-            }
-            List<AutoexecCombopPhaseOperationVo> operations = phaseOperationConfig.getOperations();
-            if (CollectionUtils.isNotEmpty(operations)) {
-                for (AutoexecCombopPhaseOperationVo loopOperation : operations) {
-                    importHandlerAutoexecCombopPhaseOperation(loopOperation, primaryChangeList);
-                }
-            }
+            dependencyHandleAutoexecCombopPhaseOperation(action, phaseOperationVo, dependencyList, zipOutputStream, primaryChangeList);
         }
     }
 
     /**
      * 导入时处理阶段组中的配置信息，例如，protocolId发生变化时替换成新的值
+     * 导出时处理阶段组中配置信息
+     * @param action
      * @param deployPipelineGroupVo
+     * @param dependencyList
+     * @param zipOutputStream
      * @param primaryChangeList
      */
-    private void importHandlerDeployPipelineGroup(DeployPipelineGroupVo deployPipelineGroupVo, List<ImportExportPrimaryChangeVo> primaryChangeList) {
+    private void dependencyHandleDeployPipelineGroup(
+            String action,
+            DeployPipelineGroupVo deployPipelineGroupVo,
+            List<ImportExportBaseInfoVo> dependencyList,
+            ZipOutputStream zipOutputStream,
+            List<ImportExportPrimaryChangeVo> primaryChangeList
+    ) {
         if (Objects.equals(deployPipelineGroupVo.getPolicy(), AutoexecJobGroupPolicy.ONESHOT.getName())) {
             return;
         }
@@ -622,9 +440,99 @@ public class AppPipelineImportExportHandler extends ImportExportHandlerBase {
             return;
         }
         if (executeConfig.getProtocolId() != null) {
-            Object newPrimaryKey = getNewPrimaryKey(CmdbImportExportHandlerType.PROTOCOL, executeConfig.getProtocolId(), primaryChangeList);
-            if (newPrimaryKey != null) {
-                executeConfig.setProtocolId((Long) newPrimaryKey);
+            if (action == IMPORT) {
+                Object newPrimaryKey = getNewPrimaryKey(CmdbImportExportHandlerType.PROTOCOL, executeConfig.getProtocolId(), primaryChangeList);
+                if (newPrimaryKey != null) {
+                    executeConfig.setProtocolId((Long) newPrimaryKey);
+                }
+            } else if (action == EXPORT) {
+                doExportData(CmdbImportExportHandlerType.PROTOCOL, executeConfig.getProtocolId(), dependencyList, zipOutputStream);
+            }
+        }
+    }
+
+    /**
+     * 导入时处理阶段操作中的配置信息，例如，profileId发生变化时替换成新的值
+     * 导出时处理阶段操作中配置信息
+     * @param action
+     * @param phaseOperationVo
+     * @param dependencyList
+     * @param zipOutputStream
+     * @param primaryChangeList
+     */
+    private void dependencyHandleAutoexecCombopPhaseOperation(
+            String action,
+            AutoexecCombopPhaseOperationVo phaseOperationVo,
+            List<ImportExportBaseInfoVo> dependencyList,
+            ZipOutputStream zipOutputStream,
+            List<ImportExportPrimaryChangeVo> primaryChangeList
+    ) {
+        if (Objects.equals(phaseOperationVo.getOperationType(), ToolType.SCRIPT.getValue())) {
+            if (action == IMPORT) {
+                Object newPrimaryKey = getNewPrimaryKey(AutoexecImportExportHandlerType.AUTOEXEC_SCRIPT, phaseOperationVo.getOperationId(), primaryChangeList);
+                if (newPrimaryKey != null) {
+                    phaseOperationVo.setOperationId((Long) newPrimaryKey);
+                }
+            } else if (action == EXPORT) {
+                doExportData(AutoexecImportExportHandlerType.AUTOEXEC_SCRIPT, phaseOperationVo.getOperationId(), dependencyList, zipOutputStream);
+            }
+        } else if (Objects.equals(phaseOperationVo.getOperationType(), ToolType.TOOL.getValue())) {
+            if (action == IMPORT) {
+                Object newPrimaryKey = getNewPrimaryKey(AutoexecImportExportHandlerType.AUTOEXEC_TOOL, phaseOperationVo.getOperationId(), primaryChangeList);
+                if (newPrimaryKey != null) {
+                    phaseOperationVo.setOperationId((Long) newPrimaryKey);
+                }
+            } else if (action == EXPORT) {
+                doExportData(AutoexecImportExportHandlerType.AUTOEXEC_TOOL, phaseOperationVo.getOperationId(), dependencyList, zipOutputStream);
+            }
+        }
+        AutoexecCombopPhaseOperationConfigVo phaseOperationConfig = phaseOperationVo.getConfig();
+        if (phaseOperationConfig != null) {
+            if (phaseOperationConfig.getProfileId() != null) {
+                if (action == IMPORT) {
+                    Object newPrimaryKey = getNewPrimaryKey(AutoexecImportExportHandlerType.AUTOEXEC_PROFILE, phaseOperationConfig.getProfileId(), primaryChangeList);
+                    if (newPrimaryKey != null) {
+                        phaseOperationConfig.setProfileId((Long) newPrimaryKey);
+                    }
+                } else if (action == EXPORT) {
+                    doExportData(AutoexecImportExportHandlerType.AUTOEXEC_PROFILE, phaseOperationConfig.getProfileId(), dependencyList, zipOutputStream);
+                }
+            }
+            if (action == EXPORT) {
+                List<ParamMappingVo> paramMappingList = phaseOperationConfig.getParamMappingList();
+                if (CollectionUtils.isNotEmpty(paramMappingList)) {
+                    for (ParamMappingVo paramMappingVo : paramMappingList) {
+                        if (Objects.equals(paramMappingVo.getMappingMode(), ParamMappingMode.GLOBAL_PARAM.getValue())) {
+                            doExportData(AutoexecImportExportHandlerType.AUTOEXEC_GLOBAL_PARAM, paramMappingVo.getValue(), dependencyList, zipOutputStream);
+                        }
+                    }
+                }
+                List<ParamMappingVo> argumentMappingList = phaseOperationConfig.getArgumentMappingList();
+                if (CollectionUtils.isNotEmpty(argumentMappingList)) {
+                    for (ParamMappingVo paramMappingVo : argumentMappingList) {
+                        if (Objects.equals(paramMappingVo.getMappingMode(), ParamMappingMode.GLOBAL_PARAM.getValue())) {
+                            doExportData(AutoexecImportExportHandlerType.AUTOEXEC_GLOBAL_PARAM, paramMappingVo.getValue(), dependencyList, zipOutputStream);
+                        }
+                    }
+                }
+            }
+            List<AutoexecCombopPhaseOperationVo> ifList = phaseOperationConfig.getIfList();
+            if (CollectionUtils.isNotEmpty(ifList)) {
+                for (AutoexecCombopPhaseOperationVo ifPhaseOperationVo : ifList) {
+                    dependencyHandleAutoexecCombopPhaseOperation(action, ifPhaseOperationVo, dependencyList, zipOutputStream, primaryChangeList);
+                }
+            }
+            List<AutoexecCombopPhaseOperationVo> elseList = phaseOperationConfig.getElseList();
+            if (CollectionUtils.isNotEmpty(elseList)) {
+                for (AutoexecCombopPhaseOperationVo elsePhaseOperationVo : elseList) {
+                    dependencyHandleAutoexecCombopPhaseOperation(action, elsePhaseOperationVo, dependencyList, zipOutputStream, primaryChangeList);
+                }
+            }
+            List<AutoexecCombopPhaseOperationVo> operations = phaseOperationConfig.getOperations();
+            if (CollectionUtils.isNotEmpty(operations)) {
+                for (AutoexecCombopPhaseOperationVo loopOperation : operations) {
+                    dependencyHandleAutoexecCombopPhaseOperation(action, loopOperation, dependencyList, zipOutputStream, primaryChangeList);
+                }
             }
         }
     }
