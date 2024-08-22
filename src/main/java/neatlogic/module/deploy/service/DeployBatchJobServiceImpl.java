@@ -99,6 +99,9 @@ public class DeployBatchJobServiceImpl implements DeployBatchJobService, IDeploy
                                 hasLaneJob = true;
                                 hasGroupJob = true;
                                 DeployJobVo jobVo = new DeployJobVo();
+                                if (jobTemplateVo.getConfig() != null && jobTemplateVo.getConfig().containsKey("param")) {
+                                    jobVo.setParam(jobTemplateVo.getConfig().getJSONObject("param"));
+                                }
                                 jobVo.setAppSystemId(jobTemplateVo.getAppSystemId());
                                 jobVo.setAppModuleId(jobTemplateVo.getAppModuleId());
                                 jobVo.setScenarioId(jobTemplateVo.getScenarioId());
