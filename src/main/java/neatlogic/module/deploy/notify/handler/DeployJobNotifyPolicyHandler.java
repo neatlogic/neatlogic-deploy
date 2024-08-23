@@ -14,7 +14,9 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 package neatlogic.module.deploy.notify.handler;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import neatlogic.framework.autoexec.constvalue.JobGroupSearch;
 import neatlogic.framework.deploy.auth.DEPLOY_MODIFY;
 import neatlogic.framework.deploy.constvalue.DeployJobNotifyParam;
 import neatlogic.framework.deploy.constvalue.DeployJobNotifyTriggerType;
@@ -71,6 +73,8 @@ public class DeployJobNotifyPolicyHandler extends NotifyPolicyHandlerBase {
 
     @Override
     protected void myAuthorityConfig(JSONObject config) {
-
+        List<String> groupList = JSON.parseArray(config.getJSONArray("groupList").toJSONString(), String.class);
+        groupList.add(JobGroupSearch.JOBUSERTYPE.getValue());
+        config.put("groupList", groupList);
     }
 }
