@@ -15,12 +15,15 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 package neatlogic.module.deploy.job.callback;
 
 import com.alibaba.fastjson.JSONObject;
+import neatlogic.framework.autoexec.constvalue.JobUserType;
 import neatlogic.framework.autoexec.dao.mapper.AutoexecJobMapper;
 import neatlogic.framework.autoexec.dto.job.AutoexecJobVo;
 import neatlogic.framework.autoexec.job.callback.core.AutoexecJobCallbackBase;
 import neatlogic.framework.cmdb.crossover.IAppSystemMapper;
 import neatlogic.framework.cmdb.dto.resourcecenter.entity.AppModuleVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.entity.AppSystemVo;
+import neatlogic.framework.common.constvalue.GroupSearch;
+import neatlogic.framework.common.constvalue.SystemUser;
 import neatlogic.framework.crossover.CrossoverServiceFactory;
 import neatlogic.framework.deploy.constvalue.DeployJobNotifyTriggerType;
 import neatlogic.framework.deploy.dto.job.DeployJobVo;
@@ -28,6 +31,7 @@ import neatlogic.framework.notify.crossover.INotifyServiceCrossoverService;
 import neatlogic.framework.notify.dao.mapper.NotifyMapper;
 import neatlogic.framework.notify.dto.InvokeNotifyPolicyConfigVo;
 import neatlogic.framework.notify.dto.NotifyPolicyVo;
+import neatlogic.framework.notify.dto.NotifyReceiverVo;
 import neatlogic.framework.transaction.util.TransactionUtil;
 import neatlogic.framework.util.NotifyPolicyUtil;
 import neatlogic.module.deploy.dao.mapper.DeployAppConfigMapper;
@@ -40,8 +44,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.TransactionStatus;
 
 import javax.annotation.Resource;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * @author longrf
@@ -139,9 +142,14 @@ public class DeployJobNotifyCallbackHandler extends AutoexecJobCallbackBase {
             return;
         }
         try {
+            Map<String, List<NotifyReceiverVo>> receiverMap = new HashMap<>();
+            if (!Objects.equals(jobInfo.getExecUser(), SystemUser.SYSTEM.getUserUuid())) {
+                receiverMap.computeIfAbsent(JobUserType.EXEC_USER.getValue(), k -> new ArrayList<>())
+                        .add(new NotifyReceiverVo(GroupSearch.USER.getValue(), jobInfo.getExecUser()));
+            }
             String notifyAuditMessage = jobInfo.getId() + "-" + jobInfo.getName();
             NotifyPolicyUtil.execute(notifyPolicyVo.getHandler(), trigger, DeployJobMessageHandler.class
-                    , notifyPolicyVo, null, null, null
+                    , notifyPolicyVo, null, null, receiverMap
                     , jobInfo, null, notifyAuditMessage);
         } catch (Exception ex) {
             logger.error("发布作业：" + jobInfo.getId() + "-" + jobInfo.getName() + "通知失败");
