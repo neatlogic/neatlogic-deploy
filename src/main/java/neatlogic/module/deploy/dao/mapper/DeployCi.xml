@@ -179,6 +179,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                `fcd`
         from deploy_ci_audit a
         where ci_id = #{ciId}
+        ORDER BY `id` DESC
         LIMIT #{startNum}, #{pageSize}
     </select>
 
