@@ -45,9 +45,8 @@ import neatlogic.framework.dao.mapper.runner.RunnerMapper;
 import neatlogic.framework.deploy.auth.BATCHDEPLOY_MODIFY;
 import neatlogic.framework.deploy.auth.DEPLOY_MODIFY;
 import neatlogic.framework.deploy.auth.core.DeployAppAuthChecker;
-import neatlogic.framework.deploy.constvalue.BuildNoStatus;
-import neatlogic.framework.deploy.constvalue.JobSource;
-import neatlogic.framework.deploy.constvalue.JobSourceType;
+import neatlogic.framework.deploy.constvalue.*;
+import neatlogic.framework.deploy.dto.app.DeployAppConfigAuthorityActionVo;
 import neatlogic.framework.deploy.dto.app.DeployPipelineConfigVo;
 import neatlogic.framework.deploy.dto.app.DeployProfileVo;
 import neatlogic.framework.deploy.dto.instance.DeployInstanceVersionVo;
@@ -60,6 +59,7 @@ import neatlogic.framework.deploy.dto.version.DeployVersionBuildNoVo;
 import neatlogic.framework.deploy.dto.version.DeployVersionEnvVo;
 import neatlogic.framework.deploy.dto.version.DeployVersionVo;
 import neatlogic.framework.deploy.exception.*;
+import neatlogic.framework.dto.AuthenticationInfoVo;
 import neatlogic.framework.dto.globallock.GlobalLockVo;
 import neatlogic.framework.dto.runner.RunnerGroupVo;
 import neatlogic.framework.dto.runner.RunnerMapVo;
@@ -73,11 +73,7 @@ import neatlogic.framework.globallock.dao.mapper.GlobalLockMapper;
 import neatlogic.framework.integration.authentication.enums.AuthenticateType;
 import neatlogic.framework.util.HttpRequestUtil;
 import neatlogic.framework.util.TableResultUtil;
-import neatlogic.module.deploy.dao.mapper.DeployAppConfigMapper;
-import neatlogic.module.deploy.dao.mapper.DeployJobMapper;
-import neatlogic.module.deploy.dao.mapper.DeploySqlMapper;
-import neatlogic.module.deploy.dao.mapper.DeployVersionMapper;
-import neatlogic.module.deploy.dao.mapper.DeployInstanceVersionMapper;
+import neatlogic.module.deploy.dao.mapper.*;
 import neatlogic.module.deploy.util.DeployPipelineConfigManager;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -698,7 +694,28 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
             //补充是否有资源锁
             boolean isHasLock = GlobalLockHandlerFactory.getHandler(JobSourceType.DEPLOY.getValue()).getIsHasLockByKey(result);
             result.put("isHasLock", isHasLock ? 1 : 0);
-
+            // 判断当前用户是否拥有“版本&制品管理”权限
+            boolean hasOperationVersionAndProductManagerAuth = false;
+            if (AuthActionChecker.check(DEPLOY_MODIFY.class)) {
+                hasOperationVersionAndProductManagerAuth = true;
+            } else {
+                AuthenticationInfoVo authenticationInfoVo = UserContext.get().getAuthenticationInfoVo();
+                List<String> authUuidList = new ArrayList<>();
+                authUuidList.add(authenticationInfoVo.getUserUuid());
+                authUuidList.addAll(authenticationInfoVo.getTeamUuidList());
+                authUuidList.addAll(authenticationInfoVo.getRoleUuidList());
+                List<DeployAppConfigAuthorityActionVo> actionList = deployAppConfigMapper.getDeployAppAllAuthorityActionListByAppSystemIdAndAuthUuidList(deployJobVo.getAppSystemId(), authUuidList);
+                for (DeployAppConfigAuthorityActionVo actionVo : actionList) {
+                    if (Objects.equals(actionVo.getType(), DeployAppConfigActionType.OPERATION.getValue())) {
+                        if (Objects.equals(actionVo.getAction(), "all")
+                                || Objects.equals(actionVo.getAction(), DeployAppConfigAction.VERSION_AND_PRODUCT_MANAGER.getValue())) {
+                            hasOperationVersionAndProductManagerAuth = true;
+                            break;
+                        }
+                    }
+                }
+            }
+            result.put("hasOperationVersionAndProductManagerAuth", hasOperationVersionAndProductManagerAuth);
         }
         return result;
     }
