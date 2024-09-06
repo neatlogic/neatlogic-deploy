@@ -37,6 +37,7 @@ import neatlogic.framework.util.NotifyPolicyUtil;
 import neatlogic.module.deploy.dao.mapper.DeployAppConfigMapper;
 import neatlogic.module.deploy.dao.mapper.DeployJobMapper;
 import neatlogic.module.deploy.handler.DeployJobMessageHandler;
+import neatlogic.module.deploy.notify.handler.DeployJobNotifyPolicyHandler;
 import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -124,7 +125,7 @@ public class DeployJobNotifyCallbackHandler extends AutoexecJobCallbackBase {
         String configStr = deployAppConfigMapper.getAppSystemNotifyPolicyConfigByAppSystemId(appSystemId);
         InvokeNotifyPolicyConfigVo invokeNotifyPolicyConfigVo = JSONObject.parseObject(configStr, InvokeNotifyPolicyConfigVo.class);
         INotifyServiceCrossoverService notifyServiceCrossoverService = CrossoverServiceFactory.getApi(INotifyServiceCrossoverService.class);
-        invokeNotifyPolicyConfigVo = notifyServiceCrossoverService.regulateNotifyPolicyConfig(invokeNotifyPolicyConfigVo);
+        invokeNotifyPolicyConfigVo = notifyServiceCrossoverService.regulateNotifyPolicyConfig(invokeNotifyPolicyConfigVo, DeployJobNotifyPolicyHandler.class);
         if (invokeNotifyPolicyConfigVo == null) {
             return;
         }
