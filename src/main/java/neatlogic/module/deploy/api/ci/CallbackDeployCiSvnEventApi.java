@@ -1,5 +1,6 @@
 package neatlogic.module.deploy.api.ci;
 
+import com.alibaba.fastjson.JSON;
 import neatlogic.framework.asynchronization.threadlocal.UserContext;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.autoexec.dao.mapper.AutoexecJobMapper;
@@ -209,14 +210,16 @@ public class CallbackDeployCiSvnEventApi extends PrivateApiComponentBase {
                     UserContext.init(SystemUser.SYSTEM);
                     UserContext.get().setToken("GZIP_" + LoginAuthHandlerBase.buildJwt(SystemUser.SYSTEM.getUserVo()).getCc());
                     Long jobId = null;
-
+                    String resultStr =StringUtils.EMPTY;
+                    JSONObject result;
                     deployCiMapper.getDeployCiLockById(ci.getId());
                     if (DeployCiActionType.CREATE_JOB.getValue().equals(ci.getAction())) {
-                        jobId = deployCiService.createJobForVCSCallback(paramObj, ci, versionName, deployVersion, DeployCiRepoType.SVN);
+                        resultStr = deployCiService.createJobForVCSCallback(paramObj, ci, versionName, deployVersion, DeployCiRepoType.SVN);
                     } else if (DeployCiActionType.CREATE_BATCH_JOB.getValue().equals(ci.getAction())) {
-                        jobId = deployCiService.createBatchJobForVCSCallback(paramObj, ci, versionName, deployVersion, DeployCiRepoType.SVN);
+                        resultStr = deployCiService.createBatchJobForVCSCallback(paramObj, ci, versionName, deployVersion, DeployCiRepoType.SVN);
                     }
-                    auditVo.setJobId(jobId);
+                    result = JSON.parseObject(resultStr);
+                    auditVo.setJobId(result.getLong("id"));
                     auditVo.setStatus(DeployCiAuditStatus.SUCCEED.getValue());
                     auditVo.setResult(jobId);
                 } catch (Exception ex) {
