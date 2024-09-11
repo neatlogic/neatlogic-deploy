@@ -1,5 +1,6 @@
 package neatlogic.module.deploy.api.ci;
 
+import com.alibaba.fastjson.JSON;
 import neatlogic.framework.asynchronization.threadlocal.UserContext;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.autoexec.dao.mapper.AutoexecJobMapper;
@@ -165,15 +166,17 @@ public class CallbackDeployCiGitlabEventApi extends PrivateApiComponentBase {
             DeployVersionVo deployVersion = deployVersionMapper.getDeployVersionBaseInfoBySystemIdAndModuleIdAndVersion(new DeployVersionVo(versionName, ci.getAppSystemId(), ci.getAppModuleId()));
             UserContext.init(SystemUser.SYSTEM);
             UserContext.get().setToken("GZIP_" + LoginAuthHandlerBase.buildJwt(SystemUser.SYSTEM.getUserVo()).getCc());
-            Long jobId = null;
+            String resultStr =StringUtils.EMPTY;
+            JSONObject result;
             if (DeployCiActionType.CREATE_JOB.getValue().equals(ci.getAction())) {
-                jobId = deployCiService.createJobForVCSCallback(paramObj, ci, versionName, deployVersion, DeployCiRepoType.GITLAB);
+                resultStr = deployCiService.createJobForVCSCallback(paramObj, ci, versionName, deployVersion, DeployCiRepoType.GITLAB);
             } else if (DeployCiActionType.CREATE_BATCH_JOB.getValue().equals(ci.getAction())) {
-                jobId = deployCiService.createBatchJobForVCSCallback(paramObj, ci, versionName, deployVersion, DeployCiRepoType.GITLAB);
+                resultStr = deployCiService.createBatchJobForVCSCallback(paramObj, ci, versionName, deployVersion, DeployCiRepoType.GITLAB);
             }
-            auditVo.setJobId(jobId);
+            result = JSON.parseObject(resultStr);
+            auditVo.setJobId(result.getLong("id"));
             auditVo.setStatus(DeployCiAuditStatus.SUCCEED.getValue());
-            auditVo.setResult(jobId);
+            auditVo.setResult(result);
         } catch (Exception ex) {
             auditVo.setStatus(DeployCiAuditStatus.FAILED.getValue());
             auditVo.setError(ExceptionUtils.getStackTrace(ex));

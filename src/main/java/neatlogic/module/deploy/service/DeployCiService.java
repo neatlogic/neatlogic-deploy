@@ -44,7 +44,7 @@ public interface DeployCiService {
      * @return 作业id
      * @throws Exception
      */
-    Long createJobForVCSCallback(JSONObject paramObj, DeployCiVo ci, String versionName, DeployVersionVo deployVersion, DeployCiRepoType repoType) throws Exception;
+    String createJobForVCSCallback(JSONObject paramObj, DeployCiVo ci, String versionName, DeployVersionVo deployVersion, DeployCiRepoType repoType) throws Exception;
 
     /**
      * 代码仓库hook回调创建批量发布作业
@@ -57,7 +57,7 @@ public interface DeployCiService {
      * @return 作业id
      * @throws Exception
      */
-    Long createBatchJobForVCSCallback(JSONObject paramObj, DeployCiVo ci, String versionName, DeployVersionVo deployVersion, DeployCiRepoType repoType) throws Exception;
+    String createBatchJobForVCSCallback(JSONObject paramObj, DeployCiVo ci, String versionName, DeployVersionVo deployVersion, DeployCiRepoType repoType) throws Exception;
 
     /**
      * 删除gitlab webhook
