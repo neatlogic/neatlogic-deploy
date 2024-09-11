@@ -259,13 +259,14 @@ public class DeployJobServiceImpl implements DeployJobService {
                 throw new DeployVersionNotFoundException(deployJobParam.getAppSystemName(), deployJobParam.getAppModuleName(), moduleVo.getVersion());
             }
 
-        } if (StringUtils.isNotBlank(deployJobParam.getVersion())) {
+        }
+        if (StringUtils.isNotBlank(deployJobParam.getVersion())) {
             versionVo = deployVersionMapper.getDeployVersionBySystemIdAndModuleIdAndVersion(deployJobParam.getAppSystemId(), deployJobParam.getAppModuleId(), deployJobParam.getVersion());
             if (versionVo == null) {
                 throw new DeployVersionNotFoundException(deployJobParam.getAppSystemName(), deployJobParam.getAppModuleName(), deployJobParam.getVersion());
             }
 
-        }else if (deployJobParam.getVersionId() != null) {
+        } else if (deployJobParam.getVersionId() != null) {
             versionVo = deployVersionMapper.getDeployVersionBySystemIdAndModuleIdAndVersionId(deployJobParam.getAppSystemId(), deployJobParam.getAppModuleId(), deployJobParam.getVersionId());
             if (versionVo == null) {
                 throw new DeployVersionNotFoundException(deployJobParam.getAppSystemName(), deployJobParam.getAppModuleName(), deployJobParam.getVersion());
@@ -360,6 +361,7 @@ public class DeployJobServiceImpl implements DeployJobService {
         resultJson.put("jobId", deployJobVo.getId());
         resultJson.put("appModuleName", deployJobVo.getAppModuleName());
         resultJson.put("deployJobParam", deployJobVo);
+        logger.debug("deployJobCreateParam:" + resultJson.toJSONString());
         return resultJson;
     }
 
