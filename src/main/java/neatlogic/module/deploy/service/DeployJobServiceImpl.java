@@ -317,6 +317,7 @@ public class DeployJobServiceImpl implements DeployJobService {
         resultJson.put("appSystemName", deployJobParam.getAppSystemName());
         resultJson.put("appModuleName", deployJobParam.getAppModuleName());
         resultJson.put("deployJobParam", deployJobParam);
+        logger.debug("deployJobCreateParam:" + resultJson.toJSONString());
         return resultJson;
     }
 
@@ -361,7 +362,7 @@ public class DeployJobServiceImpl implements DeployJobService {
         resultJson.put("jobId", deployJobVo.getId());
         resultJson.put("appModuleName", deployJobVo.getAppModuleName());
         resultJson.put("deployJobParam", deployJobVo);
-        logger.debug("deployJobCreateParam:" + resultJson.toJSONString());
+        logger.debug("deployJobScheduleCreateParam:" + resultJson.toJSONString());
         return resultJson;
     }
 
