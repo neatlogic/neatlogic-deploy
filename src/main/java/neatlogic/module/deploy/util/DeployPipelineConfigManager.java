@@ -628,7 +628,8 @@ public class DeployPipelineConfigManager {
                             }
                             int index = 0;
                             for (DeployProfileParamVo deployProfileParamVo : deployProfileParamList) {
-                                if (Objects.equals(overrideProfileParamVo.getId(), deployProfileParamVo.getId())) {
+                                //兼容id不一样，导致没法赋值回显
+                                if (Objects.equals(overrideProfileParamVo.getId(), deployProfileParamVo.getId()) || Objects.equals(overrideProfileParamVo.getKey(), deployProfileParamVo.getKey())) {
                                     deployProfileParamList.set(index, overrideProfileParamVo);
                                     break;
                                 }
