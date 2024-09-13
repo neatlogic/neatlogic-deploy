@@ -366,7 +366,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
     </select>
 
     <select id="getAppConfigVo" parameterType="neatlogic.framework.deploy.dto.app.DeployAppConfigVo"
-            resultType="neatlogic.framework.deploy.dto.app.DeployAppConfigVo" useCache="true">
+            resultType="neatlogic.framework.deploy.dto.app.DeployAppConfigVo" useCache="false">
         SELECT `id`            as id,
                `app_system_id` as appSystemId,
                `app_module_id` as appModuleId,
