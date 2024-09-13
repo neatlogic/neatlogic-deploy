@@ -42,6 +42,7 @@ import neatlogic.framework.cmdb.dto.resourcecenter.entity.AppModuleVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.entity.AppSystemVo;
 import neatlogic.framework.cmdb.exception.cientity.CiEntityNotFoundException;
 import neatlogic.framework.cmdb.exception.resourcecenter.AppEnvNotFoundException;
+import neatlogic.framework.common.util.PageUtil;
 import neatlogic.framework.crossover.CrossoverServiceFactory;
 import neatlogic.framework.deploy.constvalue.CombopOperationType;
 import neatlogic.framework.deploy.constvalue.JobSource;
@@ -291,12 +292,20 @@ public class DeployJobServiceImpl implements DeployJobService {
             }
         } else {
             //如果selectNodeList 是empty，则发布全部实例
-            List<Long> instanceIdList = resourceCrossoverMapper.getAppInstanceResourceIdListByAppSystemIdAndModuleIdAndEnvId(new ResourceVo(deployJobParam.getAppSystemId(), deployJobParam.getAppModuleId(), deployJobParam.getEnvId()));
-            if (CollectionUtils.isNotEmpty(instanceIdList)) {
-                List<ResourceVo> instanceList = resourceCrossoverMapper.getAppInstanceResourceListByIdList(instanceIdList);
-                for (ResourceVo instance : instanceList) {
-                    AutoexecNodeVo autoexecNodeVo = new AutoexecNodeVo(instance);
-                    moduleVo.getSelectNodeList().add(autoexecNodeVo);
+            ResourceVo resourceVo = new ResourceVo(deployJobParam.getAppSystemId(), deployJobParam.getAppModuleId(), deployJobParam.getEnvId());
+            int count = resourceCrossoverMapper.getAppInstanceResourceIdCountByAppSystemIdAndModuleIdAndEnvId(resourceVo);
+            if (count > 0) {
+                int pageCount = PageUtil.getPageCount(count, resourceVo.getPageSize());
+                for (int i = 1; i <= pageCount; i++) {
+                    resourceVo.setCurrentPage(i);
+                    List<Long> instanceIdList = resourceCrossoverMapper.getAppInstanceResourceIdListByAppSystemIdAndModuleIdAndEnvId(resourceVo);
+                    if (CollectionUtils.isNotEmpty(instanceIdList)) {
+                        List<ResourceVo> instanceList = resourceCrossoverMapper.getAppInstanceResourceListByIdList(instanceIdList);
+                        for (ResourceVo instance : instanceList) {
+                            AutoexecNodeVo autoexecNodeVo = new AutoexecNodeVo(instance);
+                            moduleVo.getSelectNodeList().add(autoexecNodeVo);
+                        }
+                    }
                 }
             }
         }
