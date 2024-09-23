@@ -30,7 +30,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                dpj.sort                   as sort,
                saa.`name`                 as appSystemName,
                saa.`abbr_name`            as appSystemAbbrName,
-               cienv.`name`               as envName,
+               cienv.`value`               as envName,
                saa.`app_module_name`      as appModuleName,
                saa.`app_module_abbr_name` as appModuleAbbrName,
                aes.`name`                 as scenarioName
@@ -68,7 +68,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         dpj.config as configStr,
         dpj.sort as sort,
         ciapp.`name` as appSystemName,
-        cienv.`name` as envName,
+        cienv.`value` as envName,
         cimodule.`name` as appModuleName,
         aes.`name` as scenarioName
         FROM deploy_pipeline_jobtemplate AS dpj
@@ -156,7 +156,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                saa.`abbr_name` AS jobTemplateAppAbbrName,
                saa.`app_module_name` AS jobTemplateModuleName,
                saa.`app_module_abbr_name` AS jobTemplateModuleAbbrName,
-               cienv.`name`      as jobTemplateEnvName,
+               cienv.`value`      as jobTemplateEnvName,
                dpa.auth_uuid     as authUuid,
                dpa.type          as authType
         FROM deploy_pipeline AS dp

@@ -24,7 +24,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                a.app_module_id as appModuleId,
                c.name          as appModuleName,
                a.env_id        as envId,
-               d.name          as envName,
+               d.`value`          as envName,
                a.scenario_id   as scenarioId,
                e.name          as scenarioName,
                a.version,
@@ -61,7 +61,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                a.app_system_id      as appSystemId,
                a.app_module_id      as appModuleId,
                a.env_id             as envId,
-               d.name               as envName,
+               d.`value`               as envName,
                a.scenario_id        as scenarioId,
                e.name               as scenarioName,
                a.version,
@@ -82,7 +82,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         app_module_id as appModuleId,
         c.name as appModuleName,
         env_id as envId,
-        d.name as envName,
+        d.`value` as envName,
         version,
         build_no as buildNo,
         runner_map_id as runnerMapId
@@ -330,7 +330,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
             saa.`app_module_abbr_name` as appModuleAbbrName,
         </if>
         a.`env_id` as envId,
-        d.`name` as envName,
+        d.`value` as envName,
         a.`version`,
         e.`name` as scenarioName
         FROM
@@ -524,7 +524,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                saa.`app_module_name` AS jobAppModuleName,
                saa.`app_module_abbr_name` AS jobAppModuleAbbrName,
                f.`env_id`        as jobEnvId,
-               i.`name`          as jobEnvName,
+               i.`value`          as jobEnvName,
                j.`sort`          AS jobGroupSort,
                k.`id`            AS jobPhaseId,
                k.`name`          AS jobPhaseName,
