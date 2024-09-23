@@ -36,7 +36,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                aes.`name`                 as scenarioName
         FROM deploy_pipeline_jobtemplate AS dpj
             LEFT JOIN @{DATA_SCHEMA}.scence_appsystem_appmodule AS saa ON saa.id = dpj.app_system_id AND saa.app_module_id = dpj.app_module_id
-            LEFT JOIN cmdb_cientity AS cienv ON dpj.env_id = cienv.id
+            LEFT JOIN cmdb_global_attritem AS cienv ON dpj.env_id = cienv.id
             LEFT JOIN autoexec_scenario aes ON dpj.scenario_id = aes.id
         WHERE dpj.id = #{value}
     </select>
@@ -74,7 +74,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         FROM deploy_pipeline_jobtemplate AS dpj
         LEFT JOIN cmdb_cientity AS ciapp ON dpj.app_system_id = ciapp.id
         LEFT JOIN cmdb_cientity AS cimodule ON dpj.app_module_id = cimodule.id
-        LEFT JOIN cmdb_cientity AS cienv ON dpj.env_id = cienv.id
+        LEFT JOIN cmdb_global_attritem AS cienv ON dpj.env_id = cienv.id
         LEFT JOIN autoexec_scenario aes ON dpj.scenario_id = aes.id
         <include refid="searchJobTemplateCondition"/>
     </select>
@@ -163,7 +163,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                  LEFT JOIN deploy_pipeline_lane AS dpl ON dp.id = dpl.pipeline_id
                  LEFT JOIN deploy_pipeline_group AS dpg ON dpl.id = dpg.lane_id
                  LEFT JOIN deploy_pipeline_jobtemplate AS dpj ON dpg.id = dpj.group_id
-                 LEFT JOIN cmdb_cientity AS cienv ON dpj.env_id = cienv.id
+                 LEFT JOIN cmdb_global_attritem AS cienv ON dpj.env_id = cienv.id
                  LEFT JOIN  @{DATA_SCHEMA}.scence_appsystem_appmodule AS saa ON saa.id = dpj.app_system_id AND saa.app_module_id = dpj.app_module_id
                  LEFT JOIN deploy_pipeline_auth AS dpa ON dp.id = dpa.pipeline_id
                  LEFT JOIN autoexec_scenario aes ON dpj.scenario_id = aes.id
