@@ -34,7 +34,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         from deploy_job a
                  left join cmdb_cientity b ON a.app_system_id = b.id
                  left join cmdb_cientity c ON a.app_module_id = c.id
-                 left join cmdb_cientity d ON a.env_id = d.id
+                 left join cmdb_global_attritem d ON a.env_id = d.id
                  left join autoexec_scenario e on e.id = a.scenario_id
         where a.id = #{value}
     </select>
@@ -70,7 +70,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                a.runner_map_id      as runnerMapId
         FROM `autoexec_job` aj
                  join deploy_job a on aj.id = a.id
-                 left join cmdb_cientity d ON a.env_id = d.id
+                 left join cmdb_global_attritem d ON a.env_id = d.id
                  left join autoexec_scenario e on e.id = a.scenario_id
         where a.id = #{value}
     </select>
@@ -89,7 +89,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         from deploy_job a
         left join cmdb_cientity b ON a.app_system_id = b.id
         left join cmdb_cientity c ON a.app_module_id = c.id
-        left join cmdb_cientity d ON a.env_id = d.id
+        left join cmdb_global_attritem d ON a.env_id = d.id
         where a.id in
         <foreach collection="list" item="id" separator="," open="(" close=")">
             #{id}
@@ -340,7 +340,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         <if test="isNeedNameAndAbbrName ==1">
             left join @{DATA_SCHEMA}.scence_appsystem_appmodule saa on saa.id = a.app_system_id AND saa.app_module_id = a.app_module_id
         </if>
-        left join cmdb_cientity d ON a.env_id = d.id
+        left join cmdb_global_attritem d ON a.env_id = d.id
         left join autoexec_scenario e on a.scenario_id = e.id
         WHERE aj.`id` in
         <foreach collection="idList" item="jobId" open="(" close=")" separator=",">
@@ -539,7 +539,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                  LEFT JOIN autoexec_job e ON d.job_id = e.id
                  LEFT JOIN deploy_job f ON e.id = f.id
                  LEFT JOIN @{DATA_SCHEMA}.scence_appsystem_appmodule AS saa ON saa.id = f.app_system_id AND saa.app_module_id = f.app_module_id
-                 LEFT JOIN cmdb_cientity i ON f.env_id = i.id
+                 LEFT JOIN cmdb_global_attritem i ON f.env_id = i.id
                  LEFT JOIN autoexec_job_group j ON e.id = j.job_id
                  LEFT JOIN autoexec_job_phase k ON j.id = k.group_id
                  LEFT JOIN deploy_job_auth l ON a.id = l.job_id
