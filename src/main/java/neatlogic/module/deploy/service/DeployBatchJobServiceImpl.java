@@ -96,8 +96,6 @@ public class DeployBatchJobServiceImpl implements DeployBatchJobService, IDeploy
                         if (CollectionUtils.isNotEmpty(pipelineGroupVo.getJobTemplateList())) {
                             for (int k = 0; k < pipelineGroupVo.getJobTemplateList().size(); k++) {
                                 PipelineJobTemplateVo jobTemplateVo = pipelineGroupVo.getJobTemplateList().get(k);
-                                hasLaneJob = true;
-                                hasGroupJob = true;
                                 DeployJobVo jobVo = new DeployJobVo();
                                 if (jobTemplateVo.getConfig() != null && jobTemplateVo.getConfig().containsKey("param")) {
                                     jobVo.setParam(jobTemplateVo.getConfig().getJSONObject("param"));
@@ -106,8 +104,12 @@ public class DeployBatchJobServiceImpl implements DeployBatchJobService, IDeploy
                                 jobVo.setAppModuleId(jobTemplateVo.getAppModuleId());
                                 jobVo.setScenarioId(jobTemplateVo.getScenarioId());
                                 jobVo.setEnvId(jobTemplateVo.getEnvId());
-                                Long versionId = getVersionId(deployJobVo.getAppSystemModuleVersionList(), jobTemplateVo);
-                                jobVo.setVersionId(versionId);
+                                DeploySystemModuleVersionVo deploySystemModuleVersionVo = getVersionId(deployJobVo.getAppSystemModuleVersionList(), jobTemplateVo);
+                                //如果找不到对应的应用模块则说明用户没有勾选该模块，即该模块无需执行
+                                if(deploySystemModuleVersionVo == null){
+                                    continue;
+                                }
+                                jobVo.setVersionId(deploySystemModuleVersionVo.getVersionId());
                                 jobVo.setParentId(deployJobVo.getId());
                                 jobVo.setInvokeId(deployJobVo.getId());
                                 jobVo.setRouteId(deployJobVo.getInvokeId().toString());
@@ -118,7 +120,8 @@ public class DeployBatchJobServiceImpl implements DeployBatchJobService, IDeploy
                                 }
                                 deployJobMapper.insertGroupJob(groupVo.getId(), jobVo.getId(), k + 1);
                                 deployJobMapper.updateAutoExecJobParentIdById(jobVo);
-
+                                hasLaneJob = true;
+                                hasGroupJob = true;
                             }
                         }
                         if (hasGroupJob) {
@@ -142,10 +145,10 @@ public class DeployBatchJobServiceImpl implements DeployBatchJobService, IDeploy
 
     }
 
-    private Long getVersionId(List<DeploySystemModuleVersionVo> appSystemModuleVersionList, PipelineJobTemplateVo jobTemplateVo) {
+    private DeploySystemModuleVersionVo getVersionId(List<DeploySystemModuleVersionVo> appSystemModuleVersionList, PipelineJobTemplateVo jobTemplateVo) {
         for (DeploySystemModuleVersionVo appSystemModuleVersionVo : appSystemModuleVersionList) {
             if (appSystemModuleVersionVo.getAppSystemId().equals(jobTemplateVo.getAppSystemId()) && appSystemModuleVersionVo.getAppModuleId().equals(jobTemplateVo.getAppModuleId())) {
-                return appSystemModuleVersionVo.getVersionId();
+                return appSystemModuleVersionVo;
             }
         }
         return null;

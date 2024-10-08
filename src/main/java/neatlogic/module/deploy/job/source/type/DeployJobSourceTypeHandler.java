@@ -507,7 +507,7 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
                 }
             }
             //如果buildNo是-1，表示新建buildNo
-            if (deployJobVo.getBuildNo() == -1) {
+            if (deployJobVo.getBuildNo() != null && deployJobVo.getBuildNo() == -1) {
                 Integer maxBuildNo = deployVersionMapper.getDeployVersionMaxBuildNoByVersionIdLock(deployVersionVo.getId());
                 if (maxBuildNo == null) {
                     deployJobVo.setBuildNo(1);
