@@ -1,5 +1,7 @@
 package neatlogic.module.deploy.service;
 
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.cmdb.crossover.*;
 import neatlogic.framework.cmdb.dto.ci.AttrVo;
 import neatlogic.framework.cmdb.dto.ci.CiVo;
@@ -22,8 +24,6 @@ import neatlogic.framework.dto.runner.RunnerMapVo;
 import neatlogic.framework.exception.runner.RunnerGroupRunnerNotFoundException;
 import neatlogic.framework.exception.type.ParamIrregularException;
 import neatlogic.module.deploy.dao.mapper.DeployAppConfigMapper;
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -330,21 +330,16 @@ public class DeployAppConfigServiceImpl implements DeployAppConfigService {
             if (envId == null) {
                 continue;
             }
-            boolean flag = false;
             JSONArray valueList = new JSONArray();
-            List<GlobalAttrItemVo> itemList = globalAttrVo.getItemList();
-            for (GlobalAttrItemVo item : itemList) {
-                if (Objects.equals(item.getId(), envId)) {
-                    JSONObject jsonObj = new JSONObject();
-                    jsonObj.put("id", item.getId());
-                    jsonObj.put("value", item.getValue());
-                    jsonObj.put("sort", item.getSort());
-                    jsonObj.put("attrId", globalAttrVo.getId());
-                    valueList.add(jsonObj);
-                    flag = true;
-                }
-            }
-            if (!flag) {
+            GlobalAttrItemVo globalAttrItemVo = globalAttrCrossoverMapper.getGlobalAttrItemById(envId);
+            if (globalAttrItemVo != null) {
+                JSONObject jsonObj = new JSONObject();
+                jsonObj.put("id", globalAttrItemVo.getId());
+                jsonObj.put("value", globalAttrItemVo.getValue());
+                jsonObj.put("sort", globalAttrItemVo.getSort());
+                jsonObj.put("attrId", globalAttrVo.getId());
+                valueList.add(jsonObj);
+            } else {
                 throw new GlobalAttrValueIrregularException(globalAttrVo, envId.toString());
             }
             JSONObject globalAttrEntity = new JSONObject();
