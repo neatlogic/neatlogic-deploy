@@ -202,7 +202,7 @@ public class DeployAppConfigServiceImpl implements DeployAppConfigService {
                         if (StringUtils.equals(attrVo.getType(), "select")) {
                             JSONObject attrVoConfig = attrVo.getConfig();
                             if ( MapUtils.isNotEmpty(attrVoConfig)) {
-                                attrInfo.put("isMultiple", attrVoConfig.getInteger("isMultiple") == 1);
+                                attrInfo.put("isMultiple", Objects.equals(attrVoConfig.getInteger("isMultiple") ,1));
                             }
                         } else if (StringUtils.equals(attrVo.getType(), "datetime")) {
                             JSONObject attrVoConfig = attrVo.getConfig();
