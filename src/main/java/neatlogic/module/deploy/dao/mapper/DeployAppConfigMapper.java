@@ -158,6 +158,8 @@ public interface DeployAppConfigMapper extends IDeployAppConfigCrossoverMapper {
 
     Integer getAppSystemIdListCount(DeployResourceSearchVo searchVo);
 
+    Long getAppSystemLimitMaxId(DeployResourceSearchVo searchVo);
+
     String getAppSystemNotifyPolicyConfigByAppSystemId(Long appSystemId);
 
     int getCiEntityIdListCount(Integer isConfig);
