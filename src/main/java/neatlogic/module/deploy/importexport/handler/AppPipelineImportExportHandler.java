@@ -190,6 +190,7 @@ public class AppPipelineImportExportHandler extends ImportExportHandlerBase {
                 appConfigVo.setEnvId(env.getId());
             }
             dependencyHandle(IMPORT, appConfigVo, null, null, primaryChangeList);
+            appConfigVo.setId(null);
             if (appModuleId == 0 && envId == 0) {
                 pipelineService.saveDeployAppPipeline(appConfigVo);
             } else {
