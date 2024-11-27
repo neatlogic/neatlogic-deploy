@@ -23,6 +23,7 @@ import neatlogic.framework.cmdb.dto.resourcecenter.ResourceVo;
 import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.crossover.CrossoverServiceFactory;
 import neatlogic.framework.deploy.auth.DEPLOY_BASE;
+import neatlogic.framework.deploy.dto.app.DeployAppConfigVo;
 import neatlogic.framework.deploy.dto.app.DeployAppModuleVo;
 import neatlogic.framework.deploy.dto.app.DeployPipelineConfigVo;
 import neatlogic.framework.deploy.exception.DeployAppConfigNotFoundException;
@@ -40,10 +41,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -106,9 +104,16 @@ public class ListDeployJobModuleApi extends PrivateApiComponentBase {
                 throw new DeployAppConfigNotFoundException(appSystemId);
             }
             //查询拥有runner的模块id列表
-            List<Long> hasRunnerAppModuleIdList = deployAppConfigMapper.getAppModuleIdListHasRunnerByAppSystemIdAndModuleIdList(appSystemId, moduleResourceList.stream().map(ResourceVo::getId).collect(Collectors.toList()));
+            List<Long> appModuleIdList = moduleResourceList.stream().map(ResourceVo::getId).collect(Collectors.toList());
+            List<Long> hasRunnerAppModuleIdList = deployAppConfigMapper.getAppModuleIdListHasRunnerByAppSystemIdAndModuleIdList(appSystemId, appModuleIdList);
             /*补充当前模块是否有BUILD分类的工具，前端需要根据此标识(isHasBuildTypeTool) 调用不同的选择版本下拉接口*/
             //1、获取流水线
+            List<DeployAppConfigVo> deployAppConfigList = DeployPipelineConfigManager.init(appSystemId)
+                    .withAppModuleIdList(appModuleIdList)
+                    .withEnvIdList(Collections.singletonList(envId))
+                    .isHasBuildOrDeployTypeTool(true)
+                    .isUpdateConfig(false)
+                    .getDeployAppConfigList();
 //            Map<String, DeployAppConfigVo> appConfigVoMap = appConfigVoList.stream().collect(Collectors.toMap(o -> o.getAppSystemId().toString() + "-" + o.getAppModuleId().toString() + "-" + o.getEnvId().toString(), e -> e));
             for (ResourceVo resourceVo : moduleResourceList) {
                 DeployAppModuleVo appModuleVo = new DeployAppModuleVo(resourceVo.getId(), resourceVo.getName(), resourceVo.getAbbrName());
@@ -123,12 +128,13 @@ public class ListDeployJobModuleApi extends PrivateApiComponentBase {
 //                if (configVo == null) {
 //                    throw new DeployAppConfigNotFoundException(appSystemId);
 //                }
-                DeployPipelineConfigVo pipelineConfigVo = DeployPipelineConfigManager.init(appSystemId)
-                        .withAppModuleId(appModuleVo.getId())
-                        .withEnvId(envId)
-                        .isHasBuildOrDeployTypeTool(true)
-                        .isUpdateConfig(false)
-                        .getConfig();
+//                DeployPipelineConfigVo pipelineConfigVo = DeployPipelineConfigManager.init(appSystemId)
+//                        .withAppModuleId(appModuleVo.getId())
+//                        .withEnvId(envId)
+//                        .isHasBuildOrDeployTypeTool(true)
+//                        .isUpdateConfig(false)
+//                        .getConfig();
+                DeployPipelineConfigVo pipelineConfigVo = getDeployPipelineConfigVo(deployAppConfigList, appSystemId, appModuleVo.getId(), envId);
                 if (pipelineConfigVo == null) {
                     throw new DeployAppConfigNotFoundException(appSystemId);
                 }
@@ -177,6 +183,31 @@ public class ListDeployJobModuleApi extends PrivateApiComponentBase {
         }
 
         return returnAppModuleVoList;
+    }
+
+    private DeployPipelineConfigVo getDeployPipelineConfigVo(List<DeployAppConfigVo> deployAppConfigList, Long appSystemId, Long appModuleId, Long envId) {
+        for (DeployAppConfigVo deployAppConfigVo : deployAppConfigList) {
+            if (Objects.equals(deployAppConfigVo.getAppSystemId(), appSystemId)
+                    && Objects.equals(deployAppConfigVo.getAppModuleId(), appModuleId)
+                    && Objects.equals(deployAppConfigVo.getEnvId(), envId)) {
+                return deployAppConfigVo.getConfig();
+            }
+        }
+        for (DeployAppConfigVo deployAppConfigVo : deployAppConfigList) {
+            if (Objects.equals(deployAppConfigVo.getAppSystemId(), appSystemId)
+                    && Objects.equals(deployAppConfigVo.getAppModuleId(), appModuleId)
+                    && Objects.equals(deployAppConfigVo.getEnvId(), 0L)) {
+                return deployAppConfigVo.getConfig();
+            }
+        }
+        for (DeployAppConfigVo deployAppConfigVo : deployAppConfigList) {
+            if (Objects.equals(deployAppConfigVo.getAppSystemId(), appSystemId)
+                    && Objects.equals(deployAppConfigVo.getAppModuleId(), 0L)
+                    && Objects.equals(deployAppConfigVo.getEnvId(), 0L)) {
+                return deployAppConfigVo.getConfig();
+            }
+        }
+        return null;
     }
 }
 

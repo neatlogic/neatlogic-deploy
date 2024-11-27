@@ -59,6 +59,8 @@ public interface DeployAppConfigMapper extends IDeployAppConfigCrossoverMapper {
 
     List<DeployAppConfigVo> getAppConfigList(DeployAppConfigVo configVo);
 
+    List<DeployAppConfigVo> getAppConfigListByAppSystemIdAndAppModuleIdListAndEnvIdList(@Param("appSystemId") Long appSystemId, @Param("appModuleIdList") List<Long> appModuleIdList, @Param("envIdList") List<Long> envIdList);
+
     int getAllDeployAppConfigCount();
 
     List<DeployAppConfigVo> getAllAppConfigListByPage(BasePageVo searchVo);
