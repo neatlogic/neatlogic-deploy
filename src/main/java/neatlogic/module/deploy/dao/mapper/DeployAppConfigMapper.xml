@@ -1017,6 +1017,32 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         FROM `deploy_app_config`
         WHERE `app_system_id` = #{appSystemId}
     </select>
+    <select id="getAppConfigListByAppSystemIdAndAppModuleIdListAndEnvIdList"
+            resultType="neatlogic.framework.deploy.dto.app.DeployAppConfigVo" useCache="false">
+        SELECT `id`,
+        `app_system_id` as appSystemId,
+        `app_module_id` as appModuleId,
+        `env_id`        as envId,
+        `config`        as configStr,
+        `fcd`,
+        `fcu`,
+        `lcd`,
+        `lcu`
+        FROM `deploy_app_config`
+        WHERE `app_system_id` = #{appSystemId}
+        <if test="appModuleIdList != null and appModuleIdList.size() > 0">
+            and `app_module_id` IN
+            <foreach collection="appModuleIdList" item="appModuleId" open="(" separator="," close=")">
+                #{appModuleId}
+            </foreach>
+        </if>
+        <if test="envIdList != null and envIdList.size() > 0">
+            and `env_id` IN
+            <foreach collection="envIdList" item="envId" open="(" separator="," close=")">
+                #{envId}
+            </foreach>
+        </if>
+    </select>
 
     <select id="getAppConfigCountByAppSystemId" resultType="int" useCache="false">
         SELECT count(1) FROM `deploy_app_config` WHERE `app_system_id` = #{appSystemId}

@@ -73,6 +73,8 @@ public class DeployPipelineConfigManager {
         private final Long appSystemId;
         private Long appModuleId = 0L;
         private Long envId = 0L;
+        private final List<Long> appModuleIdList = new ArrayList<>();
+        private final List<Long> envIdList = new ArrayList<>();
         private boolean isAppSystemDraft;
         private boolean isAppModuleDraft;
         private boolean isEnvDraft;
@@ -99,6 +101,20 @@ public class DeployPipelineConfigManager {
         public Builder withEnvId(Long envId) {
             if (envId != null) {
                 this.envId = envId;
+            }
+            return this;
+        }
+
+        public Builder withAppModuleIdList(List<Long> appModuleIdList) {
+            if (CollectionUtils.isNotEmpty(appModuleIdList)) {
+                this.appModuleIdList.addAll(appModuleIdList);
+            }
+            return this;
+        }
+
+        public Builder withEnvIdList(List<Long> envIdList) {
+            if (CollectionUtils.isNotEmpty(envIdList)) {
+                this.envIdList.addAll(envIdList);
             }
             return this;
         }
@@ -183,6 +199,72 @@ public class DeployPipelineConfigManager {
             }
             return deployPipelineConfig;
         }
+
+        public List<DeployAppConfigVo> getDeployAppConfigList() {
+            List<DeployAppConfigVo> resultList = new ArrayList<>();
+            if (!appModuleIdList.contains(0L)) {
+                appModuleIdList.add(0L);
+            }
+            if (!envIdList.contains(0L)) {
+                envIdList.add(0L);
+            }
+            List<DeployAppConfigVo> deployAppConfigList = deployAppConfigMapper.getAppConfigListByAppSystemIdAndAppModuleIdListAndEnvIdList(appSystemId, appModuleIdList, envIdList);
+            for (DeployAppConfigVo deployAppConfigVo : deployAppConfigList) {
+                Long appModuleId = deployAppConfigVo.getAppModuleId();
+                Long envId = deployAppConfigVo.getEnvId();
+                String targetLevel;
+                DeployPipelineConfigVo appConfig;
+                DeployPipelineConfigVo moduleOverrideConfig = null;
+                DeployPipelineConfigVo envOverrideConfig = null;
+                if (appModuleId == 0L && envId == 0L) {
+                    targetLevel = "应用";
+                    //查询应用层流水线配置信息
+                    appConfig = getDeployPipelineConfigVo(appSystemId, appModuleId, envId, deployAppConfigList);
+                    if (appConfig == null) {
+                        appConfig = new DeployPipelineConfigVo();
+                    }
+                } else if (appModuleId == 0L) {
+                    // 如果是访问环境层配置信息，moduleId不能为空
+                    throw new ParamNotExistsException("moduleId");
+                } else if (envId == 0L) {
+                    targetLevel = "模块";
+                    //查询应用层配置信息
+                    appConfig = getDeployPipelineConfigVo(appSystemId, 0L, 0L, deployAppConfigList);
+                    if (appConfig == null) {
+                        appConfig = new DeployPipelineConfigVo();
+                    }
+                    moduleOverrideConfig = getDeployPipelineConfigVo(appSystemId, appModuleId, envId, deployAppConfigList);
+                } else {
+                    targetLevel = "环境";
+                    //查询应用层配置信息
+                    appConfig = getDeployPipelineConfigVo(appSystemId, 0L, 0L, deployAppConfigList);
+                    if (appConfig == null) {
+                        appConfig = new DeployPipelineConfigVo();
+                    }
+                    moduleOverrideConfig = getDeployPipelineConfigVo(appSystemId, appModuleId, 0L, deployAppConfigList);
+                    envOverrideConfig = getDeployPipelineConfigVo(appSystemId, appModuleId, envId, deployAppConfigList);
+                }
+                DeployPipelineConfigVo deployPipelineConfigVo = mergeDeployPipelineConfig(appConfig, moduleOverrideConfig, envOverrideConfig, targetLevel, profileIdList);
+                DeployAppConfigVo deployAppConfig = new DeployAppConfigVo();
+                deployAppConfig.setAppSystemId(appSystemId);
+                deployAppConfig.setAppModuleId(appModuleId);
+                deployAppConfig.setEnvId(envId);
+                deployAppConfig.setConfig(deployPipelineConfigVo);
+                resultList.add(deployAppConfig);
+            }
+            return resultList;
+        }
+    }
+
+    private static DeployPipelineConfigVo getDeployPipelineConfigVo(Long appSystemId, Long appModuleId, Long envId, List<DeployAppConfigVo> deployAppConfigList) {
+        for (DeployAppConfigVo deployAppConfigVo : deployAppConfigList) {
+            if (Objects.equals(deployAppConfigVo.getAppSystemId(), appSystemId)
+                    && Objects.equals(deployAppConfigVo.getAppModuleId(), appModuleId)
+                    && Objects.equals(deployAppConfigVo.getEnvId(), envId)) {
+                return deployAppConfigVo.getConfig();
+            }
+        }
+        return null;
     }
 
     /**
