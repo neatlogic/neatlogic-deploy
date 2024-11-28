@@ -113,6 +113,7 @@ public class ListDeployJobModuleApi extends PrivateApiComponentBase {
                     .withEnvIdList(Collections.singletonList(envId))
                     .isHasBuildOrDeployTypeTool(true)
                     .isUpdateConfig(false)
+                    .isUpdateProfile(false)
                     .getDeployAppConfigList();
 //            Map<String, DeployAppConfigVo> appConfigVoMap = appConfigVoList.stream().collect(Collectors.toMap(o -> o.getAppSystemId().toString() + "-" + o.getAppModuleId().toString() + "-" + o.getEnvId().toString(), e -> e));
             for (ResourceVo resourceVo : moduleResourceList) {
