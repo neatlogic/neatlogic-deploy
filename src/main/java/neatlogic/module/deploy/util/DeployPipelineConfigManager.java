@@ -86,6 +86,10 @@ public class DeployPipelineConfigManager {
          * 是否需要更新配置信息中场景名称、预置参数集名称、操作对应工具信息
          */
         private boolean isUpdateConfig = true;
+        /**
+         * 是否需要更新配置信息中预置参数集
+         */
+        private boolean isUpdateProfile = true;
 
         public Builder(Long appSystemId) {
             this.appSystemId = appSystemId;
@@ -154,8 +158,60 @@ public class DeployPipelineConfigManager {
             return this;
         }
 
+        public Builder isUpdateProfile(boolean _isUpdateProfile) {
+            this.isUpdateProfile = _isUpdateProfile;
+            return this;
+        }
+
+        /**
+         * 获取流水线配置信息
+         * @return
+         */
         public DeployPipelineConfigVo getConfig() {
-            DeployPipelineConfigVo deployPipelineConfig = getDeployPipelineConfig(appSystemId, appModuleId, envId, isAppSystemDraft, isAppModuleDraft, isEnvDraft, profileIdList);
+            String targetLevel;
+            DeployPipelineConfigVo appConfig;
+            DeployPipelineConfigVo moduleOverrideConfig = null;
+            DeployPipelineConfigVo envOverrideConfig = null;
+            DeployAppConfigVo searchVo = new DeployAppConfigVo(appSystemId, appModuleId, envId);
+            if (appModuleId == 0L && envId == 0L) {
+                targetLevel = "应用";
+                //查询应用层流水线配置信息
+                appConfig = getDeployPipelineConfigVo(searchVo, isAppSystemDraft);
+                if (appConfig == null) {
+                    if (isAppSystemDraft) {
+                        return null;
+                    } else {
+                        appConfig = new DeployPipelineConfigVo();
+                    }
+                }
+            } else if (appModuleId == 0L) {
+                // 如果是访问环境层配置信息，moduleId不能为空
+                throw new ParamNotExistsException("moduleId");
+            } else if (envId == 0L) {
+                targetLevel = "模块";
+                //查询应用层配置信息
+                appConfig = getDeployPipelineConfigVo(new DeployAppConfigVo(appSystemId), false);
+                if (appConfig == null) {
+                    appConfig = new DeployPipelineConfigVo();
+                }
+                moduleOverrideConfig = getDeployPipelineConfigVo(searchVo, isAppModuleDraft);
+                if (isAppModuleDraft && moduleOverrideConfig == null) {
+                    return null;
+                }
+            } else {
+                targetLevel = "环境";
+                //查询应用层配置信息
+                appConfig = getDeployPipelineConfigVo(new DeployAppConfigVo(appSystemId), false);
+                if (appConfig == null) {
+                    appConfig = new DeployPipelineConfigVo();
+                }
+                moduleOverrideConfig = getDeployPipelineConfigVo(new DeployAppConfigVo(appSystemId, appModuleId), false);
+                envOverrideConfig = getDeployPipelineConfigVo(searchVo, isEnvDraft);
+                if (isEnvDraft && envOverrideConfig == null) {
+                    return null;
+                }
+            }
+            DeployPipelineConfigVo deployPipelineConfig = mergeDeployPipelineConfig(appConfig, moduleOverrideConfig, envOverrideConfig, targetLevel, isUpdateProfile, profileIdList);
             specialHandling(deployPipelineConfig, isDeleteDisabledPhase, isUpdateConfig, isHasBuildOrDeployTypeTool);
             return deployPipelineConfig;
         }
@@ -204,7 +260,7 @@ public class DeployPipelineConfigManager {
                     moduleOverrideConfig = getDeployPipelineConfigVo(appSystemId, appModuleId, 0L, deployAppConfigList);
                     envOverrideConfig = getDeployPipelineConfigVo(appSystemId, appModuleId, envId, deployAppConfigList);
                 }
-                DeployPipelineConfigVo deployPipelineConfigVo = mergeDeployPipelineConfig(appConfig, moduleOverrideConfig, envOverrideConfig, targetLevel, profileIdList);
+                DeployPipelineConfigVo deployPipelineConfigVo = mergeDeployPipelineConfig(appConfig, moduleOverrideConfig, envOverrideConfig, targetLevel, isUpdateProfile, profileIdList);
                 specialHandling(deployPipelineConfigVo, isDeleteDisabledPhase, isUpdateConfig, isHasBuildOrDeployTypeTool);
                 DeployAppConfigVo deployAppConfig = new DeployAppConfigVo();
                 deployAppConfig.setAppSystemId(appSystemId);
@@ -346,65 +402,6 @@ public class DeployPipelineConfigManager {
                 scenarioVo.setIsHasDeployTypeTool(1);
             }
         }
-    }
-
-    /**
-     * 获取流水线配置信息
-     *
-     * @param appSystemId      应用id
-     * @param appModuleId      应用模块id
-     * @param envId            环境id
-     * @param isAppSystemDraft 是否取应用层配置草稿
-     * @param isAppModuleDraft 是否取模块层配置草稿
-     * @param isEnvDraft       是否取环境层配置草稿
-     * @return 配置
-     */
-    private static DeployPipelineConfigVo getDeployPipelineConfig(Long appSystemId, Long appModuleId, Long envId, boolean isAppSystemDraft, boolean isAppModuleDraft, boolean isEnvDraft, List<Long> profileIdList) {
-        String targetLevel;
-        DeployPipelineConfigVo appConfig;
-        DeployPipelineConfigVo moduleOverrideConfig = null;
-        DeployPipelineConfigVo envOverrideConfig = null;
-        DeployAppConfigVo searchVo = new DeployAppConfigVo(appSystemId, appModuleId, envId);
-        if (appModuleId == 0L && envId == 0L) {
-            targetLevel = "应用";
-            //查询应用层流水线配置信息
-            appConfig = getDeployPipelineConfigVo(searchVo, isAppSystemDraft);
-            if (appConfig == null) {
-                if (isAppSystemDraft) {
-                    return null;
-                } else {
-                    appConfig = new DeployPipelineConfigVo();
-                }
-            }
-        } else if (appModuleId == 0L) {
-            // 如果是访问环境层配置信息，moduleId不能为空
-            throw new ParamNotExistsException("moduleId");
-        } else if (envId == 0L) {
-            targetLevel = "模块";
-            //查询应用层配置信息
-            appConfig = getDeployPipelineConfigVo(new DeployAppConfigVo(appSystemId), false);
-            if (appConfig == null) {
-                appConfig = new DeployPipelineConfigVo();
-            }
-            moduleOverrideConfig = getDeployPipelineConfigVo(searchVo, isAppModuleDraft);
-            if (isAppModuleDraft && moduleOverrideConfig == null) {
-                return null;
-            }
-        } else {
-            targetLevel = "环境";
-            //查询应用层配置信息
-            appConfig = getDeployPipelineConfigVo(new DeployAppConfigVo(appSystemId), false);
-            if (appConfig == null) {
-                appConfig = new DeployPipelineConfigVo();
-            }
-            moduleOverrideConfig = getDeployPipelineConfigVo(new DeployAppConfigVo(appSystemId, appModuleId), false);
-            envOverrideConfig = getDeployPipelineConfigVo(searchVo, isEnvDraft);
-            if (isEnvDraft && envOverrideConfig == null) {
-                return null;
-            }
-        }
-        DeployPipelineConfigVo deployPipelineConfigVo = mergeDeployPipelineConfig(appConfig, moduleOverrideConfig, envOverrideConfig, targetLevel, profileIdList);
-        return deployPipelineConfigVo;
     }
 
     private static DeployPipelineConfigVo getDeployPipelineConfigVo(DeployAppConfigVo searchVo, boolean isDraft) {
@@ -574,7 +571,7 @@ public class DeployPipelineConfigManager {
      * @param profileIdList        预置参数集id列表
      * @return 目标层配置信息
      */
-    private static DeployPipelineConfigVo mergeDeployPipelineConfig(DeployPipelineConfigVo appConfig, DeployPipelineConfigVo moduleOverrideConfig, DeployPipelineConfigVo envOverrideConfig, String targetLevel, List<Long> profileIdList) {
+    private static DeployPipelineConfigVo mergeDeployPipelineConfig(DeployPipelineConfigVo appConfig, DeployPipelineConfigVo moduleOverrideConfig, DeployPipelineConfigVo envOverrideConfig, String targetLevel, boolean isUpdateProfile, List<Long> profileIdList) {
         if (Objects.equals(targetLevel, "应用")) {
 
         } else if (Objects.equals(targetLevel, "模块")) {
@@ -597,39 +594,40 @@ public class DeployPipelineConfigManager {
                 mergeDeployPipelineConfig(appConfig, envOverrideConfig);
             }
         }
-
-        if (CollectionUtils.isEmpty(profileIdList)) {
-            profileIdList = new ArrayList<>(getProfileIdSet(appConfig));
-        }
-        if (CollectionUtils.isNotEmpty(profileIdList)) {
-            IAutoexecProfileCrossoverService autoexecProfileCrossoverService = CrossoverServiceFactory.getApi(IAutoexecProfileCrossoverService.class);
-            List<AutoexecProfileVo> profileList = autoexecProfileCrossoverService.getProfileVoListByIdList(profileIdList);
-            if (CollectionUtils.isNotEmpty(profileList)) {
-                List<DeployProfileVo> deployProfileList = getDeployProfileList(profileList);
-                List<DeployProfileVo> overrideProfileList = appConfig.getOverrideProfileList();
-                mergeDeployPipelineConfigProfileList(deployProfileList, overrideProfileList);
-                if (Objects.equals(targetLevel, "应用")) {
-
-                } else if (Objects.equals(targetLevel, "模块")) {
-                    overrideProfileList = null;
-                    if (moduleOverrideConfig != null) {
-                        overrideProfileList = moduleOverrideConfig.getOverrideProfileList();
-                    }
+        if (isUpdateProfile) {
+            if (CollectionUtils.isEmpty(profileIdList)) {
+                profileIdList = new ArrayList<>(getProfileIdSet(appConfig));
+            }
+            if (CollectionUtils.isNotEmpty(profileIdList)) {
+                IAutoexecProfileCrossoverService autoexecProfileCrossoverService = CrossoverServiceFactory.getApi(IAutoexecProfileCrossoverService.class);
+                List<AutoexecProfileVo> profileList = autoexecProfileCrossoverService.getProfileVoListByIdList(profileIdList);
+                if (CollectionUtils.isNotEmpty(profileList)) {
+                    List<DeployProfileVo> deployProfileList = getDeployProfileList(profileList);
+                    List<DeployProfileVo> overrideProfileList = appConfig.getOverrideProfileList();
                     mergeDeployPipelineConfigProfileList(deployProfileList, overrideProfileList);
-                } else if (Objects.equals(targetLevel, "环境")) {
-                    if (moduleOverrideConfig != null) {
-                        overrideProfileList = moduleOverrideConfig.getOverrideProfileList();
-                        if (CollectionUtils.isNotEmpty(overrideProfileList)) {
-                            mergeDeployPipelineConfigProfileList(deployProfileList, overrideProfileList);
+                    if (Objects.equals(targetLevel, "应用")) {
+
+                    } else if (Objects.equals(targetLevel, "模块")) {
+                        overrideProfileList = null;
+                        if (moduleOverrideConfig != null) {
+                            overrideProfileList = moduleOverrideConfig.getOverrideProfileList();
                         }
+                        mergeDeployPipelineConfigProfileList(deployProfileList, overrideProfileList);
+                    } else if (Objects.equals(targetLevel, "环境")) {
+                        if (moduleOverrideConfig != null) {
+                            overrideProfileList = moduleOverrideConfig.getOverrideProfileList();
+                            if (CollectionUtils.isNotEmpty(overrideProfileList)) {
+                                mergeDeployPipelineConfigProfileList(deployProfileList, overrideProfileList);
+                            }
+                        }
+                        overrideProfileList = null;
+                        if (envOverrideConfig != null) {
+                            overrideProfileList = envOverrideConfig.getOverrideProfileList();
+                        }
+                        mergeDeployPipelineConfigProfileList(deployProfileList, overrideProfileList);
                     }
-                    overrideProfileList = null;
-                    if (envOverrideConfig != null) {
-                        overrideProfileList = envOverrideConfig.getOverrideProfileList();
-                    }
-                    mergeDeployPipelineConfigProfileList(deployProfileList, overrideProfileList);
+                    appConfig.setOverrideProfileList(deployProfileList);
                 }
-                appConfig.setOverrideProfileList(deployProfileList);
             }
         }
         return appConfig;
