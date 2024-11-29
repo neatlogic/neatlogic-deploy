@@ -212,7 +212,29 @@ public class DeployPipelineConfigManager {
                 }
             }
             DeployPipelineConfigVo deployPipelineConfig = mergeDeployPipelineConfig(appConfig, moduleOverrideConfig, envOverrideConfig, targetLevel, isUpdateProfile, profileIdList);
-            specialHandling(deployPipelineConfig, isDeleteDisabledPhase, isUpdateConfig, isHasBuildOrDeployTypeTool);
+            if (deployPipelineConfig != null) {
+                if (isDeleteDisabledPhase) {
+                    deleteDisabledPhase(deployPipelineConfig);
+                }
+                if (isUpdateConfig) {
+                    IAutoexecServiceCrossoverService autoexecServiceCrossoverService = CrossoverServiceFactory.getApi(IAutoexecServiceCrossoverService.class);
+                    autoexecServiceCrossoverService.updateAutoexecCombopConfig(deployPipelineConfig.getAutoexecCombopConfigVo());
+                }
+                if (isHasBuildOrDeployTypeTool) {
+                    Set<Long> operationIdSet = getOperationIdSet(deployPipelineConfig);List<Long> buildTypeToolIdList = new ArrayList<>();
+                    List<Long> deployTypeToolIdList = new ArrayList<>();
+                    Long buildTypeId = autoexecTypeMapper.getTypeIdByName("BUILD");
+                    Long deployTypeId = autoexecTypeMapper.getTypeIdByName("DEPLOY");
+                    List<Long> operationIdList = new ArrayList<>(operationIdSet);
+                    if (buildTypeId != null) {
+                        buildTypeToolIdList = autoexecToolMapper.getToolIdListByIdListAndTypeId(operationIdList, buildTypeId);
+                    }
+                    if (deployTypeId != null) {
+                        deployTypeToolIdList = autoexecToolMapper.getToolIdListByIdListAndTypeId(operationIdList, deployTypeId);
+                    }
+                    setIsHasBuildOrDeployTypeTool(deployPipelineConfig, buildTypeToolIdList, deployTypeToolIdList);
+                }
+            }
             return deployPipelineConfig;
         }
 
@@ -261,13 +283,49 @@ public class DeployPipelineConfigManager {
                     envOverrideConfig = getDeployPipelineConfigVo(appSystemId, appModuleId, envId, deployAppConfigList);
                 }
                 DeployPipelineConfigVo deployPipelineConfigVo = mergeDeployPipelineConfig(appConfig, moduleOverrideConfig, envOverrideConfig, targetLevel, isUpdateProfile, profileIdList);
-                specialHandling(deployPipelineConfigVo, isDeleteDisabledPhase, isUpdateConfig, isHasBuildOrDeployTypeTool);
                 DeployAppConfigVo deployAppConfig = new DeployAppConfigVo();
                 deployAppConfig.setAppSystemId(appSystemId);
                 deployAppConfig.setAppModuleId(appModuleId);
                 deployAppConfig.setEnvId(envId);
                 deployAppConfig.setConfig(deployPipelineConfigVo);
                 resultList.add(deployAppConfig);
+            }
+
+            List<Long> buildTypeToolIdList = new ArrayList<>();
+            List<Long> deployTypeToolIdList = new ArrayList<>();
+            if (isHasBuildOrDeployTypeTool) {
+                Set<Long> operationIdSet = new HashSet<>();
+                for (DeployAppConfigVo deployAppConfig : resultList) {
+                    DeployPipelineConfigVo deployPipelineConfig = deployAppConfig.getConfig();
+                    if (deployPipelineConfig != null) {
+                        operationIdSet.addAll(getOperationIdSet(deployPipelineConfig));
+                    }
+                }
+                Long buildTypeId = autoexecTypeMapper.getTypeIdByName("BUILD");
+                Long deployTypeId = autoexecTypeMapper.getTypeIdByName("DEPLOY");
+                List<Long> operationIdList = new ArrayList<>(operationIdSet);
+                if (buildTypeId != null) {
+                    buildTypeToolIdList = autoexecToolMapper.getToolIdListByIdListAndTypeId(operationIdList, buildTypeId);
+                }
+                if (deployTypeId != null) {
+                    deployTypeToolIdList = autoexecToolMapper.getToolIdListByIdListAndTypeId(operationIdList, deployTypeId);
+                }
+            }
+
+            for (DeployAppConfigVo deployAppConfig : resultList) {
+                DeployPipelineConfigVo deployPipelineConfig = deployAppConfig.getConfig();
+                if (deployPipelineConfig != null) {
+                    if (isDeleteDisabledPhase) {
+                        deleteDisabledPhase(deployPipelineConfig);
+                    }
+                    if (isUpdateConfig) {
+                        IAutoexecServiceCrossoverService autoexecServiceCrossoverService = CrossoverServiceFactory.getApi(IAutoexecServiceCrossoverService.class);
+                        autoexecServiceCrossoverService.updateAutoexecCombopConfig(deployPipelineConfig.getAutoexecCombopConfigVo());
+                    }
+                    if (isHasBuildOrDeployTypeTool) {
+                        setIsHasBuildOrDeployTypeTool(deployPipelineConfig, buildTypeToolIdList, deployTypeToolIdList);
+                    }
+                }
             }
             return resultList;
         }
@@ -284,48 +342,41 @@ public class DeployPipelineConfigManager {
         return null;
     }
 
-    private static void specialHandling(DeployPipelineConfigVo deployPipelineConfig, boolean isDeleteDisabledPhase, boolean isUpdateConfig, boolean isHasBuildOrDeployTypeTool) {
-        if (deployPipelineConfig != null) {
-            if (isDeleteDisabledPhase) {
-                // 删除禁用阶段
-                List<DeployPipelinePhaseVo> deployPipelinePhaseList = deployPipelineConfig.getCombopPhaseList();
-                if (CollectionUtils.isNotEmpty(deployPipelinePhaseList)) {
-                    boolean hasRemove = false;
-                    Iterator<DeployPipelinePhaseVo> iterator = deployPipelinePhaseList.iterator();
-                    while (iterator.hasNext()) {
-                        DeployPipelinePhaseVo deployPipelinePhaseVo = iterator.next();
-                        if (Objects.equals(deployPipelinePhaseVo.getIsActive(), 0)) {
-                            iterator.remove();
-                            hasRemove = true;
-                        }
-                    }
-                    if (hasRemove) {
-                        Set<Long> groupIdSet = new HashSet<>();
-                        for (DeployPipelinePhaseVo deployPipelinePhaseVo : deployPipelinePhaseList) {
-                            groupIdSet.add(deployPipelinePhaseVo.getGroupId());
-                        }
-                        List<DeployPipelineGroupVo> deployPipelineGroupList = deployPipelineConfig.getCombopGroupList();
-                        if (CollectionUtils.isNotEmpty(deployPipelineGroupList)) {
-                            Iterator<DeployPipelineGroupVo> groupIterator = deployPipelineGroupList.iterator();
-                            while (groupIterator.hasNext()) {
-                                DeployPipelineGroupVo deployPipelineGroupVo = groupIterator.next();
-                                if (!groupIdSet.contains(deployPipelineGroupVo.getId())) {
-                                    groupIterator.remove();
-                                }
-                            }
+    /**
+     * 删除禁用阶段
+     */
+    private static void deleteDisabledPhase(DeployPipelineConfigVo deployPipelineConfig) {
+        // 删除禁用阶段
+        List<DeployPipelinePhaseVo> deployPipelinePhaseList = deployPipelineConfig.getCombopPhaseList();
+        if (CollectionUtils.isNotEmpty(deployPipelinePhaseList)) {
+            boolean hasRemove = false;
+            Iterator<DeployPipelinePhaseVo> iterator = deployPipelinePhaseList.iterator();
+            while (iterator.hasNext()) {
+                DeployPipelinePhaseVo deployPipelinePhaseVo = iterator.next();
+                if (Objects.equals(deployPipelinePhaseVo.getIsActive(), 0)) {
+                    iterator.remove();
+                    hasRemove = true;
+                }
+            }
+            if (hasRemove) {
+                Set<Long> groupIdSet = new HashSet<>();
+                for (DeployPipelinePhaseVo deployPipelinePhaseVo : deployPipelinePhaseList) {
+                    groupIdSet.add(deployPipelinePhaseVo.getGroupId());
+                }
+                List<DeployPipelineGroupVo> deployPipelineGroupList = deployPipelineConfig.getCombopGroupList();
+                if (CollectionUtils.isNotEmpty(deployPipelineGroupList)) {
+                    Iterator<DeployPipelineGroupVo> groupIterator = deployPipelineGroupList.iterator();
+                    while (groupIterator.hasNext()) {
+                        DeployPipelineGroupVo deployPipelineGroupVo = groupIterator.next();
+                        if (!groupIdSet.contains(deployPipelineGroupVo.getId())) {
+                            groupIterator.remove();
                         }
                     }
                 }
             }
-            if (isUpdateConfig) {
-                IAutoexecServiceCrossoverService autoexecServiceCrossoverService = CrossoverServiceFactory.getApi(IAutoexecServiceCrossoverService.class);
-                autoexecServiceCrossoverService.updateAutoexecCombopConfig(deployPipelineConfig.getAutoexecCombopConfigVo());
-            }
-            if (isHasBuildOrDeployTypeTool) {
-                setIsHasBuildOrDeployTypeTool(deployPipelineConfig);
-            }
         }
     }
+
     /**
      * 获取工具库id
      *
@@ -342,6 +393,62 @@ public class DeployPipelineConfigManager {
                 getToolOperationId(operationConfigVo.getIfList(), operationIdSet);
                 getToolOperationId(operationConfigVo.getElseList(), operationIdSet);
                 getToolOperationId(operationConfigVo.getOperations(), operationIdSet);
+            }
+        }
+    }
+
+    private static Set<Long> getOperationIdSet(DeployPipelineConfigVo pipelineConfigVo) {
+        Set<Long> operationIdSet = new HashSet<>();
+        List<AutoexecCombopScenarioVo> scenarioList = pipelineConfigVo.getScenarioList();
+        if (CollectionUtils.isNotEmpty(scenarioList)) {
+//            Map<Long, Set<Long>> scenarioOperationIdListMap = new HashMap<>();
+            for (AutoexecCombopScenarioVo scenarioVo : scenarioList) {
+                Set<Long> scenarioOperationIdSet = new HashSet<>();
+//                scenarioOperationIdListMap.put(scenarioVo.getScenarioId(), scenarioOperationIdSet);
+                List<String> combopPhaseNameList = scenarioVo.getCombopPhaseNameList();
+                for (DeployPipelinePhaseVo pipelinePhaseVo : pipelineConfigVo.getCombopPhaseList()) {
+                    if (!combopPhaseNameList.contains(pipelinePhaseVo.getName())) {
+                        continue;
+                    }
+                    if (Objects.equals(pipelinePhaseVo.getIsActive(), 0)) {
+                        continue;
+                    }
+                    AutoexecCombopPhaseConfigVo combopPhaseConfigVo = pipelinePhaseVo.getConfig();
+                    getToolOperationId(combopPhaseConfigVo.getPhaseOperationList(), scenarioOperationIdSet);
+                }
+                operationIdSet.addAll(scenarioOperationIdSet);
+            }
+        }
+        return operationIdSet;
+    }
+
+    /**
+     * 设置DeployPipelinePhaseVo中isHasBuildTypeTool和isHasDeployTypeTool字段值
+     *
+     * @param pipelineConfigVo 配置
+     */
+    private static void setIsHasBuildOrDeployTypeTool(DeployPipelineConfigVo pipelineConfigVo, List<Long> buildTypeToolIdList, List<Long> deployTypeToolIdList) {
+        List<AutoexecCombopScenarioVo> scenarioList = pipelineConfigVo.getScenarioList();
+        if (CollectionUtils.isNotEmpty(scenarioList)) {
+            for (AutoexecCombopScenarioVo scenarioVo : scenarioList) {
+                Set<Long> scenarioOperationIdSet = new HashSet<>();
+                List<String> combopPhaseNameList = scenarioVo.getCombopPhaseNameList();
+                for (DeployPipelinePhaseVo pipelinePhaseVo : pipelineConfigVo.getCombopPhaseList()) {
+                    if (!combopPhaseNameList.contains(pipelinePhaseVo.getName())) {
+                        continue;
+                    }
+                    if (Objects.equals(pipelinePhaseVo.getIsActive(), 0)) {
+                        continue;
+                    }
+                    AutoexecCombopPhaseConfigVo combopPhaseConfigVo = pipelinePhaseVo.getConfig();
+                    getToolOperationId(combopPhaseConfigVo.getPhaseOperationList(), scenarioOperationIdSet);
+                }
+                if (CollectionUtils.isNotEmpty(ListUtils.retainAll(scenarioOperationIdSet, buildTypeToolIdList))) {
+                    scenarioVo.setIsHasBuildTypeTool(1);
+                }
+                if (CollectionUtils.isNotEmpty(ListUtils.retainAll(scenarioOperationIdSet, deployTypeToolIdList))) {
+                    scenarioVo.setIsHasDeployTypeTool(1);
+                }
             }
         }
     }
