@@ -401,10 +401,8 @@ public class DeployPipelineConfigManager {
         Set<Long> operationIdSet = new HashSet<>();
         List<AutoexecCombopScenarioVo> scenarioList = pipelineConfigVo.getScenarioList();
         if (CollectionUtils.isNotEmpty(scenarioList)) {
-//            Map<Long, Set<Long>> scenarioOperationIdListMap = new HashMap<>();
             for (AutoexecCombopScenarioVo scenarioVo : scenarioList) {
                 Set<Long> scenarioOperationIdSet = new HashSet<>();
-//                scenarioOperationIdListMap.put(scenarioVo.getScenarioId(), scenarioOperationIdSet);
                 List<String> combopPhaseNameList = scenarioVo.getCombopPhaseNameList();
                 for (DeployPipelinePhaseVo pipelinePhaseVo : pipelineConfigVo.getCombopPhaseList()) {
                     if (!combopPhaseNameList.contains(pipelinePhaseVo.getName())) {
