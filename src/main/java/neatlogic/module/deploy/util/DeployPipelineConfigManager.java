@@ -221,18 +221,21 @@ public class DeployPipelineConfigManager {
                     autoexecServiceCrossoverService.updateAutoexecCombopConfig(deployPipelineConfig.getAutoexecCombopConfigVo());
                 }
                 if (isHasBuildOrDeployTypeTool) {
-                    Set<Long> operationIdSet = getOperationIdSet(deployPipelineConfig);List<Long> buildTypeToolIdList = new ArrayList<>();
-                    List<Long> deployTypeToolIdList = new ArrayList<>();
-                    Long buildTypeId = autoexecTypeMapper.getTypeIdByName("BUILD");
-                    Long deployTypeId = autoexecTypeMapper.getTypeIdByName("DEPLOY");
-                    List<Long> operationIdList = new ArrayList<>(operationIdSet);
-                    if (buildTypeId != null) {
-                        buildTypeToolIdList = autoexecToolMapper.getToolIdListByIdListAndTypeId(operationIdList, buildTypeId);
+                    Set<Long> operationIdSet = getOperationIdSet(deployPipelineConfig);
+                    if (CollectionUtils.isNotEmpty(operationIdSet)) {
+                        List<Long> buildTypeToolIdList = new ArrayList<>();
+                        List<Long> deployTypeToolIdList = new ArrayList<>();
+                        Long buildTypeId = autoexecTypeMapper.getTypeIdByName("BUILD");
+                        Long deployTypeId = autoexecTypeMapper.getTypeIdByName("DEPLOY");
+                        List<Long> operationIdList = new ArrayList<>(operationIdSet);
+                        if (buildTypeId != null) {
+                            buildTypeToolIdList = autoexecToolMapper.getToolIdListByIdListAndTypeId(operationIdList, buildTypeId);
+                        }
+                        if (deployTypeId != null) {
+                            deployTypeToolIdList = autoexecToolMapper.getToolIdListByIdListAndTypeId(operationIdList, deployTypeId);
+                        }
+                        setIsHasBuildOrDeployTypeTool(deployPipelineConfig, buildTypeToolIdList, deployTypeToolIdList);
                     }
-                    if (deployTypeId != null) {
-                        deployTypeToolIdList = autoexecToolMapper.getToolIdListByIdListAndTypeId(operationIdList, deployTypeId);
-                    }
-                    setIsHasBuildOrDeployTypeTool(deployPipelineConfig, buildTypeToolIdList, deployTypeToolIdList);
                 }
             }
             return deployPipelineConfig;
@@ -291,8 +294,23 @@ public class DeployPipelineConfigManager {
                 resultList.add(deployAppConfig);
             }
 
-            List<Long> buildTypeToolIdList = new ArrayList<>();
-            List<Long> deployTypeToolIdList = new ArrayList<>();
+            if (isDeleteDisabledPhase) {
+                for (DeployAppConfigVo deployAppConfig : resultList) {
+                    DeployPipelineConfigVo deployPipelineConfig = deployAppConfig.getConfig();
+                    if (deployPipelineConfig != null) {
+                        deleteDisabledPhase(deployPipelineConfig);
+                    }
+                }
+            }
+            if (isUpdateConfig) {
+                for (DeployAppConfigVo deployAppConfig : resultList) {
+                    DeployPipelineConfigVo deployPipelineConfig = deployAppConfig.getConfig();
+                    if (deployPipelineConfig != null) {
+                        IAutoexecServiceCrossoverService autoexecServiceCrossoverService = CrossoverServiceFactory.getApi(IAutoexecServiceCrossoverService.class);
+                        autoexecServiceCrossoverService.updateAutoexecCombopConfig(deployPipelineConfig.getAutoexecCombopConfigVo());
+                    }
+                }
+            }
             if (isHasBuildOrDeployTypeTool) {
                 Set<Long> operationIdSet = new HashSet<>();
                 for (DeployAppConfigVo deployAppConfig : resultList) {
@@ -301,29 +319,23 @@ public class DeployPipelineConfigManager {
                         operationIdSet.addAll(getOperationIdSet(deployPipelineConfig));
                     }
                 }
-                Long buildTypeId = autoexecTypeMapper.getTypeIdByName("BUILD");
-                Long deployTypeId = autoexecTypeMapper.getTypeIdByName("DEPLOY");
-                List<Long> operationIdList = new ArrayList<>(operationIdSet);
-                if (buildTypeId != null) {
-                    buildTypeToolIdList = autoexecToolMapper.getToolIdListByIdListAndTypeId(operationIdList, buildTypeId);
-                }
-                if (deployTypeId != null) {
-                    deployTypeToolIdList = autoexecToolMapper.getToolIdListByIdListAndTypeId(operationIdList, deployTypeId);
-                }
-            }
-
-            for (DeployAppConfigVo deployAppConfig : resultList) {
-                DeployPipelineConfigVo deployPipelineConfig = deployAppConfig.getConfig();
-                if (deployPipelineConfig != null) {
-                    if (isDeleteDisabledPhase) {
-                        deleteDisabledPhase(deployPipelineConfig);
+                if (CollectionUtils.isNotEmpty(operationIdSet)) {
+                    Long buildTypeId = autoexecTypeMapper.getTypeIdByName("BUILD");
+                    Long deployTypeId = autoexecTypeMapper.getTypeIdByName("DEPLOY");
+                    List<Long> buildTypeToolIdList = new ArrayList<>();
+                    List<Long> deployTypeToolIdList = new ArrayList<>();
+                    List<Long> operationIdList = new ArrayList<>(operationIdSet);
+                    if (buildTypeId != null) {
+                        buildTypeToolIdList = autoexecToolMapper.getToolIdListByIdListAndTypeId(operationIdList, buildTypeId);
                     }
-                    if (isUpdateConfig) {
-                        IAutoexecServiceCrossoverService autoexecServiceCrossoverService = CrossoverServiceFactory.getApi(IAutoexecServiceCrossoverService.class);
-                        autoexecServiceCrossoverService.updateAutoexecCombopConfig(deployPipelineConfig.getAutoexecCombopConfigVo());
+                    if (deployTypeId != null) {
+                        deployTypeToolIdList = autoexecToolMapper.getToolIdListByIdListAndTypeId(operationIdList, deployTypeId);
                     }
-                    if (isHasBuildOrDeployTypeTool) {
-                        setIsHasBuildOrDeployTypeTool(deployPipelineConfig, buildTypeToolIdList, deployTypeToolIdList);
+                    for (DeployAppConfigVo deployAppConfig : resultList) {
+                        DeployPipelineConfigVo deployPipelineConfig = deployAppConfig.getConfig();
+                        if (deployPipelineConfig != null) {
+                            setIsHasBuildOrDeployTypeTool(deployPipelineConfig, buildTypeToolIdList, deployTypeToolIdList);
+                        }
                     }
                 }
             }
