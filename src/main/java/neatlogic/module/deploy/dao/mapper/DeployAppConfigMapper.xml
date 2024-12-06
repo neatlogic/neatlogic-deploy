@@ -1595,7 +1595,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
             #{lcu})
         </foreach>
         ON DUPLICATE KEY UPDATE `lcd` = #{lcd},
-        `lcu` = #{lcu};
+        `lcu` = #{lcu}
     </insert>
 
     <insert id="insertAppModuleRunnerGroup">
