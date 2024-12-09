@@ -30,7 +30,6 @@ import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.module.deploy.dao.mapper.DeployAppConfigMapper;
 import neatlogic.module.deploy.service.DeployAppAuthorityService;
 import neatlogic.module.deploy.service.DeployAppConfigService;
-import neatlogic.module.deploy.util.DeployPipelineConfigManager;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -138,7 +137,11 @@ public class CopyDeployAppConfigModuleConfigApi extends PrivateApiComponentBase 
                 //1、复制模块配置
                 if (fromModuleHasConfigEnvIdList.contains(0L)) {
                     //新增模块配置，后面统一新增配置，insert时会duplicate
-                    insertAppConfigList.add(new DeployAppConfigVo(appSystemId, toModuleId, DeployPipelineConfigManager.init(appSystemId).withAppModuleId(fromAppModuleId).getConfig()));
+                    DeployAppConfigVo deployAppConfigVo = deployAppConfigMapper.getAppConfigVo(new DeployAppConfigVo(appSystemId, fromAppModuleId));
+                    if (deployAppConfigVo != null) {
+                        insertAppConfigList.add(new DeployAppConfigVo(appSystemId, toModuleId, deployAppConfigVo.getConfig()));
+                    }
+//                    insertAppConfigList.add(new DeployAppConfigVo(appSystemId, toModuleId, DeployPipelineConfigManager.init(appSystemId).withAppModuleId(fromAppModuleId).getConfig()));
                 } else if (toModuleHasConfigEnvIdList.contains(0L)) {
                     //删除原有的配置(虽然前端已经有接口控制只能选没有独一份配置的模块，但是防止单独调接口，做多一次删除动作)
                     deployAppConfigMapper.deleteAppConfig(new DeployAppConfigVo(appSystemId, toModuleId));
@@ -165,7 +168,11 @@ public class CopyDeployAppConfigModuleConfigApi extends PrivateApiComponentBase 
                         //如果来源模块的环境有独一份配置，则复制
                         if (fromModuleHasConfigEnvIdList.contains(fromEnvId)) {
                             //新增配置，insert是会duplicate
-                            insertAppConfigList.add(new DeployAppConfigVo(appSystemId, toModuleId, fromEnvId, DeployPipelineConfigManager.init(appSystemId).withAppModuleId(fromAppModuleId).withEnvId(fromEnvId).getConfig()));
+                            DeployAppConfigVo deployAppConfigVo = deployAppConfigMapper.getAppConfigVo(new DeployAppConfigVo(appSystemId, fromAppModuleId, fromEnvId));
+                            if (deployAppConfigVo != null) {
+                                insertAppConfigList.add(new DeployAppConfigVo(appSystemId, toModuleId, fromEnvId, deployAppConfigVo.getConfig()));
+                            }
+//                            insertAppConfigList.add(new DeployAppConfigVo(appSystemId, toModuleId, fromEnvId, DeployPipelineConfigManager.init(appSystemId).withAppModuleId(fromAppModuleId).withEnvId(fromEnvId).getConfig()));
                         } else if (toModuleHasConfigEnvIdList.contains(fromEnvId)) {
                             //如果来源模块的当前环境没有独一份的配置，而目标模块的当前配置有独一份配置，则需要删除此配置
                             deployAppConfigMapper.deleteAppConfig(new DeployAppConfigVo(appSystemId, toModuleId, fromEnvId));
@@ -206,12 +213,16 @@ public class CopyDeployAppConfigModuleConfigApi extends PrivateApiComponentBase 
             List<DeployAppConfigVo> insertConfigList = new ArrayList<>();
 
             for (Long envId : fromModuleHasConfigEnvIdList) {
-                if (envId == 0L) {
-                    //模块层独有一份配置
-                    insertConfigList.add(new DeployAppConfigVo(appSystemId, toAppModuleId, DeployPipelineConfigManager.init(appSystemId).withAppModuleId(fromAppModuleId).getConfig()));
+                DeployAppConfigVo deployAppConfigVo = deployAppConfigMapper.getAppConfigVo(new DeployAppConfigVo(appSystemId, fromAppModuleId, envId));
+                if (deployAppConfigVo != null) {
+                    insertConfigList.add(new DeployAppConfigVo(appSystemId, toAppModuleId, envId, deployAppConfigVo.getConfig()));
                 }
-                //环境层独有一份配置
-                insertConfigList.add(new DeployAppConfigVo(appSystemId, toAppModuleId, envId, DeployPipelineConfigManager.init(appSystemId).withAppModuleId(fromAppModuleId).withEnvId(envId).getConfig()));
+//                if (envId == 0L) {
+//                    //模块层独有一份配置
+//                    insertConfigList.add(new DeployAppConfigVo(appSystemId, toAppModuleId, DeployPipelineConfigManager.init(appSystemId).withAppModuleId(fromAppModuleId).getConfig()));
+//                }
+//                //环境层独有一份配置
+//                insertConfigList.add(new DeployAppConfigVo(appSystemId, toAppModuleId, envId, DeployPipelineConfigManager.init(appSystemId).withAppModuleId(fromAppModuleId).withEnvId(envId).getConfig()));
             }
 
             //新增或者update流水线配置
