@@ -27,8 +27,6 @@ import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.module.deploy.dao.mapper.DeployAppConfigMapper;
 import neatlogic.module.deploy.service.DeployAppAuthorityService;
-import neatlogic.module.deploy.service.DeployAppConfigService;
-import neatlogic.module.deploy.util.DeployPipelineConfigManager;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -50,9 +48,6 @@ public class CopyDeployAppConfigEnvConfigApi extends PrivateApiComponentBase {
 
     @Resource
     DeployAppConfigMapper deployAppConfigMapper;
-
-    @Resource
-    DeployAppConfigService deployAppConfigService;
 
     @Resource
     DeployAppAuthorityService deployAppAuthorityService;
@@ -100,7 +95,12 @@ public class CopyDeployAppConfigEnvConfigApi extends PrivateApiComponentBase {
         boolean hasFromEnvConfig = deployAppConfigMapper.getAppConfigByAppSystemIdAndAppModuleIdAndEnvId(appSystemId, appModuleId, fromEnvId) != null;
 
         //复制流水线配置
-        DeployPipelineConfigVo fromEnvConfigVo = DeployPipelineConfigManager.init(appSystemId).withAppModuleId(appModuleId).withEnvId(fromEnvId).getConfig();
+        DeployAppConfigVo fromEnvAppConfigVo = deployAppConfigMapper.getAppConfigVo(new DeployAppConfigVo(appSystemId, appModuleId, fromEnvId));
+        if (fromEnvAppConfigVo == null) {
+            throw new DeployAppConfigNotFoundException(appModuleId);
+        }
+        DeployPipelineConfigVo fromEnvConfigVo = fromEnvAppConfigVo.getConfig();
+//        DeployPipelineConfigVo fromEnvConfigVo = DeployPipelineConfigManager.init(appSystemId).withAppModuleId(appModuleId).withEnvId(fromEnvId).getConfig();
         if (fromEnvConfigVo == null) {
             throw new DeployAppConfigNotFoundException(appModuleId);
         }

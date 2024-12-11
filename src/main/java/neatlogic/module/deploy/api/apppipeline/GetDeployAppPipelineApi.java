@@ -94,7 +94,7 @@ public class GetDeployAppPipelineApi extends PrivateApiComponentBase {
         DeployPipelineConfigVo deployPipelineConfigVo = DeployPipelineConfigManager.init(searchVo.getAppSystemId())
                 .withAppModuleId(searchVo.getAppModuleId())
                 .withEnvId(searchVo.getEnvId())
-                .withDeleteDisabledPhase(isDeleteDisabledPhase) // 删除禁用阶段
+                .withIsDeleteDisabledPhase(isDeleteDisabledPhase) // 删除禁用阶段
                 .getConfig();
         searchVo.setConfig(deployPipelineConfigVo);
         return searchVo;

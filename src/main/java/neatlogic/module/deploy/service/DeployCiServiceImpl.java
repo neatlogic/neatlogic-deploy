@@ -107,7 +107,10 @@ public class DeployCiServiceImpl implements DeployCiService {
         DeployPipelineConfigVo deployPipelineConfigVo = DeployPipelineConfigManager.init(ci.getAppSystemId())
                 .withAppModuleId(ci.getAppModuleId())
                 .withEnvId(envId)
-                .isHasBuildOrDeployTypeTool(true)
+                .withIsHasBuildOrDeployTypeTool(true)
+                .withIsDeleteDisabledPhase(false)
+                .withIsUpdateProfile(false)
+                .withIsUpdateConfig(false)
                 .getConfig();
         if (deployPipelineConfigVo == null) {
             logger.error("{} callback error. Deploy app config not found, ciId: {}, callback params: {}", repoTypeName, ci.getId(), paramObj.toJSONString());
