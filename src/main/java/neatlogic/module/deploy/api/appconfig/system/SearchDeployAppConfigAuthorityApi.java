@@ -132,10 +132,10 @@ public class SearchDeployAppConfigAuthorityApi extends PrivateApiComponentBase {
         if (isNeedScenario) {
             //根据appSystemId获取对应的场景theadList
             pipelineConfigVo = DeployPipelineConfigManager.init(paramObj.getLong("appSystemId"))
-                    .withDeleteDisabledPhase(false)
-                    .isUpdateProfile(false)
-                    .isHasBuildOrDeployTypeTool(false)
-                    .isUpdateConfig(false)
+                    .withIsDeleteDisabledPhase(false)
+                    .withIsUpdateProfile(false)
+                    .withIsHasBuildOrDeployTypeTool(false)
+                    .withIsUpdateConfig(false)
                     .getConfig();
             if (pipelineConfigVo == null) {
                 throw new DeployAppConfigNotFoundException(paramObj.getLong("appSystemId"));

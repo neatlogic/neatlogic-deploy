@@ -193,10 +193,10 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
         DeployPipelineConfigVo deployPipelineConfigVo = DeployPipelineConfigManager.init(deployJobVo.getAppSystemId())
                 .withAppModuleId(deployJobVo.getAppModuleId())
                 .withEnvId(deployJobVo.getEnvId())
-                .withDeleteDisabledPhase(true) // 删除禁用阶段
-                .isHasBuildOrDeployTypeTool(false)
-                .isUpdateConfig(false)
-                .isUpdateProfile(true)
+                .withIsDeleteDisabledPhase(true) // 删除禁用阶段
+                .withIsHasBuildOrDeployTypeTool(false)
+                .withIsUpdateConfig(false)
+                .withIsUpdateProfile(true)
                 .getConfig();
         if (deployPipelineConfigVo == null) {
             throw new DeployPipelineConfigNotFoundException();
@@ -458,10 +458,10 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
         DeployPipelineConfigVo deployPipelineConfigVo = DeployPipelineConfigManager.init(deployJobVo.getAppSystemId())
                 .withAppModuleId(deployJobVo.getAppModuleId())
                 .withEnvId(deployJobVo.getEnvId())
-                .withDeleteDisabledPhase(true) // 删除禁用阶段
-                .isUpdateProfile(false)
-                .isHasBuildOrDeployTypeTool(false)
-                .isUpdateConfig(true)
+                .withIsDeleteDisabledPhase(true) // 删除禁用阶段
+                .withIsUpdateProfile(false)
+                .withIsHasBuildOrDeployTypeTool(false)
+                .withIsUpdateConfig(true)
                 .getConfig();
         if (deployPipelineConfigVo == null) {
             throw new DeployPipelineConfigNotFoundException();

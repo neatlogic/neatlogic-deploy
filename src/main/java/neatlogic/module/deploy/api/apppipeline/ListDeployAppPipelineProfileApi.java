@@ -101,14 +101,14 @@ public class ListDeployAppPipelineProfileApi extends PrivateApiComponentBase {
         if (CollectionUtils.isNotEmpty(defaultValue)) {
             profileIdList = defaultValue.toJavaList(Long.class);
         }
-        DeployPipelineConfigVo deployPipelineConfigVo = DeployPipelineConfigManager.init(searchVo.getAppSystemId())//a
+        DeployPipelineConfigVo deployPipelineConfigVo = DeployPipelineConfigManager.init(searchVo.getAppSystemId())
                 .withAppModuleId(searchVo.getAppModuleId())
                 .withEnvId(searchVo.getEnvId())
                 .withProfileIdList(profileIdList)
-                .withDeleteDisabledPhase(false)
-                .isHasBuildOrDeployTypeTool(false)
-                .isUpdateConfig(false)
-                .isUpdateProfile(true)
+                .withIsDeleteDisabledPhase(false)
+                .withIsHasBuildOrDeployTypeTool(false)
+                .withIsUpdateConfig(false)
+                .withIsUpdateProfile(true)
                 .getConfig();
         return deployPipelineConfigVo.getOverrideProfileList();
     }

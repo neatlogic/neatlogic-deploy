@@ -86,10 +86,10 @@ public class ListDeployAppConfigAuthorityApi extends PrivateApiComponentBase {
         //场景权限
         if (isNeedScenario) {
             DeployPipelineConfigVo pipelineConfigVo = DeployPipelineConfigManager.init(appSystemId)
-                    .withDeleteDisabledPhase(false)
-                    .isUpdateProfile(false)
-                    .isHasBuildOrDeployTypeTool(false)
-                    .isUpdateConfig(false)
+                    .withIsDeleteDisabledPhase(false)
+                    .withIsUpdateProfile(false)
+                    .withIsHasBuildOrDeployTypeTool(false)
+                    .withIsUpdateConfig(false)
                     .getConfig();
             if (pipelineConfigVo == null) {
                 throw new DeployAppConfigNotFoundException(appSystemId);

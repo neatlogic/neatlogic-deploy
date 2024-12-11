@@ -106,10 +106,10 @@ public class GetDeployJobCreateInfoApi extends PrivateApiComponentBase {
         //场景
         DeployPipelineConfigVo pipelineConfigVo = DeployPipelineConfigManager.init(appSystemId)
                 .withAppModuleId(appModuleId)
-                .withDeleteDisabledPhase(false)
-                .isUpdateProfile(false)
-                .isHasBuildOrDeployTypeTool(false)
-                .isUpdateConfig(false)
+                .withIsDeleteDisabledPhase(false)
+                .withIsUpdateProfile(false)
+                .withIsHasBuildOrDeployTypeTool(false)
+                .withIsUpdateConfig(false)
                 .getConfig();
         if (pipelineConfigVo == null) {
             throw new DeployAppConfigNotFoundException(appSystemId);

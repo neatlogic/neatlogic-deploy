@@ -143,22 +143,22 @@ public class DeployPipelineConfigManager {
             return this;
         }
 
-        public Builder withDeleteDisabledPhase(boolean isDeleteDisabledPhase) {
+        public Builder withIsDeleteDisabledPhase(boolean isDeleteDisabledPhase) {
             this.isDeleteDisabledPhase = isDeleteDisabledPhase;
             return this;
         }
 
-        public Builder isHasBuildOrDeployTypeTool(boolean _isHasBuildOrDeployTypeTool) {
+        public Builder withIsHasBuildOrDeployTypeTool(boolean _isHasBuildOrDeployTypeTool) {
             this.isHasBuildOrDeployTypeTool = _isHasBuildOrDeployTypeTool;
             return this;
         }
 
-        public Builder isUpdateConfig(boolean _isUpdateConfig) {
+        public Builder withIsUpdateConfig(boolean _isUpdateConfig) {
             this.isUpdateConfig = _isUpdateConfig;
             return this;
         }
 
-        public Builder isUpdateProfile(boolean _isUpdateProfile) {
+        public Builder withIsUpdateProfile(boolean _isUpdateProfile) {
             this.isUpdateProfile = _isUpdateProfile;
             return this;
         }
@@ -655,9 +655,9 @@ public class DeployPipelineConfigManager {
             pipelineConfigVo = DeployPipelineConfigManager.init(jobTemplateVo.getAppSystemId())
                     .withAppModuleId(jobTemplateVo.getAppModuleId())
                     .withEnvId(jobTemplateVo.getEnvId())
-                    .isHasBuildOrDeployTypeTool(true)
-                    .isUpdateConfig(false)
-                    .isUpdateProfile(false)
+                    .withIsHasBuildOrDeployTypeTool(true)
+                    .withIsUpdateConfig(false)
+                    .withIsUpdateProfile(false)
                     .getConfig();
             if (pipelineConfigVo != null) {
                 envPipelineMap.put(jobTemplateVo.getEnvId(), pipelineConfigVo);
