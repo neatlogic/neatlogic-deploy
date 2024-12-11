@@ -461,7 +461,7 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
                 .withIsDeleteDisabledPhase(true) // 删除禁用阶段
                 .withIsUpdateProfile(false)
                 .withIsHasBuildOrDeployTypeTool(false)
-                .withIsUpdateConfig(true)
+                .withIsUpdateConfig(false)
                 .getConfig();
         if (deployPipelineConfigVo == null) {
             throw new DeployPipelineConfigNotFoundException();
