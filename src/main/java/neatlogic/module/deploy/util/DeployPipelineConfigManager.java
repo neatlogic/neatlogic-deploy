@@ -657,6 +657,7 @@ public class DeployPipelineConfigManager {
                     .withEnvId(jobTemplateVo.getEnvId())
                     .isHasBuildOrDeployTypeTool(true)
                     .isUpdateConfig(false)
+                    .isUpdateProfile(false)
                     .getConfig();
             if (pipelineConfigVo != null) {
                 envPipelineMap.put(jobTemplateVo.getEnvId(), pipelineConfigVo);

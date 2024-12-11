@@ -76,8 +76,8 @@ public class ListDeployAppConfigAuthorityApi extends PrivateApiComponentBase {
     public Object myDoService(JSONObject paramObj) {
         Long appSystemId = paramObj.getLong("appSystemId");
         JSONArray includeActionList = paramObj.getJSONArray("includeActionList");
-        boolean isNeedScenario = org.apache.commons.collections4.CollectionUtils.isEmpty(includeActionList) || includeActionList.contains(DeployAppConfigActionType.SCENARIO.getValue());
-        boolean isNeedEnv = org.apache.commons.collections4.CollectionUtils.isEmpty(includeActionList) || includeActionList.contains(DeployAppConfigActionType.ENV.getValue());
+        boolean isNeedScenario = CollectionUtils.isEmpty(includeActionList) || includeActionList.contains(DeployAppConfigActionType.SCENARIO.getValue());
+        boolean isNeedEnv = CollectionUtils.isEmpty(includeActionList) || includeActionList.contains(DeployAppConfigActionType.ENV.getValue());
         JSONObject returnObj = new JSONObject();
 
         //操作权限
@@ -85,7 +85,12 @@ public class ListDeployAppConfigAuthorityApi extends PrivateApiComponentBase {
 
         //场景权限
         if (isNeedScenario) {
-            DeployPipelineConfigVo pipelineConfigVo = DeployPipelineConfigManager.init(appSystemId).getConfig();
+            DeployPipelineConfigVo pipelineConfigVo = DeployPipelineConfigManager.init(appSystemId)
+                    .withDeleteDisabledPhase(false)
+                    .isUpdateProfile(false)
+                    .isHasBuildOrDeployTypeTool(false)
+                    .isUpdateConfig(false)
+                    .getConfig();
             if (pipelineConfigVo == null) {
                 throw new DeployAppConfigNotFoundException(appSystemId);
             }
