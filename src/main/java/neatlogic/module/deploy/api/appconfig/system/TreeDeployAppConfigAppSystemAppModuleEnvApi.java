@@ -83,9 +83,9 @@ public class TreeDeployAppConfigAppSystemAppModuleEnvApi extends PrivateApiCompo
         List<DeployAppConfigVo> deployAppConfigList = DeployPipelineConfigManager.init(appSystemId)
                 .withAppModuleIdList(appModuleIdList)
                 .withEnvIdList(envIdList)
-                .isHasBuildOrDeployTypeTool(false)
-                .isUpdateConfig(false)
-                .isUpdateProfile(false)
+                .withIsHasBuildOrDeployTypeTool(false)
+                .withIsUpdateConfig(false)
+                .withIsUpdateProfile(false)
                 .getDeployAppConfigList();
         for (DeployAppModuleVo deployAppModuleVo : deployAppModuleList) {
             DeployPipelineConfigVo pipelineConfigVo = getDeployPipelineConfigVo(deployAppConfigList, appSystemId, deployAppModuleVo.getId(), 0L);

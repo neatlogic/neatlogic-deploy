@@ -105,6 +105,10 @@ public class ListDeployAppPipelineProfileApi extends PrivateApiComponentBase {
                 .withAppModuleId(searchVo.getAppModuleId())
                 .withEnvId(searchVo.getEnvId())
                 .withProfileIdList(profileIdList)
+                .withIsDeleteDisabledPhase(false)
+                .withIsHasBuildOrDeployTypeTool(false)
+                .withIsUpdateConfig(false)
+                .withIsUpdateProfile(true)
                 .getConfig();
         return deployPipelineConfigVo.getOverrideProfileList();
     }
