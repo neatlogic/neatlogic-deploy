@@ -52,10 +52,12 @@ public class SearchDeployAppAttrApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "attrName", type = ApiParamType.STRING, desc = "属性名称",isRequired = true),
-            @Param(name = "ciName", type = ApiParamType.STRING, desc = "模型名称",isRequired = true),
+            @Param(name = "attrName", type = ApiParamType.STRING, desc = "属性名称", isRequired = true),
+            @Param(name = "ciName", type = ApiParamType.STRING, desc = "模型名称", isRequired = true),
             @Param(name = "keyword", type = ApiParamType.STRING, desc = "关键字", xss = true),
-            @Param(name = "defaultValue", type = ApiParamType.JSONARRAY, desc = "用于回显列表")
+            @Param(name = "defaultValue", type = ApiParamType.JSONARRAY, desc = "用于回显列表"),
+            @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "common.pagesize"),
+            @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "common.currentpage")
     })
     @Output({
             @Param(name = "tbodyList", type = ApiParamType.JSONARRAY, explode = CiEntityVo[].class)
@@ -63,7 +65,7 @@ public class SearchDeployAppAttrApi extends PrivateApiComponentBase {
     @Description(desc = "查询发布应用属性下拉列表")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
-
+        JSONObject returnObj = new JSONObject();
         //获取应用系统的模型id
         ICiCrossoverMapper ciCrossoverMapper = CrossoverServiceFactory.getApi(ICiCrossoverMapper.class);
         CiVo ciVo = ciCrossoverMapper.getCiByName(paramObj.getString("ciName"));
@@ -73,6 +75,8 @@ public class SearchDeployAppAttrApi extends PrivateApiComponentBase {
 
         CiEntityVo ciEntityVo = new CiEntityVo();
         ciEntityVo.setCiId(attrVo.getTargetCiId());
+        ciEntityVo.setCurrentPage(paramObj.getInteger("currentPage"));
+        ciEntityVo.setPageSize(paramObj.getInteger("pageSize"));
 
         if (CollectionUtils.isNotEmpty(defaultValue)) {
             List<Long> idList = new ArrayList<>();
@@ -102,10 +106,15 @@ public class SearchDeployAppAttrApi extends PrivateApiComponentBase {
         JSONArray jsonList = new JSONArray();
         for (CiEntityVo ciEntity : ciEntityList) {
             JSONObject obj = new JSONObject();
-            obj.put("id", ciEntity.getId());
-            obj.put("name", StringUtils.isNotBlank(ciEntity.getName()) ? ciEntity.getName() : "-");
+            obj.put("value", ciEntity.getId());
+            obj.put("text", StringUtils.isNotBlank(ciEntity.getName()) ? ciEntity.getName() : "-");
             jsonList.add(obj);
         }
-        return jsonList;
+        returnObj.put("pageSize", ciEntityVo.getPageSize());
+        returnObj.put("pageCount", ciEntityVo.getPageCount());
+        returnObj.put("rowNum", ciEntityVo.getRowNum());
+        returnObj.put("currentPage", ciEntityVo.getCurrentPage());
+        returnObj.put("tbodyList", jsonList);
+        return returnObj;
     }
 }
