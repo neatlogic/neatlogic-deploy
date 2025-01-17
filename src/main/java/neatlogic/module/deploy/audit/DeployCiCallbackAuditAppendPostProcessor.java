@@ -38,7 +38,7 @@ public class DeployCiCallbackAuditAppendPostProcessor implements Consumer<IEvent
     public void accept(IEvent event) {
         JSONObject data = event.getData();
         String path = data.getString("path");
-        String dataHome = Config.DATA_HOME() + TenantContext.get().getTenantUuid();
+        String dataHome = Config.AUDIT_HOME() + TenantContext.get().getTenantUuid();
         if (path.startsWith(dataHome)) {
             path = "${home}" + path.substring(dataHome.length());
         }
