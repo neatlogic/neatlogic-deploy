@@ -18,6 +18,7 @@ package neatlogic.module.deploy.service;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.deploy.dto.job.DeployJobModuleVo;
 import neatlogic.framework.deploy.dto.job.DeployJobVo;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -64,6 +65,7 @@ public interface DeployJobService {
      * @param module           模块
      * @return result
      */
+    @Transactional
     JSONObject createJobAndFire(DeployJobVo autoexecJobParam, DeployJobModuleVo module) throws Exception;
 
     /**
