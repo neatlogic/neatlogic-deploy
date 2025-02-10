@@ -407,8 +407,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         </where>
     </select>
 
-    <select id="getDeployJobContentLock"
-            resultType="neatlogic.framework.deploy.dto.job.DeployJobContentVo">
+    <resultMap id="jobContent" type="neatlogic.framework.autoexec.dto.job.AutoexecJobContentVo">
+        <result property="content" column="content" typeHandler="CompressHandler"/>
+        <result property="hash" column="hash"/>
+    </resultMap>
+    <select id="getDeployJobContentLock" resultMap="jobContent">
         SELECT `hash`,
                `content`
         FROM `autoexec_job_content`
@@ -589,8 +592,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         <foreach collection="idList" item="item" open="(" close=")" separator=",">#{item}</foreach>
     </select>
 
-    <select id="getDeployJobContent"
-            resultType="neatlogic.framework.deploy.dto.job.DeployJobContentVo">
+    <select id="getDeployJobContent" resultMap="jobContent">
         SELECT `hash`,
                `content`
         FROM `autoexec_job_content`
@@ -646,7 +648,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
     <insert id="insertIgnoreDeployJobContent"
             parameterType="neatlogic.framework.deploy.dto.job.DeployJobContentVo">
         INSERT IGNORE INTO `deploy_job_content` (`hash`, `content`)
-        VALUES (#{hash}, #{content});
+        VALUES (#{hash}, #{content,typeHandler=CompressHandler});
     </insert>
 
     <insert id="insertLane" parameterType="neatlogic.framework.deploy.dto.job.LaneVo">
