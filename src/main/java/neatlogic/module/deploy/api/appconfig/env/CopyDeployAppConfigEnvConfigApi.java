@@ -20,8 +20,10 @@ import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.deploy.auth.DEPLOY_BASE;
 import neatlogic.framework.deploy.constvalue.DeployAppConfigAction;
-import neatlogic.framework.deploy.dto.app.*;
-import neatlogic.framework.deploy.exception.DeployAppConfigNotFoundException;
+import neatlogic.framework.deploy.dto.app.DeployAppConfigEnvDBConfigVo;
+import neatlogic.framework.deploy.dto.app.DeployAppConfigVo;
+import neatlogic.framework.deploy.dto.app.DeployAppEnvAutoConfigVo;
+import neatlogic.framework.deploy.dto.app.DeployAppEnvironmentVo;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
@@ -92,29 +94,20 @@ public class CopyDeployAppConfigEnvConfigApi extends PrivateApiComponentBase {
         deployAppAuthorityService.checkOperationAuth(appSystemId, DeployAppConfigAction.EDIT);
 
         //来源环境层独有一份配置
-        boolean hasFromEnvConfig = deployAppConfigMapper.getAppConfigByAppSystemIdAndAppModuleIdAndEnvId(appSystemId, appModuleId, fromEnvId) != null;
-
-        //复制流水线配置
-        DeployAppConfigVo fromEnvAppConfigVo = deployAppConfigMapper.getAppConfigVo(new DeployAppConfigVo(appSystemId, appModuleId, fromEnvId));
-        if (fromEnvAppConfigVo == null) {
-            throw new DeployAppConfigNotFoundException(appModuleId);
-        }
-        DeployPipelineConfigVo fromEnvConfigVo = fromEnvAppConfigVo.getConfig();
-//        DeployPipelineConfigVo fromEnvConfigVo = DeployPipelineConfigManager.init(appSystemId).withAppModuleId(appModuleId).withEnvId(fromEnvId).getConfig();
-        if (fromEnvConfigVo == null) {
-            throw new DeployAppConfigNotFoundException(appModuleId);
-        }
-        List<DeployAppConfigVo> insertAppConfigList = new ArrayList<>();
-        for (Long envId : toEnvIdList) {
-            if (hasFromEnvConfig) {
-                insertAppConfigList.add(new DeployAppConfigVo(appSystemId, appModuleId, envId, fromEnvConfigVo));
-            } else {
+        DeployAppConfigVo fromEnvAppConfigVo = deployAppConfigMapper.getAppConfigByAppSystemIdAndAppModuleIdAndEnvId(appSystemId, appModuleId, fromEnvId);
+        if (fromEnvAppConfigVo != null && fromEnvAppConfigVo.getConfig() != null) {
+            List<DeployAppConfigVo> insertAppConfigList = new ArrayList<>();
+            for (Long envId : toEnvIdList) {
+                insertAppConfigList.add(new DeployAppConfigVo(appSystemId, appModuleId, envId, fromEnvAppConfigVo.getConfig()));
+            }
+            if (CollectionUtils.isNotEmpty(insertAppConfigList)) {
+                deployAppConfigMapper.insertBatchAppConfig(insertAppConfigList);
+            }
+        } else {
+            for (Long envId : toEnvIdList) {
                 //删除原有的配置(虽然前端已经有接口控制只能选没有独一份配置的环境，但是防止单独调接口，做多一次删除动作)
                 deployAppConfigMapper.deleteAppConfig(new DeployAppConfigVo(appSystemId, appModuleId, envId));
             }
-        }
-        if (CollectionUtils.isNotEmpty(insertAppConfigList)) {
-            deployAppConfigMapper.insertBatchAppConfig(insertAppConfigList);
         }
 
         //新增环境
