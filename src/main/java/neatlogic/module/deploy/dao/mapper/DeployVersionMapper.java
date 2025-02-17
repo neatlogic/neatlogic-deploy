@@ -83,6 +83,8 @@ public interface DeployVersionMapper {
 
     RepositoryServiceVo getRepositoryServiceByAddress(String address);
 
+    RepositoryServiceVo getRepositoryServiceByAddressAndUserName(@Param("address") String address,@Param("userName")String userName);
+
     RepositoryVo getRepositoryByAppModuleId(Long appModuleId);
 
     DeployVersionTheadVo getDeployVersionTheadByUserUuid(@Param("userUuid") String userUuid);

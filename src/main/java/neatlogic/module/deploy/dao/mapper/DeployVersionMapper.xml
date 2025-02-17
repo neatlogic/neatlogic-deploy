@@ -837,6 +837,27 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         where address = #{value}
     </select>
 
+    <select id="getRepositoryServiceByAddressAndUserName"
+            resultMap="RepositoryServiceMap">
+        select id,
+               name,
+               type,
+               address,
+               username,
+               password,
+               status,
+               fcd,
+               lcd,
+               fcu,
+               lcu,
+               codehub_agent_id
+        from codehub_repository_service
+        where address = #{address}
+          and username = #{userName}
+        order by id asc
+        limit 1;
+    </select>
+
     <resultMap id="RepositoryMap" type="neatlogic.framework.deploy.dto.codehub.RepositoryVo">
         <result column="id" jdbcType="BIGINT" property="id"/>
         <result column="repo_service_id" jdbcType="BIGINT" property="repoServiceId"/>

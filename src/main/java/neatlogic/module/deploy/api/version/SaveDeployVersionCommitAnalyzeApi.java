@@ -2,7 +2,6 @@ package neatlogic.module.deploy.api.version;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import neatlogic.framework.asynchronization.threadlocal.RequestContext;
 import neatlogic.framework.asynchronization.threadlocal.UserContext;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.common.constvalue.ApiParamType;
@@ -94,7 +93,7 @@ public class SaveDeployVersionCommitAnalyzeApi extends PrivateApiComponentBase {
             throw new ParamIrregularException("repo");
         }
         //更新仓库服务
-        RepositoryServiceVo repositoryServiceVo = deployVersionMapper.getRepositoryServiceByAddress(repoServiceAddress);
+        RepositoryServiceVo repositoryServiceVo = deployVersionMapper.getRepositoryServiceByAddressAndUserName(repoServiceAddress,paramObj.getString("user"));
         if (repositoryServiceVo == null) {
             repositoryServiceVo = new RepositoryServiceVo();
             repositoryServiceVo.setName(repoAddress);
