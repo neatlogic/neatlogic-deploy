@@ -20,10 +20,7 @@ import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.deploy.auth.DEPLOY_BASE;
 import neatlogic.framework.deploy.constvalue.DeployAppConfigAction;
-import neatlogic.framework.deploy.dto.app.DeployAppConfigEnvDBConfigVo;
-import neatlogic.framework.deploy.dto.app.DeployAppConfigVo;
-import neatlogic.framework.deploy.dto.app.DeployAppEnvAutoConfigVo;
-import neatlogic.framework.deploy.dto.app.DeployAppEnvironmentVo;
+import neatlogic.framework.deploy.dto.app.*;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
@@ -118,6 +115,17 @@ public class CopyDeployAppConfigEnvConfigApi extends PrivateApiComponentBase {
         //复制dbConfig和autoConfig
         copyDbSchemaListAndAutoCfgKeyList(appSystemId, appModuleId, fromEnvId, toEnvIdList);
 
+        // 复制环境属性
+        DeployAppConfigEnvAttrVo deployAppConfigEnvAttrVo = new DeployAppConfigEnvAttrVo();
+        deployAppConfigEnvAttrVo.setAppSystemId(appSystemId);
+        deployAppConfigEnvAttrVo.setAppModuleId(appModuleId);
+        deployAppConfigEnvAttrVo.setEnvId(fromEnvId);
+        List<DeployAppEnvAutoConfigKeyValueVo> appEnvAttrList = deployAppConfigMapper.getAppEnvAttrList(deployAppConfigEnvAttrVo);
+        deployAppConfigEnvAttrVo.setKeyValueList(appEnvAttrList);
+        for (Long envId : toEnvIdList) {
+            deployAppConfigEnvAttrVo.setEnvId(envId);
+            deployAppConfigMapper.insertAppConfigEnvAttr(deployAppConfigEnvAttrVo);
+        }
         return null;
     }
 
