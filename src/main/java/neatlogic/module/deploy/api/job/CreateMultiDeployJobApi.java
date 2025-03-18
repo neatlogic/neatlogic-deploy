@@ -168,7 +168,7 @@ public class CreateMultiDeployJobApi extends PrivateApiComponentBase {
         //改为系统虚拟用户
         HttpServletRequest request = UserContext.get().getRequest();
         HttpServletResponse response = UserContext.get().getResponse();
-        UserContext.init(SystemUser.AUTOEXEC);
+        UserContext.init(SystemUser.AUTOEXEC, request, response);
         UserContext.get().setToken("GZIP_" + LoginAuthHandlerBase.buildJwt(SystemUser.AUTOEXEC.getUserVo()).getCc());
         String requestURI = request.getRequestURI();
         String url = proxyToUrl + requestURI;
