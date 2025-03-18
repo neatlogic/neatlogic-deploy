@@ -217,7 +217,7 @@ public class DownloadDeployAppBuildApi extends PrivateBinaryStreamApiComponentBa
 //        UserContext.init(credentialUser, authenticationInfo, "+8:00", request, response);
 //        UserContext.get().setToken("GZIP_" + LoginAuthHandlerBase.buildJwt(credentialUser).getCc());
         //改为系统虚拟用户
-        UserContext.init(SystemUser.AUTOEXEC);
+        UserContext.init(SystemUser.AUTOEXEC, request, response);
         UserContext.get().setToken("GZIP_" + LoginAuthHandlerBase.buildJwt(SystemUser.AUTOEXEC.getUserVo()).getCc());
         String requestURI = request.getRequestURI();
         jsonObj.put("isCurrentEnvRunner", 1);
