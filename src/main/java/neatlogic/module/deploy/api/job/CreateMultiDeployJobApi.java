@@ -20,6 +20,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.asynchronization.threadlocal.UserContext;
 import neatlogic.framework.auth.core.AuthAction;
+import neatlogic.framework.autoexec.constvalue.SystemUser;
 import neatlogic.framework.batch.BatchRunner;
 import neatlogic.framework.cmdb.crossover.IAppSystemMapper;
 import neatlogic.framework.cmdb.crossover.ICiEntityCrossoverMapper;
@@ -28,14 +29,10 @@ import neatlogic.framework.cmdb.exception.cientity.CiEntityNotFoundException;
 import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.common.constvalue.ResponseCode;
 import neatlogic.framework.crossover.CrossoverServiceFactory;
-import neatlogic.framework.dao.mapper.UserMapper;
 import neatlogic.framework.deploy.auth.DEPLOY_BASE;
 import neatlogic.framework.deploy.constvalue.JobSource;
 import neatlogic.framework.deploy.dto.job.DeployJobModuleVo;
 import neatlogic.framework.deploy.dto.job.DeployJobVo;
-import neatlogic.framework.deploy.exception.DeployVersionRedirectUrlCredentialUserNotFoundException;
-import neatlogic.framework.dto.AuthenticationInfoVo;
-import neatlogic.framework.dto.UserVo;
 import neatlogic.framework.exception.core.ApiRuntimeException;
 import neatlogic.framework.exception.type.ParamIrregularException;
 import neatlogic.framework.filter.core.LoginAuthHandlerBase;
@@ -43,9 +40,7 @@ import neatlogic.framework.integration.authentication.enums.AuthenticateType;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
-import neatlogic.framework.service.AuthenticationInfoService;
 import neatlogic.framework.util.HttpRequestUtil;
-import neatlogic.module.deploy.dao.mapper.DeployVersionMapper;
 import neatlogic.module.deploy.service.DeployJobService;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -68,14 +63,9 @@ import javax.servlet.http.HttpServletResponse;
 @OperationType(type = OperationTypeEnum.CREATE)
 public class CreateMultiDeployJobApi extends PrivateApiComponentBase {
     static Logger logger = LoggerFactory.getLogger(CreateMultiDeployJobApi.class);
-    @Resource
-    DeployVersionMapper deployVersionMapper;
-    @Resource
-    UserMapper userMapper;
+
     @Resource
     private DeployJobService deployJobService;
-    @Resource
-    AuthenticationInfoService authenticationInfoService;
 
     @Override
     public String getName() {
@@ -113,7 +103,7 @@ public class CreateMultiDeployJobApi extends PrivateApiComponentBase {
             proxyToUrl(jsonObj);
         }
         JSONArray result = new JSONArray();
-        DeployJobVo deployJobParam = JSONObject.toJavaObject(jsonObj, DeployJobVo.class);
+        DeployJobVo deployJobParam = JSON.toJavaObject(jsonObj, DeployJobVo.class);
         ICiEntityCrossoverMapper iCiEntityCrossoverMapper = CrossoverServiceFactory.getApi(ICiEntityCrossoverMapper.class);
         IAppSystemMapper iAppSystemMapper = CrossoverServiceFactory.getApi(IAppSystemMapper.class);
         if (StringUtils.isNotBlank(deployJobParam.getAppSystemAbbrName())) {
@@ -170,16 +160,16 @@ public class CreateMultiDeployJobApi extends PrivateApiComponentBase {
 
     private void proxyToUrl(JSONObject jsonObj) throws Exception {
         String proxyToUrl = jsonObj.getString("proxyToUrl");
-        String credentialUserUuid = deployVersionMapper.getDeployVersionAppbuildCredentialByProxyToUrl(proxyToUrl);
-        UserVo credentialUser = userMapper.getUserByUuid(credentialUserUuid);
-        if (credentialUser == null) {
-            throw new DeployVersionRedirectUrlCredentialUserNotFoundException(credentialUserUuid);
-        }
-        AuthenticationInfoVo authenticationInfo = authenticationInfoService.getAuthenticationInfo(credentialUserUuid);
+//        String credentialUserUuid = deployVersionMapper.getDeployVersionAppbuildCredentialByProxyToUrl(proxyToUrl);
+//        UserVo credentialUser = userMapper.getUserByUuid(credentialUserUuid);
+//        if (credentialUser == null) {
+//            throw new DeployVersionRedirectUrlCredentialUserNotFoundException(credentialUserUuid);
+//        }
+        //改为系统虚拟用户
         HttpServletRequest request = UserContext.get().getRequest();
         HttpServletResponse response = UserContext.get().getResponse();
-        UserContext.init(credentialUser, authenticationInfo, "+8:00", request, response);
-        UserContext.get().setToken("GZIP_" + LoginAuthHandlerBase.buildJwt(credentialUser).getCc());
+        UserContext.init(SystemUser.AUTOEXEC);
+        UserContext.get().setToken("GZIP_" + LoginAuthHandlerBase.buildJwt(SystemUser.AUTOEXEC.getUserVo()).getCc());
         String requestURI = request.getRequestURI();
         String url = proxyToUrl + requestURI;
         HttpRequestUtil httpRequestUtil = null;
@@ -192,7 +182,7 @@ public class CreateMultiDeployJobApi extends PrivateApiComponentBase {
             String error = httpRequestUtil.getError();
             if (StringUtils.isNotBlank(error)) {
                 if (responseCode == ResponseCode.API_RUNTIME.getCode()) {
-                    throw new ApiRuntimeException(JSONObject.parseObject(error).getString("Message"));
+                    throw new ApiRuntimeException(JSON.parseObject(error).getString("Message"));
                 } else {
                     throw new ApiRuntimeException(error);
                 }

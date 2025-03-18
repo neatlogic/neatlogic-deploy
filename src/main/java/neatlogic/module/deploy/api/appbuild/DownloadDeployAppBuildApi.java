@@ -19,25 +19,22 @@ import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.asynchronization.threadlocal.TenantContext;
 import neatlogic.framework.asynchronization.threadlocal.UserContext;
 import neatlogic.framework.auth.core.AuthAction;
+import neatlogic.framework.autoexec.constvalue.SystemUser;
 import neatlogic.framework.cmdb.crossover.IResourceCrossoverMapper;
 import neatlogic.framework.cmdb.dto.resourcecenter.ResourceVo;
 import neatlogic.framework.cmdb.exception.resourcecenter.AppEnvNotFoundException;
 import neatlogic.framework.cmdb.exception.resourcecenter.AppModuleNotFoundException;
 import neatlogic.framework.cmdb.exception.resourcecenter.AppSystemNotFoundException;
 import neatlogic.framework.common.constvalue.ApiParamType;
-import neatlogic.framework.common.constvalue.ResponseCode;
 import neatlogic.framework.crossover.CrossoverServiceFactory;
-import neatlogic.framework.dao.mapper.UserMapper;
 import neatlogic.framework.dao.mapper.runner.RunnerMapper;
-import neatlogic.framework.deploy.auth.DEPLOY_BASE;
+import neatlogic.framework.deploy.auth.DEPLOY_MODIFY;
 import neatlogic.framework.deploy.constvalue.BuildNoStatus;
 import neatlogic.framework.deploy.constvalue.JobSourceType;
 import neatlogic.framework.deploy.dto.version.DeployVersionBuildNoVo;
 import neatlogic.framework.deploy.dto.version.DeployVersionEnvVo;
 import neatlogic.framework.deploy.dto.version.DeployVersionVo;
 import neatlogic.framework.deploy.exception.*;
-import neatlogic.framework.dto.AuthenticationInfoVo;
-import neatlogic.framework.dto.UserVo;
 import neatlogic.framework.dto.runner.RunnerGroupVo;
 import neatlogic.framework.dto.runner.RunnerMapVo;
 import neatlogic.framework.exception.core.ApiRuntimeException;
@@ -50,7 +47,6 @@ import neatlogic.framework.integration.authentication.enums.AuthenticateType;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateBinaryStreamApiComponentBase;
-import neatlogic.framework.service.AuthenticationInfoService;
 import neatlogic.framework.store.mysql.DatasourceManager;
 import neatlogic.framework.store.mysql.NeatLogicBasicDataSource;
 import neatlogic.framework.util.HttpRequestUtil;
@@ -66,12 +62,13 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
 @Service
-@AuthAction(action = DEPLOY_BASE.class)
+@AuthAction(action = DEPLOY_MODIFY.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
 public class DownloadDeployAppBuildApi extends PrivateBinaryStreamApiComponentBase {
     static Logger logger = LoggerFactory.getLogger(DownloadDeployAppBuildApi.class);
@@ -81,10 +78,6 @@ public class DownloadDeployAppBuildApi extends PrivateBinaryStreamApiComponentBa
     DeployAppConfigMapper deployAppConfigMapper;
     @Resource
     DeployVersionMapper deployVersionMapper;
-    @Resource
-    UserMapper userMapper;
-    @Resource
-    AuthenticationInfoService authenticationInfoService;
 
     @Override
     public String getName() {
@@ -215,14 +208,17 @@ public class DownloadDeployAppBuildApi extends PrivateBinaryStreamApiComponentBa
      */
     private void downloadFromOtherEnv(JSONObject jsonObj, HttpServletRequest request, HttpServletResponse response) throws Exception {
         String proxyToUrl = jsonObj.getString("proxyToUrl");
-        String credentialUserUuid = deployVersionMapper.getDeployVersionAppbuildCredentialByProxyToUrl(proxyToUrl);
-        UserVo credentialUser = userMapper.getUserByUuid(credentialUserUuid);
-        if (credentialUser == null) {
-            throw new DeployVersionRedirectUrlCredentialUserNotFoundException(credentialUserUuid);
-        }
-        AuthenticationInfoVo authenticationInfo = authenticationInfoService.getAuthenticationInfo(credentialUserUuid);
-        UserContext.init(credentialUser, authenticationInfo, "+8:00", request, response);
-        UserContext.get().setToken("GZIP_" + LoginAuthHandlerBase.buildJwt(credentialUser).getCc());
+//        String credentialUserUuid = deployVersionMapper.getDeployVersionAppbuildCredentialByProxyToUrl(proxyToUrl);
+//        UserVo credentialUser = userMapper.getUserByUuid(credentialUserUuid);
+//        if (credentialUser == null) {
+//            throw new DeployVersionRedirectUrlCredentialUserNotFoundException(credentialUserUuid);
+//        }
+//        AuthenticationInfoVo authenticationInfo = authenticationInfoService.getAuthenticationInfo(credentialUserUuid);
+//        UserContext.init(credentialUser, authenticationInfo, "+8:00", request, response);
+//        UserContext.get().setToken("GZIP_" + LoginAuthHandlerBase.buildJwt(credentialUser).getCc());
+        //改为系统虚拟用户
+        UserContext.init(SystemUser.AUTOEXEC);
+        UserContext.get().setToken("GZIP_" + LoginAuthHandlerBase.buildJwt(SystemUser.AUTOEXEC.getUserVo()).getCc());
         String requestURI = request.getRequestURI();
         jsonObj.put("isCurrentEnvRunner", 1);
         jsonObj.put("runnerId", -1);
@@ -231,26 +227,18 @@ public class DownloadDeployAppBuildApi extends PrivateBinaryStreamApiComponentBa
         String tenantUuid = TenantContext.get().getTenantUuid();
         NeatLogicBasicDataSource tenantDbSource = DatasourceManager.getDatasource(tenantUuid);
         jsonObj.put("proxyTenantJdbcUrl", tenantDbSource.getJdbcUrl());
-        HttpRequestUtil httpRequestUtil = null;
+        HttpRequestUtil httpRequestUtil = HttpRequestUtil.download(url, "POST", response.getOutputStream());
         try {
-            httpRequestUtil = HttpRequestUtil.download(url, "POST", response.getOutputStream())
-                    .setPayload(jsonObj.toJSONString()).setAuthType(AuthenticateType.BUILDIN)
+            httpRequestUtil.setPayload(jsonObj.toJSONString()).setAuthType(AuthenticateType.BUILDIN)
                     .addHeader("User-Agent", request.getHeader("User-Agent"))
                     .setResponseHeaders(Arrays.asList("Build-No", "Build-Status", "Build-Env-Status", "isMirror", "Build-Local"))
                     .sendRequest();
         } catch (Exception ex) {
             logger.error(ex.getMessage(), ex);
         }
-        if (httpRequestUtil != null) {
-            int responseCode = httpRequestUtil.getResponseCode();
-            String error = httpRequestUtil.getError();
-            if (StringUtils.isNotBlank(error)) {
-                if (responseCode == ResponseCode.API_RUNTIME.getCode()) {
-                    throw new DownloadFileFailedException(JSONObject.parseObject(error).getString("Message"));
-                } else {
-                    throw new DownloadFileFailedException(error);
-                }
-            }
+        String errorMsg = httpRequestUtil.getErrorMsg();
+        if (StringUtils.isNotBlank(errorMsg)) {
+            throw new DownloadFileFailedException(errorMsg);
         }
     }
 
@@ -261,7 +249,7 @@ public class DownloadDeployAppBuildApi extends PrivateBinaryStreamApiComponentBa
      * @param request  请求
      * @param response 相应
      */
-    private void downloadFromCurrentEnv(JSONObject jsonObj, HttpServletRequest request, HttpServletResponse response) {
+    private void downloadFromCurrentEnv(JSONObject jsonObj, HttpServletRequest request, HttpServletResponse response) throws IOException {
         //获取对应的sysId、moduleId
         IResourceCrossoverMapper resourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
         ResourceVo appSystem = resourceCrossoverMapper.getAppSystemByName(jsonObj.getString("sysName"));
@@ -308,11 +296,10 @@ public class DownloadDeployAppBuildApi extends PrivateBinaryStreamApiComponentBa
         if (lockId == null) {
             throw new ApiRuntimeException(lock.getString("message"));
         }
-        HttpRequestUtil httpRequestUtil = null;
         String url = String.format("%s/api/binary/deploy/appbuild/download", runnerUrl);
+        HttpRequestUtil httpRequestUtil  = HttpRequestUtil.download(url, "POST", response.getOutputStream());
         try {
-            httpRequestUtil = HttpRequestUtil.download(url, "POST", response.getOutputStream())
-                    .setPayload(jsonObj.toJSONString()).setAuthType(AuthenticateType.BUILDIN)
+            httpRequestUtil.setPayload(jsonObj.toJSONString()).setAuthType(AuthenticateType.BUILDIN)
                     .addHeader("User-Agent", request.getHeader("User-Agent")).sendRequest();
         } catch (Exception ex) {
             logger.error(ex.getMessage(), ex);
@@ -320,16 +307,9 @@ public class DownloadDeployAppBuildApi extends PrivateBinaryStreamApiComponentBa
             // 释放锁
             handler.unLock(lockId, null);
         }
-        if (httpRequestUtil != null) {
-            int responseCode = httpRequestUtil.getResponseCode();
-            String error = httpRequestUtil.getError();
-            if (StringUtils.isNotBlank(error)) {
-                if (responseCode == ResponseCode.API_RUNTIME.getCode()) {
-                    throw new DownloadFileFailedException(JSONObject.parseObject(error).getString("Message"));
-                } else {
-                    throw new DownloadFileFailedException(error);
-                }
-            }
+        String errorMsg = httpRequestUtil.getErrorMsg();
+        if (StringUtils.isNotBlank(errorMsg)) {
+            throw new DownloadFileFailedException(errorMsg);
         }
     }
 

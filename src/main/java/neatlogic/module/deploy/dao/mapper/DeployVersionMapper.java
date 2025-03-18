@@ -59,6 +59,7 @@ public interface DeployVersionMapper {
 
     DeployVersionDependencyVo getDeployVersionDependencyByVersionIdAndPackageId(@Param("versionId") Long versionId, @Param("packageId") Long packageId);
 
+    @Deprecated
     String getDeployVersionAppbuildCredentialByProxyToUrl(String redirectUrl);
 
     List<DeployVersionEnvInstanceVo> getDeployedInstanceByVersionIdAndEnvId(@Param("versionId") Long versionId, @Param("envId") Long envId);

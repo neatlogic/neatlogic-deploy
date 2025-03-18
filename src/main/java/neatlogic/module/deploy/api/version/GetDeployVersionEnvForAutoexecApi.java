@@ -1,7 +1,9 @@
 package neatlogic.module.deploy.api.version;
 
+import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.asynchronization.threadlocal.UserContext;
 import neatlogic.framework.auth.core.AuthAction;
+import neatlogic.framework.autoexec.constvalue.SystemUser;
 import neatlogic.framework.cmdb.crossover.IResourceCrossoverMapper;
 import neatlogic.framework.cmdb.dto.resourcecenter.ResourceVo;
 import neatlogic.framework.cmdb.exception.resourcecenter.AppEnvNotFoundException;
@@ -10,15 +12,11 @@ import neatlogic.framework.cmdb.exception.resourcecenter.AppSystemNotFoundExcept
 import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.common.constvalue.ResponseCode;
 import neatlogic.framework.crossover.CrossoverServiceFactory;
-import neatlogic.framework.dao.mapper.UserMapper;
 import neatlogic.framework.deploy.auth.DEPLOY_MODIFY;
 import neatlogic.framework.deploy.dto.version.DeployVersionEnvVo;
 import neatlogic.framework.deploy.dto.version.DeployVersionVo;
 import neatlogic.framework.deploy.exception.DeployVersionEnvNotFoundException;
 import neatlogic.framework.deploy.exception.DeployVersionNotFoundException;
-import neatlogic.framework.deploy.exception.DeployVersionRedirectUrlCredentialUserNotFoundException;
-import neatlogic.framework.dto.AuthenticationInfoVo;
-import neatlogic.framework.dto.UserVo;
 import neatlogic.framework.exception.core.ApiRuntimeException;
 import neatlogic.framework.filter.core.LoginAuthHandlerBase;
 import neatlogic.framework.integration.authentication.enums.AuthenticateType;
@@ -28,11 +26,9 @@ import neatlogic.framework.restful.annotation.OperationType;
 import neatlogic.framework.restful.annotation.Param;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
-import neatlogic.framework.service.AuthenticationInfoService;
 import neatlogic.framework.util.HttpRequestUtil;
 import neatlogic.framework.util.RegexUtils;
 import neatlogic.module.deploy.dao.mapper.DeployVersionMapper;
-import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
@@ -45,12 +41,6 @@ public class GetDeployVersionEnvForAutoexecApi extends PrivateApiComponentBase {
 
     @Resource
     DeployVersionMapper deployVersionMapper;
-
-    @Resource
-    UserMapper userMapper;
-
-    @Resource
-    AuthenticationInfoService authenticationInfoService;
 
     @Override
     public String getName() {
@@ -116,15 +106,16 @@ public class GetDeployVersionEnvForAutoexecApi extends PrivateApiComponentBase {
             result.put("isMirror", versionEnvVo.getIsMirror());
             result.put("status", versionEnvVo.getStatus());
         } else {
-            String credentialUserUuid = deployVersionMapper.getDeployVersionAppbuildCredentialByProxyToUrl(proxyToUrl);
-            UserVo credentialUser = userMapper.getUserByUuid(credentialUserUuid);
-            if (credentialUser == null) {
-                throw new DeployVersionRedirectUrlCredentialUserNotFoundException(credentialUserUuid);
-            }
-            AuthenticationInfoVo authenticationInfo = authenticationInfoService.getAuthenticationInfo(credentialUserUuid);
+//            String credentialUserUuid = deployVersionMapper.getDeployVersionAppbuildCredentialByProxyToUrl(proxyToUrl);
+//            UserVo credentialUser = userMapper.getUserByUuid(credentialUserUuid);
+//            if (credentialUser == null) {
+//                throw new DeployVersionRedirectUrlCredentialUserNotFoundException(credentialUserUuid);
+//            }
+//            AuthenticationInfoVo authenticationInfo = authenticationInfoService.getAuthenticationInfo(credentialUserUuid);
+            //改为系统虚拟用户
             String url = proxyToUrl + UserContext.get().getRequest().getRequestURI();
-            UserContext.init(credentialUser, authenticationInfo, "+8:00");
-            UserContext.get().setToken("GZIP_" + LoginAuthHandlerBase.buildJwt(credentialUser).getCc());
+            UserContext.init(SystemUser.AUTOEXEC);
+            UserContext.get().setToken("GZIP_" + LoginAuthHandlerBase.buildJwt(SystemUser.AUTOEXEC.getUserVo()).getCc());
             //到别的环境去验证
             paramObj.remove("proxyToUrl");
             HttpRequestUtil httpRequestUtil = HttpRequestUtil.post(url)
