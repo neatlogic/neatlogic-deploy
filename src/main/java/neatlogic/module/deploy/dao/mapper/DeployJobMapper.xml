@@ -99,6 +99,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
     <sql id="searchJobSql">
         left join autoexec_job ajj on ajj.parent_id = aj.id
         LEFT JOIN deploy_job dj ON dj.id = aj.id
+        LEFT JOIN deploy_job djj ON djj.id = ajj.id
         <if test="(typeIdList != null and typeIdList.size() > 0) or (combopName != null and combopName != '' )">
             LEFT JOIN `autoexec_combop` ac ON aj.`operation_id` = ac.`id`
         </if>
@@ -222,7 +223,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                 and dj.`app_module_id` = #{appModuleId}
             </if>
             <if test="envId != null">
-                and dj.`env_id` = #{envId}
+                and (dj.`env_id` = #{envId} or djj.`env_id` = #{envId})
             </if>
             <include refid="neatlogic.module.deploy.dao.mapper.DeployAppConfigMapper.checkDeployAuthority"/>
         </where>
