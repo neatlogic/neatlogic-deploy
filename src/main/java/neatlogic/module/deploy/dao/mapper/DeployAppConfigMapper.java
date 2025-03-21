@@ -178,7 +178,7 @@ public interface DeployAppConfigMapper extends IDeployAppConfigCrossoverMapper {
 
     int checkDeployAppConfigEnvDBSchemaIsRepeat(DeployAppConfigEnvDBConfigVo configVo);
 
-    int getAppModuleCountBySystemIdAndEnvId(@Param("appSystemId") Long appSystemId, @Param("envId") Long envId);
+//    int getAppModuleCountBySystemIdAndEnvId(@Param("appSystemId") Long appSystemId, @Param("envId") Long envId);
 
     /**
      * 查询发布应用配置DB库下的无模块无环境、无模块同环境、同模块无环境、同模块同环境且发布没配置的数据库的数量
@@ -198,11 +198,11 @@ public interface DeployAppConfigMapper extends IDeployAppConfigCrossoverMapper {
 
     List<Long> getHasEnvAppSystemIdListByAppSystemIdList(List<Long> idList);
 
-    List<Long> getDeployAppEnvIdListByAppSystemId(Long appSystemId);
+//    List<Long> getDeployAppEnvIdListByAppSystemId(Long appSystemId);
 
     List<Long> getDeployAppHasAuthorityAppSystemIdListByAppSystemIdList(@Param("appSystemIdSet") Set<Long> appSystemIdSet);
 
-    List<DeployAppModuleVo> getAppModuleListBySystemIdAndEnvId(@Param("appSystemId") Long appSystemId, @Param("envId") Long envId);
+//    List<DeployAppModuleVo> getAppModuleListBySystemIdAndEnvId(@Param("appSystemId") Long appSystemId, @Param("envId") Long envId);
 
     List<DeployAppModuleVo> getDeployHasNotConfigAppModuleListByAppSystemIdAndAppModuleId(@Param("appSystemId") Long appSystemId, @Param("appModuleId") Long appModuleId);
 
