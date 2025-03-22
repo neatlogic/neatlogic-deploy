@@ -1,11 +1,9 @@
 package neatlogic.module.deploy.api.version;
 
-import neatlogic.framework.asynchronization.threadlocal.TenantContext;
+import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
-import neatlogic.framework.cmdb.crossover.IResourceCrossoverMapper;
 import neatlogic.framework.cmdb.dto.resourcecenter.ResourceVo;
 import neatlogic.framework.common.constvalue.ApiParamType;
-import neatlogic.framework.crossover.CrossoverServiceFactory;
 import neatlogic.framework.deploy.auth.DEPLOY_BASE;
 import neatlogic.framework.deploy.dto.version.DeployVersionEnvInstanceVo;
 import neatlogic.framework.deploy.dto.version.DeployVersionVo;
@@ -13,8 +11,8 @@ import neatlogic.framework.deploy.exception.DeployVersionNotFoundException;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
+import neatlogic.module.deploy.dao.mapper.DeployResourceMapper;
 import neatlogic.module.deploy.dao.mapper.DeployVersionMapper;
-import com.alibaba.fastjson.JSONObject;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -30,6 +28,9 @@ public class SearchDeployVersionInstanceApi extends PrivateApiComponentBase {
 
     @Resource
     DeployVersionMapper deployVersionMapper;
+
+    @Resource
+    private DeployResourceMapper deployResourceMapper;
 
     @Override
     public String getName() {
@@ -65,11 +66,10 @@ public class SearchDeployVersionInstanceApi extends PrivateApiComponentBase {
             throw new DeployVersionNotFoundException(versionId);
         }
         List<DeployVersionEnvInstanceVo> result = new ArrayList<>();
-        IResourceCrossoverMapper resourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
-        List<Long> instanceIdList = resourceCrossoverMapper.getAppInstanceResourceIdListByAppSystemIdAndModuleIdAndEnvId(new ResourceVo(versionVo.getAppSystemId(), versionVo.getAppModuleId(), envId));
+        List<Long> instanceIdList = deployResourceMapper.getAppInstanceResourceIdListByAppSystemIdAndModuleIdAndEnvId(new ResourceVo(versionVo.getAppSystemId(), versionVo.getAppModuleId(), envId));
         if (instanceIdList.size() > 0) {
             List<DeployVersionEnvInstanceVo> deployedInstanceList = deployVersionMapper.getDeployedInstanceByVersionIdAndEnvId(versionId, envId);
-            List<ResourceVo> instanceList = resourceCrossoverMapper.getAppInstanceResourceListByIdListAndKeyword(instanceIdList, keyword);
+            List<ResourceVo> instanceList = deployResourceMapper.getAppInstanceResourceListByIdListAndKeyword(instanceIdList, keyword);
             for (ResourceVo ins : instanceList) {
                 DeployVersionEnvInstanceVo vo = new DeployVersionEnvInstanceVo(ins.getId(), ins.getName(), ins.getIp());
                 Optional<DeployVersionEnvInstanceVo> first = deployedInstanceList.stream().filter(o -> Objects.equals(o.getResourceId(), ins.getId())).findFirst();

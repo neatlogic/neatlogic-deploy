@@ -36,6 +36,7 @@ import neatlogic.framework.restful.annotation.Param;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.module.deploy.dao.mapper.DeployAppConfigMapper;
+import neatlogic.module.deploy.dao.mapper.DeployResourceMapper;
 import neatlogic.module.deploy.util.DeployPipelineConfigManager;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
@@ -55,6 +56,9 @@ public class ListDeployJobModuleApi extends PrivateApiComponentBase {
 
     @Resource
     private DeployAppConfigMapper deployAppConfigMapper;
+
+    @Resource
+    private DeployResourceMapper deployResourceMapper;
 
     @Override
     public String getName() {
@@ -89,7 +93,7 @@ public class ListDeployJobModuleApi extends PrivateApiComponentBase {
         List<ResourceVo> moduleResourceList = new ArrayList<>();
         IResourceCrossoverMapper resourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
         List<Long> moduleIdSet = new ArrayList<>();
-        List<Long> moduleIdList = resourceCrossoverMapper.getAppSystemModuleIdListByAppSystemIdAndAppModuleIdListAndEnvId(paramObj.getLong("appSystemId"),paramObj.getLong("envId"), paramObj.getJSONArray("appModuleIdList"));
+        List<Long> moduleIdList = deployResourceMapper.getAppSystemModuleIdListByAppSystemIdAndAppModuleIdListAndEnvId(paramObj.getLong("appSystemId"),paramObj.getLong("envId"), paramObj.getJSONArray("appModuleIdList"));
         moduleIdSet.addAll(moduleIdList);
         moduleIdList = deployAppConfigMapper.getAppModuleIdListByAppSystemIdAndEnvId(paramObj.getLong("appSystemId"),paramObj.getLong("envId"));
         moduleIdSet.addAll(moduleIdList);
