@@ -51,6 +51,8 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * @author lvzk
@@ -125,6 +127,7 @@ public class CreateMultiDeployJobApi extends PrivateApiComponentBase {
             throw new ParamIrregularException("appSystemId | appSystemName");
         }
         Long invokeId = deployJobParam.getAppSystemId();
+        Queue<JSONObject> queue = new ConcurrentLinkedQueue<>();
         BatchRunner<DeployJobModuleVo> runner = new BatchRunner<>();
         runner.execute(deployJobParam.getModuleList(), 3, (threadIndex, dataIndex, module) -> {
             if (module != null) {
@@ -135,9 +138,9 @@ public class CreateMultiDeployJobApi extends PrivateApiComponentBase {
                 deployJob.setRouteId(invokeId.toString());
                 try {
                     if (jsonObj.containsKey("triggerType")) {
-                        result.add(deployJobService.createJobAndSchedule(deployJob, module));
+                        queue.add(deployJobService.createJobAndSchedule(deployJob, module));
                     } else {
-                        result.add(deployJobService.createJobAndFire(deployJob, module));
+                        queue.add(deployJobService.createJobAndFire(deployJob, module));
                     }
                 } catch (Exception ex) {
                     logger.error(ex.getMessage(), ex);
@@ -145,11 +148,12 @@ public class CreateMultiDeployJobApi extends PrivateApiComponentBase {
                     resultJson.put("appSystemName", jsonObj.getString("appSystemName"));
                     resultJson.put("appModuleName", jsonObj.getString("appModuleName"));
                     resultJson.put("errorMsg", ex.getMessage());
-                    result.add(resultJson);
+                    queue.add(resultJson);
                 }
 
             }
         }, "DEPLOY-JOB-MULTI-CREATE");
+        result.addAll(queue);
         return result;
     }
 
