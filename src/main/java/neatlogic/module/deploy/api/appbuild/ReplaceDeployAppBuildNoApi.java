@@ -19,21 +19,30 @@ package neatlogic.module.deploy.api.appbuild;
 
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.common.constvalue.ApiParamType;
+import neatlogic.framework.deploy.constvalue.BuildNoStatus;
 import neatlogic.framework.deploy.dto.job.DeployJobVo;
+import neatlogic.framework.deploy.dto.version.DeployVersionBuildNoVo;
+import neatlogic.framework.deploy.dto.version.DeployVersionVo;
 import neatlogic.framework.deploy.exception.DeployJobNotFoundException;
+import neatlogic.framework.deploy.exception.DeployVersionNotFoundException;
 import neatlogic.framework.restful.annotation.Description;
 import neatlogic.framework.restful.annotation.Input;
 import neatlogic.framework.restful.annotation.Param;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.module.deploy.dao.mapper.DeployJobMapper;
+import neatlogic.module.deploy.dao.mapper.DeployVersionMapper;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 
+@Transactional
 @Component
 public class ReplaceDeployAppBuildNoApi extends PrivateApiComponentBase {
     @Resource
     DeployJobMapper deployJobMapper;
+    @Resource
+    DeployVersionMapper deployVersionMapper;
 
     @Override
     public String getToken() {
@@ -60,6 +69,11 @@ public class ReplaceDeployAppBuildNoApi extends PrivateApiComponentBase {
             throw new DeployJobNotFoundException(jobId);
         }
         deployJobMapper.updateDeployJobBuildNoById(jobId, newBuildNo.toString());
+        DeployVersionVo deployVersionVo = deployVersionMapper.getDeployVersionBySystemIdAndModuleIdAndVersion(jobVo.getAppSystemId(), jobVo.getAppModuleId(), jobVo.getVersion());
+        if (deployVersionVo == null) {
+            throw new DeployVersionNotFoundException(jobVo.getAppSystemId().toString(), jobVo.getAppModuleId().toString(), jobVo.getVersion());
+        }
+        deployVersionMapper.insertDeployVersionBuildNo(new DeployVersionBuildNoVo(deployVersionVo.getId(), newBuildNo, jobId, BuildNoStatus.PENDING.getValue()));
         return null;
     }
 }
