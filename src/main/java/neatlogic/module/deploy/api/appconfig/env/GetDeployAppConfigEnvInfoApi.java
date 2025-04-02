@@ -20,7 +20,6 @@ import com.alibaba.fastjson.JSONObject;
 import com.alibaba.nacos.common.utils.CollectionUtils;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.cmdb.crossover.ICiEntityCrossoverMapper;
-import neatlogic.framework.cmdb.crossover.IResourceCrossoverMapper;
 import neatlogic.framework.cmdb.dto.cientity.CiEntityVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.ResourceVo;
 import neatlogic.framework.common.constvalue.ApiParamType;
@@ -36,6 +35,7 @@ import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.module.deploy.dao.mapper.DeployAppConfigMapper;
 import neatlogic.module.deploy.dao.mapper.DeployInstanceVersionMapper;
+import neatlogic.module.deploy.dao.mapper.DeployResourceMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -60,6 +60,9 @@ public class GetDeployAppConfigEnvInfoApi extends PrivateApiComponentBase {
 
     @Resource
     DeployInstanceVersionMapper deployInstanceVersionMapper;
+
+    @Resource
+    private DeployResourceMapper deployResourceMapper;
 
     @Override
     public String getToken() {
@@ -94,14 +97,13 @@ public class GetDeployAppConfigEnvInfoApi extends PrivateApiComponentBase {
         //获取环境 autoConfig
         List<DeployAppEnvAutoConfigKeyValueVo> envAutoConfigList = deployAppConfigMapper.getAppEnvAutoConfigKeyValueList(envAutoConfigVo);
         envInfo.put("envAutoConfigList", envAutoConfigList);
-        IResourceCrossoverMapper resourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
         //获取应用实例下的实例列表
-        List<Long> instanceIdList = resourceCrossoverMapper.getAppInstanceResourceIdListByAppSystemIdAndModuleIdAndEnvId(paramObj.toJavaObject(ResourceVo.class));
+        List<Long> instanceIdList = deployResourceMapper.getAppInstanceResourceIdListByAppSystemIdAndModuleIdAndEnvId(paramObj.toJavaObject(ResourceVo.class));
 
         //获取实例autoConfig
         if (CollectionUtils.isNotEmpty(instanceIdList)) {
 
-            List<ResourceVo> instanceList = resourceCrossoverMapper.getAppInstanceResourceListByIdList(instanceIdList);
+            List<ResourceVo> instanceList = deployResourceMapper.getAppInstanceResourceListByIdList(instanceIdList);
             // 补充实例当前版本信息
             List<DeployInstanceVersionVo> instanceVersionVoList = deployInstanceVersionMapper.getDeployInstanceVersionByEnvIdAndInstanceIdList(envAutoConfigVo.getAppSystemId(), envAutoConfigVo.getAppModuleId(), envAutoConfigVo.getEnvId(), instanceIdList);
             if (CollectionUtils.isNotEmpty(instanceVersionVoList)) {

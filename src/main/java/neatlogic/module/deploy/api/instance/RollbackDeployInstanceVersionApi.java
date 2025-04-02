@@ -17,7 +17,9 @@ import neatlogic.framework.deploy.exception.DeployInstanceVersionWhichCanRollbac
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
+import neatlogic.module.deploy.dao.mapper.DeployAppConfigMapper;
 import neatlogic.module.deploy.dao.mapper.DeployInstanceVersionMapper;
+import neatlogic.module.deploy.dao.mapper.DeployResourceMapper;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,6 +36,9 @@ public class RollbackDeployInstanceVersionApi extends PrivateApiComponentBase {
 
     @Resource
     DeployInstanceVersionMapper deployInstanceVersionMapper;
+
+    @Resource
+    private DeployResourceMapper deployResourceMapper;
 
     @Override
     public String getName() {
@@ -71,8 +76,7 @@ public class RollbackDeployInstanceVersionApi extends PrivateApiComponentBase {
             throw new AppEnvNotFoundException(envId);
         }
         String envName = env.getName();
-        IResourceCrossoverMapper resourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
-        List<Long> instanceIdList = resourceCrossoverMapper.getAppInstanceResourceIdListByAppSystemIdAndModuleIdAndEnvId(new ResourceVo(sysId, moduleId, envId));
+        List<Long> instanceIdList = deployResourceMapper.getAppInstanceResourceIdListByAppSystemIdAndModuleIdAndEnvId(new ResourceVo(sysId, moduleId, envId));
         if (CollectionUtils.isEmpty(instanceIdList) || !instanceIdList.contains(resourceId)) {
             throw new DeployInstanceInEnvNotFoundException(paramObj.getString("sysName"), paramObj.getString("moduleName"), envName, resourceId);
         }

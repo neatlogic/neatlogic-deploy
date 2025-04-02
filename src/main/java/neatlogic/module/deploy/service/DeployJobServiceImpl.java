@@ -59,6 +59,7 @@ import neatlogic.framework.scheduler.dto.JobObject;
 import neatlogic.framework.scheduler.exception.ScheduleHandlerNotFoundException;
 import neatlogic.module.deploy.dao.mapper.DeployAppConfigMapper;
 import neatlogic.module.deploy.dao.mapper.DeployJobMapper;
+import neatlogic.module.deploy.dao.mapper.DeployResourceMapper;
 import neatlogic.module.deploy.dao.mapper.DeployVersionMapper;
 import neatlogic.module.deploy.schedule.plugin.DeployJobAutoFireJob;
 import org.apache.commons.collections4.CollectionUtils;
@@ -85,6 +86,9 @@ public class DeployJobServiceImpl implements DeployJobService {
 
     @Resource
     private DeployVersionMapper deployVersionMapper;
+
+    @Resource
+    private DeployResourceMapper deployResourceMapper;
 
     @Override
     public List<DeployJobVo> searchDeployJob(DeployJobVo deployJobVo) {
@@ -293,14 +297,14 @@ public class DeployJobServiceImpl implements DeployJobService {
         } else {
             //如果selectNodeList 是empty，则发布全部实例
             ResourceVo resourceVo = new ResourceVo(deployJobParam.getAppSystemId(), deployJobParam.getAppModuleId(), deployJobParam.getEnvId());
-            int count = resourceCrossoverMapper.getAppInstanceResourceIdCountByAppSystemIdAndModuleIdAndEnvId(resourceVo);
+            int count = deployResourceMapper.getAppInstanceResourceIdCountByAppSystemIdAndModuleIdAndEnvId(resourceVo);
             if (count > 0) {
                 int pageCount = PageUtil.getPageCount(count, resourceVo.getPageSize());
                 for (int i = 1; i <= pageCount; i++) {
                     resourceVo.setCurrentPage(i);
-                    List<Long> instanceIdList = resourceCrossoverMapper.getAppInstanceResourceIdListByAppSystemIdAndModuleIdAndEnvId(resourceVo);
+                    List<Long> instanceIdList = deployResourceMapper.getAppInstanceResourceIdListByAppSystemIdAndModuleIdAndEnvId(resourceVo);
                     if (CollectionUtils.isNotEmpty(instanceIdList)) {
-                        List<ResourceVo> instanceList = resourceCrossoverMapper.getAppInstanceResourceListByIdList(instanceIdList);
+                        List<ResourceVo> instanceList = deployResourceMapper.getAppInstanceResourceListByIdList(instanceIdList);
                         for (ResourceVo instance : instanceList) {
                             AutoexecNodeVo autoexecNodeVo = new AutoexecNodeVo(instance);
                             moduleVo.getSelectNodeList().add(autoexecNodeVo);
