@@ -15,6 +15,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 
 package neatlogic.module.deploy.util;
 
+import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.autoexec.constvalue.ToolType;
 import neatlogic.framework.autoexec.crossover.IAutoexecProfileCrossoverService;
 import neatlogic.framework.autoexec.crossover.IAutoexecServiceCrossoverService;
@@ -348,7 +349,7 @@ public class DeployPipelineConfigManager {
             if (Objects.equals(deployAppConfigVo.getAppSystemId(), appSystemId)
                     && Objects.equals(deployAppConfigVo.getAppModuleId(), appModuleId)
                     && Objects.equals(deployAppConfigVo.getEnvId(), envId)) {
-                return deployAppConfigVo.getConfig();
+                return JSONObject.parseObject(deployAppConfigVo.getConfigStr(), DeployPipelineConfigVo.class);
             }
         }
         return null;
@@ -691,7 +692,7 @@ public class DeployPipelineConfigManager {
      */
     private static DeployPipelineConfigVo mergeDeployPipelineConfig(DeployPipelineConfigVo appConfig, DeployPipelineConfigVo moduleOverrideConfig, DeployPipelineConfigVo envOverrideConfig, String targetLevel, boolean isUpdateProfile, List<Long> profileIdList) {
         if (Objects.equals(targetLevel, "应用")) {
-
+            initPipelineAppConfig(appConfig);
         } else if (Objects.equals(targetLevel, "模块")) {
             initPipelineAppConfig(appConfig);
             pipelinePhaseSetSource(appConfig.getCombopPhaseList(), "应用");
