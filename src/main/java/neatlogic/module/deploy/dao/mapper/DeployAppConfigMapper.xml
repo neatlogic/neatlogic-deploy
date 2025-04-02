@@ -1304,27 +1304,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
           and `env_id` = #{envId}
     </select>
 
-    <!--<select id="getAppModuleListBySystemIdAndEnvId"
-            resultType="neatlogic.framework.deploy.dto.app.DeployAppModuleVo" useCache="false">
-        (SELECT sieaa.app_module_id        as id,
-                sieaa.app_module_name      as name,
-                sieaa.app_module_abbr_name as abbrName
-         FROM @{DATA_SCHEMA}.scence_ipobject_env_appmodule_appsystem sieaa
-         WHERE sieaa.app_system_id = #{appSystemId}
-           AND sieaa.env_id = #{envId}
-           AND sieaa.`app_module_id` IS NOT NULL)
-        union
-        (
-            SELECT dace.app_module_id as id,
-                   ra.name,
-                   ra.abbr_name       as abbrName
-            FROM deploy_app_config_env dace
-                     LEFT JOIN @{DATA_SCHEMA}.scence_appmodule ra ON ra.id = dace.app_module_id
-            WHERE dace.app_system_id = #{appSystemId}
-              AND dace.env_id = #{envId}
-        )
-    </select>-->
-
     <select id="getDeployHasNotConfigAppModuleListByAppSystemIdAndAppModuleId"
             resultType="neatlogic.framework.deploy.dto.app.DeployAppModuleVo" useCache="false">
         SELECT saa.app_module_id        AS id,
@@ -1369,24 +1348,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                              and dac.app_module_id = #{appModuleId}
         )
     </select>
-
-    <!--<select id="getAppModuleCountBySystemIdAndEnvId" resultType="java.lang.Integer" useCache="false">
-        select count(a.app_module_id)
-        from ((SELECT sieaa.app_module_id
-               FROM @{DATA_SCHEMA}.scence_ipobject_env_appmodule_appsystem sieaa
-               WHERE sieaa.app_system_id = #{appSystemId}
-                 AND sieaa.env_id = #{envId}
-                 AND sieaa.`app_module_id` IS NOT NULL)
-              union
-              (
-                  SELECT dace.app_module_id
-                  FROM deploy_app_config_env dace
-                           LEFT JOIN @{DATA_SCHEMA}.scence_appmodule ra ON ra.id = dace.app_module_id
-                  WHERE dace.app_system_id = #{appSystemId}
-                    AND dace.env_id = #{envId}
-              )) a
-
-    </select>-->
 
     <select id="getAppEnvAutoConfigBySystemIdAndModuleIdAndEnvId"
             resultMap="appEnvAutoConfigMap" useCache="false">
