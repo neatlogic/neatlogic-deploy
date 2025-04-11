@@ -68,7 +68,7 @@ public class MoveDeployAppPipelinePhaseBelongGroupApi extends PrivateApiComponen
     }
 
     @Input({
-            @Param(name = "appSystemAbbrNameList", type = ApiParamType.LONG, isRequired = true, desc = "应用系统简称列表", help = "isAllAppSystem=0才生效"),
+            @Param(name = "appSystemAbbrNameList", type = ApiParamType.JSONARRAY, isRequired = true, desc = "应用系统简称列表", help = "isAllAppSystem=0才生效"),
             @Param(name = "phaseList", type = ApiParamType.JSONARRAY,  isRequired = true, desc = "阶段列表", help = "[{\"name\":\"阶段名\",\"groupSort\":\"阶段组序号\"}]"),
             @Param(name = "targetPhaseName", type = ApiParamType.STRING, isRequired = true,  desc = "目标阶段名"),
             @Param(name = "targetPhaseGroupSort", type = ApiParamType.STRING,  isRequired = true, desc = "目标阶段组号"),
