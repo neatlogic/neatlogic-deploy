@@ -581,6 +581,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
             <result column="key" property="key"/>
             <result column="type" property="type"/>
             <result column="value" property="value"/>
+            <result column="isEmpty" property="isEmpty"/>
         </collection>
     </resultMap>
 
@@ -592,7 +593,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         daced.db_schema as dbSchema,
         daced.config as configStr,
         daeac.key,
-        daeac.value
+        daeac.value,
+        daeac.type,
+        daeac.is_empty as isEmpty
         FROM @{DATA_SCHEMA}.`scence_appinstance_env_appmodule_appsystem` a
         LEFT JOIN deploy_app_config_env_db daced
         on a.app_system_id = daced.app_system_id and a.app_module_id = daced.app_module_id and a.env_id = daced.env_id
@@ -612,7 +615,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         daced.db_schema as dbSchema,
         daced.config as configStr,
         daeac.key,
-        daeac.value
+        daeac.value,
+        daeac.type,
+        daeac.is_empty as isEmpty
         FROM deploy_app_config_env dace
         LEFT JOIN deploy_app_config_env_db daced
         on dace.app_system_id = daced.app_system_id and dace.app_module_id = daced.app_module_id and dace.env_id =
@@ -729,7 +734,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
             resultType="neatlogic.framework.deploy.dto.app.DeployAppEnvAutoConfigKeyValueVo" useCache="false">
         select `key`,
                `type`,
-               `value`
+               `value`,
+               `is_empty` as isEmpty
         from deploy_app_env_auto_config
         WHERE `app_system_id` = #{appSystemId}
           and `app_module_id` = #{appModuleId}
@@ -837,7 +843,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         daeac.`instance_id` AS instanceId,
         daeac.`key`,
         daeac.`type`,
-        daeac.`value`
+        daeac.`value`,
+        daeac.`is_empty` AS isEmpty
         FROM
         deploy_app_env_auto_config daeac
         WHERE daeac.`app_system_id` = #{appSystemId}
@@ -1357,7 +1364,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                `instance_id`   AS instanceId,
                `key`,
                `type`,
-               `value`
+               `value`,
+               `is_empty`    AS isEmpty
         from `deploy_app_env_auto_config`
         where `app_system_id` = #{systemId}
           and `app_module_id` = #{moduleId}
@@ -1576,12 +1584,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
 
     <insert id="insertAppEnvAutoConfig">
         INSERT INTO deploy_app_env_auto_config
-        (`app_system_id`,`app_module_id`,`env_id`,`instance_id`,`key`,`type`,`value`,`lcd`,`lcu`)
+        (`app_system_id`,`app_module_id`,`env_id`,`instance_id`,`key`,`type`,`value`,`is_empty`,`lcd`,`lcu`)
         VALUES
         <foreach collection="keyValueList" item="keyValue" separator="),(" open="(" close=")">
-            #{appSystemId},#{appModuleId},#{envId},#{instanceId},#{keyValue.key},#{keyValue.type},#{keyValue.value},#{lcd},#{lcu}
+            #{appSystemId},#{appModuleId},#{envId},#{instanceId},#{keyValue.key},#{keyValue.type},#{keyValue.value},#{keyValue.isEmpty},#{lcd},#{lcu}
         </foreach>
-        ON DUPLICATE KEY UPDATE `key` = VALUES(`key`),`type` = VALUES(`type`),`value` = VALUES(`value`),`lcd`= VALUES(`lcd`),`lcu` =
+        ON DUPLICATE KEY UPDATE `key` = VALUES(`key`),`type` = VALUES(`type`),`value` = VALUES(`value`),`is_empty` = VALUES(`is_empty`),`lcd`= VALUES(`lcd`),`lcu` =
         VALUES(`lcu`)
     </insert>
 
@@ -1598,21 +1606,21 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
 
     <insert id="insertAppEnvAutoConfigNew">
         INSERT INTO deploy_app_env_auto_config
-        (`app_system_id`,`app_module_id`,`env_id`,`instance_id`,`key`,`value`,`lcd`,`lcu`)
+        (`app_system_id`,`app_module_id`,`env_id`,`instance_id`,`key`,`value`,`is_empty`,`lcd`,`lcu`)
         VALUES
         <foreach collection="keyValueList" item="keyValue" separator="),(" open="(" close=")">
-            #{appSystemId},#{appModuleId},#{envId},#{instanceId},#{keyValue.key},#{keyValue.value},now(3),#{lcu}
+            #{appSystemId},#{appModuleId},#{envId},#{instanceId},#{keyValue.key},#{keyValue.value},#{keyValue.isEmpty},now(3),#{lcu}
         </foreach>
         ON DUPLICATE KEY UPDATE `key` = VALUES(`key`)
     </insert>
 
     <insert id="insertBatchAppEnvAutoConfig">
         INSERT INTO deploy_app_env_auto_config
-        (`app_system_id`,`app_module_id`,`env_id`,`instance_id`,`key`,`value`,`lcd`,`lcu`)
+        (`app_system_id`,`app_module_id`,`env_id`,`instance_id`,`key`,`type`,`value`,`is_empty`,`lcd`,`lcu`)
         VALUES
         <foreach collection="appEnvAutoConfigVoList" item="vo" separator=",">
             <foreach collection="vo.keyValueList" item="keyValue" separator="),(" open="(" close=")">
-                #{vo.appSystemId},#{vo.appModuleId},#{vo.envId},#{vo.instanceId},#{keyValue.key},#{keyValue.value},now(3),#{vo.lcu}
+                #{vo.appSystemId},#{vo.appModuleId},#{vo.envId},#{vo.instanceId},#{keyValue.key},#{keyValue.type},#{keyValue.value},#{keyValue.isEmpty},now(3),#{vo.lcu}
             </foreach>
         </foreach>
         ON DUPLICATE KEY UPDATE `key` = VALUES(`key`)
