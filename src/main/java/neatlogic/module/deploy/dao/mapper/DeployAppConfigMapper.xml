@@ -1724,7 +1724,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         #{appModuleId},
         #{envId},
         #{instanceId},
-        #{configStr},
+        #{configStr, typeHandler=CompressHandler},
         #{fcu},
         NOW(3)
         )
