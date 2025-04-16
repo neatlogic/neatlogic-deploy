@@ -100,17 +100,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         SELECT dsd.id,
                dsd.`md5`,
                dsd.`status`,
-               dsd.`sql_file` as sqlFile,
-               dsjp.job_id    as jobId
+               dsd.`sql_file` as sqlFile
         FROM deploy_sql_detail dsd
-                 JOIN deploy_sql_job_phase dsjp ON dsjp.sql_id = dsd.id
         WHERE dsd.system_id = #{sysId}
           AND dsd.module_id = #{moduleId}
           AND dsd.env_id = #{envId}
           AND dsd.version = #{version}
           AND dsd.sql_file = #{sqlFile}
-          and dsjp.job_id = #{jobId}
-          and dsjp.job_phase_name = #{phaseName}
           and dsd.resource_id = #{resourceId}
     </select>
 

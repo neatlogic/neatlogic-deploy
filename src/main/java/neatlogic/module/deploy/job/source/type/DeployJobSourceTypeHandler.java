@@ -360,7 +360,7 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
     @Override
     public void updateSqlStatus(JSONObject paramObj) {
         DeploySqlNodeDetailVo paramDeploySqlVo = new DeploySqlNodeDetailVo(paramObj.getJSONObject("sqlStatus"));
-        DeploySqlNodeDetailVo oldDeploySqlVo = deploySqlMapper.getDeploySqlDetail(new DeploySqlNodeDetailVo(paramObj.getLong("sysId"), paramObj.getLong("envId"), paramObj.getLong("moduleId"), paramObj.getString("version"), paramDeploySqlVo.getSqlFile(), paramObj.getLong("jobId"), paramObj.getString("phaseName"), paramDeploySqlVo.getResourceId()));
+        DeploySqlNodeDetailVo oldDeploySqlVo = deploySqlMapper.getDeploySqlDetail(new DeploySqlNodeDetailVo(paramObj.getLong("sysId"), paramObj.getLong("envId"), paramObj.getLong("moduleId"), paramObj.getString("version"), paramDeploySqlVo.getSqlFile(), paramDeploySqlVo.getResourceId()));
         if (oldDeploySqlVo != null) {
             paramDeploySqlVo.setId(oldDeploySqlVo.getId());
             deploySqlMapper.updateDeploySqlDetail(paramDeploySqlVo);
