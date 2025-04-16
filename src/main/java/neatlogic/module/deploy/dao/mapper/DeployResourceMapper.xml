@@ -146,9 +146,9 @@
             </choose>
         </where>
         ORDER BY a.`id` DESC
-        <if test="needPage">
+        <!--<if test="needPage">
             LIMIT #{startNum}, #{pageSize}
-        </if>
+        </if>-->
     </select>
 
     <select id="getAppInstanceResourceIdCountByAppSystemIdAndModuleIdAndEnvId"
