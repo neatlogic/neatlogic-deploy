@@ -17,6 +17,7 @@ package neatlogic.module.deploy.api.appconfig.env;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import neatlogic.framework.asynchronization.threadlocal.UserContext;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.deploy.auth.DEPLOY_BASE;
@@ -31,12 +32,14 @@ import neatlogic.framework.util.TableResultUtil;
 import neatlogic.module.deploy.dao.mapper.DeployAppConfigMapper;
 import neatlogic.module.deploy.service.DeployAppAuthorityService;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author lvzk
@@ -46,7 +49,7 @@ import java.util.*;
 @Transactional
 @AuthAction(action = DEPLOY_BASE.class)
 @OperationType(type = OperationTypeEnum.OPERATE)
-public class SaveDeployAppConfigEnvAutoConfigApi extends PrivateApiComponentBase {
+public class FallbackDeployAppConfigEnvAutoConfigApi extends PrivateApiComponentBase {
 
     @Resource
     private DeployAppConfigMapper deployAppConfigMapper;
@@ -56,12 +59,12 @@ public class SaveDeployAppConfigEnvAutoConfigApi extends PrivateApiComponentBase
 
     @Override
     public String getToken() {
-        return "deploy/app/config/env/auto/config/save";
+        return "deploy/app/config/env/auto/config/fallback";
     }
 
     @Override
     public String getName() {
-        return "保存应用环境实例autoConfig";
+        return "回滚应用环境实例autoConfig";
     }
 
     @Override
@@ -73,13 +76,12 @@ public class SaveDeployAppConfigEnvAutoConfigApi extends PrivateApiComponentBase
             @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "应用 id"),
             @Param(name = "appModuleId", type = ApiParamType.LONG, isRequired = true, desc = "模块 id"),
             @Param(name = "envId", type = ApiParamType.LONG, isRequired = true, desc = "环境 id"),
-            @Param(name = "deleteInstanceId", type = ApiParamType.LONG, desc = "删除的应用实例 id"),
             @Param(name = "instanceId", type = ApiParamType.LONG, desc = "应用实例 id"),
-            @Param(name = "keyValueList", type = ApiParamType.JSONARRAY, desc = "[{\"id\": xxx,\"key\": xxx,\"value\":xxx}]"),
+            @Param(name = "uuidList", type = ApiParamType.JSONARRAY,  isRequired = true, minSize = 1, desc = "变量名列表"),
     })
     @Output({
     })
-    @Description(desc = "保存应用环境实例autoConfig接口")
+    @Description(desc = "回滚应用环境实例autoConfig")
     @Override
     public Object myDoService(JSONObject paramObj) {
         Long appSystemId = paramObj.getLong("appSystemId");
@@ -89,39 +91,95 @@ public class SaveDeployAppConfigEnvAutoConfigApi extends PrivateApiComponentBase
         if (instanceId == null) {
             instanceId = 0L;
         }
-        List<DeployAppEnvAutoConfigKeyValueVo> keyValueList = new ArrayList<>();
-        JSONArray keyValueArray = paramObj.getJSONArray("keyValueList");
-        if (CollectionUtils.isNotEmpty(keyValueArray)) {
-            keyValueList = keyValueArray.toJavaList(DeployAppEnvAutoConfigKeyValueVo.class);
-        }
         //校验环境权限、编辑配置的操作权限
         deployAppAuthorityService.checkEnvAuth(appSystemId, paramObj.getLong("envId"));
         deployAppAuthorityService.checkOperationAuth(appSystemId, DeployAppConfigAction.EDIT);
-
-//        DeployAppEnvAutoConfigVo appEnvAutoConfigVo = JSON.toJavaObject(paramObj, DeployAppEnvAutoConfigVo.class);
-        DeployAppEnvAutoConfigVo appEnvAutoConfigVo = new DeployAppEnvAutoConfigVo(appSystemId, appModuleId, envId, instanceId);
-        List<DeployAppEnvAutoConfigKeyValueVo> oldKeyValueList = deployAppConfigMapper.getAppEnvAutoConfigKeyValueList(appEnvAutoConfigVo);
-        JSONArray tbodyList = getTbodyList(oldKeyValueList, keyValueList);
-        if (CollectionUtils.isNotEmpty(tbodyList)) {
-            Date nowDate = new Date(System.currentTimeMillis());
-            appEnvAutoConfigVo.setLcd(nowDate);
-            if (CollectionUtils.isNotEmpty(keyValueList)) {
-                appEnvAutoConfigVo.setKeyValueList(keyValueList);
-                deployAppConfigMapper.insertAppEnvAutoConfig(appEnvAutoConfigVo);
-            }
-            deployAppConfigMapper.deleteAppEnvAutoConfig(appEnvAutoConfigVo);
-            DeployAppEnvAutoConfigAuditVo deployAppEnvAutoConfigAuditVo = new DeployAppEnvAutoConfigAuditVo();
-            deployAppEnvAutoConfigAuditVo.setAppSystemId(appSystemId);
-            deployAppEnvAutoConfigAuditVo.setAppModuleId(appModuleId);
-            deployAppEnvAutoConfigAuditVo.setEnvId(envId);
-            deployAppEnvAutoConfigAuditVo.setInstanceId(instanceId);
-            deployAppEnvAutoConfigAuditVo.setConfig(TableResultUtil.getResult(tbodyList));
-            deployAppConfigMapper.insertAppEnvAutoConfigAudit(deployAppEnvAutoConfigAuditVo);
+        List<Long> idList = new ArrayList<>();
+        Map<Long, List<String>> id2KeyListMap = new HashMap<>();
+        JSONArray uuidList = paramObj.getJSONArray("uuidList");
+        for (int i = 0; i < uuidList.size(); i++) {
+            String uuid = uuidList.getString(i);
+            String[] split = uuid.split("_");
+            Long id = Long.parseLong(split[0]);
+            idList.add(id);
+            id2KeyListMap.computeIfAbsent(id, key -> new ArrayList<>()).add(split[1]);
         }
-        Long deleteInstanceId = paramObj.getLong("deleteInstanceId");
-        if (deleteInstanceId != null) {
-            DeployAppEnvAutoConfigVo deleteAppEnvAutoConfigVo = new DeployAppEnvAutoConfigVo(appSystemId, appModuleId, envId, deleteInstanceId);
-            deployAppConfigMapper.deleteAppEnvAutoConfig(deleteAppEnvAutoConfigVo);
+        if (CollectionUtils.isNotEmpty(idList)) {
+            JSONArray jsonArray = new JSONArray();
+            Map<String, DeployAppEnvAutoConfigKeyValueVo> oldKeyValueMap = new HashMap<>();
+            DeployAppEnvAutoConfigVo appEnvAutoConfigVo = new DeployAppEnvAutoConfigVo(appSystemId, appModuleId, envId, instanceId);
+            List<DeployAppEnvAutoConfigKeyValueVo> oldKeyValueList = deployAppConfigMapper.getAppEnvAutoConfigKeyValueList(appEnvAutoConfigVo);
+            if (CollectionUtils.isNotEmpty(oldKeyValueList)) {
+                oldKeyValueMap = oldKeyValueList.stream().filter(Objects::nonNull).collect(Collectors.toMap(DeployAppEnvAutoConfigKeyValueVo::getKey, e -> e));
+            }
+            List<DeployAppEnvAutoConfigAuditVo> auditList = deployAppConfigMapper.getAppEnvAutoConfigAuditListByIdList(idList);
+            for (DeployAppEnvAutoConfigAuditVo auditVo : auditList) {
+                List<String> keyList = id2KeyListMap.get(auditVo.getId());
+                if (CollectionUtils.isNotEmpty(keyList)) {
+                    JSONObject config = auditVo.getConfig();
+                    if (MapUtils.isNotEmpty(config)) {
+                        JSONArray tbodyList = config.getJSONArray("tbodyList");
+                        if (CollectionUtils.isNotEmpty(tbodyList)) {
+                            for (int i = 0; i < tbodyList.size(); i++) {
+                                JSONObject tbody = tbodyList.getJSONObject(i);
+                                String key = tbody.getString("key");
+                                if (keyList.contains(key)) {
+                                    Integer isEmpty = tbody.getInteger("beforeIsEmpty");
+                                    String type = tbody.getString("beforeType");
+                                    String value = tbody.getString("beforeValue");
+                                    String action = tbody.getString("action");
+                                    if (Objects.equals(action, "insert")) {
+                                        DeployAppEnvAutoConfigKeyValueVo keyValueVo = oldKeyValueMap.get(key);
+                                        if (keyValueVo != null) {
+                                            JSONObject jsonObj = new JSONObject();
+                                            jsonObj.put("key", key);
+                                            jsonObj.put("beforeType", keyValueVo.getType());
+                                            jsonObj.put("beforeValue", keyValueVo.getValue());
+                                            jsonObj.put("beforeIsEmpty", keyValueVo.getIsEmpty());
+                                            jsonObj.put("action", "delete");
+                                            jsonArray.add(jsonObj);
+                                            deployAppConfigMapper.deleteAppEnvAutoConfigByKey(appSystemId, appModuleId, envId, instanceId, key);
+                                        }
+                                    } else if (Objects.equals(action, "delete") || Objects.equals(action, "update")) {
+                                        DeployAppEnvAutoConfigKeyValueVo keyValueVo = oldKeyValueMap.get(key);
+                                        if (keyValueVo != null) {
+                                            JSONObject jsonObj = new JSONObject();
+                                            jsonObj.put("key", key);
+                                            jsonObj.put("beforeType", keyValueVo.getType());
+                                            jsonObj.put("beforeValue", keyValueVo.getValue());
+                                            jsonObj.put("beforeIsEmpty", keyValueVo.getIsEmpty());
+                                            jsonObj.put("afterType", type);
+                                            jsonObj.put("afterValue", value);
+                                            jsonObj.put("afterIsEmpty", isEmpty);
+                                            jsonObj.put("action", "update");
+                                            jsonArray.add(jsonObj);
+                                        } else {
+                                            JSONObject jsonObj = new JSONObject();
+                                            jsonObj.put("key", key);
+                                            jsonObj.put("afterType", type);
+                                            jsonObj.put("afterValue", value);
+                                            jsonObj.put("afterIsEmpty", isEmpty);
+                                            jsonObj.put("action", "insert");
+                                            jsonArray.add(jsonObj);
+                                        }
+                                        String lcu = UserContext.get().getUserUuid();
+                                        deployAppConfigMapper.insertAppEnvAutoConfigByKey(appSystemId, appModuleId, envId, instanceId, key, type, value, isEmpty, lcu);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            if (CollectionUtils.isNotEmpty(jsonArray)) {
+                DeployAppEnvAutoConfigAuditVo deployAppEnvAutoConfigAuditVo = new DeployAppEnvAutoConfigAuditVo();
+                deployAppEnvAutoConfigAuditVo.setAppSystemId(appSystemId);
+                deployAppEnvAutoConfigAuditVo.setAppModuleId(appModuleId);
+                deployAppEnvAutoConfigAuditVo.setEnvId(envId);
+                deployAppEnvAutoConfigAuditVo.setInstanceId(instanceId);
+                deployAppEnvAutoConfigAuditVo.setConfig(TableResultUtil.getResult(jsonArray));
+                deployAppConfigMapper.insertAppEnvAutoConfigAudit(deployAppEnvAutoConfigAuditVo);
+            }
         }
         return null;
     }
@@ -129,7 +187,8 @@ public class SaveDeployAppConfigEnvAutoConfigApi extends PrivateApiComponentBase
     private JSONArray getTbodyList(List<DeployAppEnvAutoConfigKeyValueVo> oldKeyValueList, List<DeployAppEnvAutoConfigKeyValueVo> newKeyValueList) {
         oldKeyValueList.sort(Comparator.comparing(DeployAppEnvAutoConfigKeyValueVo::getKey));
         newKeyValueList.sort(Comparator.comparing(DeployAppEnvAutoConfigKeyValueVo::getKey));
-        JSONArray tbodyList = new JSONArray();
+        JSONArray tbodyList = new JSONArray(10);
+//        Map<String, Integer> key2IndexMap = new HashMap<>();
         if (CollectionUtils.isNotEmpty(oldKeyValueList)) {
             for (int index = 0; index < oldKeyValueList.size(); index++) {
                 DeployAppEnvAutoConfigKeyValueVo keyValueVo = oldKeyValueList.get(index);
@@ -140,11 +199,13 @@ public class SaveDeployAppConfigEnvAutoConfigApi extends PrivateApiComponentBase
                 tbody.put("beforeIsEmpty", keyValueVo.getIsEmpty());
                 tbody.put("action", "delete");
                 tbodyList.add(tbody);
+//                key2IndexMap.put(keyValueVo.getKey(), index);
             }
         }
         if (CollectionUtils.isNotEmpty(newKeyValueList)) {
             int lastIndex = -1;
             for (DeployAppEnvAutoConfigKeyValueVo keyValueVo : newKeyValueList) {
+//                Integer index = key2IndexMap.get(keyValueVo.getKey());
                 Integer index = null;
                 for (int i = 0; i < tbodyList.size(); i++) {
                     JSONObject tbody = tbodyList.getJSONObject(i);

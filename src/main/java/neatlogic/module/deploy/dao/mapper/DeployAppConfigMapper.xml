@@ -1541,6 +1541,52 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
           AND `env_id` = #{envId}
     </select>
 
+    <select id="getAppEnvAutoConfigAuditCount" parameterType="neatlogic.framework.deploy.dto.app.DeployAppEnvAutoConfigAuditVo" resultType="int">
+        SELECT
+        COUNT(1)
+        FROM `deploy_app_env_auto_config_audit`
+        WHERE `app_system_id` = #{appSystemId}
+        AND `app_module_id` = #{appModuleId}
+        AND `env_id` = #{envId}
+        AND `instance_id` = #{instanceId}
+    </select>
+
+    <select id="getAppEnvAutoConfigAuditList" parameterType="neatlogic.framework.deploy.dto.app.DeployAppEnvAutoConfigAuditVo" resultType="neatlogic.framework.deploy.dto.app.DeployAppEnvAutoConfigAuditVo">
+        SELECT
+        `id`,
+        `app_system_id` AS appSystemId,
+        `app_module_id` AS appModuleId,
+        `env_id` AS envId,
+        `instance_id` AS instanceId,
+        `config` AS configStr,
+        `fcd`,
+        `fcu`
+        FROM `deploy_app_env_auto_config_audit`
+        WHERE `app_system_id` = #{appSystemId}
+        AND `app_module_id` = #{appModuleId}
+        AND `env_id` = #{envId}
+        AND `instance_id` = #{instanceId}
+        ORDER BY `fcd` DESC
+        LIMIT #{startNum}, #{pageSize}
+    </select>
+
+    <select id="getAppEnvAutoConfigAuditListByIdList" parameterType="java.lang.Long" resultType="neatlogic.framework.deploy.dto.app.DeployAppEnvAutoConfigAuditVo">
+        SELECT
+        `id`,
+        `app_system_id` AS appSystemId,
+        `app_module_id` AS appModuleId,
+        `env_id` AS envId,
+        `instance_id` AS instanceId,
+        `config` AS configStr,
+        `fcd`,
+        `fcu`
+        FROM `deploy_app_env_auto_config_audit`
+        WHERE `id` IN
+        <foreach collection="list" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </select>
+
     <update id="updateDeployAppConfigById" parameterType="java.util.Map">
         UPDATE `deploy_app_config` SET `config` = #{configStr} WHERE `id` = #{id}
     </update>
@@ -1624,6 +1670,64 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
             </foreach>
         </foreach>
         ON DUPLICATE KEY UPDATE `key` = VALUES(`key`)
+    </insert>
+
+    <insert id="insertAppEnvAutoConfigByKey">
+        INSERT INTO `deploy_app_env_auto_config` (
+        `app_system_id`,
+        `app_module_id`,
+        `env_id`,
+        `instance_id`,
+        `key`,
+        `type`,
+        `value`,
+        `is_empty`,
+        `lcu`,
+        `lcd`
+        )
+        VALUES
+        (
+        #{appSystemId},
+        #{appModuleId},
+        #{envId},
+        #{instanceId},
+        #{key},
+        #{type},
+        #{value},
+        #{isEmpty},
+        #{lcu},
+        NOW(3)
+        )
+        ON DUPLICATE KEY UPDATE
+        `type` = #{type},
+        `value` = #{value},
+        `is_empty` = #{isEmpty},
+        `lcu` = #{lcu},
+        `lcd` = NOW(3)
+    </insert>
+
+    <insert id="insertAppEnvAutoConfigAudit" parameterType="neatlogic.framework.deploy.dto.app.DeployAppEnvAutoConfigAuditVo">
+        INSERT INTO `deploy_app_env_auto_config_audit` (
+        `id`,
+        `app_system_id`,
+        `app_module_id`,
+        `env_id`,
+        `instance_id`,
+        `config`,
+        `fcu`,
+        `fcd`
+        )
+        VALUES
+        (
+        #{id},
+        #{appSystemId},
+        #{appModuleId},
+        #{envId},
+        #{instanceId},
+        #{configStr},
+        #{fcu},
+        NOW(3)
+        )
     </insert>
 
     <insert id="insertAppConfig" parameterType="neatlogic.framework.deploy.dto.app.DeployAppConfigVo">
@@ -1853,6 +1957,16 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                 AND `env_id` = #{envId}
             </if>
         </where>
+    </delete>
+
+    <delete id="deleteAppEnvAutoConfigByKey">
+        DELETE
+        FROM deploy_app_env_auto_config
+        WHERE `app_system_id` = #{appSystemId}
+        AND `app_module_id` = #{appModuleId}
+        AND `env_id` = #{envId}
+        AND `instance_id` = #{instanceId}
+        AND `key` = #{key}
     </delete>
 
     <delete id="deleteAppConfigDraft" parameterType="neatlogic.framework.deploy.dto.app.DeployAppConfigVo">

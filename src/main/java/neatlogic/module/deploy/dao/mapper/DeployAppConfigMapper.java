@@ -107,6 +107,12 @@ public interface DeployAppConfigMapper extends IDeployAppConfigCrossoverMapper {
 
     List<DeployAppModuleVo> getAppModuleListBySystemId(Long appSystemId);
 
+    int getAppEnvAutoConfigAuditCount(DeployAppEnvAutoConfigAuditVo deployAppEnvAutoConfigAuditVo);
+
+    List<DeployAppEnvAutoConfigAuditVo> getAppEnvAutoConfigAuditList(DeployAppEnvAutoConfigAuditVo deployAppEnvAutoConfigAuditVo);
+
+    List<DeployAppEnvAutoConfigAuditVo> getAppEnvAutoConfigAuditListByIdList(List<Long> idList);
+
     Integer insertAppConfigAuthority(DeployAppConfigAuthorityVo deployAppConfigAuthorityVo);
 
     Integer insertAppModuleRunnerGroup(@Param("appSystemId") Long appSystemId, @Param("appModuleId") Long appModuleId, @Param("runnerGroupId") Long runnerGroupId);
@@ -125,6 +131,20 @@ public interface DeployAppConfigMapper extends IDeployAppConfigCrossoverMapper {
     void insertAppEnvAutoConfigNew(DeployAppEnvAutoConfigVo appEnvAutoConfigVo);
 
     void insertBatchAppEnvAutoConfig(@Param("appEnvAutoConfigVoList") List<DeployAppEnvAutoConfigVo> appEnvAutoConfigVoList);
+
+    void insertAppEnvAutoConfigByKey(
+            @Param("appSystemId") Long appSystemId,
+            @Param("appModuleId") Long appModuleId,
+            @Param("envId") Long envId,
+            @Param("instanceId") Long instanceId,
+            @Param("key") String key,
+            @Param("type") String type,
+            @Param("value") String value,
+            @Param("isEmpty") Integer isEmpty,
+            @Param("lcu") String lcu
+    );
+
+    int insertAppEnvAutoConfigAudit(DeployAppEnvAutoConfigAuditVo deployAppEnvAutoConfigAuditVo);
 
     Integer insertAppConfig(DeployAppConfigVo deployAppConfigVo);
 
@@ -155,6 +175,14 @@ public interface DeployAppConfigMapper extends IDeployAppConfigCrossoverMapper {
     Integer deleteAppConfigEnvAttr(DeployAppConfigEnvAttrVo deployAppConfigEnvAttrVo);
 
     Integer deleteAppEnvAutoConfigByAppSystemIdAndAppModuleIdAndEnvId(@Param("appSystemId") Long appSystemId, @Param("appModuleId") Long appModuleId, @Param("envId") Long envId);
+
+    void deleteAppEnvAutoConfigByKey(
+            @Param("appSystemId") Long appSystemId,
+            @Param("appModuleId") Long appModuleId,
+            @Param("envId") Long envId,
+            @Param("instanceId") Long instanceId,
+            @Param("key") String key
+    );
 
     Integer deleteAppConfigDraft(DeployAppConfigVo deployAppConfigDraftVo);
 
