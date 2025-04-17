@@ -15,24 +15,28 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 
 package neatlogic.module.deploy.api.appconfig.env;
 
-import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.deploy.auth.DEPLOY_BASE;
 import neatlogic.framework.deploy.constvalue.DeployAppConfigAction;
+import neatlogic.framework.deploy.dto.app.DeployAppEnvAutoConfigAuditVo;
+import neatlogic.framework.deploy.dto.app.DeployAppEnvAutoConfigKeyValueVo;
 import neatlogic.framework.deploy.dto.app.DeployAppEnvAutoConfigVo;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
+import neatlogic.framework.util.TableResultUtil;
 import neatlogic.module.deploy.dao.mapper.DeployAppConfigMapper;
 import neatlogic.module.deploy.service.DeployAppAuthorityService;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.util.Date;
+import java.util.*;
 
 /**
  * @author lvzk
@@ -41,7 +45,7 @@ import java.util.Date;
 @Service
 @Transactional
 @AuthAction(action = DEPLOY_BASE.class)
-@OperationType(type = OperationTypeEnum.SEARCH)
+@OperationType(type = OperationTypeEnum.OPERATE)
 public class SaveDeployAppConfigEnvAutoConfigApi extends PrivateApiComponentBase {
 
     @Resource
@@ -78,23 +82,119 @@ public class SaveDeployAppConfigEnvAutoConfigApi extends PrivateApiComponentBase
     @Description(desc = "保存应用环境实例autoConfig接口")
     @Override
     public Object myDoService(JSONObject paramObj) {
-
-        //校验环境权限、编辑配置的操作权限
-        deployAppAuthorityService.checkEnvAuth(paramObj.getLong("appSystemId"), paramObj.getLong("envId"));
-        deployAppAuthorityService.checkOperationAuth(paramObj.getLong("appSystemId"), DeployAppConfigAction.EDIT);
-
-        DeployAppEnvAutoConfigVo appEnvAutoConfigVo = JSON.toJavaObject(paramObj, DeployAppEnvAutoConfigVo.class);
-        Date nowDate = new Date(System.currentTimeMillis());
-        appEnvAutoConfigVo.setLcd(nowDate);
-        if (CollectionUtils.isNotEmpty(appEnvAutoConfigVo.getKeyValueList())) {
-            deployAppConfigMapper.insertAppEnvAutoConfig(appEnvAutoConfigVo);
+        Long appSystemId = paramObj.getLong("appSystemId");
+        Long appModuleId = paramObj.getLong("appModuleId");
+        Long envId = paramObj.getLong("envId");
+        Long instanceId = paramObj.getLong("instanceId");
+        if (instanceId == null) {
+            instanceId = 0L;
         }
-        deployAppConfigMapper.deleteAppEnvAutoConfig(appEnvAutoConfigVo);
+        List<DeployAppEnvAutoConfigKeyValueVo> keyValueList = new ArrayList<>();
+        JSONArray keyValueArray = paramObj.getJSONArray("keyValueList");
+        if (CollectionUtils.isNotEmpty(keyValueArray)) {
+            keyValueList = keyValueArray.toJavaList(DeployAppEnvAutoConfigKeyValueVo.class);
+        }
+        //校验环境权限、编辑配置的操作权限
+        deployAppAuthorityService.checkEnvAuth(appSystemId, paramObj.getLong("envId"));
+        deployAppAuthorityService.checkOperationAuth(appSystemId, DeployAppConfigAction.EDIT);
+
+//        DeployAppEnvAutoConfigVo appEnvAutoConfigVo = JSON.toJavaObject(paramObj, DeployAppEnvAutoConfigVo.class);
+        DeployAppEnvAutoConfigVo appEnvAutoConfigVo = new DeployAppEnvAutoConfigVo(appSystemId, appModuleId, envId, instanceId);
+        List<DeployAppEnvAutoConfigKeyValueVo> oldKeyValueList = deployAppConfigMapper.getAppEnvAutoConfigKeyValueList(appEnvAutoConfigVo);
+        JSONArray tbodyList = getTbodyList(oldKeyValueList, keyValueList);
+        if (CollectionUtils.isNotEmpty(tbodyList)) {
+            Date nowDate = new Date(System.currentTimeMillis());
+            appEnvAutoConfigVo.setLcd(nowDate);
+            if (CollectionUtils.isNotEmpty(keyValueList)) {
+                appEnvAutoConfigVo.setKeyValueList(keyValueList);
+                deployAppConfigMapper.insertAppEnvAutoConfig(appEnvAutoConfigVo);
+            }
+            deployAppConfigMapper.deleteAppEnvAutoConfig(appEnvAutoConfigVo);
+            DeployAppEnvAutoConfigAuditVo deployAppEnvAutoConfigAuditVo = new DeployAppEnvAutoConfigAuditVo();
+            deployAppEnvAutoConfigAuditVo.setAppSystemId(appSystemId);
+            deployAppEnvAutoConfigAuditVo.setAppModuleId(appModuleId);
+            deployAppEnvAutoConfigAuditVo.setEnvId(envId);
+            deployAppEnvAutoConfigAuditVo.setInstanceId(instanceId);
+            deployAppEnvAutoConfigAuditVo.setConfig(TableResultUtil.getResult(tbodyList));
+            deployAppConfigMapper.insertAppEnvAutoConfigAudit(deployAppEnvAutoConfigAuditVo);
+        }
         Long deleteInstanceId = paramObj.getLong("deleteInstanceId");
         if (deleteInstanceId != null) {
-            DeployAppEnvAutoConfigVo deleteAppEnvAutoConfigVo = new DeployAppEnvAutoConfigVo(paramObj.getLong("appSystemId"), paramObj.getLong("appModuleId"), paramObj.getLong("envId"), deleteInstanceId);
+            DeployAppEnvAutoConfigVo deleteAppEnvAutoConfigVo = new DeployAppEnvAutoConfigVo(appSystemId, appModuleId, envId, deleteInstanceId);
             deployAppConfigMapper.deleteAppEnvAutoConfig(deleteAppEnvAutoConfigVo);
         }
         return null;
+    }
+
+    private JSONArray getTbodyList(List<DeployAppEnvAutoConfigKeyValueVo> oldKeyValueList, List<DeployAppEnvAutoConfigKeyValueVo> newKeyValueList) {
+        oldKeyValueList.sort(Comparator.comparing(DeployAppEnvAutoConfigKeyValueVo::getKey));
+        newKeyValueList.sort(Comparator.comparing(DeployAppEnvAutoConfigKeyValueVo::getKey));
+        JSONArray tbodyList = new JSONArray();
+        if (CollectionUtils.isNotEmpty(oldKeyValueList)) {
+            for (int index = 0; index < oldKeyValueList.size(); index++) {
+                DeployAppEnvAutoConfigKeyValueVo keyValueVo = oldKeyValueList.get(index);
+                JSONObject tbody = new JSONObject();
+                tbody.put("key", keyValueVo.getKey());
+                tbody.put("beforeType", keyValueVo.getType());
+                tbody.put("beforeValue", keyValueVo.getValue());
+                tbody.put("beforeIsEmpty", keyValueVo.getIsEmpty());
+                tbody.put("action", "delete");
+                tbodyList.add(tbody);
+            }
+        }
+        if (CollectionUtils.isNotEmpty(newKeyValueList)) {
+            int lastIndex = -1;
+            for (DeployAppEnvAutoConfigKeyValueVo keyValueVo : newKeyValueList) {
+                Integer index = null;
+                for (int i = 0; i < tbodyList.size(); i++) {
+                    JSONObject tbody = tbodyList.getJSONObject(i);
+                    String key = tbody.getString("key");
+                    if (Objects.equals(key, keyValueVo.getKey())) {
+                        index = i;
+                    }
+                }
+                if (index != null) {
+                    JSONObject tbody = tbodyList.getJSONObject(index);
+                    tbody.put("afterType", keyValueVo.getType());
+                    tbody.put("afterValue", keyValueVo.getValue());
+                    tbody.put("afterIsEmpty", keyValueVo.getIsEmpty());
+                    tbody.put("action", "update");
+                    lastIndex = index;
+                } else {
+                    lastIndex++;
+                    JSONObject tbody = new JSONObject();
+                    tbody.put("key", keyValueVo.getKey());
+                    tbody.put("afterType", keyValueVo.getType());
+                    tbody.put("afterValue", keyValueVo.getValue());
+                    tbody.put("afterIsEmpty", keyValueVo.getIsEmpty());
+                    tbody.put("action", "insert");
+                    tbodyList.add(lastIndex, tbody);
+                }
+            }
+        }
+        for (int index = tbodyList.size() - 1; index >= 0; index--) {
+            JSONObject tbody = tbodyList.getJSONObject(index);
+            String action = tbody.getString("action");
+            if (Objects.equals(action, "update")) {
+                Integer beforeIsEmpty = tbody.getInteger("beforeIsEmpty");
+                Integer afterIsEmpty = tbody.getInteger("afterIsEmpty");
+                if (Objects.equals(beforeIsEmpty, afterIsEmpty)) {
+                    if (Objects.equals(beforeIsEmpty, 1)) {
+                        tbodyList.remove(index);
+                    } else {
+                        String beforeValue = tbody.getString("beforeValue");
+                        String afterValue = tbody.getString("afterValue");
+                        if (Objects.equals(beforeValue, afterValue)) {
+                            tbodyList.remove(index);
+                        } else {
+                            if (StringUtils.isBlank(beforeValue) && StringUtils.isBlank(afterValue)) {
+                                tbodyList.remove(index);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return tbodyList;
     }
 }
