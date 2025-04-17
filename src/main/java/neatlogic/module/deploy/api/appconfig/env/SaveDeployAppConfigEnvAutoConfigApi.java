@@ -26,6 +26,7 @@ import neatlogic.framework.deploy.dto.app.DeployAppEnvAutoConfigKeyValueVo;
 import neatlogic.framework.deploy.dto.app.DeployAppEnvAutoConfigVo;
 import neatlogic.framework.deploy.exception.DeployAppConfigEnvAutoConfigKeyIrregularException;
 import neatlogic.framework.deploy.exception.DeployAppConfigEnvAutoConfigKeyRepeatException;
+import neatlogic.framework.deploy.exception.DeployAppConfigEnvAutoConfigKeyTypeIrregularException;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
@@ -110,10 +111,14 @@ public class SaveDeployAppConfigEnvAutoConfigApi extends PrivateApiComponentBase
         if (instanceId != 0L) {
             DeployAppEnvAutoConfigVo appEnvAutoConfigVo = new DeployAppEnvAutoConfigVo(appSystemId, appModuleId, envId, 0L);
             List<DeployAppEnvAutoConfigKeyValueVo> oldKeyValueList = deployAppConfigMapper.getAppEnvAutoConfigKeyValueList(appEnvAutoConfigVo);
-            List<String> keyList = oldKeyValueList.stream().filter(Objects::nonNull).map(DeployAppEnvAutoConfigKeyValueVo::getKey).collect(Collectors.toList());
+            Map<String, DeployAppEnvAutoConfigKeyValueVo> oldKeyValueMap = oldKeyValueList.stream().filter(Objects::nonNull).collect(Collectors.toMap(DeployAppEnvAutoConfigKeyValueVo::getKey, e  -> e));
             for (DeployAppEnvAutoConfigKeyValueVo keyValueVo : keyValueList) {
-                if (!keyList.contains(keyValueVo.getKey())) {
+                DeployAppEnvAutoConfigKeyValueVo oldKeyValueVo = oldKeyValueMap.get(keyValueVo.getKey());
+                if (oldKeyValueVo == null) {
                     throw new DeployAppConfigEnvAutoConfigKeyIrregularException(keyValueVo.getKey());
+                }
+                if (!Objects.equals(oldKeyValueVo.getType(), keyValueVo.getType())) {
+                    throw new DeployAppConfigEnvAutoConfigKeyTypeIrregularException(keyValueVo.getKey(), keyValueVo.getType(), oldKeyValueVo.getType());
                 }
             }
         }
