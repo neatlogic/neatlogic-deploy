@@ -24,6 +24,8 @@ import neatlogic.framework.deploy.constvalue.DeployAppConfigAction;
 import neatlogic.framework.deploy.dto.app.DeployAppEnvAutoConfigAuditVo;
 import neatlogic.framework.deploy.dto.app.DeployAppEnvAutoConfigKeyValueVo;
 import neatlogic.framework.deploy.dto.app.DeployAppEnvAutoConfigVo;
+import neatlogic.framework.deploy.exception.DeployAppConfigEnvAutoConfigKeyIrregularException;
+import neatlogic.framework.deploy.exception.DeployAppConfigEnvAutoConfigKeyRepeatException;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
@@ -37,6 +39,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author lvzk
@@ -97,7 +100,23 @@ public class SaveDeployAppConfigEnvAutoConfigApi extends PrivateApiComponentBase
         //校验环境权限、编辑配置的操作权限
         deployAppAuthorityService.checkEnvAuth(appSystemId, paramObj.getLong("envId"));
         deployAppAuthorityService.checkOperationAuth(appSystemId, DeployAppConfigAction.EDIT);
-
+        Set<String> keySet = new HashSet<>();
+        for (DeployAppEnvAutoConfigKeyValueVo keyValueVo : keyValueList ) {
+            if (keySet.contains(keyValueVo.getKey())) {
+                throw new DeployAppConfigEnvAutoConfigKeyRepeatException(keyValueVo.getKey());
+            }
+            keySet.add(keyValueVo.getKey());
+        }
+        if (instanceId != 0L) {
+            DeployAppEnvAutoConfigVo appEnvAutoConfigVo = new DeployAppEnvAutoConfigVo(appSystemId, appModuleId, envId, 0L);
+            List<DeployAppEnvAutoConfigKeyValueVo> oldKeyValueList = deployAppConfigMapper.getAppEnvAutoConfigKeyValueList(appEnvAutoConfigVo);
+            List<String> keyList = oldKeyValueList.stream().filter(Objects::nonNull).map(DeployAppEnvAutoConfigKeyValueVo::getKey).collect(Collectors.toList());
+            for (DeployAppEnvAutoConfigKeyValueVo keyValueVo : keyValueList) {
+                if (!keyList.contains(keyValueVo.getKey())) {
+                    throw new DeployAppConfigEnvAutoConfigKeyIrregularException(keyValueVo.getKey());
+                }
+            }
+        }
 //        DeployAppEnvAutoConfigVo appEnvAutoConfigVo = JSON.toJavaObject(paramObj, DeployAppEnvAutoConfigVo.class);
         DeployAppEnvAutoConfigVo appEnvAutoConfigVo = new DeployAppEnvAutoConfigVo(appSystemId, appModuleId, envId, instanceId);
         List<DeployAppEnvAutoConfigKeyValueVo> oldKeyValueList = deployAppConfigMapper.getAppEnvAutoConfigKeyValueList(appEnvAutoConfigVo);
