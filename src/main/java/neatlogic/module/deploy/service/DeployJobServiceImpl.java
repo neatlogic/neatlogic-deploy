@@ -344,7 +344,6 @@ public class DeployJobServiceImpl implements DeployJobService {
         JSONObject resultJson = createJob(deployJobParam, module);
         IAutoexecJobActionHandler fireAction = AutoexecJobActionHandlerFactory.getAction(JobAction.FIRE.getValue());
         deployJobParam.setAction(JobAction.FIRE.getValue());
-        deployJobParam.setIsFirstFire(1);
         fireAction.doService(deployJobParam);
         return resultJson;
     }
