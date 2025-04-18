@@ -722,6 +722,7 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
                 }
             }
             result.put("hasOperationVersionAndProductManagerAuth", hasOperationVersionAndProductManagerAuth);
+            result.put("sourceType", this.getName());
         }
         return result;
     }
