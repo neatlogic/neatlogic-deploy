@@ -15,6 +15,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 
 package neatlogic.module.deploy.api.schedule;
 
+import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.asynchronization.threadlocal.TenantContext;
 import neatlogic.framework.asynchronization.threadlocal.UserContext;
 import neatlogic.framework.auth.core.AuthAction;
@@ -53,10 +54,9 @@ import neatlogic.framework.scheduler.core.SchedulerManager;
 import neatlogic.framework.scheduler.dto.JobObject;
 import neatlogic.framework.scheduler.exception.ScheduleHandlerNotFoundException;
 import neatlogic.framework.scheduler.exception.ScheduleIllegalParameterException;
-import neatlogic.module.deploy.dao.mapper.DeployScheduleMapper;
 import neatlogic.module.deploy.dao.mapper.DeployPipelineMapper;
+import neatlogic.module.deploy.dao.mapper.DeployScheduleMapper;
 import neatlogic.module.deploy.schedule.plugin.DeployJobScheduleJob;
-import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
 import org.quartz.CronExpression;
 import org.springframework.stereotype.Service;
@@ -199,13 +199,13 @@ public class SaveDeployScheduleApi extends PrivateApiComponentBase {
                 throw new ParamNotExistsException("应用模块环境（场景）版本列表（config.deploySystemModuleVersionList）");
             }
             Map<Long, AppSystemVo> appSystemMap = new HashMap<>();
-                    List<Long> appSystemIdList = deploySystemModuleVersionList.stream().map(DeploySystemModuleVersionVo::getAppSystemId).collect(Collectors.toList());
+            List<Long> appSystemIdList = deploySystemModuleVersionList.stream().map(DeploySystemModuleVersionVo::getAppSystemId).collect(Collectors.toList());
             if (CollectionUtils.isNotEmpty(appSystemIdList)) {
                 List<AppSystemVo> appSystemList = appSystemMapper.getAppSystemListByIdList(appSystemIdList);
                 appSystemMap = appSystemList.stream().collect(Collectors.toMap(e -> e.getId(), e -> e));
             }
             Map<Long, AppModuleVo> appModuleMap = new HashMap<>();
-                    List<Long> appModuleIdList = deploySystemModuleVersionList.stream().map(DeploySystemModuleVersionVo::getAppModuleId).collect(Collectors.toList());
+            List<Long> appModuleIdList = deploySystemModuleVersionList.stream().map(DeploySystemModuleVersionVo::getAppModuleId).collect(Collectors.toList());
             if (CollectionUtils.isNotEmpty(appModuleIdList)) {
                 List<AppModuleVo> appModuleList = appSystemMapper.getAppModuleListByIdList(appModuleIdList);
                 appModuleMap = appModuleList.stream().collect(Collectors.toMap(e -> e.getId(), e -> e));
@@ -233,20 +233,22 @@ public class SaveDeployScheduleApi extends PrivateApiComponentBase {
                 }
             }
         }
-
-        JobObject jobObject = new JobObject.Builder(scheduleVo.getUuid(), jobHandler.getGroupName(), jobHandler.getClassName(), tenantUuid)
-                .withCron(scheduleVo.getCron()).withBeginTime(scheduleVo.getBeginTime())
-                .withEndTime(scheduleVo.getEndTime())
-                .setType("private")
-                .build();
         Long id = paramObj.getLong("id");
         if (id != null) {
             DeployScheduleVo oldScheduleVo = deployScheduleMapper.getScheduleById(id);
             if (oldScheduleVo == null) {
                 throw new DeployScheduleNotFoundException(id);
             }
-            scheduleVo.setLcu(userUuid);
             scheduleVo.setUuid(oldScheduleVo.getUuid());
+        }
+        JobObject jobObject = new JobObject.Builder(scheduleVo.getUuid(), jobHandler.getGroupName(), jobHandler.getClassName(), tenantUuid)
+                .withCron(scheduleVo.getCron()).withBeginTime(scheduleVo.getBeginTime())
+                .withEndTime(scheduleVo.getEndTime())
+                .setType("private")
+                .build();
+
+        if (id != null) {
+            scheduleVo.setLcu(userUuid);
             deployScheduleMapper.updateSchedule(scheduleVo);
             schedulerManager.unloadJob(jobObject);
         } else {

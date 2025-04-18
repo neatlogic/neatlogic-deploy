@@ -24,6 +24,9 @@ import neatlogic.framework.deploy.constvalue.DeployAppConfigAction;
 import neatlogic.framework.deploy.dto.app.DeployAppEnvAutoConfigAuditVo;
 import neatlogic.framework.deploy.dto.app.DeployAppEnvAutoConfigKeyValueVo;
 import neatlogic.framework.deploy.dto.app.DeployAppEnvAutoConfigVo;
+import neatlogic.framework.deploy.exception.DeployAppConfigEnvAutoConfigKeyIrregularException;
+import neatlogic.framework.deploy.exception.DeployAppConfigEnvAutoConfigKeyRepeatException;
+import neatlogic.framework.deploy.exception.DeployAppConfigEnvAutoConfigKeyTypeIrregularException;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
@@ -37,6 +40,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author lvzk
@@ -97,7 +101,34 @@ public class SaveDeployAppConfigEnvAutoConfigApi extends PrivateApiComponentBase
         //校验环境权限、编辑配置的操作权限
         deployAppAuthorityService.checkEnvAuth(appSystemId, paramObj.getLong("envId"));
         deployAppAuthorityService.checkOperationAuth(appSystemId, DeployAppConfigAction.EDIT);
-
+        Set<String> keySet = new HashSet<>();
+        for (DeployAppEnvAutoConfigKeyValueVo keyValueVo : keyValueList ) {
+            if (Objects.equals(keyValueVo.getIsEmpty(), 1)) {
+                keyValueVo.setValue(StringUtils.EMPTY);
+            } else {
+                if (StringUtils.isBlank(keyValueVo.getValue())) {
+                    keyValueVo.setValue(null);
+                }
+            }
+            if (keySet.contains(keyValueVo.getKey())) {
+                throw new DeployAppConfigEnvAutoConfigKeyRepeatException(keyValueVo.getKey());
+            }
+            keySet.add(keyValueVo.getKey());
+        }
+        if (instanceId != 0L) {
+            DeployAppEnvAutoConfigVo appEnvAutoConfigVo = new DeployAppEnvAutoConfigVo(appSystemId, appModuleId, envId, 0L);
+            List<DeployAppEnvAutoConfigKeyValueVo> oldKeyValueList = deployAppConfigMapper.getAppEnvAutoConfigKeyValueList(appEnvAutoConfigVo);
+            Map<String, DeployAppEnvAutoConfigKeyValueVo> oldKeyValueMap = oldKeyValueList.stream().filter(Objects::nonNull).collect(Collectors.toMap(DeployAppEnvAutoConfigKeyValueVo::getKey, e  -> e));
+            for (DeployAppEnvAutoConfigKeyValueVo keyValueVo : keyValueList) {
+                DeployAppEnvAutoConfigKeyValueVo oldKeyValueVo = oldKeyValueMap.get(keyValueVo.getKey());
+                if (oldKeyValueVo == null) {
+                    throw new DeployAppConfigEnvAutoConfigKeyIrregularException(keyValueVo.getKey());
+                }
+                if (!Objects.equals(oldKeyValueVo.getType(), keyValueVo.getType())) {
+                    throw new DeployAppConfigEnvAutoConfigKeyTypeIrregularException(keyValueVo.getKey(), keyValueVo.getType(), oldKeyValueVo.getType());
+                }
+            }
+        }
 //        DeployAppEnvAutoConfigVo appEnvAutoConfigVo = JSON.toJavaObject(paramObj, DeployAppEnvAutoConfigVo.class);
         DeployAppEnvAutoConfigVo appEnvAutoConfigVo = new DeployAppEnvAutoConfigVo(appSystemId, appModuleId, envId, instanceId);
         List<DeployAppEnvAutoConfigKeyValueVo> oldKeyValueList = deployAppConfigMapper.getAppEnvAutoConfigKeyValueList(appEnvAutoConfigVo);
@@ -131,8 +162,7 @@ public class SaveDeployAppConfigEnvAutoConfigApi extends PrivateApiComponentBase
         newKeyValueList.sort(Comparator.comparing(DeployAppEnvAutoConfigKeyValueVo::getKey));
         JSONArray tbodyList = new JSONArray();
         if (CollectionUtils.isNotEmpty(oldKeyValueList)) {
-            for (int index = 0; index < oldKeyValueList.size(); index++) {
-                DeployAppEnvAutoConfigKeyValueVo keyValueVo = oldKeyValueList.get(index);
+            for (DeployAppEnvAutoConfigKeyValueVo keyValueVo : oldKeyValueList) {
                 JSONObject tbody = new JSONObject();
                 tbody.put("key", keyValueVo.getKey());
                 tbody.put("beforeType", keyValueVo.getType());
@@ -186,11 +216,12 @@ public class SaveDeployAppConfigEnvAutoConfigApi extends PrivateApiComponentBase
                         String afterValue = tbody.getString("afterValue");
                         if (Objects.equals(beforeValue, afterValue)) {
                             tbodyList.remove(index);
-                        } else {
-                            if (StringUtils.isBlank(beforeValue) && StringUtils.isBlank(afterValue)) {
-                                tbodyList.remove(index);
-                            }
                         }
+//                        else {
+//                            if (StringUtils.isBlank(beforeValue) && StringUtils.isBlank(afterValue)) {
+//                                tbodyList.remove(index);
+//                            }
+//                        }
                     }
                 }
             }
