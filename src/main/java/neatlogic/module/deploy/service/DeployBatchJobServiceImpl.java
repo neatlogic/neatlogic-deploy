@@ -67,6 +67,8 @@ public class DeployBatchJobServiceImpl implements DeployBatchJobService, IDeploy
     DeployBatchJobMapper deployBatchJobMapper;
     @Resource
     SchedulerManager schedulerManager;
+    @Resource
+    private DeployBatchJobService deployBatchJobService;
 
     @Override
     public void creatBatchJob(DeployJobVo deployJobVo, PipelineVo pipelineVo, boolean isFire) throws Exception {
@@ -107,18 +109,14 @@ public class DeployBatchJobServiceImpl implements DeployBatchJobService, IDeploy
                                 jobVo.setEnvId(jobTemplateVo.getEnvId());
                                 DeploySystemModuleVersionVo deploySystemModuleVersionVo = getVersionId(deployJobVo.getAppSystemModuleVersionList(), jobTemplateVo);
                                 //如果找不到对应的应用模块则说明用户没有勾选该模块，即该模块无需执行
-                                if(deploySystemModuleVersionVo == null){
+                                if (deploySystemModuleVersionVo == null) {
                                     continue;
                                 }
                                 jobVo.setVersionId(deploySystemModuleVersionVo.getVersionId());
                                 jobVo.setParentId(deployJobVo.getId());
                                 jobVo.setInvokeId(deployJobVo.getId());
                                 jobVo.setRouteId(deployJobVo.getInvokeId().toString());
-                                if (isFire) {
-                                    deployJobService.createJobAndFire(jobVo);
-                                } else {
-                                    deployJobService.createJob(jobVo);
-                                }
+                                deployJobService.createJob(jobVo);
                                 deployJobMapper.insertGroupJob(groupVo.getId(), jobVo.getId(), k + 1);
                                 deployJobMapper.updateAutoExecJobParentIdById(jobVo);
                                 hasLaneJob = true;
@@ -143,6 +141,10 @@ public class DeployBatchJobServiceImpl implements DeployBatchJobService, IDeploy
         }
 
         deployJobMapper.insertJobInvoke(deployJobVo.getId(), deployJobVo.getInvokeId(), deployJobVo.getSource(), deployJobVo.getRouteId());
+
+        if (isFire) {
+            deployBatchJobService.fireBatch(deployJobVo.getId(), JobAction.RESET_REFIRE.getValue(), JobAction.RESET_REFIRE.getValue());
+        }
 
     }
 
@@ -238,12 +240,12 @@ public class DeployBatchJobServiceImpl implements DeployBatchJobService, IDeploy
             passThroughEnv = new JSONObject();
         }
         if (StringUtils.isBlank(groupVo.getBatchJobAction())) {
-            groupVo.setBatchJobAction(passThroughEnv.getString("BATCH_JOB_ACTION"));
+            groupVo.setBatchJobAction(passThroughEnv.getString("BATCH_JOB_ACTION") == null ? JobAction.REFIRE.getValue() : passThroughEnv.getString("BATCH_JOB_ACTION"));
         } else {
             passThroughEnv.put("BATCH_JOB_ACTION", groupVo.getBatchJobAction());
         }
         if (StringUtils.isBlank(groupVo.getJobAction())) {
-            groupVo.setJobAction(passThroughEnv.getString("JOB_ACTION"));
+            groupVo.setJobAction(passThroughEnv.getString("JOB_ACTION") == null ? JobAction.REFIRE.getValue() : passThroughEnv.getString("JOB_ACTION"));
         } else {
             passThroughEnv.put("JOB_ACTION", groupVo.getJobAction());
         }
@@ -295,6 +297,7 @@ public class DeployBatchJobServiceImpl implements DeployBatchJobService, IDeploy
                     jobVo.setExecUser(UserContext.get().getUserUuid(true));
                     refireAction.doService(jobVo);
                 } catch (Exception ex) {
+                    deployBatchJobMapper.updateGroupStatus(new LaneGroupVo(groupId, JobStatus.FAILED.getValue()));
                     logger.error("Fire job by batch failed," + ex.getMessage(), ex);
                 }
             }
@@ -360,42 +363,43 @@ public class DeployBatchJobServiceImpl implements DeployBatchJobService, IDeploy
             } else {
                 groupStatus = JobStatus.PENDING.getValue();
             }
-        } else if (statusCountMap.get(JobStatus.FAILED.getValue()) > 0 || statusCountMap.get(JobStatus.ABORTED.getValue()) > 0) {
+        } else if (statusCountMap.get(JobStatus.FAILED.getValue()) > 0) {
             groupStatus = JobStatus.FAILED.getValue();
+        } else if (statusCountMap.get(JobStatus.ABORTED.getValue()) > 0) {
+            groupStatus = JobStatus.ABORTED.getValue();
         } else if (statusCountMap.get(JobStatus.COMPLETED.getValue()) == groupJobs.size()) {
             groupStatus = JobStatus.COMPLETED.getValue();
         }
 
         //如果组状态不一致（防止重复调用），并且组状态是completed则判断是否fire下一组
-        if (!groupStatus.equals(groupVo.getStatus())) {
-            Long nextGroupId = deployBatchJobMapper.getNextGroupId(groupVo.getLaneId(), groupVo.getSort());
-            logger.info("Batch run update group:#" + groupId + " status:" + groupStatus);
-            if (groupStatus.equalsIgnoreCase(JobStatus.COMPLETED.getValue())) {
-                //如果组已完成且需要waitInput，则将状态改为 waitInput
-                if (groupVo.getNeedWait() == 1) {
-                    groupStatus = nextGroupId == null ? groupStatus : JobPhaseStatus.WAIT_INPUT.getValue();
-                }
-            } else if (groupStatus.equalsIgnoreCase(JobStatus.FAILED.getValue())) {
-                if (groupVo.getIsGroupRun() == 0) {
-                    groupStatus = nextGroupId == null ? groupStatus : JobPhaseStatus.WAIT_INPUT.getValue();
-                }
-                if (groupStatus.equalsIgnoreCase(JobStatus.FAILED.getValue())) {
-                    deployBatchJobMapper.updateBatchJobStatusByGroupId(groupVo.getId(), JobStatus.FAILED.getValue());
-                }
+        //if (!groupStatus.equals(groupVo.getStatus())) {
+        Long nextGroupId = deployBatchJobMapper.getNextGroupId(groupVo.getLaneId(), groupVo.getSort());
+        logger.info("Batch run update group:#" + groupId + " status:" + groupStatus);
+        if (groupStatus.equalsIgnoreCase(JobStatus.COMPLETED.getValue())) {
+            //如果组已完成且需要waitInput，则将状态改为 waitInput
+            if (groupVo.getNeedWait() == 1) {
+                groupStatus = nextGroupId == null ? groupStatus : JobPhaseStatus.WAIT_INPUT.getValue();
             }
-            groupVo.setStatus(groupStatus);
-            deployBatchJobMapper.updateGroupStatus(groupVo);
-            if (Objects.equals(groupStatus, JobStatus.COMPLETED.getValue())) {
-                if (nextGroupId == null) {
-                    fireLaneNextGroup(groupVo, nextGroupId, passThroughEnv);
-                } else if (groupVo.getIsGoon() == 1) {
-                    fireLaneNextGroup(groupVo, nextGroupId, passThroughEnv);
-                }
-            } else if (Objects.equals(groupStatus, JobStatus.WAIT_INPUT.getValue())) {
-                //更新下一个group 状态为 pending
-                if (groupVo.getIsGoon() == 1) {
-                    deployBatchJobMapper.updateGroupStatus(new LaneGroupVo(nextGroupId, JobStatus.PENDING.getValue()));
-                }
+        } else if (groupStatus.equalsIgnoreCase(JobStatus.FAILED.getValue())) {
+            if (groupVo.getIsGroupRun() == 0) {
+                groupStatus = nextGroupId == null ? groupStatus : JobPhaseStatus.WAIT_INPUT.getValue();
+            }
+            if (groupStatus.equalsIgnoreCase(JobStatus.FAILED.getValue())) {
+                deployBatchJobMapper.updateBatchJobStatusByGroupId(groupVo.getId(), JobStatus.FAILED.getValue());
+            }
+        } else if (groupStatus.equalsIgnoreCase(JobStatus.ABORTED.getValue())) {
+            deployBatchJobMapper.updateBatchJobStatusByGroupId(groupVo.getId(), JobStatus.ABORTED.getValue());
+        }
+        groupVo.setStatus(groupStatus);
+        deployBatchJobMapper.updateGroupStatus(groupVo);
+        if (Objects.equals(groupStatus, JobStatus.COMPLETED.getValue())) {
+            if (nextGroupId == null || groupVo.getIsGoon() == 1) {
+                fireLaneNextGroup(groupVo, nextGroupId, passThroughEnv);
+            }
+        } else if (Objects.equals(groupStatus, JobStatus.WAIT_INPUT.getValue())) {
+            //更新下一个group 状态为 pending
+            if (groupVo.getIsGoon() == 1) {
+                deployBatchJobMapper.updateGroupStatus(new LaneGroupVo(nextGroupId, JobStatus.PENDING.getValue()));
             }
         }
     }
