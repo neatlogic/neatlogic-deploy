@@ -101,7 +101,7 @@ CREATE TABLE `deploy_app_env_auto_config` (
   `instance_id` bigint NOT NULL COMMENT '实例资产id',
   `key` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '变量名',
   `type` enum('text','password','textarea') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT 'text' COMMENT '变量类型',
-  `value` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '变量值',
+  `value` TEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '变量值',
   `is_empty` tinyint(1) NOT NULL DEFAULT '0' COMMENT '是否设为空',
   `lcd` timestamp(3) NULL DEFAULT NULL COMMENT '最后一次修改时间',
   `lcu` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '最后一次修改人',
