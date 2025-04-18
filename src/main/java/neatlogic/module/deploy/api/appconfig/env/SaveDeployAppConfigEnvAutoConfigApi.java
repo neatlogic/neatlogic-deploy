@@ -103,6 +103,13 @@ public class SaveDeployAppConfigEnvAutoConfigApi extends PrivateApiComponentBase
         deployAppAuthorityService.checkOperationAuth(appSystemId, DeployAppConfigAction.EDIT);
         Set<String> keySet = new HashSet<>();
         for (DeployAppEnvAutoConfigKeyValueVo keyValueVo : keyValueList ) {
+            if (Objects.equals(keyValueVo.getIsEmpty(), 1)) {
+                keyValueVo.setValue(StringUtils.EMPTY);
+            } else {
+                if (StringUtils.isBlank(keyValueVo.getValue())) {
+                    keyValueVo.setValue(null);
+                }
+            }
             if (keySet.contains(keyValueVo.getKey())) {
                 throw new DeployAppConfigEnvAutoConfigKeyRepeatException(keyValueVo.getKey());
             }
@@ -155,8 +162,7 @@ public class SaveDeployAppConfigEnvAutoConfigApi extends PrivateApiComponentBase
         newKeyValueList.sort(Comparator.comparing(DeployAppEnvAutoConfigKeyValueVo::getKey));
         JSONArray tbodyList = new JSONArray();
         if (CollectionUtils.isNotEmpty(oldKeyValueList)) {
-            for (int index = 0; index < oldKeyValueList.size(); index++) {
-                DeployAppEnvAutoConfigKeyValueVo keyValueVo = oldKeyValueList.get(index);
+            for (DeployAppEnvAutoConfigKeyValueVo keyValueVo : oldKeyValueList) {
                 JSONObject tbody = new JSONObject();
                 tbody.put("key", keyValueVo.getKey());
                 tbody.put("beforeType", keyValueVo.getType());
@@ -210,11 +216,12 @@ public class SaveDeployAppConfigEnvAutoConfigApi extends PrivateApiComponentBase
                         String afterValue = tbody.getString("afterValue");
                         if (Objects.equals(beforeValue, afterValue)) {
                             tbodyList.remove(index);
-                        } else {
-                            if (StringUtils.isBlank(beforeValue) && StringUtils.isBlank(afterValue)) {
-                                tbodyList.remove(index);
-                            }
                         }
+//                        else {
+//                            if (StringUtils.isBlank(beforeValue) && StringUtils.isBlank(afterValue)) {
+//                                tbodyList.remove(index);
+//                            }
+//                        }
                     }
                 }
             }
