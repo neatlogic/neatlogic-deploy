@@ -1,0 +1,10 @@
+{
+  "content":[
+    {
+      "type":"新增功能",
+      "detail":[
+        {"msg":"deploy_app_env_auto_config表的value字段改成text类型"}
+      ]
+    }
+  ]
+}
