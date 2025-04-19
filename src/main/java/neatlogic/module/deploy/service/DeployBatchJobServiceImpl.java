@@ -15,7 +15,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 
 package neatlogic.module.deploy.service;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.TypeReference;
 import neatlogic.framework.asynchronization.threadlocal.TenantContext;
 import neatlogic.framework.asynchronization.threadlocal.UserContext;
 import neatlogic.framework.autoexec.constvalue.JobAction;
@@ -24,13 +27,11 @@ import neatlogic.framework.autoexec.constvalue.JobStatus;
 import neatlogic.framework.autoexec.constvalue.JobTriggerType;
 import neatlogic.framework.autoexec.dao.mapper.AutoexecJobMapper;
 import neatlogic.framework.autoexec.dto.job.AutoexecJobVo;
+import neatlogic.framework.autoexec.dto.node.AutoexecNodeVo;
 import neatlogic.framework.autoexec.job.action.core.AutoexecJobActionHandlerFactory;
 import neatlogic.framework.autoexec.job.action.core.IAutoexecJobActionHandler;
 import neatlogic.framework.deploy.crossover.IDeployBatchJobCrossoverService;
-import neatlogic.framework.deploy.dto.job.DeployJobAuthVo;
-import neatlogic.framework.deploy.dto.job.DeployJobVo;
-import neatlogic.framework.deploy.dto.job.LaneGroupVo;
-import neatlogic.framework.deploy.dto.job.LaneVo;
+import neatlogic.framework.deploy.dto.job.*;
 import neatlogic.framework.deploy.dto.pipeline.*;
 import neatlogic.framework.deploy.dto.version.DeploySystemModuleVersionVo;
 import neatlogic.framework.deploy.exception.*;
@@ -116,7 +117,16 @@ public class DeployBatchJobServiceImpl implements DeployBatchJobService, IDeploy
                                 jobVo.setParentId(deployJobVo.getId());
                                 jobVo.setInvokeId(deployJobVo.getId());
                                 jobVo.setRouteId(deployJobVo.getInvokeId().toString());
-                                deployJobService.createJob(jobVo);
+                                DeployJobModuleVo deployJobModuleVo = new DeployJobModuleVo();
+                                if (jobTemplateVo.getConfig() != null) {
+                                    JSONArray selectNodeList = jobTemplateVo.getConfig().getJSONArray("selectNodeList");
+                                    if (CollectionUtils.isNotEmpty(selectNodeList)) {
+                                        List<AutoexecNodeVo> autoexecNodeList = JSON.parseObject(selectNodeList.toJSONString(), new TypeReference<List<AutoexecNodeVo>>() {
+                                        });
+                                        deployJobModuleVo.setSelectNodeList(autoexecNodeList);
+                                    }
+                                }
+                                deployJobService.createJob(jobVo, deployJobModuleVo);
                                 deployJobMapper.insertGroupJob(groupVo.getId(), jobVo.getId(), k + 1);
                                 deployJobMapper.updateAutoExecJobParentIdById(jobVo);
                                 hasLaneJob = true;
