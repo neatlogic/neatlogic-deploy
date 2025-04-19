@@ -10,3 +10,6 @@ insert ignore into `deploy_type_status`(`type_id`,`is_active`) values (477317977
 insert ignore into `deploy_type_status`(`type_id`,`is_active`) values (477319286235136,1);
 insert ignore into `deploy_type_status`(`type_id`,`is_active`) values (651160662843392,1);
 insert ignore into `deploy_type_status`(`type_id`,`is_active`) values (681687327449088,1);
+
+insert ignore into `deploy_blue_green`(`id`,`name`,`sort`,`is_active`) values (1,'蓝',1,1);
+insert ignore into `deploy_blue_green`(`id`,`name`,`sort`,`is_active`) values (2,'绿',2,1);

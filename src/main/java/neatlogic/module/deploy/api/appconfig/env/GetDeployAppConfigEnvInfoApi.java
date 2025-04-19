@@ -15,6 +15,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 
 package neatlogic.module.deploy.api.appconfig.env;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.nacos.common.utils.CollectionUtils;
@@ -29,11 +30,13 @@ import neatlogic.framework.deploy.auth.DEPLOY_BASE;
 import neatlogic.framework.deploy.dto.app.DeployAppConfigEnvDBConfigVo;
 import neatlogic.framework.deploy.dto.app.DeployAppEnvAutoConfigKeyValueVo;
 import neatlogic.framework.deploy.dto.app.DeployAppEnvAutoConfigVo;
+import neatlogic.framework.deploy.dto.app.DeployInstanceBlueGreenVo;
 import neatlogic.framework.deploy.dto.instance.DeployInstanceVersionVo;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.module.deploy.dao.mapper.DeployAppConfigMapper;
+import neatlogic.module.deploy.dao.mapper.DeployBlueGreenMapper;
 import neatlogic.module.deploy.dao.mapper.DeployInstanceVersionMapper;
 import neatlogic.module.deploy.dao.mapper.DeployResourceMapper;
 import org.springframework.stereotype.Service;
@@ -63,6 +66,9 @@ public class GetDeployAppConfigEnvInfoApi extends PrivateApiComponentBase {
 
     @Resource
     private DeployResourceMapper deployResourceMapper;
+
+    @Resource
+    private DeployBlueGreenMapper blueGreenMapper;
 
     @Override
     public String getToken() {
@@ -110,7 +116,7 @@ public class GetDeployAppConfigEnvInfoApi extends PrivateApiComponentBase {
                 Map<Long, DeployInstanceVersionVo> versionMap = instanceVersionVoList.stream().collect(Collectors.toMap(DeployInstanceVersionVo::getResourceId, e -> e));
                 JSONArray instanceArray = new JSONArray();
                 for (ResourceVo resourceVo : instanceList) {
-                    JSONObject instanceObj = (JSONObject) JSONObject.toJSON(resourceVo);
+                    JSONObject instanceObj = (JSONObject) JSON.toJSON(resourceVo);
                     instanceObj.put("version", versionMap.containsKey(resourceVo.getId()) ? versionMap.get(resourceVo.getId()).getVersion() : "");
                     instanceObj.put("instanceVersion", versionMap.get(resourceVo.getId()));
                     instanceArray.add(instanceObj);
@@ -132,6 +138,24 @@ public class GetDeployAppConfigEnvInfoApi extends PrivateApiComponentBase {
                 autoConfigVo.setInstanceName(instanceResourceVo.getName());
                 autoConfigVo.setInstanceIp(instanceResourceVo.getIp());
                 autoConfigVo.setInstancePort(instanceResourceVo.getPort());
+            }
+
+            //补充蓝绿
+            List<DeployInstanceBlueGreenVo> instanceBlueGreenVos = blueGreenMapper.listInstanceBlueGreen(paramObj.getLong("appSystemId"), paramObj.getLong("appModuleId"), paramObj.getLong("envId"), instanceIdList);
+            if(CollectionUtils.isNotEmpty(instanceBlueGreenVos)){
+            Map<Long,DeployInstanceBlueGreenVo> deployInstanceBlueGreenVoMap = instanceBlueGreenVos.stream().collect(Collectors.toMap(DeployInstanceBlueGreenVo::getResourceId, e->e));
+                JSONArray instanceArray = envInfo.getJSONArray("instanceList");
+                if(CollectionUtils.isNotEmpty(instanceArray)){
+                    for (int i = 0; i < instanceArray.size(); i++) {
+                        JSONObject instanceJson = instanceArray.getJSONObject(i);
+                        DeployInstanceBlueGreenVo deployInstanceBlueGreenVo = deployInstanceBlueGreenVoMap.get(instanceJson.getLong("id"));
+                        if(deployInstanceBlueGreenVo != null) {
+                            instanceJson.put("blueGreenId", deployInstanceBlueGreenVo.getBlueGreenId());
+                            instanceJson.put("blueGreenName", deployInstanceBlueGreenVo.getBlueGreenName());
+                        }
+                    }
+                }
+
             }
         }
 

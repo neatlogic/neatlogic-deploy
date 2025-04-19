@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright (C) 2025  深圳极向量科技有限公司 All Rights Reserved.
+  ~
+  ~ This program is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU Affero General Public License as published by
+  ~ the Free Software Foundation, either version 3 of the License, or
+  ~ (at your option) any later version.
+  ~
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~ GNU Affero General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Affero General Public License
+  ~ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  -->
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="neatlogic.module.deploy.dao.mapper.DeployBlueGreenMapper">
+    <select id="getBlueGreenCount" resultType="java.lang.Integer">
+        select count(`id`) from `deploy_blue_green`
+        <where>
+            <if test="keyword != null and keyword != ''">
+                and `name` LIKE CONCAT('%', #{keyword}, '%')
+            </if>
+        </where>
+    </select>
+
+    <select id="searchBlueGreen" resultType="neatlogic.framework.deploy.dto.app.DeployBlueGreenVo">
+        select `id`,`name`,`sort`, `is_active` as isActive from `deploy_blue_green`
+        <where>
+            <if test="keyword != null and keyword != ''">
+                and `name` LIKE CONCAT('%', #{keyword}, '%')
+            </if>
+        </where>
+        limit #{startNum}, #{pageSize}
+    </select>
+    <select id="listInstanceBlueGreen"
+            resultType="neatlogic.framework.deploy.dto.app.DeployInstanceBlueGreenVo">
+        select a.`app_system_id` as appSystemId, a.`app_module_id` as appModuleId, a.`env_id` as envId, a.`resource_id`
+        as resourceId, a.`blue_green_id` as blueGreenId,b.`name` as blueGreenName
+        from `deploy_app_instance_blue_green` a
+        join `deploy_blue_green` b on a.`blue_green_id` = b.`id` and b.`is_active` = 1
+        where a.`app_system_id` = #{appSystemId}
+        and a.`app_module_id` = #{appModuleId}
+        and a.`env_id` = #{envId}
+        and a.`resource_id` in
+        <foreach collection="resourceIdList" item="resourceId" close=")" open="(" separator=",">
+            #{resourceId}
+        </foreach>
+    </select>
+
+    <update id="updateBlueGreen">
+        update `deploy_blue_green` set `name` = #{name},`is_active` = #{isActive}
+        where `id` = #{id}
+    </update>
+
+    <insert id="insertBlueGreen">
+        insert into `deploy_blue_green` (`id`, `name`, `sort`, `is_active`)
+        values (#{id}, #{name}, #{sort}, #{isActive})
+    </insert>
+    <insert id="insertInstanceBlueGreen">
+        insert into `deploy_app_instance_blue_green` (`app_system_id`, `app_module_id`, `env_id`, `resource_id`,
+                                                      `blue_green_id`)
+        values (#{appSystemId}, #{appModuleId}, #{envId}, #{resourceId}, #{blueGreenId})
+        on duplicate key
+            update `blue_green_id` = #{blueGreenId}
+    </insert>
+
+    <insert id="insertDeployJobPhaseNodeBlueGreen">
+        insert into `deploy_job_phase_node_blue_green`(`job_id`,
+        `job_phase_id`,`job_phase_node_id`,`blue_green_id`,`update_tag`)
+        values
+        <foreach collection="userUuidList" item="uuid" separator=",">
+            (#{jobId}, #{jobPhaseId},#{jobPhaseNodeId},#{blueGreenId},#{updateTag})
+        </foreach>
+        on duplicate key
+        update `blue_green_id` = VALUES(`blue_green_id`),
+        `update_tag` = VALUES(`update_tag`)
+    </insert>
+
+    <delete id="deleteJobPhaseNodeBlueGreenByJobPhaseIdAndUpdateTag">
+        DELETE
+        FROM `deploy_job_phase_node_blue_green`
+        where `job_phase_id` = #{jobPhaseId}
+          and `update_tag` != #{updateTag}
+    </delete>
+</mapper>
