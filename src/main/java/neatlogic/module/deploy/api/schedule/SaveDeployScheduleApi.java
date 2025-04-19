@@ -15,6 +15,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 
 package neatlogic.module.deploy.api.schedule;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.asynchronization.threadlocal.TenantContext;
 import neatlogic.framework.asynchronization.threadlocal.UserContext;
@@ -202,13 +203,13 @@ public class SaveDeployScheduleApi extends PrivateApiComponentBase {
             List<Long> appSystemIdList = deploySystemModuleVersionList.stream().map(DeploySystemModuleVersionVo::getAppSystemId).collect(Collectors.toList());
             if (CollectionUtils.isNotEmpty(appSystemIdList)) {
                 List<AppSystemVo> appSystemList = appSystemMapper.getAppSystemListByIdList(appSystemIdList);
-                appSystemMap = appSystemList.stream().collect(Collectors.toMap(e -> e.getId(), e -> e));
+                appSystemMap = appSystemList.stream().collect(Collectors.toMap(AppSystemVo::getId, e -> e));
             }
             Map<Long, AppModuleVo> appModuleMap = new HashMap<>();
             List<Long> appModuleIdList = deploySystemModuleVersionList.stream().map(DeploySystemModuleVersionVo::getAppModuleId).collect(Collectors.toList());
             if (CollectionUtils.isNotEmpty(appModuleIdList)) {
                 List<AppModuleVo> appModuleList = appSystemMapper.getAppModuleListByIdList(appModuleIdList);
-                appModuleMap = appModuleList.stream().collect(Collectors.toMap(e -> e.getId(), e -> e));
+                appModuleMap = appModuleList.stream().collect(Collectors.toMap(AppModuleVo::getId, e -> e));
             }
             for (DeploySystemModuleVersionVo deploySystemModuleVersionVo : deploySystemModuleVersionList) {
                 Long appSystemId = deploySystemModuleVersionVo.getAppSystemId();
@@ -267,7 +268,7 @@ public class SaveDeployScheduleApi extends PrivateApiComponentBase {
 
     public IValid name() {
         return value -> {
-            DeployScheduleVo vo = JSONObject.toJavaObject(value, DeployScheduleVo.class);
+            DeployScheduleVo vo = JSON.toJavaObject(value, DeployScheduleVo.class);
             if (deployScheduleMapper.checkScheduleNameIsExists(vo) > 0) {
                 return new FieldValidResultVo(new DeployScheduleNameRepeatException(vo.getName()));
             }
