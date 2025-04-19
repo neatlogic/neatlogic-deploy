@@ -31,7 +31,6 @@ import neatlogic.framework.scheduler.core.JobBase;
 import neatlogic.framework.scheduler.dto.JobObject;
 import neatlogic.framework.service.AuthenticationInfoService;
 import neatlogic.module.deploy.service.DeployBatchJobService;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.quartz.DisallowConcurrentExecution;
 import org.quartz.JobExecutionContext;
 import org.slf4j.Logger;
@@ -79,7 +78,7 @@ public class DeployBatchJobAutoFireJob extends JobBase {
     @Override
     public void reloadJob(JobObject jobObject) {
         //判断作业是否已经存在，存在则unload
-        if (schedulerManager.checkJobIsExists(jobObject.getJobName(),this.getGroupName())) {
+        if (schedulerManager.checkJobIsExists(jobObject.getJobName(), this.getGroupName())) {
             schedulerManager.unloadJob(jobObject);
         }
         String tenantUuid = jobObject.getTenantUuid();
@@ -100,7 +99,7 @@ public class DeployBatchJobAutoFireJob extends JobBase {
                     deployBatchJobService.fireBatch(jobId, JobAction.RESET_REFIRE.getValue(), JobAction.RESET_REFIRE.getValue());
                 }
             } catch (Exception ex) {
-                logger.error(ExceptionUtils.getStackTrace(ex));
+                logger.error(String.format("DeployBatchJobAutoFireJob reloadJob error. jobId:%s, errorMsg:%s", jobId, ex.getMessage()), ex);
             }
         }
     }

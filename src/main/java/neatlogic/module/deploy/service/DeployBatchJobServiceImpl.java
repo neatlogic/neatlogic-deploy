@@ -179,7 +179,7 @@ public class DeployBatchJobServiceImpl implements DeployBatchJobService, IDeploy
         //不允许存在"已撤销"的作业
         List<AutoexecJobVo> autoexecJobList = deployBatchJobMapper.getBatchDeployJobListByIdAndNotInStatus(batchJobId, Arrays.asList(JobStatus.REVOKED.getValue(), JobStatus.CHECKED.getValue()));
         if (CollectionUtils.isEmpty(autoexecJobList)) {
-            throw new DeployBatchJobFireWithRevokedAndCheckedException();
+            throw new DeployBatchJobFireWithRevokedAndCheckedException(batchJobVo);
         }
         //更新批量发布父作业状态
         String loginUserUuid = UserContext.get().getUserUuid();
