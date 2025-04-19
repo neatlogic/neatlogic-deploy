@@ -36,11 +36,13 @@ import neatlogic.module.deploy.service.DeployJobService;
 import org.quartz.DisallowConcurrentExecution;
 import org.quartz.JobExecutionContext;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.List;
 import java.util.Objects;
 
+@Transactional
 @Component
 @DisallowConcurrentExecution
 public class DeployJobScheduleJob  extends JobBase {
