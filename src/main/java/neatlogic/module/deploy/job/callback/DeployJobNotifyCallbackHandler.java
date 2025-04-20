@@ -27,7 +27,6 @@ import neatlogic.framework.common.constvalue.systemuser.SystemUser;
 import neatlogic.framework.crossover.CrossoverServiceFactory;
 import neatlogic.framework.deploy.constvalue.DeployJobNotifyTriggerType;
 import neatlogic.framework.deploy.dto.job.DeployJobVo;
-import neatlogic.framework.notify.crossover.INotifyServiceCrossoverService;
 import neatlogic.framework.notify.dao.mapper.NotifyMapper;
 import neatlogic.framework.notify.dto.InvokeNotifyPolicyConfigVo;
 import neatlogic.framework.notify.dto.NotifyPolicyVo;
@@ -37,8 +36,8 @@ import neatlogic.framework.util.NotifyPolicyUtil;
 import neatlogic.module.deploy.dao.mapper.DeployAppConfigMapper;
 import neatlogic.module.deploy.dao.mapper.DeployJobMapper;
 import neatlogic.module.deploy.handler.DeployJobMessageHandler;
-import neatlogic.module.deploy.notify.handler.DeployJobNotifyPolicyHandler;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -96,65 +95,153 @@ public class DeployJobNotifyCallbackHandler extends AutoexecJobCallbackBase {
 
     @Override
     public void doService(Long invokeId, AutoexecJobVo jobVo) {
-        DeployJobNotifyTriggerType trigger = DeployJobNotifyTriggerType.getTriggerByStatus(jobVo.getStatus());
-        if (trigger == null) {
-            return;
-        }
-        DeployJobVo jobInfo = deployJobMapper.getDeployJobInfoByJobId(jobVo.getId());
-        if (jobInfo == null) {
-            return;
-        }
-        Long appSystemId = jobInfo.getAppSystemId();
-        if (appSystemId == null) {
-            return;
-        }
-        IAppSystemMapper iAppSystemMapper = CrossoverServiceFactory.getApi(IAppSystemMapper.class);
-        AppSystemVo appSystemVo = iAppSystemMapper.getAppSystemById(appSystemId);
-        if (appSystemVo != null) {
-            jobInfo.setAppSystemName(appSystemVo.getName());
-            jobInfo.setAppSystemAbbrName(appSystemVo.getAbbrName());
-        }
-        Long appModuleId = jobInfo.getAppModuleId();
-        if (appModuleId != null) {
-            AppModuleVo appModuleVo = iAppSystemMapper.getAppModuleById(appModuleId);
-            if (appModuleVo != null) {
-                jobInfo.setAppModuleName(appModuleVo.getName());
-                jobInfo.setAppModuleAbbrName(appModuleVo.getAbbrName());
-            }
-        }
-        String configStr = deployAppConfigMapper.getAppSystemNotifyPolicyConfigByAppSystemId(appSystemId);
-        InvokeNotifyPolicyConfigVo invokeNotifyPolicyConfigVo = JSONObject.parseObject(configStr, InvokeNotifyPolicyConfigVo.class);
-        INotifyServiceCrossoverService notifyServiceCrossoverService = CrossoverServiceFactory.getApi(INotifyServiceCrossoverService.class);
-        invokeNotifyPolicyConfigVo = notifyServiceCrossoverService.regulateNotifyPolicyConfig(invokeNotifyPolicyConfigVo, DeployJobNotifyPolicyHandler.class);
-        if (invokeNotifyPolicyConfigVo == null) {
-            return;
-        }
-        // 触发点被排除，不用发送邮件
-        List<String> excludeTriggerList = invokeNotifyPolicyConfigVo.getExcludeTriggerList();
-        if (CollectionUtils.isNotEmpty(excludeTriggerList) && excludeTriggerList.contains(trigger.getTrigger())) {
-            return;
-        }
-        Long notifyPolicyId = invokeNotifyPolicyConfigVo.getPolicyId();
-        if (notifyPolicyId == null) {
-            return;
-        }
-        NotifyPolicyVo notifyPolicyVo = notifyMapper.getNotifyPolicyById(notifyPolicyId);
-        if (notifyPolicyVo == null || notifyPolicyVo.getConfig() == null) {
-            return;
-        }
+        boolean flag = false;
+        StringBuilder notifyAuditMessageStringBuilder = new StringBuilder();
         try {
-            Map<String, List<NotifyReceiverVo>> receiverMap = new HashMap<>();
-            if (!Objects.equals(jobInfo.getExecUser(), SystemUser.SYSTEM.getUserUuid())) {
-                receiverMap.computeIfAbsent(JobUserType.EXEC_USER.getValue(), k -> new ArrayList<>())
-                        .add(new NotifyReceiverVo(GroupSearch.USER.getValue(), jobInfo.getExecUser()));
+            DeployJobNotifyTriggerType notifyTriggerType = DeployJobNotifyTriggerType.getTriggerByStatus(jobVo.getStatus());
+            if (notifyTriggerType != null) {
+                notifyAuditMessageStringBuilder.append("触发点为 ").append(notifyTriggerType.getTrigger()).append("(").append(notifyTriggerType.getText()).append(")");
+                DeployJobVo jobInfo = deployJobMapper.getDeployJobInfoByJobId(jobVo.getId());
+                if (jobInfo != null) {
+                    notifyAuditMessageStringBuilder
+                            .append(" 作业")
+                            .append(jobInfo.getName())
+                            .append("(")
+                            .append(jobVo.getId())
+                            .append(")")
+                            .append("的状态为")
+                            .append(jobVo.getStatus());
+                    notifyAuditMessageStringBuilder.append(" 执行用户").append(jobInfo.getExecUser());
+                    Long appSystemId = jobInfo.getAppSystemId();
+                    if (appSystemId != null) {
+                        notifyAuditMessageStringBuilder.append(" 应用系统");
+                        IAppSystemMapper iAppSystemMapper = CrossoverServiceFactory.getApi(IAppSystemMapper.class);
+                        AppSystemVo appSystemVo = iAppSystemMapper.getAppSystemById(appSystemId);
+                        if (appSystemVo != null) {
+                            jobInfo.setAppSystemName(appSystemVo.getName());
+                            jobInfo.setAppSystemAbbrName(appSystemVo.getAbbrName());
+                            notifyAuditMessageStringBuilder.append(appSystemVo.getName())
+                                    .append("(").append(appSystemVo.getAbbrName()).append(")");
+                        }
+                        notifyAuditMessageStringBuilder.append("(").append(appSystemId).append(")");
+                        Long appModuleId = jobInfo.getAppModuleId();
+                        if (appModuleId != null) {
+                            notifyAuditMessageStringBuilder.append(" 应用模块");
+                            AppModuleVo appModuleVo = iAppSystemMapper.getAppModuleById(appModuleId);
+                            if (appModuleVo != null) {
+                                jobInfo.setAppModuleName(appModuleVo.getName());
+                                jobInfo.setAppModuleAbbrName(appModuleVo.getAbbrName());
+                                notifyAuditMessageStringBuilder.append(appModuleVo.getName())
+                                        .append("(").append(appModuleVo.getAbbrName()).append(")");
+                            }
+                            notifyAuditMessageStringBuilder.append("(").append(appModuleId).append(")");
+                        }
+                        Long envId = jobInfo.getEnvId();
+                        if (envId != null) {
+                            notifyAuditMessageStringBuilder.append(" 环境");
+                            if (StringUtils.isNotBlank(jobInfo.getEnvName())) {
+                                notifyAuditMessageStringBuilder.append(jobInfo.getEnvName());
+                            }
+                            notifyAuditMessageStringBuilder.append("(").append(envId).append(")");
+                        }
+                        String configStr = deployAppConfigMapper.getAppSystemNotifyPolicyConfigByAppSystemId(appSystemId);
+                        if (StringUtils.isNotBlank(configStr)) {
+                            InvokeNotifyPolicyConfigVo invokeNotifyPolicyConfigVo = JSONObject.parseObject(configStr, InvokeNotifyPolicyConfigVo.class);
+                            // 触发点被排除，不用发送邮件
+                            List<String> excludeTriggerList = invokeNotifyPolicyConfigVo.getExcludeTriggerList();
+                            if (CollectionUtils.isNotEmpty(excludeTriggerList) && excludeTriggerList.contains(notifyTriggerType.getTrigger())) {
+                                notifyAuditMessageStringBuilder.append(" 通知策略设置触发时机中排除了触发点").append(notifyTriggerType.getTrigger()).append("(").append(notifyTriggerType.getText()).append(")");
+                            } else {
+                                NotifyPolicyVo notifyPolicyVo = null;
+                                if (invokeNotifyPolicyConfigVo.getIsCustom() == 1) {
+                                    notifyAuditMessageStringBuilder.append(" 设置通知策略ID为 ");
+                                    if (invokeNotifyPolicyConfigVo.getPolicyId() != null) {
+                                        notifyAuditMessageStringBuilder.append(invokeNotifyPolicyConfigVo.getPolicyId());
+                                        notifyPolicyVo = notifyMapper.getNotifyPolicyById(invokeNotifyPolicyConfigVo.getPolicyId());
+                                        if (notifyPolicyVo == null) {
+                                            notifyAuditMessageStringBuilder.append("，但是该通知策略不存在");
+                                        } else {
+                                            notifyAuditMessageStringBuilder.append("，找到默认通知策略").append(notifyPolicyVo.getName()).append("(").append(notifyPolicyVo.getId()).append(")");
+                                        }
+                                    } else {
+                                        notifyAuditMessageStringBuilder.append("null");
+                                    }
+                                } else {
+                                    notifyAuditMessageStringBuilder.append(" 没有设置通知策略 ");
+                                    if (invokeNotifyPolicyConfigVo.getHandler() != null) {
+                                        notifyAuditMessageStringBuilder.append(" 通过通知策略handler=").append(invokeNotifyPolicyConfigVo.getHandler());
+                                        notifyPolicyVo = notifyMapper.getDefaultNotifyPolicyByHandler(invokeNotifyPolicyConfigVo.getHandler());
+                                        if (notifyPolicyVo == null) {
+                                            notifyAuditMessageStringBuilder.append(" ，找不到默认通知策略");
+                                        } else {
+                                            notifyAuditMessageStringBuilder.append(" ，找到默认通知策略 ").append(notifyPolicyVo.getName()).append("(").append(notifyPolicyVo.getId()).append(")");
+                                        }
+                                    } else {
+                                        notifyAuditMessageStringBuilder.append(" 由于通知策略handler为null，无法找到默认通知策略");
+                                    }
+                                }
+                                if (notifyPolicyVo != null) {
+                                    if (notifyPolicyVo.getConfig() != null) {
+                                        Map<String, List<NotifyReceiverVo>> receiverMap = new HashMap<>();
+                                        if (!Objects.equals(jobInfo.getExecUser(), SystemUser.SYSTEM.getUserUuid())) {
+                                            receiverMap.computeIfAbsent(JobUserType.EXEC_USER.getValue(), k -> new ArrayList<>())
+                                                    .add(new NotifyReceiverVo(GroupSearch.USER.getValue(), jobInfo.getExecUser()));
+                                        }
+                                        flag = true;
+                                        NotifyPolicyUtil.execute(
+                                                notifyPolicyVo.getHandler(),
+                                                notifyTriggerType,
+                                                DeployJobMessageHandler.class,
+                                                notifyPolicyVo,
+                                                null,
+                                                null,
+                                                receiverMap,
+                                                jobInfo,
+                                                null,
+                                                notifyAuditMessageStringBuilder.toString()
+                                        );
+                                    } else {
+                                        notifyAuditMessageStringBuilder.append(" 通知策略config为null，不触发通知");
+                                    }
+                                }
+                            }
+                        } else {
+                            notifyAuditMessageStringBuilder.append(" 在deploy_job_notify_policy表中找不到的该应用系统的通知策略数据").append("，无法触发通知");
+                        }
+                    } else {
+                        notifyAuditMessageStringBuilder.append(" 在deploy_job表中该作业的app_system_id").append("，无法触发通知");
+                    }
+                } else {
+                    notifyAuditMessageStringBuilder
+                            .append(" 作业")
+                            .append(jobVo.getName() != null ? jobVo.getName() : StringUtils.EMPTY)
+                            .append("(")
+                            .append(jobVo.getId())
+                            .append(")")
+                            .append("的状态为")
+                            .append(jobVo.getStatus());
+                    notifyAuditMessageStringBuilder.append(" 在deploy_job表中找不到该作业的数据").append("，无法触发通知");
+                }
+            } else {
+                notifyAuditMessageStringBuilder
+                        .append("根据作业")
+                        .append(jobVo.getName() != null ? jobVo.getName() : StringUtils.EMPTY)
+                        .append("(")
+                        .append(jobVo.getId())
+                        .append(")")
+                        .append("的状态")
+                        .append(jobVo.getStatus())
+                        .append("，找不到触发点")
+                        .append("，无法触发通知");
             }
-            String notifyAuditMessage = jobInfo.getId() + "-" + jobInfo.getName();
-            NotifyPolicyUtil.execute(notifyPolicyVo.getHandler(), trigger, DeployJobMessageHandler.class
-                    , notifyPolicyVo, null, null, receiverMap
-                    , jobInfo, null, notifyAuditMessage);
         } catch (Exception ex) {
-            logger.error("发布作业：" + jobInfo.getId() + "-" + jobInfo.getName() + "通知失败");
+            logger.error("发布作业：" + jobVo.getId() + "-" + (jobVo.getName() != null ? jobVo.getName() : StringUtils.EMPTY) + "通知失败");
             logger.error(ex.getMessage(), ex);
+        } finally {
+            if (!flag) {
+                Logger notifyAuditLogger = LoggerFactory.getLogger("notifyAudit");
+                notifyAuditLogger.info("\n" + notifyAuditMessageStringBuilder);
+            }
         }
     }
 }
