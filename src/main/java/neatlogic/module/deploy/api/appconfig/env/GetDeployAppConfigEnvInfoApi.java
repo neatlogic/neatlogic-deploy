@@ -39,11 +39,13 @@ import neatlogic.module.deploy.dao.mapper.DeployAppConfigMapper;
 import neatlogic.module.deploy.dao.mapper.DeployBlueGreenMapper;
 import neatlogic.module.deploy.dao.mapper.DeployInstanceVersionMapper;
 import neatlogic.module.deploy.dao.mapper.DeployResourceMapper;
+import org.apache.commons.collections4.MapUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -108,17 +110,31 @@ public class GetDeployAppConfigEnvInfoApi extends PrivateApiComponentBase {
 
         //获取实例autoConfig
         if (CollectionUtils.isNotEmpty(instanceIdList)) {
-
             List<ResourceVo> instanceList = deployResourceMapper.getAppInstanceResourceListByIdList(instanceIdList);
             // 补充实例当前版本信息
             List<DeployInstanceVersionVo> instanceVersionVoList = deployInstanceVersionMapper.getDeployInstanceVersionByEnvIdAndInstanceIdList(envAutoConfigVo.getAppSystemId(), envAutoConfigVo.getAppModuleId(), envAutoConfigVo.getEnvId(), instanceIdList);
+            //补充蓝绿
+            Map<Long, DeployInstanceBlueGreenVo> deployInstanceBlueGreenVoMap = new HashMap<>();
+            Map<Long, DeployInstanceVersionVo> versionMap = new HashMap<>();
+            List<DeployInstanceBlueGreenVo> instanceBlueGreenVos = blueGreenMapper.listInstanceBlueGreen(paramObj.getLong("appSystemId"), paramObj.getLong("appModuleId"), paramObj.getLong("envId"), instanceIdList);
+            if (CollectionUtils.isNotEmpty(instanceBlueGreenVos)) {
+                deployInstanceBlueGreenVoMap = instanceBlueGreenVos.stream().collect(Collectors.toMap(DeployInstanceBlueGreenVo::getResourceId, e -> e));
+            }
             if (CollectionUtils.isNotEmpty(instanceVersionVoList)) {
-                Map<Long, DeployInstanceVersionVo> versionMap = instanceVersionVoList.stream().collect(Collectors.toMap(DeployInstanceVersionVo::getResourceId, e -> e));
+                versionMap = instanceVersionVoList.stream().collect(Collectors.toMap(DeployInstanceVersionVo::getResourceId, e -> e));
+            }
+            if (MapUtils.isNotEmpty(deployInstanceBlueGreenVoMap) || MapUtils.isNotEmpty(versionMap)) {
                 JSONArray instanceArray = new JSONArray();
                 for (ResourceVo resourceVo : instanceList) {
                     JSONObject instanceObj = (JSONObject) JSON.toJSON(resourceVo);
                     instanceObj.put("version", versionMap.containsKey(resourceVo.getId()) ? versionMap.get(resourceVo.getId()).getVersion() : "");
                     instanceObj.put("instanceVersion", versionMap.get(resourceVo.getId()));
+                    DeployInstanceBlueGreenVo deployInstanceBlueGreenVo = deployInstanceBlueGreenVoMap.get(instanceObj.getLong("id"));
+                    if (deployInstanceBlueGreenVo != null) {
+                        instanceObj.put("blueGreenId", deployInstanceBlueGreenVo.getBlueGreenId());
+                        instanceObj.put("blueGreenName", deployInstanceBlueGreenVo.getBlueGreenName());
+                        instanceObj.put("blueGreenSort", deployInstanceBlueGreenVo.getBlueGreenSort());
+                    }
                     instanceArray.add(instanceObj);
                 }
                 envInfo.put("instanceList", instanceArray);
@@ -138,24 +154,6 @@ public class GetDeployAppConfigEnvInfoApi extends PrivateApiComponentBase {
                 autoConfigVo.setInstanceName(instanceResourceVo.getName());
                 autoConfigVo.setInstanceIp(instanceResourceVo.getIp());
                 autoConfigVo.setInstancePort(instanceResourceVo.getPort());
-            }
-
-            //补充蓝绿
-            List<DeployInstanceBlueGreenVo> instanceBlueGreenVos = blueGreenMapper.listInstanceBlueGreen(paramObj.getLong("appSystemId"), paramObj.getLong("appModuleId"), paramObj.getLong("envId"), instanceIdList);
-            if(CollectionUtils.isNotEmpty(instanceBlueGreenVos)){
-            Map<Long,DeployInstanceBlueGreenVo> deployInstanceBlueGreenVoMap = instanceBlueGreenVos.stream().collect(Collectors.toMap(DeployInstanceBlueGreenVo::getResourceId, e->e));
-                JSONArray instanceArray = envInfo.getJSONArray("instanceList");
-                if(CollectionUtils.isNotEmpty(instanceArray)){
-                    for (int i = 0; i < instanceArray.size(); i++) {
-                        JSONObject instanceJson = instanceArray.getJSONObject(i);
-                        DeployInstanceBlueGreenVo deployInstanceBlueGreenVo = deployInstanceBlueGreenVoMap.get(instanceJson.getLong("id"));
-                        if(deployInstanceBlueGreenVo != null) {
-                            instanceJson.put("blueGreenId", deployInstanceBlueGreenVo.getBlueGreenId());
-                            instanceJson.put("blueGreenName", deployInstanceBlueGreenVo.getBlueGreenName());
-                        }
-                    }
-                }
-
             }
         }
 

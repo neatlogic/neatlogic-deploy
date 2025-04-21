@@ -39,7 +39,7 @@
     <select id="listInstanceBlueGreen"
             resultType="neatlogic.framework.deploy.dto.app.DeployInstanceBlueGreenVo">
         select a.`app_system_id` as appSystemId, a.`app_module_id` as appModuleId, a.`env_id` as envId, a.`resource_id`
-        as resourceId, a.`blue_green_id` as blueGreenId,b.`name` as blueGreenName
+        as resourceId, a.`blue_green_id` as blueGreenId,b.`name` as blueGreenName,b.`sort` as blueGreenSort
         from `deploy_app_instance_blue_green` a
         join `deploy_blue_green` b on a.`blue_green_id` = b.`id` and b.`is_active` = 1
         where a.`app_system_id` = #{appSystemId}
@@ -48,6 +48,17 @@
         and a.`resource_id` in
         <foreach collection="resourceIdList" item="resourceId" close=")" open="(" separator=",">
             #{resourceId}
+        </foreach>
+    </select>
+
+    <select id="listDeployJobPhaseNodeBlueGreen" resultType="neatlogic.framework.deploy.dto.app.DeployJobPhaseNodeBlueGreenVo">
+        select  a.`job_phase_node_id` as jobPhaseNodeId, a.`blue_green_id` as blueGreenId,b.`name` as blueGreenName,b.`sort` as blueGreenSort
+        from `deploy_job_phase_node_blue_green` a
+        join `deploy_blue_green` b on a.`blue_green_id` = b.`id`
+        where
+        a.`job_phase_node_id` in
+        <foreach collection="list" item="id" close=")" open="(" separator=",">
+            #{id}
         </foreach>
     </select>
 
@@ -72,8 +83,8 @@
         insert into `deploy_job_phase_node_blue_green`(`job_id`,
         `job_phase_id`,`job_phase_node_id`,`blue_green_id`,`update_tag`)
         values
-        <foreach collection="userUuidList" item="uuid" separator=",">
-            (#{jobId}, #{jobPhaseId},#{jobPhaseNodeId},#{blueGreenId},#{updateTag})
+        <foreach collection="list" item="nodeBlueGreen" separator=",">
+            (#{nodeBlueGreen.jobId}, #{nodeBlueGreen.jobPhaseId},#{nodeBlueGreen.jobPhaseNodeId},#{nodeBlueGreen.blueGreenId},#{nodeBlueGreen.updateTag})
         </foreach>
         on duplicate key
         update `blue_green_id` = VALUES(`blue_green_id`),
