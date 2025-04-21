@@ -15,6 +15,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 
 package neatlogic.module.deploy.api.appconfig.env;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.nacos.common.utils.CollectionUtils;
@@ -29,18 +30,22 @@ import neatlogic.framework.deploy.auth.DEPLOY_BASE;
 import neatlogic.framework.deploy.dto.app.DeployAppConfigEnvDBConfigVo;
 import neatlogic.framework.deploy.dto.app.DeployAppEnvAutoConfigKeyValueVo;
 import neatlogic.framework.deploy.dto.app.DeployAppEnvAutoConfigVo;
+import neatlogic.framework.deploy.dto.app.DeployInstanceBlueGreenVo;
 import neatlogic.framework.deploy.dto.instance.DeployInstanceVersionVo;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.module.deploy.dao.mapper.DeployAppConfigMapper;
+import neatlogic.module.deploy.dao.mapper.DeployBlueGreenMapper;
 import neatlogic.module.deploy.dao.mapper.DeployInstanceVersionMapper;
 import neatlogic.module.deploy.dao.mapper.DeployResourceMapper;
+import org.apache.commons.collections4.MapUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -63,6 +68,9 @@ public class GetDeployAppConfigEnvInfoApi extends PrivateApiComponentBase {
 
     @Resource
     private DeployResourceMapper deployResourceMapper;
+
+    @Resource
+    private DeployBlueGreenMapper blueGreenMapper;
 
     @Override
     public String getToken() {
@@ -102,17 +110,31 @@ public class GetDeployAppConfigEnvInfoApi extends PrivateApiComponentBase {
 
         //获取实例autoConfig
         if (CollectionUtils.isNotEmpty(instanceIdList)) {
-
             List<ResourceVo> instanceList = deployResourceMapper.getAppInstanceResourceListByIdList(instanceIdList);
             // 补充实例当前版本信息
             List<DeployInstanceVersionVo> instanceVersionVoList = deployInstanceVersionMapper.getDeployInstanceVersionByEnvIdAndInstanceIdList(envAutoConfigVo.getAppSystemId(), envAutoConfigVo.getAppModuleId(), envAutoConfigVo.getEnvId(), instanceIdList);
+            //补充蓝绿
+            Map<Long, DeployInstanceBlueGreenVo> deployInstanceBlueGreenVoMap = new HashMap<>();
+            Map<Long, DeployInstanceVersionVo> versionMap = new HashMap<>();
+            List<DeployInstanceBlueGreenVo> instanceBlueGreenVos = blueGreenMapper.listInstanceBlueGreen(paramObj.getLong("appSystemId"), paramObj.getLong("appModuleId"), paramObj.getLong("envId"), instanceIdList);
+            if (CollectionUtils.isNotEmpty(instanceBlueGreenVos)) {
+                deployInstanceBlueGreenVoMap = instanceBlueGreenVos.stream().collect(Collectors.toMap(DeployInstanceBlueGreenVo::getResourceId, e -> e));
+            }
             if (CollectionUtils.isNotEmpty(instanceVersionVoList)) {
-                Map<Long, DeployInstanceVersionVo> versionMap = instanceVersionVoList.stream().collect(Collectors.toMap(DeployInstanceVersionVo::getResourceId, e -> e));
+                versionMap = instanceVersionVoList.stream().collect(Collectors.toMap(DeployInstanceVersionVo::getResourceId, e -> e));
+            }
+            if (MapUtils.isNotEmpty(deployInstanceBlueGreenVoMap) || MapUtils.isNotEmpty(versionMap)) {
                 JSONArray instanceArray = new JSONArray();
                 for (ResourceVo resourceVo : instanceList) {
-                    JSONObject instanceObj = (JSONObject) JSONObject.toJSON(resourceVo);
+                    JSONObject instanceObj = (JSONObject) JSON.toJSON(resourceVo);
                     instanceObj.put("version", versionMap.containsKey(resourceVo.getId()) ? versionMap.get(resourceVo.getId()).getVersion() : "");
                     instanceObj.put("instanceVersion", versionMap.get(resourceVo.getId()));
+                    DeployInstanceBlueGreenVo deployInstanceBlueGreenVo = deployInstanceBlueGreenVoMap.get(instanceObj.getLong("id"));
+                    if (deployInstanceBlueGreenVo != null) {
+                        instanceObj.put("blueGreenId", deployInstanceBlueGreenVo.getBlueGreenId());
+                        instanceObj.put("blueGreenName", deployInstanceBlueGreenVo.getBlueGreenName());
+                        instanceObj.put("blueGreenSort", deployInstanceBlueGreenVo.getBlueGreenSort());
+                    }
                     instanceArray.add(instanceObj);
                 }
                 envInfo.put("instanceList", instanceArray);

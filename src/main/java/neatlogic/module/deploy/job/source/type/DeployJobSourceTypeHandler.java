@@ -46,9 +46,7 @@ import neatlogic.framework.deploy.auth.BATCHDEPLOY_MODIFY;
 import neatlogic.framework.deploy.auth.DEPLOY_MODIFY;
 import neatlogic.framework.deploy.auth.core.DeployAppAuthChecker;
 import neatlogic.framework.deploy.constvalue.*;
-import neatlogic.framework.deploy.dto.app.DeployAppConfigAuthorityActionVo;
-import neatlogic.framework.deploy.dto.app.DeployPipelineConfigVo;
-import neatlogic.framework.deploy.dto.app.DeployProfileVo;
+import neatlogic.framework.deploy.dto.app.*;
 import neatlogic.framework.deploy.dto.instance.DeployInstanceVersionVo;
 import neatlogic.framework.deploy.dto.job.DeployJobContentVo;
 import neatlogic.framework.deploy.dto.job.DeployJobVo;
@@ -113,6 +111,9 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
 
     @Resource
     DeployInstanceVersionMapper deployInstanceVersionMapper;
+
+    @Resource
+    DeployBlueGreenMapper deployBlueGreenMapper;
 
     @Override
     public String getName() {
@@ -753,6 +754,12 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
                 Long appModuleId = deployJobVo.getAppModuleId();
                 Long envId = deployJobVo.getEnvId();
                 List<Long> instanceIdList = jobPhaseNodeVoList.stream().map(AutoexecJobPhaseNodeVo::getResourceId).filter(Objects::nonNull).collect(Collectors.toList());
+                List<Long> jobNodeIdList = jobPhaseNodeVoList.stream().map(AutoexecJobPhaseNodeVo::getId).filter(Objects::nonNull).collect(Collectors.toList());
+                List<DeployJobPhaseNodeBlueGreenVo> deployJobNodeBlueGreenVos = deployBlueGreenMapper.listDeployJobPhaseNodeBlueGreen(jobNodeIdList);
+                Map<Long, DeployJobPhaseNodeBlueGreenVo> deployJobPhaseNodeBlueGreenVoMap = new HashMap<>();
+                if (CollectionUtils.isNotEmpty(deployJobNodeBlueGreenVos)) {
+                    deployJobPhaseNodeBlueGreenVoMap = deployJobNodeBlueGreenVos.stream().collect(Collectors.toMap(DeployJobPhaseNodeBlueGreenVo::getJobPhaseNodeId, e -> e));
+                }
                 if (CollectionUtils.isNotEmpty(instanceIdList)) {
                     List<DeployInstanceVersionVo> instanceVersionVoList = deployInstanceVersionMapper.getDeployInstanceVersionByEnvIdAndInstanceIdList(appSystemId, appModuleId, envId, instanceIdList);
                     Map<Long, DeployInstanceVersionVo> versionMap = instanceVersionVoList.stream().collect(Collectors.toMap(DeployInstanceVersionVo::getResourceId, e -> e));
@@ -764,10 +771,83 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
                         }
                         extraInfo.put("version", versionMap.containsKey(jobPhaseNodeVo.getResourceId()) ? versionMap.get(jobPhaseNodeVo.getResourceId()).getVersion() : "");
                         extraInfo.put("instanceVersion", versionMap.get(jobPhaseNodeVo.getResourceId()));
+
+                        DeployJobPhaseNodeBlueGreenVo deployInstanceBlueGreenVo = deployJobPhaseNodeBlueGreenVoMap.get(jobPhaseNodeVo.getId());
+                        if (deployInstanceBlueGreenVo != null) {
+                            extraInfo.put("blueGreenId", deployInstanceBlueGreenVo.getBlueGreenId());
+                            extraInfo.put("blueGreenName", deployInstanceBlueGreenVo.getBlueGreenName());
+                            extraInfo.put("blueGreenSort", deployInstanceBlueGreenVo.getBlueGreenSort());
+                        }
                         jobPhaseNodeVo.setExtraInfo(extraInfo);
                     }
                 }
             }
         }
+    }
+
+    @Override
+    public void addExtraJobPhaseNodeBlueGreenInfoByList(Long jobId, List<AutoexecJobPhaseNodeVo> jobPhaseNodeVoList) {
+        if (jobId != null && CollectionUtils.isNotEmpty(jobPhaseNodeVoList)) {
+            DeployJobVo deployJobVo = deployJobMapper.getDeployJobByJobId(jobId);
+            if (deployJobVo != null) {
+                List<Long> jobNodeIdList = jobPhaseNodeVoList.stream().map(AutoexecJobPhaseNodeVo::getId).filter(Objects::nonNull).collect(Collectors.toList());
+                List<DeployJobPhaseNodeBlueGreenVo> deployJobNodeBlueGreenVos = deployBlueGreenMapper.listDeployJobPhaseNodeBlueGreen(jobNodeIdList);
+                Map<Long, DeployJobPhaseNodeBlueGreenVo> deployJobPhaseNodeBlueGreenVoMap = new HashMap<>();
+                if (CollectionUtils.isNotEmpty(deployJobNodeBlueGreenVos)) {
+                    deployJobPhaseNodeBlueGreenVoMap = deployJobNodeBlueGreenVos.stream().collect(Collectors.toMap(DeployJobPhaseNodeBlueGreenVo::getJobPhaseNodeId, e -> e));
+                }
+                if (CollectionUtils.isNotEmpty(jobNodeIdList)) {
+                    JSONObject extraInfo = null;
+                    for (AutoexecJobPhaseNodeVo jobPhaseNodeVo : jobPhaseNodeVoList) {
+                        extraInfo = jobPhaseNodeVo.getExtraInfo();
+                        if (extraInfo == null) {
+                            extraInfo = new JSONObject();
+                        }
+
+                        DeployJobPhaseNodeBlueGreenVo deployJobNodeBlueGreenVo = deployJobPhaseNodeBlueGreenVoMap.get(jobPhaseNodeVo.getId());
+                        if (deployJobNodeBlueGreenVo != null) {
+                            extraInfo.put("blueGreenId", deployJobNodeBlueGreenVo.getBlueGreenId());
+                            extraInfo.put("blueGreenName", deployJobNodeBlueGreenVo.getBlueGreenName());
+                            extraInfo.put("blueGreenSort", deployJobNodeBlueGreenVo.getBlueGreenSort());
+                        }
+                        jobPhaseNodeVo.setExtraInfo(extraInfo);
+                    }
+                }
+            }
+        }
+    }
+
+    @Override
+    public void handleAddJobPhaseNodeEvent(AutoexecJobVo jobVo, List<AutoexecJobPhaseNodeVo> autoexecJobPhaseNodeVos, String userName, Long protocolId, Long updateTag) {
+        //补充作业节点蓝绿关系
+        if (CollectionUtils.isNotEmpty(autoexecJobPhaseNodeVos)) {
+            DeployJobVo deployJobVo = deployJobMapper.getDeployJobByJobId(jobVo.getId());
+            List<Long> resourceIdList = autoexecJobPhaseNodeVos.stream().map(AutoexecJobPhaseNodeVo::getResourceId).collect(Collectors.toList());
+            List<DeployInstanceBlueGreenVo> deployInstanceBlueGreenVos = deployBlueGreenMapper.listInstanceBlueGreen(deployJobVo.getAppSystemId(), deployJobVo.getAppModuleId(), deployJobVo.getEnvId(), resourceIdList);
+            if (CollectionUtils.isNotEmpty(deployInstanceBlueGreenVos)) {
+                Map<Long, DeployInstanceBlueGreenVo> deployInstanceBlueGreenVoMap = deployInstanceBlueGreenVos.stream().collect(Collectors.toMap(DeployInstanceBlueGreenVo::getResourceId, e -> e));
+                List<DeployJobPhaseNodeBlueGreenVo> deployJobPhaseNodeBlueGreenVos = new ArrayList<>();
+                for (AutoexecJobPhaseNodeVo autoexecJobPhaseNodeVo : autoexecJobPhaseNodeVos) {
+                    DeployJobPhaseNodeBlueGreenVo blueGreenVo = new DeployJobPhaseNodeBlueGreenVo();
+                    blueGreenVo.setJobId(jobVo.getId());
+                    blueGreenVo.setJobPhaseId(jobVo.getCurrentPhase().getId());
+                    blueGreenVo.setJobPhaseNodeId(autoexecJobPhaseNodeVo.getId());
+                    blueGreenVo.setUpdateTag(updateTag);
+                    DeployInstanceBlueGreenVo instanceBlueGreenVo = deployInstanceBlueGreenVoMap.get(autoexecJobPhaseNodeVo.getResourceId());
+                    if (instanceBlueGreenVo != null) {
+                        blueGreenVo.setBlueGreenId(instanceBlueGreenVo.getBlueGreenId());
+                        deployJobPhaseNodeBlueGreenVos.add(blueGreenVo);
+                    }
+                }
+                if (CollectionUtils.isNotEmpty(deployJobPhaseNodeBlueGreenVos)) {
+                    deployBlueGreenMapper.insertDeployJobPhaseNodeBlueGreen(deployJobPhaseNodeBlueGreenVos);
+                }
+            }
+        }
+    }
+
+    @Override
+    public void handleDeleteJobPhaseNodeEvent(Long jobPhaseId, Long updateTag) {
+        deployBlueGreenMapper.deleteJobPhaseNodeBlueGreenByJobPhaseIdAndUpdateTag(jobPhaseId, updateTag);
     }
 }
