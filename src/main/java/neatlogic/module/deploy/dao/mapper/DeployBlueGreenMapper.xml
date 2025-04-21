@@ -51,12 +51,12 @@
         </foreach>
     </select>
 
-    <select id="listDeployJobPhaseNodeBlueGreen" resultType="neatlogic.framework.deploy.dto.app.DeployJobPhaseNodeBlueGreenVo">
+    <select id="listDeployJobResourceBlueGreen" resultType="neatlogic.framework.deploy.dto.app.DeployJobResourceBlueGreenVo">
         select a.`resource_id`   as resourceId,
                a.`blue_green_id` as blueGreenId,
                b.`name`          as blueGreenName,
                b.`sort`          as blueGreenSort
-        from `deploy_job_phase_node_blue_green` a
+        from `deploy_job_resource_blue_green` a
                  join `deploy_blue_green` b on a.`blue_green_id` = b.`id`
         where a.`job_id` = #{value}
     </select>
@@ -78,8 +78,8 @@
             update `blue_green_id` = #{blueGreenId}
     </insert>
 
-    <insert id="insertDeployJobPhaseNodeBlueGreen">
-        insert into `deploy_job_phase_node_blue_green`(`job_id`, `resource_id`,`blue_green_id`,`update_tag`)
+    <insert id="insertDeployJobResourceBlueGreen">
+        insert into `deploy_job_resource_blue_green`(`job_id`, `resource_id`,`blue_green_id`,`update_tag`)
         values
         <foreach collection="list" item="nodeBlueGreen" separator=",">
             (#{nodeBlueGreen.jobId}, #{nodeBlueGreen.resourceId},#{nodeBlueGreen.blueGreenId},#{nodeBlueGreen.updateTag})

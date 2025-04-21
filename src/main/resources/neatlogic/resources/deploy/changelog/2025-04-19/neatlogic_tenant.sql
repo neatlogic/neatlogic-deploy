@@ -18,14 +18,12 @@ CREATE TABLE IF NOT EXISTS `deploy_app_instance_blue_green`  (
 
 
 
-CREATE TABLE IF NOT EXISTS `deploy_job_phase_node_blue_green`  (
-  `job_id` bigint DEFAULT NULL COMMENT '作业id',
-  `job_phase_id` bigint NOT NULL COMMENT '作业阶段id',
-  `job_phase_node_id` bigint NOT NULL COMMENT '作业节点ID',
+CREATE TABLE IF NOT EXISTS `deploy_job_resource_blue_green`  (
+  `job_id` bigint NOT NULL COMMENT '作业id',
+  `resource_id` bigint NOT NULL COMMENT '资产id',
   `blue_green_id` bigint NOT NULL COMMENT '蓝绿ID',
   `update_tag` bigint DEFAULT NULL COMMENT '跟新标记',
-  PRIMARY KEY (`job_phase_node_id`,`blue_green_id`),
-  KEY `idx_phase_id` (`job_phase_id`)
+  PRIMARY KEY (`job_id`,`resource_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='发布作业蓝绿id';
 
 

@@ -754,10 +754,10 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
                 Long appModuleId = deployJobVo.getAppModuleId();
                 Long envId = deployJobVo.getEnvId();
                 List<Long> instanceIdList = jobPhaseNodeVoList.stream().map(AutoexecJobPhaseNodeVo::getResourceId).filter(Objects::nonNull).collect(Collectors.toList());
-                List<DeployJobPhaseNodeBlueGreenVo> deployJobNodeBlueGreenVos = deployBlueGreenMapper.listDeployJobPhaseNodeBlueGreen(deployJobVo.getId());
-                Map<Long, DeployJobPhaseNodeBlueGreenVo> deployJobResourceBlueGreenVoMap = new HashMap<>();
-                if (CollectionUtils.isNotEmpty(deployJobNodeBlueGreenVos)) {
-                    deployJobResourceBlueGreenVoMap = deployJobNodeBlueGreenVos.stream().collect(Collectors.toMap(DeployJobPhaseNodeBlueGreenVo::getResourceId, e -> e));
+                List<DeployJobResourceBlueGreenVo> deployResourceBlueGreenVos = deployBlueGreenMapper.listDeployJobResourceBlueGreen(deployJobVo.getId());
+                Map<Long, DeployJobResourceBlueGreenVo> deployJobResourceBlueGreenVoMap = new HashMap<>();
+                if (CollectionUtils.isNotEmpty(deployResourceBlueGreenVos)) {
+                    deployJobResourceBlueGreenVoMap = deployResourceBlueGreenVos.stream().collect(Collectors.toMap(DeployJobResourceBlueGreenVo::getResourceId, e -> e));
                 }
                 if (CollectionUtils.isNotEmpty(instanceIdList)) {
                     List<DeployInstanceVersionVo> instanceVersionVoList = deployInstanceVersionMapper.getDeployInstanceVersionByEnvIdAndInstanceIdList(appSystemId, appModuleId, envId, instanceIdList);
@@ -771,7 +771,7 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
                         extraInfo.put("version", versionMap.containsKey(jobPhaseNodeVo.getResourceId()) ? versionMap.get(jobPhaseNodeVo.getResourceId()).getVersion() : "");
                         extraInfo.put("instanceVersion", versionMap.get(jobPhaseNodeVo.getResourceId()));
 
-                        DeployJobPhaseNodeBlueGreenVo deployInstanceBlueGreenVo = deployJobResourceBlueGreenVoMap.get(jobPhaseNodeVo.getResourceId());
+                        DeployJobResourceBlueGreenVo deployInstanceBlueGreenVo = deployJobResourceBlueGreenVoMap.get(jobPhaseNodeVo.getResourceId());
                         if (deployInstanceBlueGreenVo != null) {
                             extraInfo.put("blueGreenId", deployInstanceBlueGreenVo.getBlueGreenId());
                             extraInfo.put("blueGreenName", deployInstanceBlueGreenVo.getBlueGreenName());
@@ -790,10 +790,10 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
             DeployJobVo deployJobVo = deployJobMapper.getDeployJobByJobId(jobId);
             if (deployJobVo != null) {
                 List<Long> jobResourceIdList = jobPhaseNodeVoList.stream().map(AutoexecJobPhaseNodeVo::getResourceId).filter(Objects::nonNull).collect(Collectors.toList());
-                List<DeployJobPhaseNodeBlueGreenVo> deployJobNodeBlueGreenVos = deployBlueGreenMapper.listDeployJobPhaseNodeBlueGreen(deployJobVo.getId());
-                Map<Long, DeployJobPhaseNodeBlueGreenVo> deployJobResourceBlueGreenVoMap = new HashMap<>();
-                if (CollectionUtils.isNotEmpty(deployJobNodeBlueGreenVos)) {
-                    deployJobResourceBlueGreenVoMap = deployJobNodeBlueGreenVos.stream().collect(Collectors.toMap(DeployJobPhaseNodeBlueGreenVo::getResourceId, e -> e));
+                List<DeployJobResourceBlueGreenVo> deployJobResourceBlueGreenVos = deployBlueGreenMapper.listDeployJobResourceBlueGreen(deployJobVo.getId());
+                Map<Long, DeployJobResourceBlueGreenVo> deployJobResourceBlueGreenVoMap = new HashMap<>();
+                if (CollectionUtils.isNotEmpty(deployJobResourceBlueGreenVos)) {
+                    deployJobResourceBlueGreenVoMap = deployJobResourceBlueGreenVos.stream().collect(Collectors.toMap(DeployJobResourceBlueGreenVo::getResourceId, e -> e));
                 }
                 if (CollectionUtils.isNotEmpty(jobResourceIdList)) {
                     JSONObject extraInfo = null;
@@ -803,11 +803,11 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
                             extraInfo = new JSONObject();
                         }
 
-                        DeployJobPhaseNodeBlueGreenVo deployJobNodeBlueGreenVo = deployJobResourceBlueGreenVoMap.get(jobPhaseNodeVo.getResourceId());
-                        if (deployJobNodeBlueGreenVo != null) {
-                            extraInfo.put("blueGreenId", deployJobNodeBlueGreenVo.getBlueGreenId());
-                            extraInfo.put("blueGreenName", deployJobNodeBlueGreenVo.getBlueGreenName());
-                            extraInfo.put("blueGreenSort", deployJobNodeBlueGreenVo.getBlueGreenSort());
+                        DeployJobResourceBlueGreenVo deployJobResourceBlueGreenVo = deployJobResourceBlueGreenVoMap.get(jobPhaseNodeVo.getResourceId());
+                        if (deployJobResourceBlueGreenVo != null) {
+                            extraInfo.put("blueGreenId", deployJobResourceBlueGreenVo.getBlueGreenId());
+                            extraInfo.put("blueGreenName", deployJobResourceBlueGreenVo.getBlueGreenName());
+                            extraInfo.put("blueGreenSort", deployJobResourceBlueGreenVo.getBlueGreenSort());
                         }
                         jobPhaseNodeVo.setExtraInfo(extraInfo);
                     }
@@ -825,20 +825,20 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
             List<DeployInstanceBlueGreenVo> deployInstanceBlueGreenVos = deployBlueGreenMapper.listInstanceBlueGreen(deployJobVo.getAppSystemId(), deployJobVo.getAppModuleId(), deployJobVo.getEnvId(), resourceIdList);
             if (CollectionUtils.isNotEmpty(deployInstanceBlueGreenVos)) {
                 Map<Long, DeployInstanceBlueGreenVo> deployInstanceBlueGreenVoMap = deployInstanceBlueGreenVos.stream().collect(Collectors.toMap(DeployInstanceBlueGreenVo::getResourceId, e -> e));
-                List<DeployJobPhaseNodeBlueGreenVo> deployJobPhaseNodeBlueGreenVos = new ArrayList<>();
+                List<DeployJobResourceBlueGreenVo> deployJobResourceBlueGreenVos = new ArrayList<>();
                 for (AutoexecJobPhaseNodeVo autoexecJobPhaseNodeVo : autoexecJobPhaseNodeVos) {
-                    DeployJobPhaseNodeBlueGreenVo blueGreenVo = new DeployJobPhaseNodeBlueGreenVo();
+                    DeployJobResourceBlueGreenVo blueGreenVo = new DeployJobResourceBlueGreenVo();
                     blueGreenVo.setJobId(jobVo.getId());
                     blueGreenVo.setResourceId(autoexecJobPhaseNodeVo.getResourceId());
                     blueGreenVo.setUpdateTag(updateTag);
                     DeployInstanceBlueGreenVo instanceBlueGreenVo = deployInstanceBlueGreenVoMap.get(autoexecJobPhaseNodeVo.getResourceId());
                     if (instanceBlueGreenVo != null) {
                         blueGreenVo.setBlueGreenId(instanceBlueGreenVo.getBlueGreenId());
-                        deployJobPhaseNodeBlueGreenVos.add(blueGreenVo);
+                        deployJobResourceBlueGreenVos.add(blueGreenVo);
                     }
                 }
-                if (CollectionUtils.isNotEmpty(deployJobPhaseNodeBlueGreenVos)) {
-                    deployBlueGreenMapper.insertDeployJobPhaseNodeBlueGreen(deployJobPhaseNodeBlueGreenVos);
+                if (CollectionUtils.isNotEmpty(deployJobResourceBlueGreenVos)) {
+                    deployBlueGreenMapper.insertDeployJobResourceBlueGreen(deployJobResourceBlueGreenVos);
                 }
             }
         }

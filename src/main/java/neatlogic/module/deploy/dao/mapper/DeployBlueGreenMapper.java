@@ -18,7 +18,7 @@ package neatlogic.module.deploy.dao.mapper;
 
 import neatlogic.framework.deploy.dto.app.DeployBlueGreenVo;
 import neatlogic.framework.deploy.dto.app.DeployInstanceBlueGreenVo;
-import neatlogic.framework.deploy.dto.app.DeployJobPhaseNodeBlueGreenVo;
+import neatlogic.framework.deploy.dto.app.DeployJobResourceBlueGreenVo;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
@@ -43,8 +43,8 @@ public interface DeployBlueGreenMapper {
 
     List<DeployInstanceBlueGreenVo> listInstanceBlueGreen(@Param("appSystemId") Long appSystemId, @Param("appModuleId") Long appModuleId, @Param("envId") Long envId, @Param("resourceIdList") List<Long> instanceIdList);
 
-    List<DeployJobPhaseNodeBlueGreenVo> listDeployJobPhaseNodeBlueGreen(Long jobId);
+    List<DeployJobResourceBlueGreenVo> listDeployJobResourceBlueGreen(Long jobId);
 
-    void insertDeployJobPhaseNodeBlueGreen(@Param("list") List<DeployJobPhaseNodeBlueGreenVo> deployJobPhaseNodeBlueGreenVos);
+    void insertDeployJobResourceBlueGreen(@Param("list") List<DeployJobResourceBlueGreenVo> deployJobPhaseNodeBlueGreenVos);
 
 }
