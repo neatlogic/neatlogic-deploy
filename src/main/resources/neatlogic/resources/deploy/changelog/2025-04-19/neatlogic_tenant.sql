@@ -27,3 +27,5 @@ CREATE TABLE IF NOT EXISTS `deploy_job_phase_node_blue_green`  (
   PRIMARY KEY (`job_phase_node_id`,`blue_green_id`),
   KEY `idx_phase_id` (`job_phase_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='发布作业蓝绿id';
+
+

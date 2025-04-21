@@ -43,9 +43,8 @@ public interface DeployBlueGreenMapper {
 
     List<DeployInstanceBlueGreenVo> listInstanceBlueGreen(@Param("appSystemId") Long appSystemId, @Param("appModuleId") Long appModuleId, @Param("envId") Long envId, @Param("resourceIdList") List<Long> instanceIdList);
 
-    List<DeployJobPhaseNodeBlueGreenVo> listDeployJobPhaseNodeBlueGreen(@Param("list")List<Long> jobNodeList);
+    List<DeployJobPhaseNodeBlueGreenVo> listDeployJobPhaseNodeBlueGreen(Long jobId);
 
     void insertDeployJobPhaseNodeBlueGreen(@Param("list") List<DeployJobPhaseNodeBlueGreenVo> deployJobPhaseNodeBlueGreenVos);
 
-    void deleteJobPhaseNodeBlueGreenByJobPhaseIdAndUpdateTag(@Param("jobPhaseId") Long jobPhaseId,@Param("updateTag") Long updateTag);
 }

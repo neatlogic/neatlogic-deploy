@@ -52,14 +52,13 @@
     </select>
 
     <select id="listDeployJobPhaseNodeBlueGreen" resultType="neatlogic.framework.deploy.dto.app.DeployJobPhaseNodeBlueGreenVo">
-        select  a.`job_phase_node_id` as jobPhaseNodeId, a.`blue_green_id` as blueGreenId,b.`name` as blueGreenName,b.`sort` as blueGreenSort
+        select a.`resource_id`   as resourceId,
+               a.`blue_green_id` as blueGreenId,
+               b.`name`          as blueGreenName,
+               b.`sort`          as blueGreenSort
         from `deploy_job_phase_node_blue_green` a
-        join `deploy_blue_green` b on a.`blue_green_id` = b.`id`
-        where
-        a.`job_phase_node_id` in
-        <foreach collection="list" item="id" close=")" open="(" separator=",">
-            #{id}
-        </foreach>
+                 join `deploy_blue_green` b on a.`blue_green_id` = b.`id`
+        where a.`job_id` = #{value}
     </select>
 
     <update id="updateBlueGreen">
@@ -80,21 +79,14 @@
     </insert>
 
     <insert id="insertDeployJobPhaseNodeBlueGreen">
-        insert into `deploy_job_phase_node_blue_green`(`job_id`,
-        `job_phase_id`,`job_phase_node_id`,`blue_green_id`,`update_tag`)
+        insert into `deploy_job_phase_node_blue_green`(`job_id`, `resource_id`,`blue_green_id`,`update_tag`)
         values
         <foreach collection="list" item="nodeBlueGreen" separator=",">
-            (#{nodeBlueGreen.jobId}, #{nodeBlueGreen.jobPhaseId},#{nodeBlueGreen.jobPhaseNodeId},#{nodeBlueGreen.blueGreenId},#{nodeBlueGreen.updateTag})
+            (#{nodeBlueGreen.jobId}, #{nodeBlueGreen.resourceId},#{nodeBlueGreen.blueGreenId},#{nodeBlueGreen.updateTag})
         </foreach>
         on duplicate key
         update `blue_green_id` = VALUES(`blue_green_id`),
         `update_tag` = VALUES(`update_tag`)
     </insert>
 
-    <delete id="deleteJobPhaseNodeBlueGreenByJobPhaseIdAndUpdateTag">
-        DELETE
-        FROM `deploy_job_phase_node_blue_green`
-        where `job_phase_id` = #{jobPhaseId}
-          and `update_tag` != #{updateTag}
-    </delete>
 </mapper>
