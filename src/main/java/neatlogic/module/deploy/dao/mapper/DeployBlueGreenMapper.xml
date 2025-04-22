@@ -89,4 +89,12 @@
         `update_tag` = VALUES(`update_tag`)
     </insert>
 
+    <delete id="deleteInstanceBlueGreen">
+        delete
+        from `deploy_app_instance_blue_green`
+        where `app_system_id` = #{appSystemId}
+          and `app_module_id` = #{appModuleId}
+          and `env_id` = #{envId}
+          and `resource_id` = #{resourceId}
+    </delete>
 </mapper>

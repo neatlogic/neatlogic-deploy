@@ -66,12 +66,17 @@ public class SaveInstanceBlueGreenApi extends PrivateApiComponentBase {
             @Param(name = "appModuleId", type = ApiParamType.LONG, desc = "模块id", isRequired = true),
             @Param(name = "envId", type = ApiParamType.LONG, desc = "环境id", isRequired = true),
             @Param(name = "resourceId", type = ApiParamType.LONG, desc = "实例id", isRequired = true),
-            @Param(name = "blueGreenId", type = ApiParamType.LONG, desc = "蓝绿id", isRequired = true)
+            @Param(name = "blueGreenId", type = ApiParamType.LONG, desc = "蓝绿id")
     })
     @Description(desc = "nmdab.saveinstancebluegreenapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         DeployInstanceBlueGreenVo instanceBlueGreenVo = JSON.toJavaObject(paramObj, DeployInstanceBlueGreenVo.class);
-        return deployBlueGreenMapper.insertInstanceBlueGreen(instanceBlueGreenVo);
+        Long blueGreenId = paramObj.getLong("blueGreenId");
+        if (blueGreenId != null) {
+            return deployBlueGreenMapper.insertInstanceBlueGreen(instanceBlueGreenVo);
+        } else {
+            return deployBlueGreenMapper.deleteInstanceBlueGreen(instanceBlueGreenVo);
+        }
     }
 }

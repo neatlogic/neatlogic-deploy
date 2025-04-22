@@ -47,4 +47,5 @@ public interface DeployBlueGreenMapper {
 
     void insertDeployJobResourceBlueGreen(@Param("list") List<DeployJobResourceBlueGreenVo> deployJobPhaseNodeBlueGreenVos);
 
+    Integer deleteInstanceBlueGreen(DeployInstanceBlueGreenVo instanceBlueGreenVo);
 }
