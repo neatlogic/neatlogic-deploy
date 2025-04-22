@@ -117,6 +117,7 @@ public class DeployBatchJobServiceImpl implements DeployBatchJobService, IDeploy
                                 jobVo.setParentId(deployJobVo.getId());
                                 jobVo.setInvokeId(deployJobVo.getId());
                                 jobVo.setRouteId(deployJobVo.getInvokeId().toString());
+                                jobVo.setSource(deployJobVo.getSource());
                                 DeployJobModuleVo deployJobModuleVo = new DeployJobModuleVo();
                                 if (jobTemplateVo.getConfig() != null) {
                                     JSONArray selectNodeList = jobTemplateVo.getConfig().getJSONArray("selectNodeList");
