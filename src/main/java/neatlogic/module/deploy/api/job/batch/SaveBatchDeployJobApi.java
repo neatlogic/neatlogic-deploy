@@ -109,7 +109,7 @@ public class SaveBatchDeployJobApi extends PrivateApiComponentBase {
             }else{
                 deployJobVo.setStatus(JobStatus.PENDING.getValue());
             }
-            if (!AuthActionChecker.check(BATCHDEPLOY_VERIFY.class)) {
+            if (Boolean.FALSE.equals(AuthActionChecker.check(BATCHDEPLOY_VERIFY.class))) {
                 deployJobVo.setReviewStatus(ReviewStatus.WAITING.getValue());
             } else {
                 deployJobVo.setReviewStatus(ReviewStatus.PASSED.getValue());
@@ -148,7 +148,7 @@ public class SaveBatchDeployJobApi extends PrivateApiComponentBase {
                                 deployJobMapper.updateAutoExecJobParentIdById(jobVo);
                                 deployJobMapper.insertGroupJob(groupVo.getId(), jobVo.getId(), k + 1);
                                 //批量作业没有来源id
-//                                deployJobMapper.insertJobInvoke(deployJobVo.getId(), jobVo.getId(), JobSource.BATCHDEPLOY.getValue(), deployJobVo.getRouteId());
+                                deployJobMapper.insertJobInvoke(deployJobVo.getId(), jobVo.getId(), JobSource.BATCHDEPLOY.getValue(), deployJobVo.getRouteId());
                             }
                         }
                         if (hasGroupJob) {

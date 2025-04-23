@@ -40,13 +40,16 @@ public class BatchDeployJobSourceHandler implements IAutoexecJobSource {
 
     @Override
     public List<AutoexecJobRouteVo> getListByUniqueKeyList(List<String> uniqueKeyList) {
-        if (CollectionUtils.isEmpty(uniqueKeyList)) {
-            return null;
-        }
         List<AutoexecJobRouteVo> resultList = new ArrayList<>();
-        for (String str : uniqueKeyList) {
-            String label = "一键发布";
-            resultList.add(new AutoexecJobRouteVo(str, label, new JSONObject()));
+
+        if (CollectionUtils.isEmpty(uniqueKeyList)) {
+            String label = "直接创建";
+            resultList.add(new AutoexecJobRouteVo(null, label, new JSONObject()));
+        } else {
+            String label = "超级流水线";
+            for (String str : uniqueKeyList) {
+                resultList.add(new AutoexecJobRouteVo(str, label, new JSONObject()));
+            }
         }
         return resultList;
     }

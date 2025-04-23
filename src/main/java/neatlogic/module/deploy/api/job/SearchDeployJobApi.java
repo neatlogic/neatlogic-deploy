@@ -15,6 +15,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 
 package neatlogic.module.deploy.api.job;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.autoexec.dto.job.AutoexecJobVo;
@@ -29,9 +30,11 @@ import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.framework.util.TableResultUtil;
 import neatlogic.module.deploy.dao.mapper.DeployJobMapper;
 import neatlogic.module.deploy.service.DeployJobService;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -91,10 +94,13 @@ public class SearchDeployJobApi extends PrivateApiComponentBase {
     @Description(desc = "查询发布作业接口")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
-        DeployJobVo deployJobVo = JSONObject.toJavaObject(jsonObj, DeployJobVo.class);
+        DeployJobVo deployJobVo = JSON.toJavaObject(jsonObj, DeployJobVo.class);
         deployJobVo.setSourceType(JobSourceType.DEPLOY.getValue());
         if (deployJobVo.getParentId() != null) {
             List<Long> idList = deployJobMapper.getJobIdListByParentId(deployJobVo.getParentId());
+            if (CollectionUtils.isEmpty(idList)) {
+                return TableResultUtil.getResult(new ArrayList<>(), deployJobVo);
+            }
             deployJobVo.setIdList(idList);
         }
         List<DeployJobVo> deployJobList = deployJobService.searchDeployJob(deployJobVo);

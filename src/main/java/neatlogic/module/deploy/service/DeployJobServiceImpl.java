@@ -120,6 +120,8 @@ public class DeployJobServiceImpl implements DeployJobService {
             }
         }
         if (CollectionUtils.isNotEmpty(returnList)) {
+            List<AutoexecJobInvokeVo> jobInvokeListWithoutRouteId = new ArrayList<>();
+            Map<Long, AutoexecJobRouteVo> jobIdInvokeWithoutRouteIdMap = new HashMap<>();
             Map<String, Set<String>> sourceKeyInvokeIdSetMap = new HashMap<>();
             Map<Long, String> jobIdToRouteIdMap = new HashMap<>();
             List<Long> jobIdList = returnList.stream().map(DeployJobVo::getId).collect(Collectors.toList());
@@ -127,6 +129,8 @@ public class DeployJobServiceImpl implements DeployJobService {
             for (AutoexecJobInvokeVo jobInvokeVo : jobInvokeList) {
                 if (jobInvokeVo.getRouteId() != null) {
                     sourceKeyInvokeIdSetMap.computeIfAbsent(jobInvokeVo.getSource(), key -> new HashSet<>()).add(jobInvokeVo.getRouteId());
+                } else {
+                    jobInvokeListWithoutRouteId.add(jobInvokeVo);
                 }
                 jobIdToRouteIdMap.put(jobInvokeVo.getJobId(), jobInvokeVo.getRouteId());
             }
@@ -143,6 +147,19 @@ public class DeployJobServiceImpl implements DeployJobService {
                     }
                 }
             }
+            //处理routeId为空的情况
+            if (CollectionUtils.isNotEmpty(jobInvokeListWithoutRouteId)) {
+                for (AutoexecJobInvokeVo autoexecJobInvokeVo : jobInvokeListWithoutRouteId) {
+                    IAutoexecJobSource sourceHandler = AutoexecJobSourceFactory.getHandler(autoexecJobInvokeVo.getSource());
+                    if (sourceHandler == null) {
+                        continue;
+                    }
+                    List<AutoexecJobRouteVo> list = sourceHandler.getListByUniqueKeyList(null);
+                    if (CollectionUtils.isNotEmpty(list)) {
+                        jobIdInvokeWithoutRouteIdMap.put(autoexecJobInvokeVo.getJobId(), list.get(0));
+                    }
+                }
+            }
             for (DeployJobVo vo : returnList) {
                 String routeId = jobIdToRouteIdMap.get(vo.getId());
                 if (routeId != null) {
@@ -151,6 +168,8 @@ public class DeployJobServiceImpl implements DeployJobService {
                     if (routeVo != null) {
                         vo.setRoute(routeVo);
                     }
+                } else {
+                    vo.setRoute(jobIdInvokeWithoutRouteIdMap.get(vo.getId()));
                 }
             }
         }
@@ -216,9 +235,6 @@ public class DeployJobServiceImpl implements DeployJobService {
             throw new ParamIrregularException("scenarioId | scenarioName");
         }
 
-        if (StringUtils.isBlank(deployJobParam.getSource())) {
-            deployJobParam.setSource(JobSource.DEPLOY.getValue());
-        }
         deployJobParam.setOperationType(CombopOperationType.PIPELINE.getValue());
         deployJobParam.setIsJobInitParam(true);
     }
