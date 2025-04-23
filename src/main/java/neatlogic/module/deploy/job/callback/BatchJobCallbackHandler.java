@@ -49,7 +49,8 @@ public class BatchJobCallbackHandler extends AutoexecJobCallbackBase {
     public Boolean getIsNeedCallback(AutoexecJobVo jobVo) {
         if (jobVo != null) {
             AutoexecJobVo autoexecJob = autoexecJobMapper.getJobInfo(jobVo.getId());
-            if (Objects.equals(JobSource.DEPLOY.getValue(), autoexecJob.getSource()) && autoexecJob.getParentId() != null) {
+            if (Arrays.asList(JobSource.BATCHDEPLOY.getValue(), JobSource.DEPLOY_SCHEDULE_PIPELINE.getValue(), JobSource.DEPLOY.getValue()).contains(autoexecJob.getSource())
+                    && autoexecJob.getParentId() != null && autoexecJob.getParentId() != -1) {
                 //作业回调
                 AutoexecJobVo parentJobVo = autoexecJobMapper.getJobInfo(autoexecJob.getParentId());
                 if (parentJobVo != null && Arrays.asList(JobSource.BATCHDEPLOY.getValue(), JobSource.DEPLOY_SCHEDULE_PIPELINE.getValue()).contains(parentJobVo.getSource())) {
