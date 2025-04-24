@@ -83,7 +83,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
             </if>
             <if test="isHasAllAuthority == 0">
             AND (a.`type` = 'pipeline'
-            OR daca.`app_system_id`
+            OR
             <include refid="neatlogic.module.deploy.dao.mapper.DeployAppConfigMapper.checkDeployAuthority"/>
             )
             </if>
@@ -92,7 +92,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
 
     <select id="getScheduleCount" parameterType="neatlogic.framework.deploy.dto.schedule.DeployScheduleSearchVo" resultType="int">
         SELECT
-            COUNT(1)
+            COUNT(DISTINCT a.`id`)
         FROM `deploy_schedule` a
         <if test="isHasAllAuthority == 0">
             LEFT JOIN `deploy_app_config_authority` daca ON daca.`app_system_id` = a.`app_system_id`
@@ -100,31 +100,15 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         <include refid="searchScheduleWhere"/>
     </select>
 
-    <select id="getScheduleList" parameterType="neatlogic.framework.deploy.dto.schedule.DeployScheduleSearchVo" resultType="neatlogic.framework.deploy.dto.schedule.DeployScheduleVo">
+    <select id="getScheduleIdList" parameterType="neatlogic.framework.deploy.dto.schedule.DeployScheduleSearchVo" resultType="java.lang.Long">
         SELECT
-        a.`id`,
-        a.`uuid`,
-        a.`name`,
-        a.`begin_time` AS beginTime,
-        a.`end_time` AS endTime,
-        a.`cron`,
-        a.`is_active` AS isActive,
-        a.`config` AS configStr,
-        a.`type`,
-        a.`fcd`,
-        a.`fcu`,
-        a.`lcd`,
-        a.`lcu`,
-        a.`app_system_id` AS appSystemId,
-        a.`app_module_id` AS appModuleId,
-        a.`pipeline_id` AS pipelineId,
-        a.`pipeline_type` AS pipelineType
+        DISTINCT a.`id`
         FROM `deploy_schedule` a
         <if test="isHasAllAuthority == 0">
             LEFT JOIN `deploy_app_config_authority` daca ON daca.`app_system_id` = a.`app_system_id`
         </if>
         <include refid="searchScheduleWhere"/>
-        ORDER BY a.`lcd`
+        ORDER BY a.`id`
         LIMIT #{startNum}, #{pageSize}
     </select>
 
