@@ -104,23 +104,23 @@ public class ListDeployScheduleApi extends PrivateApiComponentBase {
         int rowNum = deployScheduleMapper.getScheduleCount(searchVo);
         if (rowNum > 0) {
             searchVo.setRowNum(rowNum);
-            if (searchVo.getCurrentPage() <= searchVo.getPageCount()) {
-                IAppSystemMapper appSystemMapper = CrossoverServiceFactory.getApi(IAppSystemMapper.class);
-                tbodyList = deployScheduleMapper.getScheduleList(searchVo);
-                List<Long> idList = tbodyList.stream().map(DeployScheduleVo::getId).collect(Collectors.toList());
+            IAppSystemMapper appSystemMapper = CrossoverServiceFactory.getApi(IAppSystemMapper.class);
+            List<Long> idList = deployScheduleMapper.getScheduleIdList(searchVo);
+            if (CollectionUtils.isNotEmpty(idList)) {
+                tbodyList = deployScheduleMapper.getScheduleListByIdList(idList);
                 List<DeployScheduleVo> scheduleAuditCountList = deployScheduleMapper.getScheduleAuditCountListByIdList(idList);
-                Map<Long, DeployScheduleVo> scheduleMap = scheduleAuditCountList.stream().collect(Collectors.toMap(e -> e.getId(), e -> e));
+                Map<Long, DeployScheduleVo> scheduleMap = scheduleAuditCountList.stream().collect(Collectors.toMap(DeployScheduleVo::getId, e -> e));
                 Map<Long, AppSystemVo> appSystemMap = new HashMap<>();
                 List<Long> appSystemIdList = tbodyList.stream().map(DeployScheduleVo::getAppSystemId).collect(Collectors.toList());
                 if (CollectionUtils.isNotEmpty(appSystemIdList)) {
                     List<AppSystemVo> appSystemList = appSystemMapper.getAppSystemListByIdList(appSystemIdList);
-                    appSystemMap = appSystemList.stream().collect(Collectors.toMap(e -> e.getId(), e -> e));
+                    appSystemMap = appSystemList.stream().collect(Collectors.toMap(AppSystemVo::getId, e -> e));
                 }
                 Map<Long, AppModuleVo> appModuleMap = new HashMap<>();
                 List<Long> appModuleIdList = tbodyList.stream().map(DeployScheduleVo::getAppModuleId).collect(Collectors.toList());
                 if (CollectionUtils.isNotEmpty(appModuleIdList)) {
                     List<AppModuleVo> appModuleList = appSystemMapper.getAppModuleListByIdList(appModuleIdList);
-                    appModuleMap = appModuleList.stream().collect(Collectors.toMap(e -> e.getId(), e -> e));
+                    appModuleMap = appModuleList.stream().collect(Collectors.toMap(AppModuleVo::getId, e -> e));
                 }
                 List<Long> pipelineIdList = tbodyList.stream().map(DeployScheduleVo::getPipelineId).collect(Collectors.toList());
                 if (CollectionUtils.isNotEmpty(pipelineIdList)) {

@@ -150,7 +150,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                 dv.`fcd` &lt;= FROM_UNIXTIME(#{startTimeRange[1]})
                 )
             </if>
-            <include refid="neatlogic.module.deploy.dao.mapper.DeployAppConfigMapper.checkDeployAuthority"/>
+            <if test="isHasAllAuthority == 0">
+                AND
+                <include refid="neatlogic.module.deploy.dao.mapper.DeployAppConfigMapper.checkDeployAuthority"/>
+            </if>
         </where>
     </sql>
 

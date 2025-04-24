@@ -224,8 +224,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
             </if>
             <if test="envId != null">
                 and (dj.`env_id` = #{envId} or djj.`env_id` = #{envId})
+            </if><if test="isHasAllAuthority == 0">
+                AND
+                <include refid="neatlogic.module.deploy.dao.mapper.DeployAppConfigMapper.checkDeployAuthority"/>
             </if>
-            <include refid="neatlogic.module.deploy.dao.mapper.DeployAppConfigMapper.checkDeployAuthority"/>
         </where>
     </sql>
 

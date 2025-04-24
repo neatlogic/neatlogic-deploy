@@ -33,6 +33,7 @@ import neatlogic.module.deploy.dao.mapper.DeployPipelineMapper;
 import neatlogic.module.deploy.dao.mapper.DeployScheduleMapper;
 import neatlogic.module.deploy.service.DeployBatchJobService;
 import neatlogic.module.deploy.service.DeployJobService;
+import org.apache.commons.collections4.CollectionUtils;
 import org.quartz.DisallowConcurrentExecution;
 import org.quartz.JobExecutionContext;
 import org.springframework.stereotype.Component;
@@ -98,12 +99,15 @@ public class DeployJobScheduleJob  extends JobBase {
             int pageCount = searchVo.getPageCount();
             for (int currentPage = 1; currentPage <= pageCount; currentPage++) {
                 searchVo.setCurrentPage(currentPage);
-                List<DeployScheduleVo> list = deployScheduleMapper.getScheduleList(searchVo);
-                for (DeployScheduleVo scheduleVo : list) {
-                    JobObject.Builder jobObjectBuilder = new JobObject
-                            .Builder(scheduleVo.getUuid(), this.getGroupName(), this.getClassName(), TenantContext.get().getTenantUuid());
-                    JobObject jobObject = jobObjectBuilder.build();
-                    this.reloadJob(jobObject);
+                List<Long> idList = deployScheduleMapper.getScheduleIdList(searchVo);
+                if (CollectionUtils.isNotEmpty(idList)) {
+                    List<DeployScheduleVo> list = deployScheduleMapper.getScheduleListByIdList(idList);
+                    for (DeployScheduleVo scheduleVo : list) {
+                        JobObject.Builder jobObjectBuilder = new JobObject
+                                .Builder(scheduleVo.getUuid(), this.getGroupName(), this.getClassName(), TenantContext.get().getTenantUuid());
+                        JobObject jobObject = jobObjectBuilder.build();
+                        this.reloadJob(jobObject);
+                    }
                 }
             }
         }

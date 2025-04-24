@@ -58,6 +58,7 @@ public class SearchDeployAppModuleEnvAutoConfigInstanceApi extends PrivateApiCom
             @Param(name = "appModuleId", type = ApiParamType.LONG, isRequired = true, desc = "模块 id"),
             @Param(name = "envId", type = ApiParamType.LONG, isRequired = true, desc = "环境 id"),
             @Param(name = "isAutoConfig", type = ApiParamType.INTEGER, desc = "是否有AutoConfig"),
+            @Param(name = "defaultValue", type = ApiParamType.JSONARRAY, desc = "默认值"),
             @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "当前页"),
             @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "每页数据条目"),
             @Param(name = "needPage", type = ApiParamType.BOOLEAN, desc = "是否需要分页，默认true")
