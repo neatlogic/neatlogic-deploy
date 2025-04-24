@@ -108,7 +108,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         </if>
         <if test="pipelineId != null">
             JOIN `autoexec_job_invoke` aji_pipeline ON aj.`id` = aji_pipeline.`job_id` AND aji_pipeline.`invoke_id` =
-            #{pipelineId} AND aji_pipeline.`source` = 'pipeline'
+            #{pipelineId}
         </if>
         <if test="isHasAllAuthority == 0">
             LEFT JOIN deploy_app_config_authority daca ON daca.app_system_id = dj.app_system_id
