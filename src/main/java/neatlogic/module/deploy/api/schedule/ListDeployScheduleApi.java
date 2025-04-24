@@ -104,9 +104,9 @@ public class ListDeployScheduleApi extends PrivateApiComponentBase {
         int rowNum = deployScheduleMapper.getScheduleCount(searchVo);
         if (rowNum > 0) {
             searchVo.setRowNum(rowNum);
-            if (searchVo.getCurrentPage() <= searchVo.getPageCount()) {
-                IAppSystemMapper appSystemMapper = CrossoverServiceFactory.getApi(IAppSystemMapper.class);
-                List<Long> idList = deployScheduleMapper.getScheduleIdList(searchVo);
+            IAppSystemMapper appSystemMapper = CrossoverServiceFactory.getApi(IAppSystemMapper.class);
+            List<Long> idList = deployScheduleMapper.getScheduleIdList(searchVo);
+            if (CollectionUtils.isNotEmpty(idList)) {
                 tbodyList = deployScheduleMapper.getScheduleListByIdList(idList);
                 List<DeployScheduleVo> scheduleAuditCountList = deployScheduleMapper.getScheduleAuditCountListByIdList(idList);
                 Map<Long, DeployScheduleVo> scheduleMap = scheduleAuditCountList.stream().collect(Collectors.toMap(DeployScheduleVo::getId, e -> e));
