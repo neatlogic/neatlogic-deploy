@@ -940,7 +940,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                     #{item}
                 </foreach>
             </if>
-            <include refid="checkDeployAuthority"/>
+            <if test="isHasAllAuthority == 0">
+                AND
+                <include refid="checkDeployAuthority"/>
+            </if>
             <choose>
                 <when test="isConfig != null and isConfig == 1">
                     and b.`config` is not NULL
@@ -963,32 +966,29 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
     </select>
 
     <sql id="checkDeployAuthority">
-        <if test="isHasAllAuthority == 0">
-            AND
-            (daca.app_system_id is null
-            OR
-            (daca.action_type = 'operation'
-            AND daca.action IN
-            ('all'
-            <if test="authorityActionList != null and authorityActionList.size() > 0">,
-                <foreach collection="authorityActionList" item="item" separator=",">
-                    #{item}
-                </foreach>
-            </if>
-            )
-            AND daca.auth_uuid IN
-            (
-            'alluser'
-            <if test="authUuidList != null and authUuidList.size() > 0">
-                ,
-                <foreach collection="authUuidList" item="item" separator=",">
-                    #{item}
-                </foreach>
-            </if>
-            )
-            )
-            )
+        (daca.app_system_id is null
+        OR
+        (daca.action_type = 'operation'
+        AND daca.action IN
+        ('all'
+        <if test="authorityActionList != null and authorityActionList.size() > 0">,
+            <foreach collection="authorityActionList" item="item" separator=",">
+                #{item}
+            </foreach>
         </if>
+        )
+        AND daca.auth_uuid IN
+        (
+        'alluser'
+        <if test="authUuidList != null and authUuidList.size() > 0">
+            ,
+            <foreach collection="authUuidList" item="item" separator=",">
+                #{item}
+            </foreach>
+        </if>
+        )
+        )
+        )
     </sql>
 
     <select id="getCiEntityIdListCount" resultType="java.lang.Integer" useCache="false">

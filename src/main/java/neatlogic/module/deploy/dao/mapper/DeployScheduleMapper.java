@@ -29,7 +29,7 @@ public interface DeployScheduleMapper {
 
     int getScheduleCount(DeployScheduleSearchVo searchVo);
 
-    List<DeployScheduleVo> getScheduleList(DeployScheduleSearchVo searchVo);
+    List<Long> getScheduleIdList(DeployScheduleSearchVo searchVo);
 
     List<DeployScheduleVo> getScheduleListByIdList(List<Long> idList);
 
