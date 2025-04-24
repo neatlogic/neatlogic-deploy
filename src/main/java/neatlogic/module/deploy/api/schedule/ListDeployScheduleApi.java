@@ -107,84 +107,82 @@ public class ListDeployScheduleApi extends PrivateApiComponentBase {
             if (searchVo.getCurrentPage() <= searchVo.getPageCount()) {
                 IAppSystemMapper appSystemMapper = CrossoverServiceFactory.getApi(IAppSystemMapper.class);
                 List<Long> idList = deployScheduleMapper.getScheduleIdList(searchVo);
-                if (CollectionUtils.isNotEmpty(idList)) {
-                    tbodyList = deployScheduleMapper.getScheduleListByIdList(idList);
-                    List<DeployScheduleVo> scheduleAuditCountList = deployScheduleMapper.getScheduleAuditCountListByIdList(idList);
-                    Map<Long, DeployScheduleVo> scheduleMap = scheduleAuditCountList.stream().collect(Collectors.toMap(DeployScheduleVo::getId, e -> e));
-                    Map<Long, AppSystemVo> appSystemMap = new HashMap<>();
-                    List<Long> appSystemIdList = tbodyList.stream().map(DeployScheduleVo::getAppSystemId).collect(Collectors.toList());
-                    if (CollectionUtils.isNotEmpty(appSystemIdList)) {
-                        List<AppSystemVo> appSystemList = appSystemMapper.getAppSystemListByIdList(appSystemIdList);
-                        appSystemMap = appSystemList.stream().collect(Collectors.toMap(AppSystemVo::getId, e -> e));
+                tbodyList = deployScheduleMapper.getScheduleListByIdList(idList);
+                List<DeployScheduleVo> scheduleAuditCountList = deployScheduleMapper.getScheduleAuditCountListByIdList(idList);
+                Map<Long, DeployScheduleVo> scheduleMap = scheduleAuditCountList.stream().collect(Collectors.toMap(DeployScheduleVo::getId, e -> e));
+                Map<Long, AppSystemVo> appSystemMap = new HashMap<>();
+                List<Long> appSystemIdList = tbodyList.stream().map(DeployScheduleVo::getAppSystemId).collect(Collectors.toList());
+                if (CollectionUtils.isNotEmpty(appSystemIdList)) {
+                    List<AppSystemVo> appSystemList = appSystemMapper.getAppSystemListByIdList(appSystemIdList);
+                    appSystemMap = appSystemList.stream().collect(Collectors.toMap(AppSystemVo::getId, e -> e));
+                }
+                Map<Long, AppModuleVo> appModuleMap = new HashMap<>();
+                List<Long> appModuleIdList = tbodyList.stream().map(DeployScheduleVo::getAppModuleId).collect(Collectors.toList());
+                if (CollectionUtils.isNotEmpty(appModuleIdList)) {
+                    List<AppModuleVo> appModuleList = appSystemMapper.getAppModuleListByIdList(appModuleIdList);
+                    appModuleMap = appModuleList.stream().collect(Collectors.toMap(AppModuleVo::getId, e -> e));
+                }
+                List<Long> pipelineIdList = tbodyList.stream().map(DeployScheduleVo::getPipelineId).collect(Collectors.toList());
+                if (CollectionUtils.isNotEmpty(pipelineIdList)) {
+                    pipelineIdList = deployPipelineMapper.checkHasAuthPipelineIdList(pipelineIdList, userUuid);
+                }
+                boolean hasPipelineModify = AuthActionChecker.check(PIPELINE_MODIFY.class);
+                for (DeployScheduleVo scheduleVo : tbodyList) {
+                    DeployScheduleVo scheduleAuditCount = scheduleMap.get(scheduleVo.getId());
+                    if (scheduleAuditCount != null) {
+                        scheduleVo.setExecCount(scheduleAuditCount.getExecCount());
                     }
-                    Map<Long, AppModuleVo> appModuleMap = new HashMap<>();
-                    List<Long> appModuleIdList = tbodyList.stream().map(DeployScheduleVo::getAppModuleId).collect(Collectors.toList());
-                    if (CollectionUtils.isNotEmpty(appModuleIdList)) {
-                        List<AppModuleVo> appModuleList = appSystemMapper.getAppModuleListByIdList(appModuleIdList);
-                        appModuleMap = appModuleList.stream().collect(Collectors.toMap(AppModuleVo::getId, e -> e));
-                    }
-                    List<Long> pipelineIdList = tbodyList.stream().map(DeployScheduleVo::getPipelineId).collect(Collectors.toList());
-                    if (CollectionUtils.isNotEmpty(pipelineIdList)) {
-                        pipelineIdList = deployPipelineMapper.checkHasAuthPipelineIdList(pipelineIdList, userUuid);
-                    }
-                    boolean hasPipelineModify = AuthActionChecker.check(PIPELINE_MODIFY.class);
-                    for (DeployScheduleVo scheduleVo : tbodyList) {
-                        DeployScheduleVo scheduleAuditCount = scheduleMap.get(scheduleVo.getId());
-                        if (scheduleAuditCount != null) {
-                            scheduleVo.setExecCount(scheduleAuditCount.getExecCount());
+                    String type = scheduleVo.getType();
+                    if (type.equals(ScheduleType.GENERAL.getValue())) {
+                        Long appSystemId = scheduleVo.getAppSystemId();
+                        AppSystemVo appSystemVo = appSystemMap.get(appSystemId);
+                        if (appSystemVo != null) {
+                            scheduleVo.setAppSystemName(appSystemVo.getName());
+                            scheduleVo.setAppSystemAbbrName(appSystemVo.getAbbrName());
                         }
-                        String type = scheduleVo.getType();
-                        if (type.equals(ScheduleType.GENERAL.getValue())) {
+                        AppModuleVo appModuleVo = appModuleMap.get(scheduleVo.getAppModuleId());
+                        if (appModuleVo != null) {
+                            scheduleVo.setAppModuleName(appModuleVo.getName());
+                            scheduleVo.setAppModuleAbbrName(appModuleVo.getAbbrName());
+                        }
+                        DeployScheduleConfigVo config = scheduleVo.getConfig();
+                        Set<String> actionSet = DeployAppAuthChecker.builder(appSystemId)
+                                .addEnvAction(config.getEnvId())
+                                .addScenarioAction(config.getScenarioId())
+                                .check();
+                        if (actionSet.contains(config.getEnvId().toString()) && actionSet.contains(config.getScenarioId().toString())) {
+                            scheduleVo.setEditable(1);
+                            scheduleVo.setDeletable(1);
+                        }
+                    } else if(type.equals(ScheduleType.PIPELINE.getValue())) {
+                        String name = deployPipelineMapper.getPipelineNameById(scheduleVo.getPipelineId());
+                        if (StringUtils.isNotBlank(name)) {
+                            scheduleVo.setPipelineName(name);
+                        }
+                        String pipelineType = scheduleVo.getPipelineType();
+                        if (pipelineType.equals(PipelineType.APPSYSTEM.getValue())) {
                             Long appSystemId = scheduleVo.getAppSystemId();
                             AppSystemVo appSystemVo = appSystemMap.get(appSystemId);
                             if (appSystemVo != null) {
                                 scheduleVo.setAppSystemName(appSystemVo.getName());
                                 scheduleVo.setAppSystemAbbrName(appSystemVo.getAbbrName());
                             }
-                            AppModuleVo appModuleVo = appModuleMap.get(scheduleVo.getAppModuleId());
-                            if (appModuleVo != null) {
-                                scheduleVo.setAppModuleName(appModuleVo.getName());
-                                scheduleVo.setAppModuleAbbrName(appModuleVo.getAbbrName());
-                            }
-                            DeployScheduleConfigVo config = scheduleVo.getConfig();
-                            Set<String> actionSet = DeployAppAuthChecker.builder(appSystemId)
-                                    .addEnvAction(config.getEnvId())
-                                    .addScenarioAction(config.getScenarioId())
-                                    .check();
-                            if (actionSet.contains(config.getEnvId().toString()) && actionSet.contains(config.getScenarioId().toString())) {
+                            if (pipelineIdList.contains(scheduleVo.getPipelineId())) {
                                 scheduleVo.setEditable(1);
                                 scheduleVo.setDeletable(1);
-                            }
-                        } else if(type.equals(ScheduleType.PIPELINE.getValue())) {
-                            String name = deployPipelineMapper.getPipelineNameById(scheduleVo.getPipelineId());
-                            if (StringUtils.isNotBlank(name)) {
-                                scheduleVo.setPipelineName(name);
-                            }
-                            String pipelineType = scheduleVo.getPipelineType();
-                            if (pipelineType.equals(PipelineType.APPSYSTEM.getValue())) {
-                                Long appSystemId = scheduleVo.getAppSystemId();
-                                AppSystemVo appSystemVo = appSystemMap.get(appSystemId);
-                                if (appSystemVo != null) {
-                                    scheduleVo.setAppSystemName(appSystemVo.getName());
-                                    scheduleVo.setAppSystemAbbrName(appSystemVo.getAbbrName());
-                                }
-                                if (pipelineIdList.contains(scheduleVo.getPipelineId())) {
-                                    scheduleVo.setEditable(1);
-                                    scheduleVo.setDeletable(1);
-                                } else {
-                                    Set<String> actionSet = DeployAppAuthChecker.builder(appSystemId)
-                                            .addOperationAction(DeployAppConfigAction.PIPELINE.getValue())
-                                            .check();
-                                    if (actionSet.contains(DeployAppConfigAction.PIPELINE.getValue())) {
-                                        scheduleVo.setEditable(1);
-                                        scheduleVo.setDeletable(1);
-                                    }
-                                }
-                            } else if (pipelineType.equals(PipelineType.GLOBAL.getValue())) {
-                                if (hasPipelineModify || pipelineIdList.contains(scheduleVo.getPipelineId())) {
+                            } else {
+                                Set<String> actionSet = DeployAppAuthChecker.builder(appSystemId)
+                                        .addOperationAction(DeployAppConfigAction.PIPELINE.getValue())
+                                        .check();
+                                if (actionSet.contains(DeployAppConfigAction.PIPELINE.getValue())) {
                                     scheduleVo.setEditable(1);
                                     scheduleVo.setDeletable(1);
                                 }
+                            }
+                        } else if (pipelineType.equals(PipelineType.GLOBAL.getValue())) {
+                            if (hasPipelineModify || pipelineIdList.contains(scheduleVo.getPipelineId())) {
+                                scheduleVo.setEditable(1);
+                                scheduleVo.setDeletable(1);
                             }
                         }
                     }
