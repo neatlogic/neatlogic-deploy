@@ -121,7 +121,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                     <result column="jobTemplateScenarioId" property="scenarioId"/>
                     <result column="jobTemplateScenarioName" property="scenarioName"/>
                     <result column="jobTemplateRoundCount" property="roundCount"/>
-                    <result column="jobTemplateConfigStr" property="configStr"/>
+                    <result column="jobTemplateConfigStr" property="configStr" typeHandler="CompressHandler"/>
                     <result column="jobEnvId" property="envId"/>
                     <result column="jobEnvName" property="envName"/>
                 </collection>

@@ -116,6 +116,7 @@ public class SavePipelineApi extends PrivateApiComponentBase {
                             hasGroupJob = true;
                             for (int k = 0; k < groupVo.getJobTemplateList().size(); k++) {
                                 PipelineJobTemplateVo jobVo = groupVo.getJobTemplateList().get(k);
+                                jobVo.setSort(k);
                                 jobVo.setGroupId(groupVo.getId());
                                 pipelineMapper.insertJobTemplate(jobVo);
                             }
