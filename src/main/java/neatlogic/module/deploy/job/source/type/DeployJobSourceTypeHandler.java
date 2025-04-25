@@ -742,7 +742,9 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
         globalLockVo.setKeywordParam(keywordParam);
         IGlobalLockHandler globalLockHandler = GlobalLockHandlerFactory.getHandler(JobSourceType.DEPLOY.getValue());
         globalLockHandler.initSearchParam(globalLockVo);
-        globalLockMapper.deleteLockByIdList(globalLockVo.getIdList());
+        if (CollectionUtils.isNotEmpty(globalLockVo.getIdList())) {
+            globalLockMapper.deleteLockByIdList(globalLockVo.getIdList());
+        }
     }
 
     @Override
