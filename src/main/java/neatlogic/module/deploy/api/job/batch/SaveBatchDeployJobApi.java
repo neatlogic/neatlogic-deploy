@@ -147,8 +147,6 @@ public class SaveBatchDeployJobApi extends PrivateApiComponentBase {
                                 jobVo.setParentId(deployJobVo.getId());
                                 deployJobMapper.updateAutoExecJobParentIdById(jobVo);
                                 deployJobMapper.insertGroupJob(groupVo.getId(), jobVo.getId(), k + 1);
-                                //批量作业没有来源id
-                                deployJobMapper.insertJobInvoke(deployJobVo.getId(), jobVo.getId(), JobSource.BATCHDEPLOY.getValue(), deployJobVo.getRouteId());
                             }
                         }
                         if (hasGroupJob) {
@@ -167,6 +165,8 @@ public class SaveBatchDeployJobApi extends PrivateApiComponentBase {
                 }
             }
         }
+        //批量作业没有来源id
+        deployJobMapper.insertJobInvoke(deployJobVo.getId(), 0L, JobSource.BATCHDEPLOY.getValue(), deployJobVo.getRouteId());
         if (CollectionUtils.isNotEmpty(deployJobVo.getAuthList())) {
             for (DeployJobAuthVo authVo : deployJobVo.getAuthList()) {
                 authVo.setJobId(deployJobVo.getId());
