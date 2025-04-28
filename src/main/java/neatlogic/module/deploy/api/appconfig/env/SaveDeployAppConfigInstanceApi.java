@@ -68,7 +68,7 @@ public class SaveDeployAppConfigInstanceApi extends PrivateApiComponentBase {
     public String getToken() {
         return "deploy/app/config/instance/save";
     }
-
+//    {"instanceIdList":[1061599224643585],"appSystemId":669482179420161,"appModuleId":669491121676288,"envId":481856650534925,"appSystemName":"TomcatTest","envName":"SIT","moduleName":"WebTest"}
     @Input({
             @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "应用系统id"),
             @Param(name = "appModuleId", type = ApiParamType.LONG, isRequired = true, desc = "应用模块id"),
@@ -84,24 +84,25 @@ public class SaveDeployAppConfigInstanceApi extends PrivateApiComponentBase {
     })
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
-
+        Long appSystemId = paramObj.getLong("appSystemId");
+        Long envId = paramObj.getLong("envId");
         //校验环境权限、编辑配置的操作权限
-        deployAppAuthorityService.checkEnvAuth(paramObj.getLong("appSystemId"), paramObj.getLong("envId"));
-        deployAppAuthorityService.checkOperationAuth(paramObj.getLong("appSystemId"), DeployAppConfigAction.EDIT);
+        deployAppAuthorityService.checkEnvAuth(appSystemId, envId);
+        deployAppAuthorityService.checkOperationAuth(appSystemId, DeployAppConfigAction.EDIT);
 
         //校验应用系统id、应用模块id、环境id是否存在
         ICiEntityCrossoverMapper iCiEntityCrossoverMapper = CrossoverServiceFactory.getApi(ICiEntityCrossoverMapper.class);
         IResourceCrossoverMapper iResourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
-        CiEntityVo appSystemCiEntity = iCiEntityCrossoverMapper.getCiEntityBaseInfoById(paramObj.getLong("appSystemId"));
+        CiEntityVo appSystemCiEntity = iCiEntityCrossoverMapper.getCiEntityBaseInfoById(appSystemId);
         if (appSystemCiEntity == null) {
-            throw new CiEntityNotFoundException(paramObj.getLong("appSystemId"));
+            throw new CiEntityNotFoundException(appSystemId);
         }
         if (iCiEntityCrossoverMapper.getCiEntityBaseInfoById(paramObj.getLong("appModuleId")) == null) {
             throw new CiEntityNotFoundException(paramObj.getLong("appModuleId"));
         }
-        ResourceVo env = iResourceCrossoverMapper.getAppEnvById(paramObj.getLong("envId"));
+        ResourceVo env = iResourceCrossoverMapper.getAppEnvById(envId);
         if (env == null) {
-            throw new AppEnvNotFoundException(paramObj.getLong("envId"));
+            throw new AppEnvNotFoundException(envId);
         }
         //实例挂环境
         JSONArray instanceIdArray = paramObj.getJSONArray("instanceIdList");

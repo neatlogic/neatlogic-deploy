@@ -904,19 +904,32 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
     </sql>
 
     <select id="getAppConfigEnvInstanceCount" parameterType="neatlogic.framework.deploy.dto.app.DeployAppConfigInstanceVo" resultType="int" useCache="false">
-        SELECT count(a.`id`)
+        SELECT count(DISTINCT a.`id`)
         <include refid="searchAppConfigEnvInstance"></include>
     </select>
 
-    <select id="searchAppConfigEnvInstanceList"
-            resultType="neatlogic.framework.deploy.dto.app.DeployAppConfigInstanceVo" useCache="false">
-        SELECT a.`id`,
-        a.`ip`,
-        a.`port`,
-        a.`name`
+    <select id="searchAppConfigEnvInstanceIdList" parameterType="neatlogic.framework.deploy.dto.app.DeployAppConfigInstanceVo"
+            resultType="java.lang.Long" useCache="false">
+        SELECT DISTINCT
+        a.`id`
         <include refid="searchAppConfigEnvInstance"></include>
         ORDER BY a.`id` DESC
         LIMIT #{startNum}, #{pageSize}
+    </select>
+
+    <select id="searchAppConfigEnvInstanceListByIdList" parameterType="java.util.List"
+            resultType="neatlogic.framework.deploy.dto.app.DeployAppConfigInstanceVo" useCache="false">
+        SELECT DISTINCT
+        a.`id`,
+        a.`ip`,
+        a.`port`,
+        a.`name`
+        FROM @{DATA_SCHEMA}.`scence_appinstance_env_appmodule_appsystem` a
+        WHERE a.`id` IN
+        <foreach collection="list" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+        ORDER BY a.`id` DESC
     </select>
 
     <select id="getAppSystemIdListCount" resultType="java.lang.Integer" useCache="false">

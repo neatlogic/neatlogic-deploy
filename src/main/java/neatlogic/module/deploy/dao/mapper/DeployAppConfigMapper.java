@@ -67,7 +67,17 @@ public interface DeployAppConfigMapper extends IDeployAppConfigCrossoverMapper {
 
     DeployAppConfigVo getAppConfigDraft(DeployAppConfigVo deployAppConfigDraftVo);
 
-    List<DeployAppConfigInstanceVo> searchAppConfigEnvInstanceList(DeployAppConfigInstanceVo searchVo);
+    /**
+     * 查询发布应用配置的应用实例下的无模块无环境、无模块同环境、同模块无环境的实例个数
+     *
+     * @param searchVo searchVo
+     * @return count
+     */
+    int getAppConfigEnvInstanceCount(DeployAppConfigInstanceVo searchVo);
+
+    List<Long> searchAppConfigEnvInstanceIdList(DeployAppConfigInstanceVo searchVo);
+
+    List<DeployAppConfigInstanceVo> searchAppConfigEnvInstanceListByIdList(List<Long> idList);
 
     List<DeployAppEnvironmentVo> getDeployAppEnvListByAppSystemIdAndModuleIdList(@Param("appSystemId") Long appSystemId, @Param("appModuleIdList") List<Long> appModuleIdList);
 
@@ -195,14 +205,6 @@ public interface DeployAppConfigMapper extends IDeployAppConfigCrossoverMapper {
     int getCiEntityIdListCount(Integer isConfig);
 
     int getAppModuleEnvAutoConfigInstanceIdCount(DeployAppEnvAutoConfigVo searchVo);
-
-    /**
-     * 查询发布应用配置的应用实例下的无模块无环境、无模块同环境、同模块无环境的实例个数
-     *
-     * @param searchVo searchVo
-     * @return count
-     */
-    int getAppConfigEnvInstanceCount(DeployAppConfigInstanceVo searchVo);
 
     int checkDeployAppConfigEnvDBSchemaIsRepeat(DeployAppConfigEnvDBConfigVo configVo);
 

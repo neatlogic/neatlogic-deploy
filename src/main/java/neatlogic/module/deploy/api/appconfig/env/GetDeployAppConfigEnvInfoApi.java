@@ -86,7 +86,7 @@ public class GetDeployAppConfigEnvInfoApi extends PrivateApiComponentBase {
     public String getConfig() {
         return null;
     }
-
+    //{"needPage":false,"appSystemId":669482179420161,"appModuleId":669491121676288,"envId":481856650534925,"appSystemName":"TomcatTest","envName":"SIT","moduleName":"WebTest"}
     @Input({
             @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "应用 id"),
             @Param(name = "appModuleId", type = ApiParamType.LONG, isRequired = true, desc = "模块 id"),
