@@ -61,6 +61,19 @@ public class BatchDeployAuthChecker {
     }
 
     /**
+     * 是否有中止权限
+     *
+     * @param deployJobVo 批量发布作业
+     * @return 是｜否
+     */
+    public static boolean isCanAbort(DeployJobVo deployJobVo) {
+        if (!Objects.equals(JobStatus.CHECKED.getValue(), deployJobVo.getStatus())) {
+            return UserContext.get().getUserUuid().equals(deployJobVo.getExecUser());
+        }
+        return false;
+    }
+
+    /**
      * 是否有接管权限
      *
      * @param deployJobVo 批量发布作业
@@ -85,7 +98,7 @@ public class BatchDeployAuthChecker {
     public static boolean isCanEdit(DeployJobVo deployJobVo) {
         if (!Objects.equals(JobStatus.CHECKED.getValue(), deployJobVo.getStatus())) {
             if (!Objects.equals(deployJobVo.getReviewStatus(), ReviewStatus.WAITING.getValue())) {
-                return Arrays.asList(JobStatus.READY.getValue(),JobStatus.PENDING.getValue(), JobStatus.SAVED.getValue(), JobStatus.COMPLETED.getValue(), JobStatus.FAILED.getValue()).contains(deployJobVo.getStatus())
+                return Arrays.asList(JobStatus.READY.getValue(), JobStatus.PENDING.getValue(), JobStatus.SAVED.getValue(), JobStatus.COMPLETED.getValue(), JobStatus.FAILED.getValue()).contains(deployJobVo.getStatus())
                         && (AuthActionChecker.checkByUserUuid(UserContext.get().getUserUuid(true), BATCHDEPLOY_MODIFY.class.getSimpleName()) || Objects.equals(deployJobVo.getExecUser(), UserContext.get().getUserUuid(true)));
             }
         }

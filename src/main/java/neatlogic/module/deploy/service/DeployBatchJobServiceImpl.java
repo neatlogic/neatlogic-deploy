@@ -392,12 +392,12 @@ public class DeployBatchJobServiceImpl implements DeployBatchJobService, IDeploy
                 groupStatus = nextGroupId == null ? groupStatus : JobPhaseStatus.WAIT_INPUT.getValue();
             }
         } else if (groupStatus.equalsIgnoreCase(JobStatus.FAILED.getValue())) {
-            if (groupVo.getIsGroupRun() == 0) {
-                groupStatus = nextGroupId == null ? groupStatus : JobPhaseStatus.WAIT_INPUT.getValue();
-            }
-            if (groupStatus.equalsIgnoreCase(JobStatus.FAILED.getValue())) {
+//            if (groupVo.getIsGroupRun() == 0) {
+//                groupStatus = nextGroupId == null ? groupStatus : JobPhaseStatus.WAIT_INPUT.getValue();
+//            }
+//            if (groupStatus.equalsIgnoreCase(JobStatus.FAILED.getValue())) {
                 deployBatchJobMapper.updateBatchJobStatusByGroupId(groupVo.getId(), JobStatus.FAILED.getValue());
-            }
+//            }
         } else if (groupStatus.equalsIgnoreCase(JobStatus.ABORTED.getValue())) {
             deployBatchJobMapper.updateBatchJobStatusByGroupId(groupVo.getId(), JobStatus.ABORTED.getValue());
         }

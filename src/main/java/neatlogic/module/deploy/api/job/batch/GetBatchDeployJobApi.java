@@ -68,6 +68,7 @@ public class GetBatchDeployJobApi extends PrivateApiComponentBase {
         deployJobVo.setIsCanEdit(BatchDeployAuthChecker.isCanEdit(deployJobVo) ? 1 : 0);
         deployJobVo.setIsCanCheck(BatchDeployAuthChecker.isCanCheck(deployJobVo) ? 1 : 0);
         deployJobVo.setIsCanGroupExecute(BatchDeployAuthChecker.isCanGroupExecute(deployJobVo) ? 1 : 0);
+        deployJobVo.setIsCanAbort(BatchDeployAuthChecker.isCanAbort(deployJobVo) ? 1 : 0);
         return deployJobVo;
     }
 
