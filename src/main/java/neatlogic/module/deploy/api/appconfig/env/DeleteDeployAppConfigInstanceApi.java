@@ -1,40 +1,34 @@
 package neatlogic.module.deploy.api.appconfig.env;
 
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
-import neatlogic.framework.cmdb.crossover.ICiCrossoverMapper;
 import neatlogic.framework.cmdb.crossover.ICiEntityCrossoverMapper;
 import neatlogic.framework.cmdb.crossover.ICiEntityCrossoverService;
 import neatlogic.framework.cmdb.crossover.IResourceCrossoverMapper;
-import neatlogic.framework.cmdb.dto.ci.CiVo;
 import neatlogic.framework.cmdb.dto.cientity.CiEntityVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.ResourceVo;
 import neatlogic.framework.cmdb.dto.transaction.CiEntityTransactionVo;
 import neatlogic.framework.cmdb.enums.EditModeType;
 import neatlogic.framework.cmdb.enums.TransactionActionType;
-import neatlogic.framework.cmdb.exception.ci.CiNotFoundException;
 import neatlogic.framework.cmdb.exception.cientity.CiEntityNotFoundException;
 import neatlogic.framework.cmdb.exception.resourcecenter.AppEnvNotFoundException;
 import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.crossover.CrossoverServiceFactory;
 import neatlogic.framework.deploy.auth.DEPLOY_BASE;
 import neatlogic.framework.deploy.constvalue.DeployAppConfigAction;
-import neatlogic.framework.restful.annotation.Input;
-import neatlogic.framework.restful.annotation.OperationType;
-import neatlogic.framework.restful.annotation.Output;
-import neatlogic.framework.restful.annotation.Param;
+import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.module.deploy.service.DeployAppAuthorityService;
 import neatlogic.module.deploy.service.DeployAppConfigService;
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -46,7 +40,7 @@ import java.util.List;
 @Transactional
 @AuthAction(action = DEPLOY_BASE.class)
 @OperationType(type = OperationTypeEnum.UPDATE)
-public class SaveDeployAppConfigInstanceApi extends PrivateApiComponentBase {
+public class DeleteDeployAppConfigInstanceApi extends PrivateApiComponentBase {
 
     @Resource
     DeployAppConfigService deployAppConfigService;
@@ -56,7 +50,7 @@ public class SaveDeployAppConfigInstanceApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "保存发布应用配置的应用模块环境的实例";
+        return "删除发布应用配置的应用模块环境的实例";
     }
 
     @Override
@@ -66,22 +60,18 @@ public class SaveDeployAppConfigInstanceApi extends PrivateApiComponentBase {
 
     @Override
     public String getToken() {
-        return "deploy/app/config/instance/save";
+        return "deploy/app/config/instance/delete";
     }
 //    {"instanceIdList":[1061599224643585],"appSystemId":669482179420161,"appModuleId":669491121676288,"envId":481856650534925,"appSystemName":"TomcatTest","envName":"SIT","moduleName":"WebTest"}
     @Input({
             @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "应用系统id"),
             @Param(name = "appModuleId", type = ApiParamType.LONG, isRequired = true, desc = "应用模块id"),
             @Param(name = "envId", type = ApiParamType.LONG, isRequired = true, desc = "环境id"),
-            @Param(name = "instanceIdList", type = ApiParamType.JSONARRAY, desc = "实例id"),
-            @Param(name = "ciId", type = ApiParamType.LONG, desc = "模型id"),
-            @Param(name = "ip", type = ApiParamType.STRING, desc = "ip"),
-            @Param(name = "port", type = ApiParamType.INTEGER, desc = "端口"),
-            @Param(name = "name", type = ApiParamType.STRING, desc = "名称"),
-            @Param(name = "maintenanceWindow", type = ApiParamType.STRING, desc = "维护窗口")
+            @Param(name = "instanceIdList", type = ApiParamType.JSONARRAY, isRequired = true, minSize = 1, desc = "实例id列表")
     })
     @Output({
     })
+    @Description(desc = "删除发布应用配置的应用模块环境的实例")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         Long appSystemId = paramObj.getLong("appSystemId");
@@ -105,9 +95,12 @@ public class SaveDeployAppConfigInstanceApi extends PrivateApiComponentBase {
         if (env == null) {
             throw new AppEnvNotFoundException(envId);
         }
-        //实例挂环境
+
+        //需要解绑关系的实例
         JSONArray instanceIdArray = paramObj.getJSONArray("instanceIdList");
         if (CollectionUtils.isNotEmpty(instanceIdArray)) {
+            ICiEntityCrossoverService ciEntityService = CrossoverServiceFactory.getApi(ICiEntityCrossoverService.class);
+            List<CiEntityTransactionVo> ciEntityTransactionList = new ArrayList<>();
             List<Long> instanceIdList = instanceIdArray.toJavaList(Long.class);
             for (Long instanceId : instanceIdList) {
                 //获取实例的具体信息
@@ -116,47 +109,33 @@ public class SaveDeployAppConfigInstanceApi extends PrivateApiComponentBase {
                 if (instanceCiEntity == null) {
                     throw new CiEntityNotFoundException(instanceId);
                 }
-                ICiEntityCrossoverService ciEntityService = CrossoverServiceFactory.getApi(ICiEntityCrossoverService.class);
-                CiEntityVo instanceCiEntityInfo = ciEntityService.getCiEntityById(instanceCiEntity.getCiId(), instanceId);
+                CiEntityVo ciEntityVo = ciEntityService.getCiEntityById(instanceCiEntity.getCiId(), instanceId);
 
-                CiEntityTransactionVo ciEntityTransactionVo = new CiEntityTransactionVo(instanceCiEntityInfo);
-                JSONObject attrEntityData = instanceCiEntityInfo.getAttrEntityData();
-                ciEntityTransactionVo.setAttrEntityData(attrEntityData);
-
-                //添加环境属性、模块关系
-                deployAppConfigService.addAttrEntityDataAndRelEntityData(ciEntityTransactionVo, instanceCiEntity.getCiId(), paramObj, Collections.singletonList("app_environment"), Collections.singletonList("APPComponent"), Collections.singletonList("app_environment"));
-
-
-                //设置基础信息
+                CiEntityTransactionVo ciEntityTransactionVo = new CiEntityTransactionVo();
+                ciEntityTransactionVo.setCiEntityId(ciEntityVo.getId());
+                ciEntityTransactionVo.setCiId(ciEntityVo.getCiId());
+                ciEntityTransactionVo.setAllowCommit(true);
                 ciEntityTransactionVo.setAction(TransactionActionType.UPDATE.getValue());
                 ciEntityTransactionVo.setEditMode(EditModeType.GLOBAL.getValue());
+                JSONObject attrEntityData = ciEntityVo.getAttrEntityData();
+                if (MapUtils.isNotEmpty(attrEntityData)) {
+                    ciEntityTransactionVo.setAttrEntityData(JSONObject.parseObject(attrEntityData.toJSONString()));
+                }
+                JSONObject relEntityData = ciEntityVo.getRelEntityData();
+                if (MapUtils.isNotEmpty(relEntityData)) {
+                    ciEntityTransactionVo.setRelEntityData(JSONObject.parseObject(relEntityData.toJSONString()));
+                }
+                JSONObject globalAttrEntityData = ciEntityVo.getGlobalAttrEntityData();
+                if (MapUtils.isNotEmpty(globalAttrEntityData)) {
+                    ciEntityTransactionVo.setGlobalAttrEntityData(JSONObject.parseObject(globalAttrEntityData.toJSONString()));
+                }
 
-                List<CiEntityTransactionVo> ciEntityTransactionList = new ArrayList<>();
+                //删除环境属性、模块关系
+                deployAppConfigService.deleteAttrEntityDataAndRelEntityData(ciEntityTransactionVo, paramObj, Collections.singletonList("app_environment"), Collections.singletonList("APPComponent"), Collections.singletonList("app_environment"));
                 ciEntityTransactionList.add(ciEntityTransactionVo);
-                ciEntityService.saveCiEntity(ciEntityTransactionList);
             }
-        } else {
-
-            //新增实例到cmdb
-            Long ciId = paramObj.getLong("ciId");
-            ICiCrossoverMapper ciCrossoverMapper = CrossoverServiceFactory.getApi(ICiCrossoverMapper.class);
-            CiVo paramCiVo = ciCrossoverMapper.getCiById(ciId);
-            if (paramCiVo == null) {
-                throw new CiNotFoundException(ciId);
-            }
-            CiEntityTransactionVo ciEntityTransactionVo = new CiEntityTransactionVo();
-
-            //添加环境属性、模块关系
-            deployAppConfigService.addAttrEntityDataAndRelEntityData(ciEntityTransactionVo, paramCiVo.getId(), paramObj, Arrays.asList("name", "ip", "port", "maintenance_window"), Collections.singletonList("APPComponent"), Collections.singletonList("app_environment"));
-
-            ciEntityTransactionVo.setEditMode(EditModeType.PARTIAL.getValue());
-            ciEntityTransactionVo.setAction(TransactionActionType.INSERT.getValue());
-            List<CiEntityTransactionVo> ciEntityTransactionList = new ArrayList<>();
-            ciEntityTransactionList.add(ciEntityTransactionVo);
-            ICiEntityCrossoverService ciEntityService = CrossoverServiceFactory.getApi(ICiEntityCrossoverService.class);
             ciEntityService.saveCiEntity(ciEntityTransactionList);
         }
-
         return null;
     }
 }

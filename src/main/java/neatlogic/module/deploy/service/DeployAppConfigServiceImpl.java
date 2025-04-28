@@ -90,6 +90,88 @@ public class DeployAppConfigServiceImpl implements DeployAppConfigService {
     }
 
     @Override
+    public void deleteAttrEntityDataAndRelEntityData(CiEntityTransactionVo ciEntityTransactionVo, JSONObject attrAndRelObj, List<String> needDeleteAttrList, List<String> needDeleteRelList, List<String> needDeleteGlobalAttrList) {
+        Long ciId = ciEntityTransactionVo.getCiId();
+        // 删除属性
+        IAttrCrossoverMapper attrCrossoverMapper = CrossoverServiceFactory.getApi(IAttrCrossoverMapper.class);
+        List<AttrVo> attrVoList = attrCrossoverMapper.getAttrByCiId(ciId);
+        for (AttrVo attrVo : attrVoList) {
+            if (needDeleteAttrList.contains(attrVo.getName())) {
+                String attrParam = getAttrMap().get(attrVo.getName());
+                if (StringUtils.isNotBlank(attrParam)) {
+                    Object value = attrAndRelObj.get(attrParam);
+                    if (value != null) {
+                        JSONObject attrEntityDataByAttrId = ciEntityTransactionVo.getAttrEntityDataByAttrId(attrVo.getId());
+                        if (MapUtils.isNotEmpty(attrEntityDataByAttrId)) {
+                            JSONArray valueList = attrEntityDataByAttrId.getJSONArray("valueList");
+                            if (CollectionUtils.isNotEmpty(valueList)) {
+                                valueList.remove(value);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        // 删除关系
+        ICiEntityCrossoverMapper ciEntityCrossoverMapper = CrossoverServiceFactory.getApi(ICiEntityCrossoverMapper.class);
+        IRelCrossoverMapper relCrossoverMapper = CrossoverServiceFactory.getApi(IRelCrossoverMapper.class);
+        List<RelVo> relVoList = relCrossoverMapper.getRelByCiId(ciId);
+        for (RelVo relVo : relVoList) {
+            if (needDeleteRelList.contains(relVo.getFromCiName())) {
+                String relParam = getRelMap().get(relVo.getFromCiName());
+                if (StringUtils.isNotBlank(relParam)) {
+                    Long value = attrAndRelObj.getLong(relParam);
+                    if (value != null) {
+                        JSONObject relEntityDataByRelIdAndDirection = ciEntityTransactionVo.getRelEntityDataByRelIdAndDirection(relVo.getId(), relVo.getDirection());
+                        if (MapUtils.isNotEmpty(relEntityDataByRelIdAndDirection)) {
+                            JSONArray valueList = relEntityDataByRelIdAndDirection.getJSONArray("valueList");
+                            if (CollectionUtils.isNotEmpty(valueList)) {
+                                for (int i = valueList.size() - 1; i >= 0; i--) {
+                                    JSONObject valueObj = valueList.getJSONObject(i);
+                                    if (MapUtils.isNotEmpty(valueObj)) {
+                                        Long ciEntityId = valueObj.getLong("ciEntityId");
+                                        if (Objects.equals(ciEntityId, value)) {
+                                            valueList.remove(i);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        // 删除全局属性
+        IGlobalAttrCrossoverMapper globalAttrCrossoverMapper = CrossoverServiceFactory.getApi(IGlobalAttrCrossoverMapper.class);
+        GlobalAttrVo searchVo = new GlobalAttrVo();
+        searchVo.setIsActive(1);
+        List<GlobalAttrVo> globalAttrList = globalAttrCrossoverMapper.searchGlobalAttr(searchVo);
+        for (GlobalAttrVo globalAttrVo : globalAttrList) {
+            if (needDeleteGlobalAttrList.contains(globalAttrVo.getName())) {
+                String attrParam = getAttrMap().get(globalAttrVo.getName());
+                if (StringUtils.isNotBlank(attrParam)) {
+                    Object value = attrAndRelObj.get(attrParam);
+                    JSONObject globalAttrEntityDataByAttrId = ciEntityTransactionVo.getGlobalAttrEntityDataByAttrId(globalAttrVo.getId());
+                    if (MapUtils.isNotEmpty(globalAttrEntityDataByAttrId)) {
+                        JSONArray valueList = globalAttrEntityDataByAttrId.getJSONArray("valueList");
+                        if (CollectionUtils.isNotEmpty(valueList)) {
+                            for (int i = valueList.size() - 1; i >= 0; i--) {
+                                JSONObject valueObj = valueList.getJSONObject(i);
+                                if (MapUtils.isNotEmpty(valueObj)) {
+                                    Long id = valueObj.getLong("id");
+                                    if (Objects.equals(id, value)) {
+                                        valueList.remove(i);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    @Override
     public List<RunnerMapVo> getAppModuleRunnerGroupByAppSystemIdAndModuleId(Long appSystemId, Long appModuleId) {
         ICiEntityCrossoverMapper iCiEntityCrossoverMapper = CrossoverServiceFactory.getApi(ICiEntityCrossoverMapper.class);
         CiEntityVo appSystemEntity = iCiEntityCrossoverMapper.getCiEntityBaseInfoById(appSystemId);
