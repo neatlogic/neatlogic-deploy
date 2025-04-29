@@ -29,6 +29,7 @@ import neatlogic.module.deploy.service.DeployAppConfigService;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -73,7 +74,8 @@ public class SaveDeployAppConfigInstanceApi extends PrivateApiComponentBase {
             @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "应用系统id"),
             @Param(name = "appModuleId", type = ApiParamType.LONG, isRequired = true, desc = "应用模块id"),
             @Param(name = "envId", type = ApiParamType.LONG, isRequired = true, desc = "环境id"),
-            @Param(name = "instanceIdList", type = ApiParamType.JSONARRAY, desc = "实例id"),
+            @Param(name = "instanceIdList", type = ApiParamType.JSONARRAY, desc = "实例id列表"),
+            @Param(name = "id", type = ApiParamType.LONG, desc = "实例id"),
             @Param(name = "ciId", type = ApiParamType.LONG, desc = "模型id"),
             @Param(name = "ip", type = ApiParamType.STRING, desc = "ip"),
             @Param(name = "port", type = ApiParamType.INTEGER, desc = "端口"),
@@ -105,18 +107,20 @@ public class SaveDeployAppConfigInstanceApi extends PrivateApiComponentBase {
         if (env == null) {
             throw new AppEnvNotFoundException(envId);
         }
+        ICiEntityCrossoverService ciEntityService = CrossoverServiceFactory.getApi(ICiEntityCrossoverService.class);
+        ICiEntityCrossoverMapper ciEntityCrossoverMapper = CrossoverServiceFactory.getApi(ICiEntityCrossoverMapper.class);
         //实例挂环境
         JSONArray instanceIdArray = paramObj.getJSONArray("instanceIdList");
         if (CollectionUtils.isNotEmpty(instanceIdArray)) {
             List<Long> instanceIdList = instanceIdArray.toJavaList(Long.class);
             for (Long instanceId : instanceIdList) {
                 //获取实例的具体信息
-                ICiEntityCrossoverMapper ciEntityCrossoverMapper = CrossoverServiceFactory.getApi(ICiEntityCrossoverMapper.class);
+//                ICiEntityCrossoverMapper ciEntityCrossoverMapper = CrossoverServiceFactory.getApi(ICiEntityCrossoverMapper.class);
                 CiEntityVo instanceCiEntity = ciEntityCrossoverMapper.getCiEntityBaseInfoById(instanceId);
                 if (instanceCiEntity == null) {
                     throw new CiEntityNotFoundException(instanceId);
                 }
-                ICiEntityCrossoverService ciEntityService = CrossoverServiceFactory.getApi(ICiEntityCrossoverService.class);
+//                ICiEntityCrossoverService ciEntityService = CrossoverServiceFactory.getApi(ICiEntityCrossoverService.class);
                 CiEntityVo instanceCiEntityInfo = ciEntityService.getCiEntityById(instanceCiEntity.getCiId(), instanceId);
 
                 CiEntityTransactionVo ciEntityTransactionVo = new CiEntityTransactionVo(instanceCiEntityInfo);
@@ -145,15 +149,57 @@ public class SaveDeployAppConfigInstanceApi extends PrivateApiComponentBase {
                 throw new CiNotFoundException(ciId);
             }
             CiEntityTransactionVo ciEntityTransactionVo = new CiEntityTransactionVo();
-
-            //添加环境属性、模块关系
-            deployAppConfigService.addAttrEntityDataAndRelEntityData(ciEntityTransactionVo, paramCiVo.getId(), paramObj, Arrays.asList("name", "ip", "port", "maintenance_window"), Collections.singletonList("APPComponent"), Collections.singletonList("app_environment"));
+            Long id = paramObj.getLong("id");
+            if (id != null) {
+                //获取实例的具体信息
+                CiEntityVo instanceCiEntity = ciEntityCrossoverMapper.getCiEntityBaseInfoById(id);
+                if (instanceCiEntity == null) {
+                    throw new CiEntityNotFoundException(id);
+                }
+                CiEntityVo ciEntityVo = ciEntityService.getCiEntityById(instanceCiEntity.getCiId(), id);
+                ciEntityTransactionVo.setCiEntityId(ciEntityVo.getId());
+                ciEntityTransactionVo.setCiId(ciEntityVo.getCiId());
+                ciEntityTransactionVo.setAllowCommit(true);
+                ciEntityTransactionVo.setAction(TransactionActionType.UPDATE.getValue());
+                ciEntityTransactionVo.setEditMode(EditModeType.GLOBAL.getValue());
+                JSONObject attrEntityData = ciEntityVo.getAttrEntityData();
+                if (MapUtils.isNotEmpty(attrEntityData)) {
+                    ciEntityTransactionVo.setAttrEntityData(JSONObject.parseObject(attrEntityData.toJSONString()));
+                }
+                JSONObject relEntityData = ciEntityVo.getRelEntityData();
+                if (MapUtils.isNotEmpty(relEntityData)) {
+                    ciEntityTransactionVo.setRelEntityData(JSONObject.parseObject(relEntityData.toJSONString()));
+                }
+                JSONObject globalAttrEntityData = ciEntityVo.getGlobalAttrEntityData();
+                if (MapUtils.isNotEmpty(globalAttrEntityData)) {
+                    ciEntityTransactionVo.setGlobalAttrEntityData(JSONObject.parseObject(globalAttrEntityData.toJSONString()));
+                }
+                ciEntityTransactionVo.setAction(TransactionActionType.UPDATE.getValue());
+                //修改属性值
+                deployAppConfigService.addAttrEntityDataAndRelEntityData(
+                        ciEntityTransactionVo,
+                        paramCiVo.getId(),
+                        paramObj,
+                        Arrays.asList("name", "ip", "port", "maintenance_window"),
+                        new ArrayList<>(),
+                        new ArrayList<>()
+                );
+            } else {
+                ciEntityTransactionVo.setAction(TransactionActionType.INSERT.getValue());
+                //添加环境属性、模块关系
+                deployAppConfigService.addAttrEntityDataAndRelEntityData(
+                        ciEntityTransactionVo,
+                        paramCiVo.getId(),
+                        paramObj,
+                        Arrays.asList("name", "ip", "port", "maintenance_window"),
+                        Collections.singletonList("APPComponent"),
+                        Collections.singletonList("app_environment")
+                );
+            }
 
             ciEntityTransactionVo.setEditMode(EditModeType.PARTIAL.getValue());
-            ciEntityTransactionVo.setAction(TransactionActionType.INSERT.getValue());
             List<CiEntityTransactionVo> ciEntityTransactionList = new ArrayList<>();
             ciEntityTransactionList.add(ciEntityTransactionVo);
-            ICiEntityCrossoverService ciEntityService = CrossoverServiceFactory.getApi(ICiEntityCrossoverService.class);
             ciEntityService.saveCiEntity(ciEntityTransactionList);
         }
 

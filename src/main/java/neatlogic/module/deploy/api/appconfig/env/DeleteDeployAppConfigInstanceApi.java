@@ -32,10 +32,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-/**
- * @author longrf
- * @date 2022/6/27 6:03 下午
- */
 @Service
 @Transactional
 @AuthAction(action = DEPLOY_BASE.class)
@@ -50,7 +46,7 @@ public class DeleteDeployAppConfigInstanceApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "删除发布应用配置的应用模块环境的实例";
+        return "nmdaae.deletedeployappconfiginstanceapi.getname";
     }
 
     @Override
@@ -62,7 +58,7 @@ public class DeleteDeployAppConfigInstanceApi extends PrivateApiComponentBase {
     public String getToken() {
         return "deploy/app/config/instance/delete";
     }
-//    {"instanceIdList":[1061599224643585],"appSystemId":669482179420161,"appModuleId":669491121676288,"envId":481856650534925,"appSystemName":"TomcatTest","envName":"SIT","moduleName":"WebTest"}
+
     @Input({
             @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "应用系统id"),
             @Param(name = "appModuleId", type = ApiParamType.LONG, isRequired = true, desc = "应用模块id"),
@@ -100,11 +96,11 @@ public class DeleteDeployAppConfigInstanceApi extends PrivateApiComponentBase {
         JSONArray instanceIdArray = paramObj.getJSONArray("instanceIdList");
         if (CollectionUtils.isNotEmpty(instanceIdArray)) {
             ICiEntityCrossoverService ciEntityService = CrossoverServiceFactory.getApi(ICiEntityCrossoverService.class);
+            ICiEntityCrossoverMapper ciEntityCrossoverMapper = CrossoverServiceFactory.getApi(ICiEntityCrossoverMapper.class);
             List<CiEntityTransactionVo> ciEntityTransactionList = new ArrayList<>();
             List<Long> instanceIdList = instanceIdArray.toJavaList(Long.class);
             for (Long instanceId : instanceIdList) {
                 //获取实例的具体信息
-                ICiEntityCrossoverMapper ciEntityCrossoverMapper = CrossoverServiceFactory.getApi(ICiEntityCrossoverMapper.class);
                 CiEntityVo instanceCiEntity = ciEntityCrossoverMapper.getCiEntityBaseInfoById(instanceId);
                 if (instanceCiEntity == null) {
                     throw new CiEntityNotFoundException(instanceId);
@@ -130,8 +126,8 @@ public class DeleteDeployAppConfigInstanceApi extends PrivateApiComponentBase {
                     ciEntityTransactionVo.setGlobalAttrEntityData(JSONObject.parseObject(globalAttrEntityData.toJSONString()));
                 }
 
-                //删除环境属性、模块关系
-                deployAppConfigService.deleteAttrEntityDataAndRelEntityData(ciEntityTransactionVo, paramObj, Collections.singletonList("app_environment"), Collections.singletonList("APPComponent"), Collections.singletonList("app_environment"));
+                //删除模块关系
+                deployAppConfigService.deleteAttrEntityDataAndRelEntityData(ciEntityTransactionVo, paramObj, new ArrayList<>(), Collections.singletonList("APPComponent"), new ArrayList<>());
                 ciEntityTransactionList.add(ciEntityTransactionVo);
             }
             ciEntityService.saveCiEntity(ciEntityTransactionList);
