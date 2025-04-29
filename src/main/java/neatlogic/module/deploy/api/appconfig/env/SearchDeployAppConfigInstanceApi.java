@@ -45,7 +45,7 @@ public class SearchDeployAppConfigInstanceApi extends PrivateApiComponentBase {
     public String getConfig() {
         return null;
     }
-//    {"currentPage":1,"pageSize":20,"keyword":"","appSystemId":669482179420161,"appModuleId":669491121676288,"envId":481856650534925,"appSystemName":"TomcatTest","envName":"SIT","moduleName":"WebTest","isAutoConfig":0}
+
     @Input({
             @Param(name = "keyword", type = ApiParamType.STRING, desc = "模糊查询"),
             @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "应用系统id"),

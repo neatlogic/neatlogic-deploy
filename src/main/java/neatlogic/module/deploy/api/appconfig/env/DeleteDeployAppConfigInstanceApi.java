@@ -67,7 +67,7 @@ public class DeleteDeployAppConfigInstanceApi extends PrivateApiComponentBase {
     })
     @Output({
     })
-    @Description(desc = "删除发布应用配置的应用模块环境的实例")
+    @Description(desc = "nmdaae.deletedeployappconfiginstanceapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         Long appSystemId = paramObj.getLong("appSystemId");

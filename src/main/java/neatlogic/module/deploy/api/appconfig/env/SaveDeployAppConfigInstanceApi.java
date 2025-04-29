@@ -69,7 +69,7 @@ public class SaveDeployAppConfigInstanceApi extends PrivateApiComponentBase {
     public String getToken() {
         return "deploy/app/config/instance/save";
     }
-//    {"instanceIdList":[1061599224643585],"appSystemId":669482179420161,"appModuleId":669491121676288,"envId":481856650534925,"appSystemName":"TomcatTest","envName":"SIT","moduleName":"WebTest"}
+
     @Input({
             @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "应用系统id"),
             @Param(name = "appModuleId", type = ApiParamType.LONG, isRequired = true, desc = "应用模块id"),
@@ -115,12 +115,10 @@ public class SaveDeployAppConfigInstanceApi extends PrivateApiComponentBase {
             List<Long> instanceIdList = instanceIdArray.toJavaList(Long.class);
             for (Long instanceId : instanceIdList) {
                 //获取实例的具体信息
-//                ICiEntityCrossoverMapper ciEntityCrossoverMapper = CrossoverServiceFactory.getApi(ICiEntityCrossoverMapper.class);
                 CiEntityVo instanceCiEntity = ciEntityCrossoverMapper.getCiEntityBaseInfoById(instanceId);
                 if (instanceCiEntity == null) {
                     throw new CiEntityNotFoundException(instanceId);
                 }
-//                ICiEntityCrossoverService ciEntityService = CrossoverServiceFactory.getApi(ICiEntityCrossoverService.class);
                 CiEntityVo instanceCiEntityInfo = ciEntityService.getCiEntityById(instanceCiEntity.getCiId(), instanceId);
 
                 CiEntityTransactionVo ciEntityTransactionVo = new CiEntityTransactionVo(instanceCiEntityInfo);
@@ -129,7 +127,6 @@ public class SaveDeployAppConfigInstanceApi extends PrivateApiComponentBase {
 
                 //添加环境属性、模块关系
                 deployAppConfigService.addAttrEntityDataAndRelEntityData(ciEntityTransactionVo, instanceCiEntity.getCiId(), paramObj, Collections.singletonList("app_environment"), Collections.singletonList("APPComponent"), Collections.singletonList("app_environment"));
-
 
                 //设置基础信息
                 ciEntityTransactionVo.setAction(TransactionActionType.UPDATE.getValue());
@@ -140,7 +137,6 @@ public class SaveDeployAppConfigInstanceApi extends PrivateApiComponentBase {
                 ciEntityService.saveCiEntity(ciEntityTransactionList);
             }
         } else {
-
             //新增实例到cmdb
             Long ciId = paramObj.getLong("ciId");
             ICiCrossoverMapper ciCrossoverMapper = CrossoverServiceFactory.getApi(ICiCrossoverMapper.class);
