@@ -624,9 +624,11 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
         } else {
             if (!Objects.equals(jobVo.getSource(), JobSource.BATCHDEPLOY.getValue())) {
                 DeployJobVo deployJobVo = deployJobMapper.getDeployJobByJobId(jobVo.getId());
-                Set<String> authSet = DeployAppAuthChecker.builder(deployJobVo.getAppSystemId()).addEnvAction(deployJobVo.getEnvId()).addScenarioAction(deployJobVo.getScenarioId()).check();
-                if (authSet.containsAll(Arrays.asList(deployJobVo.getEnvId().toString(), deployJobVo.getScenarioId().toString()))) {
-                    isHasAuth = true;
+                if (deployJobVo != null) {
+                    Set<String> authSet = DeployAppAuthChecker.builder(deployJobVo.getAppSystemId()).addEnvAction(deployJobVo.getEnvId()).addScenarioAction(deployJobVo.getScenarioId()).check();
+                    if (authSet.containsAll(Arrays.asList(deployJobVo.getEnvId().toString(), deployJobVo.getScenarioId().toString()))) {
+                        isHasAuth = true;
+                    }
                 }
             }
         }
