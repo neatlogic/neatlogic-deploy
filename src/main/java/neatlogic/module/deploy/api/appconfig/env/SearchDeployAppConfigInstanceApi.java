@@ -12,6 +12,7 @@ import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.framework.util.TableResultUtil;
 import neatlogic.module.deploy.dao.mapper.DeployAppConfigMapper;
 import com.alibaba.fastjson.JSONObject;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -66,7 +67,10 @@ public class SearchDeployAppConfigInstanceApi extends PrivateApiComponentBase {
         int count = deployAppConfigMapper.getAppConfigEnvInstanceCount(searchVo);
         if (count > 0) {
             searchVo.setRowNum(count);
-            instanceList = deployAppConfigMapper.searchAppConfigEnvInstanceList(searchVo);
+            List<Long> instanceIdList = deployAppConfigMapper.searchAppConfigEnvInstanceIdList(searchVo);
+            if (CollectionUtils.isNotEmpty(instanceIdList)) {
+                instanceList = deployAppConfigMapper.searchAppConfigEnvInstanceListByIdList(instanceIdList);
+            }
         }
         return TableResultUtil.getResult(instanceList, searchVo);
     }

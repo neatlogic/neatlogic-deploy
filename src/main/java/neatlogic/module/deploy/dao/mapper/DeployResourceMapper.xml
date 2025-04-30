@@ -81,7 +81,9 @@
         a.`ip`,
         a.`port`,
         a.`name`,
-        a.`type_id`
+        a.`type_id`,
+        a.`type_name`,
+        a.`type_label`
         FROM @{DATA_SCHEMA}.`scence_appinstance_env_appmodule_appsystem` a
         WHERE a.`id` IN
         <foreach collection="idList" item="id" open="(" separator="," close=")">

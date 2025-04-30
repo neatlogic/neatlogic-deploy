@@ -35,6 +35,17 @@ public interface DeployAppConfigService {
     void addAttrEntityDataAndRelEntityData(CiEntityTransactionVo ciEntityTransactionVo, Long ciId, JSONObject attrAndRelObj, List<String> needUpdateAttrList, List<String> needUpdateRelList, List<String> needUpdateGlobalAttrList);
 
     /**
+     * 删除环境等属性、模块等关系
+     *
+     * @param ciEntityTransactionVo 配置项
+     * @param attrAndRelObj         属性关系Obj
+     * @param needDeleteAttrList    需要删除的属性列表
+     * @param needDeleteRelList     需要删除的关系列表
+     * @param needDeleteGlobalAttrList     需要删除的全局属性列表
+     */
+    void deleteAttrEntityDataAndRelEntityData(CiEntityTransactionVo ciEntityTransactionVo, JSONObject attrAndRelObj, List<String> needDeleteAttrList, List<String> needDeleteRelList, List<String> needDeleteGlobalAttrList);
+
+    /**
      * 根据应用模块ID获取runner组
      *
      * @param appSystemId 应用ID

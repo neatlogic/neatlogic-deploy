@@ -21,6 +21,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.alibaba.nacos.common.utils.CollectionUtils;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.cmdb.crossover.ICiEntityCrossoverMapper;
+import neatlogic.framework.cmdb.crossover.IResourceCrossoverMapper;
 import neatlogic.framework.cmdb.dto.cientity.CiEntityVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.ResourceVo;
 import neatlogic.framework.common.constvalue.ApiParamType;
@@ -44,10 +45,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -111,6 +109,15 @@ public class GetDeployAppConfigEnvInfoApi extends PrivateApiComponentBase {
         //获取实例autoConfig
         if (CollectionUtils.isNotEmpty(instanceIdList)) {
             List<ResourceVo> instanceList = deployResourceMapper.getAppInstanceResourceListByIdList(instanceIdList);
+            IResourceCrossoverMapper resourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
+            List<ResourceVo> resourceList = resourceCrossoverMapper.getResourceListByIdList(instanceIdList);
+            Map<Long, ResourceVo> resourceMap = resourceList.stream().filter(Objects::nonNull).collect(Collectors.toMap(ResourceVo::getId, e -> e));
+            for (ResourceVo instanceVo : instanceList) {
+                ResourceVo resourceVo = resourceMap.get(instanceVo.getId());
+                if (resourceVo != null) {
+                    instanceVo.setMaintenanceWindow(resourceVo.getMaintenanceWindow());
+                }
+            }
             // 补充实例当前版本信息
             List<DeployInstanceVersionVo> instanceVersionVoList = deployInstanceVersionMapper.getDeployInstanceVersionByEnvIdAndInstanceIdList(envAutoConfigVo.getAppSystemId(), envAutoConfigVo.getAppModuleId(), envAutoConfigVo.getEnvId(), instanceIdList);
             //补充蓝绿
