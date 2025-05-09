@@ -31,6 +31,7 @@ import neatlogic.module.deploy.service.DeployAppAuthorityService;
 import neatlogic.module.deploy.service.DeployAppConfigService;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import org.apache.commons.collections4.MapUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -129,9 +130,29 @@ public class SaveDeployAppConfigEnvDBConfigApi extends PrivateApiComponentBase {
         ICiEntityCrossoverService ciEntityService = CrossoverServiceFactory.getApi(ICiEntityCrossoverService.class);
         CiEntityVo DBCiEntityInfo = ciEntityService.getCiEntityById(DBCiEntityVo.getCiId(), DBCiEntityVo.getId());
         CiEntityTransactionVo ciEntityTransactionVo = new CiEntityTransactionVo(DBCiEntityInfo);
-        ciEntityTransactionVo.setAttrEntityData(DBCiEntityInfo.getAttrEntityData());
-        deployAppConfigService.addAttrEntityDataAndRelEntityData(ciEntityTransactionVo, DBCiEntityInfo.getCiId(), paramObj, Collections.singletonList("app_environment"), Collections.singletonList("APPComponent"), Collections.singletonList("app_environment"));
-
+        ciEntityTransactionVo.setCiId(DBCiEntityVo.getCiId());
+        ciEntityTransactionVo.setAllowCommit(true);
+        ciEntityTransactionVo.setDescription(null);
+        JSONObject attrEntityData = DBCiEntityInfo.getAttrEntityData();
+        if (MapUtils.isNotEmpty(attrEntityData)) {
+            ciEntityTransactionVo.setAttrEntityData(JSONObject.parseObject(attrEntityData.toJSONString()));
+        }
+        JSONObject relEntityData = DBCiEntityInfo.getRelEntityData();
+        if (MapUtils.isNotEmpty(relEntityData)) {
+            ciEntityTransactionVo.setRelEntityData(JSONObject.parseObject(relEntityData.toJSONString()));
+        }
+        JSONObject globalAttrEntityData = DBCiEntityInfo.getGlobalAttrEntityData();
+        if (MapUtils.isNotEmpty(globalAttrEntityData)) {
+            ciEntityTransactionVo.setGlobalAttrEntityData(JSONObject.parseObject(globalAttrEntityData.toJSONString()));
+        }
+        deployAppConfigService.addAttrEntityDataAndRelEntityData(
+                ciEntityTransactionVo,
+                DBCiEntityInfo.getCiId(),
+                paramObj,
+                Collections.singletonList("app_environment"),
+                Collections.singletonList("APPComponent"),
+                Collections.singletonList("app_environment")
+        );
         //保存
         ciEntityTransactionVo.setAction(TransactionActionType.UPDATE.getValue());
         ciEntityTransactionVo.setEditMode(EditModeType.GLOBAL.getValue());

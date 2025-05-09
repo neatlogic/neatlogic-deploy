@@ -1218,17 +1218,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
 
     <select id="getAppConfigEnvDatabaseCount" parameterType="neatlogic.framework.deploy.dto.app.DeployResourceSearchVo" resultType="java.lang.Integer"
             useCache="false">
-        SELECT count(a.id)
+        SELECT COUNT(DISTINCT a.`id`)
         <include refid="searchDatabase"></include>
     </select>
     <sql id="searchDatabase">
         FROM @{DATA_SCHEMA}.`scence_database_ip_port_env_appmodule` a
         <where>
-            (a.env_id = #{envId} OR a.env_id IS NULL)
-            AND (
-            a.app_module_id = #{appModuleId}
-            OR a.app_module_id IS NULL
-            )
             <if test="defaultValue != null and defaultValue.size() > 0">
                 AND a.`id` IN
                 <foreach collection="defaultValue" item="id" open="(" separator="," close=")">
@@ -1245,7 +1240,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
 
     <select id="getAppConfigEnvDatabaseResourceIdList" parameterType="neatlogic.framework.deploy.dto.app.DeployResourceSearchVo" resultType="java.lang.Long"
             useCache="false">
-        SELECT a.id
+        SELECT DISTINCT a.`id`
         <include refid="searchDatabase"></include>
         <if test="needPage">
             LIMIT #{startNum}, #{pageSize}
