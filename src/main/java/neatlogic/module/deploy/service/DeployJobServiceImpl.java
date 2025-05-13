@@ -67,6 +67,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.*;
@@ -355,6 +356,7 @@ public class DeployJobServiceImpl implements DeployJobService {
         return createJob(deployJobParam, new DeployJobModuleVo());
     }
 
+    @Transactional
     @Override
     public JSONObject createJobAndFire(DeployJobVo deployJobParam, DeployJobModuleVo module) throws Exception {
         JSONObject resultJson = createJob(deployJobParam, module);

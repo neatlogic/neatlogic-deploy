@@ -50,6 +50,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.*;
@@ -71,6 +72,7 @@ public class DeployBatchJobServiceImpl implements DeployBatchJobService, IDeploy
     @Resource
     private DeployBatchJobService deployBatchJobService;
 
+    @Transactional
     @Override
     public void creatBatchJob(DeployJobVo deployJobVo, PipelineVo pipelineVo, boolean isFire) throws Exception {
         // parentId为-1时，代表该作业是父作业
@@ -168,6 +170,7 @@ public class DeployBatchJobServiceImpl implements DeployBatchJobService, IDeploy
         return null;
     }
 
+    @Transactional
     @Override
     public void fireBatch(Long batchJobId, String batchJobAction, String jobAction) {
         DeployJobVo batchJobVo = deployBatchJobMapper.getBatchDeployJobLockById(batchJobId);
