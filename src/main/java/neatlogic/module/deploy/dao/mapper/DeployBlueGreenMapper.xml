@@ -24,6 +24,9 @@
             <if test="keyword != null and keyword != ''">
                 and `name` LIKE CONCAT('%', #{keyword}, '%')
             </if>
+            <if test="isActive != null">
+                and `is_active` = #{isActive}
+            </if>
         </where>
     </select>
 
@@ -32,6 +35,9 @@
         <where>
             <if test="keyword != null and keyword != ''">
                 and `name` LIKE CONCAT('%', #{keyword}, '%')
+            </if>
+            <if test="isActive != null">
+                and `is_active` = #{isActive}
             </if>
         </where>
         limit #{startNum}, #{pageSize}
