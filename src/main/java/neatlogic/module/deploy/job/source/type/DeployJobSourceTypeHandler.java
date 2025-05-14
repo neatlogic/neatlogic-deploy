@@ -23,6 +23,7 @@ import neatlogic.framework.asynchronization.threadlocal.UserContext;
 import neatlogic.framework.auth.core.AuthActionChecker;
 import neatlogic.framework.autoexec.constvalue.ExecMode;
 import neatlogic.framework.autoexec.constvalue.JobNodeStatus;
+import neatlogic.framework.autoexec.constvalue.JobPhaseStatus;
 import neatlogic.framework.autoexec.dao.mapper.AutoexecJobMapper;
 import neatlogic.framework.autoexec.dto.AutoexecParamVo;
 import neatlogic.framework.autoexec.dto.ISqlNodeDetail;
@@ -276,7 +277,7 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
         Long jobId = paramObj.getLong("jobId");
         JSONArray paramSqlVoArray = paramObj.getJSONArray("sqlInfoList");
 
-        List<DeploySqlNodeDetailVo> oldDeploySqlList = deploySqlMapper.getAllDeploySqlDetailListWithJob(new DeploySqlNodeDetailVo(paramObj.getLong("sysId"), paramObj.getLong("moduleId"), paramObj.getLong("envId"), paramObj.getString("version")));
+        List<DeploySqlNodeDetailVo> oldDeploySqlList = deploySqlMapper.getAllDeploySqlDetailListWithJob(new DeploySqlNodeDetailVo(paramObj.getLong("sysId"), paramObj.getLong("moduleId"), paramObj.getLong("envId"), paramObj.getString("version"),paramObj.getString("targetPhaseName")));
 
         Map<String, DeploySqlNodeDetailVo> jobPhaseAndSqlDetailMap = new HashMap<>();
         Map<String, DeploySqlNodeDetailVo> sqlDetailMap = new HashMap<>();
@@ -337,8 +338,18 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
             }
         }
         if (CollectionUtils.isNotEmpty(updateSqlList)) {
+            boolean isHasModified = false;
             for (DeploySqlNodeDetailVo sqlDetailVo : updateSqlList) {
                 deploySqlMapper.updateDeploySqlDetail(sqlDetailVo);
+                if (sqlDetailVo.getIsModified() == 1) {
+                    isHasModified = true;
+                }
+            }
+            //存在修改过的sql，需要重置当前阶段的状态
+            if (isHasModified) {
+                autoexecJobMapper.updateJobPhaseNodeStatusByJobPhaseIdAndIsDelete(targetPhaseVo.getId(), JobNodeStatus.PENDING.getValue(),0);
+                autoexecJobMapper.updateJobPhaseRunnerStatusByJobIdAndPhaseId(jobId, targetPhaseVo.getId(), JobPhaseStatus.PENDING.getValue());
+                autoexecJobMapper.updateJobPhaseStatusByPhaseIdList(Collections.singletonList(targetPhaseVo.getId()), JobPhaseStatus.PENDING.getValue());
             }
         }
     }

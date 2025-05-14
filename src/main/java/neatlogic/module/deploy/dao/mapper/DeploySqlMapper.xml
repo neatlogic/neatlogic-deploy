@@ -122,7 +122,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         dsd.env_id as envId,
         dsd.version as version,
         dsd.resource_id as resourceId,
-        dsd.node_name as nodeName
+        dsd.node_name as nodeName,
+        dsd.is_modified as isModified
         from
         deploy_sql_detail dsd
         WHERE
@@ -168,6 +169,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
           AND dsd.module_id = #{moduleId}
           AND dsd.env_id = #{envId}
           AND dsd.version = #{version}
+          AND asjp.job_phase_name = #{phaseName}
     </select>
 
     <select id="getAllDeploySqlDetailList" parameterType="neatlogic.framework.deploy.dto.sql.DeploySqlNodeDetailVo"
