@@ -281,7 +281,7 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
         AutoexecJobPhaseVo targetPhaseVo = autoexecJobMapper.getJobPhaseByJobIdAndPhaseName(paramObj.getLong("jobId"), paramObj.getString("targetPhaseName"));
         //防止作业不包含"回退SQL"阶段，跳过
         //阶段状态是running则不做任何处理
-        if (targetPhaseVo == null || Objects.equals(targetPhaseVo.getStatus(), JobPhaseStatus.PENDING.getValue())) {
+        if (targetPhaseVo == null || Objects.equals(targetPhaseVo.getStatus(), JobPhaseStatus.RUNNING.getValue())) {
             return;
         }
 
