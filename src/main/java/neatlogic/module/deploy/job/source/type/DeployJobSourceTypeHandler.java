@@ -280,8 +280,7 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
         JSONArray paramSqlVoArray = paramObj.getJSONArray("sqlInfoList");
         AutoexecJobPhaseVo targetPhaseVo = autoexecJobMapper.getJobPhaseByJobIdAndPhaseName(paramObj.getLong("jobId"), paramObj.getString("targetPhaseName"));
         //防止作业不包含"回退SQL"阶段，跳过
-        //阶段状态是running则不做任何处理
-        if (targetPhaseVo == null || Objects.equals(targetPhaseVo.getStatus(), JobPhaseStatus.RUNNING.getValue())) {
+        if (targetPhaseVo == null) {
             return;
         }
 
@@ -300,7 +299,7 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
             for (int i = 0; i < paramSqlDetailList.size(); i++) {
                 DeploySqlNodeDetailVo paramSqlDetailVo = paramSqlDetailList.get(i);
                 //如果状态为pending则说明sql存在变化，阶段也需重置为pending状态支持重跑
-                if (Objects.equals(paramSqlDetailVo.getStatus(), JobNodeStatus.PENDING.getValue())) {
+                if (Objects.equals(paramSqlDetailVo.getStatus(), JobNodeStatus.PENDING.getValue()) && Objects.equals(targetPhaseVo.getStatus(), JobPhaseStatus.COMPLETED.getValue())) {
                     isNeedUpdatePending = true;
                 }
                 paramSqlDetailVo.setSort(i);

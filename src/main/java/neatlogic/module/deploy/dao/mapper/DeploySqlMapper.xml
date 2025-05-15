@@ -303,6 +303,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         WHERE dsjp.job_id = #{jobId}
         and dsjp.job_phase_name = #{jobPhaseName}
         and dsd.runner_id = #{runnerMapId}
+        and dsd.is_delete = 0
         and dsd.`status` not in
         <foreach collection="statusList" item="status" separator="," close=")" open="(">
             #{status}
