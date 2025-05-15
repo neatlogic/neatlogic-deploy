@@ -266,60 +266,63 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
      */
     @Override
     public void checkinSqlList(JSONObject paramObj) {
-        //TODO 逻辑还需要优化
-        AutoexecJobPhaseVo targetPhaseVo = autoexecJobMapper.getJobPhaseByJobIdAndPhaseName(paramObj.getLong("jobId"), paramObj.getString("targetPhaseName"));
-        if (targetPhaseVo == null) {
-            return;
-            //防止作业不包含"回退SQL"阶段，跳过
-//            throw new AutoexecJobPhaseNotFoundException(paramObj.getString("targetPhaseName"));
-        }
+        autoexecJobMapper.getJobLockByJobId(paramObj.getLong("jobId"));
+        List<DeploySqlNodeDetailVo> insertSqlDetailList = new ArrayList<>();
+        List<DeploySqlNodeDetailVo> updateSqlDetailList = new ArrayList<>();
+        List<Long> needDeleteSqlIdList = new ArrayList<>();
+        Map<String, DeploySqlNodeDetailVo> oldJobPhaseAndSqlDetailMap = new HashMap<>();
+        Map<String, DeploySqlNodeDetailVo> oldSqlDetailMap = new HashMap<>();
+        List<Long> insertJobPhaseSqlIdList = new ArrayList<>();
+        //是否需要更新阶段&node为pending
+        boolean isNeedUpdatePending = false;
 
         Long jobId = paramObj.getLong("jobId");
         JSONArray paramSqlVoArray = paramObj.getJSONArray("sqlInfoList");
-
-        List<DeploySqlNodeDetailVo> oldDeploySqlList = deploySqlMapper.getAllDeploySqlDetailListWithJob(new DeploySqlNodeDetailVo(paramObj.getLong("sysId"), paramObj.getLong("moduleId"), paramObj.getLong("envId"), paramObj.getString("version"),paramObj.getString("targetPhaseName")));
-
-        Map<String, DeploySqlNodeDetailVo> jobPhaseAndSqlDetailMap = new HashMap<>();
-        Map<String, DeploySqlNodeDetailVo> sqlDetailMap = new HashMap<>();
-        List<Long> needDeleteSqlIdList = new ArrayList<>();
-        if (CollectionUtils.isNotEmpty(oldDeploySqlList)) {
-            jobPhaseAndSqlDetailMap = oldDeploySqlList.stream().collect(Collectors.toMap(e -> e.getJobId().toString() + e.getPhaseName() + e.getResourceId().toString() + e.getSqlFile(), e -> e));
-            for (DeploySqlNodeDetailVo detailVo : oldDeploySqlList) {
-                sqlDetailMap.putIfAbsent(detailVo.getResourceId().toString() + detailVo.getSqlFile(), detailVo);
-            }
-            needDeleteSqlIdList = oldDeploySqlList.stream().map(DeploySqlNodeDetailVo::getId).collect(Collectors.toList());
+        AutoexecJobPhaseVo targetPhaseVo = autoexecJobMapper.getJobPhaseByJobIdAndPhaseName(paramObj.getLong("jobId"), paramObj.getString("targetPhaseName"));
+        //防止作业不包含"回退SQL"阶段，跳过
+        //阶段状态是running则不做任何处理
+        if (targetPhaseVo == null || Objects.equals(targetPhaseVo.getStatus(), JobPhaseStatus.PENDING.getValue())) {
+            return;
         }
-        List<DeploySqlNodeDetailVo> insertSqlDetailList = new ArrayList<>();
-        List<DeploySqlNodeDetailVo> updateSqlList = new ArrayList<>();
-        List<Long> insertSqlIdList = new ArrayList<>();
+
+        List<DeploySqlNodeDetailVo> oldSqlDetailList = deploySqlMapper.getAllDeploySqlDetailListWithJob(new DeploySqlNodeDetailVo(paramObj.getLong("sysId"), paramObj.getLong("moduleId"), paramObj.getLong("envId"), paramObj.getString("version"), paramObj.getString("targetPhaseName")));
+        if (CollectionUtils.isNotEmpty(oldSqlDetailList)) {
+            oldJobPhaseAndSqlDetailMap = oldSqlDetailList.stream().collect(Collectors.toMap(e -> e.getJobId().toString() + e.getPhaseName() + e.getResourceId().toString() + e.getSqlFile(), e -> e));
+            for (DeploySqlNodeDetailVo detailVo : oldSqlDetailList) {
+                oldSqlDetailMap.putIfAbsent(detailVo.getResourceId().toString() + detailVo.getSqlFile(), detailVo);
+            }
+            //默认删除所有老sql，后续再跟paramSql对比判断再去掉需要执行的sql
+            needDeleteSqlIdList = oldSqlDetailList.stream().map(DeploySqlNodeDetailVo::getId).collect(Collectors.toList());
+        }
 
         if (CollectionUtils.isNotEmpty(paramSqlVoArray)) {
-            List<DeploySqlNodeDetailVo> sqlDetailVoList = paramSqlVoArray.toJavaList(DeploySqlNodeDetailVo.class);
-            for (int i = 0; i < sqlDetailVoList.size(); i++) {
-
-                DeploySqlNodeDetailVo newSqlVo = sqlDetailVoList.get(i);
-                newSqlVo.setSort(i);
-                DeploySqlNodeDetailVo oldSqlVo = jobPhaseAndSqlDetailMap.get(jobId.toString() + targetPhaseVo.getName() + newSqlVo.getResourceId().toString() + newSqlVo.getSqlFile());
-                //不存在则新增
-                if (oldSqlVo == null) {
-                    DeploySqlNodeDetailVo deploySqlDetailVo = sqlDetailMap.get(newSqlVo.getResourceId().toString() + newSqlVo.getSqlFile());
+            List<DeploySqlNodeDetailVo> paramSqlDetailList = paramSqlVoArray.toJavaList(DeploySqlNodeDetailVo.class);
+            for (int i = 0; i < paramSqlDetailList.size(); i++) {
+                DeploySqlNodeDetailVo paramSqlDetailVo = paramSqlDetailList.get(i);
+                //如果状态为pending则说明sql存在变化，阶段也需重置为pending状态支持重跑
+                if (Objects.equals(paramSqlDetailVo.getStatus(), JobNodeStatus.PENDING.getValue())) {
+                    isNeedUpdatePending = true;
+                }
+                paramSqlDetailVo.setSort(i);
+                DeploySqlNodeDetailVo oldSqlDetailVo = oldJobPhaseAndSqlDetailMap.get(jobId.toString() + targetPhaseVo.getName() + paramSqlDetailVo.getResourceId().toString() + paramSqlDetailVo.getSqlFile());
+                //作业阶段不存在则新增
+                if (oldSqlDetailVo == null) {
+                    DeploySqlNodeDetailVo deploySqlDetailVo = oldSqlDetailMap.get(paramSqlDetailVo.getResourceId().toString() + paramSqlDetailVo.getSqlFile());
                     if (deploySqlDetailVo != null) {
-                        newSqlVo.setId(deploySqlDetailVo.getId());
-                        updateSqlList.add(newSqlVo);
-                        insertSqlIdList.add(newSqlVo.getId());
-                        continue;
+                        paramSqlDetailVo.setId(deploySqlDetailVo.getId());
+                        updateSqlDetailList.add(paramSqlDetailVo);
+                        insertJobPhaseSqlIdList.add(paramSqlDetailVo.getId());
                     } else {
-                        insertSqlDetailList.add(newSqlVo);
-                        continue;
+                        insertSqlDetailList.add(paramSqlDetailVo);
                     }
+                } else {
+                    if (CollectionUtils.isNotEmpty(needDeleteSqlIdList)) {
+                        //旧数据 - 需要更新的数据 = 需要删除的数据
+                        needDeleteSqlIdList.remove(oldSqlDetailVo.getId());
+                    }
+                    paramSqlDetailVo.setId(oldSqlDetailVo.getId());
+                    updateSqlDetailList.add(paramSqlDetailVo);
                 }
-
-                if (CollectionUtils.isNotEmpty(needDeleteSqlIdList)) {
-                    //旧数据 - 需要更新的数据 = 需要删除的数据
-                    needDeleteSqlIdList.remove(oldSqlVo.getId());
-                }
-                newSqlVo.setId(oldSqlVo.getId());
-                updateSqlList.add(newSqlVo);
             }
 
         }
@@ -332,25 +335,24 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
                 deploySqlMapper.insertDeploySqlDetail(insertSqlVo, paramObj.getLong("sysId"), paramObj.getLong("envId"), paramObj.getLong("moduleId"), paramObj.getString("version"), paramObj.getLong("runnerId"));
             }
         }
-        if (CollectionUtils.isNotEmpty(insertSqlIdList)) {
-            for (Long sqlId : insertSqlIdList) {
+
+        if (CollectionUtils.isNotEmpty(insertJobPhaseSqlIdList)) {
+            for (Long sqlId : insertJobPhaseSqlIdList) {
                 deploySqlMapper.insertDeploySql(new DeploySqlJobPhaseVo(paramObj.getLong("jobId"), paramObj.getString("targetPhaseName"), targetPhaseVo.getId(), sqlId));
             }
         }
-        if (CollectionUtils.isNotEmpty(updateSqlList)) {
-            boolean isHasModified = false;
-            for (DeploySqlNodeDetailVo sqlDetailVo : updateSqlList) {
+
+        if (CollectionUtils.isNotEmpty(updateSqlDetailList)) {
+            for (DeploySqlNodeDetailVo sqlDetailVo : updateSqlDetailList) {
                 deploySqlMapper.updateDeploySqlDetail(sqlDetailVo);
-                if (sqlDetailVo.getIsModified() == 1) {
-                    isHasModified = true;
-                }
             }
-            //存在修改过的sql，需要重置当前阶段的状态
-            if (isHasModified) {
-                autoexecJobMapper.updateJobPhaseNodeStatusByJobPhaseIdAndIsDelete(targetPhaseVo.getId(), JobNodeStatus.PENDING.getValue(),0);
-                autoexecJobMapper.updateJobPhaseRunnerStatusByJobIdAndPhaseId(jobId, targetPhaseVo.getId(), JobPhaseStatus.PENDING.getValue());
-                autoexecJobMapper.updateJobPhaseStatusByPhaseIdList(Collections.singletonList(targetPhaseVo.getId()), JobPhaseStatus.PENDING.getValue());
-            }
+        }
+
+        //存在新增或修改过的sql，需要重置当前阶段的状态
+        if (isNeedUpdatePending) {
+            autoexecJobMapper.updateJobPhaseNodeStatusByJobPhaseIdAndIsDelete(targetPhaseVo.getId(), JobNodeStatus.PENDING.getValue(), 0);
+            autoexecJobMapper.updateJobPhaseRunnerStatusByJobIdAndPhaseId(jobId, targetPhaseVo.getId(), JobPhaseStatus.PENDING.getValue());
+            autoexecJobMapper.updateJobPhaseStatusByPhaseIdList(Collections.singletonList(targetPhaseVo.getId()), JobPhaseStatus.PENDING.getValue());
         }
     }
 
