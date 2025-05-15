@@ -175,6 +175,8 @@ public class SaveDeployAppConfigEnvCiEntityApi extends PrivateApiComponentBase {
         ciEntityTransactionList.add(ciEntityTransactionVo);
         Long transactionGroupId = ciEntityService.saveCiEntity(ciEntityTransactionList);
         JSONObject resultObj = new JSONObject();
+        Long ciEntityId = ciEntityTransactionVo.getCiEntityId();
+        resultObj.put("id", ciEntityId);
         resultObj.put("transactionGroupId", transactionGroupId);
         return resultObj;
     }
