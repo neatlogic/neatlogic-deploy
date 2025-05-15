@@ -285,7 +285,7 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
             return;
         }
 
-        List<DeploySqlNodeDetailVo> oldSqlDetailList = deploySqlMapper.getAllDeploySqlDetailListWithJob(new DeploySqlNodeDetailVo(paramObj.getString("targetPhaseName"), jobId, paramObj.getLong("sysId"), paramObj.getLong("moduleId"), paramObj.getLong("envId"), paramObj.getString("version")));
+        List<DeploySqlNodeDetailVo> oldSqlDetailList = deploySqlMapper.getAllDeploySqlDetailListWithJob(new DeploySqlNodeDetailVo(paramObj.getString("targetPhaseName"), paramObj.getLong("sysId"), paramObj.getLong("moduleId"), paramObj.getLong("envId"), paramObj.getString("version")));
         if (CollectionUtils.isNotEmpty(oldSqlDetailList)) {
             oldJobPhaseAndSqlDetailMap = oldSqlDetailList.stream().collect(Collectors.toMap(e -> e.getJobId().toString() + e.getPhaseName() + e.getResourceId().toString() + e.getSqlFile(), e -> e));
             for (DeploySqlNodeDetailVo detailVo : oldSqlDetailList) {
