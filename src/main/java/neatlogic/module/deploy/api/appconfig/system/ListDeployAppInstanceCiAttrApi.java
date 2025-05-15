@@ -60,6 +60,7 @@ public class ListDeployAppInstanceCiAttrApi extends PrivateApiComponentBase {
     }
 
     @Input({
+            @Param(name = "ciId", type = ApiParamType.LONG, desc = "term.cmdb.ciid"),
             @Param(name = "isAll", type = ApiParamType.INTEGER, isRequired = true, desc = "是否返回全部属性"),
             @Param(name = "attrNameList", type = ApiParamType.JSONARRAY, desc = "需要返回的属性列表")
     })
@@ -68,9 +69,18 @@ public class ListDeployAppInstanceCiAttrApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         ICiCrossoverMapper ciCrossoverMapper = CrossoverServiceFactory.getApi(ICiCrossoverMapper.class);
-        CiVo appCiVo = ciCrossoverMapper.getCiByName("AppIns");
-        if (appCiVo == null) {
-            throw new CiNotFoundException("AppIns");
+        CiVo appCiVo = null;
+        Long ciId = paramObj.getLong("ciId");
+        if (ciId != null) {
+            appCiVo = ciCrossoverMapper.getCiById(ciId);
+            if (appCiVo == null) {
+                throw new CiNotFoundException(ciId);
+            }
+        } else {
+            appCiVo = ciCrossoverMapper.getCiByName("AppIns");
+            if (appCiVo == null) {
+                throw new CiNotFoundException("AppIns");
+            }
         }
         return deployAppConfigService.getDeployCiAttrList(appCiVo.getId(), paramObj.getInteger("isAll"), paramObj.getJSONArray("attrNameList"));
     }
