@@ -562,6 +562,12 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
     }
 
     @Override
+    public boolean getIsCanUpdateSqlNode(AutoexecJobPhaseVo jobPhaseVo, Long runnerMapId) {
+        List<DeploySqlNodeDetailVo> deploySqlDetailVos = deploySqlMapper.getDeployJobSqlDetailByExceptStatusListAndRunnerMapId(jobPhaseVo.getJobId(), jobPhaseVo.getName(), Arrays.asList(JobNodeStatus.SUCCEED.getValue(), JobNodeStatus.IGNORED.getValue()), runnerMapId);
+        return deploySqlDetailVos.isEmpty();
+    }
+
+    @Override
     public void getMyFireParamJson(JSONObject jsonObject, AutoexecJobVo jobVo) {
         JSONObject environment = new JSONObject();
         jsonObject.put("environment", environment);
