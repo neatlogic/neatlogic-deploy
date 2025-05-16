@@ -36,6 +36,7 @@ import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.framework.util.TableResultUtil;
 import neatlogic.module.deploy.dao.mapper.DeployAppConfigMapper;
+import neatlogic.module.deploy.dao.mapper.DeployAppSystemMapper;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
@@ -55,6 +56,9 @@ public class SearchDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
 
     @Resource
     private DeployAppConfigMapper deployAppConfigMapper;
+
+    @Resource
+    DeployAppSystemMapper deployAppSystemMapper;
 
     @Resource
     private GlobalLockMapper globalLockMapper;
@@ -97,14 +101,14 @@ public class SearchDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
         if (CollectionUtils.isNotEmpty(defaultValue)) {
             List<Long> idList = defaultValue.toJavaList(Long.class);
             searchVo.setAppSystemIdList(idList);
-            List<DeployAppSystemVo> tbodyList = deployAppConfigMapper.getAppSystemListByIdList(searchVo, UserContext.get().getUserUuid());
+            List<DeployAppSystemVo> tbodyList = deployAppSystemMapper.getAppSystemListByIdList(searchVo, UserContext.get().getUserUuid());
             return TableResultUtil.getResult(tbodyList, searchVo);
         }
         if(CollectionUtils.isNotEmpty(searchVo.getAuthorityActionList()) && searchVo.getAuthorityActionList().contains(DeployAppConfigAction.VIEW.getValue())){
             searchVo.getAuthorityActionList().addAll(Arrays.asList(DeployAppConfigAction.EXECUTE.getValue(), DeployAppConfigAction.EDIT.getValue(), DeployAppConfigAction.AUTH.getValue()));
         }
         List<DeployAppSystemVo> returnAppSystemList = new ArrayList<>();
-        Integer count = deployAppConfigMapper.getAppSystemIdListCount(searchVo);
+        Integer count = deployAppSystemMapper.getAppSystemIdListCount(searchVo);
         if (count > 0) {
             searchVo.setRowNum(count);
             //过滤出有查看权限的系统
@@ -115,9 +119,9 @@ public class SearchDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
             searchVo.setAppSystemIdList(appSystemIdList);
             //补充上述系统的所有权限
             if (StringUtils.isNotEmpty(searchVo.getKeyword())) {
-                returnAppSystemList = deployAppConfigMapper.getAppSystemListIncludeModuleByIdList(searchVo, UserContext.get().getUserUuid());
+                returnAppSystemList = deployAppSystemMapper.getAppSystemListIncludeModuleByIdList(searchVo, UserContext.get().getUserUuid());
             } else {
-                returnAppSystemList = deployAppConfigMapper.getAppSystemListByIdList(searchVo, UserContext.get().getUserUuid());
+                returnAppSystemList = deployAppSystemMapper.getAppSystemListByIdList(searchVo, UserContext.get().getUserUuid());
             }
 
             /*补充系统是否有模块、是否有环境、是否有配置权限 ,补充模块是否配置、是否有环境、是否含有资源锁*/
