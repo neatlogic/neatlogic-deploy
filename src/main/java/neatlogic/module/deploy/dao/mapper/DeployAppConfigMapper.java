@@ -23,10 +23,6 @@ public interface DeployAppConfigMapper extends IDeployAppConfigCrossoverMapper {
 
     List<DeployAppSystemVo> searchAppSystemList(DeployResourceSearchVo searchVo);
 
-    List<DeployAppSystemVo> getAppSystemListIncludeModuleByIdList(@Param("searchVo") DeployResourceSearchVo searchVo, @Param("userUuid") String userUuid);
-
-    List<DeployAppSystemVo> getAppSystemListByIdList(@Param("searchVo") DeployResourceSearchVo searchVo, @Param("userUuid") String userUuid);
-
     List<DeployAppSystemVo> getAppSystemModuleListBySystemIdList(@Param("idList") List<Long> idList, @Param("isConfig") Integer isConfig, @Param("userUuid") String userUuid);
 
     List<DeployAppSystemVo> getAppSystemListByUserUuid(@Param("userUuid") String userUuid, @Param("searchVo") DeployResourceSearchVo searchVo);
@@ -195,8 +191,6 @@ public interface DeployAppConfigMapper extends IDeployAppConfigCrossoverMapper {
     );
 
     Integer deleteAppConfigDraft(DeployAppConfigVo deployAppConfigDraftVo);
-
-    Integer getAppSystemIdListCount(DeployResourceSearchVo searchVo);
 
     Long getAppSystemLimitMaxId(DeployResourceSearchVo searchVo);
 

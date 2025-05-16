@@ -1,5 +1,6 @@
 package neatlogic.module.deploy.api.activeversion;
 
+import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.cmdb.crossover.IResourceCrossoverMapper;
 import neatlogic.framework.cmdb.dto.resourcecenter.ResourceSearchVo;
@@ -23,9 +24,9 @@ import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.framework.util.TableResultUtil;
 import neatlogic.module.deploy.dao.mapper.DeployAppConfigMapper;
+import neatlogic.module.deploy.dao.mapper.DeployAppSystemMapper;
 import neatlogic.module.deploy.dao.mapper.DeployEnvVersionMapper;
 import neatlogic.module.deploy.dao.mapper.DeployVersionMapper;
-import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 
@@ -43,6 +44,9 @@ public class SearchDeployActiveVersionApi extends PrivateApiComponentBase {
 
     @Resource
     DeployAppConfigMapper deployAppConfigMapper;
+
+    @Resource
+    DeployAppSystemMapper deployAppSystemMapper;
 
     @Resource
     DeployEnvVersionMapper deployEnvVersionMapper;
@@ -75,7 +79,7 @@ public class SearchDeployActiveVersionApi extends PrivateApiComponentBase {
     public Object myDoService(JSONObject paramObj) throws Exception {
         DeployResourceSearchVo searchVo = paramObj.toJavaObject(DeployResourceSearchVo.class);
         // 按系统分页
-        Integer systemIdListCount = deployAppConfigMapper.getAppSystemIdListCount(searchVo);
+        Integer systemIdListCount = deployAppSystemMapper.getAppSystemIdListCount(searchVo);
         searchVo.setRowNum(systemIdListCount);
         List<DeploySystemActiveVersionVo> result = new ArrayList<>();
         if (systemIdListCount > 0) {
