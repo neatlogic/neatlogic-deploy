@@ -84,7 +84,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
             <if test="isHasAllAuthority == 0">
             AND (a.`type` = 'pipeline'
             OR
-            <include refid="neatlogic.module.deploy.dao.mapper.DeployAppConfigMapper.checkDeployAuthority"/>
+            <include refid="neatlogic.module.deploy.dao.mapper.DeployAppSystemMapper.checkDeployAuthority"/>
             )
             </if>
         </where>
