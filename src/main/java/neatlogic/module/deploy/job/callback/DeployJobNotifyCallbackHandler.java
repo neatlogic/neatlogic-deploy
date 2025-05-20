@@ -36,6 +36,7 @@ import neatlogic.framework.util.NotifyPolicyUtil;
 import neatlogic.module.deploy.dao.mapper.DeployAppConfigMapper;
 import neatlogic.module.deploy.dao.mapper.DeployJobMapper;
 import neatlogic.module.deploy.handler.DeployJobMessageHandler;
+import neatlogic.module.deploy.notify.handler.DeployJobNotifyPolicyHandler;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -144,72 +145,75 @@ public class DeployJobNotifyCallbackHandler extends AutoexecJobCallbackBase {
                             }
                             notifyAuditMessageStringBuilder.append("(").append(envId).append(")");
                         }
+                        InvokeNotifyPolicyConfigVo invokeNotifyPolicyConfigVo = null;
                         String configStr = deployAppConfigMapper.getAppSystemNotifyPolicyConfigByAppSystemId(appSystemId);
                         if (StringUtils.isNotBlank(configStr)) {
-                            InvokeNotifyPolicyConfigVo invokeNotifyPolicyConfigVo = JSONObject.parseObject(configStr, InvokeNotifyPolicyConfigVo.class);
-                            // 触发点被排除，不用发送邮件
-                            List<String> excludeTriggerList = invokeNotifyPolicyConfigVo.getExcludeTriggerList();
-                            if (CollectionUtils.isNotEmpty(excludeTriggerList) && excludeTriggerList.contains(notifyTriggerType.getTrigger())) {
-                                notifyAuditMessageStringBuilder.append(" 通知策略设置触发时机中排除了触发点").append(notifyTriggerType.getTrigger()).append("(").append(notifyTriggerType.getText()).append(")");
-                            } else {
-                                NotifyPolicyVo notifyPolicyVo = null;
-                                if (invokeNotifyPolicyConfigVo.getIsCustom() == 1) {
-                                    notifyAuditMessageStringBuilder.append(" 设置通知策略ID为 ");
-                                    if (invokeNotifyPolicyConfigVo.getPolicyId() != null) {
-                                        notifyAuditMessageStringBuilder.append(invokeNotifyPolicyConfigVo.getPolicyId());
-                                        notifyPolicyVo = notifyMapper.getNotifyPolicyById(invokeNotifyPolicyConfigVo.getPolicyId());
-                                        if (notifyPolicyVo == null) {
-                                            notifyAuditMessageStringBuilder.append("，但是该通知策略不存在");
-                                        } else {
-                                            notifyAuditMessageStringBuilder.append("，找到默认通知策略").append(notifyPolicyVo.getName()).append("(").append(notifyPolicyVo.getId()).append(")");
-                                        }
+                            invokeNotifyPolicyConfigVo = JSONObject.parseObject(configStr, InvokeNotifyPolicyConfigVo.class);
+                        } else {
+//                            notifyAuditMessageStringBuilder.append(" 在deploy_job_notify_policy表中找不到的该应用系统的通知策略数据").append("，无法触发通知");
+                            invokeNotifyPolicyConfigVo = new InvokeNotifyPolicyConfigVo();
+                            invokeNotifyPolicyConfigVo.setHandler(DeployJobNotifyPolicyHandler.class.getName());
+                        }
+                        // 触发点被排除，不用发送邮件
+                        List<String> excludeTriggerList = invokeNotifyPolicyConfigVo.getExcludeTriggerList();
+                        if (CollectionUtils.isNotEmpty(excludeTriggerList) && excludeTriggerList.contains(notifyTriggerType.getTrigger())) {
+                            notifyAuditMessageStringBuilder.append(" 通知策略设置触发时机中排除了触发点").append(notifyTriggerType.getTrigger()).append("(").append(notifyTriggerType.getText()).append(")");
+                        } else {
+                            NotifyPolicyVo notifyPolicyVo = null;
+                            if (invokeNotifyPolicyConfigVo.getIsCustom() == 1) {
+                                notifyAuditMessageStringBuilder.append(" 设置通知策略ID为 ");
+                                if (invokeNotifyPolicyConfigVo.getPolicyId() != null) {
+                                    notifyAuditMessageStringBuilder.append(invokeNotifyPolicyConfigVo.getPolicyId());
+                                    notifyPolicyVo = notifyMapper.getNotifyPolicyById(invokeNotifyPolicyConfigVo.getPolicyId());
+                                    if (notifyPolicyVo == null) {
+                                        notifyAuditMessageStringBuilder.append("，但是该通知策略不存在");
                                     } else {
-                                        notifyAuditMessageStringBuilder.append("null");
+                                        notifyAuditMessageStringBuilder.append("，找到默认通知策略").append(notifyPolicyVo.getName()).append("(").append(notifyPolicyVo.getId()).append(")");
                                     }
                                 } else {
-                                    notifyAuditMessageStringBuilder.append(" 没有设置通知策略 ");
-                                    if (invokeNotifyPolicyConfigVo.getHandler() != null) {
-                                        notifyAuditMessageStringBuilder.append(" 通过通知策略handler=").append(invokeNotifyPolicyConfigVo.getHandler());
-                                        notifyPolicyVo = notifyMapper.getDefaultNotifyPolicyByHandler(invokeNotifyPolicyConfigVo.getHandler());
-                                        if (notifyPolicyVo == null) {
-                                            notifyAuditMessageStringBuilder.append(" ，找不到默认通知策略");
-                                        } else {
-                                            notifyAuditMessageStringBuilder.append(" ，找到默认通知策略 ").append(notifyPolicyVo.getName()).append("(").append(notifyPolicyVo.getId()).append(")");
-                                        }
-                                    } else {
-                                        notifyAuditMessageStringBuilder.append(" 由于通知策略handler为null，无法找到默认通知策略");
-                                    }
+                                    notifyAuditMessageStringBuilder.append("null");
                                 }
-                                if (notifyPolicyVo != null) {
-                                    if (notifyPolicyVo.getConfig() != null) {
-                                        Map<String, List<NotifyReceiverVo>> receiverMap = new HashMap<>();
-                                        if (!Objects.equals(jobInfo.getExecUser(), SystemUser.SYSTEM.getUserUuid())) {
-                                            receiverMap.computeIfAbsent(JobUserType.EXEC_USER.getValue(), k -> new ArrayList<>())
-                                                    .add(new NotifyReceiverVo(GroupSearch.USER.getValue(), jobInfo.getExecUser()));
-                                        }
-                                        flag = true;
-                                        NotifyPolicyUtil.execute(
-                                                notifyPolicyVo.getHandler(),
-                                                notifyTriggerType,
-                                                DeployJobMessageHandler.class,
-                                                notifyPolicyVo,
-                                                null,
-                                                null,
-                                                receiverMap,
-                                                jobInfo,
-                                                null,
-                                                notifyAuditMessageStringBuilder.toString()
-                                        );
+                            } else {
+                                notifyAuditMessageStringBuilder.append(" 没有设置通知策略 ");
+                                if (invokeNotifyPolicyConfigVo.getHandler() != null) {
+                                    notifyAuditMessageStringBuilder.append(" 通过通知策略handler=").append(invokeNotifyPolicyConfigVo.getHandler());
+                                    notifyPolicyVo = notifyMapper.getDefaultNotifyPolicyByHandler(invokeNotifyPolicyConfigVo.getHandler());
+                                    if (notifyPolicyVo == null) {
+                                        notifyAuditMessageStringBuilder.append(" ，找不到默认通知策略");
                                     } else {
-                                        notifyAuditMessageStringBuilder.append(" 通知策略config为null，不触发通知");
+                                        notifyAuditMessageStringBuilder.append(" ，找到默认通知策略 ").append(notifyPolicyVo.getName()).append("(").append(notifyPolicyVo.getId()).append(")");
                                     }
+                                } else {
+                                    notifyAuditMessageStringBuilder.append(" 由于通知策略handler为null，无法找到默认通知策略");
                                 }
                             }
-                        } else {
-                            notifyAuditMessageStringBuilder.append(" 在deploy_job_notify_policy表中找不到的该应用系统的通知策略数据").append("，无法触发通知");
+                            if (notifyPolicyVo != null) {
+                                if (notifyPolicyVo.getConfig() != null) {
+                                    Map<String, List<NotifyReceiverVo>> receiverMap = new HashMap<>();
+                                    if (!Objects.equals(jobInfo.getExecUser(), SystemUser.SYSTEM.getUserUuid())) {
+                                        receiverMap.computeIfAbsent(JobUserType.EXEC_USER.getValue(), k -> new ArrayList<>())
+                                                .add(new NotifyReceiverVo(GroupSearch.USER.getValue(), jobInfo.getExecUser()));
+                                    }
+                                    flag = true;
+                                    NotifyPolicyUtil.execute(
+                                            notifyPolicyVo.getHandler(),
+                                            notifyTriggerType,
+                                            DeployJobMessageHandler.class,
+                                            notifyPolicyVo,
+                                            null,
+                                            null,
+                                            receiverMap,
+                                            jobInfo,
+                                            null,
+                                            notifyAuditMessageStringBuilder.toString()
+                                    );
+                                } else {
+                                    notifyAuditMessageStringBuilder.append(" 通知策略config为null，不触发通知");
+                                }
+                            }
                         }
                     } else {
-                        notifyAuditMessageStringBuilder.append(" 在deploy_job表中该作业的app_system_id").append("，无法触发通知");
+                        notifyAuditMessageStringBuilder.append(" 在deploy_job表中该作业的app_system_id为null").append("，无法触发通知");
                     }
                 } else {
                     notifyAuditMessageStringBuilder

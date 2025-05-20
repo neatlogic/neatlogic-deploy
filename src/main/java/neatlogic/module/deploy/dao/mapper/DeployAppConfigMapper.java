@@ -166,6 +166,8 @@ public interface DeployAppConfigMapper extends IDeployAppConfigCrossoverMapper {
 
     void insertBatchAppConfigEnvDBConfig(@Param("dbConfigVoList") List<DeployAppConfigEnvDBConfigVo> dbConfigVoList);
 
+    int saveDeloyJobNotifyPolicy(@Param("appSystemId") Long appSystemId, @Param("notifyPolicyId") Long notifyPolicyId, @Param("configStr") String configStr);
+
     Integer updateAppConfig(DeployAppConfigVo deployAppConfigVo);
 
     Integer updateAppConfigDraft(DeployAppConfigVo deployAppConfigDraftVo);
