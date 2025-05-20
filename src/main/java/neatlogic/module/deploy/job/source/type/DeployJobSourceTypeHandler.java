@@ -27,6 +27,7 @@ import neatlogic.framework.autoexec.constvalue.JobPhaseStatus;
 import neatlogic.framework.autoexec.dao.mapper.AutoexecJobMapper;
 import neatlogic.framework.autoexec.dto.AutoexecParamVo;
 import neatlogic.framework.autoexec.dto.ISqlNodeDetail;
+import neatlogic.framework.autoexec.dto.combop.AutoexecCombopPhaseConfigVo;
 import neatlogic.framework.autoexec.dto.combop.AutoexecCombopPhaseVo;
 import neatlogic.framework.autoexec.dto.combop.AutoexecCombopVo;
 import neatlogic.framework.autoexec.dto.job.*;
@@ -408,7 +409,7 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
     }
 
     @Override
-    public List<RunnerMapVo> getRunnerMapList(AutoexecJobVo jobVo) {
+    public List<RunnerMapVo> getRunnerMapList(AutoexecJobVo jobVo, AutoexecCombopPhaseConfigVo combopPhaseExecuteConfigVo) {
         List<RunnerMapVo> runnerMapVos = null;
         AutoexecJobPhaseVo jobPhaseVo = jobVo.getCurrentPhase();
         DeployJobVo deployJobVo = deployJobMapper.getDeployJobByJobId(jobVo.getId());
