@@ -1711,6 +1711,23 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         `config` = VALUES ( config )
     </insert>
 
+    <insert id="saveDeloyJobNotifyPolicy">
+        INSERT INTO `deploy_job_notify_policy` (
+            `app_system_id`,
+            `notify_policy_id`,
+            `config`
+        )
+        VALUES
+            (
+                #{appSystemId},
+                #{notifyPolicyId},
+                #{configStr, typeHandler=CompressHandler}
+            )
+        ON DUPLICATE KEY UPDATE
+        `notify_policy_id` = #{notifyPolicyId},
+        `config` = #{configStr, typeHandler=CompressHandler}
+    </insert>
+
     <update id="updateAppConfig" parameterType="neatlogic.framework.deploy.dto.app.DeployAppConfigVo">
         UPDATE `deploy_app_config`
         SET `config` = #{configStr},
