@@ -414,6 +414,7 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
         List<RunnerMapVo> runnerMapVos = null;
         AutoexecJobPhaseVo jobPhaseVo = jobVo.getCurrentPhase();
         jobPhaseVo.setRunnerGroupFrom(AutoexecJobPhaseNodeFrom.JOB.getValue());
+        autoexecJobMapper.updateJobPhaseRunnerGroupFrom(AutoexecJobPhaseNodeFrom.JOB.getValue(), jobPhaseVo.getId());
         DeployJobVo deployJobVo = deployJobMapper.getDeployJobByJobId(jobVo.getId());
         //如果是sqlfile ｜ local ，则保证一个作业使用同一个runner
         if (Arrays.asList(ExecMode.SQL.getValue(), ExecMode.RUNNER.getValue()).contains(jobPhaseVo.getExecMode())) {
