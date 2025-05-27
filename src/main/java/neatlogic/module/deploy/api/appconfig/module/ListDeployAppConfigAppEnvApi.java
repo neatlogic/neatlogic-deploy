@@ -22,14 +22,18 @@ import neatlogic.framework.cmdb.dto.globalattr.GlobalAttrItemVo;
 import neatlogic.framework.cmdb.dto.globalattr.GlobalAttrVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.entity.AppEnvironmentVo;
 import neatlogic.framework.common.constvalue.ApiParamType;
+import neatlogic.framework.common.dto.BasePageVo;
+import neatlogic.framework.common.util.PageUtil;
 import neatlogic.framework.crossover.CrossoverServiceFactory;
 import neatlogic.framework.deploy.auth.DEPLOY_BASE;
 import neatlogic.framework.deploy.dto.app.DeployAppEnvironmentVo;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
+import neatlogic.framework.util.TableResultUtil;
 import neatlogic.module.deploy.dao.mapper.DeployAppConfigMapper;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -69,6 +73,9 @@ public class ListDeployAppConfigAppEnvApi extends PrivateApiComponentBase {
 
     @Input({
             @Param(name = "keyword", type = ApiParamType.STRING, desc = "common.keyword"),
+            @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "common.currentpage"),
+            @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "common.pagesize"),
+            @Param(name = "needPage", type = ApiParamType.BOOLEAN, defaultValue = "false", desc = "common.isneedpage"),
             @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.appsystemid"),
             @Param(name = "appModuleId", type = ApiParamType.LONG, desc = "term.cmdb.appmoduleid"),
             @Param(name = "isHasEnv", type = ApiParamType.INTEGER, desc = "term.cmdb.isexistingenv", help = "0:查找现没有的环境，1：查找现有的环境"),
@@ -100,14 +107,14 @@ public class ListDeployAppConfigAppEnvApi extends PrivateApiComponentBase {
             List<GlobalAttrVo> globalAttrList = globalAttrCrossoverMapper.searchGlobalAttr(globalAttrVo);
             if (CollectionUtils.isNotEmpty(globalAttrList)) {
                 globalAttrVo = globalAttrList.get(0);
-                GlobalAttrItemVo globalAttrItemVo = new GlobalAttrItemVo();
-                globalAttrItemVo.setAttrId(globalAttrVo.getId());
-                globalAttrItemVo.setKeyword(keyword);
-                globalAttrItemList = globalAttrCrossoverMapper.searchGlobalAttrItem(globalAttrItemVo);
+                globalAttrItemList = globalAttrCrossoverMapper.getAllGlobalAttrItemByAttrId(globalAttrVo.getId());
             }
             for (GlobalAttrItemVo globalAttrItemVo : globalAttrItemList) {
                 Long id = globalAttrItemVo.getId();
                 if (cmdbEnvIdList.contains(id) || deployEnvIdList.contains(id)) {
+                    continue;
+                }
+                if (StringUtils.isNotBlank(keyword) && !globalAttrItemVo.getValue().toLowerCase().contains(keyword.toLowerCase())) {
                     continue;
                 }
                 returnEnvList.add(new DeployAppEnvironmentVo(id, globalAttrItemVo.getValue()));
@@ -142,6 +149,17 @@ public class ListDeployAppConfigAppEnvApi extends PrivateApiComponentBase {
                 }
             }
         }
-        return returnEnvList.stream().sorted(Comparator.comparing(DeployAppEnvironmentVo::getId)).collect(Collectors.toList());
+        returnEnvList = returnEnvList.stream().sorted(Comparator.comparing(DeployAppEnvironmentVo::getId)).collect(Collectors.toList());
+        Boolean needPage = paramObj.getBoolean("needPage");
+        if (needPage) {
+            Integer currentPage = paramObj.getInteger("currentPage");
+            Integer pageSize = paramObj.getInteger("pageSize");
+            BasePageVo basePageVo = new BasePageVo();
+            basePageVo.setCurrentPage(currentPage);
+            basePageVo.setPageSize(pageSize);
+            basePageVo.setRowNum(returnEnvList.size());
+            return TableResultUtil.getResult(PageUtil.subList(returnEnvList, basePageVo), basePageVo);
+        }
+        return TableResultUtil.getResult(returnEnvList);
     }
 }
