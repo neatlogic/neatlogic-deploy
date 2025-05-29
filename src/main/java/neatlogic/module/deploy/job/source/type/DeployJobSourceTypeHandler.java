@@ -761,6 +761,7 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
     public void deleteJob(AutoexecJobVo jobVo) {
         deploySqlMapper.deleteDeploySqlDetailByJobId(jobVo.getId());
         deployJobMapper.deleteJobById(jobVo.getId());
+        deployBlueGreenMapper.deleteDeployJobResourceBlueGreenByJobId(jobVo.getId());
         GlobalLockVo globalLockVo = new GlobalLockVo();
         JSONObject keywordParam = getExtraJobInfo(jobVo);
         globalLockVo.setKeywordParam(keywordParam);
@@ -853,6 +854,7 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
         if (CollectionUtils.isNotEmpty(autoexecJobPhaseNodeVos)) {
             DeployJobVo deployJobVo = deployJobMapper.getDeployJobByJobId(jobVo.getId());
             List<Long> resourceIdList = autoexecJobPhaseNodeVos.stream().map(AutoexecJobPhaseNodeVo::getResourceId).collect(Collectors.toList());
+            //List<DeployJobResourceBlueGreenVo> deleteDeployBlueGreenList = new ArrayList<>();
             List<DeployInstanceBlueGreenVo> deployInstanceBlueGreenVos = deployBlueGreenMapper.listInstanceBlueGreen(deployJobVo.getAppSystemId(), deployJobVo.getAppModuleId(), deployJobVo.getEnvId(), resourceIdList);
             if (CollectionUtils.isNotEmpty(deployInstanceBlueGreenVos)) {
                 Map<Long, DeployInstanceBlueGreenVo> deployInstanceBlueGreenVoMap = deployInstanceBlueGreenVos.stream().collect(Collectors.toMap(DeployInstanceBlueGreenVo::getResourceId, e -> e));
@@ -867,11 +869,20 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
                         blueGreenVo.setBlueGreenId(instanceBlueGreenVo.getBlueGreenId());
                         deployJobResourceBlueGreenVos.add(blueGreenVo);
                     }
+//                    else {
+//                        deleteDeployBlueGreenList.add(blueGreenVo);
+//                    }
                 }
                 if (CollectionUtils.isNotEmpty(deployJobResourceBlueGreenVos)) {
                     deployBlueGreenMapper.insertDeployJobResourceBlueGreen(deployJobResourceBlueGreenVos);
                 }
+//                if(CollectionUtils.isNotEmpty(deleteDeployBlueGreenList)){
+//                    deployBlueGreenMapper.deleteDeployJobResourceBlueGreen(deleteDeployBlueGreenList);
+//                }
             }
+//            }else{
+//                deployBlueGreenMapper.deleteDeployJobResourceBlueGreenByJobId(jobVo.getId());
+//            }
         }
     }
 

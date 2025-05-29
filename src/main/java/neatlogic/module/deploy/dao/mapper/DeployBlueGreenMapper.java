@@ -45,7 +45,14 @@ public interface DeployBlueGreenMapper {
 
     List<DeployJobResourceBlueGreenVo> listDeployJobResourceBlueGreen(Long jobId);
 
+    int getDeployJobBlueGreenCountByJobId(Long jobId);
+
     void insertDeployJobResourceBlueGreen(@Param("list") List<DeployJobResourceBlueGreenVo> deployJobPhaseNodeBlueGreenVos);
 
+    void deleteDeployJobResourceBlueGreen(@Param("list") List<DeployJobResourceBlueGreenVo> deployJobPhaseNodeBlueGreenVos);
+
     Integer deleteInstanceBlueGreen(DeployInstanceBlueGreenVo instanceBlueGreenVo);
+
+    void deleteDeployJobResourceBlueGreenByJobId(Long jobId);
+
 }
