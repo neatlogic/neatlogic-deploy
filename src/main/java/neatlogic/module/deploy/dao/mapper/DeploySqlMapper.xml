@@ -309,6 +309,18 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
             #{status}
         </foreach>
     </select>
+    <select id="getDeployJobSqlStatusList" resultType="java.lang.String">
+        SELECT
+        `status`
+        FROM
+        deploy_sql_job_phase dsjp
+        LEFT JOIN deploy_sql_detail dsd ON dsjp.sql_id = dsd.id
+        WHERE dsjp.job_id = #{jobId}
+        and dsjp.job_phase_name = #{jobPhaseName}
+        and dsd.runner_id = #{runnerMapId}
+        and dsd.is_delete = 0
+        GROUP BY `status`
+    </select>
 
     <sql id="searchDeploySql">
         FROM

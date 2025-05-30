@@ -554,13 +554,11 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
     }
 
     @Override
-    public boolean getIsCanUpdatePhaseRunner(AutoexecJobPhaseVo jobPhaseVo, Long runnerMapId) {
+    public List<String> getPhaseNodeOrSqlStatusList(AutoexecJobPhaseVo jobPhaseVo, Long runnerMapId) {
         if (Objects.equals(jobPhaseVo.getExecMode(), ExecMode.SQL.getValue())) {
-            List<DeploySqlNodeDetailVo> deploySqlDetailVos = deploySqlMapper.getDeployJobSqlDetailByExceptStatusListAndRunnerMapId(jobPhaseVo.getJobId(), jobPhaseVo.getName(), Arrays.asList(JobNodeStatus.SUCCEED.getValue(), JobNodeStatus.IGNORED.getValue()), runnerMapId);
-            return deploySqlDetailVos.isEmpty();
+            return deploySqlMapper.getDeployJobSqlStatusList(jobPhaseVo.getJobId(), jobPhaseVo.getName(), runnerMapId);
         } else {
-            List<AutoexecJobPhaseNodeVo> phaseNodes = autoexecJobMapper.getJobPhaseNodeListByJobIdAndPhaseIdAndExceptStatusAndRunnerMapId(jobPhaseVo.getJobId(), jobPhaseVo.getId(), Arrays.asList(JobNodeStatus.SUCCEED.getValue(), JobNodeStatus.IGNORED.getValue()), runnerMapId);
-            return phaseNodes.isEmpty();
+            return autoexecJobMapper.getJobPhaseNodeStatusList(jobPhaseVo.getJobId(), jobPhaseVo.getId(), runnerMapId);
         }
     }
 
