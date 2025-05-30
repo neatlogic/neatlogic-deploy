@@ -156,7 +156,7 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
     @Override
     public void resetSqlStatus(JSONObject paramObj, AutoexecJobVo jobVo) {
         JSONArray sqlIdArray = paramObj.getJSONArray("sqlIdList");
-        AutoexecJobPhaseVo currentPhase = jobVo.getCurrentPhase();
+        AutoexecJobPhaseVo currentPhase = jobVo.getExecutePhase();
         if (paramObj.getInteger("isAll") != null && paramObj.getInteger("isAll") == 1) {
             deploySqlMapper.updateDeploySqlStatusByJobIdAndPhaseId(currentPhase.getJobId(), currentPhase.getId(), JobNodeStatus.PENDING.getValue());
         } else {
@@ -172,7 +172,7 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
     @Override
     public void ignoreSql(JSONObject paramObj, AutoexecJobVo jobVo) {
         JSONArray sqlIdArray = paramObj.getJSONArray("sqlIdList");
-        AutoexecJobPhaseVo currentPhase = jobVo.getCurrentPhase();
+        AutoexecJobPhaseVo currentPhase = jobVo.getExecutePhase();
         if (paramObj.getInteger("isAll") != null && paramObj.getInteger("isAll") == 1) {
             deploySqlMapper.updateDeploySqlStatusByJobIdAndPhaseId(currentPhase.getJobId(), currentPhase.getId(), JobNodeStatus.IGNORED.getValue());
         } else {
@@ -401,7 +401,7 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
             autoexecSqlDetailVo = new AutoexecSqlNodeDetailVo();
             autoexecSqlDetailVo.setJobId(jobVo.getId());
             autoexecSqlDetailVo.setRunnerId(deploySqlDetailVo.getRunnerId());
-            autoexecSqlDetailVo.setPhaseName(jobVo.getCurrentPhase().getName());
+            autoexecSqlDetailVo.setPhaseName(jobVo.getExecutePhase().getName());
             autoexecSqlDetailVo.setHost(deploySqlDetailVo.getHost());
             autoexecSqlDetailVo.setPort(deploySqlDetailVo.getPort());
             autoexecSqlDetailVo.setResourceId(deploySqlDetailVo.getResourceId());
@@ -412,7 +412,7 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
     @Override
     public List<RunnerMapVo> getRunnerMapList(AutoexecJobVo jobVo, AutoexecCombopPhaseConfigVo combopPhaseExecuteConfigVo) {
         List<RunnerMapVo> runnerMapVos = null;
-        AutoexecJobPhaseVo jobPhaseVo = jobVo.getCurrentPhase();
+        AutoexecJobPhaseVo jobPhaseVo = jobVo.getExecutePhase();
         jobPhaseVo.setRunnerGroupFrom(AutoexecJobPhaseNodeFrom.JOB.getValue());
         autoexecJobMapper.updateJobPhaseRunnerGroupFrom(AutoexecJobPhaseNodeFrom.JOB.getValue(), jobPhaseVo.getId());
         DeployJobVo deployJobVo = deployJobMapper.getDeployJobByJobId(jobVo.getId());
