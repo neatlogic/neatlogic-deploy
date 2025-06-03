@@ -310,7 +310,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         </foreach>
     </select>
     <select id="getDeployJobSqlStatusList" resultType="java.lang.String">
-        <foreach collection="statusList" item="status" open="" separator=" union " close="">
+        <foreach collection="statusList" item="status" open="(" separator=") union (" close=")">
             SELECT
             `status`
             FROM
