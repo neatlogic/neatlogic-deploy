@@ -554,12 +554,8 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
     }
 
     @Override
-    public List<String> getPhaseNodeOrSqlStatusList(AutoexecJobPhaseVo jobPhaseVo, Long runnerMapId) {
-        if (Objects.equals(jobPhaseVo.getExecMode(), ExecMode.SQL.getValue())) {
-            return deploySqlMapper.getDeployJobSqlStatusList(jobPhaseVo.getJobId(), jobPhaseVo.getName(), runnerMapId);
-        } else {
-            return autoexecJobMapper.getJobPhaseNodeStatusList(jobPhaseVo.getJobId(), jobPhaseVo.getId(), runnerMapId);
-        }
+    public List<String> getPhaseSqlStatusList(AutoexecJobPhaseVo jobPhaseVo,Long runnerMapId, List<String> needCountStatusList) {
+        return deploySqlMapper.getDeployJobSqlStatusList(jobPhaseVo.getJobId(), jobPhaseVo.getName(),runnerMapId, needCountStatusList);
     }
 
     @Override
