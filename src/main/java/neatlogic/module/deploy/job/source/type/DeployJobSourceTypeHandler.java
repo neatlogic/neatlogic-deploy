@@ -134,7 +134,7 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
         JSONObject paramObj = jobVo.getActionParam();
         paramObj.put("jobId", nodeVo.getJobId());
         paramObj.put("phase", nodeVo.getJobPhaseName());
-        return JSONObject.parseObject(AutoexecUtil.requestRunner(nodeVo.getRunnerUrl() + "/api/rest/job/phase/node/sql/content/get", paramObj));
+        return JSON.parseObject(AutoexecUtil.requestRunner(nodeVo.getRunnerUrl() + "/api/rest/job/phase/node/sql/content/get", paramObj));
     }
 
     @Override
@@ -243,8 +243,8 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
         List<ISqlNodeDetail> result = new ArrayList<>();
         jobPhaseNodeVo.setJobPhaseName(autoexecJobMapper.getJobPhaseByPhaseId(jobPhaseNodeVo.getJobPhaseId()).getName());
         List<DeploySqlNodeDetailVo> list = deploySqlMapper.searchDeploySql(jobPhaseNodeVo);
-        if (list.size() > 0) {
-            list.forEach(o -> result.add(o));
+        if (!list.isEmpty()) {
+            result.addAll(list);
         }
         return result;
     }
