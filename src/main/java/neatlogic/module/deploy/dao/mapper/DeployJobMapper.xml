@@ -636,7 +636,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                                     `exec_user`,
                                     `trigger_type`,
                                     `review_status`,
-                                    `plan_start_time`)
+                                    `plan_start_time`,
+                                    `fcd`,
+                                    `fcu`)
         VALUES (#{id},
                 #{name},
                 #{status},
@@ -645,7 +647,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                 #{execUser},
                 #{triggerType},
                 #{reviewStatus},
-                #{planStartTime})
+                #{planStartTime},
+                now(),
+                #{fcu})
     </insert>
 
     <insert id="insertIgnoreDeployJobContent"
