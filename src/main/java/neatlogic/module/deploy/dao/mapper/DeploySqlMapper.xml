@@ -411,6 +411,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         <if test="sort != null">
             ,sort = #{sort}
         </if>
+        <if test="host != null">
+            ,host = #{host}
+        </if>
+        <if test="port != null">
+            ,port = #{port}
+        </if>
         <choose>
             <when test="status == 'pending'">
                 ,`start_time`= null
