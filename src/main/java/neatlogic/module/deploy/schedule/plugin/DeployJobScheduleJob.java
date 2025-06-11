@@ -35,7 +35,6 @@ import neatlogic.framework.filter.core.LoginAuthHandlerBase;
 import neatlogic.framework.scheduler.core.JobBase;
 import neatlogic.framework.scheduler.dto.JobObject;
 import neatlogic.framework.service.AuthenticationInfoService;
-import neatlogic.module.deploy.api.job.CreateMultiDeployJobApi;
 import neatlogic.module.deploy.dao.mapper.DeployJobMapper;
 import neatlogic.module.deploy.dao.mapper.DeployPipelineMapper;
 import neatlogic.module.deploy.dao.mapper.DeployScheduleMapper;
@@ -55,7 +54,7 @@ import java.util.Objects;
 @Component
 @DisallowConcurrentExecution
 public class DeployJobScheduleJob extends JobBase {
-    static Logger logger = LoggerFactory.getLogger(CreateMultiDeployJobApi.class);
+    static Logger logger = LoggerFactory.getLogger(DeployJobScheduleJob.class);
     @Resource
     private DeployScheduleMapper deployScheduleMapper;
     @Resource
