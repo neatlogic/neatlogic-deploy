@@ -112,26 +112,65 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         LIMIT #{startNum}, #{pageSize}
     </select>
 
-    <select id="getScheduleListByIdList" parameterType="java.lang.Long" resultType="neatlogic.framework.deploy.dto.schedule.DeployScheduleVo">
+    <resultMap id="jobDetailMap" type="neatlogic.framework.deploy.dto.schedule.DeployScheduleVo">
+        <id column="id" property="id"/>
+        <result column="uuid" property="uuid"/>
+        <result column="name" property="name"/>
+        <result column="beginTime" property="beginTime"/>
+        <result column="endTime" property="endTime"/>
+        <result column="cron" property="cron"/>
+        <result column="isActive" property="isActive"/>
+        <result column="configStr" property="configStr"/>
+        <result column="type" property="type"/>
+        <result column="fcd" property="fcd"/>
+        <result column="fcu" property="fcu"/>
+        <result column="lcd" property="lcd"/>
+        <result column="lcu" property="lcu"/>
+        <result column="appSystemId" property="appSystemId"/>
+        <result column="appModuleId" property="appModuleId"/>
+        <result column="pipelineId" property="pipelineId"/>
+        <result column="pipelineType" property="pipelineType"/>
+        <association property="jobStatus" resultMap="jobStatusMap"/>
+    </resultMap>
+
+    <resultMap id="jobStatusMap" type="neatlogic.framework.scheduler.dto.JobStatusVo">
+        <result column="jobName" property="jobName"/>
+        <result column="jobGroup" property="jobGroup"/>
+        <result column="handler" property="handler"/>
+        <result column="nextFireTime" property="nextFireTime"/>
+        <result column="lastFireTime" property="lastFireTime"/>
+        <result column="lastFinishTime" property="lastFinishTime"/>
+        <result column="execCount" property="execCount"/>
+    </resultMap>
+
+    <select id="getScheduleListByIdList" parameterType="java.lang.Long" resultMap="jobDetailMap">
         SELECT
-        `id`,
-        `uuid`,
-        `name`,
-        `begin_time` AS beginTime,
-        `end_time` AS endTime,
-        `cron`,
-        `is_active` AS isActive,
-        `config` AS configStr,
-        `type`,
-        `fcd`,
-        `fcu`,
-        `lcd`,
-        `lcu`,
-        `app_system_id` AS appSystemId,
-        `app_module_id` AS appModuleId,
-        `pipeline_id` AS pipelineId,
-        `pipeline_type` AS pipelineType
-        FROM `deploy_schedule`
+        a.`id`,
+        a.`uuid`,
+        a.`name`,
+        a.`begin_time` AS beginTime,
+        a.`end_time` AS endTime,
+        a.`cron`,
+        a.`is_active` AS isActive,
+        a.`config` AS configStr,
+        a.`type`,
+        a.`fcd`,
+        a.`fcu`,
+        a.`lcd`,
+        a.`lcu`,
+        a.`app_system_id` AS appSystemId,
+        a.`app_module_id` AS appModuleId,
+        a.`pipeline_id` AS pipelineId,
+        a.`pipeline_type` AS pipelineType,
+        b.job_name as jobName,
+        b.job_group as jobGroup,
+        b.handler,
+        b.last_finish_time as lastFinishTime,
+        b.last_fire_time as lastFireTime,
+        b.next_fire_time as nextFireTime,
+        b.exec_count as execCount
+        FROM `deploy_schedule` a
+        LEFT JOIN `schedule_job_status` b ON a.uuid = b.job_name
         WHERE `id` IN
         <foreach collection="list" item="id" open="(" separator="," close=")">
             #{id}
