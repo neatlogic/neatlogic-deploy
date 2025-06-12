@@ -38,6 +38,8 @@ import neatlogic.framework.deploy.dto.schedule.DeployScheduleVo;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
+import neatlogic.framework.scheduler.core.SchedulerManager;
+import neatlogic.framework.scheduler.dto.JobStatusVo;
 import neatlogic.framework.util.TableResultUtil;
 import neatlogic.module.deploy.dao.mapper.DeployPipelineMapper;
 import neatlogic.module.deploy.dao.mapper.DeployScheduleMapper;
@@ -58,6 +60,9 @@ public class ListDeployScheduleApi extends PrivateApiComponentBase {
     private DeployScheduleMapper deployScheduleMapper;
     @Resource
     private DeployPipelineMapper deployPipelineMapper;
+
+    @Resource
+    private SchedulerManager schedulerManager;
 
     @Override
     public String getToken() {
@@ -186,6 +191,12 @@ public class ListDeployScheduleApi extends PrivateApiComponentBase {
                             }
                         }
                     }
+                    boolean isLoad = false;
+                    JobStatusVo jobStatusVo = scheduleVo.getJobStatus();
+                    if (jobStatusVo != null && StringUtils.isNotBlank(jobStatusVo.getJobName()) && StringUtils.isNotBlank(jobStatusVo.getJobGroup())) {
+                        isLoad = schedulerManager.checkJobIsExists(jobStatusVo.getJobName(), jobStatusVo.getJobGroup());
+                    }
+                    scheduleVo.setIsLoad(isLoad ? 1 : 0);
                 }
             }
         }
