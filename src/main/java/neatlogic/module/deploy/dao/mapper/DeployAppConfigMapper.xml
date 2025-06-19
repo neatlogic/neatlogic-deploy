@@ -1064,6 +1064,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         <result column="port" property="port"/>
     </resultMap>
 
+    <select id="getDatabaseById" parameterType="java.lang.Long" resultMap="DatabaseResourceMap">
+        SELECT a.`id`, a.`name`, a.`type_name` as typeName, a.`ip`, a.`port`
+        FROM @{DATA_SCHEMA}.`scence_database_ip_port_env_appmodule` a
+        WHERE a.`id` = #{value}
+        LIMIT 1
+    </select>
+
     <select id="getAppConfigEnvDatabaseCount" parameterType="neatlogic.framework.deploy.dto.app.DeployResourceSearchVo" resultType="java.lang.Integer"
             useCache="false">
         SELECT COUNT(DISTINCT a.`id`)

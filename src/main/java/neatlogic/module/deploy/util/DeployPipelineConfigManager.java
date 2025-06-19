@@ -899,6 +899,7 @@ public class DeployPipelineConfigManager {
                             disabledPhaseIdList.remove(overridePhaseVo.getId());
                         }
                         overridePhaseVo.setGroupSort(pipelinePhaseVo.getGroupSort());
+                        overridePhaseVo.setSort(pipelinePhaseVo.getSort());// 模块层或环境层被重载后，修改应用层阶段顺序，回显模块层或环境层阶段时还是用应用层的顺序
                         pipelinePhaseList.set(index, overridePhaseVo);
                         break;
                     }
