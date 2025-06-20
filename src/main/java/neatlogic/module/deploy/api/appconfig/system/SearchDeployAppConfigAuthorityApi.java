@@ -55,6 +55,7 @@ import java.util.stream.Collectors;
 @AuthAction(action = DEPLOY_BASE.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
 public class SearchDeployAppConfigAuthorityApi extends PrivateApiComponentBase {
+
     @Resource
     private DeployAppConfigMapper deployAppConfigMapper;
 
@@ -84,9 +85,9 @@ public class SearchDeployAppConfigAuthorityApi extends PrivateApiComponentBase {
     })
     @Output({
             @Param(explode = BasePageVo.class),
-            @Param(name = "tbodyList", explode = DeployAppConfigAuthorityVo[].class, desc = "应用配置授权列表")
+            @Param(name = "tbodyList", explode = DeployAppConfigAuthorityVo[].class, desc = "common.tbodylist")
     })
-    @Description(desc = "查询应用配置权限接口")
+    @Description(desc = "nmdaas.searchdeployappconfigauthorityapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj) {
         JSONArray includeActionList = paramObj.getJSONArray("includeActionList");
@@ -121,6 +122,7 @@ public class SearchDeployAppConfigAuthorityApi extends PrivateApiComponentBase {
                 JSONObject envKeyValue = new JSONObject();
                 envKeyValue.put("name", environmentVo.getId());
                 envKeyValue.put("displayName", environmentVo.getName());
+                envKeyValue.put("description", DeployAppConfigActionType.ENV.getDescription());
                 finalTheadList.add(envKeyValue);
             }
 

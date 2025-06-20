@@ -1,5 +1,6 @@
 package neatlogic.module.deploy.dao.mapper;
 
+import neatlogic.framework.cmdb.dto.resourcecenter.ResourceVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.entity.AppEnvironmentVo;
 import neatlogic.framework.common.dto.BasePageVo;
 import neatlogic.framework.deploy.crossover.IDeployAppConfigCrossoverMapper;
@@ -205,6 +206,8 @@ public interface DeployAppConfigMapper extends IDeployAppConfigCrossoverMapper {
     int checkDeployAppConfigEnvDBSchemaIsRepeat(DeployAppConfigEnvDBConfigVo configVo);
 
 //    int getAppModuleCountBySystemIdAndEnvId(@Param("appSystemId") Long appSystemId, @Param("envId") Long envId);
+
+    ResourceVo getDatabaseById(Long id);
 
     /**
      * 查询发布应用配置DB库下的无模块无环境、无模块同环境、同模块无环境、同模块同环境且发布没配置的数据库的数量
