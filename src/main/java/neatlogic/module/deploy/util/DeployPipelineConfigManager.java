@@ -926,7 +926,7 @@ public class DeployPipelineConfigManager {
                 int index = 0;
                 for (DeployPipelineGroupVo pipelineGroupVo : pipelineGroupList) {
                     if (Objects.equals(overrideGroupVo.getUuid(), pipelineGroupVo.getUuid())) {
-                        // 模块层或环境层被重载后，修改应用层阶段顺序，回显模块层或环境层阶段时还是用应用层的顺序
+                        // 模块层或环境层被重载后，修改应用层阶段组顺序，回显模块层或环境层阶段组时还是用应用层的顺序
                         overrideGroupVo.setSort(pipelineGroupVo.getSort());
                         pipelineGroupList.set(index, overrideGroupVo);
                         break;
