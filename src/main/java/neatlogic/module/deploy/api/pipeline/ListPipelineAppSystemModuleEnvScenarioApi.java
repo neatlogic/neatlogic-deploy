@@ -21,6 +21,7 @@ import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.deploy.auth.DEPLOY_BASE;
 import neatlogic.framework.deploy.dto.app.DeployPipelineConfigVo;
 import neatlogic.framework.deploy.dto.pipeline.*;
+import neatlogic.framework.deploy.exception.DeployPipelineNotFoundException;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
@@ -60,8 +61,12 @@ public class ListPipelineAppSystemModuleEnvScenarioApi extends PrivateApiCompone
     @Description(desc = "获取超级流水线应用模块环境列表接口")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
+        Long id = jsonObj.getLong("id");
+        PipelineVo pipelineVo = deployPipelineMapper.getPipelineById(id);
+        if (pipelineVo == null) {
+            throw new DeployPipelineNotFoundException(id);
+        }
         List<PipelineJobTemplateVo> jobTemplateList = new ArrayList<>();
-        PipelineVo pipelineVo = deployPipelineMapper.getPipelineById(jsonObj.getLong("id"));
         Map<String, DeployPipelineConfigVo> envPipelineMap = new HashMap<>();
         if (CollectionUtils.isNotEmpty(pipelineVo.getLaneList())) {
             for (PipelineLaneVo laneVo : pipelineVo.getLaneList()) {
