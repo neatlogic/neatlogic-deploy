@@ -624,7 +624,7 @@ public class DeployPipelineConfigManager {
      * @param pipeline    超级流水线
      */
     public static void judgeHasBuildOrDeployTypeToolInPipeline(Long appSystemId, Long appModuleId, PipelineVo pipeline) {
-        Map<Long, DeployPipelineConfigVo> envPipelineMap = new HashMap<>();
+        Map<String, DeployPipelineConfigVo> envPipelineMap = new HashMap<>();
         out:
         if (CollectionUtils.isNotEmpty(pipeline.getLaneList())) {
             for (int i = 0; i < pipeline.getLaneList().size(); i++) {
@@ -663,11 +663,12 @@ public class DeployPipelineConfigManager {
      * @param jobTemplateVo  流水线
      * @param envPipelineMap 出重环境流水线map
      */
-    public static void setIsJobTemplateVoHasBuildDeployType(PipelineJobTemplateVo jobTemplateVo, Map<Long, DeployPipelineConfigVo> envPipelineMap) {
+    public static void setIsJobTemplateVoHasBuildDeployType(PipelineJobTemplateVo jobTemplateVo, Map<String, DeployPipelineConfigVo> envPipelineMap) {
         if (jobTemplateVo.getIsHasBuildTypeTool() == 1 && jobTemplateVo.getIsHasDeployTypeTool() == 1) {
             return;
         }
-        DeployPipelineConfigVo pipelineConfigVo = envPipelineMap.get(jobTemplateVo.getEnvId());
+        String key = jobTemplateVo.getAppSystemId() + "," + jobTemplateVo.getAppModuleId() + "," + jobTemplateVo.getEnvId();
+        DeployPipelineConfigVo pipelineConfigVo = envPipelineMap.get(key);
         if (pipelineConfigVo == null) {
             pipelineConfigVo = DeployPipelineConfigManager.init(jobTemplateVo.getAppSystemId())
                     .withAppModuleId(jobTemplateVo.getAppModuleId())
@@ -677,7 +678,7 @@ public class DeployPipelineConfigManager {
                     .withIsUpdateProfile(false)
                     .getConfig();
             if (pipelineConfigVo != null) {
-                envPipelineMap.put(jobTemplateVo.getEnvId(), pipelineConfigVo);
+                envPipelineMap.put(key, pipelineConfigVo);
             }
         }
         if (pipelineConfigVo != null) {
