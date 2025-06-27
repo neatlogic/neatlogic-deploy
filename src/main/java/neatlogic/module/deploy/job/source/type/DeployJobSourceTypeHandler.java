@@ -21,10 +21,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.alibaba.nacos.common.utils.CollectionUtils;
 import neatlogic.framework.asynchronization.threadlocal.UserContext;
 import neatlogic.framework.auth.core.AuthActionChecker;
-import neatlogic.framework.autoexec.constvalue.AutoexecJobPhaseNodeFrom;
-import neatlogic.framework.autoexec.constvalue.ExecMode;
-import neatlogic.framework.autoexec.constvalue.JobNodeStatus;
-import neatlogic.framework.autoexec.constvalue.JobPhaseStatus;
+import neatlogic.framework.autoexec.constvalue.*;
 import neatlogic.framework.autoexec.dao.mapper.AutoexecJobMapper;
 import neatlogic.framework.autoexec.dto.AutoexecParamVo;
 import neatlogic.framework.autoexec.dto.ISqlNodeDetail;
@@ -49,6 +46,8 @@ import neatlogic.framework.deploy.auth.BATCHDEPLOY_MODIFY;
 import neatlogic.framework.deploy.auth.DEPLOY_MODIFY;
 import neatlogic.framework.deploy.auth.core.DeployAppAuthChecker;
 import neatlogic.framework.deploy.constvalue.*;
+import neatlogic.framework.deploy.constvalue.JobSource;
+import neatlogic.framework.deploy.constvalue.JobSourceType;
 import neatlogic.framework.deploy.dto.app.*;
 import neatlogic.framework.deploy.dto.instance.DeployInstanceVersionVo;
 import neatlogic.framework.deploy.dto.job.DeployJobContentVo;
@@ -652,7 +651,9 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
             if (UserContext.get().getUserUuid().equals(jobVo.getExecUser())) {
                 jobVo.setIsCanExecute(1);
             } else {
-                jobVo.setIsCanTakeOver(1);
+                if (!Objects.equals(JobStatus.CHECKED.getValue(), jobVo.getStatus())) {
+                    jobVo.setIsCanTakeOver(1);
+                }
             }
         }
     }
