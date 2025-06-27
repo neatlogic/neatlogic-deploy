@@ -25,6 +25,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                dpj.app_module_id          as appModuleId,
                dpj.scenario_id            as scenarioId,
                dpj.round_count            as roundCount,
+               dpj.parallel_count         as parallelCount,
+               dpj.parallel_policy        as parallelPolicy,
                dpj.env_id                 as envId,
                dpj.config                 as configStr,
                dpj.sort                   as sort,
@@ -121,6 +123,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                     <result column="jobTemplateScenarioId" property="scenarioId"/>
                     <result column="jobTemplateScenarioName" property="scenarioName"/>
                     <result column="jobTemplateRoundCount" property="roundCount"/>
+                    <result column="jobTemplateParallelCount" property="parallelCount"/>
+                    <result column="jobTemplateParallelPolicy" property="parallelPolicy"/>
                     <result column="jobTemplateConfigStr" property="configStr" typeHandler="CompressHandler"/>
                     <result column="jobEnvId" property="envId"/>
                     <result column="jobEnvName" property="envName"/>
@@ -151,6 +155,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                dpj.scenario_id   as jobTemplateScenarioId,
                aes.name          as jobTemplateScenarioName,
                dpj.round_count   as jobTemplateRoundCount,
+               dpj.parallel_count   as jobTemplateParallelCount,
+               dpj.parallel_policy   as jobTemplateParallelPolicy,
                dpj.config        as jobTemplateConfigStr,
                saa.`name` AS jobTemplateAppName,
                saa.`abbr_name` AS jobTemplateAppAbbrName,
@@ -357,6 +363,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                                                    `env_id`,
                                                    `scenario_id`,
                                                    `round_count`,
+                                                   `parallel_count`,
+                                                   `parallel_policy`,
                                                    `config`,
                                                    `sort`)
         VALUES (#{id},
@@ -366,6 +374,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                 #{envId},
                 #{scenarioId},
                 #{roundCount},
+                #{parallelCount},
+                #{parallelPolicy},
                 #{configStr,typeHandler=CompressHandler},
                 #{sort})
     </insert>

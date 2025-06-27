@@ -109,6 +109,8 @@ public class DeployBatchJobServiceImpl implements DeployBatchJobService, IDeploy
                                 jobVo.setAppModuleId(jobTemplateVo.getAppModuleId());
                                 jobVo.setScenarioId(jobTemplateVo.getScenarioId());
                                 jobVo.setRoundCount(jobTemplateVo.getRoundCount());
+                                jobVo.setParallelCount(jobTemplateVo.getParallelCount());
+                                jobVo.setParallelPolicy(jobTemplateVo.getParallelPolicy());
                                 jobVo.setEnvId(jobTemplateVo.getEnvId());
                                 DeploySystemModuleVersionVo deploySystemModuleVersionVo = getVersionId(deployJobVo.getAppSystemModuleVersionList(), jobTemplateVo);
                                 //如果找不到对应的应用模块则说明用户没有勾选该模块，即该模块无需执行
