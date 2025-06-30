@@ -169,7 +169,9 @@ public class DeployJobScheduleJob extends JobBase {
         deployJobVo.setParam(config.getParam());
         deployJobVo.setInvokeId(scheduleVo.getId());
         deployJobVo.setRouteId(scheduleVo.getId().toString());
+        deployJobVo.setParallelPolicy(config.getParallelPolicy());
         deployJobVo.setRoundCount(config.getRoundCount());
+        deployJobVo.setParallelCount(config.getParallelCount());
         deployJobVo.setPipelineId(scheduleVo.getPipelineId());
         deployJobVo.setAppSystemModuleVersionList(config.getAppSystemModuleVersionList());
         deployJobVo.setAppSystemId(scheduleVo.getAppSystemId());
