@@ -789,7 +789,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
             and `env_id` = #{envId})
         </if>
         <if test="keyword != null and keyword != ''">
-            AND (a.`ip` LIKE concat('%', #{keyword}, '%') or a.`port` LIKE concat('%', #{keyword},'%'))
+            AND (a.`name` LIKE concat('%', #{keyword}, '%') or a.`ip` LIKE concat('%', #{keyword}, '%') or a.`port` LIKE concat('%', #{keyword},'%'))
         </if>
     </sql>
 
