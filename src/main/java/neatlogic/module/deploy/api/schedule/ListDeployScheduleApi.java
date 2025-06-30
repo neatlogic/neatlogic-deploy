@@ -61,9 +61,6 @@ public class ListDeployScheduleApi extends PrivateApiComponentBase {
     @Resource
     private DeployPipelineMapper deployPipelineMapper;
 
-    @Resource
-    private SchedulerManager schedulerManager;
-
     @Override
     public String getToken() {
         return "deploy/schedule/list";
@@ -191,12 +188,6 @@ public class ListDeployScheduleApi extends PrivateApiComponentBase {
                             }
                         }
                     }
-                    boolean isLoad = false;
-                    JobStatusVo jobStatusVo = scheduleVo.getJobStatus();
-                    if (jobStatusVo != null && StringUtils.isNotBlank(jobStatusVo.getJobName()) && StringUtils.isNotBlank(jobStatusVo.getJobGroup())) {
-                        isLoad = schedulerManager.checkJobIsExists(jobStatusVo.getJobName(), jobStatusVo.getJobGroup());
-                    }
-                    scheduleVo.setIsLoad(isLoad ? 1 : 0);
                 }
             }
         }
