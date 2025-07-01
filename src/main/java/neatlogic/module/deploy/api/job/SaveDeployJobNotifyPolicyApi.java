@@ -14,7 +14,6 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 package neatlogic.module.deploy.api.job;
 
-import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.common.constvalue.ApiParamType;
@@ -27,6 +26,7 @@ import neatlogic.framework.notify.dto.InvokeNotifyPolicyConfigVo;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
+import neatlogic.module.deploy.dao.mapper.DeployAppConfigMapper;
 import neatlogic.module.deploy.dependency.handler.NotifyPolicyDeployJobDependencyHandler;
 import neatlogic.module.deploy.notify.handler.DeployJobNotifyPolicyHandler;
 import neatlogic.module.deploy.service.DeployAppAuthorityService;
@@ -34,6 +34,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.Objects;
 
 /**
  * @author longrf
@@ -58,10 +59,13 @@ public class SaveDeployJobNotifyPolicyApi extends PrivateApiComponentBase {
     @Resource
     DeployAppAuthorityService deployAppAuthorityService;
 
+    @Resource
+    private DeployAppConfigMapper deployAppConfigMapper;
+
     @Input({
             @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "应用系统id"),
             @Param(name = "policyId", type = ApiParamType.LONG, desc = "通知策略id"),
-            @Param(name = "isCustom", type = ApiParamType.ENUM, rule = "0,1", desc = "通知策略id"),
+            @Param(name = "isCustom", type = ApiParamType.ENUM, rule = "0,1", isRequired = true, desc = "通知策略id"),
             @Param(name = "paramMappingList", type = ApiParamType.JSONARRAY, desc = "参数映射列表"),
             @Param(name = "excludeTriggerList", type = ApiParamType.JSONARRAY, desc = "排除的触发点列表")
     })
@@ -73,17 +77,19 @@ public class SaveDeployJobNotifyPolicyApi extends PrivateApiComponentBase {
         Long appSystemId = paramObj.getLong("appSystemId");
         deployAppAuthorityService.checkOperationAuth(appSystemId, DeployAppConfigAction.EDIT);
         DependencyManager.delete(NotifyPolicyDeployJobDependencyHandler.class, appSystemId);
+        Integer isCustom = paramObj.getInteger("isCustom");
         Long policyId = paramObj.getLong("policyId");
-        if (policyId != null) {
-            INotifyServiceCrossoverService notifyServiceCrossoverService = CrossoverServiceFactory.getApi(INotifyServiceCrossoverService.class);
-            InvokeNotifyPolicyConfigVo invokeNotifyPolicyConfigVo = paramObj.toJavaObject(InvokeNotifyPolicyConfigVo.class);
-            invokeNotifyPolicyConfigVo.setHandler(DeployJobNotifyPolicyHandler.class.getName());
-            invokeNotifyPolicyConfigVo = notifyServiceCrossoverService.regulateNotifyPolicyConfig(invokeNotifyPolicyConfigVo);
-            JSONArray to = new JSONArray();
-            to.add(appSystemId);
-            to.add(JSONObject.toJSONString(invokeNotifyPolicyConfigVo));
-            DependencyManager.insert(NotifyPolicyDeployJobDependencyHandler.class, policyId, to);
+        if (Objects.equals(isCustom, 1)) {
+            DependencyManager.insert(NotifyPolicyDeployJobDependencyHandler.class, policyId, appSystemId);
+        } else {
+            policyId = -1L;
         }
+        INotifyServiceCrossoverService notifyServiceCrossoverService = CrossoverServiceFactory.getApi(INotifyServiceCrossoverService.class);
+        InvokeNotifyPolicyConfigVo invokeNotifyPolicyConfigVo = paramObj.toJavaObject(InvokeNotifyPolicyConfigVo.class);
+        invokeNotifyPolicyConfigVo.setHandler(DeployJobNotifyPolicyHandler.class.getName());
+        invokeNotifyPolicyConfigVo = notifyServiceCrossoverService.regulateNotifyPolicyConfig(invokeNotifyPolicyConfigVo);
+        String configStr = JSONObject.toJSONString(invokeNotifyPolicyConfigVo);
+        deployAppConfigMapper.saveDeloyJobNotifyPolicy(appSystemId, policyId, configStr);
         return null;
     }
 

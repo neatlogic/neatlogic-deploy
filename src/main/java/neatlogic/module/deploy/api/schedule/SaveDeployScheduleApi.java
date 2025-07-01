@@ -20,8 +20,11 @@ import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.asynchronization.threadlocal.TenantContext;
 import neatlogic.framework.asynchronization.threadlocal.UserContext;
 import neatlogic.framework.auth.core.AuthAction;
+import neatlogic.framework.autoexec.constvalue.AutoexecParallelPolicy;
 import neatlogic.framework.autoexec.crossover.IAutoexecScenarioCrossoverMapper;
 import neatlogic.framework.autoexec.dto.scenario.AutoexecScenarioVo;
+import neatlogic.framework.autoexec.exception.AutoexecParallelCountIsRequiredException;
+import neatlogic.framework.autoexec.exception.AutoexecRoundCountIsRequiredException;
 import neatlogic.framework.autoexec.exception.AutoexecScenarioIsNotFoundException;
 import neatlogic.framework.cmdb.crossover.IAppSystemMapper;
 import neatlogic.framework.cmdb.crossover.IResourceCrossoverMapper;
@@ -67,6 +70,7 @@ import javax.annotation.Resource;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -161,9 +165,16 @@ public class SaveDeployScheduleApi extends PrivateApiComponentBase {
             if (resourceVo == null) {
                 throw new AppEnvNotFoundException(envId);
             }
-            Integer roundCount = config.getRoundCount();
-            if (roundCount == null) {
-                throw new ParamNotExistsException("分配数量（config.roundCount）");
+            if (Objects.equals(config.getParallelPolicy(), AutoexecParallelPolicy.PARALLEL.getValue())) {
+                Integer parallelCount = config.getParallelCount();
+                if (parallelCount == null) {
+                    throw new AutoexecParallelCountIsRequiredException();
+                }
+            } else {
+                Integer roundCount = config.getRoundCount();
+                if (roundCount == null) {
+                    throw new AutoexecRoundCountIsRequiredException();
+                }
             }
             List<DeployJobModuleVo> moduleList = config.getModuleList();
             if (CollectionUtils.isEmpty(moduleList)) {

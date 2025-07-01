@@ -21,6 +21,7 @@ import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.deploy.auth.DEPLOY_BASE;
 import neatlogic.framework.deploy.dto.app.DeployPipelineConfigVo;
 import neatlogic.framework.deploy.dto.pipeline.*;
+import neatlogic.framework.deploy.exception.DeployPipelineNotFoundException;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
@@ -60,50 +61,72 @@ public class ListPipelineAppSystemModuleEnvScenarioApi extends PrivateApiCompone
     @Description(desc = "获取超级流水线应用模块环境列表接口")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
-        PipelineVo pipelineVo = deployPipelineMapper.getPipelineById(jsonObj.getLong("id"));
-        JobTemplateList jobTemplateList = new JobTemplateList();
-        Map<Long, DeployPipelineConfigVo> envPipelineMap = new HashMap<>();
+        Long id = jsonObj.getLong("id");
+        PipelineVo pipelineVo = deployPipelineMapper.getPipelineById(id);
+        if (pipelineVo == null) {
+            throw new DeployPipelineNotFoundException(id);
+        }
+        List<PipelineJobTemplateVo> jobTemplateList = new ArrayList<>();
+        Map<String, DeployPipelineConfigVo> envPipelineMap = new HashMap<>();
         if (CollectionUtils.isNotEmpty(pipelineVo.getLaneList())) {
             for (PipelineLaneVo laneVo : pipelineVo.getLaneList()) {
                 if (CollectionUtils.isNotEmpty(laneVo.getGroupList())) {
                     for (PipelineGroupVo groupVo : laneVo.getGroupList()) {
                         if (CollectionUtils.isNotEmpty(groupVo.getJobTemplateList())) {
                             for (PipelineJobTemplateVo jobTemplateVo : groupVo.getJobTemplateList()) {
-                                jobTemplateList.add(jobTemplateVo, envPipelineMap);
+                                // 根据应用和模块合并环境和场景，用于前端展示
+                                PipelineEnvScenarioVo envScenarioVo = new PipelineEnvScenarioVo();
+                                envScenarioVo.setEnvId(jobTemplateVo.getEnvId());
+                                envScenarioVo.setEnvName(jobTemplateVo.getEnvName());
+                                envScenarioVo.setScenarioId(jobTemplateVo.getScenarioId());
+                                envScenarioVo.setScenarioName(jobTemplateVo.getScenarioName());
+                                Optional<PipelineJobTemplateVo> op = jobTemplateList.stream().filter(d -> d.getAppSystemId().equals(jobTemplateVo.getAppSystemId())
+                                        && d.getAppModuleId().equals(jobTemplateVo.getAppModuleId())
+                                ).findFirst();
+                                if (op.isPresent()) {
+                                    PipelineJobTemplateVo existsJobVo = op.get();
+                                    existsJobVo.addEnvScenario(envScenarioVo);
+                                    existsJobVo.setScenarioId(envScenarioVo.getScenarioId());
+                                    DeployPipelineConfigManager.setIsJobTemplateVoHasBuildDeployType(existsJobVo, envPipelineMap);
+                                } else {
+                                    jobTemplateVo.addEnvScenario(envScenarioVo);
+                                    DeployPipelineConfigManager.setIsJobTemplateVoHasBuildDeployType(jobTemplateVo, envPipelineMap);
+                                    jobTemplateList.add(jobTemplateVo);
+                                }
                             }
                         }
                     }
                 }
             }
         }
-        return jobTemplateList.get();
+        return jobTemplateList;
     }
 
-    static class JobTemplateList {
-        List<PipelineJobTemplateVo> jobTemplateList = new ArrayList<>();
-
-        public void add(PipelineJobTemplateVo jobTemplateVo, Map<Long, DeployPipelineConfigVo> envPipelineMap) {
-            PipelineJobTemplateVo existsJobVo = null;
-            Optional<PipelineJobTemplateVo> op = jobTemplateList.stream().filter(d -> d.getAppSystemId().equals(jobTemplateVo.getAppSystemId())
-                    && d.getAppModuleId().equals(jobTemplateVo.getAppModuleId())
-            ).findFirst();
-            existsJobVo = op.orElse(jobTemplateVo);
-            PipelineEnvScenarioVo envScenarioVo = new PipelineEnvScenarioVo();
-            envScenarioVo.setEnvId(jobTemplateVo.getEnvId());
-            envScenarioVo.setEnvName(jobTemplateVo.getEnvName());
-            envScenarioVo.setScenarioId(jobTemplateVo.getScenarioId());
-            envScenarioVo.setScenarioName(jobTemplateVo.getScenarioName());
-            existsJobVo.addEnvScenario(envScenarioVo);
-            existsJobVo.setScenarioId(envScenarioVo.getScenarioId());
-            DeployPipelineConfigManager.setIsJobTemplateVoHasBuildDeployType(existsJobVo, envPipelineMap);
-            if (!op.isPresent()) {
-                jobTemplateList.add(existsJobVo);
-            }
-        }
-
-        public List<PipelineJobTemplateVo> get() {
-            return this.jobTemplateList;
-        }
-    }
+//    static class JobTemplateList {
+//        List<PipelineJobTemplateVo> jobTemplateList = new ArrayList<>();
+//
+//        public void add(PipelineJobTemplateVo jobTemplateVo, Map<Long, DeployPipelineConfigVo> envPipelineMap) {
+//            PipelineJobTemplateVo existsJobVo = null;
+//            Optional<PipelineJobTemplateVo> op = jobTemplateList.stream().filter(d -> d.getAppSystemId().equals(jobTemplateVo.getAppSystemId())
+//                    && d.getAppModuleId().equals(jobTemplateVo.getAppModuleId())
+//            ).findFirst();
+//            existsJobVo = op.orElse(jobTemplateVo);
+//            PipelineEnvScenarioVo envScenarioVo = new PipelineEnvScenarioVo();
+//            envScenarioVo.setEnvId(jobTemplateVo.getEnvId());
+//            envScenarioVo.setEnvName(jobTemplateVo.getEnvName());
+//            envScenarioVo.setScenarioId(jobTemplateVo.getScenarioId());
+//            envScenarioVo.setScenarioName(jobTemplateVo.getScenarioName());
+//            existsJobVo.addEnvScenario(envScenarioVo);
+//            existsJobVo.setScenarioId(envScenarioVo.getScenarioId());
+//            DeployPipelineConfigManager.setIsJobTemplateVoHasBuildDeployType(existsJobVo, envPipelineMap);
+//            if (!op.isPresent()) {
+//                jobTemplateList.add(existsJobVo);
+//            }
+//        }
+//
+//        public List<PipelineJobTemplateVo> get() {
+//            return this.jobTemplateList;
+//        }
+//    }
 
 }

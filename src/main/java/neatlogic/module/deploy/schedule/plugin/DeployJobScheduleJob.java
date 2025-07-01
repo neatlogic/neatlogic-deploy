@@ -16,8 +16,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 package neatlogic.module.deploy.schedule.plugin;
 
 import neatlogic.framework.asynchronization.threadlocal.TenantContext;
+import neatlogic.framework.asynchronization.threadlocal.UserContext;
 import neatlogic.framework.autoexec.constvalue.JobStatus;
 import neatlogic.framework.autoexec.constvalue.ReviewStatus;
+import neatlogic.framework.common.constvalue.systemuser.SystemUser;
+import neatlogic.framework.dao.mapper.UserMapper;
 import neatlogic.framework.deploy.constvalue.JobSource;
 import neatlogic.framework.deploy.constvalue.ScheduleType;
 import neatlogic.framework.deploy.dto.job.DeployJobModuleVo;
@@ -26,8 +29,12 @@ import neatlogic.framework.deploy.dto.pipeline.PipelineVo;
 import neatlogic.framework.deploy.dto.schedule.DeployScheduleConfigVo;
 import neatlogic.framework.deploy.dto.schedule.DeployScheduleSearchVo;
 import neatlogic.framework.deploy.dto.schedule.DeployScheduleVo;
+import neatlogic.framework.dto.AuthenticationInfoVo;
+import neatlogic.framework.dto.UserVo;
+import neatlogic.framework.filter.core.LoginAuthHandlerBase;
 import neatlogic.framework.scheduler.core.JobBase;
 import neatlogic.framework.scheduler.dto.JobObject;
+import neatlogic.framework.service.AuthenticationInfoService;
 import neatlogic.module.deploy.dao.mapper.DeployJobMapper;
 import neatlogic.module.deploy.dao.mapper.DeployPipelineMapper;
 import neatlogic.module.deploy.dao.mapper.DeployScheduleMapper;
@@ -36,18 +43,18 @@ import neatlogic.module.deploy.service.DeployJobService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.quartz.DisallowConcurrentExecution;
 import org.quartz.JobExecutionContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.List;
 import java.util.Objects;
 
-@Transactional
 @Component
 @DisallowConcurrentExecution
-public class DeployJobScheduleJob  extends JobBase {
-
+public class DeployJobScheduleJob extends JobBase {
+    static Logger logger = LoggerFactory.getLogger(DeployJobScheduleJob.class);
     @Resource
     private DeployScheduleMapper deployScheduleMapper;
     @Resource
@@ -58,6 +65,10 @@ public class DeployJobScheduleJob  extends JobBase {
     private DeployJobService deployJobService;
     @Resource
     private DeployBatchJobService deployBatchJobService;
+    @Resource
+    private UserMapper userMapper;
+    @Resource
+    private AuthenticationInfoService authenticationInfoService;
 
     @Override
     public String getGroupName() {
@@ -121,13 +132,22 @@ public class DeployJobScheduleJob  extends JobBase {
             schedulerManager.unloadJob(jobObject);
             return;
         }
+        UserVo execUser = userMapper.getUserBaseInfoByUuid(scheduleVo.getLcu());
+        if (execUser == null) {
+            schedulerManager.unloadJob(jobObject);
+            logger.error("execUser: {} not exist!", scheduleVo.getLcu());
+            return;
+        }
+        AuthenticationInfoVo authenticationInfo = authenticationInfoService.getAuthenticationInfo(execUser.getUuid());
+        UserContext.init(execUser, authenticationInfo, SystemUser.SYSTEM.getTimezone());
+        UserContext.get().setToken("GZIP_" + LoginAuthHandlerBase.buildJwt(execUser).getCc());
         String type = scheduleVo.getType();
         if (type.equals(ScheduleType.GENERAL.getValue())) {
             DeployJobVo deployJobVo = convertDeployScheduleVoToDeployJobVo(scheduleVo);
             deployJobVo.setSource(JobSource.DEPLOY_SCHEDULE_GENERAL.getValue());
             List<DeployJobModuleVo> moduleList = deployJobVo.getModuleList();
             deployJobService.createJobAndFire(deployJobVo, moduleList.get(0));
-        } else if(type.equals(ScheduleType.PIPELINE.getValue())) {
+        } else if (type.equals(ScheduleType.PIPELINE.getValue())) {
             PipelineVo pipelineVo = deployPipelineMapper.getPipelineById(scheduleVo.getPipelineId());
             if (pipelineVo == null) {
                 schedulerManager.unloadJob(jobObject);
@@ -149,7 +169,9 @@ public class DeployJobScheduleJob  extends JobBase {
         deployJobVo.setParam(config.getParam());
         deployJobVo.setInvokeId(scheduleVo.getId());
         deployJobVo.setRouteId(scheduleVo.getId().toString());
+        deployJobVo.setParallelPolicy(config.getParallelPolicy());
         deployJobVo.setRoundCount(config.getRoundCount());
+        deployJobVo.setParallelCount(config.getParallelCount());
         deployJobVo.setPipelineId(scheduleVo.getPipelineId());
         deployJobVo.setAppSystemModuleVersionList(config.getAppSystemModuleVersionList());
         deployJobVo.setAppSystemId(scheduleVo.getAppSystemId());

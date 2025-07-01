@@ -122,7 +122,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         dsd.env_id as envId,
         dsd.version as version,
         dsd.resource_id as resourceId,
-        dsd.node_name as nodeName
+        dsd.node_name as nodeName,
+        dsd.is_modified as isModified
         from
         deploy_sql_detail dsd
         WHERE
@@ -168,6 +169,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
           AND dsd.module_id = #{moduleId}
           AND dsd.env_id = #{envId}
           AND dsd.version = #{version}
+          AND asjp.job_phase_name = #{phaseName}
     </select>
 
     <select id="getAllDeploySqlDetailList" parameterType="neatlogic.framework.deploy.dto.sql.DeploySqlNodeDetailVo"
@@ -301,9 +303,25 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         WHERE dsjp.job_id = #{jobId}
         and dsjp.job_phase_name = #{jobPhaseName}
         and dsd.runner_id = #{runnerMapId}
+        and dsd.is_delete = 0
         and dsd.`status` not in
         <foreach collection="statusList" item="status" separator="," close=")" open="(">
             #{status}
+        </foreach>
+    </select>
+    <select id="getDeployJobSqlStatusList" resultType="java.lang.String">
+        <foreach collection="statusList" item="status" open="(" separator=") union (" close=")">
+            SELECT
+            `status`
+            FROM
+            deploy_sql_job_phase dsjp
+            LEFT JOIN deploy_sql_detail dsd ON dsjp.sql_id = dsd.id
+            WHERE dsjp.job_id = #{jobId}
+            and dsjp.job_phase_name = #{jobPhaseName}
+            and dsd.runner_id = #{runnerMapId}
+            and dsd.is_delete = 0
+            and `status` = #{status}
+            limit 1
         </foreach>
     </select>
 
@@ -392,6 +410,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         `is_delete` = #{isDelete}
         <if test="sort != null">
             ,sort = #{sort}
+        </if>
+        <if test="host != null">
+            ,host = #{host}
+        </if>
+        <if test="port != null">
+            ,port = #{port}
         </if>
         <choose>
             <when test="status == 'pending'">

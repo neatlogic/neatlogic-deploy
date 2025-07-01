@@ -115,6 +115,7 @@ public class ListDeployAppConfigAuthorityApi extends PrivateApiComponentBase {
                 JSONObject envValueText = new JSONObject();
                 envValueText.put("text", env.getName());
                 envValueText.put("value", env.getId());
+                envValueText.put("description", DeployAppConfigActionType.ENV.getDescription());
                 envAuthList.add(envValueText);
             }
             returnObj.put("envAuthList", envAuthList);

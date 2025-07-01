@@ -15,6 +15,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 
 package neatlogic.module.deploy.api.job.batch;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.asynchronization.threadlocal.TenantContext;
@@ -101,7 +102,7 @@ public class AddBatchDeployJobFromPipelineApi extends PrivateApiComponentBase {
         if (pipelineVo == null) {
             throw new DeployPipelineNotFoundException(pipelineId);
         }
-        DeployJobVo deployJobVo = JSONObject.toJavaObject(jsonObj, DeployJobVo.class);
+        DeployJobVo deployJobVo = JSON.toJavaObject(jsonObj, DeployJobVo.class);
         if (deployJobVo.getTriggerType().equals(JobTriggerType.AUTO.getValue())) {
             if (deployJobVo.getPlanStartTime() == null) {
                 throw new DeployJobParamIrregularException("planStartTime");
@@ -111,7 +112,7 @@ public class AddBatchDeployJobFromPipelineApi extends PrivateApiComponentBase {
             deployJobVo.setStatus(JobStatus.PENDING.getValue());
             deployJobVo.setPlanStartTime(null);
         }
-        if (!AuthActionChecker.check(BATCHDEPLOY_VERIFY.class)) {
+        if (Boolean.FALSE.equals(AuthActionChecker.check(BATCHDEPLOY_VERIFY.class))) {
             deployJobVo.setReviewStatus(ReviewStatus.WAITING.getValue());
         } else {
             deployJobVo.setReviewStatus(ReviewStatus.PASSED.getValue());

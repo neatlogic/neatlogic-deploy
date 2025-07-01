@@ -1,5 +1,6 @@
 package neatlogic.module.deploy.dao.mapper;
 
+import neatlogic.framework.cmdb.dto.resourcecenter.ResourceVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.entity.AppEnvironmentVo;
 import neatlogic.framework.common.dto.BasePageVo;
 import neatlogic.framework.deploy.crossover.IDeployAppConfigCrossoverMapper;
@@ -22,10 +23,6 @@ public interface DeployAppConfigMapper extends IDeployAppConfigCrossoverMapper {
     List<Long> getAppSystemIdList(@Param("searchVo") DeployResourceSearchVo searchVo, @Param("userUuid") String userUuid);
 
     List<DeployAppSystemVo> searchAppSystemList(DeployResourceSearchVo searchVo);
-
-    List<DeployAppSystemVo> getAppSystemListIncludeModuleByIdList(@Param("searchVo") DeployResourceSearchVo searchVo, @Param("userUuid") String userUuid);
-
-    List<DeployAppSystemVo> getAppSystemListByIdList(@Param("searchVo") DeployResourceSearchVo searchVo, @Param("userUuid") String userUuid);
 
     List<DeployAppSystemVo> getAppSystemModuleListBySystemIdList(@Param("idList") List<Long> idList, @Param("isConfig") Integer isConfig, @Param("userUuid") String userUuid);
 
@@ -170,6 +167,8 @@ public interface DeployAppConfigMapper extends IDeployAppConfigCrossoverMapper {
 
     void insertBatchAppConfigEnvDBConfig(@Param("dbConfigVoList") List<DeployAppConfigEnvDBConfigVo> dbConfigVoList);
 
+    int saveDeloyJobNotifyPolicy(@Param("appSystemId") Long appSystemId, @Param("notifyPolicyId") Long notifyPolicyId, @Param("configStr") String configStr);
+
     Integer updateAppConfig(DeployAppConfigVo deployAppConfigVo);
 
     Integer updateAppConfigDraft(DeployAppConfigVo deployAppConfigDraftVo);
@@ -196,8 +195,6 @@ public interface DeployAppConfigMapper extends IDeployAppConfigCrossoverMapper {
 
     Integer deleteAppConfigDraft(DeployAppConfigVo deployAppConfigDraftVo);
 
-    Integer getAppSystemIdListCount(DeployResourceSearchVo searchVo);
-
     Long getAppSystemLimitMaxId(DeployResourceSearchVo searchVo);
 
     String getAppSystemNotifyPolicyConfigByAppSystemId(Long appSystemId);
@@ -209,6 +206,8 @@ public interface DeployAppConfigMapper extends IDeployAppConfigCrossoverMapper {
     int checkDeployAppConfigEnvDBSchemaIsRepeat(DeployAppConfigEnvDBConfigVo configVo);
 
 //    int getAppModuleCountBySystemIdAndEnvId(@Param("appSystemId") Long appSystemId, @Param("envId") Long envId);
+
+    ResourceVo getDatabaseById(Long id);
 
     /**
      * 查询发布应用配置DB库下的无模块无环境、无模块同环境、同模块无环境、同模块同环境且发布没配置的数据库的数量

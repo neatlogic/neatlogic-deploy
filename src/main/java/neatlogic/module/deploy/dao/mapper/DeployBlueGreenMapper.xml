@@ -24,6 +24,9 @@
             <if test="keyword != null and keyword != ''">
                 and `name` LIKE CONCAT('%', #{keyword}, '%')
             </if>
+            <if test="isActive != null">
+                and `is_active` = #{isActive}
+            </if>
         </where>
     </select>
 
@@ -32,6 +35,9 @@
         <where>
             <if test="keyword != null and keyword != ''">
                 and `name` LIKE CONCAT('%', #{keyword}, '%')
+            </if>
+            <if test="isActive != null">
+                and `is_active` = #{isActive}
             </if>
         </where>
         limit #{startNum}, #{pageSize}
@@ -61,6 +67,10 @@
         where a.`job_id` = #{value}
     </select>
 
+    <select id="getDeployJobBlueGreenCountByJobId" resultType="java.lang.Integer">
+        select count(1) from `deploy_job_resource_blue_green` where `job_id` = #{value}
+    </select>
+
     <update id="updateBlueGreen">
         update `deploy_blue_green` set `name` = #{name},`is_active` = #{isActive}
         where `id` = #{id}
@@ -79,15 +89,20 @@
     </insert>
 
     <insert id="insertDeployJobResourceBlueGreen">
-        insert into `deploy_job_resource_blue_green`(`job_id`, `resource_id`,`blue_green_id`,`update_tag`)
+        insert ignore into `deploy_job_resource_blue_green`(`job_id`, `resource_id`,`blue_green_id`,`update_tag`)
         values
         <foreach collection="list" item="nodeBlueGreen" separator=",">
             (#{nodeBlueGreen.jobId}, #{nodeBlueGreen.resourceId},#{nodeBlueGreen.blueGreenId},#{nodeBlueGreen.updateTag})
         </foreach>
-        on duplicate key
-        update `blue_green_id` = VALUES(`blue_green_id`),
-        `update_tag` = VALUES(`update_tag`)
     </insert>
+
+    <delete id="deleteDeployJobResourceBlueGreen">
+        delete from `deploy_job_resource_blue_green`
+        where
+        <foreach collection="list" item="nodeBlueGreen" separator=" or ">
+            ( `job_id` = #{nodeBlueGreen.jobId} and `resource_id` = #{nodeBlueGreen.resourceId})
+        </foreach>
+    </delete>
 
     <delete id="deleteInstanceBlueGreen">
         delete
@@ -96,5 +111,9 @@
           and `app_module_id` = #{appModuleId}
           and `env_id` = #{envId}
           and `resource_id` = #{resourceId}
+    </delete>
+
+    <delete id="deleteDeployJobResourceBlueGreenByJobId">
+        delete from `deploy_job_resource_blue_green` where `job_id` = #{value}
     </delete>
 </mapper>

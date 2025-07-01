@@ -395,7 +395,11 @@ public class DeployAppConfigServiceImpl implements DeployAppConfigService {
      * @param needUpdateGlobalAttrList    需要更新的全局属性列表
      */
     void addGlobalAttrEntityData(CiEntityTransactionVo ciEntityTransactionVo, JSONObject attrAndRelObj, List<String> needUpdateGlobalAttrList) {
-        JSONObject globalAttrEntityData = new JSONObject();
+        JSONObject globalAttrEntityData = ciEntityTransactionVo.getGlobalAttrEntityData();
+        if (globalAttrEntityData == null) {
+            globalAttrEntityData = new JSONObject();
+            ciEntityTransactionVo.setGlobalAttrEntityData(globalAttrEntityData);
+        }
         IGlobalAttrCrossoverMapper globalAttrCrossoverMapper = CrossoverServiceFactory.getApi(IGlobalAttrCrossoverMapper.class);
         GlobalAttrVo searchVo = new GlobalAttrVo();
         searchVo.setIsActive(1);
@@ -412,23 +416,45 @@ public class DeployAppConfigServiceImpl implements DeployAppConfigService {
             if (envId == null) {
                 continue;
             }
-            JSONArray valueList = new JSONArray();
             GlobalAttrItemVo globalAttrItemVo = globalAttrCrossoverMapper.getGlobalAttrItemById(envId);
-            if (globalAttrItemVo != null) {
+            if (globalAttrItemVo == null) {
+                throw new GlobalAttrValueIrregularException(globalAttrVo, envId.toString());
+            }
+            JSONObject globalAttrEntityDataByAttrId = ciEntityTransactionVo.getGlobalAttrEntityDataByAttrId(globalAttrVo.getId());
+            if (MapUtils.isNotEmpty(globalAttrEntityDataByAttrId)) {
+                boolean flag = false;
+                JSONArray valueList = globalAttrEntityDataByAttrId.getJSONArray("valueList");
+                for (int i = 0; i < valueList.size(); i++) {
+                    JSONObject valueObj = valueList.getJSONObject(i);
+                    if (MapUtils.isNotEmpty(valueObj)) {
+                        Long id = valueObj.getLong("id");
+                        if (Objects.equals(id, globalAttrItemVo.getId())) {
+                            flag = true;
+                            break;
+                        }
+                    }
+                }
+                if (!flag) {
+                    JSONObject valueObj = new JSONObject();
+                    valueObj.put("id", globalAttrItemVo.getId());
+                    valueObj.put("value", globalAttrItemVo.getValue());
+                    valueObj.put("sort", globalAttrItemVo.getSort());
+                    valueObj.put("attrId", globalAttrVo.getId());
+                    valueList.add(valueObj);
+                }
+            } else {
+                JSONArray valueList = new JSONArray();
                 JSONObject jsonObj = new JSONObject();
                 jsonObj.put("id", globalAttrItemVo.getId());
                 jsonObj.put("value", globalAttrItemVo.getValue());
                 jsonObj.put("sort", globalAttrItemVo.getSort());
                 jsonObj.put("attrId", globalAttrVo.getId());
                 valueList.add(jsonObj);
-            } else {
-                throw new GlobalAttrValueIrregularException(globalAttrVo, envId.toString());
+                JSONObject globalAttrEntity = new JSONObject();
+                globalAttrEntity.put("valueList", valueList);
+                globalAttrEntityData.put("global_" + globalAttrVo.getId(), globalAttrEntity);
             }
-            JSONObject globalAttrEntity = new JSONObject();
-            globalAttrEntity.put("valueList", valueList);
-            globalAttrEntityData.put("global_" + globalAttrVo.getId(), globalAttrEntity);
         }
-        ciEntityTransactionVo.setGlobalAttrEntityData(globalAttrEntityData);
     }
 
     public static Map<String, String> getAttrMap() {
