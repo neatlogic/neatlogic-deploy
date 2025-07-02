@@ -38,11 +38,10 @@ import neatlogic.framework.deploy.dto.schedule.DeployScheduleVo;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
-import neatlogic.framework.scheduler.core.SchedulerManager;
-import neatlogic.framework.scheduler.dto.JobStatusVo;
 import neatlogic.framework.util.TableResultUtil;
 import neatlogic.module.deploy.dao.mapper.DeployPipelineMapper;
 import neatlogic.module.deploy.dao.mapper.DeployScheduleMapper;
+import neatlogic.module.deploy.schedule.plugin.DeployJobScheduleJob;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
@@ -191,6 +190,8 @@ public class ListDeployScheduleApi extends PrivateApiComponentBase {
                 }
             }
         }
-        return TableResultUtil.getResult(tbodyList, searchVo);
+        JSONObject resultObj = TableResultUtil.getResult(tbodyList, searchVo);
+        resultObj.put("handler", DeployJobScheduleJob.class.getName());
+        return resultObj;
     }
 }
