@@ -15,6 +15,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 
 package neatlogic.module.deploy.api.schedule;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.asynchronization.threadlocal.UserContext;
 import neatlogic.framework.auth.core.AuthAction;
@@ -90,13 +91,15 @@ public class ListDeployScheduleApi extends PrivateApiComponentBase {
     @Description(desc = "查询定时作业列表")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
-        DeployScheduleSearchVo searchVo = JSONObject.toJavaObject(paramObj, DeployScheduleSearchVo.class);
-        if (AuthActionChecker.check(DEPLOY_MODIFY.class)) {
+        DeployScheduleSearchVo searchVo = JSON.toJavaObject(paramObj, DeployScheduleSearchVo.class);
+        if (Boolean.TRUE.equals(AuthActionChecker.check(DEPLOY_MODIFY.class))) {
             searchVo.setIsHasAllAuthority(1);
         } else {
             searchVo.setIsHasAllAuthority(0);
             List<String> authorityActionList = new ArrayList<>();
             authorityActionList.add(DeployAppConfigAction.VIEW.getValue());
+            authorityActionList.add(DeployAppConfigAction.AUTH.getValue());
+            authorityActionList.add(DeployAppConfigAction.EDIT.getValue());
             authorityActionList.add(DeployAppConfigAction.EXECUTE.getValue());
             searchVo.setAuthorityActionList(authorityActionList);
             searchVo.setAuthUuidList(UserContext.get().getUuidList());

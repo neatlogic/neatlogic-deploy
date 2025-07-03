@@ -107,6 +107,8 @@ public class DeployJobServiceImpl implements DeployJobService {
             deployJobVo.setIsHasAllAuthority(0);
             List<String> authorityActionList = new ArrayList<>();
             authorityActionList.add(DeployAppConfigAction.VIEW.getValue());
+            authorityActionList.add(DeployAppConfigAction.EDIT.getValue());
+            authorityActionList.add(DeployAppConfigAction.AUTH.getValue());
             authorityActionList.add(DeployAppConfigAction.EXECUTE.getValue());
             deployJobVo.setAuthorityActionList(authorityActionList);
         }
@@ -460,6 +462,7 @@ public class DeployJobServiceImpl implements DeployJobService {
             Set<String> actionSet = DeployAppAuthChecker.builder(appSystemId)
                     .addEnvAction(config.getEnvId())
                     .addScenarioAction(config.getScenarioId())
+                    .addOperationAction(DeployAppConfigAction.EDIT.getValue())
                     .addOperationAction(DeployAppConfigAction.EXECUTE.getValue())
                     .check();
             if (!actionSet.contains(config.getEnvId().toString())) {
