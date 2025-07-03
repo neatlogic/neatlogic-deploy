@@ -48,6 +48,7 @@ import neatlogic.framework.cmdb.exception.resourcecenter.AppModuleNotFoundExcept
 import neatlogic.framework.cmdb.exception.resourcecenter.AppSystemNotFoundException;
 import neatlogic.framework.common.util.PageUtil;
 import neatlogic.framework.crossover.CrossoverServiceFactory;
+import neatlogic.framework.deploy.auth.DEPLOY_MODIFY;
 import neatlogic.framework.deploy.auth.PIPELINE_MODIFY;
 import neatlogic.framework.deploy.auth.core.DeployAppAuthChecker;
 import neatlogic.framework.deploy.constvalue.*;
@@ -100,6 +101,15 @@ public class DeployJobServiceImpl implements DeployJobService {
     @Override
     public List<DeployJobVo> searchDeployJob(DeployJobVo deployJobVo) {
         List<DeployJobVo> returnList = new ArrayList<>();
+        if (Boolean.TRUE.equals(AuthActionChecker.check(DEPLOY_MODIFY.class))) {
+            deployJobVo.setIsHasAllAuthority(1);
+        } else {
+            deployJobVo.setIsHasAllAuthority(0);
+            List<String> authorityActionList = new ArrayList<>();
+            authorityActionList.add(DeployAppConfigAction.VIEW.getValue());
+            authorityActionList.add(DeployAppConfigAction.EXECUTE.getValue());
+            deployJobVo.setAuthorityActionList(authorityActionList);
+        }
         if (CollectionUtils.isEmpty(deployJobVo.getIdList())) {
             int rowNum = deployJobMapper.searchDeployJobCount(deployJobVo);
             deployJobVo.setRowNum(rowNum);
