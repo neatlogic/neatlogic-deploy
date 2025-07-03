@@ -21,7 +21,7 @@ import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.auth.core.AuthActionChecker;
 import neatlogic.framework.autoexec.constvalue.AutoexecParallelPolicy;
 import neatlogic.framework.common.constvalue.ApiParamType;
-import neatlogic.framework.deploy.auth.DEPLOY_BASE;
+import neatlogic.framework.deploy.auth.DEPLOY_SCHEDULE_MODIFY;
 import neatlogic.framework.deploy.auth.PIPELINE_MODIFY;
 import neatlogic.framework.deploy.auth.core.DeployAppAuthChecker;
 import neatlogic.framework.deploy.constvalue.DeployAppConfigAction;
@@ -45,7 +45,7 @@ import java.util.List;
 import java.util.Set;
 
 @Service
-@AuthAction(action = DEPLOY_BASE.class)
+@AuthAction(action = DEPLOY_SCHEDULE_MODIFY.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
 public class GetDeployScheduleApi extends PrivateApiComponentBase {
 

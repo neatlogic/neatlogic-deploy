@@ -15,6 +15,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 
 package neatlogic.module.deploy.api.pipeline;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.common.constvalue.ApiParamType;
@@ -69,7 +70,7 @@ public class SearchPipelineApi extends PrivateApiComponentBase {
     @Description(desc = "查询超级流水线接口")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
-        PipelineSearchVo searchVo = JSONObject.toJavaObject(jsonObj, PipelineSearchVo.class);
+        PipelineSearchVo searchVo = JSON.toJavaObject(jsonObj, PipelineSearchVo.class);
         return TableResultUtil.getResult(pipelineService.searchPipeline(searchVo), searchVo);
     }
 

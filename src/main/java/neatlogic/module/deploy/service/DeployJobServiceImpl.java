@@ -17,6 +17,8 @@ package neatlogic.module.deploy.service;
 
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.asynchronization.threadlocal.TenantContext;
+import neatlogic.framework.asynchronization.threadlocal.UserContext;
+import neatlogic.framework.auth.core.AuthActionChecker;
 import neatlogic.framework.autoexec.constvalue.JobAction;
 import neatlogic.framework.autoexec.constvalue.JobTriggerType;
 import neatlogic.framework.autoexec.crossover.IAutoexecJobActionCrossoverService;
@@ -42,25 +44,27 @@ import neatlogic.framework.cmdb.dto.resourcecenter.entity.AppModuleVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.entity.AppSystemVo;
 import neatlogic.framework.cmdb.exception.cientity.CiEntityNotFoundException;
 import neatlogic.framework.cmdb.exception.resourcecenter.AppEnvNotFoundException;
+import neatlogic.framework.cmdb.exception.resourcecenter.AppModuleNotFoundException;
+import neatlogic.framework.cmdb.exception.resourcecenter.AppSystemNotFoundException;
 import neatlogic.framework.common.util.PageUtil;
 import neatlogic.framework.crossover.CrossoverServiceFactory;
-import neatlogic.framework.deploy.constvalue.CombopOperationType;
-import neatlogic.framework.deploy.constvalue.JobSource;
+import neatlogic.framework.deploy.auth.PIPELINE_MODIFY;
+import neatlogic.framework.deploy.auth.core.DeployAppAuthChecker;
+import neatlogic.framework.deploy.constvalue.*;
 import neatlogic.framework.deploy.dto.app.DeployAppConfigVo;
 import neatlogic.framework.deploy.dto.job.DeployJobModuleVo;
 import neatlogic.framework.deploy.dto.job.DeployJobVo;
+import neatlogic.framework.deploy.dto.pipeline.PipelineVo;
+import neatlogic.framework.deploy.dto.schedule.DeployScheduleConfigVo;
+import neatlogic.framework.deploy.dto.schedule.DeployScheduleVo;
 import neatlogic.framework.deploy.dto.version.DeployVersionVo;
-import neatlogic.framework.deploy.exception.DeployAppConfigNotFoundException;
-import neatlogic.framework.deploy.exception.DeployVersionNotFoundException;
+import neatlogic.framework.deploy.exception.*;
 import neatlogic.framework.exception.type.ParamIrregularException;
 import neatlogic.framework.scheduler.core.IJob;
 import neatlogic.framework.scheduler.core.SchedulerManager;
 import neatlogic.framework.scheduler.dto.JobObject;
 import neatlogic.framework.scheduler.exception.ScheduleHandlerNotFoundException;
-import neatlogic.module.deploy.dao.mapper.DeployAppConfigMapper;
-import neatlogic.module.deploy.dao.mapper.DeployJobMapper;
-import neatlogic.module.deploy.dao.mapper.DeployResourceMapper;
-import neatlogic.module.deploy.dao.mapper.DeployVersionMapper;
+import neatlogic.module.deploy.dao.mapper.*;
 import neatlogic.module.deploy.schedule.plugin.DeployJobAutoFireJob;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -89,6 +93,9 @@ public class DeployJobServiceImpl implements DeployJobService {
 
     @Resource
     private DeployResourceMapper deployResourceMapper;
+
+    @Resource
+    private DeployPipelineMapper deployPipelineMapper;
 
     @Override
     public List<DeployJobVo> searchDeployJob(DeployJobVo deployJobVo) {
@@ -413,5 +420,66 @@ public class DeployJobServiceImpl implements DeployJobService {
             throw new DeployAppConfigNotFoundException(appModuleId);
         }
         return operationId;
+    }
+
+    @Override
+    public void scheduleAuthCheck(DeployScheduleVo scheduleVo) {
+        String type = scheduleVo.getType();
+        IAppSystemMapper appSystemMapper = CrossoverServiceFactory.getApi(IAppSystemMapper.class);
+        IResourceCrossoverMapper iResourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
+        IAutoexecScenarioCrossoverMapper iAutoexecScenarioCrossoverMapper = CrossoverServiceFactory.getApi(IAutoexecScenarioCrossoverMapper.class);
+        if (type.equals(ScheduleType.GENERAL.getValue())) {
+            Long appSystemId = scheduleVo.getAppSystemId();
+            AppSystemVo appSystemVo = appSystemMapper.getAppSystemById(scheduleVo.getAppSystemId());
+            if (appSystemVo == null) {
+                throw new AppSystemNotFoundException(scheduleVo.getAppSystemId());
+            }
+            AppModuleVo appModuleVo = appSystemMapper.getAppModuleById(scheduleVo.getAppModuleId());
+            if (appModuleVo == null) {
+                throw new AppModuleNotFoundException(scheduleVo.getAppModuleId());
+            }
+            DeployScheduleConfigVo config = scheduleVo.getConfig();
+            ResourceVo env = iResourceCrossoverMapper.getAppEnvById(config.getEnvId());
+            if (env == null) {
+                throw new AppEnvNotFoundException(config.getEnvId());
+            }
+            AutoexecScenarioVo scenarioVo = iAutoexecScenarioCrossoverMapper.getScenarioById(config.getScenarioId());
+            if(scenarioVo == null){
+                throw new AutoexecScenarioIsNotFoundException(config.getScenarioId());
+            }
+            Set<String> actionSet = DeployAppAuthChecker.builder(appSystemId)
+                    .addEnvAction(config.getEnvId())
+                    .addScenarioAction(config.getScenarioId())
+                    .addOperationAction(DeployAppConfigAction.EXECUTE.getValue())
+                    .check();
+            if (!actionSet.contains(config.getEnvId().toString())) {
+                throw new DeployAppEnvAuthException(appSystemVo, env);
+            }
+
+            if (!actionSet.contains(config.getScenarioId().toString())) {
+                throw new DeployAppScenarioAuthException(appSystemVo, scenarioVo);
+            }
+        } else if (type.equals(ScheduleType.PIPELINE.getValue())) {
+            PipelineVo pipeline = deployPipelineMapper.getPipelineSimpleInfoById(scheduleVo.getPipelineId());
+            String pipelineType = scheduleVo.getPipelineType();
+            List<Long> pipelineIdList = deployPipelineMapper.checkHasAuthPipelineIdList(Collections.singletonList(scheduleVo.getPipelineId()), UserContext.get().getUserUuid(true));
+            if (pipelineType.equals(PipelineType.APPSYSTEM.getValue())) {
+                Long appSystemId = scheduleVo.getAppSystemId();
+                AppSystemVo appSystemVo = appSystemMapper.getAppSystemById(scheduleVo.getAppSystemId());
+                if (appSystemVo == null) {
+                    throw new AppSystemNotFoundException(scheduleVo.getAppSystemId());
+                }
+                if (!pipelineIdList.contains(scheduleVo.getPipelineId())) {
+                    Set<String> actionSet = DeployAppAuthChecker.builder(appSystemId)
+                            .addOperationAction(DeployAppConfigAction.PIPELINE.getValue())
+                            .check();
+                    if (!actionSet.contains(DeployAppConfigAction.PIPELINE.getValue())) {
+                        throw new DeployAppPipelineAuthException(appSystemVo,pipeline);
+                    }
+                }
+            } else if (pipelineType.equals(PipelineType.GLOBAL.getValue()) && (!Boolean.TRUE.equals(AuthActionChecker.check(PIPELINE_MODIFY.class)) && !pipelineIdList.contains(scheduleVo.getPipelineId()))) {
+                throw new DeployAppPipelineAuthException(pipeline);
+            }
+        }
     }
 }

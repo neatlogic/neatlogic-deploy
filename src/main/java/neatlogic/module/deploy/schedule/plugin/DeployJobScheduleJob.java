@@ -190,6 +190,7 @@ public class DeployJobScheduleJob extends JobBase {
         JobVo jobVo = null;
         DeployScheduleVo scheduleVo = deployScheduleMapper.getScheduleByUuid(uuid);
         if (scheduleVo != null) {
+            deployJobService.scheduleAuthCheck(scheduleVo);
             jobVo = new JobVo();
             jobVo.setName(scheduleVo.getName());
             jobVo.setUuid(scheduleVo.getUuid());

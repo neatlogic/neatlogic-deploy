@@ -25,8 +25,8 @@ import neatlogic.framework.cmdb.dto.resourcecenter.entity.AppSystemVo;
 import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.common.dto.BasePageVo;
 import neatlogic.framework.crossover.CrossoverServiceFactory;
-import neatlogic.framework.deploy.auth.DEPLOY_BASE;
 import neatlogic.framework.deploy.auth.DEPLOY_MODIFY;
+import neatlogic.framework.deploy.auth.DEPLOY_SCHEDULE_MODIFY;
 import neatlogic.framework.deploy.auth.PIPELINE_MODIFY;
 import neatlogic.framework.deploy.auth.core.DeployAppAuthChecker;
 import neatlogic.framework.deploy.constvalue.DeployAppConfigAction;
@@ -51,7 +51,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
-@AuthAction(action = DEPLOY_BASE.class)
+@AuthAction(action = DEPLOY_SCHEDULE_MODIFY.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
 public class ListDeployScheduleApi extends PrivateApiComponentBase {
 
@@ -97,6 +97,7 @@ public class ListDeployScheduleApi extends PrivateApiComponentBase {
             searchVo.setIsHasAllAuthority(0);
             List<String> authorityActionList = new ArrayList<>();
             authorityActionList.add(DeployAppConfigAction.VIEW.getValue());
+            authorityActionList.add(DeployAppConfigAction.EXECUTE.getValue());
             searchVo.setAuthorityActionList(authorityActionList);
             searchVo.setAuthUuidList(UserContext.get().getUuidList());
         }
@@ -150,12 +151,13 @@ public class ListDeployScheduleApi extends PrivateApiComponentBase {
                         Set<String> actionSet = DeployAppAuthChecker.builder(appSystemId)
                                 .addEnvAction(config.getEnvId())
                                 .addScenarioAction(config.getScenarioId())
+                                .addOperationAction(DeployAppConfigAction.EXECUTE.getValue())
                                 .check();
                         if (actionSet.contains(config.getEnvId().toString()) && actionSet.contains(config.getScenarioId().toString())) {
                             scheduleVo.setEditable(1);
                             scheduleVo.setDeletable(1);
                         }
-                    } else if(type.equals(ScheduleType.PIPELINE.getValue())) {
+                    } else if (type.equals(ScheduleType.PIPELINE.getValue())) {
                         String name = deployPipelineMapper.getPipelineNameById(scheduleVo.getPipelineId());
                         if (StringUtils.isNotBlank(name)) {
                             scheduleVo.setPipelineName(name);
