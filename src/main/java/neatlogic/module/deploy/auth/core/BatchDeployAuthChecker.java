@@ -67,7 +67,7 @@ public class BatchDeployAuthChecker {
      * @return 是｜否
      */
     public static boolean isCanAbort(DeployJobVo deployJobVo) {
-        if (!Objects.equals(JobStatus.CHECKED.getValue(), deployJobVo.getStatus())) {
+        if (!Objects.equals(JobStatus.CHECKED.getValue(), deployJobVo.getStatus()) && Objects.equals(deployJobVo.getReviewStatus(), ReviewStatus.PASSED.getValue())) {
             return UserContext.get().getUserUuid().equals(deployJobVo.getExecUser());
         }
         return false;

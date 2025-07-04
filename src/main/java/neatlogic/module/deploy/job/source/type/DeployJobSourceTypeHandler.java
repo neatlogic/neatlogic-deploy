@@ -33,26 +33,30 @@ import neatlogic.framework.autoexec.exception.AutoexecJobNotFoundException;
 import neatlogic.framework.autoexec.exception.AutoexecJobPhaseNotFoundException;
 import neatlogic.framework.autoexec.job.source.type.AutoexecJobSourceTypeHandlerBase;
 import neatlogic.framework.autoexec.util.AutoexecUtil;
+import neatlogic.framework.cmdb.crossover.IAppSystemMapper;
 import neatlogic.framework.cmdb.crossover.ICiEntityCrossoverMapper;
 import neatlogic.framework.cmdb.crossover.IResourceCrossoverMapper;
 import neatlogic.framework.cmdb.dto.cientity.CiEntityVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.ResourceVo;
+import neatlogic.framework.cmdb.dto.resourcecenter.entity.AppSystemVo;
 import neatlogic.framework.cmdb.exception.cientity.CiEntityNotFoundException;
 import neatlogic.framework.cmdb.exception.resourcecenter.AppEnvNotFoundException;
+import neatlogic.framework.cmdb.exception.resourcecenter.AppSystemNotFoundException;
 import neatlogic.framework.common.constvalue.systemuser.SystemUser;
 import neatlogic.framework.crossover.CrossoverServiceFactory;
 import neatlogic.framework.dao.mapper.runner.RunnerMapper;
 import neatlogic.framework.deploy.auth.BATCHDEPLOY_MODIFY;
 import neatlogic.framework.deploy.auth.DEPLOY_MODIFY;
 import neatlogic.framework.deploy.auth.core.DeployAppAuthChecker;
-import neatlogic.framework.deploy.constvalue.*;
 import neatlogic.framework.deploy.constvalue.JobSource;
 import neatlogic.framework.deploy.constvalue.JobSourceType;
+import neatlogic.framework.deploy.constvalue.*;
 import neatlogic.framework.deploy.dto.app.*;
 import neatlogic.framework.deploy.dto.instance.DeployInstanceVersionVo;
 import neatlogic.framework.deploy.dto.job.DeployJobContentVo;
 import neatlogic.framework.deploy.dto.job.DeployJobVo;
 import neatlogic.framework.deploy.dto.pipeline.PipelineJobTemplateVo;
+import neatlogic.framework.deploy.dto.pipeline.PipelineVo;
 import neatlogic.framework.deploy.dto.sql.DeploySqlJobPhaseVo;
 import neatlogic.framework.deploy.dto.sql.DeploySqlNodeDetailVo;
 import neatlogic.framework.deploy.dto.version.DeployVersionBuildNoVo;
@@ -116,6 +120,9 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
 
     @Resource
     DeployBlueGreenMapper deployBlueGreenMapper;
+
+    @Resource
+    DeployPipelineMapper deployPipelineMapper;
 
     @Override
     public String getName() {
@@ -553,8 +560,8 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
     }
 
     @Override
-    public List<String> getPhaseSqlStatusList(AutoexecJobPhaseVo jobPhaseVo,Long runnerMapId, List<String> needCountStatusList) {
-        return deploySqlMapper.getDeployJobSqlStatusList(jobPhaseVo.getJobId(), jobPhaseVo.getName(),runnerMapId, needCountStatusList);
+    public List<String> getPhaseSqlStatusList(AutoexecJobPhaseVo jobPhaseVo, Long runnerMapId, List<String> needCountStatusList) {
+        return deploySqlMapper.getDeployJobSqlStatusList(jobPhaseVo.getJobId(), jobPhaseVo.getName(), runnerMapId, needCountStatusList);
     }
 
     @Override
@@ -603,7 +610,8 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
 
     @Override
     public void myExecuteAuthCheck(AutoexecJobVo jobVo) {
-        if (AuthActionChecker.checkByUserUuid(UserContext.get().getUserUuid(true), BATCHDEPLOY_MODIFY.class.getSimpleName()) || Objects.equals(UserContext.get().getUserUuid(), SystemUser.SYSTEM.getUserUuid())) {
+        //包含BATCHJOB_MODIFY 或 系统用户 则拥有所有应用的执行权限
+        if (Boolean.TRUE.equals(AuthActionChecker.checkByUserUuid(UserContext.get().getUserUuid(true), BATCHDEPLOY_MODIFY.class.getSimpleName())) || Objects.equals(UserContext.get().getUserUuid(), SystemUser.SYSTEM.getUserUuid())) {
             return;
         }
         DeployJobVo deployJobVo;
@@ -616,10 +624,41 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
             }
             deployJobVo = deployJobTmp;
         }
-        //包含BATCHJOB_MODIFY 则拥有所有应用的执行权限
-        if (!AuthActionChecker.checkByUserUuid(UserContext.get().getUserUuid(true), BATCHDEPLOY_MODIFY.class.getSimpleName()) && !Objects.equals(UserContext.get().getUserUuid(), SystemUser.SYSTEM.getUserUuid())) {
-            Set<String> authSet = DeployAppAuthChecker.builder(deployJobVo.getAppSystemId()).addEnvAction(deployJobVo.getEnvId()).addScenarioAction(deployJobVo.getScenarioId()).check();
-            if (!authSet.containsAll(Arrays.asList(deployJobVo.getEnvId().toString(), deployJobVo.getScenarioId().toString()))) {
+        //如果作业来源于批量发布则应该判断是否有对应超级流水线的执行权限
+        if (JobSource.isBatch(jobVo.getSource()) && jobVo.getParentId() != null) {
+            AutoexecJobVo parentJob = autoexecJobMapper.getJobInfoWithInvoke(jobVo.getParentId());
+            if (parentJob != null) {
+                PipelineVo pipelineVo = deployPipelineMapper.getPipelineById(parentJob.getInvokeId());
+                if (pipelineVo != null) {
+                    List<Long> pipelineIdList = deployPipelineMapper.checkHasAuthPipelineIdList(Collections.singletonList(pipelineVo.getId()), UserContext.get().getUserUuid(true));
+                    //“应用流水线” 需要 应用配置中的“流水线权限”或对应超级流水线里面的授权
+                    if (Objects.equals(pipelineVo.getType(), PipelineType.APPSYSTEM.getValue())) {
+                        IAppSystemMapper appSystemMapper = CrossoverServiceFactory.getApi(IAppSystemMapper.class);
+                        AppSystemVo appSystemVo = appSystemMapper.getAppSystemById(pipelineVo.getAppSystemId());
+                        if (appSystemVo == null) {
+                            throw new AppSystemNotFoundException(pipelineVo.getAppSystemId());
+                        }
+                        if (!pipelineIdList.contains(pipelineVo.getId())) {
+                            Set<String> actionSet = DeployAppAuthChecker.builder(pipelineVo.getAppSystemId())
+                                    .addOperationAction(DeployAppConfigAction.PIPELINE.getValue())
+                                    .check();
+                            if (!actionSet.contains(DeployAppConfigAction.PIPELINE.getValue())) {
+                                throw new DeployAppPipelineAuthException(appSystemVo, pipelineVo);
+                            }
+                        }
+                        //“全局流水线” 需要 对应超级流水线里面的授权
+                    } else if (Objects.equals(pipelineVo.getType(), PipelineType.GLOBAL.getValue()) && !pipelineIdList.contains(pipelineVo.getId())) {
+                        throw new DeployAppPipelineAuthException(pipelineVo);
+                    }
+                }
+            }
+        } else {
+            Set<String> authSet = DeployAppAuthChecker.builder(deployJobVo.getAppSystemId())
+                    .addEnvAction(deployJobVo.getEnvId())
+                    .addScenarioAction(deployJobVo.getScenarioId())
+                    .addOperationAction(DeployAppConfigAction.EXECUTE.getValue())
+                    .check();
+            if (!authSet.containsAll(Arrays.asList(deployJobVo.getEnvId().toString(), deployJobVo.getScenarioId().toString(), DeployAppConfigAction.EXECUTE.getValue()))) {
                 throw new DeployJobCannotExecuteException(deployJobVo);
             }
         }
@@ -634,14 +673,14 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
     public void getJobActionAuth(AutoexecJobVo jobVo) {
         boolean isHasAuth = false;
         //包含BATCHJOB_MODIFY 则拥有所有应用的执行权限
-        if (AuthActionChecker.checkByUserUuid(UserContext.get().getUserUuid(true), BATCHDEPLOY_MODIFY.class.getSimpleName())) {
+        if (Boolean.TRUE.equals(AuthActionChecker.checkByUserUuid(UserContext.get().getUserUuid(true), BATCHDEPLOY_MODIFY.class.getSimpleName()))) {
             isHasAuth = true;
         } else {
             if (!Objects.equals(jobVo.getSource(), JobSource.BATCHDEPLOY.getValue())) {
                 DeployJobVo deployJobVo = deployJobMapper.getDeployJobByJobId(jobVo.getId());
                 if (deployJobVo != null) {
-                    Set<String> authSet = DeployAppAuthChecker.builder(deployJobVo.getAppSystemId()).addEnvAction(deployJobVo.getEnvId()).addScenarioAction(deployJobVo.getScenarioId()).check();
-                    if (authSet.containsAll(Arrays.asList(deployJobVo.getEnvId().toString(), deployJobVo.getScenarioId().toString()))) {
+                    Set<String> authSet = DeployAppAuthChecker.builder(deployJobVo.getAppSystemId()).addEnvAction(deployJobVo.getEnvId()).addScenarioAction(deployJobVo.getScenarioId()).addOperationAction(DeployAppConfigAction.EXECUTE.getValue()).check();
+                    if (authSet.containsAll(Arrays.asList(deployJobVo.getEnvId().toString(), deployJobVo.getScenarioId().toString(), DeployAppConfigAction.EXECUTE.getValue()))) {
                         isHasAuth = true;
                     }
                 }
@@ -884,5 +923,14 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
     @Override
     public void handleDeleteJobPhaseNodeEvent(Long jobPhaseId, Long updateTag) {
         //deployBlueGreenMapper.deleteJobPhaseNodeBlueGreenByJobPhaseIdAndUpdateTag(jobPhaseId, updateTag);
+    }
+
+    @Override
+    public void autoexecTakeOver(AutoexecJobVo jobVo) {
+        //如果是批量作业则需要自动接管作业
+        if(JobSource.isBatch(jobVo.getSource())) {
+            autoexecJobMapper.updateJobExecUser(jobVo.getId(), UserContext.get().getUserUuid(true));
+            jobVo.setExecUser(UserContext.get().getUserUuid(true));
+        }
     }
 }
