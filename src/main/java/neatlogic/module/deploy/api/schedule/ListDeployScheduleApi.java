@@ -15,6 +15,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 
 package neatlogic.module.deploy.api.schedule;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.asynchronization.threadlocal.UserContext;
 import neatlogic.framework.auth.core.AuthAction;
@@ -25,8 +26,8 @@ import neatlogic.framework.cmdb.dto.resourcecenter.entity.AppSystemVo;
 import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.common.dto.BasePageVo;
 import neatlogic.framework.crossover.CrossoverServiceFactory;
-import neatlogic.framework.deploy.auth.DEPLOY_BASE;
 import neatlogic.framework.deploy.auth.DEPLOY_MODIFY;
+import neatlogic.framework.deploy.auth.DEPLOY_SCHEDULE_MODIFY;
 import neatlogic.framework.deploy.auth.PIPELINE_MODIFY;
 import neatlogic.framework.deploy.auth.core.DeployAppAuthChecker;
 import neatlogic.framework.deploy.constvalue.DeployAppConfigAction;
@@ -38,11 +39,10 @@ import neatlogic.framework.deploy.dto.schedule.DeployScheduleVo;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
-import neatlogic.framework.scheduler.core.SchedulerManager;
-import neatlogic.framework.scheduler.dto.JobStatusVo;
 import neatlogic.framework.util.TableResultUtil;
 import neatlogic.module.deploy.dao.mapper.DeployPipelineMapper;
 import neatlogic.module.deploy.dao.mapper.DeployScheduleMapper;
+import neatlogic.module.deploy.schedule.plugin.DeployJobScheduleJob;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
@@ -52,7 +52,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
-@AuthAction(action = DEPLOY_BASE.class)
+@AuthAction(action = DEPLOY_SCHEDULE_MODIFY.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
 public class ListDeployScheduleApi extends PrivateApiComponentBase {
 
@@ -91,13 +91,16 @@ public class ListDeployScheduleApi extends PrivateApiComponentBase {
     @Description(desc = "查询定时作业列表")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
-        DeployScheduleSearchVo searchVo = JSONObject.toJavaObject(paramObj, DeployScheduleSearchVo.class);
-        if (AuthActionChecker.check(DEPLOY_MODIFY.class)) {
+        DeployScheduleSearchVo searchVo = JSON.toJavaObject(paramObj, DeployScheduleSearchVo.class);
+        if (Boolean.TRUE.equals(AuthActionChecker.check(DEPLOY_MODIFY.class))) {
             searchVo.setIsHasAllAuthority(1);
         } else {
             searchVo.setIsHasAllAuthority(0);
             List<String> authorityActionList = new ArrayList<>();
             authorityActionList.add(DeployAppConfigAction.VIEW.getValue());
+            authorityActionList.add(DeployAppConfigAction.AUTH.getValue());
+            authorityActionList.add(DeployAppConfigAction.EDIT.getValue());
+            authorityActionList.add(DeployAppConfigAction.EXECUTE.getValue());
             searchVo.setAuthorityActionList(authorityActionList);
             searchVo.setAuthUuidList(UserContext.get().getUuidList());
         }
@@ -151,12 +154,13 @@ public class ListDeployScheduleApi extends PrivateApiComponentBase {
                         Set<String> actionSet = DeployAppAuthChecker.builder(appSystemId)
                                 .addEnvAction(config.getEnvId())
                                 .addScenarioAction(config.getScenarioId())
+                                .addOperationAction(DeployAppConfigAction.EXECUTE.getValue())
                                 .check();
                         if (actionSet.contains(config.getEnvId().toString()) && actionSet.contains(config.getScenarioId().toString())) {
                             scheduleVo.setEditable(1);
                             scheduleVo.setDeletable(1);
                         }
-                    } else if(type.equals(ScheduleType.PIPELINE.getValue())) {
+                    } else if (type.equals(ScheduleType.PIPELINE.getValue())) {
                         String name = deployPipelineMapper.getPipelineNameById(scheduleVo.getPipelineId());
                         if (StringUtils.isNotBlank(name)) {
                             scheduleVo.setPipelineName(name);
@@ -191,6 +195,8 @@ public class ListDeployScheduleApi extends PrivateApiComponentBase {
                 }
             }
         }
-        return TableResultUtil.getResult(tbodyList, searchVo);
+        JSONObject resultObj = TableResultUtil.getResult(tbodyList, searchVo);
+        resultObj.put("handler", DeployJobScheduleJob.class.getName());
+        return resultObj;
     }
 }

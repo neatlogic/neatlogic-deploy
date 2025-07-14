@@ -19,8 +19,9 @@ import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.asynchronization.threadlocal.UserContext;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.auth.core.AuthActionChecker;
+import neatlogic.framework.autoexec.constvalue.AutoexecParallelPolicy;
 import neatlogic.framework.common.constvalue.ApiParamType;
-import neatlogic.framework.deploy.auth.DEPLOY_BASE;
+import neatlogic.framework.deploy.auth.DEPLOY_SCHEDULE_MODIFY;
 import neatlogic.framework.deploy.auth.PIPELINE_MODIFY;
 import neatlogic.framework.deploy.auth.core.DeployAppAuthChecker;
 import neatlogic.framework.deploy.constvalue.DeployAppConfigAction;
@@ -35,6 +36,7 @@ import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.module.deploy.dao.mapper.DeployPipelineMapper;
 import neatlogic.module.deploy.dao.mapper.DeployScheduleMapper;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -43,7 +45,7 @@ import java.util.List;
 import java.util.Set;
 
 @Service
-@AuthAction(action = DEPLOY_BASE.class)
+@AuthAction(action = DEPLOY_SCHEDULE_MODIFY.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
 public class GetDeployScheduleApi extends PrivateApiComponentBase {
 
@@ -94,7 +96,12 @@ public class GetDeployScheduleApi extends PrivateApiComponentBase {
                 scheduleVo.setEditable(1);
                 scheduleVo.setDeletable(1);
             }
-        } else if(type.equals(ScheduleType.PIPELINE.getValue())) {
+            //兼容老数据
+            if (scheduleVo.getConfig() != null && scheduleVo.getConfig().getRoundCount() != null
+                    && StringUtils.isBlank(scheduleVo.getConfig().getParallelPolicy())) {
+                scheduleVo.getConfig().setParallelPolicy(AutoexecParallelPolicy.ROUND_COUNT.getValue());
+            }
+        } else if (type.equals(ScheduleType.PIPELINE.getValue())) {
             String pipelineType = scheduleVo.getPipelineType();
             if (pipelineType.equals(PipelineType.APPSYSTEM.getValue())) {
                 Set<String> actionSet = DeployAppAuthChecker.builder(scheduleVo.getAppSystemId())

@@ -18,6 +18,7 @@ package neatlogic.module.deploy.service;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.deploy.dto.job.DeployJobModuleVo;
 import neatlogic.framework.deploy.dto.job.DeployJobVo;
+import neatlogic.framework.deploy.dto.schedule.DeployScheduleVo;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -94,5 +95,9 @@ public interface DeployJobService {
      */
     Long getOperationId(JSONObject jsonObj);
 
-
+    /**
+     * 校验发布定时作业权限
+     * @param scheduleVo 发布定时作业
+     */
+    void scheduleAuthCheck(DeployScheduleVo scheduleVo);
 }

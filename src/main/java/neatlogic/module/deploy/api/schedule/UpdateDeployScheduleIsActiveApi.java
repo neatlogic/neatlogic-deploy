@@ -19,7 +19,7 @@ import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.asynchronization.threadlocal.TenantContext;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.common.constvalue.ApiParamType;
-import neatlogic.framework.deploy.auth.DEPLOY_BASE;
+import neatlogic.framework.deploy.auth.DEPLOY_SCHEDULE_MODIFY;
 import neatlogic.framework.deploy.dto.schedule.DeployScheduleVo;
 import neatlogic.framework.deploy.exception.DeployScheduleNotFoundException;
 import neatlogic.framework.restful.annotation.*;
@@ -31,13 +31,14 @@ import neatlogic.framework.scheduler.dto.JobObject;
 import neatlogic.framework.scheduler.exception.ScheduleHandlerNotFoundException;
 import neatlogic.module.deploy.dao.mapper.DeployScheduleMapper;
 import neatlogic.module.deploy.schedule.plugin.DeployJobScheduleJob;
+import neatlogic.module.deploy.service.DeployJobService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 
 @Service
-@AuthAction(action = DEPLOY_BASE.class)
+@AuthAction(action = DEPLOY_SCHEDULE_MODIFY.class)
 @OperationType(type = OperationTypeEnum.UPDATE)
 @Transactional
 public class UpdateDeployScheduleIsActiveApi extends PrivateApiComponentBase {
@@ -46,6 +47,8 @@ public class UpdateDeployScheduleIsActiveApi extends PrivateApiComponentBase {
     private DeployScheduleMapper deployScheduleMapper;
     @Resource
     private SchedulerManager schedulerManager;
+    @Resource
+    private DeployJobService deployJobService;
 
     @Override
     public String getToken() {
@@ -74,6 +77,7 @@ public class UpdateDeployScheduleIsActiveApi extends PrivateApiComponentBase {
         if (scheduleVo == null) {
             throw new DeployScheduleNotFoundException(id);
         }
+        deployJobService.scheduleAuthCheck(scheduleVo);
         deployScheduleMapper.updateScheduleIsActiveById(id);
         scheduleVo = deployScheduleMapper.getScheduleById(id);
         IJob jobHandler = SchedulerManager.getHandler(DeployJobScheduleJob.class.getName());
