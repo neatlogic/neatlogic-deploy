@@ -10,7 +10,6 @@ import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.module.deploy.dao.mapper.DeployAppConfigMapper;
-import neatlogic.module.deploy.util.DeployPipelineConfigManager;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 
@@ -80,13 +79,7 @@ public class TreeDeployAppConfigAppSystemAppModuleEnvApi extends PrivateApiCompo
 //                env.setOverride(resultObj.getInteger("override"));
             }
         }
-        List<DeployAppConfigVo> deployAppConfigList = DeployPipelineConfigManager.init(appSystemId)
-                .withAppModuleIdList(appModuleIdList)
-                .withEnvIdList(envIdList)
-                .withIsHasBuildOrDeployTypeTool(false)
-                .withIsUpdateConfig(false)
-                .withIsUpdateProfile(false)
-                .getDeployAppConfigList();
+        List<DeployAppConfigVo> deployAppConfigList = deployAppConfigMapper.getAppConfigListByAppSystemId(appSystemId);
         for (DeployAppModuleVo deployAppModuleVo : deployAppModuleList) {
             DeployPipelineConfigVo pipelineConfigVo = getDeployPipelineConfigVo(deployAppConfigList, appSystemId, deployAppModuleVo.getId(), 0L);
             if (pipelineConfigVo != null) {
