@@ -55,12 +55,7 @@ public class TreeDeployAppConfigAppSystemAppModuleEnvApi extends PrivateApiCompo
         }
         List<DeployAppModuleVo> deployAppModuleList = deployAppConfigMapper.getAppModuleListBySystemId(appSystemId);
         deployAppSystemVo.setAppModuleList(deployAppModuleList);
-//        List<Long> appModuleIdList = new ArrayList<>();
-//        List<Long> envIdList = new ArrayList<>();
         for (DeployAppModuleVo deployAppModuleVo : deployAppModuleList) {
-//            JSONObject resultObj = parsePipeline(appSystemId, deployAppModuleVo.getId());
-//            deployAppModuleVo.setIsActive(resultObj.getInteger("isActive"));
-//            deployAppModuleVo.setOverride(resultObj.getInteger("override"));
             //查找发布的环境
             List<DeployAppEnvironmentVo> deployEnvList = deployAppConfigMapper.getDeployAppEnvListByAppSystemIdAndModuleId(appSystemId, deployAppModuleVo.getId());
             //查找cmdb的环境
@@ -79,16 +74,7 @@ public class TreeDeployAppConfigAppSystemAppModuleEnvApi extends PrivateApiCompo
                     envIdSet.add(env.getId());
                 }
             }
-//            envList.addAll(deployEnvList);
-//            envList.addAll(cmdbEnvList);
             deployAppModuleVo.setEnvList(envList);
-//            appModuleIdList.add(deployAppModuleVo.getId());
-//            for (DeployAppEnvironmentVo env : envList) {
-//                envIdList.add(env.getId());
-////                resultObj = parsePipeline(appSystemId, deployAppModuleVo.getId(), env.getId());
-////                env.setIsActive(resultObj.getInteger("isActive"));
-////                env.setOverride(resultObj.getInteger("override"));
-//            }
         }
         List<DeployAppConfigVo> deployAppConfigList = deployAppConfigMapper.getAppConfigListByAppSystemId(appSystemId);
         for (DeployAppModuleVo deployAppModuleVo : deployAppModuleList) {
