@@ -265,14 +265,14 @@ public class DeployPipelineConfigManager {
                     continue;
                 }
                 for (Long envId : envIdList) {
-//                    boolean flag = false;
-//                    for (DeployAppConfigVo deployAppConfigVo : deployAppConfigList) {
-//                        if (Objects.equals(deployAppConfigVo.getAppModuleId(), appModuleId) && Objects.equals(deployAppConfigVo.getEnvId(), envId)) {
-//                            flag = true;
-//                            break;
-//                        }
-//                    }
-//                    if (flag) {
+                    boolean flag = false;
+                    for (DeployAppConfigVo deployAppConfigVo : deployAppConfigList) {
+                        if (Objects.equals(deployAppConfigVo.getAppModuleId(), appModuleId) && Objects.equals(deployAppConfigVo.getEnvId(), envId)) {
+                            flag = true;
+                            break;
+                        }
+                    }
+                    if (flag) {
                         DeployPipelineConfigVo deployPipelineConfigVo = getMergeDeployPipelineConfig(deployAppConfigList, appSystemId, appModuleId, envId);
                         DeployAppConfigVo deployAppConfigVo = new DeployAppConfigVo();
                         deployAppConfigVo.setAppSystemId(appSystemId);
@@ -280,7 +280,7 @@ public class DeployPipelineConfigManager {
                         deployAppConfigVo.setEnvId(envId);
                         deployAppConfigVo.setConfig(deployPipelineConfigVo);
                         resultList.add(deployAppConfigVo);
-//                    }
+                    }
                 }
             }
 
