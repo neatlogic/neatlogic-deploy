@@ -1,9 +1,14 @@
 package neatlogic.module.deploy.api.appconfig.env;
 
+import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
+import neatlogic.framework.cmdb.crossover.IAttrCrossoverMapper;
 import neatlogic.framework.cmdb.crossover.ICiEntityCrossoverService;
+import neatlogic.framework.cmdb.crossover.IResourceEntityCrossoverMapper;
+import neatlogic.framework.cmdb.dto.ci.AttrVo;
 import neatlogic.framework.cmdb.dto.cientity.AttrEntityVo;
 import neatlogic.framework.cmdb.dto.cientity.CiEntityVo;
+import neatlogic.framework.cmdb.dto.resourcecenter.config.ResourceEntityVo;
 import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.crossover.CrossoverServiceFactory;
 import neatlogic.framework.deploy.auth.DEPLOY_BASE;
@@ -12,7 +17,6 @@ import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.module.deploy.dao.mapper.DeployAppConfigMapper;
-import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -75,10 +79,29 @@ public class GetDeployAppConfigEnvDBConfigForAutoexecApi extends PrivateApiCompo
         }
         Set<Long> dbResourceIdSet = allDBConfigVoList.stream().map(DeployAppConfigEnvDBConfigVo::getDbResourceId).collect(Collectors.toSet());
         //获取db属性
-        ICiEntityCrossoverService ciEntityCrossoverService = CrossoverServiceFactory.getApi(ICiEntityCrossoverService.class);
-        CiEntityVo paramCiEntityVo = new CiEntityVo();
-        paramCiEntityVo.setIdList(new ArrayList<>(dbResourceIdSet));
-        List<CiEntityVo> allDBResourceInfoList = ciEntityCrossoverService.getCiEntityByIdList(paramCiEntityVo);
+        List<CiEntityVo> allDBResourceInfoList = null;
+        IResourceEntityCrossoverMapper resourceEntityCrossoverMapper = CrossoverServiceFactory.getApi(IResourceEntityCrossoverMapper.class);
+        ResourceEntityVo resourceEntityVo = resourceEntityCrossoverMapper.getResourceEntityByName("scence_database_ip_port_env_appmodule");
+        if (resourceEntityVo != null) {
+            Long ciId = resourceEntityVo.getCiId();
+            if (ciId != null) {
+                CiEntityVo paramCiEntityVo = new CiEntityVo();
+                List<Long> attrIdList = new ArrayList<>();
+                List<String> attrNameList = Arrays.asList("ip", "name", "service_addr", "port");
+                IAttrCrossoverMapper attrCrossoverMapper = CrossoverServiceFactory.getApi(IAttrCrossoverMapper.class);
+                List<AttrVo> attrList = attrCrossoverMapper.getAttrByCiId(ciId);
+                for (AttrVo attrVo : attrList) {
+                    if (attrNameList.contains(attrVo.getName())) {
+                        attrIdList.add(attrVo.getId());
+                    }
+                }
+                paramCiEntityVo.setAttrIdList(attrIdList);
+                paramCiEntityVo.setCiId(ciId);
+                ICiEntityCrossoverService ciEntityCrossoverService = CrossoverServiceFactory.getApi(ICiEntityCrossoverService.class);
+                paramCiEntityVo.setIdList(new ArrayList<>(dbResourceIdSet));
+                allDBResourceInfoList = ciEntityCrossoverService.searchCiEntity(paramCiEntityVo);
+            }
+        }
         if (CollectionUtils.isEmpty(allDBResourceInfoList)) {
             return null;
         }
@@ -102,24 +125,17 @@ public class GetDeployAppConfigEnvDBConfigForAutoexecApi extends PrivateApiCompo
             for (AttrEntityVo attrEntityVo : attrEntityList) {
                 if (StringUtils.equals("ip", attrEntityVo.getAttrName())) {
                     nodeObj.put("host", attrEntityVo.getValueList().get(0));
-                    continue;
-                }
-                if (StringUtils.equals("name", attrEntityVo.getAttrName())) {
+                } else if (StringUtils.equals("name", attrEntityVo.getAttrName())) {
                     nodeObj.put("name", attrEntityVo.getValueList().get(0));
-                    continue;
-                }
-                if (StringUtils.equals("service_addr", attrEntityVo.getAttrName())) {
+                } else if (StringUtils.equals("service_addr", attrEntityVo.getAttrName())) {
                     nodeObj.put("serviceAddr", attrEntityVo.getValueList().get(0));
-                    continue;
-                }
-                if (StringUtils.equals("port", attrEntityVo.getAttrName())) {
+                } else if (StringUtils.equals("port", attrEntityVo.getAttrName())) {
                     nodeObj.put("port", attrEntityVo.getValueList().get(0));
-                    continue;
                 }
-                dbResourceObj.put("node", nodeObj);
-                dbResourceObj.put("args", dbConfigVo.getConfig());
-                returnDBUserObject.put(dbConfigVo.getDbSchema(), dbResourceObj);
             }
+            dbResourceObj.put("node", nodeObj);
+            dbResourceObj.put("args", dbConfigVo.getConfig());
+            returnDBUserObject.put(dbConfigVo.getDbSchema(), dbResourceObj);
         }
         return returnDBUserObject;
     }
