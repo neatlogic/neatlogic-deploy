@@ -96,7 +96,6 @@ public class GetDeployAppConfigEnvDBConfigForAutoexecApi extends PrivateApiCompo
                     }
                 }
                 paramCiEntityVo.setAttrIdList(attrIdList);
-                paramCiEntityVo.setRelIdList(new ArrayList<>());
                 paramCiEntityVo.setCiId(ciId);
                 ICiEntityCrossoverService ciEntityCrossoverService = CrossoverServiceFactory.getApi(ICiEntityCrossoverService.class);
                 paramCiEntityVo.setIdList(new ArrayList<>(dbResourceIdSet));
