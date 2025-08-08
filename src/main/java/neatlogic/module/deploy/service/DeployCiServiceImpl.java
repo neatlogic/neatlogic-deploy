@@ -185,7 +185,7 @@ public class DeployCiServiceImpl implements DeployCiService {
             throw new DeployCiJobNameLostException();
         }
         DeployJobVo deployJobVo = getBatchDeployJobVo(ci, deployVersion != null ? deployVersion.getId() : null);
-        deployBatchJobService.creatBatchJob(deployJobVo, pipeline, false);
+        deployBatchJobService.creatBatchJob(deployJobVo, pipeline);
 
         //补充定时执行逻辑
         if (Objects.equals(deployJobVo.getTriggerType(), JobTriggerType.AUTO.getValue())) {

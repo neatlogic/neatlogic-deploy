@@ -22,7 +22,7 @@ import neatlogic.framework.deploy.dto.pipeline.PipelineVo;
 
 public interface DeployBatchJobService {
 
-    void creatBatchJob(DeployJobVo deployJobVo, PipelineVo pipelineVo, boolean isFire) throws Exception;
+    void creatBatchJob(DeployJobVo deployJobVo, PipelineVo pipelineVo) throws Exception;
     /**
      * 执行批量作业
      *

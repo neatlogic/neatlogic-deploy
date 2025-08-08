@@ -74,7 +74,7 @@ public class DeployBatchJobServiceImpl implements DeployBatchJobService, IDeploy
 
     @Transactional
     @Override
-    public void creatBatchJob(DeployJobVo deployJobVo, PipelineVo pipelineVo, boolean isFire) throws Exception {
+    public void creatBatchJob(DeployJobVo deployJobVo, PipelineVo pipelineVo) throws Exception {
         // parentId为-1时，代表该作业是父作业
         deployJobVo.setParentId(-1L);
         deployJobMapper.insertAutoExecJob(deployJobVo);
@@ -156,11 +156,6 @@ public class DeployBatchJobServiceImpl implements DeployBatchJobService, IDeploy
         }
 
         deployJobMapper.insertJobInvoke(deployJobVo.getId(), deployJobVo.getInvokeId(), deployJobVo.getSource(), deployJobVo.getRouteId());
-
-        if (isFire) {
-            deployBatchJobService.fireBatch(deployJobVo.getId(), JobAction.RESET_REFIRE.getValue(), JobAction.RESET_REFIRE.getValue());
-        }
-
     }
 
     private DeploySystemModuleVersionVo getVersionId(List<DeploySystemModuleVersionVo> appSystemModuleVersionList, PipelineJobTemplateVo jobTemplateVo) {
