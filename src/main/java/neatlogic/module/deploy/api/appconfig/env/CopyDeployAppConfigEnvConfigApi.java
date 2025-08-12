@@ -33,6 +33,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -120,6 +121,9 @@ public class CopyDeployAppConfigEnvConfigApi extends PrivateApiComponentBase {
         deployAppConfigEnvAttrVo.setAppSystemId(appSystemId);
         deployAppConfigEnvAttrVo.setAppModuleId(appModuleId);
         deployAppConfigEnvAttrVo.setEnvId(fromEnvId);
+        Long nowDate = System.currentTimeMillis();
+        deployAppConfigEnvAttrVo.setUpdateTime(nowDate);
+        deployAppConfigEnvAttrVo.setLcd(new Date());
         List<DeployAppEnvAutoConfigKeyValueVo> appEnvAttrList = deployAppConfigMapper.getAppEnvAttrList(deployAppConfigEnvAttrVo);
         if (CollectionUtils.isNotEmpty(appEnvAttrList)) {
             deployAppConfigEnvAttrVo.setKeyValueList(appEnvAttrList);

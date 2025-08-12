@@ -10,14 +10,12 @@ import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.module.deploy.dao.mapper.DeployAppConfigMapper;
-import neatlogic.module.deploy.util.DeployPipelineConfigManager;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @AuthAction(action = DEPLOY_BASE.class)
@@ -58,46 +56,40 @@ public class TreeDeployAppConfigAppSystemAppModuleEnvApi extends PrivateApiCompo
         }
         List<DeployAppModuleVo> deployAppModuleList = deployAppConfigMapper.getAppModuleListBySystemId(appSystemId);
         deployAppSystemVo.setAppModuleList(deployAppModuleList);
-        List<Long> appModuleIdList = new ArrayList<>();
-        List<Long> envIdList = new ArrayList<>();
         for (DeployAppModuleVo deployAppModuleVo : deployAppModuleList) {
-//            JSONObject resultObj = parsePipeline(appSystemId, deployAppModuleVo.getId());
-//            deployAppModuleVo.setIsActive(resultObj.getInteger("isActive"));
-//            deployAppModuleVo.setOverride(resultObj.getInteger("override"));
             //查找发布的环境
             List<DeployAppEnvironmentVo> deployEnvList = deployAppConfigMapper.getDeployAppEnvListByAppSystemIdAndModuleId(appSystemId, deployAppModuleVo.getId());
             //查找cmdb的环境
             List<DeployAppEnvironmentVo> cmdbEnvList = deployAppConfigMapper.getCmdbEnvListByAppSystemIdAndModuleId(appSystemId, deployAppModuleVo.getId());
+            Set<Long> envIdSet = new HashSet<>();
             List<DeployAppEnvironmentVo> envList = new ArrayList<>();
-            envList.addAll(deployEnvList);
-            envList.addAll(cmdbEnvList);
+            for (DeployAppEnvironmentVo env : deployEnvList) {
+                if (!envIdSet.contains(env.getId())) {
+                    envList.add(env);
+                    envIdSet.add(env.getId());
+                }
+            }
+            for (DeployAppEnvironmentVo env : cmdbEnvList) {
+                if (!envIdSet.contains(env.getId())) {
+                    envList.add(env);
+                    envIdSet.add(env.getId());
+                }
+            }
             deployAppModuleVo.setEnvList(envList);
-            appModuleIdList.add(deployAppModuleVo.getId());
-            for (DeployAppEnvironmentVo env : envList) {
-                envIdList.add(env.getId());
-//                resultObj = parsePipeline(appSystemId, deployAppModuleVo.getId(), env.getId());
-//                env.setIsActive(resultObj.getInteger("isActive"));
-//                env.setOverride(resultObj.getInteger("override"));
-            }
         }
-        List<DeployAppConfigVo> deployAppConfigList = DeployPipelineConfigManager.init(appSystemId)
-                .withAppModuleIdList(appModuleIdList)
-                .withEnvIdList(envIdList)
-                .withIsHasBuildOrDeployTypeTool(false)
-                .withIsUpdateConfig(false)
-                .withIsUpdateProfile(false)
-                .getDeployAppConfigList();
-        for (DeployAppModuleVo deployAppModuleVo : deployAppModuleList) {
-            DeployPipelineConfigVo pipelineConfigVo = getDeployPipelineConfigVo(deployAppConfigList, appSystemId, deployAppModuleVo.getId(), 0L);
-            if (pipelineConfigVo != null) {
-                JSONObject resultObj = parsePipeline(pipelineConfigVo);
-                deployAppModuleVo.setIsActive(resultObj.getInteger("isActive"));
-                deployAppModuleVo.setOverride(resultObj.getInteger("override"));
-            }
-            for (DeployAppEnvironmentVo env : deployAppModuleVo.getEnvList()) {
-                pipelineConfigVo = getDeployPipelineConfigVo(deployAppConfigList, appSystemId, deployAppModuleVo.getId(), env.getId());
-                if (pipelineConfigVo != null) {
-                    JSONObject resultObj = parsePipeline(pipelineConfigVo);
+        List<DeployAppConfigVo> deployAppConfigList = deployAppConfigMapper.getAppConfigListByAppSystemId(appSystemId);
+        DeployPipelineConfigVo appPipelineConfigVo = getDeployPipelineConfigVo(deployAppConfigList, appSystemId, 0L, 0L);
+        if (appPipelineConfigVo != null) {
+            for (DeployAppModuleVo deployAppModuleVo : deployAppModuleList) {
+                {
+                    DeployPipelineConfigVo pipelineConfigVo = getDeployPipelineConfigVo(deployAppConfigList, appSystemId, deployAppModuleVo.getId(), 0L);
+                    JSONObject resultObj = parsePipeline(appPipelineConfigVo, pipelineConfigVo);
+                    deployAppModuleVo.setIsActive(resultObj.getInteger("isActive"));
+                    deployAppModuleVo.setOverride(resultObj.getInteger("override"));
+                }
+                for (DeployAppEnvironmentVo env : deployAppModuleVo.getEnvList()) {
+                    DeployPipelineConfigVo pipelineConfigVo = getDeployPipelineConfigVo(deployAppConfigList, appSystemId, deployAppModuleVo.getId(), env.getId());
+                    JSONObject resultObj = parsePipeline(appPipelineConfigVo, pipelineConfigVo);
                     env.setIsActive(resultObj.getInteger("isActive"));
                     env.setOverride(resultObj.getInteger("override"));
                 }
@@ -141,22 +133,38 @@ public class TreeDeployAppConfigAppSystemAppModuleEnvApi extends PrivateApiCompo
 //        return resultObj;
 //    }
 
-    private JSONObject parsePipeline(DeployPipelineConfigVo deployPipelineConfigVo) {
+    private JSONObject parsePipeline(DeployPipelineConfigVo appPipelineConfigVo, DeployPipelineConfigVo deployPipelineConfigVo) {
         JSONObject resultObj = new JSONObject();
-        Integer override = 0;
-        Integer isActive = 1;
-        List<DeployPipelinePhaseVo> combopPhaseList = deployPipelineConfigVo.getCombopPhaseList();
-        if (CollectionUtils.isNotEmpty(combopPhaseList)) {
-            for (DeployPipelinePhaseVo deployPipelinePhaseVo : combopPhaseList) {
-                if (Objects.equals(deployPipelinePhaseVo.getOverride(), 1)) {
-                    override = 1;
-                    break;
+        int override = 0;
+        int isActive = 1;
+        Set<Long> appCombopPhaseIdSet = new HashSet<>();
+        List<DeployPipelinePhaseVo> appCombopPhaseList = appPipelineConfigVo.getCombopPhaseList();
+        if (CollectionUtils.isNotEmpty(appCombopPhaseList)) {
+            appCombopPhaseIdSet = appCombopPhaseList.stream().map(DeployPipelinePhaseVo::getId).collect(Collectors.toSet());
+        }
+        if (deployPipelineConfigVo != null) {
+            List<DeployPipelinePhaseVo> combopPhaseList = deployPipelineConfigVo.getCombopPhaseList();
+            if (CollectionUtils.isNotEmpty(combopPhaseList)) {
+                for (DeployPipelinePhaseVo deployPipelinePhaseVo : combopPhaseList) {
+                    if (appCombopPhaseIdSet.contains(deployPipelinePhaseVo.getId()) && Objects.equals(deployPipelinePhaseVo.getOverride(), 1)) {
+                        override = 1;
+                        break;
+                    }
                 }
+//            for (DeployPipelinePhaseVo deployPipelinePhaseVo : combopPhaseList) {
+//                if (appCombopPhaseUuidSet.contains(deployPipelinePhaseVo.getUuid()) && !Objects.equals(deployPipelinePhaseVo.getIsActive(), 1)) {
+//                    isActive = 0;
+//                    break;
+//                }
+//            }
             }
-            for (DeployPipelinePhaseVo deployPipelinePhaseVo : combopPhaseList) {
-                if (!Objects.equals(deployPipelinePhaseVo.getIsActive(), 1)) {
-                    isActive = 0;
-                    break;
+            List<Long> disabledPhaseIdList = deployPipelineConfigVo.getDisabledPhaseIdList();
+            if (CollectionUtils.isNotEmpty(disabledPhaseIdList)) {
+                for (Long disabledPhaseId : disabledPhaseIdList) {
+                    if (appCombopPhaseIdSet.contains(disabledPhaseId)) {
+                        isActive = 0;
+                        break;
+                    }
                 }
             }
         }
@@ -173,20 +181,20 @@ public class TreeDeployAppConfigAppSystemAppModuleEnvApi extends PrivateApiCompo
                 return deployAppConfigVo.getConfig();
             }
         }
-        for (DeployAppConfigVo deployAppConfigVo : deployAppConfigList) {
-            if (Objects.equals(deployAppConfigVo.getAppSystemId(), appSystemId)
-                    && Objects.equals(deployAppConfigVo.getAppModuleId(), appModuleId)
-                    && Objects.equals(deployAppConfigVo.getEnvId(), 0L)) {
-                return deployAppConfigVo.getConfig();
-            }
-        }
-        for (DeployAppConfigVo deployAppConfigVo : deployAppConfigList) {
-            if (Objects.equals(deployAppConfigVo.getAppSystemId(), appSystemId)
-                    && Objects.equals(deployAppConfigVo.getAppModuleId(), 0L)
-                    && Objects.equals(deployAppConfigVo.getEnvId(), 0L)) {
-                return deployAppConfigVo.getConfig();
-            }
-        }
+//        for (DeployAppConfigVo deployAppConfigVo : deployAppConfigList) {
+//            if (Objects.equals(deployAppConfigVo.getAppSystemId(), appSystemId)
+//                    && Objects.equals(deployAppConfigVo.getAppModuleId(), appModuleId)
+//                    && Objects.equals(deployAppConfigVo.getEnvId(), 0L)) {
+//                return deployAppConfigVo.getConfig();
+//            }
+//        }
+//        for (DeployAppConfigVo deployAppConfigVo : deployAppConfigList) {
+//            if (Objects.equals(deployAppConfigVo.getAppSystemId(), appSystemId)
+//                    && Objects.equals(deployAppConfigVo.getAppModuleId(), 0L)
+//                    && Objects.equals(deployAppConfigVo.getEnvId(), 0L)) {
+//                return deployAppConfigVo.getConfig();
+//            }
+//        }
         return null;
     }
 }

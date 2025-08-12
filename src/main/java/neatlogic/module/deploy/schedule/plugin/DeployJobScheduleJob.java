@@ -17,6 +17,7 @@ package neatlogic.module.deploy.schedule.plugin;
 
 import neatlogic.framework.asynchronization.threadlocal.TenantContext;
 import neatlogic.framework.asynchronization.threadlocal.UserContext;
+import neatlogic.framework.autoexec.constvalue.JobAction;
 import neatlogic.framework.autoexec.constvalue.JobStatus;
 import neatlogic.framework.autoexec.constvalue.ReviewStatus;
 import neatlogic.framework.common.constvalue.systemuser.SystemUser;
@@ -160,7 +161,8 @@ public class DeployJobScheduleJob extends JobBase {
             DeployJobVo deployJobVo = convertDeployScheduleVoToDeployJobVo(scheduleVo);
             deployJobVo.setSource(JobSource.DEPLOY_SCHEDULE_PIPELINE.getValue());
             deployJobVo.setName("定时作业/" + pipelineVo.getName());
-            deployBatchJobService.creatBatchJob(deployJobVo, pipelineVo, true);
+            deployBatchJobService.creatBatchJob(deployJobVo, pipelineVo);
+            deployBatchJobService.fireBatch(deployJobVo.getId(), JobAction.RESET_REFIRE.getValue(), JobAction.RESET_REFIRE.getValue());
         }
     }
 

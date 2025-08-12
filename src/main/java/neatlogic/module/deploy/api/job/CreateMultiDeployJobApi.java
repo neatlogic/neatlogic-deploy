@@ -46,7 +46,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -59,7 +58,6 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  * @since 2022/6/29 11:20
  **/
 
-@Transactional
 @Service
 @AuthAction(action = DEPLOY_BASE.class)
 @OperationType(type = OperationTypeEnum.CREATE)
@@ -88,7 +86,7 @@ public class CreateMultiDeployJobApi extends PrivateApiComponentBase {
             @Param(name = "envId", type = ApiParamType.LONG, desc = "term.cmdb.envid"),
             @Param(name = "envName", type = ApiParamType.STRING, desc = "term.cmdb.envname", help = "如果入参也有envId，则会以envName为准"),
             @Param(name = "param", type = ApiParamType.JSONOBJECT, desc = "term.autoexec.executeparam"),
-            @Param(name = "roundCount", type = ApiParamType.LONG, isRequired = true, desc = "term.autoexec.roundcount"),
+            @Param(name = "roundCount", type = ApiParamType.LONG, desc = "term.autoexec.roundcount"),
             @Param(name = "executeConfig", type = ApiParamType.JSONOBJECT, desc = "term.autoexec.executeconfig"),
             @Param(name = "planStartTime", type = ApiParamType.LONG, desc = "common.planstarttime"),
             @Param(name = "triggerType", type = ApiParamType.ENUM, rule = "auto,manual", desc = "common.triggertype"),

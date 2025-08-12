@@ -74,7 +74,7 @@ public class DeployBatchJobServiceImpl implements DeployBatchJobService, IDeploy
 
     @Transactional
     @Override
-    public void creatBatchJob(DeployJobVo deployJobVo, PipelineVo pipelineVo, boolean isFire) throws Exception {
+    public void creatBatchJob(DeployJobVo deployJobVo, PipelineVo pipelineVo) throws Exception {
         // parentId为-1时，代表该作业是父作业
         deployJobVo.setParentId(-1L);
         deployJobMapper.insertAutoExecJob(deployJobVo);
@@ -155,12 +155,6 @@ public class DeployBatchJobServiceImpl implements DeployBatchJobService, IDeploy
                 }
             }
         }
-
-
-        if (isFire) {
-            deployBatchJobService.fireBatch(deployJobVo.getId(), JobAction.RESET_REFIRE.getValue(), JobAction.RESET_REFIRE.getValue());
-        }
-
     }
 
     private DeploySystemModuleVersionVo getVersionId(List<DeploySystemModuleVersionVo> appSystemModuleVersionList, PipelineJobTemplateVo jobTemplateVo) {
@@ -403,7 +397,7 @@ public class DeployBatchJobServiceImpl implements DeployBatchJobService, IDeploy
 //                groupStatus = nextGroupId == null ? groupStatus : JobPhaseStatus.WAIT_INPUT.getValue();
 //            }
 //            if (groupStatus.equalsIgnoreCase(JobStatus.FAILED.getValue())) {
-            deployBatchJobMapper.updateBatchJobStatusByGroupId(groupVo.getId(), JobStatus.FAILED.getValue());
+                deployBatchJobMapper.updateBatchJobStatusByGroupId(groupVo.getId(), JobStatus.FAILED.getValue());
 //            }
         } else if (groupStatus.equalsIgnoreCase(JobStatus.ABORTED.getValue())) {
             deployBatchJobMapper.updateBatchJobStatusByGroupId(groupVo.getId(), JobStatus.ABORTED.getValue());

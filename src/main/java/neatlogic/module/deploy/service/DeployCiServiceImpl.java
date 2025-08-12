@@ -136,7 +136,7 @@ public class DeployCiServiceImpl implements DeployCiService {
         if (Arrays.asList(DeployCiTriggerType.INSTANT.getValue(), DeployCiTriggerType.DELAY.getValue()).contains(ci.getTriggerType())) {
             triggerType = DeployCiTriggerType.AUTO.getValue();
         }
-        DeployJobVo deployJobParam = new DeployJobVo(ci.getAppSystemId(), scenarioId, envId, triggerType, triggerTime, ci.getConfig().getInteger("roundCount"), ci.getConfig().getJSONObject("param"));
+        DeployJobVo deployJobParam = new DeployJobVo(ci.getAppSystemId(), scenarioId, envId, triggerType, triggerTime, ci.getConfig());
         JSONArray selectNodeList = ci.getConfig().getJSONArray("selectNodeList");
         DeployJobModuleVo moduleVo = new DeployJobModuleVo(ci.getAppModuleId(), deployVersion != null ? deployVersion.getVersion() : null, CollectionUtils.isNotEmpty(selectNodeList) ? selectNodeList.toJavaList(AutoexecNodeVo.class) : new ArrayList<>());
         // 包含编译工具则新建buildNo
@@ -185,7 +185,7 @@ public class DeployCiServiceImpl implements DeployCiService {
             throw new DeployCiJobNameLostException();
         }
         DeployJobVo deployJobVo = getBatchDeployJobVo(ci, deployVersion != null ? deployVersion.getId() : null);
-        deployBatchJobService.creatBatchJob(deployJobVo, pipeline, false);
+        deployBatchJobService.creatBatchJob(deployJobVo, pipeline);
 
         //补充定时执行逻辑
         if (Objects.equals(deployJobVo.getTriggerType(), JobTriggerType.AUTO.getValue())) {
