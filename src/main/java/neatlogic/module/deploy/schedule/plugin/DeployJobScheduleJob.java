@@ -139,7 +139,7 @@ public class DeployJobScheduleJob extends JobBase {
             return;
         }
         String execUserUuid = scheduleVo.getLcu();
-        if(StringUtils.isNotBlank(jobObject.getTestUserUuid())){
+        if(jobObject.isTest() == 1 && StringUtils.isNotBlank(jobObject.getTestUserUuid())){
             execUserUuid = jobObject.getTestUserUuid();
         }
         UserVo execUser = userMapper.getUserBaseInfoByUuid(execUserUuid);
