@@ -43,6 +43,7 @@ import neatlogic.module.deploy.dao.mapper.DeployScheduleMapper;
 import neatlogic.module.deploy.service.DeployBatchJobService;
 import neatlogic.module.deploy.service.DeployJobService;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.quartz.DisallowConcurrentExecution;
 import org.quartz.JobExecutionContext;
 import org.slf4j.Logger;
@@ -137,10 +138,14 @@ public class DeployJobScheduleJob extends JobBase {
             schedulerManager.unloadJob(jobObject);
             return;
         }
-        UserVo execUser = userMapper.getUserBaseInfoByUuid(scheduleVo.getLcu());
+        String execUserUuid = scheduleVo.getLcu();
+        if(StringUtils.isNotBlank(jobObject.getTestUserUuid())){
+            execUserUuid = jobObject.getTestUserUuid();
+        }
+        UserVo execUser = userMapper.getUserBaseInfoByUuid(execUserUuid);
         if (execUser == null) {
             schedulerManager.unloadJob(jobObject);
-            logger.error("execUser: {} not exist!", scheduleVo.getLcu());
+            logger.error("execUser: {} not exist!", execUserUuid);
             return;
         }
         AuthenticationInfoVo authenticationInfo = authenticationInfoService.getAuthenticationInfo(execUser.getUuid());
