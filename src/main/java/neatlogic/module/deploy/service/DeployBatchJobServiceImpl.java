@@ -78,6 +78,7 @@ public class DeployBatchJobServiceImpl implements DeployBatchJobService, IDeploy
         // parentId为-1时，代表该作业是父作业
         deployJobVo.setParentId(-1L);
         deployJobMapper.insertAutoExecJob(deployJobVo);
+        deployJobMapper.insertJobInvoke(deployJobVo.getId(), deployJobVo.getInvokeId(), deployJobVo.getSource(), deployJobVo.getRouteId());
         if (CollectionUtils.isNotEmpty(pipelineVo.getAuthList())) {
             for (PipelineAuthVo authVo : pipelineVo.getAuthList()) {
                 DeployJobAuthVo deployAuthVo = new DeployJobAuthVo();
@@ -154,8 +155,6 @@ public class DeployBatchJobServiceImpl implements DeployBatchJobService, IDeploy
                 }
             }
         }
-
-        deployJobMapper.insertJobInvoke(deployJobVo.getId(), deployJobVo.getInvokeId(), deployJobVo.getSource(), deployJobVo.getRouteId());
     }
 
     private DeploySystemModuleVersionVo getVersionId(List<DeploySystemModuleVersionVo> appSystemModuleVersionList, PipelineJobTemplateVo jobTemplateVo) {
@@ -304,9 +303,11 @@ public class DeployBatchJobServiceImpl implements DeployBatchJobService, IDeploy
                     jobVo.setAction(groupVo.getJobAction());
                     IAutoexecJobActionHandler refireAction = AutoexecJobActionHandlerFactory.getAction(JobAction.REFIRE.getValue());
                     jobVo.setPassThroughEnv(passThroughEnv);
-                    jobVo.setIsTakeOver(1);
                     jobVo.setExecUser(UserContext.get().getUserUuid(true));
                     refireAction.doService(jobVo);
+                } catch (ApiRuntimeException e) {
+                    deployBatchJobMapper.updateGroupStatus(new LaneGroupVo(groupId, JobStatus.FAILED.getValue()));
+                    throw new ApiRuntimeException(e.getMessage(),e);
                 } catch (Exception ex) {
                     deployBatchJobMapper.updateGroupStatus(new LaneGroupVo(groupId, JobStatus.FAILED.getValue()));
                     logger.error("Fire job by batch failed," + ex.getMessage(), ex);

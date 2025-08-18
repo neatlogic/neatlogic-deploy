@@ -26,8 +26,8 @@ import neatlogic.framework.autoexec.constvalue.JobStatus;
 import neatlogic.framework.autoexec.constvalue.JobTriggerType;
 import neatlogic.framework.autoexec.constvalue.ReviewStatus;
 import neatlogic.framework.common.constvalue.ApiParamType;
-import neatlogic.framework.deploy.auth.BATCHDEPLOY_MODIFY;
 import neatlogic.framework.deploy.auth.BATCHDEPLOY_VERIFY;
+import neatlogic.framework.deploy.auth.DEPLOY_BASE;
 import neatlogic.framework.deploy.constvalue.JobSource;
 import neatlogic.framework.deploy.dto.job.DeployJobVo;
 import neatlogic.framework.deploy.dto.pipeline.PipelineJobTemplateVo;
@@ -54,7 +54,7 @@ import javax.annotation.Resource;
 import java.util.Objects;
 
 @Service
-@AuthAction(action = BATCHDEPLOY_MODIFY.class)
+@AuthAction(action = DEPLOY_BASE.class)
 @OperationType(type = OperationTypeEnum.UPDATE)
 @Transactional
 public class AddBatchDeployJobFromPipelineApi extends PrivateApiComponentBase {

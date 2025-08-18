@@ -252,7 +252,7 @@ public class DeployCiServiceImpl implements DeployCiService {
         }
         deployJobVo.setAppSystemModuleVersionList(Collections.singletonList(new DeploySystemModuleVersionVo(ci.getAppSystemId(), ci.getAppModuleId(), deployVersionId)));
         deployJobVo.setReviewStatus(ReviewStatus.PASSED.getValue());
-        deployJobVo.setSource(JobSource.DEPLOY_CI.getValue());// 可能是
+        deployJobVo.setSource(JobSource.DEPLOY_CI_PIPELINE.getValue());// 可能是
         deployJobVo.setExecUser(UserContext.get().getUserUuid());
         return deployJobVo;
     }
