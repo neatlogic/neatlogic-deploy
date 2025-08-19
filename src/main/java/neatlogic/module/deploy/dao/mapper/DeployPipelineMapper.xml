@@ -331,6 +331,16 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         </foreach>
     </select>
 
+    <select id="getHasAuthPipelineAppSystemIdList" resultType="java.lang.Long">
+        SELECT
+            dp.app_system_id
+        FROM
+            deploy_pipeline dp
+                JOIN deploy_pipeline_auth dpa ON dp.id = dpa.pipeline_id and dp.type  = 'appsystem'
+        where dpa.auth_uuid = #{authUuid}
+    </select>
+
+
     <update id="updatePipeline" parameterType="neatlogic.framework.deploy.dto.pipeline.PipelineVo">
         UPDATE deploy_pipeline
         SET `name`      = #{name},

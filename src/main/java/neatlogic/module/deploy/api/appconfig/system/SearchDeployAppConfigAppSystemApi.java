@@ -37,6 +37,7 @@ import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.framework.util.TableResultUtil;
 import neatlogic.module.deploy.dao.mapper.DeployAppConfigMapper;
 import neatlogic.module.deploy.dao.mapper.DeployAppSystemMapper;
+import neatlogic.module.deploy.dao.mapper.DeployPipelineMapper;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
@@ -62,6 +63,9 @@ public class SearchDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
 
     @Resource
     private GlobalLockMapper globalLockMapper;
+
+    @Resource
+    private DeployPipelineMapper deployPipelineMapper;
 
     @Override
     public String getToken() {
@@ -104,8 +108,8 @@ public class SearchDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
             List<DeployAppSystemVo> tbodyList = deployAppSystemMapper.getAppSystemListByIdList(searchVo, UserContext.get().getUserUuid());
             return TableResultUtil.getResult(tbodyList, searchVo);
         }
-        if(CollectionUtils.isNotEmpty(searchVo.getAuthorityActionList()) && searchVo.getAuthorityActionList().contains(DeployAppConfigAction.VIEW.getValue())){
-            searchVo.getAuthorityActionList().addAll(Arrays.asList(DeployAppConfigAction.EXECUTE.getValue(), DeployAppConfigAction.EDIT.getValue(), DeployAppConfigAction.AUTH.getValue()));
+        if (CollectionUtils.isNotEmpty(searchVo.getAuthorityActionList()) && searchVo.getAuthorityActionList().contains(DeployAppConfigAction.VIEW.getValue())) {
+            searchVo.getAuthorityActionList().addAll(Arrays.asList(DeployAppConfigAction.EXECUTE.getValue(), DeployAppConfigAction.EDIT.getValue(), DeployAppConfigAction.AUTH.getValue(), DeployAppConfigAction.PIPELINE.getValue()));
         }
         List<DeployAppSystemVo> returnAppSystemList = new ArrayList<>();
         Integer count = deployAppSystemMapper.getAppSystemIdListCount(searchVo);
@@ -134,6 +138,11 @@ public class SearchDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
             if (CollectionUtils.isNotEmpty(globalLockVoList)) {
                 globalLockKeySet = globalLockVoList.stream().map(GlobalLockVo::getKey).collect(Collectors.toSet());
             }
+
+            //获取应用系统所有流水线授权
+
+            List<Long> hasAuthPipelineAppSystemIdList = deployPipelineMapper.getHasAuthPipelineAppSystemIdList(UserContext.get().getUserUuid(true));
+
             for (DeployAppSystemVo returnSystemVo : returnAppSystemList) {
                 //补充系统是否有模块、是否有环境、是否有配置权限
                 if (hasModuleAppSystemIdList.contains(returnSystemVo.getId())) {
@@ -161,6 +170,11 @@ public class SearchDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
                 //补充isHasResourceLock
                 if (globalLockKeySet.stream().anyMatch(o -> o.contains(returnSystemVo.getId().toString()))) {
                     returnSystemVo.setIsHasResourceLock(1);
+                }
+
+                //补充是否拥有应用超级流水线授权
+                if (CollectionUtils.isNotEmpty(hasAuthPipelineAppSystemIdList) && hasAuthPipelineAppSystemIdList.contains(returnSystemVo.getId())) {
+                    returnSystemVo.setIsHasAuthPipeline(1);
                 }
             }
         }
