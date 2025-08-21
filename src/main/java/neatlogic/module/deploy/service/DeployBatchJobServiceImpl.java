@@ -501,24 +501,26 @@ public class DeployBatchJobServiceImpl implements DeployBatchJobService, IDeploy
         }
         //如果是应用超级流水线补充应用系统id，为了后续权限校验
         AutoexecJobInvokeVo autoexecJobInvokeVo = autoexecJobMapper.getJobInvokeByJobId(jobId);
-        Long pipeLineId = autoexecJobInvokeVo.getInvokeId();
-        PipelineVo pipelineVo = pipelineMapper.getPipelineById(pipeLineId);
-        if (pipelineVo == null) {
-            throw new DeployPipelineNotFoundException(pipeLineId);
-        }
-        IAppSystemMapper appSystemMapper = CrossoverServiceFactory.getApi(IAppSystemMapper.class);
-        AppSystemVo appSystemVo = appSystemMapper.getAppSystemById(pipelineVo.getAppSystemId());
-        if (appSystemVo == null) {
-            throw new AppSystemNotFoundException(pipelineVo.getAppSystemId());
-        }
-        if (Objects.equals(pipelineVo.getType(), PipelineType.APPSYSTEM.getValue())) {
-            Set<String> actionSet = DeployAppAuthChecker.builder(pipelineVo.getAppSystemId()).addOperationAction(DeployAppConfigAction.PIPELINE.getValue()).check();
-            boolean isHasAppSystemPipelineAuth = actionSet.contains(DeployAppConfigAction.PIPELINE.getValue());
-            if (!isHasAppSystemPipelineAuth) {
-                throw new DeployAppPipelineAuthException(appSystemVo, pipelineVo);
+        if(autoexecJobInvokeVo != null) {
+            Long pipeLineId = autoexecJobInvokeVo.getInvokeId();
+            PipelineVo pipelineVo = pipelineMapper.getPipelineById(pipeLineId);
+            if (pipelineVo == null) {
+                throw new DeployPipelineNotFoundException(pipeLineId);
             }
-        } else {
-            throw new DeployAppPipelineAuthException(pipelineVo);
+            IAppSystemMapper appSystemMapper = CrossoverServiceFactory.getApi(IAppSystemMapper.class);
+            AppSystemVo appSystemVo = appSystemMapper.getAppSystemById(pipelineVo.getAppSystemId());
+            if (appSystemVo == null) {
+                throw new AppSystemNotFoundException(pipelineVo.getAppSystemId());
+            }
+            if (Objects.equals(pipelineVo.getType(), PipelineType.APPSYSTEM.getValue())) {
+                Set<String> actionSet = DeployAppAuthChecker.builder(pipelineVo.getAppSystemId()).addOperationAction(DeployAppConfigAction.PIPELINE.getValue()).check();
+                boolean isHasAppSystemPipelineAuth = actionSet.contains(DeployAppConfigAction.PIPELINE.getValue());
+                if (!isHasAppSystemPipelineAuth) {
+                    throw new DeployAppPipelineAuthException(appSystemVo, pipelineVo);
+                }
+            } else {
+                throw new DeployAppPipelineAuthException(pipelineVo);
+            }
         }
     }
 }
