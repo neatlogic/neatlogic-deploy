@@ -24,7 +24,6 @@ import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.common.dto.BasePageVo;
 import neatlogic.framework.crossover.CrossoverServiceFactory;
 import neatlogic.framework.deploy.auth.DEPLOY;
-import neatlogic.framework.deploy.constvalue.DeployAppConfigAction;
 import neatlogic.framework.deploy.constvalue.JobSourceType;
 import neatlogic.framework.deploy.dto.app.DeployAppModuleVo;
 import neatlogic.framework.deploy.dto.app.DeployAppSystemVo;
@@ -43,7 +42,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -108,15 +110,12 @@ public class SearchDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
             List<DeployAppSystemVo> tbodyList = deployAppSystemMapper.getAppSystemListByIdList(searchVo, UserContext.get().getUserUuid());
             return TableResultUtil.getResult(tbodyList, searchVo);
         }
-        if (CollectionUtils.isNotEmpty(searchVo.getAuthorityActionList()) && searchVo.getAuthorityActionList().contains(DeployAppConfigAction.VIEW.getValue())) {
-            searchVo.getAuthorityActionList().addAll(Arrays.asList(DeployAppConfigAction.EXECUTE.getValue(), DeployAppConfigAction.EDIT.getValue(), DeployAppConfigAction.AUTH.getValue(), DeployAppConfigAction.PIPELINE.getValue()));
-        }
         List<DeployAppSystemVo> returnAppSystemList = new ArrayList<>();
         Integer count = deployAppSystemMapper.getAppSystemIdListCount(searchVo);
         if (count > 0) {
             searchVo.setRowNum(count);
             //过滤出有查看权限的系统
-            List<Long> appSystemIdList = deployAppConfigMapper.getAppSystemIdList(searchVo, UserContext.get().getUserUuid());
+            List<Long> appSystemIdList = deployAppSystemMapper.getAppSystemIdList(searchVo, UserContext.get().getUserUuid());
             if (CollectionUtils.isEmpty(appSystemIdList)) {
                 return TableResultUtil.getResult(returnAppSystemList, searchVo);
             }

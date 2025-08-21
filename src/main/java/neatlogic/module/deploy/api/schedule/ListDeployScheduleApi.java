@@ -98,9 +98,6 @@ public class ListDeployScheduleApi extends PrivateApiComponentBase {
             searchVo.setIsHasAllAuthority(0);
             List<String> authorityActionList = new ArrayList<>();
             authorityActionList.add(DeployAppConfigAction.VIEW.getValue());
-            authorityActionList.add(DeployAppConfigAction.AUTH.getValue());
-            authorityActionList.add(DeployAppConfigAction.EDIT.getValue());
-            authorityActionList.add(DeployAppConfigAction.EXECUTE.getValue());
             searchVo.setAuthorityActionList(authorityActionList);
             searchVo.setAuthUuidList(UserContext.get().getUuidList());
         }

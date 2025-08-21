@@ -20,8 +20,6 @@ import java.util.Set;
  */
 public interface DeployAppConfigMapper extends IDeployAppConfigCrossoverMapper {
 
-    List<Long> getAppSystemIdList(@Param("searchVo") DeployResourceSearchVo searchVo, @Param("userUuid") String userUuid);
-
     List<DeployAppSystemVo> searchAppSystemList(DeployResourceSearchVo searchVo);
 
     List<DeployAppSystemVo> getAppSystemModuleListBySystemIdList(@Param("idList") List<Long> idList, @Param("isConfig") Integer isConfig, @Param("userUuid") String userUuid);

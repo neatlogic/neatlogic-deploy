@@ -150,7 +150,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                 dv.`fcd` &lt;= FROM_UNIXTIME(#{startTimeRange[1]})
                 )
             </if>
-            <if test="isHasAllAuthority == 0">
+            <if test="isHasAllAuthority == 0 and authorityActionList != null and authorityActionList.size() > 0">
                 AND
                 <include refid="neatlogic.module.deploy.dao.mapper.DeployAppSystemMapper.checkDeployAuthority"/>
             </if>

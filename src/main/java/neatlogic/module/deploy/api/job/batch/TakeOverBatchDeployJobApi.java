@@ -29,6 +29,7 @@ import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.module.deploy.auth.core.BatchDeployAuthChecker;
 import neatlogic.module.deploy.dao.mapper.DeployBatchJobMapper;
+import neatlogic.module.deploy.service.DeployBatchJobService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -49,6 +50,8 @@ public class TakeOverBatchDeployJobApi extends PrivateApiComponentBase {
     private AutoexecJobMapper autoexecJobMapper;
     @Resource
     DeployBatchJobMapper deployBatchJobMapper;
+    @Resource
+    DeployBatchJobService deployBatchJobService;
 
     @Override
     public String getName() {
@@ -73,6 +76,7 @@ public class TakeOverBatchDeployJobApi extends PrivateApiComponentBase {
         if (deployBatchJobVo == null) {
             throw new DeployBatchJobNotFoundException(batchJobId);
         }
+        deployBatchJobService.isJobHasPipelineAuth(deployBatchJobVo.getId());
         if (BatchDeployAuthChecker.isCanTakeOver(deployBatchJobVo)) {
             deployBatchJobVo.setExecUser(UserContext.get().getUserUuid(true));
             autoexecJobMapper.updateJobExecUser(deployBatchJobVo.getId(), deployBatchJobVo.getExecUser());

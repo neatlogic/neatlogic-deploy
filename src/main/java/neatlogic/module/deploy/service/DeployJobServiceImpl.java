@@ -17,7 +17,6 @@ package neatlogic.module.deploy.service;
 
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.asynchronization.threadlocal.TenantContext;
-import neatlogic.framework.asynchronization.threadlocal.UserContext;
 import neatlogic.framework.auth.core.AuthActionChecker;
 import neatlogic.framework.autoexec.constvalue.JobAction;
 import neatlogic.framework.autoexec.constvalue.JobTriggerType;
@@ -49,17 +48,21 @@ import neatlogic.framework.cmdb.exception.resourcecenter.AppSystemNotFoundExcept
 import neatlogic.framework.common.util.PageUtil;
 import neatlogic.framework.crossover.CrossoverServiceFactory;
 import neatlogic.framework.deploy.auth.DEPLOY_MODIFY;
-import neatlogic.framework.deploy.auth.PIPELINE_MODIFY;
 import neatlogic.framework.deploy.auth.core.DeployAppAuthChecker;
-import neatlogic.framework.deploy.constvalue.*;
+import neatlogic.framework.deploy.constvalue.CombopOperationType;
+import neatlogic.framework.deploy.constvalue.DeployAppConfigAction;
+import neatlogic.framework.deploy.constvalue.JobSource;
+import neatlogic.framework.deploy.constvalue.ScheduleType;
 import neatlogic.framework.deploy.dto.app.DeployAppConfigVo;
 import neatlogic.framework.deploy.dto.job.DeployJobModuleVo;
 import neatlogic.framework.deploy.dto.job.DeployJobVo;
-import neatlogic.framework.deploy.dto.pipeline.PipelineVo;
 import neatlogic.framework.deploy.dto.schedule.DeployScheduleConfigVo;
 import neatlogic.framework.deploy.dto.schedule.DeployScheduleVo;
 import neatlogic.framework.deploy.dto.version.DeployVersionVo;
-import neatlogic.framework.deploy.exception.*;
+import neatlogic.framework.deploy.exception.DeployAppConfigNotFoundException;
+import neatlogic.framework.deploy.exception.DeployAppEnvAuthException;
+import neatlogic.framework.deploy.exception.DeployAppScenarioAuthException;
+import neatlogic.framework.deploy.exception.DeployVersionNotFoundException;
 import neatlogic.framework.exception.type.ParamIrregularException;
 import neatlogic.framework.scheduler.core.IJob;
 import neatlogic.framework.scheduler.core.SchedulerManager;
@@ -98,6 +101,9 @@ public class DeployJobServiceImpl implements DeployJobService {
     @Resource
     private DeployPipelineMapper deployPipelineMapper;
 
+    @Resource
+    private DeployBatchJobService deployBatchJobService;
+
     @Override
     public List<DeployJobVo> searchDeployJob(DeployJobVo deployJobVo) {
         List<DeployJobVo> returnList = new ArrayList<>();
@@ -107,9 +113,6 @@ public class DeployJobServiceImpl implements DeployJobService {
             deployJobVo.setIsHasAllAuthority(0);
             List<String> authorityActionList = new ArrayList<>();
             authorityActionList.add(DeployAppConfigAction.VIEW.getValue());
-            authorityActionList.add(DeployAppConfigAction.EDIT.getValue());
-            authorityActionList.add(DeployAppConfigAction.AUTH.getValue());
-            authorityActionList.add(DeployAppConfigAction.EXECUTE.getValue());
             deployJobVo.setAuthorityActionList(authorityActionList);
         }
         if (CollectionUtils.isEmpty(deployJobVo.getIdList())) {
@@ -456,7 +459,7 @@ public class DeployJobServiceImpl implements DeployJobService {
                 throw new AppEnvNotFoundException(config.getEnvId());
             }
             AutoexecScenarioVo scenarioVo = iAutoexecScenarioCrossoverMapper.getScenarioById(config.getScenarioId());
-            if(scenarioVo == null){
+            if (scenarioVo == null) {
                 throw new AutoexecScenarioIsNotFoundException(config.getScenarioId());
             }
             Set<String> actionSet = DeployAppAuthChecker.builder(appSystemId)
@@ -473,26 +476,7 @@ public class DeployJobServiceImpl implements DeployJobService {
                 throw new DeployAppScenarioAuthException(appSystemVo, scenarioVo);
             }
         } else if (type.equals(ScheduleType.PIPELINE.getValue())) {
-            PipelineVo pipeline = deployPipelineMapper.getPipelineSimpleInfoById(scheduleVo.getPipelineId());
-            String pipelineType = scheduleVo.getPipelineType();
-            List<Long> pipelineIdList = deployPipelineMapper.checkHasAuthPipelineIdList(Collections.singletonList(scheduleVo.getPipelineId()), UserContext.get().getUserUuid(true));
-            if (pipelineType.equals(PipelineType.APPSYSTEM.getValue())) {
-                Long appSystemId = scheduleVo.getAppSystemId();
-                AppSystemVo appSystemVo = appSystemMapper.getAppSystemById(scheduleVo.getAppSystemId());
-                if (appSystemVo == null) {
-                    throw new AppSystemNotFoundException(scheduleVo.getAppSystemId());
-                }
-                if (!pipelineIdList.contains(scheduleVo.getPipelineId())) {
-                    Set<String> actionSet = DeployAppAuthChecker.builder(appSystemId)
-                            .addOperationAction(DeployAppConfigAction.PIPELINE.getValue())
-                            .check();
-                    if (!actionSet.contains(DeployAppConfigAction.PIPELINE.getValue())) {
-                        throw new DeployAppPipelineAuthException(appSystemVo,pipeline);
-                    }
-                }
-            } else if (pipelineType.equals(PipelineType.GLOBAL.getValue()) && (!Boolean.TRUE.equals(AuthActionChecker.check(PIPELINE_MODIFY.class)) && !pipelineIdList.contains(scheduleVo.getPipelineId()))) {
-                throw new DeployAppPipelineAuthException(pipeline);
-            }
+            deployBatchJobService.isHasPipelineAuth(scheduleVo.getAppSystemId(), scheduleVo.getPipelineId());
         }
     }
 }

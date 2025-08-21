@@ -25,6 +25,7 @@ import neatlogic.module.deploy.dao.mapper.DeployJobMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Resource;
 import java.util.Arrays;
 import java.util.Objects;
 
@@ -35,12 +36,14 @@ import java.util.Objects;
 
 @Component
 public class BatchDeployAuthChecker {
+    private static BatchDeployAuthChecker instance;
 
-    private static DeployJobMapper deployJobMapper;
+    @Resource
+    DeployJobMapper deployJobMapper;
 
     @Autowired
-    public BatchDeployAuthChecker(DeployJobMapper _deployJobMapper) {
-        deployJobMapper = _deployJobMapper;
+    public BatchDeployAuthChecker() {
+        instance = this;
     }
 
     /**
@@ -50,14 +53,10 @@ public class BatchDeployAuthChecker {
      * @return 是｜否
      */
     public static boolean isCanExecute(DeployJobVo deployJobVo) {
-        if (!Objects.equals(JobStatus.CHECKED.getValue(), deployJobVo.getStatus())) {
-            if (Objects.equals(deployJobVo.getReviewStatus(), ReviewStatus.PASSED.getValue())) {
-                if (!Objects.equals(JobStatus.RUNNING.getValue(), deployJobVo.getStatus())) {
-                    return UserContext.get().getUserUuid().equals(deployJobVo.getExecUser());
-                }
-            }
-        }
-        return false;
+        return !Objects.equals(JobStatus.CHECKED.getValue(), deployJobVo.getStatus())
+                && Objects.equals(deployJobVo.getReviewStatus(), ReviewStatus.PASSED.getValue())
+                && !Objects.equals(JobStatus.RUNNING.getValue(), deployJobVo.getStatus())
+                && UserContext.get().getUserUuid().equals(deployJobVo.getExecUser());
     }
 
     /**
@@ -67,10 +66,7 @@ public class BatchDeployAuthChecker {
      * @return 是｜否
      */
     public static boolean isCanAbort(DeployJobVo deployJobVo) {
-        if (!Objects.equals(JobStatus.CHECKED.getValue(), deployJobVo.getStatus()) && Objects.equals(deployJobVo.getReviewStatus(), ReviewStatus.PASSED.getValue())) {
-            return UserContext.get().getUserUuid().equals(deployJobVo.getExecUser());
-        }
-        return false;
+        return !Objects.equals(JobStatus.CHECKED.getValue(), deployJobVo.getStatus()) && Objects.equals(deployJobVo.getReviewStatus(), ReviewStatus.PASSED.getValue()) && UserContext.get().getUserUuid().equals(deployJobVo.getExecUser());
     }
 
     /**
@@ -80,13 +76,9 @@ public class BatchDeployAuthChecker {
      * @return 是｜否
      */
     public static boolean isCanTakeOver(DeployJobVo deployJobVo) {
-        if (!Objects.equals(JobStatus.CHECKED.getValue(), deployJobVo.getStatus())) {
-            if (Objects.equals(deployJobVo.getReviewStatus(), ReviewStatus.PASSED.getValue())) {
-                int authCount = deployJobMapper.getDeployJobAuthCountByJobIdAndUuid(deployJobVo.getId(), UserContext.get().getUserUuid(true));
-                return (authCount > 0 || AuthActionChecker.checkByUserUuid(UserContext.get().getUserUuid(true), BATCHDEPLOY_MODIFY.class.getSimpleName())) && !Objects.equals(deployJobVo.getExecUser(), UserContext.get().getUserUuid(true));
-            }
-        }
-        return false;
+        return !Objects.equals(JobStatus.CHECKED.getValue(), deployJobVo.getStatus())
+                && Objects.equals(deployJobVo.getReviewStatus(), ReviewStatus.PASSED.getValue())
+                && !Objects.equals(deployJobVo.getExecUser(), UserContext.get().getUserUuid(true));
     }
 
     /**
@@ -96,11 +88,9 @@ public class BatchDeployAuthChecker {
      * @return 是｜否
      */
     public static boolean isCanEdit(DeployJobVo deployJobVo) {
-        if (!Objects.equals(JobStatus.CHECKED.getValue(), deployJobVo.getStatus())) {
-            if (!Objects.equals(deployJobVo.getReviewStatus(), ReviewStatus.WAITING.getValue())) {
-                return Arrays.asList(JobStatus.READY.getValue(), JobStatus.PENDING.getValue(), JobStatus.SAVED.getValue(), JobStatus.COMPLETED.getValue(), JobStatus.FAILED.getValue()).contains(deployJobVo.getStatus())
-                        && (AuthActionChecker.checkByUserUuid(UserContext.get().getUserUuid(true), BATCHDEPLOY_MODIFY.class.getSimpleName()));
-            }
+        if (!Objects.equals(JobStatus.CHECKED.getValue(), deployJobVo.getStatus()) && !Objects.equals(deployJobVo.getReviewStatus(), ReviewStatus.WAITING.getValue())) {
+            return Arrays.asList(JobStatus.READY.getValue(), JobStatus.PENDING.getValue(), JobStatus.SAVED.getValue(), JobStatus.COMPLETED.getValue(), JobStatus.FAILED.getValue()).contains(deployJobVo.getStatus())
+                    && (AuthActionChecker.checkByUserUuid(UserContext.get().getUserUuid(true), BATCHDEPLOY_MODIFY.class.getSimpleName()));
         }
         return false;
     }
@@ -113,7 +103,7 @@ public class BatchDeployAuthChecker {
      */
     public static boolean isCanCheck(DeployJobVo deployJobVo) {
         if (Objects.equals(deployJobVo.getReviewStatus(), ReviewStatus.PASSED.getValue())) {
-            int authCount = deployJobMapper.getDeployJobAuthCountByJobIdAndUuid(deployJobVo.getId(), UserContext.get().getUserUuid(true));
+            int authCount = instance.deployJobMapper.getDeployJobAuthCountByJobIdAndUuid(deployJobVo.getId(), UserContext.get().getUserUuid(true));
             return (authCount > 0 || AuthActionChecker.checkByUserUuid(UserContext.get().getUserUuid(true), BATCHDEPLOY_MODIFY.class.getSimpleName()));
         }
         return false;
@@ -126,11 +116,8 @@ public class BatchDeployAuthChecker {
      * @return 是｜否
      */
     public static boolean isCanGroupExecute(DeployJobVo deployJobVo) {
-        if (!Objects.equals(JobStatus.CHECKED.getValue(), deployJobVo.getStatus())) {
-            if (Objects.equals(deployJobVo.getReviewStatus(), ReviewStatus.PASSED.getValue())) {
-                return UserContext.get().getUserUuid().equals(deployJobVo.getExecUser());
-            }
-        }
-        return false;
+        return !Objects.equals(JobStatus.CHECKED.getValue(), deployJobVo.getStatus())
+                && (Objects.equals(deployJobVo.getReviewStatus(), ReviewStatus.PASSED.getValue())
+                && UserContext.get().getUserUuid().equals(deployJobVo.getExecUser()));
     }
 }

@@ -21,11 +21,13 @@ import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.deploy.auth.DEPLOY_BASE;
 import neatlogic.framework.deploy.dto.job.DeployJobVo;
 import neatlogic.framework.deploy.exception.job.DeployBatchJobNotFoundEditTargetException;
+import neatlogic.framework.exception.core.ApiRuntimeException;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.module.deploy.auth.core.BatchDeployAuthChecker;
 import neatlogic.module.deploy.dao.mapper.DeployJobMapper;
+import neatlogic.module.deploy.service.DeployBatchJobService;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -42,6 +44,9 @@ public class GetBatchDeployJobApi extends PrivateApiComponentBase {
 
     @Resource
     DeployJobMapper deployJobMapper;
+
+    @Resource
+    DeployBatchJobService deployBatchJobService;
 
     @Override
     public String getName() {
@@ -63,12 +68,22 @@ public class GetBatchDeployJobApi extends PrivateApiComponentBase {
         if (deployJobVo == null) {
             throw new DeployBatchJobNotFoundEditTargetException(id);
         }
-        deployJobVo.setIsCanExecute(BatchDeployAuthChecker.isCanExecute(deployJobVo) ? 1 : 0);
-        deployJobVo.setIsCanTakeOver(BatchDeployAuthChecker.isCanTakeOver(deployJobVo) ? 1 : 0);
+        try {
+            deployBatchJobService.isJobHasPipelineAuth(deployJobVo.getId());
+            deployJobVo.setIsCanExecute(BatchDeployAuthChecker.isCanExecute(deployJobVo) ? 1 : 0);
+            deployJobVo.setIsCanTakeOver(BatchDeployAuthChecker.isCanTakeOver(deployJobVo) ? 1 : 0);
+            deployJobVo.setIsCanGroupExecute(BatchDeployAuthChecker.isCanGroupExecute(deployJobVo) ? 1 : 0);
+            deployJobVo.setIsCanAbort(BatchDeployAuthChecker.isCanAbort(deployJobVo) ? 1 : 0);
+        } catch (ApiRuntimeException ignored) {
+            deployJobVo.setIsCanExecute(0);
+            deployJobVo.setIsCanTakeOver(0);
+            deployJobVo.setIsCanGroupExecute(0);
+            deployJobVo.setIsCanAbort(0);
+        }
+
         deployJobVo.setIsCanEdit(BatchDeployAuthChecker.isCanEdit(deployJobVo) ? 1 : 0);
         deployJobVo.setIsCanCheck(BatchDeployAuthChecker.isCanCheck(deployJobVo) ? 1 : 0);
-        deployJobVo.setIsCanGroupExecute(BatchDeployAuthChecker.isCanGroupExecute(deployJobVo) ? 1 : 0);
-        deployJobVo.setIsCanAbort(BatchDeployAuthChecker.isCanAbort(deployJobVo) ? 1 : 0);
+
         return deployJobVo;
     }
 

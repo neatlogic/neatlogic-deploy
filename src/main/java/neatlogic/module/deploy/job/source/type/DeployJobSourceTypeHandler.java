@@ -33,15 +33,12 @@ import neatlogic.framework.autoexec.exception.AutoexecJobNotFoundException;
 import neatlogic.framework.autoexec.exception.AutoexecJobPhaseNotFoundException;
 import neatlogic.framework.autoexec.job.source.type.AutoexecJobSourceTypeHandlerBase;
 import neatlogic.framework.autoexec.util.AutoexecUtil;
-import neatlogic.framework.cmdb.crossover.IAppSystemMapper;
 import neatlogic.framework.cmdb.crossover.ICiEntityCrossoverMapper;
 import neatlogic.framework.cmdb.crossover.IResourceCrossoverMapper;
 import neatlogic.framework.cmdb.dto.cientity.CiEntityVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.ResourceVo;
-import neatlogic.framework.cmdb.dto.resourcecenter.entity.AppSystemVo;
 import neatlogic.framework.cmdb.exception.cientity.CiEntityNotFoundException;
 import neatlogic.framework.cmdb.exception.resourcecenter.AppEnvNotFoundException;
-import neatlogic.framework.cmdb.exception.resourcecenter.AppSystemNotFoundException;
 import neatlogic.framework.common.constvalue.systemuser.SystemUser;
 import neatlogic.framework.crossover.CrossoverServiceFactory;
 import neatlogic.framework.dao.mapper.runner.RunnerMapper;
@@ -56,7 +53,6 @@ import neatlogic.framework.deploy.dto.instance.DeployInstanceVersionVo;
 import neatlogic.framework.deploy.dto.job.DeployJobContentVo;
 import neatlogic.framework.deploy.dto.job.DeployJobVo;
 import neatlogic.framework.deploy.dto.pipeline.PipelineJobTemplateVo;
-import neatlogic.framework.deploy.dto.pipeline.PipelineVo;
 import neatlogic.framework.deploy.dto.sql.DeploySqlJobPhaseVo;
 import neatlogic.framework.deploy.dto.sql.DeploySqlNodeDetailVo;
 import neatlogic.framework.deploy.dto.version.DeployVersionBuildNoVo;
@@ -67,6 +63,7 @@ import neatlogic.framework.dto.AuthenticationInfoVo;
 import neatlogic.framework.dto.globallock.GlobalLockVo;
 import neatlogic.framework.dto.runner.RunnerGroupVo;
 import neatlogic.framework.dto.runner.RunnerMapVo;
+import neatlogic.framework.exception.core.ApiRuntimeException;
 import neatlogic.framework.exception.runner.RunnerGroupRunnerNotFoundException;
 import neatlogic.framework.exception.runner.RunnerHttpRequestException;
 import neatlogic.framework.exception.runner.RunnerNotFoundByRunnerMapIdException;
@@ -78,6 +75,7 @@ import neatlogic.framework.integration.authentication.enums.AuthenticateType;
 import neatlogic.framework.util.HttpRequestUtil;
 import neatlogic.framework.util.TableResultUtil;
 import neatlogic.module.deploy.dao.mapper.*;
+import neatlogic.module.deploy.service.DeployBatchJobService;
 import neatlogic.module.deploy.util.DeployPipelineConfigManager;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -123,6 +121,9 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
 
     @Resource
     DeployPipelineMapper deployPipelineMapper;
+
+    @Resource
+    DeployBatchJobService deployBatchJobService;
 
     @Override
     public String getName() {
@@ -429,13 +430,17 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
                 //sql 优先使用历史runner TODO 如果切换runner组会有问题
                 List<DeploySqlNodeDetailVo> sqlNodeDetailVos = deploySqlMapper.getAllDeploySqlDetailList(new DeploySqlNodeDetailVo(deployJobVo.getAppSystemId(), deployJobVo.getAppModuleId(), deployJobVo.getEnvId(), deployJobVo.getVersion()));
                 if (CollectionUtils.isNotEmpty(sqlNodeDetailVos)) {
-                    runnerMapId = sqlNodeDetailVos.get(0).getRunnerId();
+                    Long runnerMapIdTmp = sqlNodeDetailVos.get(0).getRunnerId();
+                    RunnerMapVo runnerMapVo = runnerMapper.getRunnerMapByRunnerMapId(runnerMapIdTmp);
+                    if (runnerMapVo != null) {
+                        runnerMapId = runnerMapIdTmp;
+                    }
                 }
             }
             if (runnerMapId != null) {
                 RunnerMapVo runnerMapVo = runnerMapper.getRunnerMapByRunnerMapId(runnerMapId);
                 if (runnerMapVo == null) {
-                    throw new RunnerNotFoundByRunnerMapIdException(deployJobVo.getRunnerMapId());
+                    throw new RunnerNotFoundByRunnerMapIdException(runnerMapId);
                 }
                 //如果runner没有被删除则沿用历史runner
                 if (runnerMapVo.getIsDelete() == 0) {
@@ -628,29 +633,7 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
         if (JobSource.isBatch(jobVo.getSource()) && jobVo.getParentId() != null) {
             AutoexecJobVo parentJob = autoexecJobMapper.getJobInfoWithInvoke(jobVo.getParentId());
             if (parentJob != null) {
-                PipelineVo pipelineVo = deployPipelineMapper.getPipelineById(parentJob.getInvokeId());
-                if (pipelineVo != null) {
-                    List<Long> pipelineIdList = deployPipelineMapper.checkHasAuthPipelineIdList(Collections.singletonList(pipelineVo.getId()), UserContext.get().getUserUuid(true));
-                    //“应用流水线” 需要 应用配置中的“流水线权限”或对应超级流水线里面的授权
-                    if (Objects.equals(pipelineVo.getType(), PipelineType.APPSYSTEM.getValue())) {
-                        IAppSystemMapper appSystemMapper = CrossoverServiceFactory.getApi(IAppSystemMapper.class);
-                        AppSystemVo appSystemVo = appSystemMapper.getAppSystemById(pipelineVo.getAppSystemId());
-                        if (appSystemVo == null) {
-                            throw new AppSystemNotFoundException(pipelineVo.getAppSystemId());
-                        }
-                        if (!pipelineIdList.contains(pipelineVo.getId())) {
-                            Set<String> actionSet = DeployAppAuthChecker.builder(pipelineVo.getAppSystemId())
-                                    .addOperationAction(DeployAppConfigAction.PIPELINE.getValue())
-                                    .check();
-                            if (!actionSet.contains(DeployAppConfigAction.PIPELINE.getValue())) {
-                                throw new DeployAppPipelineAuthException(appSystemVo, pipelineVo);
-                            }
-                        }
-                        //“全局流水线” 需要 对应超级流水线里面的授权
-                    } else if (Objects.equals(pipelineVo.getType(), PipelineType.GLOBAL.getValue()) && !pipelineIdList.contains(pipelineVo.getId())) {
-                        throw new DeployAppPipelineAuthException(pipelineVo);
-                    }
-                }
+                deployBatchJobService.isJobHasPipelineAuth(parentJob.getId());
             }
         } else {
             Set<String> authSet = DeployAppAuthChecker.builder(deployJobVo.getAppSystemId())
@@ -676,7 +659,14 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
         if (Boolean.TRUE.equals(AuthActionChecker.checkByUserUuid(UserContext.get().getUserUuid(true), BATCHDEPLOY_MODIFY.class.getSimpleName()))) {
             isHasAuth = true;
         } else {
-            if (!Objects.equals(jobVo.getSource(), JobSource.BATCHDEPLOY.getValue())) {
+            if (JobSource.isBatch(jobVo.getSource())) {
+                try {
+                    deployBatchJobService.isJobHasPipelineAuth(jobVo.getParentId());
+                    isHasAuth = true;
+                } catch (ApiRuntimeException ignored) {
+                    //异常表示没权限
+                }
+            } else {
                 DeployJobVo deployJobVo = deployJobMapper.getDeployJobByJobId(jobVo.getId());
                 if (deployJobVo != null) {
                     Set<String> authSet = DeployAppAuthChecker.builder(deployJobVo.getAppSystemId()).addEnvAction(deployJobVo.getEnvId()).addScenarioAction(deployJobVo.getScenarioId()).addOperationAction(DeployAppConfigAction.EXECUTE.getValue()).check();
@@ -928,7 +918,7 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
     @Override
     public void autoexecTakeOver(AutoexecJobVo jobVo) {
         //如果是批量作业则需要自动接管作业
-        if(JobSource.isBatch(jobVo.getSource())) {
+        if (JobSource.isBatch(jobVo.getSource())) {
             autoexecJobMapper.updateJobExecUser(jobVo.getId(), UserContext.get().getUserUuid(true));
             jobVo.setExecUser(UserContext.get().getUserUuid(true));
         }

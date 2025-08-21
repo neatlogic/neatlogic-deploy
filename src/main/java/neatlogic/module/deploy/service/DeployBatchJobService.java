@@ -23,6 +23,7 @@ import neatlogic.framework.deploy.dto.pipeline.PipelineVo;
 public interface DeployBatchJobService {
 
     void creatBatchJob(DeployJobVo deployJobVo, PipelineVo pipelineVo) throws Exception;
+
     /**
      * 执行批量作业
      *
@@ -39,8 +40,8 @@ public interface DeployBatchJobService {
     void fireLaneGroup(Long groupId, String batchJobAction, String jobAction, JSONObject passThroughEnv) throws Exception;
 
     /**
-     * @param groupId  组id
-     * @param isGoon 执行完当前组是否停止不继续执行后续组，但仍受needWait约束
+     * @param groupId 组id
+     * @param isGoon  执行完当前组是否停止不继续执行后续组，但仍受needWait约束
      */
     void refireLaneGroup(Long groupId, int isGoon, String batchJobAction, String jobAction);
 
@@ -81,4 +82,17 @@ public interface DeployBatchJobService {
      * @param nextGroupId    下一组id
      */
     void fireLaneNextGroup(LaneGroupVo currentGroupVo, Long nextGroupId, JSONObject passThroughEnv);
+
+    /**
+     * 是否存在超级流水线权限
+     *
+     */
+    void isHasPipelineAuth(Long appSystemId, Long pipelineId);
+
+    /**
+     * 是否存在超级流水线权限
+     *
+     * @param jobId 批量作业的父id
+     */
+    void isJobHasPipelineAuth(Long jobId);
 }

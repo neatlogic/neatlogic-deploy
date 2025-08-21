@@ -21,15 +21,25 @@ import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.TypeReference;
 import neatlogic.framework.asynchronization.threadlocal.TenantContext;
 import neatlogic.framework.asynchronization.threadlocal.UserContext;
+import neatlogic.framework.auth.core.AuthActionChecker;
 import neatlogic.framework.autoexec.constvalue.JobAction;
 import neatlogic.framework.autoexec.constvalue.JobPhaseStatus;
 import neatlogic.framework.autoexec.constvalue.JobStatus;
 import neatlogic.framework.autoexec.constvalue.JobTriggerType;
 import neatlogic.framework.autoexec.dao.mapper.AutoexecJobMapper;
+import neatlogic.framework.autoexec.dto.job.AutoexecJobInvokeVo;
 import neatlogic.framework.autoexec.dto.job.AutoexecJobVo;
 import neatlogic.framework.autoexec.dto.node.AutoexecNodeVo;
 import neatlogic.framework.autoexec.job.action.core.AutoexecJobActionHandlerFactory;
 import neatlogic.framework.autoexec.job.action.core.IAutoexecJobActionHandler;
+import neatlogic.framework.cmdb.crossover.IAppSystemMapper;
+import neatlogic.framework.cmdb.dto.resourcecenter.entity.AppSystemVo;
+import neatlogic.framework.cmdb.exception.resourcecenter.AppSystemNotFoundException;
+import neatlogic.framework.crossover.CrossoverServiceFactory;
+import neatlogic.framework.deploy.auth.BATCHDEPLOY_MODIFY;
+import neatlogic.framework.deploy.auth.core.DeployAppAuthChecker;
+import neatlogic.framework.deploy.constvalue.DeployAppConfigAction;
+import neatlogic.framework.deploy.constvalue.PipelineType;
 import neatlogic.framework.deploy.crossover.IDeployBatchJobCrossoverService;
 import neatlogic.framework.deploy.dto.job.*;
 import neatlogic.framework.deploy.dto.pipeline.*;
@@ -43,6 +53,7 @@ import neatlogic.framework.scheduler.exception.ScheduleHandlerNotFoundException;
 import neatlogic.module.deploy.auth.core.BatchDeployAuthChecker;
 import neatlogic.module.deploy.dao.mapper.DeployBatchJobMapper;
 import neatlogic.module.deploy.dao.mapper.DeployJobMapper;
+import neatlogic.module.deploy.dao.mapper.DeployPipelineMapper;
 import neatlogic.module.deploy.schedule.plugin.DeployBatchJobAutoFireJob;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
@@ -70,7 +81,7 @@ public class DeployBatchJobServiceImpl implements DeployBatchJobService, IDeploy
     @Resource
     SchedulerManager schedulerManager;
     @Resource
-    private DeployBatchJobService deployBatchJobService;
+    DeployPipelineMapper pipelineMapper;
 
     @Transactional
     @Override
@@ -78,6 +89,7 @@ public class DeployBatchJobServiceImpl implements DeployBatchJobService, IDeploy
         // parentId为-1时，代表该作业是父作业
         deployJobVo.setParentId(-1L);
         deployJobMapper.insertAutoExecJob(deployJobVo);
+        deployJobMapper.insertDeployJob(deployJobVo);
         deployJobMapper.insertJobInvoke(deployJobVo.getId(), deployJobVo.getInvokeId(), deployJobVo.getSource(), deployJobVo.getRouteId());
         if (CollectionUtils.isNotEmpty(pipelineVo.getAuthList())) {
             for (PipelineAuthVo authVo : pipelineVo.getAuthList()) {
@@ -173,6 +185,7 @@ public class DeployBatchJobServiceImpl implements DeployBatchJobService, IDeploy
         if (batchJobVo == null) {
             throw new DeployBatchJobNotFoundException(batchJobId);
         }
+        this.isJobHasPipelineAuth(batchJobVo.getId());
         if (!BatchDeployAuthChecker.isCanExecute(batchJobVo)) {
             throw new DeployBatchJobCannotExecuteException();
         }
@@ -230,6 +243,7 @@ public class DeployBatchJobServiceImpl implements DeployBatchJobService, IDeploy
         if (batchJobVo == null) {
             throw new DeployBatchJobNotFoundException();
         }
+        this.isJobHasPipelineAuth(batchJobVo.getId());
         if (!BatchDeployAuthChecker.isCanGroupExecute(batchJobVo)) {
             throw new DeployBatchJobCannotExecuteException();
         }
@@ -265,7 +279,7 @@ public class DeployBatchJobServiceImpl implements DeployBatchJobService, IDeploy
             passThroughEnv.put("IS_GOON", groupVo.getIsGoon());
         }
         if (Objects.equals(groupVo.getBatchJobAction(), JobAction.REFIRE.getValue()) && Objects.equals(groupVo.getStatus(), JobStatus.COMPLETED.getValue())) {
-            logger.info("Batch run fire group:#" + groupId + " status completed, ignore.");
+            logger.info("Batch run fire group:#{} status completed, ignore.", groupId);
             if (groupVo.getIsGoon() == 1 && groupVo.getNeedWait() != 1) {
                 checkAndFireLaneNextGroup(groupVo, passThroughEnv);
             }
@@ -281,7 +295,7 @@ public class DeployBatchJobServiceImpl implements DeployBatchJobService, IDeploy
         }
 
         // 如果属于正常触发，则继续执行以下逻辑
-        logger.info("Batch run fire group:#" + groupId);
+        logger.info("Batch run fire group:#{}", groupId);
         groupVo.setStatus(JobStatus.RUNNING.getValue());
         deployBatchJobMapper.updateGroupStatus(groupVo);
         deployBatchJobMapper.updateLaneStatus(groupVo.getLaneId(), JobStatus.RUNNING.getValue());
@@ -291,7 +305,7 @@ public class DeployBatchJobServiceImpl implements DeployBatchJobService, IDeploy
         int completedContinueCount = 0;
         if (CollectionUtils.isNotEmpty(jobVoList)) {
             List<DeployJobVo> deployJobVos = deployJobMapper.getDeployJobByJobIdList(jobVoList.stream().map(AutoexecJobVo::getId).collect(Collectors.toList()));
-            Map<Long, String> deployJobIdPathMap = deployJobVos.stream().collect(Collectors.toMap(AutoexecJobVo::getId, o -> o.getAppSystemId() + "/" + o.getAppModuleId() + "/" + o.getEnvId()));
+            Map<Long, String> deployJobIdPathMap = deployJobVos.stream().collect(Collectors.toMap(AutoexecJobVo::getId, o -> String.format("%s/%s/%s", o.getAppSystemId(), o.getAppModuleId(), o.getEnvId())));
             for (AutoexecJobVo jobVo : jobVoList) {
                 try {
                     //跳过所有已完成的子作业
@@ -307,7 +321,7 @@ public class DeployBatchJobServiceImpl implements DeployBatchJobService, IDeploy
                     refireAction.doService(jobVo);
                 } catch (ApiRuntimeException e) {
                     deployBatchJobMapper.updateGroupStatus(new LaneGroupVo(groupId, JobStatus.FAILED.getValue()));
-                    throw new ApiRuntimeException(e.getMessage(),e);
+                    throw new ApiRuntimeException(e.getMessage(), e);
                 } catch (Exception ex) {
                     deployBatchJobMapper.updateGroupStatus(new LaneGroupVo(groupId, JobStatus.FAILED.getValue()));
                     logger.error("Fire job by batch failed," + ex.getMessage(), ex);
@@ -358,11 +372,7 @@ public class DeployBatchJobServiceImpl implements DeployBatchJobService, IDeploy
         for (JobPhaseStatus jobStatus : JobPhaseStatus.values()) {
             statusCountMap.put(jobStatus.getValue(), 0);
         }
-        //List<Long> failedJobsId = new ArrayList<>();
         for (AutoexecJobVo jobVo : groupJobs) {
-//            if (Objects.equals(JobStatus.FAILED.getValue(), jobVo.getStatus())) {
-//                failedJobsId.add(jobVo.getId());
-//            }
             statusCountMap.put(jobVo.getStatus(), statusCountMap.get(jobVo.getStatus()) + 1);
         }
         //根据状态数量map 获取最终组状态
@@ -386,7 +396,7 @@ public class DeployBatchJobServiceImpl implements DeployBatchJobService, IDeploy
         //如果组状态不一致（防止重复调用），并且组状态是completed则判断是否fire下一组
         //if (!groupStatus.equals(groupVo.getStatus())) {
         Long nextGroupId = deployBatchJobMapper.getNextGroupId(groupVo.getLaneId(), groupVo.getSort());
-        logger.info("Batch run update group:#" + groupId + " status:" + groupStatus);
+        logger.info("Batch run update group:# {} status:{}", groupId, groupStatus);
         if (groupStatus.equalsIgnoreCase(JobStatus.COMPLETED.getValue())) {
             //如果组已完成且需要waitInput，则将状态改为 waitInput
             if (groupVo.getNeedWait() == 1) {
@@ -397,7 +407,7 @@ public class DeployBatchJobServiceImpl implements DeployBatchJobService, IDeploy
 //                groupStatus = nextGroupId == null ? groupStatus : JobPhaseStatus.WAIT_INPUT.getValue();
 //            }
 //            if (groupStatus.equalsIgnoreCase(JobStatus.FAILED.getValue())) {
-                deployBatchJobMapper.updateBatchJobStatusByGroupId(groupVo.getId(), JobStatus.FAILED.getValue());
+            deployBatchJobMapper.updateBatchJobStatusByGroupId(groupVo.getId(), JobStatus.FAILED.getValue());
 //            }
         } else if (groupStatus.equalsIgnoreCase(JobStatus.ABORTED.getValue())) {
             deployBatchJobMapper.updateBatchJobStatusByGroupId(groupVo.getId(), JobStatus.ABORTED.getValue());
@@ -408,11 +418,8 @@ public class DeployBatchJobServiceImpl implements DeployBatchJobService, IDeploy
             if (nextGroupId == null || groupVo.getIsGoon() == 1) {
                 fireLaneNextGroup(groupVo, nextGroupId, passThroughEnv);
             }
-        } else if (Objects.equals(groupStatus, JobStatus.WAIT_INPUT.getValue())) {
-            //更新下一个group 状态为 pending
-            if (groupVo.getIsGoon() == 1) {
-                deployBatchJobMapper.updateGroupStatus(new LaneGroupVo(nextGroupId, JobStatus.PENDING.getValue()));
-            }
+        } else if (Objects.equals(groupStatus, JobStatus.WAIT_INPUT.getValue()) && groupVo.getIsGoon() == 1) {
+            deployBatchJobMapper.updateGroupStatus(new LaneGroupVo(nextGroupId, JobStatus.PENDING.getValue()));
         }
     }
 
@@ -425,7 +432,7 @@ public class DeployBatchJobServiceImpl implements DeployBatchJobService, IDeploy
     @Override
     public void fireLaneNextGroup(LaneGroupVo currentGroupVo, Long nextGroupId, JSONObject passThroughEnv) {
         if (nextGroupId != null) {
-            logger.info("Next group found:#" + nextGroupId + ", for lane:#" + currentGroupVo.getLaneId() + " pre sort:#" + currentGroupVo.getSort());
+            logger.info("Next group found:#{}, for lane:#{} pre sort:#{}", nextGroupId, currentGroupVo.getLaneId(), currentGroupVo.getSort());
             try {
                 fireLaneGroup(nextGroupId, currentGroupVo.getBatchJobAction(), currentGroupVo.getJobAction(), passThroughEnv);
             } catch (ApiRuntimeException ex) {
@@ -435,7 +442,7 @@ public class DeployBatchJobServiceImpl implements DeployBatchJobService, IDeploy
             }
         } else {
             deployBatchJobMapper.updateLaneStatus(currentGroupVo.getLaneId(), JobStatus.COMPLETED.getValue());
-            logger.info("Batch run lane:#" + currentGroupVo.getLaneId() + " finished.");
+            logger.info("Batch run lane:#{} finished.", currentGroupVo.getLaneId());
             LaneVo laneVo = deployBatchJobMapper.getLaneById(currentGroupVo.getLaneId());
             Long batchJobId = laneVo.getBatchJobId();
             List<LaneVo> laneList = deployBatchJobMapper.getLaneListByBatchJobId(batchJobId);
@@ -452,6 +459,66 @@ public class DeployBatchJobServiceImpl implements DeployBatchJobService, IDeploy
                 batchJobVo.setStatus(JobStatus.COMPLETED.getValue());
                 autoexecJobMapper.updateJobStatus(batchJobVo);
             }
+        }
+    }
+
+    @Override
+    public void isHasPipelineAuth(Long appSystemId, Long pipelineId) {
+        if (Boolean.FALSE.equals(AuthActionChecker.checkByUserUuid(UserContext.get().getUserUuid(true), BATCHDEPLOY_MODIFY.class.getSimpleName()))) {
+            PipelineVo pipeline = pipelineMapper.getPipelineSimpleInfoById(pipelineId);
+            if (pipeline == null) {
+                throw new DeployPipelineNotFoundException(pipelineId);
+            }
+            List<Long> pipelineIdList = pipelineMapper.checkHasAuthPipelineIdList(Collections.singletonList(pipelineId), UserContext.get().getUserUuid(true));
+            if (CollectionUtils.isNotEmpty(pipelineIdList) && !pipelineIdList.contains(pipelineId)) {
+                IAppSystemMapper appSystemMapper = CrossoverServiceFactory.getApi(IAppSystemMapper.class);
+                if (Objects.equals(pipeline.getType(), PipelineType.APPSYSTEM.getValue())) {
+                    AppSystemVo appSystemVo = appSystemMapper.getAppSystemById(appSystemId);
+                    if (appSystemVo == null) {
+                        throw new AppSystemNotFoundException(appSystemId);
+                    }
+                    Set<String> actionSet = DeployAppAuthChecker.builder(appSystemId)
+                            .addOperationAction(DeployAppConfigAction.PIPELINE.getValue())
+                            .check();
+                    if (!actionSet.contains(DeployAppConfigAction.PIPELINE.getValue())) {
+                        throw new DeployAppPipelineAuthException(appSystemVo, pipeline);
+                    }
+                } else if (Objects.equals(pipeline.getType(), PipelineType.GLOBAL.getValue())) {
+                    throw new DeployAppPipelineAuthException(pipeline);
+                }
+            }
+        }
+    }
+
+    @Override
+    public void isJobHasPipelineAuth(Long jobId) {
+        if (Boolean.TRUE.equals(AuthActionChecker.checkByUserUuid(UserContext.get().getUserUuid(true), BATCHDEPLOY_MODIFY.class.getSimpleName()))) {
+            return;
+        }
+        int authCount = deployJobMapper.getDeployJobAuthCountByJobIdAndUuid(jobId, UserContext.get().getUserUuid(true));
+        if (authCount > 0) {
+            return;
+        }
+        //如果是应用超级流水线补充应用系统id，为了后续权限校验
+        AutoexecJobInvokeVo autoexecJobInvokeVo = autoexecJobMapper.getJobInvokeByJobId(jobId);
+        Long pipeLineId = autoexecJobInvokeVo.getInvokeId();
+        PipelineVo pipelineVo = pipelineMapper.getPipelineById(pipeLineId);
+        if (pipelineVo == null) {
+            throw new DeployPipelineNotFoundException(pipeLineId);
+        }
+        IAppSystemMapper appSystemMapper = CrossoverServiceFactory.getApi(IAppSystemMapper.class);
+        AppSystemVo appSystemVo = appSystemMapper.getAppSystemById(pipelineVo.getAppSystemId());
+        if (appSystemVo == null) {
+            throw new AppSystemNotFoundException(pipelineVo.getAppSystemId());
+        }
+        if (Objects.equals(pipelineVo.getType(), PipelineType.APPSYSTEM.getValue())) {
+            Set<String> actionSet = DeployAppAuthChecker.builder(pipelineVo.getAppSystemId()).addOperationAction(DeployAppConfigAction.PIPELINE.getValue()).check();
+            boolean isHasAppSystemPipelineAuth = actionSet.contains(DeployAppConfigAction.PIPELINE.getValue());
+            if (!isHasAppSystemPipelineAuth) {
+                throw new DeployAppPipelineAuthException(appSystemVo, pipelineVo);
+            }
+        } else {
+            throw new DeployAppPipelineAuthException(pipelineVo);
         }
     }
 }
