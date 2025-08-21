@@ -1061,7 +1061,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         <result column="name" property="name"/>
         <result column="type_name" property="typeName"/>
         <result column="ip" property="ip"/>
-        <result column="port" property="port"/>
+        <result column="port" property="port" typeHandler="neatlogic.framework.dao.plugin.EmptyStringToNullIntegerTypeHandler"/>
     </resultMap>
 
     <select id="getDatabaseById" parameterType="java.lang.Long" resultMap="DatabaseResourceMap">
