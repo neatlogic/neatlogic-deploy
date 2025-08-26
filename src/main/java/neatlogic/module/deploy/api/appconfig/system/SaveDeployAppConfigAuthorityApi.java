@@ -78,7 +78,7 @@ public class SaveDeployAppConfigAuthorityApi extends PrivateApiComponentBase {
     public Object myDoService(JSONObject paramObj) {
 
         //校验编辑配置的操作权限
-        deployAppAuthorityService.checkOperationAuth(paramObj.getLong("appSystemId"), DeployAppConfigAction.EDIT);
+        deployAppAuthorityService.checkOperationAuth(paramObj.getLong("appSystemId"), DeployAppConfigAction.AUTH);
 
         DeployAppConfigAuthorityVo deployAppConfigAuthorityVo = paramObj.toJavaObject(DeployAppConfigAuthorityVo.class);
         Date nowTime = new Date(System.currentTimeMillis());
