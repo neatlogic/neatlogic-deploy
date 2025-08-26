@@ -1,8 +1,10 @@
 package neatlogic.module.deploy.api.version;
 
+import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.common.constvalue.ApiParamType;
-import neatlogic.framework.deploy.auth.DEPLOY_MODIFY;
+import neatlogic.framework.deploy.auth.DEPLOY_BASE;
+import neatlogic.framework.deploy.constvalue.DeployAppConfigAction;
 import neatlogic.framework.deploy.dto.version.DeployVersionVo;
 import neatlogic.framework.exception.type.ParamNotExistsException;
 import neatlogic.framework.restful.annotation.Description;
@@ -14,7 +16,7 @@ import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.module.deploy.dao.mapper.DeployEnvVersionMapper;
 import neatlogic.module.deploy.dao.mapper.DeployInstanceVersionMapper;
 import neatlogic.module.deploy.dao.mapper.DeployVersionMapper;
-import com.alibaba.fastjson.JSONObject;
+import neatlogic.module.deploy.service.DeployAppAuthorityService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,7 +31,7 @@ import java.util.List;
  */
 @Service
 @Transactional
-@AuthAction(action = DEPLOY_MODIFY.class)
+@AuthAction(action = DEPLOY_BASE.class)
 @OperationType(type = OperationTypeEnum.DELETE)
 public class DeleteDeployVersionApi extends PrivateApiComponentBase {
 
@@ -41,6 +43,9 @@ public class DeleteDeployVersionApi extends PrivateApiComponentBase {
 
     @Resource
     DeployInstanceVersionMapper deployInstanceVersionMapper;
+
+    @Resource
+    DeployAppAuthorityService deployAppAuthorityService;
 
     @Override
     public String getName() {
@@ -66,6 +71,7 @@ public class DeleteDeployVersionApi extends PrivateApiComponentBase {
     @Description(desc = "删除发布版本")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
+        deployAppAuthorityService.checkOperationAuth(paramObj.getLong("appSystemId"), DeployAppConfigAction.VERSION_AND_PRODUCT_MANAGER);
         Long versionId = paramObj.getLong("id");
         Long sysId = paramObj.getLong("sysId");
         Long moduleId = paramObj.getLong("moduleId");
