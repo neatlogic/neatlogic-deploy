@@ -66,6 +66,7 @@ public class GetDeployAppPipelineApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         DeployAppConfigVo searchVo = paramObj.toJavaObject(DeployAppConfigVo.class);
+        searchVo.setId(-1L);
         IResourceCrossoverMapper resourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
         ResourceVo appSystem = resourceCrossoverMapper.getAppSystemById(searchVo.getAppSystemId());
         if (appSystem == null) {
