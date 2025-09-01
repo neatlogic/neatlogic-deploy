@@ -580,18 +580,38 @@ public class DeployPipelineConfigManager {
             if (phaseConfigVo == null) {
                 continue;
             }
-            List<AutoexecCombopPhaseOperationVo> combopPhaseOperationList = phaseConfigVo.getPhaseOperationList();
-            if (CollectionUtils.isEmpty(combopPhaseOperationList)) {
-                continue;
-            }
+            profileIdSet.addAll(getProfileIdSet(phaseConfigVo.getPhaseOperationList()));
+//            List<AutoexecCombopPhaseOperationVo> combopPhaseOperationList = phaseConfigVo.getPhaseOperationList();
+//            if (CollectionUtils.isEmpty(combopPhaseOperationList)) {
+//                continue;
+//            }
+//            for (AutoexecCombopPhaseOperationVo combopPhaseOperationVo : combopPhaseOperationList) {
+//                AutoexecCombopPhaseOperationConfigVo operationConfigVo = combopPhaseOperationVo.getConfig();
+//                if (operationConfigVo == null) {
+//                    continue;
+//                }
+//                Long profileId = operationConfigVo.getProfileId();
+//                if (profileId != null) {
+//                    profileIdSet.add(profileId);
+//                }
+//            }
+        }
+        return profileIdSet;
+    }
+
+    private static Set<Long> getProfileIdSet(List<AutoexecCombopPhaseOperationVo> combopPhaseOperationList) {
+        Set<Long> profileIdSet = new HashSet<>();
+        if (CollectionUtils.isNotEmpty(combopPhaseOperationList)) {
             for (AutoexecCombopPhaseOperationVo combopPhaseOperationVo : combopPhaseOperationList) {
                 AutoexecCombopPhaseOperationConfigVo operationConfigVo = combopPhaseOperationVo.getConfig();
-                if (operationConfigVo == null) {
-                    continue;
-                }
-                Long profileId = operationConfigVo.getProfileId();
-                if (profileId != null) {
-                    profileIdSet.add(profileId);
+                if (operationConfigVo != null) {
+                    Long profileId = operationConfigVo.getProfileId();
+                    if (profileId != null) {
+                        profileIdSet.add(profileId);
+                    }
+                    profileIdSet.addAll(getProfileIdSet(operationConfigVo.getIfList()));
+                    profileIdSet.addAll(getProfileIdSet(operationConfigVo.getElseList()));
+                    profileIdSet.addAll(getProfileIdSet(operationConfigVo.getOperations()));
                 }
             }
         }
