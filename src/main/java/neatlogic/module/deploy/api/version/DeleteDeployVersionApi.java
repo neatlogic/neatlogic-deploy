@@ -71,7 +71,7 @@ public class DeleteDeployVersionApi extends PrivateApiComponentBase {
     @Description(desc = "删除发布版本")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
-        deployAppAuthorityService.checkOperationAuth(paramObj.getLong("appSystemId"), DeployAppConfigAction.VERSION_AND_PRODUCT_MANAGER);
+        DeployVersionVo versionVo;
         Long versionId = paramObj.getLong("id");
         Long sysId = paramObj.getLong("sysId");
         Long moduleId = paramObj.getLong("moduleId");
@@ -84,24 +84,28 @@ public class DeleteDeployVersionApi extends PrivateApiComponentBase {
             throw new ParamNotExistsException(Collections.singletonList("id"), paramList);
         }
         if (versionId == null) {
-            DeployVersionVo versionVo = deployVersionMapper.getDeployVersionBaseInfoBySystemIdAndModuleIdAndVersion(new DeployVersionVo(version, sysId, moduleId));
-            if (versionVo != null) {
-                deployVersionMapper.getDeployVersionLockById(versionVo.getId());
-                versionId = versionVo.getId();
-            }
+             versionVo = deployVersionMapper.getDeployVersionBaseInfoBySystemIdAndModuleIdAndVersion(new DeployVersionVo(version, sysId, moduleId));
+             if(versionVo != null) {
+                 versionId = versionVo.getId();
+             }
         }
-        if (versionId != null) {
-            deployVersionMapper.deleteDeployVersionById(versionId);
-            deployVersionMapper.deleteDeployVersionBuildNoByVersionId(versionId);
-            deployVersionMapper.deleteDeployVersionEnvByVersionId(versionId);
-            deployEnvVersionMapper.deleteDeployEnvVersionByVersionId(versionId);
-            deployEnvVersionMapper.deleteDeployEnvVersionAuditByVersionId(versionId);
-            deployInstanceVersionMapper.deleteDeployInstanceVersionByVersionId(versionId);
-            deployInstanceVersionMapper.deleteDeployInstanceVersionAuditByVersionId(versionId);
-            deployVersionMapper.deleteDeployVersionDependencyByVersionId(versionId);
-            deployVersionMapper.deleteDeployedInstanceByVersionId(versionId);
-            deployVersionMapper.deleteDeployVersionBuildQualityByVersionId(versionId);
-            deployVersionMapper.deleteDeployVersionUnitTestByVersionId(versionId);
+
+        if(versionId != null) {
+            versionVo = deployVersionMapper.getDeployVersionLockById(versionId);
+            if (versionVo != null) {
+                deployAppAuthorityService.checkOperationAuth(versionVo.getAppSystemId(), DeployAppConfigAction.VERSION_AND_PRODUCT_MANAGER);
+                deployVersionMapper.deleteDeployVersionById(versionId);
+                deployVersionMapper.deleteDeployVersionBuildNoByVersionId(versionId);
+                deployVersionMapper.deleteDeployVersionEnvByVersionId(versionId);
+                deployEnvVersionMapper.deleteDeployEnvVersionByVersionId(versionId);
+                deployEnvVersionMapper.deleteDeployEnvVersionAuditByVersionId(versionId);
+                deployInstanceVersionMapper.deleteDeployInstanceVersionByVersionId(versionId);
+                deployInstanceVersionMapper.deleteDeployInstanceVersionAuditByVersionId(versionId);
+                deployVersionMapper.deleteDeployVersionDependencyByVersionId(versionId);
+                deployVersionMapper.deleteDeployedInstanceByVersionId(versionId);
+                deployVersionMapper.deleteDeployVersionBuildQualityByVersionId(versionId);
+                deployVersionMapper.deleteDeployVersionUnitTestByVersionId(versionId);
+            }
         }
         return null;
     }
