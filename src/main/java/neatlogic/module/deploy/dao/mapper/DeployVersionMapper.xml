@@ -94,18 +94,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
     <select id="searchDeployVersionCount" resultType="java.lang.Integer">
         select count(dv.id)
         from deploy_version dv
-        <if test="isHasAllAuthority == 0">
-            LEFT JOIN deploy_app_config_authority daca ON daca.app_system_id = dv.app_system_id
-        </if>
         <include refid="searchVersionWhere"></include>
     </select>
 
     <select id="getDeployVersionIdList" resultType="java.lang.Long">
         select dv.id
         from deploy_version dv
-        <if test="isHasAllAuthority == 0">
-            LEFT JOIN deploy_app_config_authority daca ON daca.app_system_id = dv.app_system_id
-        </if>
         <include refid="searchVersionWhere"></include>
         <if test="needPage == true">
             LIMIT #{startNum}, #{pageSize}
@@ -149,10 +143,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                 and
                 dv.`fcd` &lt;= FROM_UNIXTIME(#{startTimeRange[1]})
                 )
-            </if>
-            <if test="isHasAllAuthority == 0 and authorityActionList != null and authorityActionList.size() > 0">
-                AND
-                <include refid="neatlogic.module.deploy.dao.mapper.DeployAppSystemMapper.checkDeployAuthority"/>
             </if>
         </where>
     </sql>
