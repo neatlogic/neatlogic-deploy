@@ -1,7 +1,8 @@
 package neatlogic.module.deploy.api.appconfig.env;
 
+import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
-import neatlogic.framework.cmdb.crossover.IResourceCrossoverMapper;
+import neatlogic.framework.cmdb.crossover.IResourceCenterResourceCrossoverService;
 import neatlogic.framework.cmdb.dto.resourcecenter.ResourceVo;
 import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.common.dto.BasePageVo;
@@ -13,7 +14,6 @@ import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.framework.util.TableResultUtil;
 import neatlogic.module.deploy.dao.mapper.DeployAppConfigMapper;
-import com.alibaba.fastjson.JSONObject;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -69,8 +69,8 @@ public class SearchDeployAppConfigEnvDatabaseApi extends PrivateApiComponentBase
         if (count > 0) {
             searchVo.setRowNum(count);
             List<Long> databaseIdList = deployAppConfigMapper.getAppConfigEnvDatabaseResourceIdList(searchVo);
-            IResourceCrossoverMapper resourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
-            deployDBResourceVoList = resourceCrossoverMapper.getResourceListByIdList(databaseIdList);
+            IResourceCenterResourceCrossoverService resourceCenterResourceCrossoverService = CrossoverServiceFactory.getApi(IResourceCenterResourceCrossoverService.class);
+            deployDBResourceVoList = resourceCenterResourceCrossoverService.getResourceListByIdList(databaseIdList);
         }
         return TableResultUtil.getResult(deployDBResourceVoList, searchVo);
     }

@@ -21,7 +21,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.alibaba.nacos.common.utils.CollectionUtils;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.cmdb.crossover.ICiEntityCrossoverMapper;
-import neatlogic.framework.cmdb.crossover.IResourceCrossoverMapper;
+import neatlogic.framework.cmdb.crossover.IResourceCenterResourceCrossoverService;
 import neatlogic.framework.cmdb.dto.cientity.CiEntityVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.ResourceVo;
 import neatlogic.framework.common.constvalue.ApiParamType;
@@ -109,8 +109,8 @@ public class GetDeployAppConfigEnvInfoApi extends PrivateApiComponentBase {
         //获取实例autoConfig
         if (CollectionUtils.isNotEmpty(instanceIdList)) {
             List<ResourceVo> instanceList = deployResourceMapper.getAppInstanceResourceListByIdList(instanceIdList);
-            IResourceCrossoverMapper resourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
-            List<ResourceVo> resourceList = resourceCrossoverMapper.getResourceListByIdList(instanceIdList);
+            IResourceCenterResourceCrossoverService resourceCenterResourceCrossoverService = CrossoverServiceFactory.getApi(IResourceCenterResourceCrossoverService.class);
+            List<ResourceVo> resourceList = resourceCenterResourceCrossoverService.getResourceListByIdList(instanceIdList);
             Map<Long, ResourceVo> resourceMap = resourceList.stream().filter(Objects::nonNull).collect(Collectors.toMap(ResourceVo::getId, e -> e));
             for (ResourceVo instanceVo : instanceList) {
                 ResourceVo resourceVo = resourceMap.get(instanceVo.getId());
