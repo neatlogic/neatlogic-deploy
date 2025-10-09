@@ -266,10 +266,7 @@ public class SaveDeployScheduleApi extends PrivateApiComponentBase {
                 if (appModule == null) {
                     throw new AppModuleNotFoundException(appModuleId);
                 }
-                Long versionId = deploySystemModuleVersionVo.getVersionId();
-                if (versionId == null) {
-                    throw new ParamNotExistsException("模块版本（config.deploySystemModuleVersionList.versionId）");
-                }
+                //TODO 补充版本是否必填校验
             }
         }
         Long id = paramObj.getLong("id");
