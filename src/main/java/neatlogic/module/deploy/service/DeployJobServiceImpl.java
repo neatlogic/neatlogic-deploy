@@ -37,6 +37,7 @@ import neatlogic.framework.autoexec.source.AutoexecJobSourceFactory;
 import neatlogic.framework.autoexec.source.IAutoexecJobSource;
 import neatlogic.framework.cmdb.crossover.IAppSystemMapper;
 import neatlogic.framework.cmdb.crossover.ICiEntityCrossoverMapper;
+import neatlogic.framework.cmdb.crossover.IResourceCenterResourceCrossoverService;
 import neatlogic.framework.cmdb.crossover.IResourceCrossoverMapper;
 import neatlogic.framework.cmdb.dto.resourcecenter.ResourceVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.entity.AppModuleVo;
@@ -319,13 +320,13 @@ public class DeployJobServiceImpl implements DeployJobService {
             deployJobParam.setVersionId(versionVo.getId());
             deployJobParam.setVersion(versionVo.getVersion());
         }
-        IResourceCrossoverMapper resourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
+        IResourceCenterResourceCrossoverService resourceCenterResourceCrossoverService = CrossoverServiceFactory.getApi(IResourceCenterResourceCrossoverService.class);
         AutoexecCombopExecuteNodeConfigVo executeNodeConfig = new AutoexecCombopExecuteNodeConfigVo();
         if (CollectionUtils.isNotEmpty(moduleVo.getSelectNodeList())) {
             //如果不存在resourceId则需要补充 resourceId
             for (AutoexecNodeVo autoexecNodeVo : moduleVo.getSelectNodeList()) {
                 if (autoexecNodeVo.getId() == null) {
-                    ResourceVo resourceVo = resourceCrossoverMapper.getResourceByIpAndPort(autoexecNodeVo.getIp(), autoexecNodeVo.getPort());
+                    ResourceVo resourceVo = resourceCenterResourceCrossoverService.getResourceByIpAndPort(autoexecNodeVo.getIp(), autoexecNodeVo.getPort());
                     if (resourceVo != null) {
                         autoexecNodeVo.setId(resourceVo.getId());
                         autoexecNodeVo.setName(resourceVo.getName());
