@@ -226,7 +226,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                 #{triggerTime},
                 #{delayTime},
                 #{versionRuleStr},
-                #{configStr},
+                #{configStr, typeHandler=CompressHandler},
                 #{hookId},
                 #{fcu},
                 now(3),
@@ -246,7 +246,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                                 `trigger_time`        = #{triggerTime},
                                 `delay_time`          = #{delayTime},
                                 `version_rule`        = #{versionRuleStr},
-                                `config`              = #{configStr},
+                                `config`              = #{configStr, typeHandler=CompressHandler},
                                 `hook_id`             = #{hookId},
                                 `lcu`                 = #{lcu},
                                 `lcd`                 = now(3)

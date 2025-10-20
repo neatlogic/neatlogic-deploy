@@ -1387,7 +1387,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
     </select>
 
     <update id="updateDeployAppConfigById" parameterType="java.util.Map">
-        UPDATE `deploy_app_config` SET `config` = #{configStr} WHERE `id` = #{id}
+        UPDATE `deploy_app_config` SET `config` = #{configStr, typeHandler=CompressHandler} WHERE `id` = #{id}
     </update>
 
     <insert id="insertAppConfigAuthority">
@@ -1432,7 +1432,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         (`app_system_id`,`app_module_id`,`env_id`,`instance_id`,`key`,`type`,`value`,`is_empty`,`lcd`,`lcu`)
         VALUES
         <foreach collection="keyValueList" item="keyValue" separator="),(" open="(" close=")">
-            #{appSystemId},#{appModuleId},#{envId},#{instanceId},#{keyValue.key},#{keyValue.type},#{keyValue.value},#{keyValue.isEmpty},#{lcd},#{lcu}
+            #{appSystemId},#{appModuleId},#{envId},#{instanceId},#{keyValue.key},#{keyValue.type},#{keyValue.value, typeHandler=CompressHandler},#{keyValue.isEmpty},#{lcd},#{lcu}
         </foreach>
         ON DUPLICATE KEY UPDATE `key` = VALUES(`key`),`type` = VALUES(`type`),`value` = VALUES(`value`),`is_empty` = VALUES(`is_empty`),`lcd`= VALUES(`lcd`),`lcu` =
         VALUES(`lcu`)
@@ -1454,7 +1454,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         (`app_system_id`,`app_module_id`,`env_id`,`instance_id`,`key`,`value`,`is_empty`,`lcd`,`lcu`)
         VALUES
         <foreach collection="keyValueList" item="keyValue" separator="),(" open="(" close=")">
-            #{appSystemId},#{appModuleId},#{envId},#{instanceId},#{keyValue.key},#{keyValue.value},#{keyValue.isEmpty},now(3),#{lcu}
+            #{appSystemId},#{appModuleId},#{envId},#{instanceId},#{keyValue.key},#{keyValue.value, typeHandler=CompressHandler},#{keyValue.isEmpty},now(3),#{lcu}
         </foreach>
         ON DUPLICATE KEY UPDATE `key` = VALUES(`key`)
     </insert>
@@ -1465,7 +1465,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         VALUES
         <foreach collection="appEnvAutoConfigVoList" item="vo" separator=",">
             <foreach collection="vo.keyValueList" item="keyValue" separator="),(" open="(" close=")">
-                #{vo.appSystemId},#{vo.appModuleId},#{vo.envId},#{vo.instanceId},#{keyValue.key},#{keyValue.type},#{keyValue.value},#{keyValue.isEmpty},now(3),#{vo.lcu}
+                #{vo.appSystemId},#{vo.appModuleId},#{vo.envId},#{vo.instanceId},#{keyValue.key},#{keyValue.type},#{keyValue.value, typeHandler=CompressHandler},#{keyValue.isEmpty},now(3),#{vo.lcu}
             </foreach>
         </foreach>
         ON DUPLICATE KEY UPDATE `key` = VALUES(`key`)
@@ -1492,14 +1492,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         #{instanceId},
         #{key},
         #{type},
-        #{value},
+        #{value, typeHandler=CompressHandler},
         #{isEmpty},
         #{lcu},
         NOW(3)
         )
         ON DUPLICATE KEY UPDATE
         `type` = #{type},
-        `value` = #{value},
+        `value` = #{value, typeHandler=CompressHandler},
         `is_empty` = #{isEmpty},
         `lcu` = #{lcu},
         `lcd` = NOW(3)
@@ -1543,7 +1543,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                 #{appSystemId},
                 #{appModuleId},
                 #{envId},
-                #{configStr},
+                #{configStr, typeHandler=CompressHandler},
                 NOW(3),
                 #{fcu},
                 NOW(3),
@@ -1566,7 +1566,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
             #{vo.appSystemId},
             #{vo.appModuleId},
             #{vo.envId},
-            #{vo.configStr},
+            #{vo.configStr, typeHandler=CompressHandler},
             NOW(3),
             #{vo.fcu},
             NOW(3),
@@ -1587,7 +1587,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         VALUES (#{appSystemId},
                 #{appModuleId},
                 #{envId},
-                #{configStr},
+                #{configStr, typeHandler=CompressHandler},
                 NOW(3),
                 #{fcu},
                 NOW(3),
@@ -1628,7 +1628,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                 #{envId},
                 #{dbResourceId},
                 #{accountId},
-                #{configStr})
+                #{configStr, typeHandler=CompressHandler})
 
     </insert>
 
@@ -1643,7 +1643,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
             #{dbConfigVo.appSystemId},
             #{dbConfigVo.appModuleId},
             #{dbConfigVo.envId},
-            #{dbConfigVo.configStr}
+            #{dbConfigVo.configStr, typeHandler=CompressHandler}
             )
         </foreach>
         ON DUPLICATE KEY UPDATE `db_schema` = VALUES ( db_schema ),
@@ -1672,7 +1672,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
 
     <update id="updateAppConfig" parameterType="neatlogic.framework.deploy.dto.app.DeployAppConfigVo">
         UPDATE `deploy_app_config`
-        SET `config` = #{configStr},
+        SET `config` = #{configStr, typeHandler=CompressHandler},
             `lcu`    = #{lcu},
             `lcd`    = NOW(3)
         WHERE `app_system_id` = #{appSystemId}
@@ -1682,7 +1682,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
 
     <update id="updateAppConfigDraft" parameterType="neatlogic.framework.deploy.dto.app.DeployAppConfigVo">
         UPDATE `deploy_app_config_draft`
-        SET `config` = #{configStr},
+        SET `config` = #{configStr, typeHandler=CompressHandler},
             `lcu`    = #{lcu},
             `lcd`    = NOW(3)
         WHERE `app_system_id` = #{appSystemId}
@@ -1695,7 +1695,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         set db_schema= #{dbSchema},
             db_resource_id = #{dbResourceId},
             account_id = #{accountId},
-            config = #{configStr}
+            config = #{configStr, typeHandler=CompressHandler}
         where id = #{id}
     </update>
 
