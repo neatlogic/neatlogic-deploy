@@ -955,7 +955,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
             runner_map_id = #{runnerMapId},
         </if>
         <if test="runnerGroupStr != null and runnerGroupStr != ''">
-            runner_group = #{runnerGroupStr},
+            runner_group = #{runnerGroupStr, typeHandler=CompressHandler},
         </if>
         <if test="isCompiled != null">
             <choose>
@@ -979,7 +979,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
             runner_map_id = #{runnerMapId},
         </if>
         <if test="runnerGroupStr != null and runnerGroupStr != ''">
-            runner_group = #{runnerGroupStr},
+            runner_group = #{runnerGroupStr, typeHandler=CompressHandler},
         </if>
         <if test="endRev != null and endRev != ''">
             end_rev = #{endRev},
@@ -1001,7 +1001,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
             runner_map_id = #{runnerMapId},
         </if>
         <if test="runnerGroupStr != null and runnerGroupStr != ''">
-            runner_group = #{runnerGroupStr},
+            runner_group = #{runnerGroupStr, typeHandler=CompressHandler},
         </if>
         <if test="buildNo != null">
             build_no = #{buildNo},
@@ -1084,7 +1084,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         #{version},
         #{appSystemId},
         #{appModuleId},
-        #{description},
+        #{description, typeHandler=CompressHandler},
         #{isFreeze},
         <if test="repoType != null and repoType != ''">
             #{repoType},
@@ -1114,7 +1114,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
             #{runnerMapId},
         </if>
         <if test="runnerGroupStr != null and runnerGroupStr != ''">
-            #{runnerGroupStr},
+            #{runnerGroupStr, typeHandler=CompressHandler},
         </if>
         <if test="compileSuccessCount != null">
             #{compileSuccessCount},
@@ -1145,7 +1145,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         #{jobId},
         #{status},
         #{runnerMapId},
-        #{runnerGroupStr},
+        #{runnerGroupStr, typeHandler=CompressHandler},
         #{buildNo},
         #{isMirror},
         #{lcu},
@@ -1179,7 +1179,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
             #{runnerMapId},
         </if>
         <if test="runnerGroupStr != null and runnerGroupStr != ''">
-            #{runnerGroupStr},
+            #{runnerGroupStr, typeHandler=CompressHandler},
         </if>
         <if test="endRev != null and endRev != ''">
             #{endRev},
@@ -1194,7 +1194,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
             `runner_map_id` = #{runnerMapId},
         </if>
         <if test="runnerGroupStr != null and runnerGroupStr != ''">
-            `runner_group` = #{runnerGroupStr},
+            `runner_group` = #{runnerGroupStr, typeHandler=CompressHandler},
         </if>
         <if test="endRev != null and endRev != ''">
             `end_rev` = #{endRev},
@@ -1373,7 +1373,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         #{reopenedIssues},
         #{wontFixIssues},
         #{alertStatus},
-        #{qualityGateDetails},
+        #{qualityGateDetails, typeHandler=CompressHandler},
         #{newMaintainabilityRating})
     </insert>
 
@@ -1549,9 +1549,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
     </insert>
     <insert id="insertDeployVersionThead">
         insert into deploy_version_thead ( `config`,`user_uuid`)
-        values (#{configStr}, #{userUuid})
+        values (#{configStr, typeHandler=CompressHandler}, #{userUuid})
         ON DUPLICATE KEY
-            UPDATE `config` = #{configStr}
+            UPDATE `config` = #{configStr, typeHandler=CompressHandler}
     </insert>
 
     <delete id="deleteDeployVersionById">

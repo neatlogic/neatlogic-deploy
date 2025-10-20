@@ -137,7 +137,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                 #{type},
                 #{pipelineType},
                 #{buildNoPolicy},
-                #{configStr},
+                #{configStr, typeHandler=CompressHandler},
                 NOW(),
                 #{lcu})
     </insert>
@@ -172,7 +172,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
             `type`             = #{type},
             `pipeline_type`    = #{pipelineType},
             `build_no_policy`  = #{buildNoPolicy},
-            `config`           = #{configStr},
+            `config`           = #{configStr, typeHandler=CompressHandler},
             `lcd`              = NOW(3),
             `lcu`              = #{lcu}
         where `id` = #{id}

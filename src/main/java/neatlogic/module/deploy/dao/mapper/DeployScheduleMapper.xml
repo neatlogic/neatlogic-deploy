@@ -219,7 +219,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
             #{endTime},
             #{cron},
             #{isActive},
-            #{configStr},
+            #{configStr, typeHandler=CompressHandler},
             NOW(3),
             #{fcu},
             NOW(3),
@@ -239,7 +239,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
             `end_time`           = #{endTime},
             `cron`               = #{cron},
             `is_active`          = #{isActive},
-            `config`             = #{configStr},
+            `config`             = #{configStr, typeHandler=CompressHandler},
             `lcd`                = NOW(3),
             `lcu`                = #{lcu}
         WHERE `id` = #{id}
