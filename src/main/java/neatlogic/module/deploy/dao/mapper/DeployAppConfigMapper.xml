@@ -1087,6 +1087,28 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         </if>
     </select>
 
+    <select id="getAppConfigListByAppSystemIdList" parameterType="java.lang.Long"
+            resultType="neatlogic.framework.deploy.dto.app.DeployAppConfigVo" useCache="false">
+        SELECT
+            `app_system_id` as appSystemId,
+            `app_module_id` as appModuleId,
+            `env_id`        as envId,
+            `config`        as configStr,
+            `fcd`,
+            `fcu`,
+            `lcd`,
+            `lcu`
+        FROM `deploy_app_config`
+        WHERE `app_module_id` = 0
+        AND `env_id` = 0
+        <if test="list != null and list.size() > 0">
+            AND `app_system_id` IN
+            <foreach collection="list" item="appSystemId" open="(" separator="," close=")">
+                #{appSystemId}
+            </foreach>
+        </if>
+    </select>
+
     <select id="getAppConfigUserAppSystemIdList" resultType="java.lang.Long" useCache="false">
         SELECT
         `app_system_id`

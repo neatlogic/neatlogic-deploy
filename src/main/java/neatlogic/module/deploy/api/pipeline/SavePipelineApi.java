@@ -20,28 +20,34 @@ import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.asynchronization.threadlocal.UserContext;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.auth.core.AuthActionChecker;
+import neatlogic.framework.autoexec.dto.AutoexecParamVo;
 import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.deploy.auth.DEPLOY_BASE;
 import neatlogic.framework.deploy.auth.PIPELINE_MODIFY;
 import neatlogic.framework.deploy.constvalue.DeployAppConfigAction;
 import neatlogic.framework.deploy.constvalue.PipelineType;
+import neatlogic.framework.deploy.dto.app.DeployAppConfigVo;
+import neatlogic.framework.deploy.dto.app.DeployPipelineConfigVo;
 import neatlogic.framework.deploy.dto.pipeline.*;
 import neatlogic.framework.deploy.exception.DeployPipelineNotFoundException;
 import neatlogic.framework.deploy.exception.DeployScheduleNameRepeatException;
+import neatlogic.framework.deploy.exception.pipeline.DeployPipelineParamCannotBeEmptyException;
 import neatlogic.framework.dto.FieldValidResultVo;
 import neatlogic.framework.exception.type.PermissionDeniedException;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.IValid;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
+import neatlogic.module.deploy.dao.mapper.DeployAppConfigMapper;
 import neatlogic.module.deploy.dao.mapper.DeployPipelineMapper;
 import neatlogic.module.deploy.service.DeployAppAuthorityService;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.util.Objects;
+import java.util.*;
 
 @Service
 @Transactional
@@ -52,6 +58,9 @@ public class SavePipelineApi extends PrivateApiComponentBase {
     private DeployPipelineMapper pipelineMapper;
     @Resource
     private DeployAppAuthorityService deployAppAuthorityService;
+
+    @Resource
+    private DeployAppConfigMapper deployAppConfigMapper;
 
     @Override
     public String getName() {
@@ -95,6 +104,7 @@ public class SavePipelineApi extends PrivateApiComponentBase {
         } else if (Objects.equals(type, PipelineType.APPSYSTEM.getValue())) {
             deployAppAuthorityService.checkOperationAuth(pipelineVo.getAppSystemId(), DeployAppConfigAction.PIPELINE);
         }
+        verifyPipelineConfig(pipelineVo);
         if (id == null) {
             pipelineVo.setFcu(UserContext.get().getUserUuid(true));
             pipelineMapper.insertPipeline(pipelineVo);
@@ -155,4 +165,72 @@ public class SavePipelineApi extends PrivateApiComponentBase {
         };
     }
 
+    private void verifyPipelineConfig(PipelineVo pipelineVo) {
+        List<Long> appSystemIdList = new ArrayList<>();
+        List<PipelineLaneVo> laneList = pipelineVo.getLaneList();
+        if (CollectionUtils.isNotEmpty(laneList)) {
+            for (PipelineLaneVo pipelineLaneVo : laneList) {
+                List<PipelineGroupVo> groupList = pipelineLaneVo.getGroupList();
+                if (CollectionUtils.isNotEmpty(groupList)) {
+                    for (PipelineGroupVo pipelineGroupVo : groupList) {
+                        List<PipelineJobTemplateVo> jobTemplateList = pipelineGroupVo.getJobTemplateList();
+                        if (CollectionUtils.isNotEmpty(jobTemplateList)) {
+                            for (PipelineJobTemplateVo pipelineJobTemplateVo : jobTemplateList) {
+                                Long appSystemId = pipelineJobTemplateVo.getAppSystemId();
+                                if (appSystemId != null && !appSystemIdList.contains(appSystemId)) {
+                                    appSystemIdList.add(appSystemId);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        if (CollectionUtils.isNotEmpty(appSystemIdList)) {
+            Map<Long, List<AutoexecParamVo>> appSystemId2RuntimeParamListMap = new HashMap<>();
+            List<DeployAppConfigVo> appConfigList = deployAppConfigMapper.getAppConfigListByAppSystemIdList(appSystemIdList);
+            for (DeployAppConfigVo deployAppConfigVo : appConfigList) {
+                DeployPipelineConfigVo config = deployAppConfigVo.getConfig();
+                if (config != null && CollectionUtils.isNotEmpty(config.getRuntimeParamList())) {
+                    appSystemId2RuntimeParamListMap.put(deployAppConfigVo.getAppSystemId(), config.getRuntimeParamList());
+                }
+            }
+            if (CollectionUtils.isNotEmpty(laneList)) {
+                for (int i = 0; i < laneList.size(); i++) {
+                    PipelineLaneVo laneVo = laneList.get(i);
+                    List<PipelineGroupVo> groupList = laneVo.getGroupList();
+                    if (CollectionUtils.isNotEmpty(groupList)) {
+                        for (int j = 0; j < groupList.size(); j++) {
+                            PipelineGroupVo groupVo = groupList.get(j);
+                            List<PipelineJobTemplateVo> jobTemplateList = groupVo.getJobTemplateList();
+                            if (CollectionUtils.isNotEmpty(jobTemplateList)) {
+                                for (int k = 0; k < jobTemplateList.size(); k++) {
+                                    PipelineJobTemplateVo jobVo = jobTemplateList.get(k);
+                                    Long appSystemId = jobVo.getAppSystemId();
+                                    List<AutoexecParamVo> runtimeParamList = appSystemId2RuntimeParamListMap.get(appSystemId);
+                                    if (CollectionUtils.isNotEmpty(runtimeParamList)) {
+                                        JSONObject param = null;
+                                        JSONObject config = jobVo.getConfig();
+                                        if (MapUtils.isNotEmpty(config)) {
+                                            param = config.getJSONObject("param");
+                                        }
+                                        if (param == null) {
+                                            param = new JSONObject();
+                                        }
+                                        for (AutoexecParamVo runtimeParam : runtimeParamList) {
+                                            if (Objects.equals(runtimeParam.getIsRequired(), 1)) {
+                                                if (!param.containsKey(runtimeParam.getKey())) {
+                                                    throw new DeployPipelineParamCannotBeEmptyException(i + 1, j + 1, k + 1, runtimeParam.getName(), runtimeParam.getKey());
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
