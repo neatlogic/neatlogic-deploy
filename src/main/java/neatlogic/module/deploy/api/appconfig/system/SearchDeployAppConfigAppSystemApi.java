@@ -42,10 +42,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -158,6 +155,31 @@ public class SearchDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
                         isHasConfig = 1;
                     }
                     List<Long> appModuleIdList = deployAppConfigMapper.getHasEnvAppModuleIdListByAppSystemIdAndModuleIdList(returnSystemVo.getId(), returnSystemVo.getAppModuleList().stream().map(DeployAppModuleVo::getId).collect(Collectors.toList()));
+
+                    Iterator<DeployAppModuleVo> it = returnSystemVo.getAppModuleList().iterator();
+                    while (it.hasNext()) {
+                        DeployAppModuleVo appModuleVo  = it.next();
+                        if (appModuleIdList.contains(appModuleVo.getId())) {
+                            appModuleVo.setIsHasEnv(1);
+                        }
+                        appModuleVo.setIsConfig(isHasConfig);
+
+                        if(StringUtils.isEmpty(searchVo.getKeyword())){
+                            continue;
+                        }
+                        //匹配到应用系统 需要展示所有模块
+                        if( StringUtils.isNotBlank(returnSystemVo.getAbbrName()) && returnSystemVo.getAbbrName().contains(returnSystemVo.getKeyword())
+                                || StringUtils.isNotBlank(returnSystemVo.getName()) && returnSystemVo.getName().contains(returnSystemVo.getKeyword())){
+                            continue;
+                        }
+
+                        //只保留匹配到的模块
+                        if (StringUtils.isNotBlank(appModuleVo.getAbbrName()) && !appModuleVo.getAbbrName().contains(searchVo.getKeyword())
+                            || StringUtils.isNotBlank(appModuleVo.getName()) && !appModuleVo.getName().contains(searchVo.getKeyword())) {
+                            it.remove(); // ✅ 正确：使用迭代器自身的 remove()
+                        }
+                    }
+
                     for (DeployAppModuleVo appModuleVo : returnSystemVo.getAppModuleList()) {
                         if (appModuleIdList.contains(appModuleVo.getId())) {
                             appModuleVo.setIsHasEnv(1);
