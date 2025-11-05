@@ -5,6 +5,7 @@ import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.asynchronization.threadlocal.UserContext;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.common.constvalue.ApiParamType;
+import neatlogic.framework.common.constvalue.systemuser.SystemUser;
 import neatlogic.framework.deploy.auth.DEPLOY_MODIFY;
 import neatlogic.framework.deploy.dto.codehub.CommitVo;
 import neatlogic.framework.deploy.dto.codehub.RepositoryServiceVo;
@@ -29,7 +30,7 @@ import java.util.regex.Pattern;
 
 @Service
 @Transactional
-@SystemUser("autoexec")
+@AuthUser(SystemUser.AUTOEXEC)
 @AuthAction(action = DEPLOY_MODIFY.class)
 @OperationType(type = OperationTypeEnum.UPDATE)
 public class SaveDeployVersionCommitAnalyzeApi extends PrivateApiComponentBase {

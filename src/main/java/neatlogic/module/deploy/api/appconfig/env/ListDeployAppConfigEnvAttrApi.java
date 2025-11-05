@@ -18,6 +18,7 @@ package neatlogic.module.deploy.api.appconfig.env;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.common.constvalue.ApiParamType;
+import neatlogic.framework.common.constvalue.systemuser.SystemUser;
 import neatlogic.framework.common.dto.BasePageVo;
 import neatlogic.framework.deploy.auth.DEPLOY_BASE;
 import neatlogic.framework.deploy.dto.app.DeployAppConfigEnvAttrVo;
@@ -37,7 +38,7 @@ import javax.annotation.Resource;
  **/
 @Service
 @Transactional
-@SystemUser("autoexec")
+@AuthUser(SystemUser.AUTOEXEC)
 @AuthAction(action = DEPLOY_BASE.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
 public class ListDeployAppConfigEnvAttrApi extends PrivateApiComponentBase {

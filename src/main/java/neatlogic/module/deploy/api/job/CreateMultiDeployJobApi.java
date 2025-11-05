@@ -20,7 +20,6 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.asynchronization.threadlocal.UserContext;
 import neatlogic.framework.auth.core.AuthAction;
-import neatlogic.framework.autoexec.constvalue.SystemUser;
 import neatlogic.framework.batch.BatchRunner;
 import neatlogic.framework.cmdb.crossover.IAppSystemMapper;
 import neatlogic.framework.cmdb.crossover.ICiEntityCrossoverMapper;
@@ -28,6 +27,7 @@ import neatlogic.framework.cmdb.dto.resourcecenter.entity.AppSystemVo;
 import neatlogic.framework.cmdb.exception.cientity.CiEntityNotFoundException;
 import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.common.constvalue.ResponseCode;
+import neatlogic.framework.common.constvalue.systemuser.SystemUser;
 import neatlogic.framework.crossover.CrossoverServiceFactory;
 import neatlogic.framework.deploy.auth.DEPLOY_BASE;
 import neatlogic.framework.deploy.constvalue.JobSource;
@@ -59,7 +59,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  **/
 
 @Service
-@neatlogic.framework.restful.annotation.SystemUser("autoexec")
+@AuthUser(SystemUser.AUTOEXEC)
 @AuthAction(action = DEPLOY_BASE.class)
 @OperationType(type = OperationTypeEnum.CREATE)
 public class CreateMultiDeployJobApi extends PrivateApiComponentBase {

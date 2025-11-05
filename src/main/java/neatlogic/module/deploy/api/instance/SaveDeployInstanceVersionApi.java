@@ -36,7 +36,7 @@ import java.util.Objects;
 
 @Service
 @Transactional
-@neatlogic.framework.restful.annotation.SystemUser("autoexec")
+@AuthUser(SystemUser.AUTOEXEC)
 @AuthAction(action = DEPLOY_MODIFY.class)
 @OperationType(type = OperationTypeEnum.UPDATE)
 public class SaveDeployInstanceVersionApi extends PrivateApiComponentBase {

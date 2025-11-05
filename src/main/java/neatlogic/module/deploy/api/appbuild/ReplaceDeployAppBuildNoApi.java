@@ -19,16 +19,17 @@ package neatlogic.module.deploy.api.appbuild;
 
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.common.constvalue.ApiParamType;
+import neatlogic.framework.common.constvalue.systemuser.SystemUser;
 import neatlogic.framework.deploy.constvalue.BuildNoStatus;
 import neatlogic.framework.deploy.dto.job.DeployJobVo;
 import neatlogic.framework.deploy.dto.version.DeployVersionBuildNoVo;
 import neatlogic.framework.deploy.dto.version.DeployVersionVo;
 import neatlogic.framework.deploy.exception.DeployJobNotFoundException;
 import neatlogic.framework.deploy.exception.DeployVersionNotFoundException;
+import neatlogic.framework.restful.annotation.AuthUser;
 import neatlogic.framework.restful.annotation.Description;
 import neatlogic.framework.restful.annotation.Input;
 import neatlogic.framework.restful.annotation.Param;
-import neatlogic.framework.restful.annotation.SystemUser;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.module.deploy.dao.mapper.DeployJobMapper;
 import neatlogic.module.deploy.dao.mapper.DeployVersionMapper;
@@ -38,7 +39,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 
 @Transactional
-@SystemUser("autoexec")
+@AuthUser(SystemUser.AUTOEXEC)
 @Component
 public class ReplaceDeployAppBuildNoApi extends PrivateApiComponentBase {
     @Resource
