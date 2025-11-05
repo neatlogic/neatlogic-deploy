@@ -7,10 +7,7 @@ import neatlogic.framework.deploy.auth.DEPLOY_BASE;
 import neatlogic.framework.deploy.constvalue.DeployAppConfigAction;
 import neatlogic.framework.deploy.dto.version.DeployVersionVo;
 import neatlogic.framework.exception.type.ParamNotExistsException;
-import neatlogic.framework.restful.annotation.Description;
-import neatlogic.framework.restful.annotation.Input;
-import neatlogic.framework.restful.annotation.OperationType;
-import neatlogic.framework.restful.annotation.Param;
+import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.module.deploy.dao.mapper.DeployEnvVersionMapper;
@@ -30,6 +27,7 @@ import java.util.List;
  * @date 2022/6/14 9:59 上午
  */
 @Service
+@SystemUser("autoexec")
 @Transactional
 @AuthAction(action = DEPLOY_BASE.class)
 @OperationType(type = OperationTypeEnum.DELETE)

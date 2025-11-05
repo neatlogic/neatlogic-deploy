@@ -37,6 +37,7 @@ import java.util.List;
  * @date 2022/8/22 16:38
  */
 @Service
+@SystemUser("autoexec")
 @AuthAction(action = DEPLOY_BASE.class)
 @OperationType(type = OperationTypeEnum.OPERATE)
 public class SaveDeployAppConfigAutoConfigForAutoexecApi extends PrivateApiComponentBase {

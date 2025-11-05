@@ -22,7 +22,6 @@ import neatlogic.framework.exception.user.UserNotFoundException;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
-import neatlogic.module.deploy.dao.mapper.DeployAppConfigMapper;
 import neatlogic.module.deploy.dao.mapper.DeployInstanceVersionMapper;
 import neatlogic.module.deploy.dao.mapper.DeployResourceMapper;
 import neatlogic.module.deploy.dao.mapper.DeployVersionMapper;
@@ -37,6 +36,7 @@ import java.util.Objects;
 
 @Service
 @Transactional
+@neatlogic.framework.restful.annotation.SystemUser("autoexec")
 @AuthAction(action = DEPLOY_MODIFY.class)
 @OperationType(type = OperationTypeEnum.UPDATE)
 public class SaveDeployInstanceVersionApi extends PrivateApiComponentBase {

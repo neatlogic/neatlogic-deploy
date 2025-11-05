@@ -29,6 +29,7 @@ import java.util.regex.Pattern;
 
 @Service
 @Transactional
+@SystemUser("autoexec")
 @AuthAction(action = DEPLOY_MODIFY.class)
 @OperationType(type = OperationTypeEnum.UPDATE)
 public class SaveDeployVersionCommitAnalyzeApi extends PrivateApiComponentBase {

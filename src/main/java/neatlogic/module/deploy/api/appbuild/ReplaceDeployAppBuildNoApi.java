@@ -28,6 +28,7 @@ import neatlogic.framework.deploy.exception.DeployVersionNotFoundException;
 import neatlogic.framework.restful.annotation.Description;
 import neatlogic.framework.restful.annotation.Input;
 import neatlogic.framework.restful.annotation.Param;
+import neatlogic.framework.restful.annotation.SystemUser;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.module.deploy.dao.mapper.DeployJobMapper;
 import neatlogic.module.deploy.dao.mapper.DeployVersionMapper;
@@ -37,6 +38,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 
 @Transactional
+@SystemUser("autoexec")
 @Component
 public class ReplaceDeployAppBuildNoApi extends PrivateApiComponentBase {
     @Resource

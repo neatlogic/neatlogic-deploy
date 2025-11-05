@@ -17,7 +17,6 @@ import neatlogic.framework.deploy.exception.DeployInstanceVersionWhichCanRollbac
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
-import neatlogic.module.deploy.dao.mapper.DeployAppConfigMapper;
 import neatlogic.module.deploy.dao.mapper.DeployInstanceVersionMapper;
 import neatlogic.module.deploy.dao.mapper.DeployResourceMapper;
 import org.apache.commons.collections4.CollectionUtils;
@@ -30,6 +29,7 @@ import java.util.Objects;
 
 @Service
 @Transactional
+@SystemUser("autoexec")
 @AuthAction(action = DEPLOY_MODIFY.class)
 @OperationType(type = OperationTypeEnum.UPDATE)
 public class RollbackDeployInstanceVersionApi extends PrivateApiComponentBase {

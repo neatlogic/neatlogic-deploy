@@ -35,6 +35,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 
 @Service
+@neatlogic.framework.restful.annotation.SystemUser("autoexec")
 @AuthAction(action = DEPLOY_MODIFY.class)
 @OperationType(type = OperationTypeEnum.UPDATE)
 public class GetDeployVersionEnvForAutoexecApi extends PrivateApiComponentBase {

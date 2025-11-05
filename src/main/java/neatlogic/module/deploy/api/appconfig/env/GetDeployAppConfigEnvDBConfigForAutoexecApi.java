@@ -30,6 +30,7 @@ import java.util.stream.Collectors;
  * @date 2022/7/18 11:29
  */
 @Service
+@SystemUser("autoexec")
 @AuthAction(action = DEPLOY_BASE.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
 public class GetDeployAppConfigEnvDBConfigForAutoexecApi extends PrivateApiComponentBase {

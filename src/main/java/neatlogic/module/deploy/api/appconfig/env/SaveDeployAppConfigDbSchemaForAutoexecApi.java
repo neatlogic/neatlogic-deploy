@@ -40,6 +40,7 @@ import java.util.List;
  */
 @Service
 @Transactional
+@SystemUser("autoexec")
 @AuthAction(action = DEPLOY_BASE.class)
 @OperationType(type = OperationTypeEnum.OPERATE)
 public class SaveDeployAppConfigDbSchemaForAutoexecApi extends PrivateApiComponentBase {

@@ -33,6 +33,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 
 @Service
+@SystemUser("autoexec")
 @AuthAction(action = DEPLOY_BASE.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
 public class GetDeployRunnerGroupForAutoexecApi extends PrivateApiComponentBase {

@@ -39,6 +39,7 @@ import javax.annotation.Resource;
  **/
 
 @Transactional
+@SystemUser("autoexec")
 @Deprecated
 @AuthAction(action = DEPLOY_BASE.class)
 @OperationType(type = OperationTypeEnum.CREATE)

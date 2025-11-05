@@ -37,6 +37,7 @@ import javax.annotation.Resource;
  **/
 @Service
 @Transactional
+@SystemUser("autoexec")
 @AuthAction(action = DEPLOY_BASE.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
 public class ListDeployAppConfigEnvAttrApi extends PrivateApiComponentBase {

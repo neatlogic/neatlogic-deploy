@@ -11,10 +11,7 @@ import neatlogic.framework.crossover.CrossoverServiceFactory;
 import neatlogic.framework.deploy.auth.DEPLOY_BASE;
 import neatlogic.framework.deploy.dto.app.DeployAppEnvAutoConfigKeyValueVo;
 import neatlogic.framework.deploy.dto.app.DeployAppEnvAutoConfigVo;
-import neatlogic.framework.restful.annotation.Description;
-import neatlogic.framework.restful.annotation.Input;
-import neatlogic.framework.restful.annotation.OperationType;
-import neatlogic.framework.restful.annotation.Param;
+import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.module.deploy.dao.mapper.DeployAppConfigMapper;
@@ -26,6 +23,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
+@SystemUser("autoexec")
 @AuthAction(action = DEPLOY_BASE.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
 public class GetDeployAppEnvAutoConfigApi extends PrivateApiComponentBase {

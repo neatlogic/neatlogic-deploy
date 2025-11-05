@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@SystemUser("autoexec")
 @Transactional
 @AuthAction(action = DEPLOY_MODIFY.class)
 @OperationType(type = OperationTypeEnum.OPERATE)

@@ -25,6 +25,7 @@ import java.util.Objects;
 
 @Service
 @Transactional
+@SystemUser("autoexec")
 @AuthAction(action = DEPLOY_MODIFY.class)
 @OperationType(type = OperationTypeEnum.UPDATE)
 public class RollbackDeployEnvVersionApi extends PrivateApiComponentBase {

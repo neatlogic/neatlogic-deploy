@@ -59,6 +59,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  **/
 
 @Service
+@neatlogic.framework.restful.annotation.SystemUser("autoexec")
 @AuthAction(action = DEPLOY_BASE.class)
 @OperationType(type = OperationTypeEnum.CREATE)
 public class CreateMultiDeployJobApi extends PrivateApiComponentBase {

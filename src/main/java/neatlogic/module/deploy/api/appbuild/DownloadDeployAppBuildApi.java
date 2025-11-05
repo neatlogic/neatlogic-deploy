@@ -68,6 +68,7 @@ import java.util.List;
 import java.util.Objects;
 
 @Service
+@neatlogic.framework.restful.annotation.SystemUser("autoexec")
 @AuthAction(action = DEPLOY_MODIFY.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
 public class DownloadDeployAppBuildApi extends PrivateBinaryStreamApiComponentBase {

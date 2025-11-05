@@ -45,6 +45,7 @@ import java.util.stream.Collectors;
 
 @Component
 @Transactional
+@SystemUser("autoexec")
 @AuthAction(action = DEPLOY_BASE.class)
 @OperationType(type = OperationTypeEnum.CREATE)
 public class SaveDeployVersionCveListApi extends PrivateApiComponentBase {
