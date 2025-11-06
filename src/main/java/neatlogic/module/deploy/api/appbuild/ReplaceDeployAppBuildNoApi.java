@@ -18,6 +18,8 @@
 package neatlogic.module.deploy.api.appbuild;
 
 import com.alibaba.fastjson.JSONObject;
+import neatlogic.framework.auth.core.AuthAction;
+import neatlogic.framework.auth.label.NoAuth;
 import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.common.constvalue.systemuser.SystemUser;
 import neatlogic.framework.deploy.constvalue.BuildNoStatus;
@@ -41,6 +43,7 @@ import javax.annotation.Resource;
 @Transactional
 @AuthUser(SystemUser.AUTOEXEC)
 @Component
+@AuthAction(action = NoAuth.class)
 public class ReplaceDeployAppBuildNoApi extends PrivateApiComponentBase {
     @Resource
     DeployJobMapper deployJobMapper;
