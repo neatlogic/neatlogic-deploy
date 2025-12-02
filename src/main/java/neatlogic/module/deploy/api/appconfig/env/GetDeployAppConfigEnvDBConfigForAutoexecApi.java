@@ -4,11 +4,11 @@ import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.cmdb.crossover.IAttrCrossoverMapper;
 import neatlogic.framework.cmdb.crossover.ICiEntityCrossoverService;
-import neatlogic.framework.cmdb.crossover.IResourceEntityCrossoverMapper;
+import neatlogic.framework.cmdb.crossover.IResourceEntityCrossoverService;
 import neatlogic.framework.cmdb.dto.ci.AttrVo;
+import neatlogic.framework.cmdb.dto.ci.CiVo;
 import neatlogic.framework.cmdb.dto.cientity.AttrEntityVo;
 import neatlogic.framework.cmdb.dto.cientity.CiEntityVo;
-import neatlogic.framework.cmdb.dto.resourcecenter.config.ResourceEntityVo;
 import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.crossover.CrossoverServiceFactory;
 import neatlogic.framework.deploy.auth.DEPLOY_BASE;
@@ -80,10 +80,10 @@ public class GetDeployAppConfigEnvDBConfigForAutoexecApi extends PrivateApiCompo
         Set<Long> dbResourceIdSet = allDBConfigVoList.stream().map(DeployAppConfigEnvDBConfigVo::getDbResourceId).collect(Collectors.toSet());
         //获取db属性
         List<CiEntityVo> allDBResourceInfoList = null;
-        IResourceEntityCrossoverMapper resourceEntityCrossoverMapper = CrossoverServiceFactory.getApi(IResourceEntityCrossoverMapper.class);
-        ResourceEntityVo resourceEntityVo = resourceEntityCrossoverMapper.getResourceEntityByName("scence_database_ip_port_env_appmodule");
-        if (resourceEntityVo != null) {
-            Long ciId = resourceEntityVo.getCiId();
+        IResourceEntityCrossoverService resourceEntityCrossoverService = CrossoverServiceFactory.getApi(IResourceEntityCrossoverService.class);
+        CiVo rootCiVo = resourceEntityCrossoverService.getViewRootCi("scence_database_ip_port_env_appmodule");
+        if (rootCiVo != null) {
+            Long ciId = rootCiVo.getId();
             if (ciId != null) {
                 CiEntityVo paramCiEntityVo = new CiEntityVo();
                 List<Long> attrIdList = new ArrayList<>();
