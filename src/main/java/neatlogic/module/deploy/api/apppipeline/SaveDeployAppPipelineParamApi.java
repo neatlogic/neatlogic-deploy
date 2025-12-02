@@ -110,10 +110,14 @@ public class SaveDeployAppPipelineParamApi extends PrivateApiComponentBase {
                 if (autoexecParamVo != null) {
                     String type = autoexecParamVo.getType();
                     ParamType paramType = ParamType.getParamType(type);
-                    Object value = autoexecParamVo.getDefaultValue();
                     // 如果默认值不以"RC4:"开头，说明修改了密码，则重新加密
-                    if (paramType == ParamType.PASSWORD && value != null) {
-                        autoexecParamVo.setDefaultValue(RC4Util.encrypt((String) value));
+                    if (paramType == ParamType.PASSWORD) {
+                        if (autoexecParamVo.getDefaultValue() != null) {
+                            String value = autoexecParamVo.getDefaultValue().toString();
+                            if (StringUtils.isNotBlank(value)) {
+                                autoexecParamVo.setDefaultValue(RC4Util.encrypt(value));
+                            }
+                        }
                     } else if (paramType == ParamType.SELECT || paramType == ParamType.MULTISELECT || paramType == ParamType.CHECKBOX || paramType == ParamType.RADIO) {
                         AutoexecParamConfigVo config = autoexecParamVo.getConfig();
                         if (config != null) {
