@@ -350,10 +350,10 @@ public class DeployJobServiceImpl implements DeployJobService {
             }
         }
         executeNodeConfig.setSelectNodeList(moduleVo.getSelectNodeList());
-        if (deployJobParam.getExecuteConfig() == null) {
-            deployJobParam.setExecuteConfig(new AutoexecCombopExecuteConfigVo());
-        }
-        deployJobParam.getExecuteConfig().setExecuteNodeConfig(executeNodeConfig);
+//        if (deployJobParam.getExecuteConfig() == null) {
+//            deployJobParam.setExecuteConfig(new AutoexecCombopExecuteConfigVo());
+//        }
+        deployJobParam.setExecuteNodeConfig(executeNodeConfig);
     }
 
     @Override

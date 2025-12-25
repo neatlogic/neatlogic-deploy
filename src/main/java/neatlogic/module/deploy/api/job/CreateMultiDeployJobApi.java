@@ -17,6 +17,8 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.asynchronization.threadlocal.UserContext;
 import neatlogic.framework.auth.core.AuthAction;
+import neatlogic.framework.autoexec.crossover.IAutoexecJobCrossoverService;
+import neatlogic.framework.autoexec.dto.combop.AutoexecCombopExecuteConfigVo;
 import neatlogic.framework.batch.BatchRunner;
 import neatlogic.framework.cmdb.crossover.IAppSystemMapper;
 import neatlogic.framework.cmdb.crossover.ICiEntityCrossoverMapper;
@@ -39,6 +41,7 @@ import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.framework.util.HttpRequestUtil;
 import neatlogic.module.deploy.service.DeployJobService;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -85,7 +88,10 @@ public class CreateMultiDeployJobApi extends PrivateApiComponentBase {
             @Param(name = "envName", type = ApiParamType.STRING, desc = "term.cmdb.envname", help = "如果入参也有envId，则会以envName为准"),
             @Param(name = "param", type = ApiParamType.JSONOBJECT, desc = "term.autoexec.executeparam"),
             @Param(name = "roundCount", type = ApiParamType.LONG, desc = "term.autoexec.roundcount"),
-            @Param(name = "executeConfig", type = ApiParamType.JSONOBJECT, desc = "term.autoexec.executeconfig"),
+//            @Param(name = "executeConfig", type = ApiParamType.JSONOBJECT, desc = "term.autoexec.executeconfig"),
+            @Param(name = "protocolId", type = ApiParamType.LONG, desc = "协议id"),
+            @Param(name = "executeUser", type = ApiParamType.JSONOBJECT, desc = "执行用户"),
+            @Param(name = "executeNodeConfig", type = ApiParamType.JSONOBJECT, desc = "执行目标配置"),
             @Param(name = "planStartTime", type = ApiParamType.LONG, desc = "common.planstarttime"),
             @Param(name = "triggerType", type = ApiParamType.ENUM, rule = "auto,manual", desc = "common.triggertype"),
             @Param(name = "assignExecUser", type = ApiParamType.STRING, desc = "term.autoexec.assignexecuser"),
@@ -97,11 +103,17 @@ public class CreateMultiDeployJobApi extends PrivateApiComponentBase {
     @ResubmitInterval(value = 2)
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
+        JSONObject executeConfigObj = jsonObj.getJSONObject("executeConfig");
         if (StringUtils.isNotBlank(jsonObj.getString("proxyToUrl"))) {
             proxyToUrl(jsonObj);
         }
         JSONArray result = new JSONArray();
         DeployJobVo deployJobParam = JSON.toJavaObject(jsonObj, DeployJobVo.class);
+        if (MapUtils.isNotEmpty(executeConfigObj)) {
+            AutoexecCombopExecuteConfigVo executeConfigVo = executeConfigObj.toJavaObject(AutoexecCombopExecuteConfigVo.class);
+            IAutoexecJobCrossoverService autoexecJobCrossoverService = CrossoverServiceFactory.getApi(IAutoexecJobCrossoverService.class);
+            autoexecJobCrossoverService.handleOldDataExecuteConfig(executeConfigVo, deployJobParam);
+        }
         ICiEntityCrossoverMapper iCiEntityCrossoverMapper = CrossoverServiceFactory.getApi(ICiEntityCrossoverMapper.class);
         IAppSystemMapper iAppSystemMapper = CrossoverServiceFactory.getApi(IAppSystemMapper.class);
         if (StringUtils.isNotBlank(deployJobParam.getAppSystemAbbrName())) {
@@ -129,6 +141,11 @@ public class CreateMultiDeployJobApi extends PrivateApiComponentBase {
             if (module != null) {
                 //防止后续多个作业用的同一个作业
                 DeployJobVo deployJob = JSON.toJavaObject(jsonObj, DeployJobVo.class);
+                if (MapUtils.isNotEmpty(executeConfigObj)) {
+                    AutoexecCombopExecuteConfigVo executeConfigVo = executeConfigObj.toJavaObject(AutoexecCombopExecuteConfigVo.class);
+                    IAutoexecJobCrossoverService autoexecJobCrossoverService = CrossoverServiceFactory.getApi(IAutoexecJobCrossoverService.class);
+                    autoexecJobCrossoverService.handleOldDataExecuteConfig(executeConfigVo, deployJob);
+                }
                 deployJob.setSource(JobSource.DEPLOY.getValue());
                 deployJob.setInvokeId(invokeId);
                 deployJob.setRouteId(invokeId.toString());
