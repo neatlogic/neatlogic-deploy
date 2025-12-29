@@ -1,6 +1,7 @@
 package neatlogic.module.deploy.api.version;
 
 import com.alibaba.fastjson.JSONObject;
+import neatlogic.framework.asynchronization.threadlocal.RequestContext;
 import neatlogic.framework.asynchronization.threadlocal.UserContext;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.cmdb.crossover.IResourceCrossoverMapper;
@@ -111,7 +112,7 @@ public class GetDeployVersionEnvForAutoexecApi extends PrivateApiComponentBase {
 //            }
 //            AuthenticationInfoVo authenticationInfo = authenticationInfoService.getAuthenticationInfo(credentialUserUuid);
             //改为系统虚拟用户
-            String url = proxyToUrl + UserContext.get().getRequest().getRequestURI();
+            String url = proxyToUrl + RequestContext.get().getRequest().getRequestURI();
             UserContext.init(SystemUser.AUTOEXEC);
             UserContext.get().setToken("GZIP_" + LoginAuthHandlerBase.buildJwt(SystemUser.AUTOEXEC.getUserVo()).getCc());
             //到别的环境去验证
