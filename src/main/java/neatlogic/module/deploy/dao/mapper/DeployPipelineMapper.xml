@@ -30,6 +30,40 @@
         WHERE dpj.id = #{value}
     </select>
 
+    <select id="getJobTemplateListByIdList" parameterType="java.lang.Long"
+            resultType="neatlogic.framework.deploy.dto.pipeline.PipelineJobTemplateVo">
+        SELECT dpj.id,
+               dpj.group_id               as groupId,
+               dpj.app_system_id          as appSystemId,
+               dpj.app_module_id          as appModuleId,
+               dpj.scenario_id            as scenarioId,
+               dpj.round_count            as roundCount,
+               dpj.parallel_count         as parallelCount,
+               dpj.parallel_policy        as parallelPolicy,
+               dpj.env_id                 as envId,
+               dpj.config                 as configStr,
+               dpj.sort                   as sort
+        FROM deploy_pipeline_jobtemplate AS dpj
+        WHERE dpj.id in
+              <foreach collection="idList" close=")" item="id" separator="," open="(">
+                  #{id}
+              </foreach>
+    </select>
+
+    <select id="getVersionByJobTemplateIdListAndVersionName" resultType="neatlogic.framework.deploy.dto.pipeline.PipelineJobTemplateVersionVo">
+        select dpj.id ,
+        dv.id as versionId,
+        dv.version
+        from deploy_pipeline_jobtemplate dpj
+        left join deploy_version dv
+        on dpj.app_system_id = dv.app_system_id and dpj.app_module_id = dv.app_module_id and dv.is_freeze = 0
+        where dpj.id in
+        <foreach collection="idList" close=")" item="id" separator="," open="(">
+            #{id}
+        </foreach>
+        and dv.version = #{version}
+    </select>
+
     <sql id="searchJobTemplateCondition">
         <where>
             <if test="keyword != null and keyword != ''">
@@ -85,6 +119,7 @@
         <result column="pipelineFcu" property="fcu"/>
         <result column="pipelineLcd" property="lcd"/>
         <result column="pipelineLcu" property="lcu"/>
+        <result column="pipelineDefaultVersion" property="defaultVersion"/>
         <collection property="authList" ofType="neatlogic.framework.deploy.dto.pipeline.PipelineAuthVo">
             <result column="authUuid" property="authUuid"/>
             <result column="authType" property="type"/>
@@ -121,45 +156,47 @@
     </resultMap>
 
     <select id="getPipelineById" parameterType="java.lang.Long" resultMap="pipelineResultMap">
-        SELECT dp.id             as pipelineId,
-               dp.`name`         as pipelineName,
-               dp.is_active      as pipelineIsActive,
-               dp.type           as pipelineType,
-               dp.app_system_id  as pipelineAppSystemId,
-               dp.fcd            as pipelineFcd,
-               dp.fcu            as pipelineFcu,
-               dp.lcd            as pipelineLcd,
-               dp.lcu            as pipelineLcu,
-               dpl.id            as laneId,
-               dpl.sort          as laneSort,
-               dpg.id            as groupId,
-               dpg.need_wait     as groupNeedWait,
-               dpg.sort          as groupSort,
-               dpj.id            as jobTemplateId,
-               dpj.app_system_id as jobTemplateAppId,
-               dpj.app_module_id as jobTemplateModuleId,
-               dpj.env_id        as jobTemplateEnvId,
-               dpj.scenario_id   as jobTemplateScenarioId,
-               aes.name          as jobTemplateScenarioName,
-               dpj.round_count   as jobTemplateRoundCount,
-               dpj.parallel_count   as jobTemplateParallelCount,
-               dpj.parallel_policy   as jobTemplateParallelPolicy,
-               dpj.config        as jobTemplateConfigStr,
-               saa.`name` AS jobTemplateAppName,
-               saa.`abbr_name` AS jobTemplateAppAbbrName,
-               saa.`app_module_name` AS jobTemplateModuleName,
+        SELECT dp.id                      as pipelineId,
+               dp.`name`                  as pipelineName,
+               dp.is_active               as pipelineIsActive,
+               dp.type                    as pipelineType,
+               dp.app_system_id           as pipelineAppSystemId,
+               dp.fcd                     as pipelineFcd,
+               dp.fcu                     as pipelineFcu,
+               dp.lcd                     as pipelineLcd,
+               dp.lcu                     as pipelineLcu,
+               dp.default_version         as pipelineDefaultVersion,
+               dpl.id                     as laneId,
+               dpl.sort                   as laneSort,
+               dpg.id                     as groupId,
+               dpg.need_wait              as groupNeedWait,
+               dpg.sort                   as groupSort,
+               dpj.id                     as jobTemplateId,
+               dpj.app_system_id          as jobTemplateAppId,
+               dpj.app_module_id          as jobTemplateModuleId,
+               dpj.env_id                 as jobTemplateEnvId,
+               dpj.scenario_id            as jobTemplateScenarioId,
+               aes.name                   as jobTemplateScenarioName,
+               dpj.round_count            as jobTemplateRoundCount,
+               dpj.parallel_count         as jobTemplateParallelCount,
+               dpj.parallel_policy        as jobTemplateParallelPolicy,
+               dpj.config                 as jobTemplateConfigStr,
+               saa.`name`                 AS jobTemplateAppName,
+               saa.`abbr_name`            AS jobTemplateAppAbbrName,
+               saa.`app_module_name`      AS jobTemplateModuleName,
                saa.`app_module_abbr_name` AS jobTemplateModuleAbbrName,
-               cienv.`value`      as jobTemplateEnvName,
-               dpa.auth_uuid     as authUuid,
-               dpa.type          as authType
+               cienv.`value`              as jobTemplateEnvName,
+               dpa.auth_uuid              as authUuid,
+               dpa.type                   as authType
         FROM deploy_pipeline AS dp
                  LEFT JOIN deploy_pipeline_lane AS dpl ON dp.id = dpl.pipeline_id
                  LEFT JOIN deploy_pipeline_group AS dpg ON dpl.id = dpg.lane_id
                  LEFT JOIN deploy_pipeline_jobtemplate AS dpj ON dpg.id = dpj.group_id
                  LEFT JOIN cmdb_global_attritem AS cienv ON dpj.env_id = cienv.id
-                 LEFT JOIN  @{DATA_SCHEMA}.scence_appsystem_appmodule AS saa ON saa.id = dpj.app_system_id AND saa.app_module_id = dpj.app_module_id
-                 LEFT JOIN deploy_pipeline_auth AS dpa ON dp.id = dpa.pipeline_id
-                 LEFT JOIN autoexec_scenario aes ON dpj.scenario_id = aes.id
+                 LEFT JOIN @{DATA_SCHEMA}.scence_appsystem_appmodule AS saa
+        ON saa.id = dpj.app_system_id AND saa.app_module_id = dpj.app_module_id
+            LEFT JOIN deploy_pipeline_auth AS dpa ON dp.id = dpa.pipeline_id
+            LEFT JOIN autoexec_scenario aes ON dpj.scenario_id = aes.id
         where dp.id = #{value}
         order by dpl.sort, dpg.sort, dpj.sort
     </select>
@@ -332,6 +369,7 @@
         UPDATE deploy_pipeline
         SET `name`      = #{name},
             `is_active` = #{isActive},
+            `default_version` = #{defaultVersion},
             `lcu`= #{lcu},
             `lcd`=NOW(3)
         WHERE `id` = #{id}
@@ -383,6 +421,7 @@
                                     `is_active`,
                                     `type`,
                                     `app_system_id`,
+                                    `default_version`,
                                     `fcd`,
                                     `fcu`,
                                     `lcd`,
@@ -392,6 +431,7 @@
                 #{isActive},
                 #{type},
                 #{appSystemId},
+                #{defaultVersion},
                 NOW(3),
                 #{fcu},
                 NOW(3),

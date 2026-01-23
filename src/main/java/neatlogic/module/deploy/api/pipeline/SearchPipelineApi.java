@@ -17,7 +17,9 @@ import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.common.dto.BasePageVo;
+import neatlogic.framework.config.ConfigManager;
 import neatlogic.framework.deploy.auth.DEPLOY_BASE;
+import neatlogic.framework.deploy.constvalue.DeployTenantConfig;
 import neatlogic.framework.deploy.constvalue.PipelineType;
 import neatlogic.framework.deploy.dto.pipeline.PipelineSearchVo;
 import neatlogic.framework.deploy.dto.pipeline.PipelineVo;
@@ -68,7 +70,13 @@ public class SearchPipelineApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         PipelineSearchVo searchVo = JSON.toJavaObject(jsonObj, PipelineSearchVo.class);
-        return TableResultUtil.getResult(pipelineService.searchPipeline(searchVo), searchVo);
+        JSONObject result = TableResultUtil.getResult(pipelineService.searchPipeline(searchVo), searchVo);
+        try {
+            result.put("isNeedDefaultVersion", Integer.valueOf(ConfigManager.getConfig(DeployTenantConfig.IS_PIPELINE_NEED_DEFAULT_VERSION)));
+        }catch (Exception e){
+            result.put("isNeedDefaultVersion",0);
+        }
+        return result;
     }
 
 }

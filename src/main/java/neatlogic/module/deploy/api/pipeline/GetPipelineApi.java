@@ -12,11 +12,14 @@
 
 package neatlogic.module.deploy.api.pipeline;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.autoexec.dto.AutoexecParamVo;
 import neatlogic.framework.common.constvalue.ApiParamType;
+import neatlogic.framework.config.ConfigManager;
 import neatlogic.framework.deploy.auth.DEPLOY_BASE;
+import neatlogic.framework.deploy.constvalue.DeployTenantConfig;
 import neatlogic.framework.deploy.dto.app.DeployAppConfigVo;
 import neatlogic.framework.deploy.dto.app.DeployPipelineConfigVo;
 import neatlogic.framework.deploy.dto.pipeline.PipelineGroupVo;
@@ -109,7 +112,13 @@ public class GetPipelineApi extends PrivateApiComponentBase {
             }
         }
         pipelineVo.setAppConfigList(appConfigList);
-        return pipelineVo;
+        JSONObject result = JSON.parseObject(JSON.toJSONString(pipelineVo));
+        try {
+            result.put("isNeedDefaultVersion", Integer.valueOf(ConfigManager.getConfig(DeployTenantConfig.IS_PIPELINE_NEED_DEFAULT_VERSION)));
+        } catch (Exception e) {
+            result.put("isNeedDefaultVersion", 0);
+        }
+        return result;
     }
 
 }
