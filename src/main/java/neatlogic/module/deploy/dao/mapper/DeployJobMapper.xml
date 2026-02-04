@@ -11,7 +11,7 @@
                a.app_module_id as appModuleId,
                c.name          as appModuleName,
                a.env_id        as envId,
-               d.`value`          as envName,
+               d.`value`       as envName,
                a.scenario_id   as scenarioId,
                e.name          as scenarioName,
                a.version,
@@ -48,7 +48,7 @@
                a.app_system_id      as appSystemId,
                a.app_module_id      as appModuleId,
                a.env_id             as envId,
-               d.`value`               as envName,
+               d.`value`            as envName,
                a.scenario_id        as scenarioId,
                e.name               as scenarioName,
                a.version,
@@ -83,139 +83,368 @@
         </foreach>
     </select>
 
-    <sql id="searchJobSql">
-        left join autoexec_job ajj on ajj.parent_id = aj.id
-        LEFT JOIN deploy_job dj ON dj.id = aj.id
+    <resultMap id="parentJobListMap" type="neatlogic.framework.autoexec.dto.job.AutoexecJobVo">
+        <id column="parentId" property="id"/>
+        <collection property="children" ofType="neatlogic.framework.autoexec.dto.job.AutoexecJobVo">
+            <id column="id" property="id"/>
+            <result column="name" property="name"/>
+            <result column="status" property="status"/>
+            <result column="planStartTime" property="planStartTime"/>
+            <result column="startTime" property="startTime"/>
+            <result column="endTime" property="endTime"/>
+            <result column="operationId" property="operationId"/>
+            <result column="operationType" property="operationType"/>
+            <result column="execUser" property="execUser"/>
+            <result column="execUserType" property="execUserType"/>
+            <result column="source" property="source"/>
+            <result column="roundCount" property="roundCount"/>
+            <result column="source" property="source"/>
+            <result column="source" property="source"/>
+            <result column="triggerType" property="triggerType"/>
+            <result column="parentId" property="parentId"/>
+            <result column="reviewer" property="reviewer"/>
+            <result column="reviewStatus" property="reviewStatus"/>
+            <result column="reviewTime" property="reviewTime"/>
+            <result column="scenarioName" property="scenarioName"/>
+        </collection>
+    </resultMap>
+
+    <select id="getDeploySubJobListByFilter" resultMap="parentJobListMap">
+        SELECT ajj.`parent_id` as parentId,
+        ajj.`id` as id,
+        ajj.`name` as name,
+        ajj.`status` as status,
+        ajj.`plan_start_time` as planStartTime,
+        ajj.`start_time` as startTime,
+        ajj.`end_time` as endTime,
+        ajj.`operation_id` as operationId,
+        ajj.`operation_type` as operationType,
+        ajj.`exec_user` as execUser,
+        ajj.`exec_user_type` as execUserType,
+        ajj.`source` as source,
+        ajj.`round_count` as roundCount,
+        ajj.`trigger_type` as triggerType,
+        ajj.`parent_id` as parentId,
+        ajj.`reviewer` as reviewer,
+        ajj.`review_status` as reviewStatus,
+        ajj.`review_time` as reviewTime,
+        e.`name` as scenarioName
+        FROM autoexec_job ajj
         LEFT JOIN deploy_job djj ON djj.id = ajj.id
-        <if test="(typeIdList != null and typeIdList.size() > 0) or (combopName != null and combopName != '' )">
-            LEFT JOIN `autoexec_combop` ac ON aj.`operation_id` = ac.`id`
-        </if>
+        left join autoexec_scenario e on djj.scenario_id = e.id
         <if test="(invokeIdList != null and invokeIdList.size() > 0) or (sourceType != null and sourceType != '')">
-            JOIN `autoexec_job_invoke` aji ON aj.`id` = aji.`job_id`
-        </if>
-        <if test="pipelineId != null">
-            JOIN `autoexec_job_invoke` aji_pipeline ON aj.`id` = aji_pipeline.`job_id` AND aji_pipeline.`invoke_id` =
-            #{pipelineId}
+            JOIN `autoexec_job_invoke` aji ON ajj.`id` = aji.`job_id`
         </if>
         <if test="isHasAllAuthority == 0">
-            LEFT JOIN deploy_app_config_authority daca ON daca.app_system_id = dj.app_system_id
+            LEFT JOIN deploy_app_config_authority daca ON daca.app_system_id = djj.app_system_id
         </if>
         <where>
-            <if test="combopName != null and combopName != ''">
-                ac.name like concat('%', #{combopName}, '%')
-            </if>
-            <if test="excludeIdList != null and excludeIdList.size() > 0">
-                AND aj.id not in
-                <foreach collection="excludeIdList" item="item" open="(" close=")" separator=",">#{item}</foreach>
-            </if>
-            <if test="keyword != null and keyword != ''">
-                and (aj.name like concat('%', #{keyword}, '%') OR aj.id = #{keyword} OR ajj.name like concat('%',
-                #{keyword}, '%'))
-            </if>
-            <if test="operationId != null">
-                and aj.operation_id = #{operationId}
-            </if>
-            <if test="statusList != null and statusList.size() > 0 ">
-                and (aj.`status` in
-                <foreach collection="statusList" item="status" open="(" close=")" separator=",">
-                    #{status}
-                </foreach>
-                or ajj.`status` in
-                <foreach collection="statusList" item="status" open="(" close=")" separator=",">
-                    #{status}
-                </foreach>)
-            </if>
-            <if test="sourceType != null and sourceType != ''">
-                and aji.`type` = #{sourceType}
-            </if>
-            <if test="sourceList != null and sourceList.size() > 0 ">
-                and aj.`source` in
-                <foreach collection="sourceList" item="source" open="(" close=")" separator=",">
-                    #{source}
-                </foreach>
-            </if>
-            <if test="hasParent != null">
-                <choose>
-                    <when test="hasParent == true">
-                        AND (aj.parent_id is not null AND aj.parent_id != -1)
-                    </when>
-                    <otherwise>
-                        AND (aj.parent_id is null OR aj.parent_id = -1)
-                    </otherwise>
-                </choose>
-            </if>
-            <if test="typeIdList != null and typeIdList.size() > 0 ">
-                and ac.`type_id` in
-                <foreach collection="typeIdList" item="typeId" open="(" close=")"
-                         separator=",">
-                    #{typeId}
-                </foreach>
-            </if>
-            <if test="execUserList != null and execUserList.size() > 0 ">
-                and (aj.`exec_user` in
-                <foreach collection="execUserList" item="execUser" open="(" close=")" separator=",">
-                    #{execUser}
-                </foreach>
-                or ajj.`exec_user` in
-                <foreach collection="execUserList" item="execUser" open="(" close=")" separator=",">
-                    #{execUser}
-                </foreach>)
-            </if>
-            <if test="idList != null and idList.size() > 0">
-                and aj.`id` in
-                <foreach collection="idList" item="item" open="(" close=")" separator=",">
-                    #{item}
-                </foreach>
-            </if>
-            <if test="startTimeRange != null">
-                <if test="startTimeRange.size() > 0">
-                    and (aj.start_time &gt;= STR_TO_DATE(#{startTimeRange[0]},'%Y-%m-%d')
-                    or ajj.start_time &gt;= STR_TO_DATE(#{startTimeRange[0]},'%Y-%m-%d'))
-                </if>
-                <if test="startTimeRange.size() > 1">
-                    and (aj.start_time &lt;= STR_TO_DATE(#{startTimeRange[1]},'%Y-%m-%d')
-                    or ajj.start_time &lt;= STR_TO_DATE(#{startTimeRange[1]},'%Y-%m-%d'))
-                </if>
-            </if>
-            <if test="endTimeRange != null">
-                <if test="endTimeRange.size() > 0">
-                    and (aj.end_time &gt;= STR_TO_DATE(#{endTimeRange[0]},'%Y-%m-%d')
-                    or ajj.end_time &gt;= STR_TO_DATE(#{endTimeRange[0]},'%Y-%m-%d'))
-                </if>
-                <if test="endTimeRange.size() > 1">
-                    and (aj.end_time &lt;= STR_TO_DATE(#{endTimeRange[1]},'%Y-%m-%d')
-                    or ajj.end_time &lt;= STR_TO_DATE(#{endTimeRange[1]},'%Y-%m-%d'))
-                </if>
-            </if>
-            <if test="planStartTimeRange != null">
-                <if test="planStartTimeRange.size() > 0">
-                    and (aj.plan_start_time &gt;= STR_TO_DATE(#{planStartTimeRange[0]},'%Y-%m-%d')
-                    or ajj.plan_start_time &gt;= STR_TO_DATE(#{planStartTimeRange[0]},'%Y-%m-%d'))
-                </if>
-                <if test="planStartTimeRange.size() > 1">
-                    and (aj.plan_start_time &lt;= STR_TO_DATE(#{planStartTimeRange[1]},'%Y-%m-%d')
-                    or ajj.plan_start_time &lt;= STR_TO_DATE(#{planStartTimeRange[1]},'%Y-%m-%d'))
-                </if>
-            </if>
-            <if test="invokeIdList != null and invokeIdList.size() > 0">
-                and aji.`invoke_id` in
-                <foreach collection="invokeIdList" open="(" item="invokeId" close=")" separator=",">
-                    #{invokeId}
-                </foreach>
-            </if>
-            <if test="appSystemId != null">
-                and dj.`app_system_id` = #{appSystemId}
-            </if>
-            <if test="appModuleId != null">
-                and dj.`app_module_id` = #{appModuleId}
-            </if>
-            <if test="envId != null">
-                and (dj.`env_id` = #{envId} or djj.`env_id` = #{envId})
-            </if><if test="isHasAllAuthority == 0">
-                AND
-                <include refid="neatlogic.module.deploy.dao.mapper.DeployAppSystemMapper.checkDeployAuthority"/>
-            </if>
+            <include refid="searchSubJobSql"/>
         </where>
+    </select>
+
+    <sql id="searchSubJobSql">
+        and ajj.parent_id is not null
+        <if test="parentIdList != null and parentIdList.size() > 0">
+            and ajj.parent_id in
+            <foreach collection="parentIdList" item="parentId" open="(" separator="," close=")">
+                #{parentId}
+            </foreach>
+        </if>
+        <if test="excludeIdList != null and excludeIdList.size() > 0">
+            AND ajj.id not in
+            <foreach collection="excludeIdList" item="item" open="(" close=")" separator=",">#{item}</foreach>
+        </if>
+        <if test="keyword != null and keyword != ''">
+            and (ajj.name like concat('%', #{keyword}, '%') OR ajj.id = #{keyword} )
+        </if>
+        <if test="operationId != null">
+            and ajj.operation_id = #{operationId}
+        </if>
+        <if test="statusList != null and statusList.size() > 0 ">
+            and (ajj.`status` in
+            <foreach collection="statusList" item="status" open="(" close=")" separator=",">
+                #{status}
+            </foreach>
+            )
+        </if>
+        <if test="sourceType != null and sourceType != ''">
+            and aji.`type` = #{sourceType}
+        </if>
+        <if test="sourceList != null and sourceList.size() > 0 ">
+            and ajj.`source` in
+            <foreach collection="sourceList" item="source" open="(" close=")" separator=",">
+                #{source}
+            </foreach>
+        </if>
+        <if test="execUserList != null and execUserList.size() > 0 ">
+            and (ajj.`exec_user` in
+            <foreach collection="execUserList" item="execUser" open="(" close=")" separator=",">
+                #{execUser}
+            </foreach>
+            )
+        </if>
+        <if test="idList != null and idList.size() > 0">
+            and ajj.`id` in
+            <foreach collection="idList" item="item" open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </if>
+        <if test="startTimeRange != null">
+            <if test="startTimeRange.size() > 0">
+                and (ajj.start_time &gt;= STR_TO_DATE(#{startTimeRange[0]},'%Y-%m-%d'))
+            </if>
+            <if test="startTimeRange.size() > 1">
+                and (ajj.start_time &lt;= STR_TO_DATE(#{startTimeRange[1]},'%Y-%m-%d'))
+            </if>
+        </if>
+        <if test="endTimeRange != null">
+            <if test="endTimeRange.size() > 0">
+                and (ajj.end_time &gt;= STR_TO_DATE(#{endTimeRange[0]},'%Y-%m-%d'))
+            </if>
+            <if test="endTimeRange.size() > 1">
+                and (ajj.end_time &lt;= STR_TO_DATE(#{endTimeRange[1]},'%Y-%m-%d'))
+            </if>
+        </if>
+        <if test="planStartTimeRange != null">
+            <if test="planStartTimeRange.size() > 0">
+                and (ajj.plan_start_time &gt;= STR_TO_DATE(#{planStartTimeRange[0]},'%Y-%m-%d'))
+            </if>
+            <if test="planStartTimeRange.size() > 1">
+                and (ajj.plan_start_time &lt;= STR_TO_DATE(#{planStartTimeRange[1]},'%Y-%m-%d'))
+            </if>
+        </if>
+        <if test="invokeIdList != null and invokeIdList.size() > 0">
+            and aji.`invoke_id` in
+            <foreach collection="invokeIdList" open="(" item="invokeId" close=")" separator=",">
+                #{invokeId}
+            </foreach>
+        </if>
+        <if test="appSystemId != null">
+            and djj.`app_system_id` = #{appSystemId}
+        </if>
+        <if test="appModuleId != null">
+            and djj.`app_module_id` = #{appModuleId}
+        </if>
+        <if test="envId != null">
+            and (djj.`env_id` = #{envId})
+        </if>
+        <if test="isHasAllAuthority == 0">
+            AND
+            <include refid="neatlogic.module.deploy.dao.mapper.DeployAppSystemMapper.checkDeployAuthority"/>
+        </if>
+    </sql>
+
+    <sql id="searchParentJobSql">
+        and ajj.parent_id is not null
+        <if test="combopName != null and combopName != ''">
+            ac.name like concat('%', #{combopName}, '%')
+        </if>
+        <if test="excludeIdList != null and excludeIdList.size() > 0">
+            AND aj.id not in
+            <foreach collection="excludeIdList" item="item" open="(" close=")" separator=",">#{item}</foreach>
+        </if>
+        <if test="keyword != null and keyword != ''">
+            and (aj.name like concat('%', #{keyword}, '%') OR aj.id = #{keyword})
+        </if>
+        <if test="operationId != null">
+            and aj.operation_id = #{operationId}
+        </if>
+        <if test="statusList != null and statusList.size() > 0 ">
+            and (aj.`status` in
+            <foreach collection="statusList" item="status" open="(" close=")" separator=",">
+                #{status}
+            </foreach>
+        </if>
+        <if test="sourceType != null and sourceType != ''">
+            and aji.`type` = #{sourceType}
+        </if>
+        <if test="sourceList != null and sourceList.size() > 0 ">
+            and aj.`source` in
+            <foreach collection="sourceList" item="source" open="(" close=")" separator=",">
+                #{source}
+            </foreach>
+        </if>
+        <if test="typeIdList != null and typeIdList.size() > 0 ">
+            and ac.`type_id` in
+            <foreach collection="typeIdList" item="typeId" open="(" close=")"
+                     separator=",">
+                #{typeId}
+            </foreach>
+        </if>
+        <if test="execUserList != null and execUserList.size() > 0 ">
+            and (aj.`exec_user` in
+            <foreach collection="execUserList" item="execUser" open="(" close=")" separator=",">
+                #{execUser}
+            </foreach>
+        </if>
+        <if test="idList != null and idList.size() > 0">
+            and aj.`id` in
+            <foreach collection="idList" item="item" open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </if>
+        <if test="startTimeRange != null">
+            <if test="startTimeRange.size() > 0">
+                and (aj.start_time &gt;= STR_TO_DATE(#{startTimeRange[0]},'%Y-%m-%d')
+            </if>
+            <if test="startTimeRange.size() > 1">
+                and (aj.start_time &lt;= STR_TO_DATE(#{startTimeRange[1]},'%Y-%m-%d')
+            </if>
+        </if>
+        <if test="endTimeRange != null">
+            <if test="endTimeRange.size() > 0">
+                and (aj.end_time &gt;= STR_TO_DATE(#{endTimeRange[0]},'%Y-%m-%d')
+            </if>
+            <if test="endTimeRange.size() > 1">
+                and (aj.end_time &lt;= STR_TO_DATE(#{endTimeRange[1]},'%Y-%m-%d')
+            </if>
+        </if>
+        <if test="planStartTimeRange != null">
+            <if test="planStartTimeRange.size() > 0">
+                and (aj.plan_start_time &gt;= STR_TO_DATE(#{planStartTimeRange[0]},'%Y-%m-%d')
+            </if>
+            <if test="planStartTimeRange.size() > 1">
+                and (aj.plan_start_time &lt;= STR_TO_DATE(#{planStartTimeRange[1]},'%Y-%m-%d')
+            </if>
+        </if>
+        <if test="invokeIdList != null and invokeIdList.size() > 0">
+            and aji.`invoke_id` in
+            <foreach collection="invokeIdList" open="(" item="invokeId" close=")" separator=",">
+                #{invokeId}
+            </foreach>
+        </if>
+        <if test="appSystemId != null">
+            and dj.`app_system_id` = #{appSystemId}
+        </if>
+        <if test="appModuleId != null">
+            and dj.`app_module_id` = #{appModuleId}
+        </if>
+        <if test="envId != null">
+            and (dj.`env_id` = #{envId})
+        </if>
+        <if test="isHasAllAuthority == 0">
+            AND
+            <include refid="neatlogic.module.deploy.dao.mapper.DeployAppSystemMapper.checkDeployAuthority"/>
+        </if>
+    </sql>
+
+    <sql id="searchJobSql">
+        <if test="combopName != null and combopName != ''">
+            ac.name like concat('%', #{combopName}, '%')
+        </if>
+        <if test="excludeIdList != null and excludeIdList.size() > 0">
+            AND aj.id not in
+            <foreach collection="excludeIdList" item="item" open="(" close=")" separator=",">#{item}</foreach>
+        </if>
+        <if test="keyword != null and keyword != ''">
+            and (aj.name like concat('%', #{keyword}, '%') OR aj.id = #{keyword} OR ajj.name like concat('%',
+            #{keyword}, '%'))
+        </if>
+        <if test="operationId != null">
+            and aj.operation_id = #{operationId}
+        </if>
+        <if test="statusList != null and statusList.size() > 0 ">
+            and (aj.`status` in
+            <foreach collection="statusList" item="status" open="(" close=")" separator=",">
+                #{status}
+            </foreach>
+            or ajj.`status` in
+            <foreach collection="statusList" item="status" open="(" close=")" separator=",">
+                #{status}
+            </foreach>)
+        </if>
+        <if test="sourceType != null and sourceType != ''">
+            and aji.`type` = #{sourceType}
+        </if>
+        <if test="sourceList != null and sourceList.size() > 0 ">
+            and aj.`source` in
+            <foreach collection="sourceList" item="source" open="(" close=")" separator=",">
+                #{source}
+            </foreach>
+        </if>
+        <if test="hasParent != null">
+            <choose>
+                <when test="hasParent == true">
+                    AND (aj.parent_id is not null AND aj.parent_id != -1)
+                </when>
+                <otherwise>
+                    AND (aj.parent_id is null OR aj.parent_id = -1)
+                </otherwise>
+            </choose>
+        </if>
+        <if test="typeIdList != null and typeIdList.size() > 0 ">
+            and ac.`type_id` in
+            <foreach collection="typeIdList" item="typeId" open="(" close=")"
+                     separator=",">
+                #{typeId}
+            </foreach>
+        </if>
+        <if test="execUserList != null and execUserList.size() > 0 ">
+            and (aj.`exec_user` in
+            <foreach collection="execUserList" item="execUser" open="(" close=")" separator=",">
+                #{execUser}
+            </foreach>
+            or ajj.`exec_user` in
+            <foreach collection="execUserList" item="execUser" open="(" close=")" separator=",">
+                #{execUser}
+            </foreach>)
+        </if>
+        <if test="idList != null and idList.size() > 0">
+            and aj.`id` in
+            <foreach collection="idList" item="item" open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </if>
+        <if test="startTimeRange != null">
+            <if test="startTimeRange.size() > 0">
+                and (aj.start_time &gt;= STR_TO_DATE(#{startTimeRange[0]},'%Y-%m-%d')
+                or ajj.start_time &gt;= STR_TO_DATE(#{startTimeRange[0]},'%Y-%m-%d'))
+            </if>
+            <if test="startTimeRange.size() > 1">
+                and (aj.start_time &lt;= STR_TO_DATE(#{startTimeRange[1]},'%Y-%m-%d')
+                or ajj.start_time &lt;= STR_TO_DATE(#{startTimeRange[1]},'%Y-%m-%d'))
+            </if>
+        </if>
+        <if test="endTimeRange != null">
+            <if test="endTimeRange.size() > 0">
+                and (aj.end_time &gt;= STR_TO_DATE(#{endTimeRange[0]},'%Y-%m-%d')
+                or ajj.end_time &gt;= STR_TO_DATE(#{endTimeRange[0]},'%Y-%m-%d'))
+            </if>
+            <if test="endTimeRange.size() > 1">
+                and (aj.end_time &lt;= STR_TO_DATE(#{endTimeRange[1]},'%Y-%m-%d')
+                or ajj.end_time &lt;= STR_TO_DATE(#{endTimeRange[1]},'%Y-%m-%d'))
+            </if>
+        </if>
+        <if test="planStartTimeRange != null">
+            <if test="planStartTimeRange.size() > 0">
+                and (aj.plan_start_time &gt;= STR_TO_DATE(#{planStartTimeRange[0]},'%Y-%m-%d')
+                or ajj.plan_start_time &gt;= STR_TO_DATE(#{planStartTimeRange[0]},'%Y-%m-%d'))
+            </if>
+            <if test="planStartTimeRange.size() > 1">
+                and (aj.plan_start_time &lt;= STR_TO_DATE(#{planStartTimeRange[1]},'%Y-%m-%d')
+                or ajj.plan_start_time &lt;= STR_TO_DATE(#{planStartTimeRange[1]},'%Y-%m-%d'))
+            </if>
+        </if>
+        <if test="invokeIdList != null and invokeIdList.size() > 0">
+            and aji.`invoke_id` in
+            <foreach collection="invokeIdList" open="(" item="invokeId" close=")" separator=",">
+                #{invokeId}
+            </foreach>
+        </if>
+        <if test="appSystemId != null">
+            and (dj.`app_system_id` = #{appSystemId} or djj.`app_system_id` = #{appSystemId})
+        </if>
+        <if test="appModuleId != null">
+            and (dj.`app_module_id` = #{appModuleId} or djj.`app_module_id` = #{appModuleId})
+        </if>
+        <if test="envId != null">
+            and (dj.`env_id` = #{envId} or djj.`env_id` = #{envId})
+        </if>
+        <if test="isHasAllAuthority == 0">
+            AND
+            <include refid="neatlogic.module.deploy.dao.mapper.DeployAppSystemMapper.checkDeployAuthority"/>
+        </if>
     </sql>
 
     <select id="searchDeployJobCount" resultType="int"
@@ -224,16 +453,56 @@
         count(distinct aj.`id`)
         FROM
         `autoexec_job` aj
-        <include refid="searchJobSql"/>
+        left join autoexec_job ajj on ajj.parent_id = aj.id
+        LEFT JOIN deploy_job dj ON dj.id = aj.id
+        LEFT JOIN deploy_job djj ON djj.id = ajj.id
+        <if test="(invokeIdList != null and invokeIdList.size() > 0) or (sourceType != null and sourceType != '')">
+            JOIN `autoexec_job_invoke` aji ON aj.`id` = aji.`job_id`
+        </if>
+        <if test="isHasAllAuthority == 0">
+            LEFT JOIN deploy_app_config_authority daca ON daca.app_system_id = djj.app_system_id
+        </if>
+        <where>
+            and (aj.parent_id is null OR aj.parent_id = -1)
+            <if test="hasParent == null">
+                <include refid="searchJobSql"/>
+            </if>
+            <if test="hasParent != null and hasParent">
+                <include refid="searchSubJobSql"/>
+            </if>
+            <if test="hasParent != null and !hasParent">
+                <include refid="searchParentJobSql"/>
+            </if>
+        </where>
     </select>
 
     <select id="searchDeployJobId" parameterType="neatlogic.framework.deploy.dto.job.DeployJobVo"
             resultType="java.lang.Long">
         SELECT
-         aj.`id`
+        aj.`id`
         FROM
         `autoexec_job` aj
-        <include refid="searchJobSql"/>
+        left join autoexec_job ajj on ajj.parent_id = aj.id
+        LEFT JOIN deploy_job dj ON dj.id = aj.id
+        LEFT JOIN deploy_job djj ON djj.id = ajj.id
+        <if test="(invokeIdList != null and invokeIdList.size() > 0) or (sourceType != null and sourceType != '')">
+            JOIN `autoexec_job_invoke` aji ON aj.`id` = aji.`job_id`
+        </if>
+        <if test="isHasAllAuthority == 0">
+            LEFT JOIN deploy_app_config_authority daca ON daca.app_system_id = djj.app_system_id
+        </if>
+        <where>
+            and (aj.parent_id is null OR aj.parent_id = -1)
+            <if test="hasParent == null">
+                <include refid="searchJobSql"/>
+            </if>
+            <if test="hasParent != null and hasParent">
+                <include refid="searchSubJobSql"/>
+            </if>
+            <if test="hasParent != null and !hasParent">
+                <include refid="searchParentJobSql"/>
+            </if>
+        </where>
         GROUP BY aj.`id`
         <if test="sortOrder != null">
             order by aj.${sortOrder.key} ${sortOrder.type}
@@ -287,7 +556,8 @@
         </collection>
     </resultMap>
 
-    <select id="searchDeployJob" parameterType="neatlogic.framework.deploy.dto.job.DeployJobVo" resultMap="deployJobMap">
+    <select id="searchDeployJob" parameterType="neatlogic.framework.deploy.dto.job.DeployJobVo"
+            resultMap="deployJobMap">
         SELECT
         aj.`id` as id,
         aj.`name` as name,
@@ -328,7 +598,8 @@
         left join `autoexec_job_phase` ajp on aj.id = ajp.job_id
         left join deploy_job a on aj.id = a.id
         <if test="isNeedNameAndAbbrName ==1">
-            left join @{DATA_SCHEMA}.scence_appsystem_appmodule saa on saa.id = a.app_system_id AND saa.app_module_id = a.app_module_id
+            left join @{DATA_SCHEMA}.scence_appsystem_appmodule saa on saa.id = a.app_system_id AND saa.app_module_id =
+            a.app_module_id
         </if>
         left join cmdb_global_attritem d ON a.env_id = d.id
         left join autoexec_scenario e on a.scenario_id = e.id
@@ -479,64 +750,65 @@
 
     <select id="getBatchDeployJobById" parameterType="java.lang.Long"
             resultMap="deployBatchJobResultMap">
-        SELECT a.id              as batchJobId,
-               a.`name`          as batchJobName,
-               a.`status`        as batchJobStatus,
-               a.plan_start_time as batchJobPlanStartTime,
-               a.start_time      as batchJobStartTime,
-               a.end_time        as batchJobEndTime,
-               a.source          as batchJobSource,
-               a.reviewer        as batchJobReviewer,
-               a.review_status   as batchJobReviewStatus,
-               a.review_time     as batchJobReviewTime,
-               a.trigger_type    as batchJobTriggerType,
-               a.exec_user       as batchJobExecUser,
-               b.id              as laneId,
-               b.sort            as laneSort,
-               b.`status`        as laneStatus,
-               c.id              as groupId,
-               c.need_wait       as groupNeedWait,
-               c.sort            as groupSort,
-               c.`status`        as groupStatus,
-               d.`sort`          as jobSort,
-               e.id              as jobId,
-               e.`name`          as jobName,
-               e.`status`        as jobStatus,
-               e.plan_start_time as jobPlanStartTime,
-               e.start_time      as jobStartTime,
-               e.end_time        as jobEndTime,
-               e.source          as jobSource,
-               e.trigger_type    as jobTriggerType,
-               f.`scenario_id`   as scenarioId,
-               m.`name`          as scenarioName,
-               f.`app_system_id` as jobAppSystemId,
-               saa.`name` AS jobAppSystemName,
-               saa.`abbr_name` AS jobAppSystemAbbrName,
-               f.`app_module_id` AS jobAppModuleId,
-               f.`version` AS jobVersion,
-               saa.`app_module_name` AS jobAppModuleName,
+        SELECT a.id                       as batchJobId,
+               a.`name`                   as batchJobName,
+               a.`status`                 as batchJobStatus,
+               a.plan_start_time          as batchJobPlanStartTime,
+               a.start_time               as batchJobStartTime,
+               a.end_time                 as batchJobEndTime,
+               a.source                   as batchJobSource,
+               a.reviewer                 as batchJobReviewer,
+               a.review_status            as batchJobReviewStatus,
+               a.review_time              as batchJobReviewTime,
+               a.trigger_type             as batchJobTriggerType,
+               a.exec_user                as batchJobExecUser,
+               b.id                       as laneId,
+               b.sort                     as laneSort,
+               b.`status`                 as laneStatus,
+               c.id                       as groupId,
+               c.need_wait                as groupNeedWait,
+               c.sort                     as groupSort,
+               c.`status`                 as groupStatus,
+               d.`sort`                   as jobSort,
+               e.id                       as jobId,
+               e.`name`                   as jobName,
+               e.`status`                 as jobStatus,
+               e.plan_start_time          as jobPlanStartTime,
+               e.start_time               as jobStartTime,
+               e.end_time                 as jobEndTime,
+               e.source                   as jobSource,
+               e.trigger_type             as jobTriggerType,
+               f.`scenario_id`            as scenarioId,
+               m.`name`                   as scenarioName,
+               f.`app_system_id`          as jobAppSystemId,
+               saa.`name`                 AS jobAppSystemName,
+               saa.`abbr_name`            AS jobAppSystemAbbrName,
+               f.`app_module_id`          AS jobAppModuleId,
+               f.`version`                AS jobVersion,
+               saa.`app_module_name`      AS jobAppModuleName,
                saa.`app_module_abbr_name` AS jobAppModuleAbbrName,
-               f.`env_id`        as jobEnvId,
-               i.`value`          as jobEnvName,
-               j.`sort`          AS jobGroupSort,
-               k.`id`            AS jobPhaseId,
-               k.`name`          AS jobPhaseName,
-               k.`sort`          AS jobPhaseSort,
-               k.`status`        AS jobPhaseStatus,
-               l.`type`          AS jobAuthType,
-               l.`auth_uuid`     AS jobAuthUuid
+               f.`env_id`                 as jobEnvId,
+               i.`value`                  as jobEnvName,
+               j.`sort`                   AS jobGroupSort,
+               k.`id`                     AS jobPhaseId,
+               k.`name`                   AS jobPhaseName,
+               k.`sort`                   AS jobPhaseSort,
+               k.`status`                 AS jobPhaseStatus,
+               l.`type`                   AS jobAuthType,
+               l.`auth_uuid`              AS jobAuthUuid
         FROM autoexec_job AS a
                  LEFT JOIN deploy_job_lane AS b ON a.id = b.batch_job_id
                  LEFT JOIN deploy_job_lane_group AS c ON b.id = c.lane_id
                  LEFT JOIN deploy_job_lane_group_job AS d ON c.id = d.group_id
                  LEFT JOIN autoexec_job e ON d.job_id = e.id
                  LEFT JOIN deploy_job f ON e.id = f.id
-                 LEFT JOIN @{DATA_SCHEMA}.scence_appsystem_appmodule AS saa ON saa.id = f.app_system_id AND saa.app_module_id = f.app_module_id
-                 LEFT JOIN cmdb_global_attritem i ON f.env_id = i.id
-                 LEFT JOIN autoexec_job_group j ON e.id = j.job_id
-                 LEFT JOIN autoexec_job_phase k ON j.id = k.group_id
-                 LEFT JOIN deploy_job_auth l ON a.id = l.job_id
-                 LEFT JOIN autoexec_scenario m on f.scenario_id = m.id
+                 LEFT JOIN @{DATA_SCHEMA}.scence_appsystem_appmodule AS saa
+        ON saa.id = f.app_system_id AND saa.app_module_id = f.app_module_id
+            LEFT JOIN cmdb_global_attritem i ON f.env_id = i.id
+            LEFT JOIN autoexec_job_group j ON e.id = j.job_id
+            LEFT JOIN autoexec_job_phase k ON j.id = k.group_id
+            LEFT JOIN deploy_job_auth l ON a.id = l.job_id
+            LEFT JOIN autoexec_scenario m on f.scenario_id = m.id
         where a.id = #{value}
         order by laneSort, groupSort, jobSort, jobGroupSort, jobPhaseSort, jobPhaseName
     </select>
