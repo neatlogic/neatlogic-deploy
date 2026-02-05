@@ -11,8 +11,10 @@ import neatlogic.framework.deploy.exception.DeployVersionNotFoundException;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
+import neatlogic.framework.util.TableResultUtil;
 import neatlogic.module.deploy.dao.mapper.DeployResourceMapper;
 import neatlogic.module.deploy.dao.mapper.DeployVersionMapper;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -53,7 +55,7 @@ public class SearchDeployVersionInstanceApi extends PrivateApiComponentBase {
             @Param(name = "envId", type = ApiParamType.LONG, isRequired = true, desc = "环境id")
     })
     @Output({
-            @Param(name = "Return", explode = DeployVersionEnvInstanceVo[].class),
+            @Param(name = "tbodyList", explode = DeployVersionEnvInstanceVo[].class),
     })
     @Description(desc = "查询版本实例发布状态")
     @Override
@@ -67,11 +69,13 @@ public class SearchDeployVersionInstanceApi extends PrivateApiComponentBase {
         }
         List<DeployVersionEnvInstanceVo> result = new ArrayList<>();
         List<Long> instanceIdList = deployResourceMapper.getAppInstanceResourceIdListByAppSystemIdAndModuleIdAndEnvId(new ResourceVo(versionVo.getAppSystemId(), versionVo.getAppModuleId(), envId));
-        if (instanceIdList.size() > 0) {
+        if (CollectionUtils.isNotEmpty(instanceIdList)) {
             List<DeployVersionEnvInstanceVo> deployedInstanceList = deployVersionMapper.getDeployedInstanceByVersionIdAndEnvId(versionId, envId);
             List<ResourceVo> instanceList = deployResourceMapper.getAppInstanceResourceListByIdListAndKeyword(instanceIdList, keyword);
             for (ResourceVo ins : instanceList) {
                 DeployVersionEnvInstanceVo vo = new DeployVersionEnvInstanceVo(ins.getId(), ins.getName(), ins.getIp());
+                vo.setVersionId(versionVo.getId());
+                vo.setVersion(versionVo.getVersion());
                 Optional<DeployVersionEnvInstanceVo> first = deployedInstanceList.stream().filter(o -> Objects.equals(o.getResourceId(), ins.getId())).findFirst();
                 if (first.isPresent()) {
                     DeployVersionEnvInstanceVo deployedInstanceVo = first.get();
@@ -83,6 +87,6 @@ public class SearchDeployVersionInstanceApi extends PrivateApiComponentBase {
                 result.add(vo);
             }
         }
-        return result;
+        return TableResultUtil.getResult(result);
     }
 }

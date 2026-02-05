@@ -61,7 +61,7 @@ public class SavePipelineApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "保存超级流水线";
+        return "nmdap.savepipelineapi.getname";
     }
 
     @Override
@@ -74,15 +74,18 @@ public class SavePipelineApi extends PrivateApiComponentBase {
         return "/deploy/pipeline/save";
     }
 
-    @Input({@Param(name = "id", type = ApiParamType.LONG, desc = "id，不提供代表添加新流水线"),
-            @Param(name = "name", type = ApiParamType.STRING, isRequired = true, desc = "作业名称"),
-            @Param(name = "type", type = ApiParamType.ENUM, member = PipelineType.class, isRequired = true, desc = "类型"),
-            @Param(name = "appSystemId", type = ApiParamType.LONG, desc = "应用ID"),
-            @Param(name = "laneList", type = ApiParamType.JSONARRAY, desc = "通道列表"),
-            @Param(name = "authList", type = ApiParamType.JSONARRAY, desc = "授权列表")})
+    @Input({@Param(name = "id", type = ApiParamType.LONG, desc = "nmdap.savepipelineapi.input.param.desc.id"),
+            @Param(name = "name", type = ApiParamType.STRING, isRequired = true, desc = "nmdap.savepipelineapi.input.param.desc.name"),
+            @Param(name = "type", type = ApiParamType.ENUM, member = PipelineType.class, isRequired = true, desc = "common.type"),
+            @Param(name = "appSystemId", type = ApiParamType.LONG, desc = "nmraa.getappapi.input.param.desc"),
+            @Param(name = "laneList", type = ApiParamType.JSONARRAY, desc = "term.deploy.lanelist"),
+            @Param(name = "authList", type = ApiParamType.JSONARRAY, desc = "common.authlist"),
+            @Param(name = "defaultVersion", type = ApiParamType.STRING, desc = "nmdap.savepipelineapi.input.param.desc"),
+        }
+    )
     @ResubmitInterval(3)
     @Output({@Param(explode = PipelineVo.class)})
-    @Description(desc = "保存超级流水线接口")
+    @Description(desc = "nmdap.savepipelineapi.getname")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         Long id = jsonObj.getLong("id");

@@ -12,6 +12,7 @@
 
 package neatlogic.module.deploy.dao.mapper;
 
+import neatlogic.framework.autoexec.dto.job.AutoexecJobVo;
 import neatlogic.framework.deploy.dto.job.*;
 import org.apache.ibatis.annotations.Param;
 
@@ -28,6 +29,8 @@ public interface DeployJobMapper {
     DeployJobVo getDeployJobInfoByJobId(Long id);
 
     List<DeployJobVo> getDeployJobByJobIdList(List<Long> idList);
+
+    List<AutoexecJobVo> getDeploySubJobListByFilter(DeployJobVo deployJobVo);
 
     int searchDeployJobCount(DeployJobVo deployJobVo);
 

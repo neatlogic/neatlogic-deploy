@@ -24,6 +24,10 @@ public interface DeployPipelineMapper {
 
     PipelineJobTemplateVo getJobTemplateById(Long id);
 
+    List<PipelineJobTemplateVo> getJobTemplateListByIdList(@Param("idList") List<Long> idList);
+
+    List<PipelineJobTemplateVersionVo> getVersionByJobTemplateIdListAndVersionName(@Param("idList") List<Long> idList, @Param("version") String versionName);
+
     List<PipelineJobTemplateVo> searchJobTemplate(PipelineJobTemplateVo jobTemplateVo);
 
     int searchJobTemplateCount(PipelineJobTemplateVo jobTemplateVo);
