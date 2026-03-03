@@ -27,7 +27,6 @@ import neatlogic.framework.deploy.auth.BATCHDEPLOY_VERIFY;
 import neatlogic.framework.deploy.auth.DEPLOY_BASE;
 import neatlogic.framework.deploy.constvalue.JobSource;
 import neatlogic.framework.deploy.dto.job.DeployJobVo;
-import neatlogic.framework.deploy.dto.pipeline.PipelineJobTemplateVo;
 import neatlogic.framework.deploy.dto.pipeline.PipelineVo;
 import neatlogic.framework.deploy.exception.DeployJobParamIrregularException;
 import neatlogic.framework.deploy.exception.DeployPipelineNotFoundException;
@@ -83,7 +82,7 @@ public class AddBatchDeployJobFromPipelineApi extends PrivateApiComponentBase {
     @Input({@Param(name = "pipelineId", type = ApiParamType.LONG, isRequired = true, desc = "超级流水线id"),
             @Param(name = "name", type = ApiParamType.STRING, isRequired = true, desc = "作业名称"),
             @Param(name = "appSystemModuleVersionList", type = ApiParamType.JSONARRAY, isRequired = true, desc = "选中的系统模块和版本，数组对象需要包含appSystemId,appModuleId和versionId三个字段"),
-            @Param(name = "triggerType", type = ApiParamType.ENUM, rule = "manual,auto", desc = "触发方式"),
+            @Param(name = "triggerType", type = ApiParamType.ENUM, rule = "manual,auto,instant", desc = "触发方式"),
             @Param(name = "planStartTime", type = ApiParamType.LONG, desc = "计划开始时间")})
     @Output({@Param(explode = DeployJobVo.class)})
     @ResubmitInterval(3)
@@ -100,16 +99,21 @@ public class AddBatchDeployJobFromPipelineApi extends PrivateApiComponentBase {
             throw new DeployPipelineNotFoundException(pipelineId);
         }
         DeployJobVo deployJobVo = JSON.toJavaObject(jsonObj, DeployJobVo.class);
+        boolean isInstantExecute = Objects.equals("instant", deployJobVo.getTriggerType());
         if (deployJobVo.getTriggerType().equals(JobTriggerType.AUTO.getValue())) {
             if (deployJobVo.getPlanStartTime() == null) {
                 throw new DeployJobParamIrregularException("planStartTime");
             }
             deployJobVo.setStatus(JobStatus.READY.getValue());
+        } else if (isInstantExecute) {
+            deployJobVo.setStatus(JobStatus.PENDING.getValue());
+            deployJobVo.setPlanStartTime(null);
+            deployJobVo.setTriggerType(JobTriggerType.MANUAL.getValue());
         } else if (deployJobVo.getTriggerType().equals(JobTriggerType.MANUAL.getValue())) {
             deployJobVo.setStatus(JobStatus.PENDING.getValue());
             deployJobVo.setPlanStartTime(null);
         }
-        if (Boolean.FALSE.equals(AuthActionChecker.check(BATCHDEPLOY_VERIFY.class))) {
+        if (!AuthActionChecker.check(BATCHDEPLOY_VERIFY.class)) {
             deployJobVo.setReviewStatus(ReviewStatus.WAITING.getValue());
         } else {
             deployJobVo.setReviewStatus(ReviewStatus.PASSED.getValue());
@@ -132,18 +136,9 @@ public class AddBatchDeployJobFromPipelineApi extends PrivateApiComponentBase {
             }
             JobObject.Builder jobObjectBuilder = new JobObject.Builder(deployJobVo.getId().toString(), jobHandler.getGroupName(), jobHandler.getClassName(), TenantContext.get().getTenantUuid());
             jobHandler.reloadJob(jobObjectBuilder.build());
+        } else if (isInstantExecute && Objects.equals(deployJobVo.getReviewStatus(), ReviewStatus.PASSED.getValue())) {
+            deployBatchJobService.fireBatch(deployJobVo.getId(), "refireAll", "refireAll");
         }
         return deployJobMapper.getBatchDeployJobById(deployJobVo.getId());
-    }
-
-
-    static Long getVersionId(JSONArray appSystemModuleVersionList, PipelineJobTemplateVo jobTemplateVo) {
-        for (int i = 0; i < appSystemModuleVersionList.size(); i++) {
-            JSONObject dataObj = appSystemModuleVersionList.getJSONObject(i);
-            if (dataObj.getLong("appSystemId").equals(jobTemplateVo.getAppSystemId()) && dataObj.getLong("appModuleId").equals(jobTemplateVo.getAppModuleId())) {
-                return dataObj.getLong("versionId");
-            }
-        }
-        return null;
     }
 }
