@@ -136,7 +136,7 @@
             JOIN `autoexec_job_invoke` aji ON ajj.`id` = aji.`job_id`
         </if>
         <if test="isHasAllAuthority == 0">
-            LEFT JOIN deploy_app_config_authority daca ON daca.app_system_id = djj.app_system_id
+            LEFT JOIN deploy_app_config_authority dacaSub ON daca.app_system_id = djj.app_system_id
         </if>
         <where>
             <include refid="searchSubJobSql"/>
@@ -231,7 +231,7 @@
         </if>
         <if test="isHasAllAuthority == 0">
             AND
-            <include refid="neatlogic.module.deploy.dao.mapper.DeployAppSystemMapper.checkDeployAuthority"/>
+            <include refid="checkSubDeployAuthority"/>
         </if>
     </sql>
 
@@ -442,8 +442,11 @@
             and (dj.`env_id` = #{envId} or djj.`env_id` = #{envId})
         </if>
         <if test="isHasAllAuthority == 0">
-            AND
+            AND (
             <include refid="neatlogic.module.deploy.dao.mapper.DeployAppSystemMapper.checkDeployAuthority"/>
+            or
+            <include refid="checkSubDeployAuthority"/>
+            )
         </if>
     </sql>
 
@@ -460,7 +463,8 @@
             JOIN `autoexec_job_invoke` aji ON aj.`id` = aji.`job_id`
         </if>
         <if test="isHasAllAuthority == 0">
-            LEFT JOIN deploy_app_config_authority daca ON daca.app_system_id = djj.app_system_id
+            LEFT JOIN deploy_app_config_authority daca ON daca.app_system_id = dj.app_system_id
+            LEFT JOIN deploy_app_config_authority dacaSub ON daca.app_system_id = djj.app_system_id
         </if>
         <where>
             and (aj.parent_id is null OR aj.parent_id = -1)
@@ -476,6 +480,31 @@
         </where>
     </select>
 
+    <sql id="checkSubDeployAuthority">
+
+        (dacaSub.action_type = 'operation'
+        AND dacaSub.action IN
+        ('all'
+        <if test="authorityActionList != null and authorityActionList.size() > 0">,
+            <foreach collection="authorityActionList" item="item" separator=",">
+                #{item}
+            </foreach>
+        </if>
+        )
+        AND dacaSub.auth_uuid IN
+        (
+        'alluser'
+        <if test="authUuidList != null and authUuidList.size() > 0">
+            ,
+            <foreach collection="authUuidList" item="item" separator=",">
+                #{item}
+            </foreach>
+        </if>
+        )
+        )
+
+    </sql>
+
     <select id="searchDeployJobId" parameterType="neatlogic.framework.deploy.dto.job.DeployJobVo"
             resultType="java.lang.Long">
         SELECT
@@ -489,7 +518,8 @@
             JOIN `autoexec_job_invoke` aji ON aj.`id` = aji.`job_id`
         </if>
         <if test="isHasAllAuthority == 0">
-            LEFT JOIN deploy_app_config_authority daca ON daca.app_system_id = djj.app_system_id
+            LEFT JOIN deploy_app_config_authority daca ON daca.app_system_id = dj.app_system_id
+            LEFT JOIN deploy_app_config_authority dacaSub ON daca.app_system_id = djj.app_system_id
         </if>
         <where>
             and (aj.parent_id is null OR aj.parent_id = -1)
