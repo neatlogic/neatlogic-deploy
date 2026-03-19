@@ -23,7 +23,7 @@ import neatlogic.framework.exception.file.FilePathIllegalException;
 import neatlogic.framework.file.dto.AuditFilePathVo;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
-import neatlogic.framework.restful.core.privateapi.PrivateBinaryStreamApiComponentBase;
+import neatlogic.framework.restful.core.privateapi.binarystream.PrivateBinaryStreamApiComponentBase;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
