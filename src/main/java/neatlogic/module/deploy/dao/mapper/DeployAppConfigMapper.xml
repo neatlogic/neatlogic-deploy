@@ -987,7 +987,7 @@
     </resultMap>
 
     <select id="getDatabaseById" parameterType="java.lang.Long" resultMap="DatabaseResourceMap">
-        SELECT a.`id`, a.`name`, a.`type_name` as typeName, a.`ip`, a.`port`
+        SELECT a.`id`, a.`name`, a.`type_name`, a.`ip`, a.`port`
         FROM @{DATA_SCHEMA}.`scence_database_ip_port_env_appmodule` a
         WHERE a.`id` = #{value}
         LIMIT 1
