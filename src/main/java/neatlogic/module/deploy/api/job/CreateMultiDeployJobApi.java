@@ -142,8 +142,10 @@ public class CreateMultiDeployJobApi extends PrivateApiComponentBase {
                 } catch (Exception ex) {
                     logger.error(ex.getMessage(), ex);
                     JSONObject resultJson = new JSONObject();
-                    resultJson.put("appSystemName", jsonObj.getString("appSystemName"));
-                    resultJson.put("appModuleName", jsonObj.getString("appModuleName"));
+                    resultJson.put("appSystemName", deployJob.getAppSystemName());
+                    resultJson.put("appModuleName", module.getName());
+                    resultJson.put("envName", deployJob.getEnvName());
+                    resultJson.put("version", module.getVersion());
                     resultJson.put("errorMsg", ex.getMessage());
                     queue.add(resultJson);
                 }
