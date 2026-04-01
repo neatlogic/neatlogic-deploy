@@ -1,8 +1,10 @@
 package neatlogic.module.deploy.service;
 
+import neatlogic.framework.cmdb.dto.resourcecenter.ResourceVo;
 import neatlogic.framework.cmdb.dto.transaction.CiEntityTransactionVo;
 import neatlogic.framework.deploy.dto.app.DeployAppConfigVo;
 import neatlogic.framework.deploy.dto.app.DeployAppModuleVo;
+import neatlogic.framework.deploy.dto.app.DeployResourceSearchVo;
 import neatlogic.framework.dto.runner.RunnerMapVo;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
@@ -73,4 +75,16 @@ public interface DeployAppConfigService {
      * @return 属性列表
      */
     JSONObject getDeployCiAttrList(Long ciId, Integer isAll, JSONArray attrNameArray);
+
+    ResourceVo getDatabaseById(Long id);
+
+    /**
+     * 查询发布应用配置DB库下的无模块无环境、无模块同环境、同模块无环境、同模块同环境且发布没配置的数据库的数量
+     *
+     * @param searchVo   searchVo
+     * @return count
+     */
+    int getAppConfigEnvDatabaseCount(DeployResourceSearchVo searchVo);
+
+    List<Long> getAppConfigEnvDatabaseResourceIdList(DeployResourceSearchVo searchVo);
 }

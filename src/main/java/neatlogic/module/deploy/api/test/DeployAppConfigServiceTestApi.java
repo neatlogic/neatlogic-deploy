@@ -1,0 +1,416 @@
+package neatlogic.module.deploy.api.test;
+
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
+import neatlogic.framework.auth.core.AuthAction;
+import neatlogic.framework.cmdb.crossover.IResourceBuildSqlCrossoverService;
+import neatlogic.framework.cmdb.crossover.IResourceCrossoverMapper;
+import neatlogic.framework.cmdb.dto.resourcecenter.ResourceVo;
+import neatlogic.framework.crossover.CrossoverServiceFactory;
+import neatlogic.framework.deploy.auth.DEPLOY_BASE;
+import neatlogic.framework.deploy.dto.app.DeployResourceSearchVo;
+import neatlogic.framework.restful.annotation.*;
+import neatlogic.framework.restful.constvalue.OperationTypeEnum;
+import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
+import neatlogic.module.deploy.service.DeployAppConfigService;
+import neatlogic.module.deploy.service.DeployResourceBuildSqlService;
+import net.sf.jsqlparser.expression.*;
+import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
+import net.sf.jsqlparser.expression.operators.conditional.OrExpression;
+import net.sf.jsqlparser.expression.operators.relational.ExistsExpression;
+import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
+import net.sf.jsqlparser.expression.operators.relational.IsNullExpression;
+import net.sf.jsqlparser.parser.CCJSqlParserUtil;
+import net.sf.jsqlparser.schema.Column;
+import net.sf.jsqlparser.statement.Statement;
+import net.sf.jsqlparser.statement.select.*;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
+
+import javax.annotation.Resource;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+@Component
+@AuthAction(action = DEPLOY_BASE.class)
+@OperationType(type = OperationTypeEnum.SEARCH)
+public class DeployAppConfigServiceTestApi extends PrivateApiComponentBase {
+    private final Logger logger = LoggerFactory.getLogger(DeployAppConfigServiceTestApi.class);
+
+    @Resource
+    private DeployAppConfigService deployAppConfigService;
+
+    @Resource
+    private DeployResourceBuildSqlService deployResourceBuildSqlService;
+
+    @Override
+    public String getName() {
+        return "测试DeployAppConfigService方法";
+    }
+
+    @Override
+    public String getConfig() {
+        return null;
+    }
+
+    @Override
+    public String getToken() {
+        return "deploy/deployappconfigservice/test";
+    }
+
+    @Input({})
+    @Output({})
+    @Description(desc = "测试DeployAppConfigService方法")
+    @Override
+    public Object myDoService(JSONObject paramObj) throws Exception {
+        getDatabaseByIdTest();
+        getAppConfigEnvDatabaseCountTest();
+        getAppConfigEnvDatabaseResourceIdListTest();
+        return null;
+    }
+
+    private void getDatabaseByIdTest() {
+        getDatabaseByIdTestForId();
+    }
+    private void getDatabaseByIdTestForId() {
+        IResourceCrossoverMapper resourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
+        try {
+            String sql = deployResourceBuildSqlService.buildGetDatabaseByIdSql(1L);
+            Column groupedColumn = new Column("cientity_Database.id");
+            String groupBySql = buildGroupBySql(sql, groupedColumn);
+            List<Map<String, Object>> mapList = resourceCrossoverMapper.getMapListBySql(groupBySql);
+            for (Map<String, Object> rowMap : mapList) {
+                Object fieldValue = rowMap.get("fieldValue");
+                if (fieldValue != null) {
+                    Long id = ((Number) fieldValue).longValue();
+                    Long count = ((Number) rowMap.get("count")).longValue();
+                    ResourceVo resourceVo = deployAppConfigService.getDatabaseById(id);
+                    if (resourceVo == null || !id.equals(resourceVo.getId())) {
+                        JSONObject itemObj = new JSONObject(true);
+                        itemObj.put("count", count);
+                        itemObj.put("id", id);
+                        itemObj.put("resourceVo", resourceVo);
+                        logger.info(itemObj.toJSONString());
+                    }
+                }
+            }
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+        }
+    }
+
+    private void getAppConfigEnvDatabaseCountTest() {
+        getAppConfigEnvDatabaseCountTestForKeyword();
+        getAppConfigEnvDatabaseCountTestForDefaultValue();
+    }
+
+    private void getAppConfigEnvDatabaseCountTestForKeyword() {
+        IResourceCrossoverMapper resourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
+        try {
+            DeployResourceSearchVo baseSearchVo = new DeployResourceSearchVo();
+            baseSearchVo.setKeyword("test");
+            String sql = deployResourceBuildSqlService.buildGetAppConfigEnvDatabaseCountSql(baseSearchVo);
+            Column groupedColumn = null;
+            {
+                groupedColumn = new Column("cmdb_441087512551424_Database.`478701787553792`");
+                String groupBySql = buildGroupBySql(sql, groupedColumn);
+                List<Map<String, Object>> mapList = resourceCrossoverMapper.getMapListBySql(groupBySql);
+                for (Map<String, Object> rowMap : mapList) {
+                    String fieldValue = (String) rowMap.get("fieldValue");
+                    if (StringUtils.isNotBlank(fieldValue)) {
+                        Long count = ((Number) rowMap.get("count")).longValue();
+                        DeployResourceSearchVo searchVo = new DeployResourceSearchVo();
+                        searchVo.setKeyword(fieldValue);
+                        int resourceCount = deployAppConfigService.getAppConfigEnvDatabaseCount(searchVo);
+                        if (resourceCount <= 0) {
+                            JSONObject itemObj = new JSONObject(true);
+                            itemObj.put("resourceCount", resourceCount);
+                            itemObj.put("count", count);
+                            itemObj.put("keyword", fieldValue);
+                            itemObj.put("groupedColumn", groupedColumn.toString());
+                            logger.info(itemObj.toJSONString());
+                        }
+                    }
+                }
+            }
+            {
+                groupedColumn = new Column("cmdb_442011534499840_Database.`486022852698112`");
+                String groupBySql = buildGroupBySql(sql, groupedColumn);
+                List<Map<String, Object>> mapList = resourceCrossoverMapper.getMapListBySql(groupBySql);
+                for (Map<String, Object> rowMap : mapList) {
+                    String fieldValue = (String) rowMap.get("fieldValue");
+                    if (StringUtils.isNotBlank(fieldValue)) {
+                        Long count = ((Number) rowMap.get("count")).longValue();
+                        DeployResourceSearchVo searchVo = new DeployResourceSearchVo();
+                        searchVo.setKeyword(fieldValue);
+                        int resourceCount = deployAppConfigService.getAppConfigEnvDatabaseCount(searchVo);
+                        if (resourceCount <= 0) {
+                            JSONObject itemObj = new JSONObject(true);
+                            itemObj.put("resourceCount", resourceCount);
+                            itemObj.put("count", count);
+                            itemObj.put("keyword", fieldValue);
+                            itemObj.put("groupedColumn", groupedColumn.toString());
+                            logger.info(itemObj.toJSONString());
+                        }
+                    }
+                }
+            }
+            {
+                groupedColumn = new Column("cmdb_478816686317568_Database.`478816971530240`");
+                String groupBySql = buildGroupBySql(sql, groupedColumn);
+                List<Map<String, Object>> mapList = resourceCrossoverMapper.getMapListBySql(groupBySql);
+                for (Map<String, Object> rowMap : mapList) {
+                    Object fieldValue = rowMap.get("fieldValue");
+                    if (fieldValue != null) {
+                        String keyword = String.valueOf(fieldValue);
+                        if (StringUtils.isNotBlank(keyword)) {
+                            Long count = ((Number) rowMap.get("count")).longValue();
+                            DeployResourceSearchVo searchVo = new DeployResourceSearchVo();
+                            searchVo.setKeyword(keyword);
+                            int resourceCount = deployAppConfigService.getAppConfigEnvDatabaseCount(searchVo);
+                            if (resourceCount <= 0) {
+                                JSONObject itemObj = new JSONObject(true);
+                                itemObj.put("resourceCount", resourceCount);
+                                itemObj.put("count", count);
+                                itemObj.put("keyword", keyword);
+                                itemObj.put("groupedColumn", groupedColumn.toString());
+                                logger.info(itemObj.toJSONString());
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+        }
+    }
+
+    private void getAppConfigEnvDatabaseCountTestForDefaultValue() {
+        IResourceCrossoverMapper resourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
+        try {
+            DeployResourceSearchVo baseSearchVo = new DeployResourceSearchVo();
+            baseSearchVo.setDefaultValue(new JSONArray().fluentAdd(12345L));
+            String sql = deployResourceBuildSqlService.buildGetAppConfigEnvDatabaseCountSql(baseSearchVo);
+            Column groupedColumn = new Column("cientity_Database.id");
+            String groupBySql = buildGroupBySql(sql, groupedColumn);
+            List<Map<String, Object>> mapList = resourceCrossoverMapper.getMapListBySql(groupBySql);
+            for (Map<String, Object> rowMap : mapList) {
+                Object fieldValue = rowMap.get("fieldValue");
+                if (fieldValue != null) {
+                    Long id = ((Number) fieldValue).longValue();
+                    Long count = ((Number) rowMap.get("count")).longValue();
+                    DeployResourceSearchVo searchVo = new DeployResourceSearchVo();
+                    searchVo.setDefaultValue(new JSONArray().fluentAdd(id));
+                    int resourceCount = deployAppConfigService.getAppConfigEnvDatabaseCount(searchVo);
+                    if (resourceCount <= 0) {
+                        JSONObject itemObj = new JSONObject(true);
+                        itemObj.put("resourceCount", resourceCount);
+                        itemObj.put("count", count);
+                        itemObj.put("defaultValue", id);
+                        itemObj.put("groupedColumn", groupedColumn.toString());
+                        logger.info(itemObj.toJSONString());
+                    }
+                }
+            }
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+        }
+    }
+
+    private void getAppConfigEnvDatabaseResourceIdListTest() {
+        getAppConfigEnvDatabaseResourceIdListForKeyword();
+        getAppConfigEnvDatabaseResourceIdListTestForDefaultValue();
+    }
+
+    private void getAppConfigEnvDatabaseResourceIdListForKeyword() {
+        IResourceCrossoverMapper resourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
+        try {
+            DeployResourceSearchVo baseSearchVo = new DeployResourceSearchVo();
+            baseSearchVo.setKeyword("test");
+            String sql = deployResourceBuildSqlService.buildGetAppConfigEnvDatabaseResourceIdListSql(baseSearchVo);
+            Column groupedColumn = null;
+            {
+                groupedColumn = new Column("cmdb_441087512551424_Database.`478701787553792`");
+                String groupBySql = buildGroupBySql(sql, groupedColumn);
+                List<Map<String, Object>> mapList = resourceCrossoverMapper.getMapListBySql(groupBySql);
+                for (Map<String, Object> rowMap : mapList) {
+                    String fieldValue = (String) rowMap.get("fieldValue");
+                    if (StringUtils.isNotBlank(fieldValue)) {
+                        Long count = ((Number) rowMap.get("count")).longValue();
+                        DeployResourceSearchVo searchVo = new DeployResourceSearchVo();
+                        searchVo.setKeyword(fieldValue);
+                        List<Long> idList = deployAppConfigService.getAppConfigEnvDatabaseResourceIdList(searchVo);
+                        if (idList == null || idList.isEmpty()) {
+                            JSONObject itemObj = new JSONObject(true);
+                            itemObj.put("idList", idList);
+                            itemObj.put("count", count);
+                            itemObj.put("keyword", fieldValue);
+                            itemObj.put("groupedColumn", groupedColumn.toString());
+                            logger.info(itemObj.toJSONString());
+                        }
+                    }
+                }
+            }
+            {
+                groupedColumn = new Column("cmdb_442011534499840_Database.`486022852698112`");
+                String groupBySql = buildGroupBySql(sql, groupedColumn);
+                List<Map<String, Object>> mapList = resourceCrossoverMapper.getMapListBySql(groupBySql);
+                for (Map<String, Object> rowMap : mapList) {
+                    String fieldValue = (String) rowMap.get("fieldValue");
+                    if (StringUtils.isNotBlank(fieldValue)) {
+                        Long count = ((Number) rowMap.get("count")).longValue();
+                        DeployResourceSearchVo searchVo = new DeployResourceSearchVo();
+                        searchVo.setKeyword(fieldValue);
+                        List<Long> idList = deployAppConfigService.getAppConfigEnvDatabaseResourceIdList(searchVo);
+                        if (idList == null || idList.isEmpty()) {
+                            JSONObject itemObj = new JSONObject(true);
+                            itemObj.put("idList", idList);
+                            itemObj.put("count", count);
+                            itemObj.put("keyword", fieldValue);
+                            itemObj.put("groupedColumn", groupedColumn.toString());
+                            logger.info(itemObj.toJSONString());
+                        }
+                    }
+                }
+            }
+            {
+                groupedColumn = new Column("cmdb_478816686317568_Database.`478816971530240`");
+                String groupBySql = buildGroupBySql(sql, groupedColumn);
+                List<Map<String, Object>> mapList = resourceCrossoverMapper.getMapListBySql(groupBySql);
+                for (Map<String, Object> rowMap : mapList) {
+                    Object fieldValue = rowMap.get("fieldValue");
+                    if (fieldValue != null) {
+                        String keyword = String.valueOf(fieldValue);
+                        if (StringUtils.isNotBlank(keyword)) {
+                            Long count = ((Number) rowMap.get("count")).longValue();
+                            DeployResourceSearchVo searchVo = new DeployResourceSearchVo();
+                            searchVo.setKeyword(keyword);
+                            List<Long> idList = deployAppConfigService.getAppConfigEnvDatabaseResourceIdList(searchVo);
+                            if (idList == null || idList.isEmpty()) {
+                                JSONObject itemObj = new JSONObject(true);
+                                itemObj.put("idList", idList);
+                                itemObj.put("count", count);
+                                itemObj.put("keyword", keyword);
+                                itemObj.put("groupedColumn", groupedColumn.toString());
+                                logger.info(itemObj.toJSONString());
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+        }
+    }
+
+    private void getAppConfigEnvDatabaseResourceIdListTestForDefaultValue() {
+        IResourceCrossoverMapper resourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
+        try {
+            IResourceBuildSqlCrossoverService resourceBuildSqlCrossoverService = CrossoverServiceFactory.getApi(IResourceBuildSqlCrossoverService.class);
+            DeployResourceSearchVo baseSearchVo = new DeployResourceSearchVo();
+            baseSearchVo.setDefaultValue(new JSONArray().fluentAdd(12345L));
+            String sql = deployResourceBuildSqlService.buildGetAppConfigEnvDatabaseResourceIdListSql(baseSearchVo);
+            Column groupedColumn = new Column("cientity_Database.id");
+            String groupBySql = buildGroupBySql(sql, groupedColumn);
+            List<Map<String, Object>> mapList = resourceCrossoverMapper.getMapListBySql(groupBySql);
+            for (Map<String, Object> rowMap : mapList) {
+                Object fieldValue = rowMap.get("fieldValue");
+                if (fieldValue != null) {
+                    Long id = ((Number) fieldValue).longValue();
+                    Long count = ((Number) rowMap.get("count")).longValue();
+                    DeployResourceSearchVo searchVo = new DeployResourceSearchVo();
+                    searchVo.setDefaultValue(new JSONArray().fluentAdd(id));
+                    List<Long> idList = deployAppConfigService.getAppConfigEnvDatabaseResourceIdList(searchVo);
+                    if (idList == null || idList.isEmpty()) {
+                        JSONObject itemObj = new JSONObject(true);
+                        itemObj.put("idList", idList);
+                        itemObj.put("count", count);
+                        itemObj.put("defaultValue", id);
+                        itemObj.put("groupedColumn", groupedColumn.toString());
+                        logger.info(itemObj.toJSONString());
+                    }
+                }
+            }
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+        }
+    }
+
+    private String buildGroupBySql(String sql, Column groupByColumn) throws Exception {
+        Statement statement = CCJSqlParserUtil.parse(sql);
+        PlainSelect plainSelect = (PlainSelect) ((Select) statement).getSelectBody();
+
+        List<SelectItem> selectItemList = new ArrayList<>();
+        selectItemList.add(new SelectExpressionItem(groupByColumn).withAlias(new Alias("fieldValue")));
+        Function function = new Function();
+        function.setName("COUNT");
+        function.setParameters(new ExpressionList(new LongValue(1)));
+        selectItemList.add(new SelectExpressionItem(function).withAlias(new Alias("count")));
+        plainSelect.setSelectItems(selectItemList);
+        Parenthesis expiredExpression = getWhereFirstExpiredExpression(plainSelect.getWhere());
+        plainSelect.setWhere(new AndExpression(expiredExpression, new IsNullExpression().withLeftExpression(groupByColumn).withNot(true)));
+        GroupByElement groupByElement = new GroupByElement();
+        List<Expression> groupByExpressions = new ArrayList<>();
+        groupByExpressions.add(groupByColumn);
+        groupByElement.addGroupByExpressions(groupByExpressions);
+        plainSelect.setGroupByElement(groupByElement);
+
+        OrderByElement orderByElement = new OrderByElement();
+        orderByElement.setExpression(new Column("count"));
+        orderByElement.setAsc(false);
+        plainSelect.setOrderByElements(List.of(orderByElement));
+
+        Limit limit = new Limit();
+        limit.setRowCount(new LongValue(10));
+        plainSelect.setLimit(limit);
+        return plainSelect.toString();
+    }
+
+    private Parenthesis getWhereFirstExpiredExpression(Expression where) {
+        if (where != null) {
+            if (where instanceof AndExpression andExpr) {
+                Expression leftExpression = andExpr.getLeftExpression();
+                if (leftExpression instanceof Parenthesis parenthesis) {
+                    if (parenthesis.getExpression() instanceof OrExpression orExpr) {
+                        if ((orExpr.getLeftExpression() instanceof NotExpression)
+                                && (orExpr.getRightExpression() instanceof ExistsExpression)) {
+                            return parenthesis;
+                        }
+                    }
+                }
+                Expression rightExpression = andExpr.getRightExpression();
+                if (rightExpression instanceof Parenthesis parenthesis) {
+                    if (parenthesis.getExpression() instanceof OrExpression orExpr) {
+                        if ((orExpr.getLeftExpression() instanceof NotExpression)
+                                && (orExpr.getRightExpression() instanceof ExistsExpression)) {
+                            return parenthesis;
+                        }
+                    }
+                }
+            } else if (where instanceof OrExpression orExpr) {
+                Expression leftExpression = orExpr.getLeftExpression();
+                if (leftExpression instanceof Parenthesis parenthesis) {
+                    if (parenthesis.getExpression() instanceof OrExpression orExpr2) {
+                        if ((orExpr2.getLeftExpression() instanceof NotExpression)
+                                && (orExpr2.getRightExpression() instanceof ExistsExpression)) {
+                            return parenthesis;
+                        }
+                    }
+                }
+                Expression rightExpression = orExpr.getRightExpression();
+                if (rightExpression instanceof Parenthesis parenthesis) {
+                    if (parenthesis.getExpression() instanceof OrExpression orExpr2) {
+                        if ((orExpr2.getLeftExpression() instanceof NotExpression)
+                                && (orExpr2.getRightExpression() instanceof ExistsExpression)) {
+                            return parenthesis;
+                        }
+                    }
+                }
+            }
+        }
+        return null;
+    }
+}
