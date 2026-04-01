@@ -2,6 +2,7 @@ package neatlogic.module.deploy.service;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.serializer.SerializerFeature;
 import neatlogic.framework.cmdb.crossover.*;
 import neatlogic.framework.cmdb.dto.ci.AttrVo;
 import neatlogic.framework.cmdb.dto.ci.CiVo;
@@ -9,15 +10,19 @@ import neatlogic.framework.cmdb.dto.ci.RelVo;
 import neatlogic.framework.cmdb.dto.cientity.CiEntityVo;
 import neatlogic.framework.cmdb.dto.globalattr.GlobalAttrItemVo;
 import neatlogic.framework.cmdb.dto.globalattr.GlobalAttrVo;
+import neatlogic.framework.cmdb.dto.resourcecenter.ResourceVo;
 import neatlogic.framework.cmdb.dto.transaction.CiEntityTransactionVo;
+import neatlogic.framework.cmdb.enums.CmdbTenantConfig;
 import neatlogic.framework.cmdb.enums.EditModeType;
 import neatlogic.framework.cmdb.enums.TransactionActionType;
 import neatlogic.framework.cmdb.exception.cientity.CiEntityNotFoundException;
 import neatlogic.framework.cmdb.exception.globalattr.GlobalAttrValueIrregularException;
+import neatlogic.framework.config.ConfigManager;
 import neatlogic.framework.crossover.CrossoverServiceFactory;
 import neatlogic.framework.deploy.dto.app.DeployAppConfigEnvDBConfigVo;
 import neatlogic.framework.deploy.dto.app.DeployAppConfigVo;
 import neatlogic.framework.deploy.dto.app.DeployAppModuleVo;
+import neatlogic.framework.deploy.dto.app.DeployResourceSearchVo;
 import neatlogic.framework.deploy.exception.DeployAppConfigModuleRunnerGroupNotFoundException;
 import neatlogic.framework.dto.runner.RunnerGroupVo;
 import neatlogic.framework.dto.runner.RunnerMapVo;
@@ -27,6 +32,8 @@ import neatlogic.module.deploy.dao.mapper.DeployAppConfigMapper;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -40,12 +47,19 @@ import java.util.regex.Pattern;
  */
 @Service
 public class DeployAppConfigServiceImpl implements DeployAppConfigService {
+    private final Logger logger = LoggerFactory.getLogger(DeployAppConfigServiceImpl.class);
+    private final String MYBATIS_MODE = "mybatis";
+    private final String JSQLPARSER_MODE = "jsqlparser";
+    private final String COMPARISON_ENABLED = "1";
 
     @Resource
     DeployAppConfigMapper deployAppConfigMapper;
 
     @Resource
     PipelineService pipelineService;
+
+    @Resource
+    DeployResourceBuildSqlService deployResourceBuildSqlService;
 
     @Override
     public void deleteAppConfig(DeployAppConfigVo configVo) {
@@ -312,6 +326,133 @@ public class DeployAppConfigServiceImpl implements DeployAppConfigService {
             }
         }
         return returnObj;
+    }
+
+    @Override
+    public ResourceVo getDatabaseById(Long id) {
+        IResourceCrossoverMapper resourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
+
+        String enable = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_DATA_COMPARISON_MODE_ENABLE);
+        String mode = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_SQL_MODE);
+        ResourceVo newResourceVo = null;
+        ResourceVo oldResourceVo = null;
+        if (Objects.equals(mode, JSQLPARSER_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
+            String sql = deployResourceBuildSqlService.buildGetDatabaseByIdSql(id);
+            if (StringUtils.isNotBlank(sql)) {
+                newResourceVo = resourceCrossoverMapper.getResourceBySql(sql);
+            }
+        }
+        if (Objects.equals(mode, MYBATIS_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
+            oldResourceVo = deployAppConfigMapper.getDatabaseById(id);
+        }
+        if (Objects.equals(enable, COMPARISON_ENABLED)) {
+            List<ResourceVo> newResourceList = new ArrayList<>();
+            if (newResourceVo != null) {
+                newResourceVo.setAllIp(null);
+                newResourceVo.setBgList(null);
+                newResourceVo.setOwnerList(null);
+                newResourceList.add(newResourceVo);
+            }
+            List<ResourceVo> oldResourceList = new ArrayList<>();
+            if (oldResourceVo != null) {
+                oldResourceList.add(oldResourceVo);
+            }
+            checkResourceListIsEquals(newResourceList, oldResourceList);
+        }
+        if (Objects.equals(mode, JSQLPARSER_MODE)) {
+            return newResourceVo;
+        } else if (Objects.equals(mode, MYBATIS_MODE)) {
+            return oldResourceVo;
+        }
+        return null;
+    }
+
+    @Override
+    public int getAppConfigEnvDatabaseCount(DeployResourceSearchVo searchVo) {
+        IResourceCrossoverMapper resourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
+        String enable = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_DATA_COMPARISON_MODE_ENABLE);
+        String mode = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_SQL_MODE);
+        int newRowNum = 0;
+        int oldRowNum = 0;
+        if (Objects.equals(mode, JSQLPARSER_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
+            String sql = deployResourceBuildSqlService.buildGetAppConfigEnvDatabaseCountSql(searchVo);
+            if (StringUtils.isNotBlank(sql)) {
+                newRowNum = resourceCrossoverMapper.getCountBySql(sql);
+            }
+        }
+        if (Objects.equals(mode, MYBATIS_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
+            oldRowNum = deployAppConfigMapper.getAppConfigEnvDatabaseCount(searchVo);
+        }
+        if (Objects.equals(enable, COMPARISON_ENABLED) && oldRowNum != newRowNum) {
+            JSONObject errorObj = new JSONObject();
+            errorObj.put("newRowNum", newRowNum);
+            errorObj.put("oldRowNum", oldRowNum);
+            logger.error("资产清单新旧SQL获取结果不一致：{}", errorObj);
+        }
+        if (Objects.equals(mode, JSQLPARSER_MODE)) {
+            return newRowNum;
+        } else if (Objects.equals(mode, MYBATIS_MODE)) {
+            return oldRowNum;
+        }
+        return 0;
+    }
+
+    @Override
+    public List<Long> getAppConfigEnvDatabaseResourceIdList(DeployResourceSearchVo searchVo) {
+        IResourceCrossoverMapper resourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
+        String enable = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_DATA_COMPARISON_MODE_ENABLE);
+        String mode = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_SQL_MODE);
+        List<Long> newIdList = new ArrayList<>();
+        List<Long> oldIdList = new ArrayList<>();
+        if (Objects.equals(mode, JSQLPARSER_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
+            String sql = deployResourceBuildSqlService.buildGetAppConfigEnvDatabaseResourceIdListSql(searchVo);
+            if (StringUtils.isNotBlank(sql)) {
+                newIdList = resourceCrossoverMapper.getIdListBySql(sql);
+            }
+        }
+        if (Objects.equals(mode, MYBATIS_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
+            oldIdList = deployAppConfigMapper.getAppConfigEnvDatabaseResourceIdList(searchVo);
+        }
+        if (Objects.equals(enable, COMPARISON_ENABLED) && !Objects.equals(oldIdList, newIdList)) {
+            JSONObject errorObj = new JSONObject();
+            errorObj.put("newIdList", newIdList);
+            errorObj.put("oldIdList", oldIdList);
+            logger.error("资产清单新旧SQL获取idList结果不一致：{}", errorObj);
+        }
+        if (Objects.equals(mode, JSQLPARSER_MODE)) {
+            return newIdList;
+        } else if (Objects.equals(mode, MYBATIS_MODE)) {
+            return oldIdList;
+        }
+        return new ArrayList<>();
+    }
+
+    private boolean checkResourceListIsEquals(List<ResourceVo> resourceList, List<ResourceVo> oldResourceList) {
+        if (oldResourceList.size() != resourceList.size()) {
+            JSONObject errorObj = new JSONObject();
+            errorObj.put("resourceList.size()", resourceList.size());
+            errorObj.put("oldResourceList.size()", oldResourceList.size());
+            logger.error("资产清单新旧SQL获取tbodyList结果不一致：{}", errorObj);
+            return false;
+        }
+        boolean flag = true;
+        resourceList.sort(Comparator.comparing(ResourceVo::getId));
+        oldResourceList.sort(Comparator.comparing(ResourceVo::getId));
+        for (int i = 0; i < resourceList.size(); i++) {
+            ResourceVo resourceVo = resourceList.get(i);
+            ResourceVo oldResourceVo = oldResourceList.get(i);
+            String resourceString = JSONObject.toJSONString(resourceVo, SerializerFeature.MapSortField);
+            String oldResourceString = JSONObject.toJSONString(oldResourceVo, SerializerFeature.MapSortField);
+            if (!Objects.equals(resourceString, oldResourceString)) {
+                JSONObject errorObj = new JSONObject();
+                errorObj.put("index", i);
+                errorObj.put("resourceVo", resourceVo);
+                errorObj.put("oldResourceVo", oldResourceVo);
+                logger.error("资产清单新旧SQL获取tbodyList结果不一致：{}", errorObj);
+                flag = false;
+            }
+        }
+        return flag;
     }
 
     /**
