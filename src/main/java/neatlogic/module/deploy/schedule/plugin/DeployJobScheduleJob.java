@@ -54,6 +54,11 @@ import java.util.Objects;
 @Component
 @DisallowConcurrentExecution
 public class DeployJobScheduleJob extends JobBase {
+    @Override
+    public String getName() {
+        return "发布定时作业执行";
+    }
+
     static Logger logger = LoggerFactory.getLogger(DeployJobScheduleJob.class);
     @Resource
     private DeployScheduleMapper deployScheduleMapper;

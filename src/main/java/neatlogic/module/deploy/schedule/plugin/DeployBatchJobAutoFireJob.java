@@ -47,6 +47,11 @@ import java.util.List;
 @Component
 @DisallowConcurrentExecution
 public class DeployBatchJobAutoFireJob extends JobBase {
+    @Override
+    public String getName() {
+        return "发布批量作业计划启动";
+    }
+
     static Logger logger = LoggerFactory.getLogger(DeployBatchJobAutoFireJob.class);
 
     @Resource
