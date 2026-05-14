@@ -136,7 +136,7 @@
             JOIN `autoexec_job_invoke` aji ON ajj.`id` = aji.`job_id`
         </if>
         <if test="isHasAllAuthority == 0">
-            LEFT JOIN deploy_app_config_authority dacaSub ON daca.app_system_id = djj.app_system_id
+            LEFT JOIN deploy_app_config_authority dacaSub ON dacaSub.app_system_id = djj.app_system_id
         </if>
         <where>
             <include refid="searchSubJobSql"/>
@@ -464,7 +464,7 @@
         </if>
         <if test="isHasAllAuthority == 0">
             LEFT JOIN deploy_app_config_authority daca ON daca.app_system_id = dj.app_system_id
-            LEFT JOIN deploy_app_config_authority dacaSub ON daca.app_system_id = djj.app_system_id
+            LEFT JOIN deploy_app_config_authority dacaSub ON dacaSub.app_system_id = djj.app_system_id
         </if>
         <where>
             and (aj.parent_id is null OR aj.parent_id = -1)
@@ -519,7 +519,7 @@
         </if>
         <if test="isHasAllAuthority == 0">
             LEFT JOIN deploy_app_config_authority daca ON daca.app_system_id = dj.app_system_id
-            LEFT JOIN deploy_app_config_authority dacaSub ON daca.app_system_id = djj.app_system_id
+            LEFT JOIN deploy_app_config_authority dacaSub ON dacaSub.app_system_id = djj.app_system_id
         </if>
         <where>
             and (aj.parent_id is null OR aj.parent_id = -1)
