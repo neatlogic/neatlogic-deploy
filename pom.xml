@@ -37,9 +37,5 @@
 			<groupId>com.neatlogic</groupId>
 			<artifactId>neatlogic-deploy-base</artifactId>
 		</dependency>
-		<!--<dependency>
-			<groupId>com.neatlogic</groupId>
-			<artifactId>neatlogic-codehub-base</artifactId>
-		</dependency>-->
 	</dependencies>
 </project>

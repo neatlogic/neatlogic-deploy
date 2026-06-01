@@ -1434,6 +1434,7 @@
         <foreach collection="runnerGroupVoList" separator="," item="vo">
             (#{vo.appSystemId}, #{vo.appModuleId}, #{vo.runnerGroupId})
         </foreach>
+        ON DUPLICATE KEY UPDATE `runner_group_id` = VALUES(`runner_group_id`)
     </insert>
 
     <insert id="insertAppEnvAutoConfig">

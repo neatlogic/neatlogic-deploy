@@ -394,6 +394,19 @@ public class DeployJobServiceImpl implements DeployJobService {
     }
 
     @Override
+    public JSONObject getJobStatus(Long jobId) {
+        JSONObject result = new JSONObject();
+        AutoexecJobVo jobVo = autoexecJobMapper.getJobInfo(jobId);
+        if (jobVo != null) {
+            result.put("jobId", jobVo.getId());
+            result.put("jobName", jobVo.getName());
+            result.put("status", jobVo.getStatus());
+            result.put("statusName", neatlogic.framework.autoexec.constvalue.JobStatus.getText(jobVo.getStatus()));
+        }
+        return result;
+    }
+
+    @Override
     public JSONObject createJobAndSchedule(DeployJobVo deployJobVo, DeployJobModuleVo module) {
         convertModule(deployJobVo, module);
         JSONObject resultJson = new JSONObject();

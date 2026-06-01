@@ -75,6 +75,14 @@ public interface DeployJobService {
     JSONObject createJobAndFire(DeployJobVo autoexecJobParam) throws Exception;
 
     /**
+     * 查询发布作业状态
+     *
+     * @param jobId 作业id
+     * @return 状态信息
+     */
+    JSONObject getJobStatus(Long jobId);
+
+    /**
      * 创建定时发布作业
      *
      * @param deployJobVo 入参
