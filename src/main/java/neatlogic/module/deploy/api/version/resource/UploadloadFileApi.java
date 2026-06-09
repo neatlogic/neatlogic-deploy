@@ -21,7 +21,7 @@ import neatlogic.framework.deploy.constvalue.DeployResourceType;
 import neatlogic.framework.deploy.dto.version.DeployVersionVo;
 import neatlogic.framework.deploy.exception.DeployVersionNotFoundException;
 import neatlogic.framework.deploy.exception.DeployVersionResourceTypeNotFoundException;
-import neatlogic.framework.deploy.exception.UploadFileFailedException;
+import neatlogic.framework.exception.file.UploadFileFailedException;
 import neatlogic.framework.integration.authentication.enums.AuthenticateType;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
