@@ -300,20 +300,20 @@ public class DeployJobServiceImpl implements DeployJobService {
         if (StringUtils.isNotBlank(moduleVo.getVersion())) {
             versionVo = deployVersionMapper.getDeployVersionBySystemIdAndModuleIdAndVersion(deployJobParam.getAppSystemId(), deployJobParam.getAppModuleId(), moduleVo.getVersion());
             if (versionVo == null) {
-                throw new DeployVersionNotFoundException(deployJobParam.getAppSystemName(), deployJobParam.getAppModuleName(), moduleVo.getVersion());
+                throw new DeployVersionNotFoundException(deployJobParam, moduleVo,"moduleVersion");
             }
 
         }
         if (StringUtils.isNotBlank(deployJobParam.getVersion())) {
             versionVo = deployVersionMapper.getDeployVersionBySystemIdAndModuleIdAndVersion(deployJobParam.getAppSystemId(), deployJobParam.getAppModuleId(), deployJobParam.getVersion());
             if (versionVo == null) {
-                throw new DeployVersionNotFoundException(deployJobParam.getAppSystemName(), deployJobParam.getAppModuleName(), deployJobParam.getVersion());
+                throw new DeployVersionNotFoundException(deployJobParam,"paramVersion");
             }
 
         } else if (deployJobParam.getVersionId() != null) {
             versionVo = deployVersionMapper.getDeployVersionBySystemIdAndModuleIdAndVersionId(deployJobParam.getAppSystemId(), deployJobParam.getAppModuleId(), deployJobParam.getVersionId());
             if (versionVo == null) {
-                throw new DeployVersionNotFoundException(deployJobParam.getAppSystemName(), deployJobParam.getAppModuleName(), deployJobParam.getVersion());
+                throw new DeployVersionNotFoundException(deployJobParam,"paramVersionId");
             }
         }
         if (versionVo != null) {
