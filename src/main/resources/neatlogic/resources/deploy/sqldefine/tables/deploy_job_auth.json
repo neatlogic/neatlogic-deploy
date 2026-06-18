@@ -1,0 +1,35 @@
+{
+  "moduleId": "deploy",
+  "name": "deploy_job_auth",
+  "label": "发布作业授权",
+  "description": "发布作业授权 可用于发布相关的关联查询等报表查询场景。",
+  "fields": [
+    {
+      "name": "job_id",
+      "type": "bigint",
+      "description": "作业id，已建立普通索引，适合用于过滤、关联或排序查询。"
+    },
+    {
+      "name": "auth_uuid",
+      "type": "char(32)",
+      "description": "授权对象。"
+    },
+    {
+      "name": "type",
+      "type": "enum('user','team','role')",
+      "description": "授权类型。"
+    }
+  ],
+  "indexes": [
+    {
+      "name": "idx_job_id",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "job_id"
+      ],
+      "description": "普通索引，覆盖 job_id 字段，适合用于过滤、关联或排序查询。"
+    }
+  ]
+}

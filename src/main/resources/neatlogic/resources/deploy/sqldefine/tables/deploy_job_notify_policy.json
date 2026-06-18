@@ -1,0 +1,35 @@
+{
+  "moduleId": "deploy",
+  "name": "deploy_job_notify_policy",
+  "label": "发布作业引用通知策略表",
+  "description": "发布作业引用通知策略表 可用于发布相关的关联查询等报表查询场景。",
+  "fields": [
+    {
+      "name": "app_system_id",
+      "type": "bigint",
+      "description": "应用系统id，作为当前表记录的主键或唯一定位字段。"
+    },
+    {
+      "name": "notify_policy_id",
+      "type": "bigint",
+      "description": "通知策略id。"
+    },
+    {
+      "name": "config",
+      "type": "mediumtext",
+      "description": "通知策略个性化配置。"
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "app_system_id"
+      ],
+      "description": "主键索引，覆盖 app_system_id 字段，适合用于唯一定位记录和主表关联查询。"
+    }
+  ]
+}

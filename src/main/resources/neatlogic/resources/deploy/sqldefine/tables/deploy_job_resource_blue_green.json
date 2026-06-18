@@ -1,0 +1,41 @@
+{
+  "moduleId": "deploy",
+  "name": "deploy_job_resource_blue_green",
+  "label": "发布作业蓝绿id",
+  "description": "发布作业蓝绿id 可用于发布相关的关联查询等报表查询场景。",
+  "fields": [
+    {
+      "name": "job_id",
+      "type": "bigint",
+      "description": "作业id，作为当前表记录的主键或唯一定位字段。"
+    },
+    {
+      "name": "resource_id",
+      "type": "bigint",
+      "description": "资产id，作为当前表记录的主键或唯一定位字段。"
+    },
+    {
+      "name": "blue_green_id",
+      "type": "bigint",
+      "description": "蓝绿ID。"
+    },
+    {
+      "name": "update_tag",
+      "type": "bigint",
+      "description": "跟新标记。"
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "job_id",
+        "resource_id"
+      ],
+      "description": "主键索引，覆盖 job_id、resource_id 字段，适合用于唯一定位记录和主表关联查询。"
+    }
+  ]
+}

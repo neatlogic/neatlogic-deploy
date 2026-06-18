@@ -1,0 +1,30 @@
+{
+  "moduleId": "deploy",
+  "name": "deploy_version_thead",
+  "label": "发布版本表头配置",
+  "description": "发布版本表头配置 可用于发布相关数据的查询、筛选和报表展示。",
+  "fields": [
+    {
+      "name": "config",
+      "type": "text",
+      "description": "表头配置。"
+    },
+    {
+      "name": "user_uuid",
+      "type": "char(32)",
+      "description": "用户uuid，作为当前表记录的主键或唯一定位字段。"
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "user_uuid"
+      ],
+      "description": "主键索引，覆盖 user_uuid 字段，适合用于唯一定位记录和主表关联查询。"
+    }
+  ]
+}

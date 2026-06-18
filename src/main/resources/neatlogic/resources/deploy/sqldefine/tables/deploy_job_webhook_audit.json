@@ -1,0 +1,70 @@
+{
+  "moduleId": "deploy",
+  "name": "deploy_job_webhook_audit",
+  "label": "作业触发器记录表",
+  "description": "作业触发器记录表 可用于发布相关的时间维度统计、关联查询等报表查询场景。",
+  "fields": [
+    {
+      "name": "id",
+      "type": "bigint",
+      "description": "id，作为当前表记录的主键或唯一定位字段。"
+    },
+    {
+      "name": "webhook_id",
+      "type": "bigint",
+      "description": "触发器id，已建立普通索引，适合用于过滤、关联或排序查询。"
+    },
+    {
+      "name": "name",
+      "type": "varchar(50)",
+      "description": "名称。"
+    },
+    {
+      "name": "integration_audit_id",
+      "type": "bigint",
+      "description": "集成记录id，已建立普通索引，适合用于过滤、关联或排序查询。"
+    },
+    {
+      "name": "lcd",
+      "type": "timestamp(3)",
+      "description": "触发事件。"
+    },
+    {
+      "name": "from_job_id",
+      "type": "bigint",
+      "description": "来源作业id。"
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "id"
+      ],
+      "description": "主键索引，覆盖 id 字段，适合用于唯一定位记录和主表关联查询。"
+    },
+    {
+      "name": "idx_integration_autditid",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "integration_audit_id"
+      ],
+      "description": "普通索引，覆盖 integration_audit_id 字段，适合用于过滤、关联或排序查询。"
+    },
+    {
+      "name": "idx_triggerid",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "webhook_id"
+      ],
+      "description": "普通索引，覆盖 webhook_id 字段，适合用于过滤、关联或排序查询。"
+    }
+  ]
+}

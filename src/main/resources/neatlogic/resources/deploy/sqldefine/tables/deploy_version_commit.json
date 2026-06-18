@@ -1,0 +1,37 @@
+{
+  "moduleId": "deploy",
+  "name": "deploy_version_commit",
+  "label": "发布版本提交记录关联吧",
+  "description": "发布版本提交记录关联吧 可用于发布相关的关联查询等报表查询场景。",
+  "fields": [
+    {
+      "name": "version_id",
+      "type": "bigint",
+      "description": "版本id，作为当前表记录的主键或唯一定位字段。"
+    },
+    {
+      "name": "commit_id",
+      "type": "varchar(255)",
+      "description": "提交id，作为当前表记录的主键或唯一定位字段。"
+    },
+    {
+      "name": "repository_id",
+      "type": "bigint",
+      "description": "仓库id，作为当前表记录的主键或唯一定位字段。"
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "version_id",
+        "commit_id",
+        "repository_id"
+      ],
+      "description": "主键索引，覆盖 version_id、commit_id、repository_id 字段，适合用于唯一定位记录和主表关联查询。"
+    }
+  ]
+}

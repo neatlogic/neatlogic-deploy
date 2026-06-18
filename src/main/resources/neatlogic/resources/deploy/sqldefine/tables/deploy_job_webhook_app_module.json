@@ -1,0 +1,37 @@
+{
+  "moduleId": "deploy",
+  "name": "deploy_job_webhook_app_module",
+  "label": "发布job_webhook_app_module表",
+  "description": "发布job_webhook_app_module表，属于发布模块的数据表。 可用于发布相关的关联查询等报表查询场景。",
+  "fields": [
+    {
+      "name": "webhook_id",
+      "type": "bigint",
+      "description": "触发器id，作为当前表记录的主键或唯一定位字段。"
+    },
+    {
+      "name": "app_system_id",
+      "type": "bigint",
+      "description": "应用系统id，作为当前表记录的主键或唯一定位字段。"
+    },
+    {
+      "name": "app_module_id",
+      "type": "bigint",
+      "description": "应用模块id，作为当前表记录的主键或唯一定位字段。"
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "webhook_id",
+        "app_system_id",
+        "app_module_id"
+      ],
+      "description": "主键索引，覆盖 webhook_id、app_system_id、app_module_id 字段，适合用于唯一定位记录和主表关联查询。"
+    }
+  ]
+}

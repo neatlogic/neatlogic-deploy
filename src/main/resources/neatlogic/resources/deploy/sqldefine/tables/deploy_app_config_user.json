@@ -1,0 +1,31 @@
+{
+  "moduleId": "deploy",
+  "name": "deploy_app_config_user",
+  "label": "发布应用系统配置收藏",
+  "description": "发布应用系统配置收藏 可用于发布相关的关联查询等报表查询场景。",
+  "fields": [
+    {
+      "name": "app_system_id",
+      "type": "bigint",
+      "description": "应用资产id，作为当前表记录的主键或唯一定位字段。"
+    },
+    {
+      "name": "user_uuid",
+      "type": "char(32)",
+      "description": "收藏人，作为当前表记录的主键或唯一定位字段。"
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "app_system_id",
+        "user_uuid"
+      ],
+      "description": "主键索引，覆盖 app_system_id、user_uuid 字段，适合用于唯一定位记录和主表关联查询。"
+    }
+  ]
+}

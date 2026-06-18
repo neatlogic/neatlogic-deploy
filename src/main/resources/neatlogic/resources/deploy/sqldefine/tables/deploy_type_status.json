@@ -1,0 +1,30 @@
+{
+  "moduleId": "deploy",
+  "name": "deploy_type_status",
+  "label": "发布工具类型状态表",
+  "description": "发布工具类型状态表 可用于发布相关的启用状态筛选、关联查询等报表查询场景。",
+  "fields": [
+    {
+      "name": "type_id",
+      "type": "bigint",
+      "description": "工具类型id，作为当前表记录的主键或唯一定位字段。"
+    },
+    {
+      "name": "is_active",
+      "type": "int",
+      "description": "是否激活(0:禁用，1：激活)。"
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "type_id"
+      ],
+      "description": "主键索引，覆盖 type_id 字段，适合用于唯一定位记录和主表关联查询。"
+    }
+  ]
+}

@@ -1,0 +1,81 @@
+{
+  "moduleId": "deploy",
+  "name": "deploy_version_unit_test",
+  "label": "发版版本单元测试",
+  "description": "发版版本单元测试 可用于发布相关的关联查询等报表查询场景。",
+  "fields": [
+    {
+      "name": "id",
+      "type": "bigint",
+      "description": "id，作为当前表记录的主键或唯一定位字段。"
+    },
+    {
+      "name": "version_id",
+      "type": "bigint",
+      "description": "版本id，已建立普通索引，适合用于过滤、关联或排序查询。"
+    },
+    {
+      "name": "build_time",
+      "type": "timestamp(3)",
+      "description": "编译时间。"
+    },
+    {
+      "name": "tests",
+      "type": "int",
+      "description": "单元测试总数。"
+    },
+    {
+      "name": "test_success_density",
+      "type": "int",
+      "description": "单元测试成功率。"
+    },
+    {
+      "name": "test_errors",
+      "type": "int",
+      "description": "单元测试失败数。"
+    },
+    {
+      "name": "branch_coverage",
+      "type": "int",
+      "description": "全量代码分支覆盖率。"
+    },
+    {
+      "name": "new_branch_coverage",
+      "type": "int",
+      "description": "增量代码分支覆盖率。"
+    },
+    {
+      "name": "line_coverage",
+      "type": "int",
+      "description": "全量行覆盖率。"
+    },
+    {
+      "name": "new_line_coverage",
+      "type": "int",
+      "description": "增量行覆盖率。"
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "id"
+      ],
+      "description": "主键索引，覆盖 id 字段，适合用于唯一定位记录和主表关联查询。"
+    },
+    {
+      "name": "version_build_time",
+      "type": "BTREE",
+      "unique": true,
+      "primary": false,
+      "columns": [
+        "version_id",
+        "build_time"
+      ],
+      "description": "唯一索引，覆盖 version_id、build_time 字段，适合用于精确检索、唯一性判断和去重查询。"
+    }
+  ]
+}

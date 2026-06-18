@@ -1,0 +1,80 @@
+{
+  "moduleId": "deploy",
+  "name": "deploy_job_webhook",
+  "label": "发布触发器",
+  "description": "发布触发器 可用于发布相关的启用状态筛选、时间维度统计等报表查询场景。",
+  "fields": [
+    {
+      "name": "id",
+      "type": "bigint",
+      "description": "id，作为当前表记录的主键或唯一定位字段。"
+    },
+    {
+      "name": "name",
+      "type": "varchar(50)",
+      "description": "名称，数据库中要求唯一，适合用于精确查询和去重判断。"
+    },
+    {
+      "name": "is_active",
+      "type": "tinyint(1)",
+      "description": "是否激活。"
+    },
+    {
+      "name": "integration_uuid",
+      "type": "char(32)",
+      "description": "集成uuid。"
+    },
+    {
+      "name": "type",
+      "type": "varchar(50)",
+      "description": "作业类型。"
+    },
+    {
+      "name": "pipeline_type",
+      "type": "varchar(50)",
+      "description": "流水线类型。"
+    },
+    {
+      "name": "build_no_policy",
+      "type": "varchar(50)",
+      "description": "编译号策略。"
+    },
+    {
+      "name": "config",
+      "type": "text",
+      "description": "配置。"
+    },
+    {
+      "name": "lcd",
+      "type": "timestamp(3)",
+      "description": "最后一次修改时间。"
+    },
+    {
+      "name": "lcu",
+      "type": "char(32)",
+      "description": "最后一次修改人。"
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "id"
+      ],
+      "description": "主键索引，覆盖 id 字段，适合用于唯一定位记录和主表关联查询。"
+    },
+    {
+      "name": "uniq",
+      "type": "BTREE",
+      "unique": true,
+      "primary": false,
+      "columns": [
+        "name"
+      ],
+      "description": "唯一索引，覆盖 name 字段，适合用于精确检索、唯一性判断和去重查询。"
+    }
+  ]
+}

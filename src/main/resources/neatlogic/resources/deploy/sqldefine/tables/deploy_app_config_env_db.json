@@ -1,0 +1,73 @@
+{
+  "moduleId": "deploy",
+  "name": "deploy_app_config_env_db",
+  "label": "发布应用配置环境层DB配置表",
+  "description": "发布应用配置环境层DB配置表 可用于发布相关的关联查询等报表查询场景。",
+  "fields": [
+    {
+      "name": "id",
+      "type": "bigint",
+      "description": "id，作为当前表记录的主键或唯一定位字段。"
+    },
+    {
+      "name": "db_schema",
+      "type": "varchar(50)",
+      "description": "数据库schema，已建立普通索引，适合用于过滤、关联或排序查询。"
+    },
+    {
+      "name": "app_system_id",
+      "type": "bigint",
+      "description": "应用系统id。"
+    },
+    {
+      "name": "app_module_id",
+      "type": "bigint",
+      "description": "应用模块id。"
+    },
+    {
+      "name": "env_id",
+      "type": "bigint",
+      "description": "环境id。"
+    },
+    {
+      "name": "db_resource_id",
+      "type": "bigint",
+      "description": "数据库id。"
+    },
+    {
+      "name": "config",
+      "type": "text",
+      "description": "高级设置。"
+    },
+    {
+      "name": "account_id",
+      "type": "bigint",
+      "description": "账号id。"
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "id"
+      ],
+      "description": "主键索引，覆盖 id 字段，适合用于唯一定位记录和主表关联查询。"
+    },
+    {
+      "name": "un_app_system_id_app_module_id_env_id_db_schema",
+      "type": "BTREE",
+      "unique": true,
+      "primary": false,
+      "columns": [
+        "db_schema",
+        "app_system_id",
+        "app_module_id",
+        "env_id"
+      ],
+      "description": "唯一索引，覆盖 db_schema、app_system_id、app_module_id、env_id 字段，适合用于精确检索、唯一性判断和去重查询。"
+    }
+  ]
+}

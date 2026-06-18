@@ -1,0 +1,94 @@
+{
+  "moduleId": "deploy",
+  "name": "deploy_instance_version_audit",
+  "label": "实例版本变更记录",
+  "description": "实例版本变更记录 可用于发布相关的时间维度统计、关联查询等报表查询场景。",
+  "fields": [
+    {
+      "name": "id",
+      "type": "bigint",
+      "description": "id，作为当前表记录的主键或唯一定位字段。"
+    },
+    {
+      "name": "app_system_id",
+      "type": "bigint",
+      "description": "应用id，已建立普通索引，适合用于过滤、关联或排序查询。"
+    },
+    {
+      "name": "app_module_id",
+      "type": "bigint",
+      "description": "模块id。"
+    },
+    {
+      "name": "env_id",
+      "type": "bigint",
+      "description": "环境id。"
+    },
+    {
+      "name": "resource_id",
+      "type": "bigint",
+      "description": "实例id。"
+    },
+    {
+      "name": "new_version_id",
+      "type": "bigint",
+      "description": "新版本id。"
+    },
+    {
+      "name": "old_version_id",
+      "type": "bigint",
+      "description": "旧版本id。"
+    },
+    {
+      "name": "new_build_no",
+      "type": "int",
+      "description": "新版本编译号。"
+    },
+    {
+      "name": "old_build_no",
+      "type": "int",
+      "description": "旧版本编译号。"
+    },
+    {
+      "name": "direction",
+      "type": "enum('forward','rollback')",
+      "description": "forward:发布版本；rollback:回滚版本。"
+    },
+    {
+      "name": "fcu",
+      "type": "char(32)",
+      "description": "创建人。"
+    },
+    {
+      "name": "fcd",
+      "type": "timestamp(3)",
+      "description": "创建时间。"
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "id"
+      ],
+      "description": "主键索引，覆盖 id 字段，适合用于唯一定位记录和主表关联查询。"
+    },
+    {
+      "name": "idx_system_module_env_resource_new_version",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "app_system_id",
+        "app_module_id",
+        "env_id",
+        "resource_id",
+        "new_version_id"
+      ],
+      "description": "普通索引，覆盖 app_system_id、app_module_id、env_id、resource_id、new_version_id 字段，适合用于过滤、关联或排序查询。"
+    }
+  ]
+}

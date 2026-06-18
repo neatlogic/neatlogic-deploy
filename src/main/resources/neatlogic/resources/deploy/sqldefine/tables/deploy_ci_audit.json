@@ -1,0 +1,70 @@
+{
+  "moduleId": "deploy",
+  "name": "deploy_ci_audit",
+  "label": "发布持续集成记录表",
+  "description": "发布持续集成记录表 可用于发布相关的状态跟踪、时间维度统计、关联查询等报表查询场景。",
+  "fields": [
+    {
+      "name": "id",
+      "type": "bigint",
+      "description": "id，作为当前表记录的主键或唯一定位字段。"
+    },
+    {
+      "name": "ci_id",
+      "type": "bigint",
+      "description": "持续集成配置id。"
+    },
+    {
+      "name": "commit_id",
+      "type": "varchar(255)",
+      "description": "提交id。"
+    },
+    {
+      "name": "action",
+      "type": "varchar(50)",
+      "description": "动作。"
+    },
+    {
+      "name": "status",
+      "type": "varchar(50)",
+      "description": "状态。"
+    },
+    {
+      "name": "job_id",
+      "type": "bigint",
+      "description": "作业id。"
+    },
+    {
+      "name": "param_file_path",
+      "type": "varchar(255)",
+      "description": "参数内容文件路径。"
+    },
+    {
+      "name": "result_file_path",
+      "type": "varchar(255)",
+      "description": "结果内容文件路径。"
+    },
+    {
+      "name": "error_file_path",
+      "type": "varchar(255)",
+      "description": "错误内容文件路径。"
+    },
+    {
+      "name": "fcd",
+      "type": "timestamp(3)",
+      "description": "触发时间。"
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "id"
+      ],
+      "description": "主键索引，覆盖 id 字段，适合用于唯一定位记录和主表关联查询。"
+    }
+  ]
+}

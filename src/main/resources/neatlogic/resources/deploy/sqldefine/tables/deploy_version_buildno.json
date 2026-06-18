@@ -1,0 +1,116 @@
+{
+  "moduleId": "deploy",
+  "name": "deploy_version_buildno",
+  "label": "发布版本编译序号关联表",
+  "description": "发布版本编译序号关联表 可用于发布相关的状态跟踪、时间维度统计、关联查询等报表查询场景。",
+  "fields": [
+    {
+      "name": "version_id",
+      "type": "bigint",
+      "description": "发布版本表关联id，作为当前表记录的主键或唯一定位字段。"
+    },
+    {
+      "name": "build_no",
+      "type": "int",
+      "description": "编译号，作为当前表记录的主键或唯一定位字段。"
+    },
+    {
+      "name": "job_id",
+      "type": "bigint",
+      "description": "作业id，已建立普通索引，适合用于过滤、关联或排序查询。"
+    },
+    {
+      "name": "status",
+      "type": "varchar(50)",
+      "description": "编译状态。"
+    },
+    {
+      "name": "runner_map_id",
+      "type": "bigint",
+      "description": "runner映射id。"
+    },
+    {
+      "name": "runner_group",
+      "type": "text",
+      "description": "runner组。"
+    },
+    {
+      "name": "compile_start_time",
+      "type": "timestamp(3)",
+      "description": "编译开始时间，已建立普通索引，适合用于过滤、关联或排序查询。"
+    },
+    {
+      "name": "compile_end_time",
+      "type": "timestamp(3)",
+      "description": "编译结束时间。"
+    },
+    {
+      "name": "end_rev",
+      "type": "varchar(50)",
+      "description": "结束Rev号。"
+    },
+    {
+      "name": "lcu",
+      "type": "char(32)",
+      "description": "修改人。"
+    },
+    {
+      "name": "lcd",
+      "type": "timestamp(3)",
+      "description": "修改时间。"
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "version_id",
+        "build_no"
+      ],
+      "description": "主键索引，覆盖 version_id、build_no 字段，适合用于唯一定位记录和主表关联查询。"
+    },
+    {
+      "name": "id_fcd",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "compile_start_time"
+      ],
+      "description": "普通索引，覆盖 compile_start_time 字段，适合用于过滤、关联或排序查询。"
+    },
+    {
+      "name": "idx_buildno",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "build_no"
+      ],
+      "description": "普通索引，覆盖 build_no 字段，适合用于过滤、关联或排序查询。"
+    },
+    {
+      "name": "idx_compile_start_time",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "compile_start_time"
+      ],
+      "description": "普通索引，覆盖 compile_start_time 字段，适合用于过滤、关联或排序查询。"
+    },
+    {
+      "name": "idx_jobId",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "job_id"
+      ],
+      "description": "普通索引，覆盖 job_id 字段，适合用于过滤、关联或排序查询。"
+    }
+  ]
+}

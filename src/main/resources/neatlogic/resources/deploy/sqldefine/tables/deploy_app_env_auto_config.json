@@ -1,0 +1,74 @@
+{
+  "moduleId": "deploy",
+  "name": "deploy_app_env_auto_config",
+  "label": "发布应用环境变量配置",
+  "description": "发布应用环境变量配置 可用于发布相关的时间维度统计、关联查询等报表查询场景。",
+  "fields": [
+    {
+      "name": "app_system_id",
+      "type": "bigint",
+      "description": "应用id，作为当前表记录的主键或唯一定位字段。"
+    },
+    {
+      "name": "app_module_id",
+      "type": "bigint",
+      "description": "模块id，作为当前表记录的主键或唯一定位字段。"
+    },
+    {
+      "name": "env_id",
+      "type": "bigint",
+      "description": "环境资产id，作为当前表记录的主键或唯一定位字段。"
+    },
+    {
+      "name": "instance_id",
+      "type": "bigint",
+      "description": "实例资产id，作为当前表记录的主键或唯一定位字段。"
+    },
+    {
+      "name": "key",
+      "type": "varchar(255)",
+      "description": "变量名，作为当前表记录的主键或唯一定位字段。"
+    },
+    {
+      "name": "type",
+      "type": "enum('text','password','textarea')",
+      "description": "变量类型。"
+    },
+    {
+      "name": "value",
+      "type": "text",
+      "description": "变量值。"
+    },
+    {
+      "name": "is_empty",
+      "type": "tinyint(1)",
+      "description": "是否设为空。"
+    },
+    {
+      "name": "lcd",
+      "type": "timestamp(3)",
+      "description": "最后一次修改时间。"
+    },
+    {
+      "name": "lcu",
+      "type": "char(32)",
+      "description": "最后一次修改人。"
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "app_system_id",
+        "app_module_id",
+        "env_id",
+        "instance_id",
+        "key"
+      ],
+      "description": "主键索引，覆盖 app_system_id、app_module_id、env_id、instance_id、key 字段，适合用于唯一定位记录和主表关联查询。"
+    }
+  ]
+}

@@ -1,0 +1,71 @@
+{
+  "moduleId": "deploy",
+  "name": "deploy_app_config_authority",
+  "label": "发布应用系统配置授权",
+  "description": "发布应用系统配置授权 可用于发布相关的时间维度统计、关联查询等报表查询场景。",
+  "fields": [
+    {
+      "name": "app_system_id",
+      "type": "bigint",
+      "description": "应用资产id，作为当前表记录的主键或唯一定位字段。"
+    },
+    {
+      "name": "auth_type",
+      "type": "enum('team','user','role','common')",
+      "description": "授权类型 user|team|role，作为当前表记录的主键或唯一定位字段。"
+    },
+    {
+      "name": "auth_uuid",
+      "type": "char(32)",
+      "description": "授权用户对象，作为当前表记录的主键或唯一定位字段。"
+    },
+    {
+      "name": "action_type",
+      "type": "varchar(50)",
+      "description": "授权操作类型，作为当前表记录的主键或唯一定位字段。"
+    },
+    {
+      "name": "action",
+      "type": "varchar(50)",
+      "description": "授权操作，作为当前表记录的主键或唯一定位字段。"
+    },
+    {
+      "name": "lcd",
+      "type": "timestamp(3)",
+      "description": "最后一次修改时间。"
+    },
+    {
+      "name": "lcu",
+      "type": "char(32)",
+      "description": "最后一次修改人。"
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "app_system_id",
+        "auth_type",
+        "auth_uuid",
+        "action_type",
+        "action"
+      ],
+      "description": "主键索引，覆盖 app_system_id、auth_type、auth_uuid、action_type、action 字段，适合用于唯一定位记录和主表关联查询。"
+    },
+    {
+      "name": "idx_app_env_authuuid_action",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "app_system_id",
+        "action_type",
+        "auth_uuid"
+      ],
+      "description": "普通索引，覆盖 app_system_id、action_type、auth_uuid 字段，适合用于过滤、关联或排序查询。"
+    }
+  ]
+}

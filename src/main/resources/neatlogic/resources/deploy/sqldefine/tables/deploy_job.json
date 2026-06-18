@@ -1,0 +1,107 @@
+{
+  "moduleId": "deploy",
+  "name": "deploy_job",
+  "label": "发布作业表",
+  "description": "发布作业表 可用于发布相关的关联查询等报表查询场景。",
+  "fields": [
+    {
+      "name": "id",
+      "type": "bigint",
+      "description": "id，作为当前表记录的主键或唯一定位字段。"
+    },
+    {
+      "name": "app_system_id",
+      "type": "bigint",
+      "description": "系统id，已建立普通索引，适合用于过滤、关联或排序查询。"
+    },
+    {
+      "name": "app_module_id",
+      "type": "bigint",
+      "description": "系统模块id，已建立普通索引，适合用于过滤、关联或排序查询。"
+    },
+    {
+      "name": "env_id",
+      "type": "bigint",
+      "description": "环境id。"
+    },
+    {
+      "name": "version_id",
+      "type": "bigint",
+      "description": "版本id。"
+    },
+    {
+      "name": "version",
+      "type": "varchar(50)",
+      "description": "版本号。"
+    },
+    {
+      "name": "scenario_id",
+      "type": "bigint",
+      "description": "场景id。"
+    },
+    {
+      "name": "runner_map_id",
+      "type": "bigint",
+      "description": "编译|构造的runner_id。"
+    },
+    {
+      "name": "config",
+      "type": "longtext",
+      "description": "配置。"
+    },
+    {
+      "name": "build_no",
+      "type": "int",
+      "description": "编译号。"
+    },
+    {
+      "name": "config_hash",
+      "type": "char(32)",
+      "description": "配置hash。"
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "id"
+      ],
+      "description": "主键索引，覆盖 id 字段，适合用于唯一定位记录和主表关联查询。"
+    },
+    {
+      "name": "idx_appId_modueId_version_jobId",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "app_system_id",
+        "app_module_id",
+        "version"
+      ],
+      "description": "普通索引，覆盖 app_system_id、app_module_id、version 字段，适合用于过滤、关联或排序查询。"
+    },
+    {
+      "name": "idx_app_id",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "app_system_id"
+      ],
+      "description": "普通索引，覆盖 app_system_id 字段，适合用于过滤、关联或排序查询。"
+    },
+    {
+      "name": "idx_module_id",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "app_module_id"
+      ],
+      "description": "普通索引，覆盖 app_module_id 字段，适合用于过滤、关联或排序查询。"
+    }
+  ]
+}

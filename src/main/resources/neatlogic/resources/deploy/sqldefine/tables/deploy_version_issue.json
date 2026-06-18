@@ -1,0 +1,31 @@
+{
+  "moduleId": "deploy",
+  "name": "deploy_version_issue",
+  "label": "发布版本需求表",
+  "description": "发布版本需求表 可用于发布相关的关联查询等报表查询场景。",
+  "fields": [
+    {
+      "name": "version_id",
+      "type": "bigint",
+      "description": "版本id，作为当前表记录的主键或唯一定位字段。"
+    },
+    {
+      "name": "issue_id",
+      "type": "varchar(255)",
+      "description": "需求id，作为当前表记录的主键或唯一定位字段。"
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "version_id",
+        "issue_id"
+      ],
+      "description": "主键索引，覆盖 version_id、issue_id 字段，适合用于唯一定位记录和主表关联查询。"
+    }
+  ]
+}

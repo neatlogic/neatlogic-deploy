@@ -1,0 +1,36 @@
+{
+  "moduleId": "deploy",
+  "name": "deploy_app_module_runner_group",
+  "label": "发布应用模块runner组关联",
+  "description": "发布应用模块runner组关联 可用于发布相关的关联查询等报表查询场景。",
+  "fields": [
+    {
+      "name": "app_system_id",
+      "type": "bigint",
+      "description": "应用id，作为当前表记录的主键或唯一定位字段。"
+    },
+    {
+      "name": "app_module_id",
+      "type": "bigint",
+      "description": "模块资产id，作为当前表记录的主键或唯一定位字段。"
+    },
+    {
+      "name": "runner_group_id",
+      "type": "bigint",
+      "description": "runner组id。"
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "app_system_id",
+        "app_module_id"
+      ],
+      "description": "主键索引，覆盖 app_system_id、app_module_id 字段，适合用于唯一定位记录和主表关联查询。"
+    }
+  ]
+}

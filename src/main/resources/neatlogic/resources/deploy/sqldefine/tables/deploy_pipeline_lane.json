@@ -1,0 +1,35 @@
+{
+  "moduleId": "deploy",
+  "name": "deploy_pipeline_lane",
+  "label": "发布作业泳道超级流水线表",
+  "description": "发布作业泳道超级流水线表 可用于发布相关的关联查询等报表查询场景。",
+  "fields": [
+    {
+      "name": "id",
+      "type": "bigint",
+      "description": "流水线泳道id，作为当前表记录的主键或唯一定位字段。"
+    },
+    {
+      "name": "pipeline_id",
+      "type": "bigint",
+      "description": "流水线id。"
+    },
+    {
+      "name": "sort",
+      "type": "int",
+      "description": "排序。"
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "id"
+      ],
+      "description": "主键索引，覆盖 id 字段，适合用于唯一定位记录和主表关联查询。"
+    }
+  ]
+}

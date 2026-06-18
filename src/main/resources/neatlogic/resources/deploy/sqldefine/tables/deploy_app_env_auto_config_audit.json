@@ -1,0 +1,60 @@
+{
+  "moduleId": "deploy",
+  "name": "deploy_app_env_auto_config_audit",
+  "label": "发布应用环境变量配置审计",
+  "description": "发布应用环境变量配置审计 可用于发布相关的时间维度统计、关联查询等报表查询场景。",
+  "fields": [
+    {
+      "name": "id",
+      "type": "bigint",
+      "description": "主键ID，作为当前表记录的主键或唯一定位字段。"
+    },
+    {
+      "name": "app_system_id",
+      "type": "bigint",
+      "description": "应用id。"
+    },
+    {
+      "name": "app_module_id",
+      "type": "bigint",
+      "description": "模块id。"
+    },
+    {
+      "name": "env_id",
+      "type": "bigint",
+      "description": "环境资产id。"
+    },
+    {
+      "name": "instance_id",
+      "type": "bigint",
+      "description": "实例资产id。"
+    },
+    {
+      "name": "config",
+      "type": "longtext",
+      "description": "修改记录。"
+    },
+    {
+      "name": "fcd",
+      "type": "timestamp(3)",
+      "description": "创建者。"
+    },
+    {
+      "name": "fcu",
+      "type": "char(32)",
+      "description": "创建时间。"
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "id"
+      ],
+      "description": "主键索引，覆盖 id 字段，适合用于唯一定位记录和主表关联查询。"
+    }
+  ]
+}

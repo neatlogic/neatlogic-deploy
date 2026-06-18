@@ -1,0 +1,202 @@
+{
+  "moduleId": "deploy",
+  "name": "deploy_version",
+  "label": "发布版本表",
+  "description": "发布版本表 可用于发布相关的时间维度统计、关联查询等报表查询场景。",
+  "fields": [
+    {
+      "name": "id",
+      "type": "bigint",
+      "description": "主键，作为当前表记录的主键或唯一定位字段。"
+    },
+    {
+      "name": "version",
+      "type": "varchar(50)",
+      "description": "版本，已建立普通索引，适合用于过滤、关联或排序查询。"
+    },
+    {
+      "name": "app_system_id",
+      "type": "bigint",
+      "description": "应用id。"
+    },
+    {
+      "name": "app_system_name",
+      "type": "varchar(50)",
+      "description": "应用名称。"
+    },
+    {
+      "name": "app_module_id",
+      "type": "bigint",
+      "description": "应用模块id。"
+    },
+    {
+      "name": "app_module_name",
+      "type": "varchar(50)",
+      "description": "应用模块名称。"
+    },
+    {
+      "name": "is_freeze",
+      "type": "tinyint",
+      "description": "是否封版，已建立普通索引，适合用于过滤、关联或排序查询。"
+    },
+    {
+      "name": "runner_map_id",
+      "type": "bigint",
+      "description": "runner映射id。"
+    },
+    {
+      "name": "runner_group",
+      "type": "text",
+      "description": "runner组。"
+    },
+    {
+      "name": "compile_success_count",
+      "type": "int",
+      "description": "编译成功次数。"
+    },
+    {
+      "name": "compile_fail_count",
+      "type": "int",
+      "description": "编译失败次数。"
+    },
+    {
+      "name": "repo_type",
+      "type": "varchar(10)",
+      "description": "仓库类型。"
+    },
+    {
+      "name": "repo",
+      "type": "varchar(300)",
+      "description": "仓库地址。"
+    },
+    {
+      "name": "trunk",
+      "type": "varchar(300)",
+      "description": "主干。"
+    },
+    {
+      "name": "branch",
+      "type": "varchar(300)",
+      "description": "分支。"
+    },
+    {
+      "name": "tag",
+      "type": "varchar(300)",
+      "description": "标签。"
+    },
+    {
+      "name": "tags_dir",
+      "type": "varchar(50)",
+      "description": "标签目录。"
+    },
+    {
+      "name": "start_rev",
+      "type": "varchar(50)",
+      "description": "开始Rev号。"
+    },
+    {
+      "name": "end_rev",
+      "type": "varchar(50)",
+      "description": "结束Rev号。"
+    },
+    {
+      "name": "fcu",
+      "type": "char(32)",
+      "description": "创建人。"
+    },
+    {
+      "name": "fcd",
+      "type": "timestamp(3)",
+      "description": "创建时间，已建立普通索引，适合用于过滤、关联或排序查询。"
+    },
+    {
+      "name": "lcu",
+      "type": "char(32)",
+      "description": "修改人。"
+    },
+    {
+      "name": "lcd",
+      "type": "timestamp(3)",
+      "description": "修改时间。"
+    },
+    {
+      "name": "description",
+      "type": "text",
+      "description": "描述。"
+    },
+    {
+      "name": "file_add_count",
+      "type": "int",
+      "description": "文件增加数。"
+    },
+    {
+      "name": "file_modify_count",
+      "type": "int",
+      "description": "文件修改数。"
+    },
+    {
+      "name": "file_delete_count",
+      "type": "int",
+      "description": "文件删除数。"
+    },
+    {
+      "name": "line_add_count",
+      "type": "int",
+      "description": "代码行增加数。"
+    },
+    {
+      "name": "line_delete_count",
+      "type": "int",
+      "description": "代码行减少数。"
+    },
+    {
+      "name": "issue_count",
+      "type": "int",
+      "description": "需求数。"
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "id"
+      ],
+      "description": "主键索引，覆盖 id 字段，适合用于唯一定位记录和主表关联查询。"
+    },
+    {
+      "name": "id_is_locked",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "is_freeze"
+      ],
+      "description": "普通索引，覆盖 is_freeze 字段，适合用于过滤、关联或排序查询。"
+    },
+    {
+      "name": "idx_fcd",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "fcd"
+      ],
+      "description": "普通索引，覆盖 fcd 字段，适合用于过滤、关联或排序查询。"
+    },
+    {
+      "name": "uk_app_system_id_app_module_id_version",
+      "type": "BTREE",
+      "unique": true,
+      "primary": false,
+      "columns": [
+        "version",
+        "app_system_id",
+        "app_module_id"
+      ],
+      "description": "唯一索引，覆盖 version、app_system_id、app_module_id 字段，适合用于精确检索、唯一性判断和去重查询。"
+    }
+  ]
+}

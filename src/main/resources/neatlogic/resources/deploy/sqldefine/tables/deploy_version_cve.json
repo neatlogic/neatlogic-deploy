@@ -1,0 +1,76 @@
+{
+  "moduleId": "deploy",
+  "name": "deploy_version_cve",
+  "label": "发布version_cve表",
+  "description": "发布version_cve表，属于发布模块的数据表。 可用于发布相关的关联查询等报表查询场景。",
+  "fields": [
+    {
+      "name": "id",
+      "type": "bigint",
+      "description": "主键ID，作为当前表记录的主键或唯一定位字段。"
+    },
+    {
+      "name": "version_id",
+      "type": "bigint",
+      "description": "版本id，已建立普通索引，适合用于过滤、关联或排序查询。"
+    },
+    {
+      "name": "dependency",
+      "type": "varchar(250)",
+      "description": "依赖。"
+    },
+    {
+      "name": "vulnerability_ids",
+      "type": "varchar(250)",
+      "description": "脆弱性id。"
+    },
+    {
+      "name": "package_name",
+      "type": "varchar(250)",
+      "description": "包名。"
+    },
+    {
+      "name": "highest_severity",
+      "type": "varchar(250)",
+      "description": "最高严重程度。"
+    },
+    {
+      "name": "cve_count",
+      "type": "int",
+      "description": "CVE计数。"
+    },
+    {
+      "name": "confidence",
+      "type": "varchar(250)",
+      "description": "信心。"
+    },
+    {
+      "name": "evidence_count",
+      "type": "int",
+      "description": "证据计数。"
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "id"
+      ],
+      "description": "主键索引，覆盖 id 字段，适合用于唯一定位记录和主表关联查询。"
+    },
+    {
+      "name": "idx_version_id_highest_severity",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "version_id",
+        "highest_severity"
+      ],
+      "description": "普通索引，覆盖 version_id、highest_severity 字段，适合用于过滤、关联或排序查询。"
+    }
+  ]
+}

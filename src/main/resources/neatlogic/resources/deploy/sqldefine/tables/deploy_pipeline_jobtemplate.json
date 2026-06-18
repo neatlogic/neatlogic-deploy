@@ -1,0 +1,106 @@
+{
+  "moduleId": "deploy",
+  "name": "deploy_pipeline_jobtemplate",
+  "label": "发布超级流水线作业模板表",
+  "description": "发布超级流水线作业模板表 可用于发布相关的关联查询等报表查询场景。",
+  "fields": [
+    {
+      "name": "id",
+      "type": "bigint",
+      "description": "id，作为当前表记录的主键或唯一定位字段。"
+    },
+    {
+      "name": "group_id",
+      "type": "bigint",
+      "description": "分组id。"
+    },
+    {
+      "name": "app_system_id",
+      "type": "bigint",
+      "description": "系统id，已建立普通索引，适合用于过滤、关联或排序查询。"
+    },
+    {
+      "name": "app_module_id",
+      "type": "bigint",
+      "description": "系统模块id，已建立普通索引，适合用于过滤、关联或排序查询。"
+    },
+    {
+      "name": "env_id",
+      "type": "bigint",
+      "description": "环境id。"
+    },
+    {
+      "name": "scenario_id",
+      "type": "bigint",
+      "description": "场景id。"
+    },
+    {
+      "name": "round_count",
+      "type": "int",
+      "description": "分批数量。"
+    },
+    {
+      "name": "parallel_count",
+      "type": "int",
+      "description": "并发数。"
+    },
+    {
+      "name": "parallel_policy",
+      "type": "varchar(50)",
+      "description": "并发策略。"
+    },
+    {
+      "name": "config",
+      "type": "longtext",
+      "description": "配置。"
+    },
+    {
+      "name": "sort",
+      "type": "int",
+      "description": "排序。"
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "id"
+      ],
+      "description": "主键索引，覆盖 id 字段，适合用于唯一定位记录和主表关联查询。"
+    },
+    {
+      "name": "idx_appId_modueId_version_jobId",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "app_system_id",
+        "app_module_id"
+      ],
+      "description": "普通索引，覆盖 app_system_id、app_module_id 字段，适合用于过滤、关联或排序查询。"
+    },
+    {
+      "name": "idx_app_id",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "app_system_id"
+      ],
+      "description": "普通索引，覆盖 app_system_id 字段，适合用于过滤、关联或排序查询。"
+    },
+    {
+      "name": "idx_module_id",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "app_module_id"
+      ],
+      "description": "普通索引，覆盖 app_module_id 字段，适合用于过滤、关联或排序查询。"
+    }
+  ]
+}

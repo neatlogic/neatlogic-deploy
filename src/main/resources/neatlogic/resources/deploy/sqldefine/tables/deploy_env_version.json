@@ -1,0 +1,57 @@
+{
+  "moduleId": "deploy",
+  "name": "deploy_env_version",
+  "label": "环境当前版本",
+  "description": "环境当前版本 可用于发布相关的时间维度统计、关联查询等报表查询场景。",
+  "fields": [
+    {
+      "name": "app_system_id",
+      "type": "bigint",
+      "description": "应用id，作为当前表记录的主键或唯一定位字段。"
+    },
+    {
+      "name": "app_module_id",
+      "type": "bigint",
+      "description": "模块id，作为当前表记录的主键或唯一定位字段。"
+    },
+    {
+      "name": "env_id",
+      "type": "bigint",
+      "description": "环境id，作为当前表记录的主键或唯一定位字段。"
+    },
+    {
+      "name": "version_id",
+      "type": "bigint",
+      "description": "版本id。"
+    },
+    {
+      "name": "build_no",
+      "type": "int",
+      "description": "编译号。"
+    },
+    {
+      "name": "lcu",
+      "type": "char(32)",
+      "description": "修改人。"
+    },
+    {
+      "name": "lcd",
+      "type": "timestamp(3)",
+      "description": "修改时间。"
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "app_system_id",
+        "app_module_id",
+        "env_id"
+      ],
+      "description": "主键索引，覆盖 app_system_id、app_module_id、env_id 字段，适合用于唯一定位记录和主表关联查询。"
+    }
+  ]
+}

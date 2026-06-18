@@ -1,0 +1,57 @@
+{
+  "moduleId": "deploy",
+  "name": "deploy_sql_job_phase",
+  "label": "发布sql与作业剧本关系表",
+  "description": "发布sql与作业剧本关系表 可用于发布相关的关联查询等报表查询场景。",
+  "fields": [
+    {
+      "name": "id",
+      "type": "bigint",
+      "description": "主键 id，作为当前表记录的主键或唯一定位字段。"
+    },
+    {
+      "name": "job_id",
+      "type": "bigint",
+      "description": "作业 id，已建立普通索引，适合用于过滤、关联或排序查询。"
+    },
+    {
+      "name": "sql_id",
+      "type": "bigint",
+      "description": "执行sql详情 id。"
+    },
+    {
+      "name": "job_phase_name",
+      "type": "varchar(50)",
+      "description": "作业剧本名。"
+    },
+    {
+      "name": "job_phase_id",
+      "type": "bigint",
+      "description": "作业剧本id。"
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "id"
+      ],
+      "description": "主键索引，覆盖 id 字段，适合用于唯一定位记录和主表关联查询。"
+    },
+    {
+      "name": "ux_job_id_sql_id_job_phase_name",
+      "type": "BTREE",
+      "unique": true,
+      "primary": false,
+      "columns": [
+        "job_id",
+        "sql_id",
+        "job_phase_name"
+      ],
+      "description": "唯一索引，覆盖 job_id、sql_id、job_phase_name 字段，适合用于精确检索、唯一性判断和去重查询。"
+    }
+  ]
+}

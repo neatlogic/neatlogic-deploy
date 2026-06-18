@@ -1,0 +1,456 @@
+{
+  "moduleId": "deploy",
+  "name": "deploy_version_build_quality",
+  "label": "发布编译质量",
+  "description": "发布编译质量 可用于发布相关的关联查询等报表查询场景。",
+  "fields": [
+    {
+      "name": "id",
+      "type": "bigint",
+      "description": "id，作为当前表记录的主键或唯一定位字段。"
+    },
+    {
+      "name": "version_id",
+      "type": "bigint",
+      "description": "版本id，已建立普通索引，适合用于过滤、关联或排序查询。"
+    },
+    {
+      "name": "build_time",
+      "type": "timestamp(3)",
+      "description": "编译时间。"
+    },
+    {
+      "name": "files",
+      "type": "int",
+      "description": "文件数。"
+    },
+    {
+      "name": "classes",
+      "type": "int",
+      "description": "类数。"
+    },
+    {
+      "name": "lines",
+      "type": "int",
+      "description": "物理行数（回车数）。"
+    },
+    {
+      "name": "ncloc",
+      "type": "int",
+      "description": "代码行数。"
+    },
+    {
+      "name": "functions",
+      "type": "int",
+      "description": "函数个数。"
+    },
+    {
+      "name": "statements",
+      "type": "int",
+      "description": "语句数。"
+    },
+    {
+      "name": "complexity",
+      "type": "int",
+      "description": "复杂度。"
+    },
+    {
+      "name": "file_complexity",
+      "type": "int",
+      "description": "文件复杂度。"
+    },
+    {
+      "name": "class_complexity",
+      "type": "int",
+      "description": "类复杂度。"
+    },
+    {
+      "name": "function_complexity",
+      "type": "int",
+      "description": "函数复杂度。"
+    },
+    {
+      "name": "violations",
+      "type": "int",
+      "description": "违规总数。"
+    },
+    {
+      "name": "blocker_violations",
+      "type": "int",
+      "description": "阻碍性违规。"
+    },
+    {
+      "name": "critical_violations",
+      "type": "int",
+      "description": "严重违规。"
+    },
+    {
+      "name": "major_violations",
+      "type": "int",
+      "description": "主要违规。"
+    },
+    {
+      "name": "minor_violations",
+      "type": "int",
+      "description": "次要违规。"
+    },
+    {
+      "name": "executable_lines_data",
+      "type": "int",
+      "description": "可执行行数据。"
+    },
+    {
+      "name": "it_conditions_to_cover",
+      "type": "int",
+      "description": "it_conditions_to_cover。"
+    },
+    {
+      "name": "it_branch_coverage",
+      "type": "int",
+      "description": "it_branch_coverage。"
+    },
+    {
+      "name": "it_conditions_by_line",
+      "type": "int",
+      "description": "it_conditions_by_line。"
+    },
+    {
+      "name": "it_coverage",
+      "type": "int",
+      "description": "it_coverage。"
+    },
+    {
+      "name": "it_coverage_line_hits_data",
+      "type": "int",
+      "description": "it_coverage_line_hits_data。"
+    },
+    {
+      "name": "it_covered_conditions_by_line",
+      "type": "int",
+      "description": "it_covered_conditions_by_line。"
+    },
+    {
+      "name": "it_line_coverage",
+      "type": "int",
+      "description": "it_line_coverage。"
+    },
+    {
+      "name": "it_lines_to_cover",
+      "type": "int",
+      "description": "it_lines_to_cover。"
+    },
+    {
+      "name": "comment_lines_density",
+      "type": "double(5,1)",
+      "description": "行注释 (%)。"
+    },
+    {
+      "name": "public_documented_api_density",
+      "type": "int",
+      "description": "添加注释的公有API占比。"
+    },
+    {
+      "name": "duplicated_files",
+      "type": "int",
+      "description": "重复文件。"
+    },
+    {
+      "name": "duplicated_lines",
+      "type": "int",
+      "description": "重复行。"
+    },
+    {
+      "name": "duplicated_lines_density",
+      "type": "double(5,1)",
+      "description": "重复行 (%)。"
+    },
+    {
+      "name": "new_duplicated_lines",
+      "type": "int",
+      "description": "新重复行。"
+    },
+    {
+      "name": "new_duplicated_lines_density",
+      "type": "int",
+      "description": "新重复行 (%)。"
+    },
+    {
+      "name": "duplicated_blocks",
+      "type": "int",
+      "description": "重复块。"
+    },
+    {
+      "name": "new_duplicated_blocks",
+      "type": "int",
+      "description": "新重复块。"
+    },
+    {
+      "name": "bugs",
+      "type": "int",
+      "description": "漏洞。"
+    },
+    {
+      "name": "vulnerabilities",
+      "type": "int",
+      "description": "缺陷。"
+    },
+    {
+      "name": "code_smells",
+      "type": "int",
+      "description": "代码味道。"
+    },
+    {
+      "name": "new_security_hotspots",
+      "type": "int",
+      "description": "新代码安全热点。"
+    },
+    {
+      "name": "new_security_rating",
+      "type": "varchar(2)",
+      "description": "新代码安全率。"
+    },
+    {
+      "name": "new_security_remediation_effort",
+      "type": "int",
+      "description": "新代码修复工作。"
+    },
+    {
+      "name": "new_vulnerabilities",
+      "type": "int",
+      "description": "新代码漏洞。"
+    },
+    {
+      "name": "security_hotspots",
+      "type": "int",
+      "description": "安全热点。"
+    },
+    {
+      "name": "security_rating",
+      "type": "varchar(2)",
+      "description": "安全率。"
+    },
+    {
+      "name": "security_remediation_effort",
+      "type": "int",
+      "description": "修复工作。"
+    },
+    {
+      "name": "comment_lines",
+      "type": "int",
+      "description": "注释行。"
+    },
+    {
+      "name": "ncloc_language_distribution",
+      "type": "varchar(255)",
+      "description": "每种语言的代码行数。"
+    },
+    {
+      "name": "new_lines",
+      "type": "int",
+      "description": "新增代码行数。"
+    },
+    {
+      "name": "cognitive_complexity",
+      "type": "int",
+      "description": "认知复杂性。"
+    },
+    {
+      "name": "conditions_to_cover",
+      "type": "int",
+      "description": "覆盖的条件。"
+    },
+    {
+      "name": "coverage",
+      "type": "double(7,2)",
+      "description": "覆盖率。"
+    },
+    {
+      "name": "lines_to_cover",
+      "type": "int",
+      "description": "覆盖行。"
+    },
+    {
+      "name": "new_conditions_to_cover",
+      "type": "int",
+      "description": "新代码覆盖的条件。"
+    },
+    {
+      "name": "new_coverage",
+      "type": "double(7,2)",
+      "description": "新代码覆盖率。"
+    },
+    {
+      "name": "new_lines_to_cover",
+      "type": "int",
+      "description": "新代码覆盖行。"
+    },
+    {
+      "name": "new_uncovered_conditions",
+      "type": "int",
+      "description": "新代码未覆盖的条件。"
+    },
+    {
+      "name": "new_uncovered_lines",
+      "type": "int",
+      "description": "新代码未覆盖行。"
+    },
+    {
+      "name": "uncovered_conditions",
+      "type": "int",
+      "description": "未覆盖的条件。"
+    },
+    {
+      "name": "uncovered_lines",
+      "type": "int",
+      "description": "未覆盖行。"
+    },
+    {
+      "name": "new_bugs",
+      "type": "int",
+      "description": "新代码错误。"
+    },
+    {
+      "name": "new_reliability_rating",
+      "type": "varchar(2)",
+      "description": "新代码可靠率。"
+    },
+    {
+      "name": "reliability_rating",
+      "type": "varchar(2)",
+      "description": "可靠率。"
+    },
+    {
+      "name": "new_code_smells",
+      "type": "int",
+      "description": "新代码异味。"
+    },
+    {
+      "name": "new_sqale_debt_ratio",
+      "type": "double(7,2)",
+      "description": "新代码的技术债务比率。"
+    },
+    {
+      "name": "new_technical_debt",
+      "type": "int",
+      "description": "新代码的技术债务。"
+    },
+    {
+      "name": "sqale_debt_ratio",
+      "type": "double(7,2)",
+      "description": "技术债务比率。"
+    },
+    {
+      "name": "sqale_index",
+      "type": "int",
+      "description": "技术债务。"
+    },
+    {
+      "name": "sqale_rating",
+      "type": "varchar(2)",
+      "description": "可维护率。"
+    },
+    {
+      "name": "confirmed_issues",
+      "type": "int",
+      "description": "确认问题。"
+    },
+    {
+      "name": "false_positive_issues",
+      "type": "int",
+      "description": "误判问题。"
+    },
+    {
+      "name": "info_violations",
+      "type": "int",
+      "description": "提示问题。"
+    },
+    {
+      "name": "new_blocker_violations",
+      "type": "int",
+      "description": "新代码阻断问题。"
+    },
+    {
+      "name": "new_critical_violations",
+      "type": "int",
+      "description": "新代码严重问题。"
+    },
+    {
+      "name": "new_info_violations",
+      "type": "int",
+      "description": "新代码提示问题。"
+    },
+    {
+      "name": "new_major_violations",
+      "type": "int",
+      "description": "新代码主要问题。"
+    },
+    {
+      "name": "new_minor_violations",
+      "type": "int",
+      "description": "新代码次要问题。"
+    },
+    {
+      "name": "new_violations",
+      "type": "int",
+      "description": "新违规。"
+    },
+    {
+      "name": "open_issues",
+      "type": "int",
+      "description": "开启问题。"
+    },
+    {
+      "name": "reopened_issues",
+      "type": "int",
+      "description": "重开问题。"
+    },
+    {
+      "name": "wont_fix_issues",
+      "type": "int",
+      "description": "不修复的问题。"
+    },
+    {
+      "name": "alert_status",
+      "type": "varchar(255)",
+      "description": "质量阀。"
+    },
+    {
+      "name": "quality_gate_details",
+      "type": "text",
+      "description": "质量阀详细信息。"
+    },
+    {
+      "name": "threshold",
+      "type": "bigint",
+      "description": "漏洞阀值。"
+    },
+    {
+      "name": "new_maintainability_rating",
+      "type": "varchar(2)",
+      "description": "新代码可维护率。"
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "id"
+      ],
+      "description": "主键索引，覆盖 id 字段，适合用于唯一定位记录和主表关联查询。"
+    },
+    {
+      "name": "version_build_time",
+      "type": "BTREE",
+      "unique": true,
+      "primary": false,
+      "columns": [
+        "version_id",
+        "build_time"
+      ],
+      "description": "唯一索引，覆盖 version_id、build_time 字段，适合用于精确检索、唯一性判断和去重查询。"
+    }
+  ]
+}

@@ -1,0 +1,280 @@
+{
+  "moduleId": "deploy",
+  "tables": [
+    {
+      "name": "deploy_app_config",
+      "label": "发布应用系统配置",
+      "description": "发布应用系统配置 可用于发布相关的时间维度统计、关联查询等报表查询场景。"
+    },
+    {
+      "name": "deploy_app_config_authority",
+      "label": "发布应用系统配置授权",
+      "description": "发布应用系统配置授权 可用于发布相关的时间维度统计、关联查询等报表查询场景。"
+    },
+    {
+      "name": "deploy_app_config_draft",
+      "label": "应用系统模块环境流水线阶段关系表",
+      "description": "应用系统模块环境流水线阶段关系表 可用于发布相关的时间维度统计、关联查询等报表查询场景。"
+    },
+    {
+      "name": "deploy_app_config_env",
+      "label": "发布应用配置环境表",
+      "description": "发布应用配置环境表 可用于发布相关的关联查询等报表查询场景。"
+    },
+    {
+      "name": "deploy_app_config_env_attr",
+      "label": "发布应用环境属性",
+      "description": "发布应用环境属性 可用于发布相关的时间维度统计、关联查询等报表查询场景。"
+    },
+    {
+      "name": "deploy_app_config_env_db",
+      "label": "发布应用配置环境层DB配置表",
+      "description": "发布应用配置环境层DB配置表 可用于发布相关的关联查询等报表查询场景。"
+    },
+    {
+      "name": "deploy_app_config_env_db_account",
+      "label": "发布应用配置环境层DB配置账号表",
+      "description": "发布应用配置环境层DB配置账号表 可用于发布相关的关联查询等报表查询场景。"
+    },
+    {
+      "name": "deploy_app_config_user",
+      "label": "发布应用系统配置收藏",
+      "description": "发布应用系统配置收藏 可用于发布相关的关联查询等报表查询场景。"
+    },
+    {
+      "name": "deploy_app_env_auto_config",
+      "label": "发布应用环境变量配置",
+      "description": "发布应用环境变量配置 可用于发布相关的时间维度统计、关联查询等报表查询场景。"
+    },
+    {
+      "name": "deploy_app_env_auto_config_audit",
+      "label": "发布应用环境变量配置审计",
+      "description": "发布应用环境变量配置审计 可用于发布相关的时间维度统计、关联查询等报表查询场景。"
+    },
+    {
+      "name": "deploy_app_instance_blue_green",
+      "label": "发布实例蓝绿关系表",
+      "description": "发布实例蓝绿关系表 可用于发布相关的关联查询等报表查询场景。"
+    },
+    {
+      "name": "deploy_app_module_runner_group",
+      "label": "发布应用模块runner组关联",
+      "description": "发布应用模块runner组关联 可用于发布相关的关联查询等报表查询场景。"
+    },
+    {
+      "name": "deploy_blue_green",
+      "label": "发布蓝绿表",
+      "description": "发布蓝绿表 可用于发布相关的启用状态筛选等报表查询场景。"
+    },
+    {
+      "name": "deploy_ci",
+      "label": "发布持续集成表",
+      "description": "发布持续集成表 可用于发布相关的启用状态筛选、时间维度统计、关联查询等报表查询场景。"
+    },
+    {
+      "name": "deploy_ci_audit",
+      "label": "发布持续集成记录表",
+      "description": "发布持续集成记录表 可用于发布相关的状态跟踪、时间维度统计、关联查询等报表查询场景。"
+    },
+    {
+      "name": "deploy_env_version",
+      "label": "环境当前版本",
+      "description": "环境当前版本 可用于发布相关的时间维度统计、关联查询等报表查询场景。"
+    },
+    {
+      "name": "deploy_env_version_audit",
+      "label": "环境版本变更记录",
+      "description": "环境版本变更记录 可用于发布相关的时间维度统计、关联查询等报表查询场景。"
+    },
+    {
+      "name": "deploy_instance_version",
+      "label": "发布实例当前版本",
+      "description": "发布实例当前版本 可用于发布相关的时间维度统计、关联查询等报表查询场景。"
+    },
+    {
+      "name": "deploy_instance_version_audit",
+      "label": "实例版本变更记录",
+      "description": "实例版本变更记录 可用于发布相关的时间维度统计、关联查询等报表查询场景。"
+    },
+    {
+      "name": "deploy_job",
+      "label": "发布作业表",
+      "description": "发布作业表 可用于发布相关的关联查询等报表查询场景。"
+    },
+    {
+      "name": "deploy_job_auth",
+      "label": "发布作业授权",
+      "description": "发布作业授权 可用于发布相关的关联查询等报表查询场景。"
+    },
+    {
+      "name": "deploy_job_content",
+      "label": "发布作业配置hash",
+      "description": "发布作业配置hash 可用于发布相关数据的查询、筛选和报表展示。"
+    },
+    {
+      "name": "deploy_job_lane",
+      "label": "发布作业泳道表",
+      "description": "发布作业泳道表 可用于发布相关的状态跟踪、关联查询等报表查询场景。"
+    },
+    {
+      "name": "deploy_job_lane_group",
+      "label": "批量作业泳道组表",
+      "description": "批量作业泳道组表 可用于发布相关的状态跟踪、关联查询等报表查询场景。"
+    },
+    {
+      "name": "deploy_job_lane_group_job",
+      "label": "批量作业泳道组作业关联表",
+      "description": "批量作业泳道组作业关联表 可用于发布相关的关联查询等报表查询场景。"
+    },
+    {
+      "name": "deploy_job_notify_policy",
+      "label": "发布作业引用通知策略表",
+      "description": "发布作业引用通知策略表 可用于发布相关的关联查询等报表查询场景。"
+    },
+    {
+      "name": "deploy_job_resource_blue_green",
+      "label": "发布作业蓝绿id",
+      "description": "发布作业蓝绿id 可用于发布相关的关联查询等报表查询场景。"
+    },
+    {
+      "name": "deploy_job_trigger",
+      "label": "发布触发器",
+      "description": "发布触发器 可用于发布相关的启用状态筛选、时间维度统计等报表查询场景。"
+    },
+    {
+      "name": "deploy_job_webhook",
+      "label": "发布触发器",
+      "description": "发布触发器 可用于发布相关的启用状态筛选、时间维度统计等报表查询场景。"
+    },
+    {
+      "name": "deploy_job_webhook_app_module",
+      "label": "发布job_webhook_app_module表",
+      "description": "发布job_webhook_app_module表，属于发布模块的数据表。 可用于发布相关的关联查询等报表查询场景。"
+    },
+    {
+      "name": "deploy_job_webhook_audit",
+      "label": "作业触发器记录表",
+      "description": "作业触发器记录表 可用于发布相关的时间维度统计、关联查询等报表查询场景。"
+    },
+    {
+      "name": "deploy_package",
+      "label": "发布包信息",
+      "description": "发布包信息 可用于发布相关的关联查询等报表查询场景。"
+    },
+    {
+      "name": "deploy_pipeline",
+      "label": "超级流水线",
+      "description": "超级流水线 可用于发布相关的启用状态筛选、时间维度统计、关联查询等报表查询场景。"
+    },
+    {
+      "name": "deploy_pipeline_auth",
+      "label": "超级流水线授权",
+      "description": "超级流水线授权 可用于发布相关的关联查询等报表查询场景。"
+    },
+    {
+      "name": "deploy_pipeline_group",
+      "label": "批量作业泳道组表",
+      "description": "批量作业泳道组表 可用于发布相关的关联查询等报表查询场景。"
+    },
+    {
+      "name": "deploy_pipeline_jobtemplate",
+      "label": "发布超级流水线作业模板表",
+      "description": "发布超级流水线作业模板表 可用于发布相关的关联查询等报表查询场景。"
+    },
+    {
+      "name": "deploy_pipeline_lane",
+      "label": "发布作业泳道超级流水线表",
+      "description": "发布作业泳道超级流水线表 可用于发布相关的关联查询等报表查询场景。"
+    },
+    {
+      "name": "deploy_schedule",
+      "label": "定时作业信息表",
+      "description": "定时作业信息表 可用于发布相关的启用状态筛选、时间维度统计、关联查询等报表查询场景。"
+    },
+    {
+      "name": "deploy_sql_detail",
+      "label": "发布sql状态表",
+      "description": "发布sql状态表 可用于发布相关的状态跟踪、关联查询等报表查询场景。"
+    },
+    {
+      "name": "deploy_sql_job_phase",
+      "label": "发布sql与作业剧本关系表",
+      "description": "发布sql与作业剧本关系表 可用于发布相关的关联查询等报表查询场景。"
+    },
+    {
+      "name": "deploy_type_status",
+      "label": "发布工具类型状态表",
+      "description": "发布工具类型状态表 可用于发布相关的启用状态筛选、关联查询等报表查询场景。"
+    },
+    {
+      "name": "deploy_version",
+      "label": "发布版本表",
+      "description": "发布版本表 可用于发布相关的时间维度统计、关联查询等报表查询场景。"
+    },
+    {
+      "name": "deploy_version_appbuild_credential",
+      "label": "发布版本应用系统编译认证关联表",
+      "description": "发布版本应用系统编译认证关联表 可用于发布相关数据的查询、筛选和报表展示。"
+    },
+    {
+      "name": "deploy_version_build_quality",
+      "label": "发布编译质量",
+      "description": "发布编译质量 可用于发布相关的关联查询等报表查询场景。"
+    },
+    {
+      "name": "deploy_version_buildno",
+      "label": "发布版本编译序号关联表",
+      "description": "发布版本编译序号关联表 可用于发布相关的状态跟踪、时间维度统计、关联查询等报表查询场景。"
+    },
+    {
+      "name": "deploy_version_commit",
+      "label": "发布版本提交记录关联吧",
+      "description": "发布版本提交记录关联吧 可用于发布相关的关联查询等报表查询场景。"
+    },
+    {
+      "name": "deploy_version_cve",
+      "label": "发布version_cve表",
+      "description": "发布version_cve表，属于发布模块的数据表。 可用于发布相关的关联查询等报表查询场景。"
+    },
+    {
+      "name": "deploy_version_cve_package",
+      "label": "发布version_cve_package表",
+      "description": "发布version_cve_package表，属于发布模块的数据表。 可用于发布相关的关联查询等报表查询场景。"
+    },
+    {
+      "name": "deploy_version_cve_vulnerability",
+      "label": "发布version_cve_vulnerability表",
+      "description": "发布version_cve_vulnerability表，属于发布模块的数据表。 可用于发布相关的关联查询等报表查询场景。"
+    },
+    {
+      "name": "deploy_version_dependency",
+      "label": "发布版本依赖",
+      "description": "发布版本依赖 可用于发布相关的关联查询等报表查询场景。"
+    },
+    {
+      "name": "deploy_version_deployed_instance",
+      "label": "已发布的版本实例表",
+      "description": "已发布的版本实例表 可用于发布相关的关联查询等报表查询场景。"
+    },
+    {
+      "name": "deploy_version_env",
+      "label": "发布版本环境关联表",
+      "description": "发布版本环境关联表 可用于发布相关的状态跟踪、时间维度统计、关联查询等报表查询场景。"
+    },
+    {
+      "name": "deploy_version_issue",
+      "label": "发布版本需求表",
+      "description": "发布版本需求表 可用于发布相关的关联查询等报表查询场景。"
+    },
+    {
+      "name": "deploy_version_thead",
+      "label": "发布版本表头配置",
+      "description": "发布版本表头配置 可用于发布相关数据的查询、筛选和报表展示。"
+    },
+    {
+      "name": "deploy_version_unit_test",
+      "label": "发版版本单元测试",
+      "description": "发版版本单元测试 可用于发布相关的关联查询等报表查询场景。"
+    }
+  ]
+}

@@ -1,0 +1,48 @@
+{
+  "moduleId": "deploy",
+  "name": "deploy_app_instance_blue_green",
+  "label": "发布实例蓝绿关系表",
+  "description": "发布实例蓝绿关系表 可用于发布相关的关联查询等报表查询场景。",
+  "fields": [
+    {
+      "name": "app_system_id",
+      "type": "bigint",
+      "description": "系统id，作为当前表记录的主键或唯一定位字段。"
+    },
+    {
+      "name": "app_module_id",
+      "type": "bigint",
+      "description": "模块id，作为当前表记录的主键或唯一定位字段。"
+    },
+    {
+      "name": "env_id",
+      "type": "bigint",
+      "description": "环境id，作为当前表记录的主键或唯一定位字段。"
+    },
+    {
+      "name": "resource_id",
+      "type": "bigint",
+      "description": "实例id，作为当前表记录的主键或唯一定位字段。"
+    },
+    {
+      "name": "blue_green_id",
+      "type": "bigint",
+      "description": "蓝绿id。"
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "app_system_id",
+        "app_module_id",
+        "env_id",
+        "resource_id"
+      ],
+      "description": "主键索引，覆盖 app_system_id、app_module_id、env_id、resource_id 字段，适合用于唯一定位记录和主表关联查询。"
+    }
+  ]
+}

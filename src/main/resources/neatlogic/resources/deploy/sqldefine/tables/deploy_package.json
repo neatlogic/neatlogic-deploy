@@ -1,0 +1,67 @@
+{
+  "moduleId": "deploy",
+  "name": "deploy_package",
+  "label": "发布包信息",
+  "description": "发布包信息 可用于发布相关的关联查询等报表查询场景。",
+  "fields": [
+    {
+      "name": "id",
+      "type": "bigint",
+      "description": "主键，作为当前表记录的主键或唯一定位字段。"
+    },
+    {
+      "name": "group_id",
+      "type": "varchar(100)",
+      "description": "工程组标识，在一个组织或者项目中通常是唯一的，已建立普通索引，适合用于过滤、关联或排序查询。"
+    },
+    {
+      "name": "artifact_id",
+      "type": "varchar(50)",
+      "description": "工程标识，通常是工程的名称，groupId 和 artifact_id 一起定义了 artifact在仓库中的位置。"
+    },
+    {
+      "name": "version",
+      "type": "varchar(50)",
+      "description": "工程版本号。"
+    },
+    {
+      "name": "type",
+      "type": "varchar(20)",
+      "description": "包类型，默认为jar。"
+    },
+    {
+      "name": "license",
+      "type": "varchar(255)",
+      "description": "版权许可，开源协议等。"
+    },
+    {
+      "name": "url",
+      "type": "varchar(255)",
+      "description": "包在maven仓库中的地址。"
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "id"
+      ],
+      "description": "主键索引，覆盖 id 字段，适合用于唯一定位记录和主表关联查询。"
+    },
+    {
+      "name": "uk_pkg",
+      "type": "BTREE",
+      "unique": true,
+      "primary": false,
+      "columns": [
+        "group_id",
+        "artifact_id",
+        "version"
+      ],
+      "description": "唯一索引，覆盖 group_id、artifact_id、version 字段，适合用于精确检索、唯一性判断和去重查询。"
+    }
+  ]
+}

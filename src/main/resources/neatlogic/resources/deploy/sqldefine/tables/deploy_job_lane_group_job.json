@@ -1,0 +1,36 @@
+{
+  "moduleId": "deploy",
+  "name": "deploy_job_lane_group_job",
+  "label": "批量作业泳道组作业关联表",
+  "description": "批量作业泳道组作业关联表 可用于发布相关的关联查询等报表查询场景。",
+  "fields": [
+    {
+      "name": "group_id",
+      "type": "bigint",
+      "description": "泳道组id，作为当前表记录的主键或唯一定位字段。"
+    },
+    {
+      "name": "job_id",
+      "type": "bigint",
+      "description": "作业id，作为当前表记录的主键或唯一定位字段。"
+    },
+    {
+      "name": "sort",
+      "type": "int",
+      "description": "顺序。"
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "group_id",
+        "job_id"
+      ],
+      "description": "主键索引，覆盖 group_id、job_id 字段，适合用于唯一定位记录和主表关联查询。"
+    }
+  ]
+}

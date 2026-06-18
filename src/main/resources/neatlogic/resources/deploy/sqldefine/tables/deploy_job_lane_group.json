@@ -1,0 +1,45 @@
+{
+  "moduleId": "deploy",
+  "name": "deploy_job_lane_group",
+  "label": "批量作业泳道组表",
+  "description": "批量作业泳道组表 可用于发布相关的状态跟踪、关联查询等报表查询场景。",
+  "fields": [
+    {
+      "name": "id",
+      "type": "bigint",
+      "description": "组id，作为当前表记录的主键或唯一定位字段。"
+    },
+    {
+      "name": "lane_id",
+      "type": "bigint",
+      "description": "泳道id。"
+    },
+    {
+      "name": "need_wait",
+      "type": "tinyint(1)",
+      "description": "是否需要等待。"
+    },
+    {
+      "name": "sort",
+      "type": "int",
+      "description": "排序。"
+    },
+    {
+      "name": "status",
+      "type": "varchar(20)",
+      "description": "组状态。"
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "id"
+      ],
+      "description": "主键索引，覆盖 id 字段，适合用于唯一定位记录和主表关联查询。"
+    }
+  ]
+}
