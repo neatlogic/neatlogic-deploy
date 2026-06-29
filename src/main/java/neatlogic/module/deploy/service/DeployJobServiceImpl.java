@@ -65,6 +65,7 @@ import neatlogic.framework.exception.type.ParamIrregularException;
 import neatlogic.framework.scheduler.core.IJob;
 import neatlogic.framework.scheduler.core.SchedulerManager;
 import neatlogic.framework.scheduler.dto.JobObject;
+import neatlogic.framework.scheduler.enums.JobLoadTriggerType;
 import neatlogic.framework.scheduler.exception.ScheduleHandlerNotFoundException;
 import neatlogic.module.deploy.dao.mapper.*;
 import neatlogic.module.deploy.schedule.plugin.DeployJobAutoFireJob;
@@ -422,7 +423,7 @@ public class DeployJobServiceImpl implements DeployJobService {
                 throw new ScheduleHandlerNotFoundException(DeployJobAutoFireJob.class.getName());
             }
             JobObject.Builder jobObjectBuilder = new JobObject.Builder(deployJobVo.getId().toString(), jobHandler.getGroupName(), jobHandler.getClassName(), TenantContext.get().getTenantUuid());
-            jobHandler.reloadJob(jobObjectBuilder.build());
+            jobHandler.reloadJob(jobObjectBuilder.build(), JobLoadTriggerType.INITIAL_CREATE);
         }
         resultJson.put("jobId", deployJobVo.getId());
         resultJson.put("appSystemName", deployJobVo.getAppSystemName());
