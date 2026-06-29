@@ -39,10 +39,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -106,6 +103,10 @@ public class SearchDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
             searchVo.setAppSystemIdList(idList);
             List<DeployAppSystemVo> tbodyList = deployAppSystemMapper.getAppSystemListByIdList(searchVo, UserContext.get().getUserUuid());
             return TableResultUtil.getResult(tbodyList, searchVo);
+        }
+        //要根据入参系统过滤
+        if (searchVo.getAppSystemId() != null) {
+            searchVo.setAppSystemIdList(Collections.singletonList(searchVo.getAppSystemId()));
         }
         List<DeployAppSystemVo> returnAppSystemList = new ArrayList<>();
         Integer count = deployAppSystemMapper.getAppSystemIdListCount(searchVo);
