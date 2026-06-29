@@ -26,6 +26,7 @@ import neatlogic.framework.dto.UserVo;
 import neatlogic.framework.filter.core.LoginAuthHandlerBase;
 import neatlogic.framework.scheduler.core.JobBase;
 import neatlogic.framework.scheduler.dto.JobObject;
+import neatlogic.framework.scheduler.enums.JobLoadTriggerType;
 import neatlogic.framework.service.AuthenticationInfoService;
 import neatlogic.module.deploy.service.DeployBatchJobService;
 import org.quartz.DisallowConcurrentExecution;
@@ -78,7 +79,7 @@ public class DeployBatchJobAutoFireJob extends JobBase {
     }
 
     @Override
-    public void reloadJob(JobObject jobObject) {
+    public void reloadJob(JobObject jobObject, JobLoadTriggerType triggerType) {
         //判断作业是否已经存在，存在则unload
         if (schedulerManager.checkJobIsExists(jobObject.getJobName(), this.getGroupName())) {
             schedulerManager.unloadJob(jobObject);
@@ -96,7 +97,7 @@ public class DeployBatchJobAutoFireJob extends JobBase {
                             .withIntervalInSeconds(60 * 60)
                             .withRepeatCount(0);
                     JobObject newJobObject = newJobObjectBuilder.build();
-                    schedulerManager.loadJob(newJobObject);
+                    schedulerManager.loadJob(newJobObject, triggerType);
                 } else {
                     deployBatchJobService.fireBatch(jobId, JobAction.RESET_REFIRE.getValue(), JobAction.RESET_REFIRE.getValue());
                 }
@@ -112,7 +113,7 @@ public class DeployBatchJobAutoFireJob extends JobBase {
         for (Long id : list) {
             JobObject.Builder jobObjectBuilder = new JobObject.Builder(id.toString(), this.getGroupName(), this.getClassName(), TenantContext.get().getTenantUuid());
             JobObject jobObject = jobObjectBuilder.build();
-            this.reloadJob(jobObject);
+            this.reloadJob(jobObject, JobLoadTriggerType.SERVER_RESTART);
         }
     }
 
