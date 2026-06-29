@@ -38,6 +38,7 @@ import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.framework.scheduler.core.IJob;
 import neatlogic.framework.scheduler.core.SchedulerManager;
 import neatlogic.framework.scheduler.dto.JobObject;
+import neatlogic.framework.scheduler.enums.JobLoadTriggerType;
 import neatlogic.framework.scheduler.exception.ScheduleHandlerNotFoundException;
 import neatlogic.module.deploy.dao.mapper.DeployJobMapper;
 import neatlogic.module.deploy.schedule.plugin.DeployBatchJobAutoFireJob;
@@ -180,7 +181,7 @@ public class SaveBatchDeployJobApi extends PrivateApiComponentBase {
                 throw new ScheduleHandlerNotFoundException(DeployBatchJobAutoFireJob.class.getName());
             }
             JobObject.Builder jobObjectBuilder = new JobObject.Builder(deployJobVo.getId().toString(), jobHandler.getGroupName(), jobHandler.getClassName(), TenantContext.get().getTenantUuid());
-            jobHandler.reloadJob(jobObjectBuilder.build());
+            jobHandler.reloadJob(jobObjectBuilder.build(), JobLoadTriggerType.INITIAL_CREATE);
         }
         return deployJobMapper.getBatchDeployJobById(deployJobVo.getId());
     }
