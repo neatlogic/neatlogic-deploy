@@ -20,6 +20,7 @@ import neatlogic.framework.auth.core.AuthActionChecker;
 import neatlogic.framework.cmdb.crossover.IAppSystemMapper;
 import neatlogic.framework.cmdb.dto.resourcecenter.entity.AppModuleVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.entity.AppSystemVo;
+import neatlogic.framework.common.config.Config;
 import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.common.dto.BasePageVo;
 import neatlogic.framework.crossover.CrossoverServiceFactory;
@@ -100,6 +101,7 @@ public class ListDeployScheduleApi extends PrivateApiComponentBase {
         }
         List<DeployScheduleVo> tbodyList = new ArrayList<>();
         String userUuid = UserContext.get().getUserUuid(true);
+        searchVo.setSourceServerGroup(Config.SCHEDULE_SERVER_GROUP());
         int rowNum = deployScheduleMapper.getScheduleCount(searchVo);
         if (rowNum > 0) {
             searchVo.setRowNum(rowNum);
