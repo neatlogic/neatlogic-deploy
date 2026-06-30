@@ -56,6 +56,16 @@
 
     <sql id="searchScheduleWhere">
         <where>
+            (c.`job_name` IS NULL
+            <choose>
+                <when test="sourceServerGroup != null and sourceServerGroup != ''">
+                    OR c.`server_group` = #{sourceServerGroup}
+                </when>
+                <otherwise>
+                    OR c.`server_group` IS NULL
+                </otherwise>
+            </choose>
+            )
             <if test="keyword != null and keyword != ''">
                 AND a.`name` LIKE concat('%', #{keyword}, '%')
             </if>
@@ -81,6 +91,7 @@
         SELECT
             COUNT(DISTINCT a.`id`)
         FROM `deploy_schedule` a
+        LEFT JOIN `schedule_job_source` c ON c.`job_name` = a.`uuid`
         <if test="isHasAllAuthority == 0">
             LEFT JOIN `deploy_app_config_authority` daca ON daca.`app_system_id` = a.`app_system_id`
         </if>
@@ -91,6 +102,7 @@
         SELECT
         DISTINCT a.`id`
         FROM `deploy_schedule` a
+        LEFT JOIN `schedule_job_source` c ON c.`job_name` = a.`uuid`
         <if test="isHasAllAuthority == 0">
             LEFT JOIN `deploy_app_config_authority` daca ON daca.`app_system_id` = a.`app_system_id`
         </if>
@@ -155,9 +167,12 @@
         b.last_finish_time as lastFinishTime,
         b.last_fire_time as lastFireTime,
         b.next_fire_time as nextFireTime,
-        b.exec_count as execCount
+        b.exec_count as execCount,
+        c.server_id AS sourceServerId,
+        c.server_group AS sourceServerGroup
         FROM `deploy_schedule` a
         LEFT JOIN `schedule_job_status` b ON a.uuid = b.job_name
+        LEFT JOIN `schedule_job_source` c ON c.`job_name` = a.`uuid`
         WHERE `id` IN
         <foreach collection="list" item="id" open="(" separator="," close=")">
             #{id}
