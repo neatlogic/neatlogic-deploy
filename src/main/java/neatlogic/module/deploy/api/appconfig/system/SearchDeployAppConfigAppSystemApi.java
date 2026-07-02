@@ -132,7 +132,7 @@ public class SearchDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
             /*补充系统是否有模块、是否有环境、是否有配置权限 ,补充模块是否配置、是否有环境、是否含有资源锁*/
             IResourceCrossoverMapper resourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
             List<Long> hasModuleAppSystemIdList = resourceCrossoverMapper.getHasModuleAppSystemIdListByAppSystemIdList(appSystemIdList);
-            List<Long> hasEnvAppSystemIdList = deployAppConfigMapper.getHasEnvAppSystemIdListByAppSystemIdList(appSystemIdList);
+            List<Long> hasEnvAppSystemIdList = deployAppConfigService.getHasEnvAppSystemIdListByAppSystemIdList(appSystemIdList);
 
             Set<String> globalLockKeySet = new HashSet<>();
             List<GlobalLockVo> globalLockVoList = globalLockMapper.getLockListByKeyListAndHandler(appSystemIdList.stream().map(Object::toString).collect(Collectors.toList()), JobSourceType.DEPLOY.getValue());

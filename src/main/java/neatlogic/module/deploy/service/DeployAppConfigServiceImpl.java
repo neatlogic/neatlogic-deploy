@@ -387,6 +387,13 @@ public class DeployAppConfigServiceImpl implements DeployAppConfigService {
     }
 
     @Override
+    public List<Long> getHasEnvAppSystemIdListByAppSystemIdList(List<Long> idList) {
+        List<Long> cmdbAppSystemIdList = deployAppConfigMapper.getCmdbHasEnvAppSystemIdListByAppSystemIdList(idList);
+        List<Long> configAppSystemIdList = deployAppConfigMapper.getConfigHasEnvAppSystemIdListByAppSystemIdList(idList);
+        return mergeLongList(cmdbAppSystemIdList, configAppSystemIdList);
+    }
+
+    @Override
     public List<DeployAppModuleEnvVo> getDeployAppModuleEnvListByAppSystemId(Long appSystemId) {
         List<DeployAppModuleEnvVo> cmdbModuleEnvList = deployAppConfigMapper.getCmdbDeployAppModuleEnvListByAppSystemId(appSystemId);
         List<DeployAppModuleEnvVo> configModuleEnvList = deployAppConfigMapper.getConfigDeployAppModuleEnvListByAppSystemId(appSystemId);

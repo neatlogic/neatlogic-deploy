@@ -1036,9 +1036,8 @@
         </if>
     </select>
 
-    <select id="getHasEnvAppSystemIdListByAppSystemIdList"
+    <select id="getCmdbHasEnvAppSystemIdListByAppSystemIdList"
             resultType="java.lang.Long" useCache="false">
-        (
         SELECT
         a.`app_system_id` as id
         FROM
@@ -1051,8 +1050,10 @@
                 #{id}
             </foreach>
         </where>
-        ) UNION
-        (
+    </select>
+
+    <select id="getConfigHasEnvAppSystemIdListByAppSystemIdList"
+            resultType="java.lang.Long" useCache="false">
         SELECT
         dace.app_system_id as id
         FROM
@@ -1062,7 +1063,6 @@
         <foreach collection="list" item="id" separator="," open="(" close=")">
             #{id}
         </foreach>
-        )
     </select>
 
     <resultMap id="AppModuleMap" type="neatlogic.framework.deploy.dto.app.DeployAppModuleVo">

@@ -237,7 +237,9 @@ public interface DeployAppConfigMapper extends IDeployAppConfigCrossoverMapper {
      */
     List<Long> getAppConfigEnvDatabaseResourceIdList(DeployResourceSearchVo searchVo);
 
-    List<Long> getHasEnvAppSystemIdListByAppSystemIdList(List<Long> idList);
+    List<Long> getCmdbHasEnvAppSystemIdListByAppSystemIdList(List<Long> idList);
+
+    List<Long> getConfigHasEnvAppSystemIdListByAppSystemIdList(List<Long> idList);
 
 //    List<Long> getDeployAppEnvIdListByAppSystemId(Long appSystemId);
 

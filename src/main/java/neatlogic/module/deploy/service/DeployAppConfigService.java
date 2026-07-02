@@ -85,6 +85,8 @@ public interface DeployAppConfigService {
 
     List<Long> getHasEnvAppModuleIdListByAppSystemIdAndModuleIdList(Long appSystemId, List<Long> appModuleIdList);
 
+    List<Long> getHasEnvAppSystemIdListByAppSystemIdList(List<Long> idList);
+
     List<DeployAppModuleEnvVo> getDeployAppModuleEnvListByAppSystemId(Long appSystemId);
 
     List<DeployAppModuleEnvVo> getDeployAppModuleEnvListByAppSystemIdAndAppModuleIdList(Long appSystemId, List<Long> appModuleIdList);
