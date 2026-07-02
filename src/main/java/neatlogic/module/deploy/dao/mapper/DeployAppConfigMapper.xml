@@ -368,7 +368,7 @@
         </collection>
     </resultMap>
 
-    <select id="getDeployAppModuleEnvListByAppSystemIdAndAppModuleIdList"
+    <select id="getCmdbDeployAppModuleEnvListByAppSystemIdAndAppModuleIdList"
             resultMap="appModuleIncludeEnvIdListMap" useCache="false">
         SELECT a.`env_id` AS envId,
         a.`app_module_id` AS appModuleId
@@ -379,7 +379,10 @@
         <foreach collection="appModuleIdList" separator="," item="appModuleId" open="(" close=")">
             #{appModuleId}
         </foreach>
-        UNION
+    </select>
+
+    <select id="getConfigDeployAppModuleEnvListByAppSystemIdAndAppModuleIdList"
+            resultMap="appModuleIncludeEnvIdListMap" useCache="false">
         SELECT cga.id AS envId,
         dace.app_module_id AS appModuleId
         FROM deploy_app_config_env dace

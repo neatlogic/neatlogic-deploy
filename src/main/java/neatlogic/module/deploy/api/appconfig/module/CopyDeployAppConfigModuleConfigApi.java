@@ -114,7 +114,7 @@ public class CopyDeployAppConfigModuleConfigApi extends PrivateApiComponentBase 
             List<Long> allParamModuleIdList = new ArrayList<>();
             allParamModuleIdList.add(fromAppModuleId);
             allParamModuleIdList.addAll(toAppModuleIdList);
-            List<DeployAppModuleEnvVo> appModuleEnvVoList = deployAppConfigMapper.getDeployAppModuleEnvListByAppSystemIdAndAppModuleIdList(appSystemId, allParamModuleIdList);
+            List<DeployAppModuleEnvVo> appModuleEnvVoList = deployAppConfigService.getDeployAppModuleEnvListByAppSystemIdAndAppModuleIdList(appSystemId, allParamModuleIdList);
             Map<Long, List<Long>> appModuleEnvListMap = appModuleEnvVoList.stream().collect(Collectors.toMap(DeployAppModuleEnvVo::getId, DeployAppModuleEnvVo::getEnvIdList));
             List<Long> fromModuleEnvIdList = new ArrayList<>();
             if (CollectionUtils.isNotEmpty(appModuleEnvListMap.get(fromAppModuleId))) {

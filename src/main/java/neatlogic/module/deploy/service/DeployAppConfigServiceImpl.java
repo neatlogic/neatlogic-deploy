@@ -386,6 +386,13 @@ public class DeployAppConfigServiceImpl implements DeployAppConfigService {
     }
 
     @Override
+    public List<DeployAppModuleEnvVo> getDeployAppModuleEnvListByAppSystemIdAndAppModuleIdList(Long appSystemId, List<Long> appModuleIdList) {
+        List<DeployAppModuleEnvVo> cmdbModuleEnvList = deployAppConfigMapper.getCmdbDeployAppModuleEnvListByAppSystemIdAndAppModuleIdList(appSystemId, appModuleIdList);
+        List<DeployAppModuleEnvVo> configModuleEnvList = deployAppConfigMapper.getConfigDeployAppModuleEnvListByAppSystemIdAndAppModuleIdList(appSystemId, appModuleIdList);
+        return mergeDeployAppModuleEnvIdList(cmdbModuleEnvList, configModuleEnvList);
+    }
+
+    @Override
     public int getAppConfigEnvDatabaseCount(DeployResourceSearchVo searchVo) {
         IResourceCrossoverMapper resourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
         String enable = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_DATA_COMPARISON_MODE_ENABLE);
@@ -543,6 +550,37 @@ public class DeployAppConfigServiceImpl implements DeployAppConfigService {
                 for (AppEnvironmentVo envVo : moduleEnvVo.getEnvList()) {
                     if (envVo != null && envVo.getEnvId() != null && envIdSet.add(envVo.getEnvId())) {
                         targetModuleEnv.getEnvList().add(envVo);
+                    }
+                }
+            }
+        }
+        return new ArrayList<>(moduleEnvMap.values());
+    }
+
+    @SafeVarargs
+    private final List<DeployAppModuleEnvVo> mergeDeployAppModuleEnvIdList(List<DeployAppModuleEnvVo>... moduleEnvLists) {
+        Map<Long, DeployAppModuleEnvVo> moduleEnvMap = new LinkedHashMap<>();
+        for (List<DeployAppModuleEnvVo> moduleEnvList : moduleEnvLists) {
+            if (CollectionUtils.isEmpty(moduleEnvList)) {
+                continue;
+            }
+            for (DeployAppModuleEnvVo moduleEnvVo : moduleEnvList) {
+                if (moduleEnvVo == null || moduleEnvVo.getId() == null) {
+                    continue;
+                }
+                DeployAppModuleEnvVo targetModuleEnv = moduleEnvMap.computeIfAbsent(moduleEnvVo.getId(), key -> {
+                    DeployAppModuleEnvVo newModuleEnv = new DeployAppModuleEnvVo();
+                    newModuleEnv.setId(moduleEnvVo.getId());
+                    newModuleEnv.setEnvIdList(new ArrayList<>());
+                    return newModuleEnv;
+                });
+                if (CollectionUtils.isEmpty(moduleEnvVo.getEnvIdList())) {
+                    continue;
+                }
+                Set<Long> envIdSet = new HashSet<>(targetModuleEnv.getEnvIdList());
+                for (Long envId : moduleEnvVo.getEnvIdList()) {
+                    if (envId != null && envIdSet.add(envId)) {
+                        targetModuleEnv.getEnvIdList().add(envId);
                     }
                 }
             }
