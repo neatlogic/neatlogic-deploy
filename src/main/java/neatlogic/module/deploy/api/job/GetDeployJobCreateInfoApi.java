@@ -32,6 +32,7 @@ import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.module.deploy.dao.mapper.DeployAppConfigMapper;
+import neatlogic.module.deploy.service.DeployAppConfigService;
 import neatlogic.module.deploy.util.DeployPipelineConfigManager;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
@@ -55,6 +56,9 @@ public class GetDeployJobCreateInfoApi extends PrivateApiComponentBase {
 
     @Resource
     DeployAppConfigMapper deployAppConfigMapper;
+
+    @Resource
+    DeployAppConfigService deployAppConfigService;
 
     @Override
     public String getName() {
@@ -123,7 +127,7 @@ public class GetDeployJobCreateInfoApi extends PrivateApiComponentBase {
             appModuleIdList.addAll(resourceCrossoverMapper.getAppSystemModuleIdListByAppSystemId(appSystemId));
         }
         if (CollectionUtils.isNotEmpty(appModuleIdList)) {
-            envList = deployAppConfigMapper.getDeployAppEnvListByAppSystemIdAndModuleIdList(appSystemId, appModuleIdList);
+            envList = deployAppConfigService.getDeployAppEnvListByAppSystemIdAndModuleIdList(appSystemId, appModuleIdList);
             appModuleList = resourceCrossoverMapper.getAppModuleListByIdListSimple(appModuleIdList, true);
         }
         result.put("envList", envList);

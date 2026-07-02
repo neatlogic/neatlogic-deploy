@@ -32,6 +32,7 @@ import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.framework.util.$;
 import neatlogic.framework.util.TableResultUtil;
 import neatlogic.module.deploy.dao.mapper.DeployAppConfigMapper;
+import neatlogic.module.deploy.service.DeployAppConfigService;
 import neatlogic.module.deploy.util.DeployPipelineConfigManager;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -55,6 +56,9 @@ public class SearchDeployAppConfigAuthorityApi extends PrivateApiComponentBase {
 
     @Resource
     private DeployAppConfigMapper deployAppConfigMapper;
+
+    @Resource
+    private DeployAppConfigService deployAppConfigService;
 
     @Override
     public String getToken() {
@@ -114,7 +118,7 @@ public class SearchDeployAppConfigAuthorityApi extends PrivateApiComponentBase {
         Map<Long, String> envIdNameMap = new HashMap<>();
         if (isNeedEnv) {
             //获取当前应用下的所有环境
-            envList = deployAppConfigMapper.getDeployAppEnvListByAppSystemIdAndModuleIdList(paramObj.getLong("appSystemId"), new ArrayList<>());
+            envList = deployAppConfigService.getDeployAppEnvListByAppSystemIdAndModuleIdList(paramObj.getLong("appSystemId"), new ArrayList<>());
             for (DeployAppEnvironmentVo environmentVo : envList) {
                 JSONObject envKeyValue = new JSONObject();
                 envKeyValue.put("name", environmentVo.getId());

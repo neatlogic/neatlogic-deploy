@@ -11,6 +11,7 @@ import neatlogic.framework.cmdb.dto.cientity.CiEntityVo;
 import neatlogic.framework.cmdb.dto.globalattr.GlobalAttrItemVo;
 import neatlogic.framework.cmdb.dto.globalattr.GlobalAttrVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.ResourceVo;
+import neatlogic.framework.cmdb.dto.resourcecenter.entity.AppModuleVo;
 import neatlogic.framework.cmdb.dto.transaction.CiEntityTransactionVo;
 import neatlogic.framework.cmdb.enums.CmdbTenantConfig;
 import neatlogic.framework.cmdb.enums.EditModeType;
@@ -21,6 +22,7 @@ import neatlogic.framework.config.ConfigManager;
 import neatlogic.framework.crossover.CrossoverServiceFactory;
 import neatlogic.framework.deploy.dto.app.DeployAppConfigEnvDBConfigVo;
 import neatlogic.framework.deploy.dto.app.DeployAppConfigVo;
+import neatlogic.framework.deploy.dto.app.DeployAppEnvironmentVo;
 import neatlogic.framework.deploy.dto.app.DeployAppModuleVo;
 import neatlogic.framework.deploy.dto.app.DeployResourceSearchVo;
 import neatlogic.framework.deploy.exception.DeployAppConfigModuleRunnerGroupNotFoundException;
@@ -368,6 +370,13 @@ public class DeployAppConfigServiceImpl implements DeployAppConfigService {
     }
 
     @Override
+    public List<DeployAppEnvironmentVo> getDeployAppEnvListByAppSystemIdAndModuleIdList(Long appSystemId, List<Long> appModuleIdList) {
+        List<DeployAppEnvironmentVo> cmdbEnvList = deployAppConfigMapper.getCmdbDeployAppEnvListByAppSystemIdAndModuleIdList(appSystemId, appModuleIdList);
+        List<DeployAppEnvironmentVo> configEnvList = deployAppConfigMapper.getConfigDeployAppEnvListByAppSystemIdAndModuleIdList(appSystemId, appModuleIdList);
+        return mergeDeployAppEnvironmentList(cmdbEnvList, configEnvList);
+    }
+
+    @Override
     public int getAppConfigEnvDatabaseCount(DeployResourceSearchVo searchVo) {
         IResourceCrossoverMapper resourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
         String enable = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_DATA_COMPARISON_MODE_ENABLE);
@@ -453,6 +462,45 @@ public class DeployAppConfigServiceImpl implements DeployAppConfigService {
             }
         }
         return flag;
+    }
+
+    @SafeVarargs
+    private final List<DeployAppEnvironmentVo> mergeDeployAppEnvironmentList(List<DeployAppEnvironmentVo>... envLists) {
+        Map<Long, DeployAppEnvironmentVo> envMap = new LinkedHashMap<>();
+        for (List<DeployAppEnvironmentVo> envList : envLists) {
+            if (CollectionUtils.isEmpty(envList)) {
+                continue;
+            }
+            for (DeployAppEnvironmentVo env : envList) {
+                if (env == null || env.getId() == null) {
+                    continue;
+                }
+                DeployAppEnvironmentVo targetEnv = envMap.computeIfAbsent(env.getId(), key -> {
+                    DeployAppEnvironmentVo newEnv = new DeployAppEnvironmentVo();
+                    newEnv.setId(env.getId());
+                    newEnv.setName(env.getName());
+                    newEnv.setAppModuleList(new ArrayList<>());
+                    return newEnv;
+                });
+                if (CollectionUtils.isEmpty(env.getAppModuleList())) {
+                    continue;
+                }
+                Set<Long> appModuleIdSet = new HashSet<>();
+                if (CollectionUtils.isNotEmpty(targetEnv.getAppModuleList())) {
+                    for (AppModuleVo appModuleVo : targetEnv.getAppModuleList()) {
+                        if (appModuleVo != null && appModuleVo.getId() != null) {
+                            appModuleIdSet.add(appModuleVo.getId());
+                        }
+                    }
+                }
+                for (AppModuleVo appModuleVo : env.getAppModuleList()) {
+                    if (appModuleVo != null && appModuleVo.getId() != null && appModuleIdSet.add(appModuleVo.getId())) {
+                        targetEnv.getAppModuleList().add(appModuleVo);
+                    }
+                }
+            }
+        }
+        return new ArrayList<>(envMap.values());
     }
 
     /**

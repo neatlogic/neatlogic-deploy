@@ -244,9 +244,8 @@
         </collection>
     </resultMap>
 
-    <select id="getDeployAppEnvListByAppSystemIdAndModuleIdList"
+    <select id="getCmdbDeployAppEnvListByAppSystemIdAndModuleIdList"
             resultMap="appEnvMap" useCache="false">
-        (
         SELECT
         a.`env_id` AS envId,
         a.`env_name` AS envName,
@@ -275,8 +274,10 @@
                 </otherwise>
             </choose>
         </where>
-        ) UNION
-        (
+    </select>
+
+    <select id="getConfigDeployAppEnvListByAppSystemIdAndModuleIdList"
+            resultMap="appEnvMap" useCache="false">
         SELECT
         cga.id AS envId,
         cga.value AS envName,
@@ -297,7 +298,6 @@
                 </foreach>
             </if>
         </where>
-        )
     </select>
 
     <!--<select id="getDeployAppEnvIdListByAppSystemId" parameterType="java.lang.Long"
