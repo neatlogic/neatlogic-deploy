@@ -244,9 +244,8 @@
         </collection>
     </resultMap>
 
-    <select id="getDeployAppEnvListByAppSystemIdAndModuleIdList"
+    <select id="getCmdbDeployAppEnvListByAppSystemIdAndModuleIdList"
             resultMap="appEnvMap" useCache="false">
-        (
         SELECT
         a.`env_id` AS envId,
         a.`env_name` AS envName,
@@ -275,8 +274,10 @@
                 </otherwise>
             </choose>
         </where>
-        ) UNION
-        (
+    </select>
+
+    <select id="getConfigDeployAppEnvListByAppSystemIdAndModuleIdList"
+            resultMap="appEnvMap" useCache="false">
         SELECT
         cga.id AS envId,
         cga.value AS envName,
@@ -297,7 +298,6 @@
                 </foreach>
             </if>
         </where>
-        )
     </select>
 
     <!--<select id="getDeployAppEnvIdListByAppSystemId" parameterType="java.lang.Long"
@@ -341,7 +341,7 @@
         </collection>
     </resultMap>
 
-    <select id="getDeployAppModuleEnvListByAppSystemId"
+    <select id="getCmdbDeployAppModuleEnvListByAppSystemId"
             resultMap="deployAppModuleEnvMap" useCache="false">
         SELECT a.`env_id`        AS envId,
                a.`env_name`      AS envName,
@@ -349,13 +349,16 @@
         FROM @{DATA_SCHEMA}.`scence_appinstance_env_appmodule_appsystem` a
         where a.`env_id` is not null
           and a.`app_system_id` = #{appSystemId}
-        UNION
+    </select>
+
+    <select id="getConfigDeployAppModuleEnvListByAppSystemId"
+            resultMap="deployAppModuleEnvMap" useCache="false">
         SELECT cga.id              AS envId,
                cga.value            AS envName,
                dace.app_module_id AS appModuleId
         FROM deploy_app_config_env dace
                  JOIN cmdb_global_attritem cga ON cga.id = dace.env_id
-        where dace.app_system_id = #{value}
+        where dace.app_system_id = #{appSystemId}
     </select>
 
     <resultMap id="appModuleIncludeEnvIdListMap" type="neatlogic.framework.deploy.dto.app.DeployAppModuleEnvVo">
@@ -365,7 +368,7 @@
         </collection>
     </resultMap>
 
-    <select id="getDeployAppModuleEnvListByAppSystemIdAndAppModuleIdList"
+    <select id="getCmdbDeployAppModuleEnvListByAppSystemIdAndAppModuleIdList"
             resultMap="appModuleIncludeEnvIdListMap" useCache="false">
         SELECT a.`env_id` AS envId,
         a.`app_module_id` AS appModuleId
@@ -376,7 +379,10 @@
         <foreach collection="appModuleIdList" separator="," item="appModuleId" open="(" close=")">
             #{appModuleId}
         </foreach>
-        UNION
+    </select>
+
+    <select id="getConfigDeployAppModuleEnvListByAppSystemIdAndAppModuleIdList"
+            resultMap="appModuleIncludeEnvIdListMap" useCache="false">
         SELECT cga.id AS envId,
         dace.app_module_id AS appModuleId
         FROM deploy_app_config_env dace
@@ -388,7 +394,7 @@
         </foreach>
     </select>
 
-    <select id="getDeployAppModuleEnvListByAppSystemIdAndModuleId"
+    <select id="getCmdbDeployAppModuleEnvListByAppSystemIdAndModuleId"
             resultType="neatlogic.framework.cmdb.dto.resourcecenter.entity.AppEnvironmentVo" useCache="false">
         SELECT a.`env_id` AS envId,
         a.`env_name` AS envName
@@ -396,7 +402,10 @@
         where a.`env_id` is not null
         and a.`app_system_id` = #{systemId}
         and a.`app_module_id` = #{moduleId}
-        UNION
+    </select>
+
+    <select id="getConfigDeployAppModuleEnvListByAppSystemIdAndModuleId"
+            resultType="neatlogic.framework.cmdb.dto.resourcecenter.entity.AppEnvironmentVo" useCache="false">
         SELECT cga.id AS envId,
         cga.value AS envName
         FROM deploy_app_config_env dace
@@ -420,7 +429,7 @@
         </collection>
     </resultMap>
 
-    <select id="getAppConfigEnvListIncludeDBCSchemaListAndAutoCfgKeyListByAppSystemIdAndAppModuleIdAndEnvId"
+    <select id="getCmdbAppConfigEnvListIncludeDBCSchemaListAndAutoCfgKeyListByAppSystemIdAndAppModuleIdAndEnvId"
             resultMap="appEnvIncludeSchemaListAndAutoCfgKeyListMap" useCache="false">
         SELECT a.app_system_id as appSystemId,
         a.app_module_id as appModuleId,
@@ -443,7 +452,10 @@
         <foreach collection="envIdList" separator="," item="envId" open="(" close=")">
             #{envId}
         </foreach>
-        UNION
+    </select>
+
+    <select id="getConfigAppConfigEnvListIncludeDBCSchemaListAndAutoCfgKeyListByAppSystemIdAndAppModuleIdAndEnvId"
+            resultMap="appEnvIncludeSchemaListAndAutoCfgKeyListMap" useCache="false">
         SELECT dace.app_system_id as appSystemId,
         dace.app_module_id as appModuleId,
         dace.env_id as envId,
@@ -515,9 +527,8 @@
         </where>
     </select>
 
-    <select id="getHasEnvAppModuleIdListByAppSystemIdAndModuleIdList"
+    <select id="getCmdbHasEnvAppModuleIdListByAppSystemIdAndModuleIdList"
             resultType="java.lang.Long" useCache="false">
-        (
         SELECT
         a.`app_module_id`
         FROM @{DATA_SCHEMA}.`scence_appinstance_env_appmodule_appsystem` a
@@ -543,8 +554,10 @@
                 </otherwise>
             </choose>
         </where>
-        ) UNION
-        (
+    </select>
+
+    <select id="getConfigHasEnvAppModuleIdListByAppSystemIdAndModuleIdList"
+            resultType="java.lang.Long" useCache="false">
         SELECT
         dace.app_module_id
         FROM
@@ -561,7 +574,6 @@
                 </foreach>
             </if>
         </where>
-        )
     </select>
 
     <select id="getAppEnvAutoConfigKeyValueList"
@@ -1024,9 +1036,8 @@
         </if>
     </select>
 
-    <select id="getHasEnvAppSystemIdListByAppSystemIdList"
+    <select id="getCmdbHasEnvAppSystemIdListByAppSystemIdList"
             resultType="java.lang.Long" useCache="false">
-        (
         SELECT
         a.`app_system_id` as id
         FROM
@@ -1039,8 +1050,10 @@
                 #{id}
             </foreach>
         </where>
-        ) UNION
-        (
+    </select>
+
+    <select id="getConfigHasEnvAppSystemIdListByAppSystemIdList"
+            resultType="java.lang.Long" useCache="false">
         SELECT
         dace.app_system_id as id
         FROM
@@ -1050,7 +1063,6 @@
         <foreach collection="list" item="id" separator="," open="(" close=")">
             #{id}
         </foreach>
-        )
     </select>
 
     <resultMap id="AppModuleMap" type="neatlogic.framework.deploy.dto.app.DeployAppModuleVo">
@@ -1135,33 +1147,38 @@
           AND saa.app_module_id != #{appModuleId}
     </select>
 
-    <select id="getDeployHasNotConfigAppEnvListByAppSystemIdAndAppModuleIdAndEnvId"
+    <select id="getCmdbDeployHasNotConfigAppEnvListByAppSystemIdAndAppModuleIdAndEnvId"
             resultType="neatlogic.framework.deploy.dto.app.DeployAppEnvironmentVo" useCache="false">
-        select a.id, a.name
-        from ((
-                  SELECT a.`env_id`   AS id,
-                         a.`env_name` AS name
-                  FROM @{DATA_SCHEMA}.`scence_appinstance_env_appmodule_appsystem` a
-                  where a.`env_id` is not null
-                    AND a.`app_system_id` = #{appSystemId}
-                    and a.`app_module_id` = #{appModuleId}
-                    and a.`env_id` != #{envId}
-              )
-              UNION
-              (
-                  SELECT cga.id   AS envId,
-                         cga.value AS envName
-                  FROM deploy_app_config_env dace
-                           JOIN cmdb_global_attritem cga ON cga.id = dace.env_id
-                  where dace.app_system_id = #{appSystemId}
-                    and dace.app_module_id = #{appModuleId}
-                    and dace.env_id != #{envId}
-              )) a
-        where a.id not in (select dac.env_id
-                           from deploy_app_config dac
-                           where dac.app_system_id = #{appSystemId}
-                             and dac.app_module_id = #{appModuleId}
-        )
+        SELECT a.`env_id` AS id,
+               a.`env_name` AS name
+        FROM @{DATA_SCHEMA}.`scence_appinstance_env_appmodule_appsystem` a
+        WHERE a.`env_id` IS NOT NULL
+          AND a.`app_system_id` = #{appSystemId}
+          AND a.`app_module_id` = #{appModuleId}
+          AND a.`env_id` != #{envId}
+          AND a.`env_id` NOT IN (
+              SELECT dac.env_id
+              FROM deploy_app_config dac
+              WHERE dac.app_system_id = #{appSystemId}
+                AND dac.app_module_id = #{appModuleId}
+          )
+    </select>
+
+    <select id="getConfigDeployHasNotConfigAppEnvListByAppSystemIdAndAppModuleIdAndEnvId"
+            resultType="neatlogic.framework.deploy.dto.app.DeployAppEnvironmentVo" useCache="false">
+        SELECT cga.id AS id,
+               cga.value AS name
+        FROM deploy_app_config_env dace
+        JOIN cmdb_global_attritem cga ON cga.id = dace.env_id
+        WHERE dace.app_system_id = #{appSystemId}
+          AND dace.app_module_id = #{appModuleId}
+          AND dace.env_id != #{envId}
+          AND dace.env_id NOT IN (
+              SELECT dac.env_id
+              FROM deploy_app_config dac
+              WHERE dac.app_system_id = #{appSystemId}
+                AND dac.app_module_id = #{appModuleId}
+          )
     </select>
 
     <select id="getAppEnvAutoConfigBySystemIdAndModuleIdAndEnvId"

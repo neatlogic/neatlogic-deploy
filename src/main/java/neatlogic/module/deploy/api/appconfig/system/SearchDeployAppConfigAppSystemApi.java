@@ -34,6 +34,7 @@ import neatlogic.framework.util.TableResultUtil;
 import neatlogic.module.deploy.dao.mapper.DeployAppConfigMapper;
 import neatlogic.module.deploy.dao.mapper.DeployAppSystemMapper;
 import neatlogic.module.deploy.dao.mapper.DeployPipelineMapper;
+import neatlogic.module.deploy.service.DeployAppConfigService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
@@ -53,6 +54,9 @@ public class SearchDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
 
     @Resource
     private DeployAppConfigMapper deployAppConfigMapper;
+
+    @Resource
+    private DeployAppConfigService deployAppConfigService;
 
     @Resource
     DeployAppSystemMapper deployAppSystemMapper;
@@ -128,7 +132,7 @@ public class SearchDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
             /*补充系统是否有模块、是否有环境、是否有配置权限 ,补充模块是否配置、是否有环境、是否含有资源锁*/
             IResourceCrossoverMapper resourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
             List<Long> hasModuleAppSystemIdList = resourceCrossoverMapper.getHasModuleAppSystemIdListByAppSystemIdList(appSystemIdList);
-            List<Long> hasEnvAppSystemIdList = deployAppConfigMapper.getHasEnvAppSystemIdListByAppSystemIdList(appSystemIdList);
+            List<Long> hasEnvAppSystemIdList = deployAppConfigService.getHasEnvAppSystemIdListByAppSystemIdList(appSystemIdList);
 
             Set<String> globalLockKeySet = new HashSet<>();
             List<GlobalLockVo> globalLockVoList = globalLockMapper.getLockListByKeyListAndHandler(appSystemIdList.stream().map(Object::toString).collect(Collectors.toList()), JobSourceType.DEPLOY.getValue());
@@ -155,7 +159,7 @@ public class SearchDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
                     if (CollectionUtils.isNotEmpty(deployAppConfigMapper.getAppConfigListByAppSystemId(returnSystemVo.getId()))) {
                         isHasConfig = 1;
                     }
-                    List<Long> appModuleIdList = deployAppConfigMapper.getHasEnvAppModuleIdListByAppSystemIdAndModuleIdList(returnSystemVo.getId(), returnSystemVo.getAppModuleList().stream().map(DeployAppModuleVo::getId).collect(Collectors.toList()));
+                    List<Long> appModuleIdList = deployAppConfigService.getHasEnvAppModuleIdListByAppSystemIdAndModuleIdList(returnSystemVo.getId(), returnSystemVo.getAppModuleList().stream().map(DeployAppModuleVo::getId).collect(Collectors.toList()));
                     for (DeployAppModuleVo appModuleVo : returnSystemVo.getAppModuleList()) {
                         if (appModuleIdList.contains(appModuleVo.getId())) {
                             appModuleVo.setIsHasEnv(1);

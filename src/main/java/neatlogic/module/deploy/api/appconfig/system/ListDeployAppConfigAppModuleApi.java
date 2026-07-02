@@ -12,6 +12,7 @@ import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.module.deploy.dao.mapper.DeployAppConfigMapper;
+import neatlogic.module.deploy.service.DeployAppConfigService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 
@@ -31,6 +32,9 @@ public class ListDeployAppConfigAppModuleApi extends PrivateApiComponentBase {
 
     @Resource
     private DeployAppConfigMapper deployAppConfigMapper;
+
+    @Resource
+    private DeployAppConfigService deployAppConfigService;
 
     @Override
     public String getName() {
@@ -73,7 +77,7 @@ public class ListDeployAppConfigAppModuleApi extends PrivateApiComponentBase {
         }
 
         //补充模块是否有环境（有实例的环境）
-        List<Long> hasEnvAppModuleIdList = deployAppConfigMapper.getHasEnvAppModuleIdListByAppSystemIdAndModuleIdList(paramObj.getLong("appSystemId"), moduleResourceList.stream().map(ResourceVo::getId).collect(Collectors.toList()));
+        List<Long> hasEnvAppModuleIdList = deployAppConfigService.getHasEnvAppModuleIdListByAppSystemIdAndModuleIdList(paramObj.getLong("appSystemId"), moduleResourceList.stream().map(ResourceVo::getId).collect(Collectors.toList()));
         for (ResourceVo resourceVo : moduleResourceList) {
             DeployAppModuleVo returnAppModuleVo = new DeployAppModuleVo(resourceVo.getId(), resourceVo.getName(), resourceVo.getAbbrName());
             returnAppModuleVoList.add(returnAppModuleVo);

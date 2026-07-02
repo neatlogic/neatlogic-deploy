@@ -9,8 +9,8 @@ import neatlogic.framework.deploy.exception.DeployVersionNotFoundException;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
-import neatlogic.module.deploy.dao.mapper.DeployAppConfigMapper;
 import neatlogic.module.deploy.dao.mapper.DeployVersionMapper;
+import neatlogic.module.deploy.service.DeployAppConfigService;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.stereotype.Service;
 
@@ -25,7 +25,7 @@ public class GetDeployVersionEnvListApi extends PrivateApiComponentBase {
     DeployVersionMapper deployVersionMapper;
 
     @Resource
-    DeployAppConfigMapper deployAppConfigMapper;
+    DeployAppConfigService deployAppConfigService;
 
     @Override
     public String getName() {
@@ -56,6 +56,6 @@ public class GetDeployVersionEnvListApi extends PrivateApiComponentBase {
         if (version == null) {
             throw new DeployVersionNotFoundException(versionId);
         }
-        return deployAppConfigMapper.getDeployAppModuleEnvListByAppSystemIdAndModuleId(version.getAppSystemId(), version.getAppModuleId());
+        return deployAppConfigService.getDeployAppModuleEnvListByAppSystemIdAndModuleId(version.getAppSystemId(), version.getAppModuleId());
     }
 }

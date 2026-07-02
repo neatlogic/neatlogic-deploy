@@ -27,6 +27,7 @@ import neatlogic.module.deploy.dao.mapper.DeployAppConfigMapper;
 import neatlogic.module.deploy.dao.mapper.DeployAppSystemMapper;
 import neatlogic.module.deploy.dao.mapper.DeployEnvVersionMapper;
 import neatlogic.module.deploy.dao.mapper.DeployVersionMapper;
+import neatlogic.module.deploy.service.DeployAppConfigService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 
@@ -44,6 +45,9 @@ public class SearchDeployActiveVersionApi extends PrivateApiComponentBase {
 
     @Resource
     DeployAppConfigMapper deployAppConfigMapper;
+
+    @Resource
+    DeployAppConfigService deployAppConfigService;
 
     @Resource
     DeployAppSystemMapper deployAppSystemMapper;
@@ -112,7 +116,7 @@ public class SearchDeployActiveVersionApi extends PrivateApiComponentBase {
                     moduleVersionMap = systemVersionList.stream().collect(Collectors.groupingBy(DeployVersionVo::getAppModuleId));
                 }
                 // 当前系统所有模块各自所拥有的环境
-                List<DeployAppModuleEnvVo> moduleEnvList = deployAppConfigMapper.getDeployAppModuleEnvListByAppSystemId(systemVo.getId());
+                List<DeployAppModuleEnvVo> moduleEnvList = deployAppConfigService.getDeployAppModuleEnvListByAppSystemId(systemVo.getId());
                 Map<Long, List<AppEnvironmentVo>> moduleEnvListMap = null;
                 if (moduleEnvList.size() > 0) {
                     // 补充环境序号

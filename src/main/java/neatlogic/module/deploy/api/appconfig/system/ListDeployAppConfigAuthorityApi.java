@@ -27,6 +27,7 @@ import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.module.deploy.dao.mapper.DeployAppConfigMapper;
+import neatlogic.module.deploy.service.DeployAppConfigService;
 import neatlogic.module.deploy.util.DeployPipelineConfigManager;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
@@ -46,6 +47,9 @@ public class ListDeployAppConfigAuthorityApi extends PrivateApiComponentBase {
 
     @Resource
     private DeployAppConfigMapper deployAppConfigMapper;
+
+    @Resource
+    private DeployAppConfigService deployAppConfigService;
 
     @Override
     public String getToken() {
@@ -107,7 +111,7 @@ public class ListDeployAppConfigAuthorityApi extends PrivateApiComponentBase {
         //环境权限
         if (isNeedEnv) {
             List<JSONObject> envAuthList = new ArrayList<>();
-            List<DeployAppEnvironmentVo> envList = deployAppConfigMapper.getDeployAppEnvListByAppSystemIdAndModuleIdList(appSystemId, new ArrayList<>());
+            List<DeployAppEnvironmentVo> envList = deployAppConfigService.getDeployAppEnvListByAppSystemIdAndModuleIdList(appSystemId, new ArrayList<>());
             for (DeployAppEnvironmentVo env : envList) {
                 JSONObject envValueText = new JSONObject();
                 envValueText.put("text", env.getName());

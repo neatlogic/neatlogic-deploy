@@ -19,7 +19,7 @@ import neatlogic.framework.deploy.dto.app.DeployAppEnvironmentVo;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
-import neatlogic.module.deploy.dao.mapper.DeployAppConfigMapper;
+import neatlogic.module.deploy.service.DeployAppConfigService;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -34,7 +34,7 @@ import javax.annotation.Resource;
 public class ListDeployAppConfigWithoutConfigEnvApi extends PrivateApiComponentBase {
 
     @Resource
-    private DeployAppConfigMapper deployAppConfigMapper;
+    private DeployAppConfigService deployAppConfigService;
 
     @Override
     public String getName() {
@@ -62,6 +62,6 @@ public class ListDeployAppConfigWithoutConfigEnvApi extends PrivateApiComponentB
     @Description(desc = "获取没有继承应用配置的环境列表(复制配置到现有环境时的环境下拉)")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
-        return deployAppConfigMapper.getDeployHasNotConfigAppEnvListByAppSystemIdAndAppModuleIdAndEnvId(paramObj.getLong("appSystemId"), paramObj.getLong("appModuleId"), paramObj.getLong("envId"));
+        return deployAppConfigService.getDeployHasNotConfigAppEnvListByAppSystemIdAndAppModuleIdAndEnvId(paramObj.getLong("appSystemId"), paramObj.getLong("appModuleId"), paramObj.getLong("envId"));
     }
 }

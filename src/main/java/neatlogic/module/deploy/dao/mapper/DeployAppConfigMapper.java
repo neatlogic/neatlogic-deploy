@@ -74,13 +74,17 @@ public interface DeployAppConfigMapper extends IDeployAppConfigCrossoverMapper {
 
     List<DeployAppConfigInstanceVo> searchAppConfigEnvInstanceListByIdList(List<Long> idList);
 
-    List<DeployAppEnvironmentVo> getDeployAppEnvListByAppSystemIdAndModuleIdList(@Param("appSystemId") Long appSystemId, @Param("appModuleIdList") List<Long> appModuleIdList);
+    List<DeployAppEnvironmentVo> getCmdbDeployAppEnvListByAppSystemIdAndModuleIdList(@Param("appSystemId") Long appSystemId, @Param("appModuleIdList") List<Long> appModuleIdList);
+
+    List<DeployAppEnvironmentVo> getConfigDeployAppEnvListByAppSystemIdAndModuleIdList(@Param("appSystemId") Long appSystemId, @Param("appModuleIdList") List<Long> appModuleIdList);
 
     List<DeployAppEnvironmentVo> getCmdbEnvListByAppSystemIdAndModuleId(@Param("appSystemId") Long appSystemId, @Param("appModuleId") Long appModuleId);
 
     List<DeployAppEnvironmentVo> getDeployAppEnvListByAppSystemIdAndModuleId(@Param("appSystemId") Long appSystemId, @Param("appModuleId") Long appModuleId);
 
-    List<Long> getHasEnvAppModuleIdListByAppSystemIdAndModuleIdList(@Param("appSystemId") Long appSystemId, @Param("appModuleIdList") List<Long> appModuleIdList);
+    List<Long> getCmdbHasEnvAppModuleIdListByAppSystemIdAndModuleIdList(@Param("appSystemId") Long appSystemId, @Param("appModuleIdList") List<Long> appModuleIdList);
+
+    List<Long> getConfigHasEnvAppModuleIdListByAppSystemIdAndModuleIdList(@Param("appSystemId") Long appSystemId, @Param("appModuleIdList") List<Long> appModuleIdList);
 
     List<Long> getAppModuleEnvAutoConfigInstanceIdList(DeployAppEnvAutoConfigVo searchVo);
 
@@ -102,13 +106,21 @@ public interface DeployAppConfigMapper extends IDeployAppConfigCrossoverMapper {
 
     List<DeployAppEnvAutoConfigVo> getAppEnvAutoConfigBySystemIdAndModuleIdAndEnvId(@Param("systemId") Long systemId, @Param("moduleId") Long moduleId, @Param("envId") Long envId);
 
-    List<DeployAppModuleEnvVo> getDeployAppModuleEnvListByAppSystemId(Long appSystemId);
+    List<DeployAppModuleEnvVo> getCmdbDeployAppModuleEnvListByAppSystemId(@Param("appSystemId") Long appSystemId);
 
-    List<DeployAppModuleEnvVo> getDeployAppModuleEnvListByAppSystemIdAndAppModuleIdList(@Param("appSystemId") Long appSystemId, @Param("appModuleIdList") List<Long> appModuleIdList);
+    List<DeployAppModuleEnvVo> getConfigDeployAppModuleEnvListByAppSystemId(@Param("appSystemId") Long appSystemId);
 
-    List<AppEnvironmentVo> getDeployAppModuleEnvListByAppSystemIdAndModuleId(@Param("systemId") Long systemId, @Param("moduleId") Long moduleId);
+    List<DeployAppModuleEnvVo> getCmdbDeployAppModuleEnvListByAppSystemIdAndAppModuleIdList(@Param("appSystemId") Long appSystemId, @Param("appModuleIdList") List<Long> appModuleIdList);
 
-    List<DeployAppEnvironmentVo> getAppConfigEnvListIncludeDBCSchemaListAndAutoCfgKeyListByAppSystemIdAndAppModuleIdAndEnvId(@Param("appSystemId") Long appSystemId, @Param("appModuleId") Long appModuleId, @Param("envIdList") List<Long> envIdList);
+    List<DeployAppModuleEnvVo> getConfigDeployAppModuleEnvListByAppSystemIdAndAppModuleIdList(@Param("appSystemId") Long appSystemId, @Param("appModuleIdList") List<Long> appModuleIdList);
+
+    List<AppEnvironmentVo> getCmdbDeployAppModuleEnvListByAppSystemIdAndModuleId(@Param("systemId") Long systemId, @Param("moduleId") Long moduleId);
+
+    List<AppEnvironmentVo> getConfigDeployAppModuleEnvListByAppSystemIdAndModuleId(@Param("systemId") Long systemId, @Param("moduleId") Long moduleId);
+
+    List<DeployAppEnvironmentVo> getCmdbAppConfigEnvListIncludeDBCSchemaListAndAutoCfgKeyListByAppSystemIdAndAppModuleIdAndEnvId(@Param("appSystemId") Long appSystemId, @Param("appModuleId") Long appModuleId, @Param("envIdList") List<Long> envIdList);
+
+    List<DeployAppEnvironmentVo> getConfigAppConfigEnvListIncludeDBCSchemaListAndAutoCfgKeyListByAppSystemIdAndAppModuleIdAndEnvId(@Param("appSystemId") Long appSystemId, @Param("appModuleId") Long appModuleId, @Param("envIdList") List<Long> envIdList);
 
     DeployAppSystemVo getAppSystemById(Long appSystemId);
 
@@ -225,7 +237,9 @@ public interface DeployAppConfigMapper extends IDeployAppConfigCrossoverMapper {
      */
     List<Long> getAppConfigEnvDatabaseResourceIdList(DeployResourceSearchVo searchVo);
 
-    List<Long> getHasEnvAppSystemIdListByAppSystemIdList(List<Long> idList);
+    List<Long> getCmdbHasEnvAppSystemIdListByAppSystemIdList(List<Long> idList);
+
+    List<Long> getConfigHasEnvAppSystemIdListByAppSystemIdList(List<Long> idList);
 
 //    List<Long> getDeployAppEnvIdListByAppSystemId(Long appSystemId);
 
@@ -235,7 +249,9 @@ public interface DeployAppConfigMapper extends IDeployAppConfigCrossoverMapper {
 
     List<DeployAppModuleVo> getDeployHasNotConfigAppModuleListByAppSystemIdAndAppModuleId(@Param("appSystemId") Long appSystemId, @Param("appModuleId") Long appModuleId);
 
-    List<DeployAppEnvironmentVo> getDeployHasNotConfigAppEnvListByAppSystemIdAndAppModuleIdAndEnvId(@Param("appSystemId") Long appSystemId, @Param("appModuleId") Long appModuleId, @Param("envId") Long envId);
+    List<DeployAppEnvironmentVo> getCmdbDeployHasNotConfigAppEnvListByAppSystemIdAndAppModuleIdAndEnvId(@Param("appSystemId") Long appSystemId, @Param("appModuleId") Long appModuleId, @Param("envId") Long envId);
+
+    List<DeployAppEnvironmentVo> getConfigDeployHasNotConfigAppEnvListByAppSystemIdAndAppModuleIdAndEnvId(@Param("appSystemId") Long appSystemId, @Param("appModuleId") Long appModuleId, @Param("envId") Long envId);
 
     List<DeployAppConfigAuthorityActionVo> getDeployAppAuthorityActionList(DeployAppAuthCheckVo deployAppAuthCheckVo);
 
