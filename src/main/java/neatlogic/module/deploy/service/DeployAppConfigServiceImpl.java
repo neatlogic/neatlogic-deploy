@@ -393,6 +393,13 @@ public class DeployAppConfigServiceImpl implements DeployAppConfigService {
     }
 
     @Override
+    public List<AppEnvironmentVo> getDeployAppModuleEnvListByAppSystemIdAndModuleId(Long systemId, Long moduleId) {
+        List<AppEnvironmentVo> cmdbEnvList = deployAppConfigMapper.getCmdbDeployAppModuleEnvListByAppSystemIdAndModuleId(systemId, moduleId);
+        List<AppEnvironmentVo> configEnvList = deployAppConfigMapper.getConfigDeployAppModuleEnvListByAppSystemIdAndModuleId(systemId, moduleId);
+        return mergeAppEnvironmentList(cmdbEnvList, configEnvList);
+    }
+
+    @Override
     public int getAppConfigEnvDatabaseCount(DeployResourceSearchVo searchVo) {
         IResourceCrossoverMapper resourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
         String enable = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_DATA_COMPARISON_MODE_ENABLE);
@@ -586,6 +593,23 @@ public class DeployAppConfigServiceImpl implements DeployAppConfigService {
             }
         }
         return new ArrayList<>(moduleEnvMap.values());
+    }
+
+    @SafeVarargs
+    private final List<AppEnvironmentVo> mergeAppEnvironmentList(List<AppEnvironmentVo>... envLists) {
+        Map<Long, AppEnvironmentVo> envMap = new LinkedHashMap<>();
+        for (List<AppEnvironmentVo> envList : envLists) {
+            if (CollectionUtils.isEmpty(envList)) {
+                continue;
+            }
+            for (AppEnvironmentVo envVo : envList) {
+                if (envVo == null || envVo.getEnvId() == null) {
+                    continue;
+                }
+                envMap.putIfAbsent(envVo.getEnvId(), envVo);
+            }
+        }
+        return new ArrayList<>(envMap.values());
     }
 
     /**

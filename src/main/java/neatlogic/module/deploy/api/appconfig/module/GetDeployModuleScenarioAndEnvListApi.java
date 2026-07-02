@@ -23,6 +23,7 @@ import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.module.deploy.dao.mapper.DeployAppConfigMapper;
+import neatlogic.module.deploy.service.DeployAppConfigService;
 import neatlogic.module.deploy.util.DeployPipelineConfigManager;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
@@ -37,6 +38,9 @@ public class GetDeployModuleScenarioAndEnvListApi extends PrivateApiComponentBas
 
     @Resource
     DeployAppConfigMapper deployAppConfigMapper;
+
+    @Resource
+    DeployAppConfigService deployAppConfigService;
 
     @Override
     public String getToken() {
@@ -83,7 +87,7 @@ public class GetDeployModuleScenarioAndEnvListApi extends PrivateApiComponentBas
         }
         result.put("scenarioList", pipelineConfigVo.getScenarioList());
         result.put("defaultScenarioId", pipelineConfigVo.getDefaultScenarioId());
-        result.put("envList", deployAppConfigMapper.getDeployAppModuleEnvListByAppSystemIdAndModuleId(appSystemId, appModuleId));
+        result.put("envList", deployAppConfigService.getDeployAppModuleEnvListByAppSystemIdAndModuleId(appSystemId, appModuleId));
         return result;
     }
 }

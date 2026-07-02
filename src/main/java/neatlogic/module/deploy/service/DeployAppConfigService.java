@@ -1,6 +1,7 @@
 package neatlogic.module.deploy.service;
 
 import neatlogic.framework.cmdb.dto.resourcecenter.ResourceVo;
+import neatlogic.framework.cmdb.dto.resourcecenter.entity.AppEnvironmentVo;
 import neatlogic.framework.cmdb.dto.transaction.CiEntityTransactionVo;
 import neatlogic.framework.deploy.dto.app.DeployAppConfigVo;
 import neatlogic.framework.deploy.dto.app.DeployAppEnvironmentVo;
@@ -85,6 +86,8 @@ public interface DeployAppConfigService {
     List<DeployAppModuleEnvVo> getDeployAppModuleEnvListByAppSystemId(Long appSystemId);
 
     List<DeployAppModuleEnvVo> getDeployAppModuleEnvListByAppSystemIdAndAppModuleIdList(Long appSystemId, List<Long> appModuleIdList);
+
+    List<AppEnvironmentVo> getDeployAppModuleEnvListByAppSystemIdAndModuleId(Long systemId, Long moduleId);
 
     /**
      * 查询发布应用配置DB库下的无模块无环境、无模块同环境、同模块无环境、同模块同环境且发布没配置的数据库的数量

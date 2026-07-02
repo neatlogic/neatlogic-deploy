@@ -394,7 +394,7 @@
         </foreach>
     </select>
 
-    <select id="getDeployAppModuleEnvListByAppSystemIdAndModuleId"
+    <select id="getCmdbDeployAppModuleEnvListByAppSystemIdAndModuleId"
             resultType="neatlogic.framework.cmdb.dto.resourcecenter.entity.AppEnvironmentVo" useCache="false">
         SELECT a.`env_id` AS envId,
         a.`env_name` AS envName
@@ -402,7 +402,10 @@
         where a.`env_id` is not null
         and a.`app_system_id` = #{systemId}
         and a.`app_module_id` = #{moduleId}
-        UNION
+    </select>
+
+    <select id="getConfigDeployAppModuleEnvListByAppSystemIdAndModuleId"
+            resultType="neatlogic.framework.cmdb.dto.resourcecenter.entity.AppEnvironmentVo" useCache="false">
         SELECT cga.id AS envId,
         cga.value AS envName
         FROM deploy_app_config_env dace

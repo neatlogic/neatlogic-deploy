@@ -232,7 +232,7 @@ public class CopyDeployAppConfigModuleConfigApi extends PrivateApiComponentBase 
             if (fromModuleRunnerGroup != null) {
                 deployAppConfigMapper.insertAppModuleRunnerGroup(appSystemId, toAppModuleId, fromModuleRunnerGroup.getId());
             }
-            List<Long> envIdList = deployAppConfigMapper.getDeployAppModuleEnvListByAppSystemIdAndModuleId(appSystemId, fromAppModuleId).stream().map(AppEnvironmentVo::getEnvId).collect(Collectors.toList());
+            List<Long> envIdList = deployAppConfigService.getDeployAppModuleEnvListByAppSystemIdAndModuleId(appSystemId, fromAppModuleId).stream().map(AppEnvironmentVo::getEnvId).collect(Collectors.toList());
             if (CollectionUtils.isNotEmpty(envIdList)) {
                 deployAppConfigMapper.insertAppConfigEnv(appSystemId, toAppModuleId, envIdList);
                 copyDbSchemaListAndAutoCfgKeyList(appSystemId, fromAppModuleId, toAppModuleId, envIdList);
