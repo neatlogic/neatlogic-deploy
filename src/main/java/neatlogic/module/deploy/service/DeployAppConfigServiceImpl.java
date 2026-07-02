@@ -11,6 +11,7 @@ import neatlogic.framework.cmdb.dto.cientity.CiEntityVo;
 import neatlogic.framework.cmdb.dto.globalattr.GlobalAttrItemVo;
 import neatlogic.framework.cmdb.dto.globalattr.GlobalAttrVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.ResourceVo;
+import neatlogic.framework.cmdb.dto.resourcecenter.entity.AppEnvironmentVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.entity.AppModuleVo;
 import neatlogic.framework.cmdb.dto.transaction.CiEntityTransactionVo;
 import neatlogic.framework.cmdb.enums.CmdbTenantConfig;
@@ -23,6 +24,7 @@ import neatlogic.framework.crossover.CrossoverServiceFactory;
 import neatlogic.framework.deploy.dto.app.DeployAppConfigEnvDBConfigVo;
 import neatlogic.framework.deploy.dto.app.DeployAppConfigVo;
 import neatlogic.framework.deploy.dto.app.DeployAppEnvironmentVo;
+import neatlogic.framework.deploy.dto.app.DeployAppModuleEnvVo;
 import neatlogic.framework.deploy.dto.app.DeployAppModuleVo;
 import neatlogic.framework.deploy.dto.app.DeployResourceSearchVo;
 import neatlogic.framework.deploy.exception.DeployAppConfigModuleRunnerGroupNotFoundException;
@@ -377,6 +379,13 @@ public class DeployAppConfigServiceImpl implements DeployAppConfigService {
     }
 
     @Override
+    public List<DeployAppModuleEnvVo> getDeployAppModuleEnvListByAppSystemId(Long appSystemId) {
+        List<DeployAppModuleEnvVo> cmdbModuleEnvList = deployAppConfigMapper.getCmdbDeployAppModuleEnvListByAppSystemId(appSystemId);
+        List<DeployAppModuleEnvVo> configModuleEnvList = deployAppConfigMapper.getConfigDeployAppModuleEnvListByAppSystemId(appSystemId);
+        return mergeDeployAppModuleEnvList(cmdbModuleEnvList, configModuleEnvList);
+    }
+
+    @Override
     public int getAppConfigEnvDatabaseCount(DeployResourceSearchVo searchVo) {
         IResourceCrossoverMapper resourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
         String enable = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_DATA_COMPARISON_MODE_ENABLE);
@@ -501,6 +510,44 @@ public class DeployAppConfigServiceImpl implements DeployAppConfigService {
             }
         }
         return new ArrayList<>(envMap.values());
+    }
+
+    @SafeVarargs
+    private final List<DeployAppModuleEnvVo> mergeDeployAppModuleEnvList(List<DeployAppModuleEnvVo>... moduleEnvLists) {
+        Map<Long, DeployAppModuleEnvVo> moduleEnvMap = new LinkedHashMap<>();
+        for (List<DeployAppModuleEnvVo> moduleEnvList : moduleEnvLists) {
+            if (CollectionUtils.isEmpty(moduleEnvList)) {
+                continue;
+            }
+            for (DeployAppModuleEnvVo moduleEnvVo : moduleEnvList) {
+                if (moduleEnvVo == null || moduleEnvVo.getId() == null) {
+                    continue;
+                }
+                DeployAppModuleEnvVo targetModuleEnv = moduleEnvMap.computeIfAbsent(moduleEnvVo.getId(), key -> {
+                    DeployAppModuleEnvVo newModuleEnv = new DeployAppModuleEnvVo();
+                    newModuleEnv.setId(moduleEnvVo.getId());
+                    newModuleEnv.setEnvList(new ArrayList<>());
+                    return newModuleEnv;
+                });
+                if (CollectionUtils.isEmpty(moduleEnvVo.getEnvList())) {
+                    continue;
+                }
+                Set<Long> envIdSet = new HashSet<>();
+                if (CollectionUtils.isNotEmpty(targetModuleEnv.getEnvList())) {
+                    for (AppEnvironmentVo envVo : targetModuleEnv.getEnvList()) {
+                        if (envVo != null && envVo.getEnvId() != null) {
+                            envIdSet.add(envVo.getEnvId());
+                        }
+                    }
+                }
+                for (AppEnvironmentVo envVo : moduleEnvVo.getEnvList()) {
+                    if (envVo != null && envVo.getEnvId() != null && envIdSet.add(envVo.getEnvId())) {
+                        targetModuleEnv.getEnvList().add(envVo);
+                    }
+                }
+            }
+        }
+        return new ArrayList<>(moduleEnvMap.values());
     }
 
     /**

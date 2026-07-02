@@ -341,7 +341,7 @@
         </collection>
     </resultMap>
 
-    <select id="getDeployAppModuleEnvListByAppSystemId"
+    <select id="getCmdbDeployAppModuleEnvListByAppSystemId"
             resultMap="deployAppModuleEnvMap" useCache="false">
         SELECT a.`env_id`        AS envId,
                a.`env_name`      AS envName,
@@ -349,13 +349,16 @@
         FROM @{DATA_SCHEMA}.`scence_appinstance_env_appmodule_appsystem` a
         where a.`env_id` is not null
           and a.`app_system_id` = #{appSystemId}
-        UNION
+    </select>
+
+    <select id="getConfigDeployAppModuleEnvListByAppSystemId"
+            resultMap="deployAppModuleEnvMap" useCache="false">
         SELECT cga.id              AS envId,
                cga.value            AS envName,
                dace.app_module_id AS appModuleId
         FROM deploy_app_config_env dace
                  JOIN cmdb_global_attritem cga ON cga.id = dace.env_id
-        where dace.app_system_id = #{value}
+        where dace.app_system_id = #{appSystemId}
     </select>
 
     <resultMap id="appModuleIncludeEnvIdListMap" type="neatlogic.framework.deploy.dto.app.DeployAppModuleEnvVo">

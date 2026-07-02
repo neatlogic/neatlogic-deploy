@@ -104,7 +104,9 @@ public interface DeployAppConfigMapper extends IDeployAppConfigCrossoverMapper {
 
     List<DeployAppEnvAutoConfigVo> getAppEnvAutoConfigBySystemIdAndModuleIdAndEnvId(@Param("systemId") Long systemId, @Param("moduleId") Long moduleId, @Param("envId") Long envId);
 
-    List<DeployAppModuleEnvVo> getDeployAppModuleEnvListByAppSystemId(Long appSystemId);
+    List<DeployAppModuleEnvVo> getCmdbDeployAppModuleEnvListByAppSystemId(@Param("appSystemId") Long appSystemId);
+
+    List<DeployAppModuleEnvVo> getConfigDeployAppModuleEnvListByAppSystemId(@Param("appSystemId") Long appSystemId);
 
     List<DeployAppModuleEnvVo> getDeployAppModuleEnvListByAppSystemIdAndAppModuleIdList(@Param("appSystemId") Long appSystemId, @Param("appModuleIdList") List<Long> appModuleIdList);
 
