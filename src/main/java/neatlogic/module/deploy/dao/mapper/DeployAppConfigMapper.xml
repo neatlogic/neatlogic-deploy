@@ -527,9 +527,8 @@
         </where>
     </select>
 
-    <select id="getHasEnvAppModuleIdListByAppSystemIdAndModuleIdList"
+    <select id="getCmdbHasEnvAppModuleIdListByAppSystemIdAndModuleIdList"
             resultType="java.lang.Long" useCache="false">
-        (
         SELECT
         a.`app_module_id`
         FROM @{DATA_SCHEMA}.`scence_appinstance_env_appmodule_appsystem` a
@@ -555,8 +554,10 @@
                 </otherwise>
             </choose>
         </where>
-        ) UNION
-        (
+    </select>
+
+    <select id="getConfigHasEnvAppModuleIdListByAppSystemIdAndModuleIdList"
+            resultType="java.lang.Long" useCache="false">
         SELECT
         dace.app_module_id
         FROM
@@ -573,7 +574,6 @@
                 </foreach>
             </if>
         </where>
-        )
     </select>
 
     <select id="getAppEnvAutoConfigKeyValueList"

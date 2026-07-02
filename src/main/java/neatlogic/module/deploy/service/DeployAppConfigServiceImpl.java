@@ -380,6 +380,13 @@ public class DeployAppConfigServiceImpl implements DeployAppConfigService {
     }
 
     @Override
+    public List<Long> getHasEnvAppModuleIdListByAppSystemIdAndModuleIdList(Long appSystemId, List<Long> appModuleIdList) {
+        List<Long> cmdbAppModuleIdList = deployAppConfigMapper.getCmdbHasEnvAppModuleIdListByAppSystemIdAndModuleIdList(appSystemId, appModuleIdList);
+        List<Long> configAppModuleIdList = deployAppConfigMapper.getConfigHasEnvAppModuleIdListByAppSystemIdAndModuleIdList(appSystemId, appModuleIdList);
+        return mergeLongList(cmdbAppModuleIdList, configAppModuleIdList);
+    }
+
+    @Override
     public List<DeployAppModuleEnvVo> getDeployAppModuleEnvListByAppSystemId(Long appSystemId) {
         List<DeployAppModuleEnvVo> cmdbModuleEnvList = deployAppConfigMapper.getCmdbDeployAppModuleEnvListByAppSystemId(appSystemId);
         List<DeployAppModuleEnvVo> configModuleEnvList = deployAppConfigMapper.getConfigDeployAppModuleEnvListByAppSystemId(appSystemId);
@@ -532,6 +539,22 @@ public class DeployAppConfigServiceImpl implements DeployAppConfigService {
             }
         }
         return new ArrayList<>(envMap.values());
+    }
+
+    @SafeVarargs
+    private final List<Long> mergeLongList(List<Long>... idLists) {
+        Set<Long> idSet = new LinkedHashSet<>();
+        for (List<Long> idList : idLists) {
+            if (CollectionUtils.isEmpty(idList)) {
+                continue;
+            }
+            for (Long id : idList) {
+                if (id != null) {
+                    idSet.add(id);
+                }
+            }
+        }
+        return new ArrayList<>(idSet);
     }
 
     @SafeVarargs
