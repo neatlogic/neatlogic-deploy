@@ -422,6 +422,13 @@ public class DeployAppConfigServiceImpl implements DeployAppConfigService {
     }
 
     @Override
+    public List<DeployAppEnvironmentVo> getDeployHasNotConfigAppEnvListByAppSystemIdAndAppModuleIdAndEnvId(Long appSystemId, Long appModuleId, Long envId) {
+        List<DeployAppEnvironmentVo> cmdbEnvList = deployAppConfigMapper.getCmdbDeployHasNotConfigAppEnvListByAppSystemIdAndAppModuleIdAndEnvId(appSystemId, appModuleId, envId);
+        List<DeployAppEnvironmentVo> configEnvList = deployAppConfigMapper.getConfigDeployHasNotConfigAppEnvListByAppSystemIdAndAppModuleIdAndEnvId(appSystemId, appModuleId, envId);
+        return mergeDeployAppEnvironmentList(cmdbEnvList, configEnvList);
+    }
+
+    @Override
     public int getAppConfigEnvDatabaseCount(DeployResourceSearchVo searchVo) {
         IResourceCrossoverMapper resourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
         String enable = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_DATA_COMPARISON_MODE_ENABLE);

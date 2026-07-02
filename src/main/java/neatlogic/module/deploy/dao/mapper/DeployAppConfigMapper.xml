@@ -1147,33 +1147,38 @@
           AND saa.app_module_id != #{appModuleId}
     </select>
 
-    <select id="getDeployHasNotConfigAppEnvListByAppSystemIdAndAppModuleIdAndEnvId"
+    <select id="getCmdbDeployHasNotConfigAppEnvListByAppSystemIdAndAppModuleIdAndEnvId"
             resultType="neatlogic.framework.deploy.dto.app.DeployAppEnvironmentVo" useCache="false">
-        select a.id, a.name
-        from ((
-                  SELECT a.`env_id`   AS id,
-                         a.`env_name` AS name
-                  FROM @{DATA_SCHEMA}.`scence_appinstance_env_appmodule_appsystem` a
-                  where a.`env_id` is not null
-                    AND a.`app_system_id` = #{appSystemId}
-                    and a.`app_module_id` = #{appModuleId}
-                    and a.`env_id` != #{envId}
-              )
-              UNION
-              (
-                  SELECT cga.id   AS envId,
-                         cga.value AS envName
-                  FROM deploy_app_config_env dace
-                           JOIN cmdb_global_attritem cga ON cga.id = dace.env_id
-                  where dace.app_system_id = #{appSystemId}
-                    and dace.app_module_id = #{appModuleId}
-                    and dace.env_id != #{envId}
-              )) a
-        where a.id not in (select dac.env_id
-                           from deploy_app_config dac
-                           where dac.app_system_id = #{appSystemId}
-                             and dac.app_module_id = #{appModuleId}
-        )
+        SELECT a.`env_id` AS id,
+               a.`env_name` AS name
+        FROM @{DATA_SCHEMA}.`scence_appinstance_env_appmodule_appsystem` a
+        WHERE a.`env_id` IS NOT NULL
+          AND a.`app_system_id` = #{appSystemId}
+          AND a.`app_module_id` = #{appModuleId}
+          AND a.`env_id` != #{envId}
+          AND a.`env_id` NOT IN (
+              SELECT dac.env_id
+              FROM deploy_app_config dac
+              WHERE dac.app_system_id = #{appSystemId}
+                AND dac.app_module_id = #{appModuleId}
+          )
+    </select>
+
+    <select id="getConfigDeployHasNotConfigAppEnvListByAppSystemIdAndAppModuleIdAndEnvId"
+            resultType="neatlogic.framework.deploy.dto.app.DeployAppEnvironmentVo" useCache="false">
+        SELECT cga.id AS id,
+               cga.value AS name
+        FROM deploy_app_config_env dace
+        JOIN cmdb_global_attritem cga ON cga.id = dace.env_id
+        WHERE dace.app_system_id = #{appSystemId}
+          AND dace.app_module_id = #{appModuleId}
+          AND dace.env_id != #{envId}
+          AND dace.env_id NOT IN (
+              SELECT dac.env_id
+              FROM deploy_app_config dac
+              WHERE dac.app_system_id = #{appSystemId}
+                AND dac.app_module_id = #{appModuleId}
+          )
     </select>
 
     <select id="getAppEnvAutoConfigBySystemIdAndModuleIdAndEnvId"
