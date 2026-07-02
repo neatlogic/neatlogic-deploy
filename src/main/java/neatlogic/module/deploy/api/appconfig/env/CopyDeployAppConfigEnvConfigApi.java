@@ -23,6 +23,7 @@ import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.module.deploy.dao.mapper.DeployAppConfigMapper;
 import neatlogic.module.deploy.service.DeployAppAuthorityService;
+import neatlogic.module.deploy.service.DeployAppConfigService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -45,6 +46,9 @@ public class CopyDeployAppConfigEnvConfigApi extends PrivateApiComponentBase {
 
     @Resource
     DeployAppConfigMapper deployAppConfigMapper;
+
+    @Resource
+    DeployAppConfigService deployAppConfigService;
 
     @Resource
     DeployAppAuthorityService deployAppAuthorityService;
@@ -146,7 +150,7 @@ public class CopyDeployAppConfigEnvConfigApi extends PrivateApiComponentBase {
             return;
         }
 
-        List<DeployAppEnvironmentVo> envInfoVoList = deployAppConfigMapper.getAppConfigEnvListIncludeDBCSchemaListAndAutoCfgKeyListByAppSystemIdAndAppModuleIdAndEnvId(appSystemId, appModuleId, Collections.singletonList(fromEnvId));
+        List<DeployAppEnvironmentVo> envInfoVoList = deployAppConfigService.getAppConfigEnvListIncludeDBCSchemaListAndAutoCfgKeyListByAppSystemIdAndAppModuleIdAndEnvId(appSystemId, appModuleId, Collections.singletonList(fromEnvId));
         if (CollectionUtils.isEmpty(envInfoVoList)) {
             return;
         }

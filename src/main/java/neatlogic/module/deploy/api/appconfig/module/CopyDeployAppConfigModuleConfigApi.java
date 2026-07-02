@@ -255,7 +255,7 @@ public class CopyDeployAppConfigModuleConfigApi extends PrivateApiComponentBase 
             return;
         }
 
-        List<DeployAppEnvironmentVo> envInfoVoList = deployAppConfigMapper.getAppConfigEnvListIncludeDBCSchemaListAndAutoCfgKeyListByAppSystemIdAndAppModuleIdAndEnvId(appSystemId, fromAppModuleId, envIdList);
+        List<DeployAppEnvironmentVo> envInfoVoList = deployAppConfigService.getAppConfigEnvListIncludeDBCSchemaListAndAutoCfgKeyListByAppSystemIdAndAppModuleIdAndEnvId(appSystemId, fromAppModuleId, envIdList);
         Map<Long, List<DeployAppConfigEnvDBConfigVo>> envDbSchemaListMap = new HashMap<>();
         Map<Long, List<DeployAppEnvAutoConfigKeyValueVo>> envAutoCfgKeyListMap = new HashMap<>();
         for (DeployAppEnvironmentVo envVo : envInfoVoList) {

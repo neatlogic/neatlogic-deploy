@@ -429,7 +429,7 @@
         </collection>
     </resultMap>
 
-    <select id="getAppConfigEnvListIncludeDBCSchemaListAndAutoCfgKeyListByAppSystemIdAndAppModuleIdAndEnvId"
+    <select id="getCmdbAppConfigEnvListIncludeDBCSchemaListAndAutoCfgKeyListByAppSystemIdAndAppModuleIdAndEnvId"
             resultMap="appEnvIncludeSchemaListAndAutoCfgKeyListMap" useCache="false">
         SELECT a.app_system_id as appSystemId,
         a.app_module_id as appModuleId,
@@ -452,7 +452,10 @@
         <foreach collection="envIdList" separator="," item="envId" open="(" close=")">
             #{envId}
         </foreach>
-        UNION
+    </select>
+
+    <select id="getConfigAppConfigEnvListIncludeDBCSchemaListAndAutoCfgKeyListByAppSystemIdAndAppModuleIdAndEnvId"
+            resultMap="appEnvIncludeSchemaListAndAutoCfgKeyListMap" useCache="false">
         SELECT dace.app_system_id as appSystemId,
         dace.app_module_id as appModuleId,
         dace.env_id as envId,

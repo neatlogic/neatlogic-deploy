@@ -23,6 +23,7 @@ import neatlogic.framework.config.ConfigManager;
 import neatlogic.framework.crossover.CrossoverServiceFactory;
 import neatlogic.framework.deploy.dto.app.DeployAppConfigEnvDBConfigVo;
 import neatlogic.framework.deploy.dto.app.DeployAppConfigVo;
+import neatlogic.framework.deploy.dto.app.DeployAppEnvAutoConfigKeyValueVo;
 import neatlogic.framework.deploy.dto.app.DeployAppEnvironmentVo;
 import neatlogic.framework.deploy.dto.app.DeployAppModuleEnvVo;
 import neatlogic.framework.deploy.dto.app.DeployAppModuleVo;
@@ -400,6 +401,13 @@ public class DeployAppConfigServiceImpl implements DeployAppConfigService {
     }
 
     @Override
+    public List<DeployAppEnvironmentVo> getAppConfigEnvListIncludeDBCSchemaListAndAutoCfgKeyListByAppSystemIdAndAppModuleIdAndEnvId(Long appSystemId, Long appModuleId, List<Long> envIdList) {
+        List<DeployAppEnvironmentVo> cmdbEnvList = deployAppConfigMapper.getCmdbAppConfigEnvListIncludeDBCSchemaListAndAutoCfgKeyListByAppSystemIdAndAppModuleIdAndEnvId(appSystemId, appModuleId, envIdList);
+        List<DeployAppEnvironmentVo> configEnvList = deployAppConfigMapper.getConfigAppConfigEnvListIncludeDBCSchemaListAndAutoCfgKeyListByAppSystemIdAndAppModuleIdAndEnvId(appSystemId, appModuleId, envIdList);
+        return mergeDeployAppEnvironmentConfigList(cmdbEnvList, configEnvList);
+    }
+
+    @Override
     public int getAppConfigEnvDatabaseCount(DeployResourceSearchVo searchVo) {
         IResourceCrossoverMapper resourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
         String enable = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_DATA_COMPARISON_MODE_ENABLE);
@@ -610,6 +618,89 @@ public class DeployAppConfigServiceImpl implements DeployAppConfigService {
             }
         }
         return new ArrayList<>(envMap.values());
+    }
+
+    @SafeVarargs
+    private final List<DeployAppEnvironmentVo> mergeDeployAppEnvironmentConfigList(List<DeployAppEnvironmentVo>... envLists) {
+        Map<Long, DeployAppEnvironmentVo> envMap = new LinkedHashMap<>();
+        for (List<DeployAppEnvironmentVo> envList : envLists) {
+            if (CollectionUtils.isEmpty(envList)) {
+                continue;
+            }
+            for (DeployAppEnvironmentVo envVo : envList) {
+                if (envVo == null || envVo.getId() == null) {
+                    continue;
+                }
+                DeployAppEnvironmentVo targetEnv = envMap.computeIfAbsent(envVo.getId(), key -> {
+                    DeployAppEnvironmentVo newEnv = new DeployAppEnvironmentVo();
+                    newEnv.setId(envVo.getId());
+                    newEnv.setName(envVo.getName());
+                    newEnv.setDbSchemaList(new ArrayList<>());
+                    newEnv.setAutoCfgKeyValueList(new ArrayList<>());
+                    return newEnv;
+                });
+                mergeDbSchemaList(targetEnv, envVo.getDbSchemaList());
+                mergeAutoCfgKeyValueList(targetEnv, envVo.getAutoCfgKeyValueList());
+            }
+        }
+        return new ArrayList<>(envMap.values());
+    }
+
+    private void mergeDbSchemaList(DeployAppEnvironmentVo targetEnv, List<DeployAppConfigEnvDBConfigVo> dbSchemaList) {
+        if (CollectionUtils.isEmpty(dbSchemaList)) {
+            return;
+        }
+        Set<String> dbSchemaKeySet = new HashSet<>();
+        if (CollectionUtils.isNotEmpty(targetEnv.getDbSchemaList())) {
+            for (DeployAppConfigEnvDBConfigVo dbConfigVo : targetEnv.getDbSchemaList()) {
+                if (dbConfigVo != null && StringUtils.isNotBlank(dbConfigVo.getDbSchema())) {
+                    dbSchemaKeySet.add(dbConfigVo.getDbSchema() + "|" + safeString(dbConfigVo.getConfigStr()));
+                }
+            }
+        }
+        for (DeployAppConfigEnvDBConfigVo dbConfigVo : dbSchemaList) {
+            if (dbConfigVo == null || StringUtils.isBlank(dbConfigVo.getDbSchema())) {
+                continue;
+            }
+            String dbSchemaKey = dbConfigVo.getDbSchema() + "|" + safeString(dbConfigVo.getConfigStr());
+            if (dbSchemaKeySet.add(dbSchemaKey)) {
+                targetEnv.getDbSchemaList().add(dbConfigVo);
+            }
+        }
+    }
+
+    private void mergeAutoCfgKeyValueList(DeployAppEnvironmentVo targetEnv, List<DeployAppEnvAutoConfigKeyValueVo> autoCfgKeyValueList) {
+        if (CollectionUtils.isEmpty(autoCfgKeyValueList)) {
+            return;
+        }
+        Set<String> autoCfgKeySet = new HashSet<>();
+        if (CollectionUtils.isNotEmpty(targetEnv.getAutoCfgKeyValueList())) {
+            for (DeployAppEnvAutoConfigKeyValueVo keyValueVo : targetEnv.getAutoCfgKeyValueList()) {
+                if (keyValueVo != null && StringUtils.isNotBlank(keyValueVo.getKey())) {
+                    autoCfgKeySet.add(buildAutoCfgKey(keyValueVo));
+                }
+            }
+        }
+        for (DeployAppEnvAutoConfigKeyValueVo keyValueVo : autoCfgKeyValueList) {
+            if (keyValueVo == null || StringUtils.isBlank(keyValueVo.getKey())) {
+                continue;
+            }
+            String autoCfgKey = buildAutoCfgKey(keyValueVo);
+            if (autoCfgKeySet.add(autoCfgKey)) {
+                targetEnv.getAutoCfgKeyValueList().add(keyValueVo);
+            }
+        }
+    }
+
+    private String buildAutoCfgKey(DeployAppEnvAutoConfigKeyValueVo keyValueVo) {
+        return safeString(keyValueVo.getKey()) + "|"
+                + safeString(keyValueVo.getType()) + "|"
+                + safeString(keyValueVo.getValue()) + "|"
+                + Objects.toString(keyValueVo.getIsEmpty(), StringUtils.EMPTY);
+    }
+
+    private String safeString(String value) {
+        return value == null ? StringUtils.EMPTY : value;
     }
 
     /**
