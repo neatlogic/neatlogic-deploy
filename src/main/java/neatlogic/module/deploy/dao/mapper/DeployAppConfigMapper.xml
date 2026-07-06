@@ -705,22 +705,23 @@
 
     <sql id="searchAppModuleEnvConfigInstance">
         FROM @{DATA_SCHEMA}.`scence_appinstance_env_appmodule_appsystem` a
+        <if test="isAutoConfig != null">
+            LEFT JOIN `deploy_app_env_auto_config` daeac
+            ON daeac.`app_system_id` = #{appSystemId}
+            AND daeac.`app_module_id` = #{appModuleId}
+            AND daeac.`env_id` = #{envId}
+            AND daeac.`instance_id` = a.`id`
+        </if>
         WHERE a.`app_system_id` = #{appSystemId}
         AND a.`app_module_id` = #{appModuleId}
         AND a.`env_id` = #{envId}
         <if test="isAutoConfig != null">
-            AND a.`id`
             <if test="isAutoConfig == 1">
-                in
+                AND daeac.`instance_id` IS NOT NULL
             </if>
             <if test="isAutoConfig == 0">
-                not in
+                AND daeac.`instance_id` IS NULL
             </if>
-            (select `instance_id`
-            from `deploy_app_env_auto_config`
-            WHERE `app_system_id` = #{appSystemId}
-            and `app_module_id` = #{appModuleId}
-            and `env_id` = #{envId})
         </if>
         <if test="keyword != null and keyword != ''">
             AND (a.`name` LIKE concat('%', #{keyword}, '%') or a.`ip` LIKE concat('%', #{keyword}, '%') or a.`port` LIKE concat('%', #{keyword},'%'))
@@ -728,12 +729,12 @@
     </sql>
 
     <select id="getAppModuleEnvAutoConfigInstanceIdCount" parameterType="neatlogic.framework.deploy.dto.app.DeployAppEnvAutoConfigVo" resultType="int" useCache="false">
-        SELECT count(a.id)
+        SELECT count(DISTINCT a.id)
         <include refid="searchAppModuleEnvConfigInstance"></include>
     </select>
 
     <select id="getAppModuleEnvAutoConfigInstanceIdList" parameterType="neatlogic.framework.deploy.dto.app.DeployAppEnvAutoConfigVo" resultType="java.lang.Long" useCache="false">
-        SELECT a.id
+        SELECT DISTINCT a.id
         <include refid="searchAppModuleEnvConfigInstance"></include>
         ORDER BY a.id DESC
         LIMIT #{startNum}, #{pageSize}
