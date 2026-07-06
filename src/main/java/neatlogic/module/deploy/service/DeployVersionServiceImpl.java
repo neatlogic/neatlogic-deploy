@@ -32,9 +32,13 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -143,6 +147,17 @@ public class DeployVersionServiceImpl implements DeployVersionService {
     }
 
     @Override
+    public List<DeployVersionVo> getDeployVersionIncludeEnvListByVersionIdList(List<Long> idList) {
+        if (idList == null || idList.isEmpty()) {
+            return new ArrayList<>();
+        }
+        Map<Long, DeployVersionVo> versionMap = new LinkedHashMap<>();
+        mergeDeployVersionEnvList(versionMap, deployVersionMapper.getCmdbDeployVersionIncludeEnvListByVersionIdList(idList));
+        mergeDeployVersionEnvList(versionMap, deployVersionMapper.getConfigDeployVersionIncludeEnvListByVersionIdList(idList));
+        return new ArrayList<>(versionMap.values());
+    }
+
+    @Override
     public void checkHomeHasBeenLocked(String runnerUrl, String path) {
         IGlobalLockHandler handler = GlobalLockHandlerFactory.getHandler(JobSourceType.DEPLOY_VERSION_RESOURCE.getValue());
         JSONObject lockJson = new JSONObject();
@@ -192,6 +207,30 @@ public class DeployVersionServiceImpl implements DeployVersionService {
             }
         }
         return url;
+    }
+
+    private void mergeDeployVersionEnvList(Map<Long, DeployVersionVo> versionMap, List<DeployVersionVo> versionList) {
+        if (versionList == null || versionList.isEmpty()) {
+            return;
+        }
+        for (DeployVersionVo versionVo : versionList) {
+            List<DeployVersionEnvVo> sourceEnvList = versionVo.getEnvList();
+            DeployVersionVo targetVersion = versionMap.get(versionVo.getId());
+            if (targetVersion == null) {
+                targetVersion = versionVo;
+                targetVersion.setEnvList(new ArrayList<>());
+                versionMap.put(targetVersion.getId(), targetVersion);
+            }
+            if (sourceEnvList == null || sourceEnvList.isEmpty()) {
+                continue;
+            }
+            Set<Long> envIdSet = targetVersion.getEnvList().stream().map(DeployVersionEnvVo::getEnvId).collect(Collectors.toSet());
+            for (DeployVersionEnvVo envVo : sourceEnvList) {
+                if (envIdSet.add(envVo.getEnvId())) {
+                    targetVersion.getEnvList().add(envVo);
+                }
+            }
+        }
     }
 
     @Override
