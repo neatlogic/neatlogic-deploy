@@ -1134,18 +1134,16 @@
 
     <select id="getDeployHasNotConfigAppModuleListByAppSystemIdAndAppModuleId"
             resultType="neatlogic.framework.deploy.dto.app.DeployAppModuleVo" useCache="false">
-        SELECT saa.app_module_id        AS id,
+        SELECT DISTINCT
+               saa.app_module_id        AS id,
                saa.app_module_name      AS NAME,
                saa.app_module_abbr_name AS abbrName
         FROM @{DATA_SCHEMA}.scence_appsystem_appmodule saa
-        WHERE saa.app_module_id NOT IN
-              (SELECT dac.app_module_id
-               FROM @{DATA_SCHEMA}.scence_appsystem_appmodule sa
-                        JOIN deploy_app_config dac ON dac.app_system_id = sa.id
-                   AND dac.app_module_id = sa.app_module_id
-               WHERE sa.id = #{appSystemId})
-          AND saa.id = #{appSystemId}
+                 LEFT JOIN deploy_app_config dac ON dac.app_system_id = saa.id
+            AND dac.app_module_id = saa.app_module_id
+        WHERE saa.id = #{appSystemId}
           AND saa.app_module_id != #{appModuleId}
+          AND dac.app_module_id IS NULL
     </select>
 
     <select id="getCmdbDeployHasNotConfigAppEnvListByAppSystemIdAndAppModuleIdAndEnvId"
