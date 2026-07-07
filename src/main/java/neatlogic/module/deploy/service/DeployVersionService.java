@@ -69,6 +69,8 @@ public interface DeployVersionService {
      */
     String getWorkspaceResourceFullPath(Long appSystemId, Long appModuleId, String customPath);
 
+    List<DeployVersionVo> getDeployVersionIncludeEnvListByVersionIdList(List<Long> idList);
+
     /**
      * 对HOME目录进行打包下载时，HOME目录将被锁定，此时除查看文件外，不允许对HOME目录下的文件做任何操作
      *

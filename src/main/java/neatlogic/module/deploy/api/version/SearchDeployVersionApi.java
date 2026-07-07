@@ -12,6 +12,7 @@ import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.framework.util.TableResultUtil;
 import neatlogic.module.deploy.dao.mapper.DeployVersionMapper;
+import neatlogic.module.deploy.service.DeployVersionService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.springframework.stereotype.Service;
@@ -31,6 +32,9 @@ public class SearchDeployVersionApi extends PrivateApiComponentBase {
 
     @Resource
     DeployVersionMapper deployVersionMapper;
+
+    @Resource
+    DeployVersionService deployVersionService;
 
     @Override
     public String getName() {
@@ -73,7 +77,7 @@ public class SearchDeployVersionApi extends PrivateApiComponentBase {
             List<Long> idList = deployVersionMapper.getDeployVersionIdList(paramVersionVo);
             if (CollectionUtils.isNotEmpty(idList)) {
                 returnVersionList = deployVersionMapper.getDeployVersionByIdList(idList);
-                List<DeployVersionVo> versionVoListIncludeEnvList = deployVersionMapper.getDeployVersionIncludeEnvListByVersionIdList(idList);
+                List<DeployVersionVo> versionVoListIncludeEnvList = deployVersionService.getDeployVersionIncludeEnvListByVersionIdList(idList);
                 Map<Long, List<DeployVersionEnvVo>> allEnvListMap = versionVoListIncludeEnvList.stream().collect(Collectors.toMap(DeployVersionVo::getId, DeployVersionVo::getEnvList));
                 Map<Long, Map<String, Long>> versionId2Map = new HashMap<>();
                 List<Map<String, Object>> versionHighestSeverityCveCountList = deployVersionMapper.getVersionHighestSeverityCveCountListByVersionIdListGroupByVersionIdAndHighestSeverity(idList);

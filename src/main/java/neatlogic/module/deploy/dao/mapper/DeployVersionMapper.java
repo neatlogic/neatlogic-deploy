@@ -33,7 +33,9 @@ public interface DeployVersionMapper {
 
     List<DeployVersionVo> getDeployVersionByIdList(@Param("idList") List<Long> idList);
 
-    List<DeployVersionVo> getDeployVersionIncludeEnvListByVersionIdList(List<Long> idList);
+    List<DeployVersionVo> getCmdbDeployVersionIncludeEnvListByVersionIdList(List<Long> idList);
+
+    List<DeployVersionVo> getConfigDeployVersionIncludeEnvListByVersionIdList(List<Long> idList);
 
     List<DeployVersionBuildNoVo> searchDeployVersionBuildNoList(DeployVersionBuildNoVo versionBuildNoVo);
 

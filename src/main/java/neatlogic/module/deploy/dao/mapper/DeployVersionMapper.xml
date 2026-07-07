@@ -234,9 +234,9 @@
         ORDER BY dv.fcd DESC, dvb.compile_start_time DESC,dvb.build_no DESC
     </select>
 
-    <select id="getDeployVersionIncludeEnvListByVersionIdList" parameterType="java.lang.Long"
+    <select id="getCmdbDeployVersionIncludeEnvListByVersionIdList" parameterType="java.util.List"
             resultMap="deployVersionMap">
-        (SELECT dv.id,
+        SELECT dv.id,
         dv.version,
         a.env_id AS envId,
         a.env_name AS envName,
@@ -250,9 +250,10 @@
         <foreach collection="list" item="id" separator="," open="(" close=")">
             #{id}
         </foreach>
-        )
-        UNION
-        (
+    </select>
+
+    <select id="getConfigDeployVersionIncludeEnvListByVersionIdList" parameterType="java.util.List"
+            resultMap="deployVersionMap">
         SELECT dv.id,
         dv.version,
         cga.id AS envId,
@@ -266,7 +267,6 @@
         <foreach collection="list" item="id" separator="," open="(" close=")">
             #{id}
         </foreach>
-        )
     </select>
 
     <select id="getJobIdByDeployVersionIdAndBuildNo" resultType="java.lang.Long">
