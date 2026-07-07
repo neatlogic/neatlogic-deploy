@@ -24,6 +24,7 @@ import neatlogic.framework.exception.type.ParamNotExistsException;
 import neatlogic.framework.globallock.core.GlobalLockHandlerFactory;
 import neatlogic.framework.globallock.core.IGlobalLockHandler;
 import neatlogic.framework.integration.authentication.enums.AuthenticateType;
+import neatlogic.framework.util.FileSafeUtil;
 import neatlogic.framework.util.HttpRequestUtil;
 import neatlogic.module.deploy.dao.mapper.DeployAppConfigMapper;
 import neatlogic.module.deploy.dao.mapper.DeployVersionMapper;
@@ -92,7 +93,7 @@ public class DeployVersionServiceImpl implements DeployVersionService {
 
     @Override
     public String getVersionResourceFullPath(DeployVersionVo version, DeployResourceType resourceType, Integer buildNo, String envName, String customPath) {
-        return getVersionResourceHomePath(version, resourceType, buildNo, envName) + (customPath.startsWith("/") ? customPath : "/" + customPath);
+        return appendSafeResourcePath(getVersionResourceHomePath(version, resourceType, buildNo, envName), customPath);
     }
 
     @Override
@@ -140,10 +141,15 @@ public class DeployVersionServiceImpl implements DeployVersionService {
     @Override
     public String getWorkspaceResourceFullPath(Long appSystemId, Long appModuleId, String customPath) {
         String path = appSystemId + "/" + appModuleId + "/" + DeployResourceType.WORKSPACE.getDirectoryName();
-        if (StringUtils.isNotBlank(customPath)) {
-            path += (customPath.startsWith("/") ? customPath : "/" + customPath);
+        return appendSafeResourcePath(path, customPath);
+    }
+
+    private String appendSafeResourcePath(String homePath, String customPath) {
+        String safePath = FileSafeUtil.getSafeRelativePath(customPath);
+        if (StringUtils.isBlank(safePath)) {
+            return homePath;
         }
-        return path;
+        return homePath + "/" + safePath;
     }
 
     @Override

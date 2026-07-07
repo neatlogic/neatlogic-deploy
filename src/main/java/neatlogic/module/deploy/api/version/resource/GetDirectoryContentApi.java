@@ -13,6 +13,7 @@ import neatlogic.framework.integration.authentication.enums.AuthenticateType;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
+import neatlogic.framework.util.FileSafeUtil;
 import neatlogic.framework.util.HttpRequestUtil;
 import neatlogic.module.deploy.dao.mapper.DeployVersionMapper;
 import neatlogic.module.deploy.service.DeployVersionService;
@@ -78,7 +79,7 @@ public class GetDirectoryContentApi extends PrivateApiComponentBase {
         Long id = paramObj.getLong("id");
         Integer buildNo = paramObj.getInteger("buildNo");
         Long envId = paramObj.getLong("envId");
-        String path = paramObj.getString("path");
+        String path = getSafeDirectoryPath(paramObj.getString("path"));
         DeployResourceType resourceType = DeployResourceType.getDeployResourceType(paramObj.getString("resourceType"));
         if (resourceType == null) {
             throw new DeployVersionResourceTypeNotFoundException(paramObj.getString("resourceType"));
@@ -113,5 +114,15 @@ public class GetDirectoryContentApi extends PrivateApiComponentBase {
             }
         }
         return resultJson.getJSONArray("Return");
+    }
+
+    private String getSafeDirectoryPath(String path) {
+        try {
+            String safePath = FileSafeUtil.getSafeRelativePath(path);
+            // 目录列表同样先在deploy侧限制为安全相对路径，再交给runner做真实路径边界校验。
+            return StringUtils.isBlank(safePath) ? "/" : "/" + safePath;
+        } catch (IllegalArgumentException ex) {
+            throw new GetDirectoryFailedException("文件路径不合法");
+        }
     }
 }

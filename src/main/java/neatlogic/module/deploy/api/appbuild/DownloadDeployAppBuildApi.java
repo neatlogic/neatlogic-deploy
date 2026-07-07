@@ -15,6 +15,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 
 package neatlogic.module.deploy.api.appbuild;
 
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.asynchronization.threadlocal.TenantContext;
 import neatlogic.framework.asynchronization.threadlocal.UserContext;
@@ -49,6 +50,7 @@ import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.binarystream.PrivateBinaryStreamApiComponentBase;
 import neatlogic.framework.store.mysql.DatasourceManager;
 import neatlogic.framework.store.mysql.NeatLogicBasicDataSource;
+import neatlogic.framework.util.FileSafeUtil;
 import neatlogic.framework.util.HttpRequestUtil;
 import neatlogic.module.deploy.dao.mapper.DeployAppConfigMapper;
 import neatlogic.module.deploy.dao.mapper.DeployVersionMapper;
@@ -111,6 +113,7 @@ public class DownloadDeployAppBuildApi extends PrivateBinaryStreamApiComponentBa
     @Description(desc = "nmdaa.downloaddeployappbuildapi.getname")
     @Override
     public Object myDoService(JSONObject jsonObj, HttpServletRequest request, HttpServletResponse response) throws Exception {
+        validateAppBuildPathParam(jsonObj);
         String proxyTenantJdbcUrl = jsonObj.getString("proxyTenantJdbcUrl");
         //有jdbcUrl 说明是proxy过来的
         if (StringUtils.isNotBlank(proxyTenantJdbcUrl)) {
@@ -134,6 +137,37 @@ public class DownloadDeployAppBuildApi extends PrivateBinaryStreamApiComponentBa
             }
         }
         return null;
+    }
+
+    private void validateAppBuildPathParam(JSONObject jsonObj) {
+        String version = jsonObj.getString("version");
+        if (!StringUtils.equals(version, getSafeAppBuildRelativePath(version, false))) {
+            throw new ApiRuntimeException("文件路径不合法");
+        }
+        JSONArray subDirs = jsonObj.getJSONArray("subDirs");
+        if (CollectionUtils.isNotEmpty(subDirs)) {
+            JSONArray safeSubDirs = new JSONArray();
+            for (int i = 0; i < subDirs.size(); i++) {
+                safeSubDirs.add(getSafeAppBuildRelativePath(subDirs.getString(i), true));
+            }
+            jsonObj.put("subDirs", safeSubDirs);
+        }
+    }
+
+    private String getSafeAppBuildRelativePath(String path, boolean allowCurrentDirectory) {
+        String normalizedPath = StringUtils.defaultString(path).replace("\\", "/");
+        if (normalizedPath.startsWith("/") || (!allowCurrentDirectory && normalizedPath.contains("/"))) {
+            throw new ApiRuntimeException("文件路径不合法");
+        }
+        String safePath = FileSafeUtil.getSafeRelativePath(path);
+        if (StringUtils.isBlank(safePath)) {
+            if (allowCurrentDirectory) {
+                return ".";
+            }
+            throw new ApiRuntimeException("文件路径不合法");
+        }
+        // appbuild的version和subDirs会转发给runner，先保持为安全相对路径，避免旧runner被../带出制品目录。
+        return safePath;
     }
 
     /**

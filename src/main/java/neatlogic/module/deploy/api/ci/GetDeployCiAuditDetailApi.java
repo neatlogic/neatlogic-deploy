@@ -59,10 +59,10 @@ public class GetDeployCiAuditDetailApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         String filePath = paramObj.getString("filePath");
-        if (!filePath.contains("deploycicallbackaudit")) {
+        AuditFilePathVo auditFilePathVo = new AuditFilePathVo(filePath);
+        if (!auditFilePathVo.isInHomeDirectory("deploycicallbackaudit")) {
             throw new FilePathIllegalException(filePath);
         }
-        AuditFilePathVo auditFilePathVo = new AuditFilePathVo(filePath);
         IFileCrossoverService fileCrossoverService = CrossoverServiceFactory.getApi(IFileCrossoverService.class);
         if (Objects.equals(auditFilePathVo.getServerId(), Config.SCHEDULE_SERVER_ID)) {
             return fileCrossoverService.readLocalFile(auditFilePathVo.getPath(), auditFilePathVo.getStartIndex(), auditFilePathVo.getOffset());
