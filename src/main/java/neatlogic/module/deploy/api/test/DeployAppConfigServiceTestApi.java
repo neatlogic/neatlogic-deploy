@@ -8,6 +8,7 @@ import neatlogic.framework.cmdb.crossover.IResourceCrossoverMapper;
 import neatlogic.framework.cmdb.dto.resourcecenter.ResourceVo;
 import neatlogic.framework.crossover.CrossoverServiceFactory;
 import neatlogic.framework.deploy.auth.DEPLOY_BASE;
+import neatlogic.framework.deploy.dto.app.DeployAppEnvironmentVo;
 import neatlogic.framework.deploy.dto.app.DeployResourceSearchVo;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
@@ -69,6 +70,7 @@ public class DeployAppConfigServiceTestApi extends PrivateApiComponentBase {
         getDatabaseByIdTest();
         getAppConfigEnvDatabaseCountTest();
         getAppConfigEnvDatabaseResourceIdListTest();
+        getCmdbDeployAppEnvListByAppSystemIdAndModuleIdListTest();
         return null;
     }
 
@@ -93,6 +95,69 @@ public class DeployAppConfigServiceTestApi extends PrivateApiComponentBase {
                         itemObj.put("count", count);
                         itemObj.put("id", id);
                         itemObj.put("resourceVo", resourceVo);
+                        logger.info(itemObj.toJSONString());
+                    }
+                }
+            }
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+        }
+    }
+
+    private void getCmdbDeployAppEnvListByAppSystemIdAndModuleIdListTest() {
+        getCmdbDeployAppEnvListByAppSystemIdAndModuleIdListTestForAppSystemId();
+        getCmdbDeployAppEnvListByAppSystemIdAndModuleIdListTestForAppModuleIdList();
+    }
+
+    private void getCmdbDeployAppEnvListByAppSystemIdAndModuleIdListTestForAppSystemId() {
+        IResourceCrossoverMapper resourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
+        try {
+            String sql = deployResourceBuildSqlService.buildGetCmdbDeployAppEnvListByAppSystemIdAndModuleIdListSql(-1L, List.of(-1L));
+            Column groupedColumn = new Column("cientity_APP.id");
+            String groupBySql = buildGroupBySql(sql, groupedColumn);
+            List<Map<String, Object>> mapList = resourceCrossoverMapper.getMapListBySql(groupBySql);
+            for (Map<String, Object> rowMap : mapList) {
+                Object fieldValue = rowMap.get("fieldValue");
+                if (fieldValue != null) {
+                    Long appSystemId = ((Number) fieldValue).longValue();
+                    Long count = ((Number) rowMap.get("count")).longValue();
+                    List<DeployAppEnvironmentVo> envList = deployAppConfigService.getCmdbDeployAppEnvListByAppSystemIdAndModuleIdList(appSystemId, null);
+//                    System.out.println("envList.size() = " + envList.size() + ", count = " + count);
+                    if (envList == null || envList.isEmpty()) {
+                        JSONObject itemObj = new JSONObject(true);
+                        itemObj.put("envList", envList);
+                        itemObj.put("count", count);
+                        itemObj.put("appSystemId", appSystemId);
+                        itemObj.put("groupedColumn", groupedColumn.toString());
+                        logger.info(itemObj.toJSONString());
+                    }
+                }
+            }
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+        }
+    }
+
+    private void getCmdbDeployAppEnvListByAppSystemIdAndModuleIdListTestForAppModuleIdList() {
+        IResourceCrossoverMapper resourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
+        try {
+            String sql = deployResourceBuildSqlService.buildGetCmdbDeployAppEnvListByAppSystemIdAndModuleIdListSql(-1L, List.of(-1L));
+            Column groupedColumn = new Column("cientity_APPComponent.id");
+            String groupBySql = buildGroupBySql(sql, groupedColumn);
+            List<Map<String, Object>> mapList = resourceCrossoverMapper.getMapListBySql(groupBySql);
+            for (Map<String, Object> rowMap : mapList) {
+                Object fieldValue = rowMap.get("fieldValue");
+                if (fieldValue != null) {
+                    Long appModuleId = ((Number) fieldValue).longValue();
+                    Long count = ((Number) rowMap.get("count")).longValue();
+                    List<DeployAppEnvironmentVo> envList = deployAppConfigService.getCmdbDeployAppEnvListByAppSystemIdAndModuleIdList(null, List.of(appModuleId));
+//                    System.out.println("envList.size() = " + envList.size() + ", count = " + count);
+                    if (envList == null || envList.isEmpty()) {
+                        JSONObject itemObj = new JSONObject(true);
+                        itemObj.put("envList", envList);
+                        itemObj.put("count", count);
+                        itemObj.put("appModuleIdList", List.of(appModuleId));
+                        itemObj.put("groupedColumn", groupedColumn.toString());
                         logger.info(itemObj.toJSONString());
                     }
                 }
@@ -389,6 +454,12 @@ public class DeployAppConfigServiceTestApi extends PrivateApiComponentBase {
                             return parenthesis;
                         }
                     }
+                }
+                if (leftExpression instanceof AndExpression) {
+                    return getWhereFirstExpiredExpression(leftExpression);
+                }
+                if (rightExpression instanceof AndExpression) {
+                    return getWhereFirstExpiredExpression(rightExpression);
                 }
             } else if (where instanceof OrExpression orExpr) {
                 Expression leftExpression = orExpr.getLeftExpression();
