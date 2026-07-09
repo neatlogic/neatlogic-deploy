@@ -12,9 +12,13 @@ package neatlogic.module.deploy.service;
 
 import neatlogic.framework.deploy.dto.app.DeployResourceSearchVo;
 
+import java.util.List;
+
 public interface DeployResourceBuildSqlService {
 
     String buildGetDatabaseByIdSql(Long id);
+
+    String buildGetCmdbDeployAppEnvListByAppSystemIdAndModuleIdListSql(Long appSystemId, List<Long> appModuleIdList);
 
     String buildGetAppConfigEnvDatabaseCountSql(DeployResourceSearchVo searchVo);
 

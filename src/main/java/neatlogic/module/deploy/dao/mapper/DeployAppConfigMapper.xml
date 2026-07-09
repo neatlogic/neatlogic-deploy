@@ -244,6 +244,10 @@
         </collection>
     </resultMap>
 
+    <select id="getDeployAppEnvListBySql" parameterType="java.lang.String" resultMap="appEnvMap" useCache="false">
+        ${sql}
+    </select>
+
     <select id="getCmdbDeployAppEnvListByAppSystemIdAndModuleIdList"
             resultMap="appEnvMap" useCache="false">
         SELECT
