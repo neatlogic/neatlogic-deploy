@@ -376,7 +376,7 @@
         </collection>
     </resultMap>
 
-    <select id="getDeployAppModuleEnvList2BySql" parameterType="java.lang.String" resultMap="appModuleIncludeEnvIdListMap" useCache="false">
+    <select id="getDeployAppModuleEnvListIncludeEnvIdListBySql" parameterType="java.lang.String" resultMap="appModuleIncludeEnvIdListMap" useCache="false">
         ${sql}
     </select>
 

@@ -461,7 +461,7 @@ public class DeployAppConfigServiceImpl implements DeployAppConfigService {
         if (Objects.equals(mode, JSQLPARSER_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
             String sql = deployResourceBuildSqlService.buildGetCmdbDeployAppModuleEnvListByAppSystemIdAndAppModuleIdListSql(appSystemId, appModuleIdList);
             if (StringUtils.isNotBlank(sql)) {
-                newModuleEnvList = deployAppConfigMapper.getDeployAppModuleEnvList2BySql(sql);
+                newModuleEnvList = deployAppConfigMapper.getDeployAppModuleEnvListIncludeEnvIdListBySql(sql);
             }
         }
         if (Objects.equals(mode, MYBATIS_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
