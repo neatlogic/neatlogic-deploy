@@ -134,6 +134,44 @@ public class DeployResourceBuildSqlServiceImpl implements DeployResourceBuildSql
     }
 
     @Override
+    public String buildGetCmdbDeployAppModuleEnvListByAppSystemIdAndAppModuleIdListSql(Long appSystemId, List<Long> appModuleIdList) {
+        IResourceEntityCrossoverMapper resourceEntityCrossoverMapper = CrossoverServiceFactory.getApi(IResourceEntityCrossoverMapper.class);
+        IResourceBuildSqlCrossoverService resourceBuildSqlCrossoverService = CrossoverServiceFactory.getApi(IResourceBuildSqlCrossoverService.class);
+        try {
+            ResourceEntityVo resourceEntityVo = resourceEntityCrossoverMapper.getResourceEntityByName("scence_appinstance_env_appmodule_appsystem");
+            ResourceEntityConfigVo config = resourceBuildSqlCrossoverService.getResourceEntityConfigVo(resourceEntityVo);
+            List<String> selectItemFieldNameList = new ArrayList<>();
+            List<String> filterItemFieldNameList = new ArrayList<>();
+            filterItemFieldNameList.add("env_id");
+            filterItemFieldNameList.add("app_module_id");
+            filterItemFieldNameList.add("app_system_id");
+            config.setSelectItemFieldNameList(selectItemFieldNameList);
+            config.setFilterItemFieldNameList(filterItemFieldNameList);
+            Map<String, Column> fieldName2ColumnMap = new HashMap<>();
+            PlainSelect plainSelect = resourceBuildSqlCrossoverService.getPlainSelect(config, fieldName2ColumnMap);
+            $sql.addSelectColumn(plainSelect, fieldName2ColumnMap.get("env_id").toString(), "envId");
+            $sql.addSelectColumn(plainSelect, fieldName2ColumnMap.get("app_module_id").toString(), "appModuleId");
+            $sql.addWhereExpression(plainSelect, $sql.exp(fieldName2ColumnMap.get("env_id").toString(), "is not null"));
+            if (appSystemId != null) {
+                $sql.addWhereExpression(plainSelect, $sql.exp(fieldName2ColumnMap.get("app_system_id").toString(), "=", appSystemId));
+            } else {
+                $sql.addWhereExpression(plainSelect, $sql.exp(fieldName2ColumnMap.get("app_system_id").toString(), "is not null"));
+//                $sql.addWhereExpression(plainSelect, $sql.exp(1, "=", 0));
+            }
+            if (CollectionUtils.isNotEmpty(appModuleIdList)) {
+                $sql.addWhereExpression(plainSelect, $sql.exp(fieldName2ColumnMap.get("app_module_id").toString(), "in", appModuleIdList));
+            } else {
+                $sql.addWhereExpression(plainSelect, $sql.exp(fieldName2ColumnMap.get("app_module_id").toString(), "is not null"));
+//                $sql.addWhereExpression(plainSelect, $sql.exp(1, "=", 0));
+            }
+            return plainSelect.toString();
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+        }
+        return null;
+    }
+
+    @Override
     public String buildGetAppConfigEnvDatabaseCountSql(DeployResourceSearchVo searchVo) {
         IResourceEntityCrossoverMapper resourceEntityCrossoverMapper = CrossoverServiceFactory.getApi(IResourceEntityCrossoverMapper.class);
         IResourceBuildSqlCrossoverService resourceBuildSqlCrossoverService = CrossoverServiceFactory.getApi(IResourceBuildSqlCrossoverService.class);
