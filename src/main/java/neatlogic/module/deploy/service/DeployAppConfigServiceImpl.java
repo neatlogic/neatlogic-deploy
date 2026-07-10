@@ -453,6 +453,32 @@ public class DeployAppConfigServiceImpl implements DeployAppConfigService {
     }
 
     @Override
+    public List<DeployAppModuleEnvVo> getCmdbDeployAppModuleEnvListByAppSystemIdAndAppModuleIdList(Long appSystemId, List<Long> appModuleIdList) {
+        String enable = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_DATA_COMPARISON_MODE_ENABLE);
+        String mode = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_SQL_MODE);
+        List<DeployAppModuleEnvVo> newModuleEnvList = new ArrayList<>();
+        List<DeployAppModuleEnvVo> oldModuleEnvList = new ArrayList<>();
+        if (Objects.equals(mode, JSQLPARSER_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
+            String sql = deployResourceBuildSqlService.buildGetCmdbDeployAppModuleEnvListByAppSystemIdAndAppModuleIdListSql(appSystemId, appModuleIdList);
+            if (StringUtils.isNotBlank(sql)) {
+                newModuleEnvList = deployAppConfigMapper.getDeployAppModuleEnvListIncludeEnvIdListBySql(sql);
+            }
+        }
+        if (Objects.equals(mode, MYBATIS_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
+            oldModuleEnvList = deployAppConfigMapper.getCmdbDeployAppModuleEnvListByAppSystemIdAndAppModuleIdList(appSystemId, appModuleIdList);
+        }
+        if (Objects.equals(enable, COMPARISON_ENABLED)) {
+            checkDeployAppModuleEnvListIsEquals(newModuleEnvList, oldModuleEnvList);
+        }
+        if (Objects.equals(mode, JSQLPARSER_MODE)) {
+            return newModuleEnvList;
+        } else if (Objects.equals(mode, MYBATIS_MODE)) {
+            return oldModuleEnvList;
+        }
+        return new ArrayList<>();
+    }
+
+    @Override
     public List<DeployAppModuleEnvVo> getDeployAppModuleEnvListByAppSystemIdAndAppModuleIdList(Long appSystemId, List<Long> appModuleIdList) {
         List<DeployAppModuleEnvVo> cmdbModuleEnvList = deployAppConfigMapper.getCmdbDeployAppModuleEnvListByAppSystemIdAndAppModuleIdList(appSystemId, appModuleIdList);
         List<DeployAppModuleEnvVo> configModuleEnvList = deployAppConfigMapper.getConfigDeployAppModuleEnvListByAppSystemIdAndAppModuleIdList(appSystemId, appModuleIdList);
