@@ -19,6 +19,7 @@ import neatlogic.module.deploy.service.DeployResourceBuildSqlService;
 import net.sf.jsqlparser.expression.*;
 import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
 import net.sf.jsqlparser.expression.operators.conditional.OrExpression;
+import net.sf.jsqlparser.expression.operators.relational.EqualsTo;
 import net.sf.jsqlparser.expression.operators.relational.ExistsExpression;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.expression.operators.relational.IsNullExpression;
@@ -286,7 +287,7 @@ public class DeployAppConfigServiceTestApi extends PrivateApiComponentBase {
                     Long appSystemId = null;
                     String appSystemSql = deployResourceBuildSqlService.buildGetCmdbDeployAppModuleEnvListByAppSystemIdAndAppModuleIdListSql(null, List.of(appModuleId));
 //                    System.out.println("appSystemSql = " + appSystemSql);
-                    String groupByAppSystemSql = buildGroupBySql(appSystemSql, new Column("cientity_APP.id"));
+                    String groupByAppSystemSql = buildGroupBySql(appSystemSql, new Column("cientity_APP.id"), true);
 //                    System.out.println("groupByAppSystemSql = " + groupByAppSystemSql);
                     List<Map<String, Object>> appSystemMapList = resourceCrossoverMapper.getMapListBySql(groupByAppSystemSql);
 //                    System.out.println("appSystemMapList = " + JSONObject.toJSONString(appSystemMapList));
@@ -562,6 +563,10 @@ public class DeployAppConfigServiceTestApi extends PrivateApiComponentBase {
     }
 
     private String buildGroupBySql(String sql, Column groupByColumn) throws Exception {
+        return buildGroupBySql(sql, groupByColumn, false);
+    }
+
+    private String buildGroupBySql(String sql, Column groupByColumn, boolean isRetainOtherConditions) throws Exception {
         Statement statement = CCJSqlParserUtil.parse(sql);
         PlainSelect plainSelect = (PlainSelect) ((Select) statement).getSelectBody();
 
@@ -572,8 +577,13 @@ public class DeployAppConfigServiceTestApi extends PrivateApiComponentBase {
         function.setParameters(new ExpressionList(new LongValue(1)));
         selectItemList.add(new SelectExpressionItem(function).withAlias(new Alias("count")));
         plainSelect.setSelectItems(selectItemList);
-        Parenthesis expiredExpression = getWhereFirstExpiredExpression(plainSelect.getWhere());
-        plainSelect.setWhere(new AndExpression(expiredExpression, new IsNullExpression().withLeftExpression(groupByColumn).withNot(true)));
+        if (isRetainOtherConditions) {
+            Expression otherConditionExpression = resetWhereGroupByColumnToTrue(plainSelect.getWhere(), groupByColumn);
+            plainSelect.setWhere(new AndExpression(otherConditionExpression, new IsNullExpression().withLeftExpression(groupByColumn).withNot(true)));
+        } else {
+            Parenthesis expiredExpression = getWhereFirstExpiredExpression(plainSelect.getWhere());
+            plainSelect.setWhere(new AndExpression(expiredExpression, new IsNullExpression().withLeftExpression(groupByColumn).withNot(true)));
+        }
         GroupByElement groupByElement = new GroupByElement();
         List<Expression> groupByExpressions = new ArrayList<>();
         groupByExpressions.add(groupByColumn);
@@ -640,5 +650,61 @@ public class DeployAppConfigServiceTestApi extends PrivateApiComponentBase {
             }
         }
         return null;
+    }
+
+    /**
+     * 将where条件中分组字段的条件设置为true，例如将 appSystemId = -1 设置为 true 或 1=1
+     * @param where
+     * @param groupByColumn
+     * @return
+     */
+    private Expression resetWhereGroupByColumnToTrue(Expression where, Column groupByColumn) {
+        if (where == null) {
+            return buildTrueExpression();
+        }
+        if (where instanceof AndExpression andExpr) {
+            return new AndExpression(
+                    resetWhereGroupByColumnToTrue(andExpr.getLeftExpression(), groupByColumn),
+                    resetWhereGroupByColumnToTrue(andExpr.getRightExpression(), groupByColumn)
+            );
+        }
+        if (where instanceof OrExpression orExpr) {
+            return new OrExpression(
+                    resetWhereGroupByColumnToTrue(orExpr.getLeftExpression(), groupByColumn),
+                    resetWhereGroupByColumnToTrue(orExpr.getRightExpression(), groupByColumn)
+            );
+        }
+        if (where instanceof Parenthesis parenthesis) {
+            return new Parenthesis(resetWhereGroupByColumnToTrue(parenthesis.getExpression(), groupByColumn));
+        }
+        if (isExpressionContainsColumn(where, groupByColumn)) {
+            return buildTrueExpression();
+        }
+        return where;
+    }
+
+    private boolean isExpressionContainsColumn(Expression expression, Column column) {
+        if (expression == null || column == null) {
+            return false;
+        }
+        String expressionText = normalizeColumnExpression(expression.toString());
+        String columnText = normalizeColumnExpression(column.toString());
+        return StringUtils.isNotBlank(columnText) && expressionText.contains(columnText);
+    }
+
+    private String normalizeColumnExpression(String expression) {
+        if (StringUtils.isBlank(expression)) {
+            return StringUtils.EMPTY;
+        }
+        return expression.replace("`", "")
+                .replace("\"", "")
+                .replace("[", "")
+                .replace("]", "")
+                .replaceAll("\\s+", "")
+                .toLowerCase();
+    }
+
+    private Expression buildTrueExpression() {
+        return new EqualsTo(new LongValue(1), new LongValue(1));
     }
 }
