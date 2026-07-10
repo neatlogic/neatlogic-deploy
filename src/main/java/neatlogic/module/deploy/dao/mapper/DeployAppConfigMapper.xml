@@ -338,12 +338,16 @@
     </select>-->
 
     <resultMap id="deployAppModuleEnvMap" type="neatlogic.framework.deploy.dto.app.DeployAppModuleEnvVo">
-        <result column="appModuleId" property="id"/>
+        <id column="appModuleId" property="id"/>
         <collection property="envList" ofType="neatlogic.framework.cmdb.dto.resourcecenter.entity.AppEnvironmentVo">
             <id column="envId" property="envId"/>
             <result column="envName" property="envName"/>
         </collection>
     </resultMap>
+
+    <select id="getDeployAppModuleEnvListBySql" parameterType="java.lang.String" resultMap="deployAppModuleEnvMap" useCache="false">
+        ${sql}
+    </select>
 
     <select id="getCmdbDeployAppModuleEnvListByAppSystemId"
             resultMap="deployAppModuleEnvMap" useCache="false">

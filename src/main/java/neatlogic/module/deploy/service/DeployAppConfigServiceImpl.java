@@ -420,6 +420,32 @@ public class DeployAppConfigServiceImpl implements DeployAppConfigService {
     }
 
     @Override
+    public List<DeployAppModuleEnvVo> getCmdbDeployAppModuleEnvListByAppSystemId(Long appSystemId) {
+        String enable = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_DATA_COMPARISON_MODE_ENABLE);
+        String mode = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_SQL_MODE);
+        List<DeployAppModuleEnvVo> newModuleEnvList = new ArrayList<>();
+        List<DeployAppModuleEnvVo> oldModuleEnvList = new ArrayList<>();
+        if (Objects.equals(mode, JSQLPARSER_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
+            String sql = deployResourceBuildSqlService.buildGetCmdbDeployAppModuleEnvListByAppSystemIdSql(appSystemId);
+            if (StringUtils.isNotBlank(sql)) {
+                newModuleEnvList = deployAppConfigMapper.getDeployAppModuleEnvListBySql(sql);
+            }
+        }
+        if (Objects.equals(mode, MYBATIS_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
+            oldModuleEnvList = deployAppConfigMapper.getCmdbDeployAppModuleEnvListByAppSystemId(appSystemId);
+        }
+        if (Objects.equals(enable, COMPARISON_ENABLED)) {
+            checkDeployAppModuleEnvListIsEquals(newModuleEnvList, oldModuleEnvList);
+        }
+        if (Objects.equals(mode, JSQLPARSER_MODE)) {
+            return newModuleEnvList;
+        } else if (Objects.equals(mode, MYBATIS_MODE)) {
+            return oldModuleEnvList;
+        }
+        return new ArrayList<>();
+    }
+
+    @Override
     public List<DeployAppModuleEnvVo> getDeployAppModuleEnvListByAppSystemId(Long appSystemId) {
         List<DeployAppModuleEnvVo> cmdbModuleEnvList = deployAppConfigMapper.getCmdbDeployAppModuleEnvListByAppSystemId(appSystemId);
         List<DeployAppModuleEnvVo> configModuleEnvList = deployAppConfigMapper.getConfigDeployAppModuleEnvListByAppSystemId(appSystemId);
@@ -561,6 +587,32 @@ public class DeployAppConfigServiceImpl implements DeployAppConfigService {
                 errorObj.put("index", i);
                 errorObj.put("envVo", envVo);
                 errorObj.put("oldEnvVo", oldEnvVo);
+                logger.error("资产清单新旧SQL获取tbodyList结果不一致：{}", errorObj);
+                flag = false;
+            }
+        }
+        return flag;
+    }
+
+    private boolean checkDeployAppModuleEnvListIsEquals(List<DeployAppModuleEnvVo> moduleEnvList, List<DeployAppModuleEnvVo> oldModuleEnvList) {
+        if (oldModuleEnvList.size() != moduleEnvList.size()) {
+            JSONObject errorObj = new JSONObject();
+            errorObj.put("newModuleEnvList.size()", moduleEnvList.size());
+            errorObj.put("oldModuleEnvList.size()", oldModuleEnvList.size());
+            logger.error("资产清单新旧SQL获取tbodyList结果不一致：{}", errorObj);
+            return false;
+        }
+        boolean flag = true;
+        for (int i = 0; i < moduleEnvList.size(); i++) {
+            DeployAppModuleEnvVo moduleEnvVo = moduleEnvList.get(i);
+            DeployAppModuleEnvVo oldModuleEnvVo = oldModuleEnvList.get(i);
+            String moduleEnvString = JSONObject.toJSONString(moduleEnvVo, SerializerFeature.MapSortField);
+            String oldModuleEnvString = JSONObject.toJSONString(oldModuleEnvVo, SerializerFeature.MapSortField);
+            if (!Objects.equals(moduleEnvString, oldModuleEnvString)) {
+                JSONObject errorObj = new JSONObject();
+                errorObj.put("index", i);
+                errorObj.put("moduleEnvVo", moduleEnvVo);
+                errorObj.put("oldModuleEnvVo", oldModuleEnvVo);
                 logger.error("资产清单新旧SQL获取tbodyList结果不一致：{}", errorObj);
                 flag = false;
             }
