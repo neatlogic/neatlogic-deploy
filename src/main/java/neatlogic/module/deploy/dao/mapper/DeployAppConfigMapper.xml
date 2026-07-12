@@ -406,6 +406,10 @@
         </foreach>
     </select>
 
+    <select id="getAppEnvListBySql" resultType="neatlogic.framework.cmdb.dto.resourcecenter.entity.AppEnvironmentVo" useCache="false">
+        ${sql}
+    </select>
+
     <select id="getCmdbDeployAppModuleEnvListByAppSystemIdAndModuleId"
             resultType="neatlogic.framework.cmdb.dto.resourcecenter.entity.AppEnvironmentVo" useCache="false">
         SELECT a.`env_id` AS envId,
