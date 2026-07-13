@@ -445,6 +445,11 @@
         </collection>
     </resultMap>
 
+    <select id="getCmdbAppConfigEnvListIncludeDBCSchemaListAndAutoCfgKeyListBySql"
+            resultMap="appEnvIncludeSchemaListAndAutoCfgKeyListMap" useCache="false">
+        ${sql}
+    </select>
+
     <select id="getCmdbAppConfigEnvListIncludeDBCSchemaListAndAutoCfgKeyListByAppSystemIdAndAppModuleIdAndEnvId"
             resultMap="appEnvIncludeSchemaListAndAutoCfgKeyListMap" useCache="false">
         SELECT a.app_system_id as appSystemId,
