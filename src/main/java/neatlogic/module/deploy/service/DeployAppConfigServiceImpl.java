@@ -535,6 +535,7 @@ public class DeployAppConfigServiceImpl implements DeployAppConfigService {
             oldEnvList = deployAppConfigMapper.getCmdbAppConfigEnvListIncludeDBCSchemaListAndAutoCfgKeyListByAppSystemIdAndAppModuleIdAndEnvId(appSystemId, appModuleId, envIdList);
         }
         if (Objects.equals(enable, COMPARISON_ENABLED)) {
+            System.out.println("比较 = ");
             checkDeployAppEnvironmentListIsEquals(newEnvList, oldEnvList);
         }
         if (Objects.equals(mode, JSQLPARSER_MODE)) {
