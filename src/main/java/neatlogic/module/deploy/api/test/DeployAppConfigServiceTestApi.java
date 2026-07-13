@@ -6,6 +6,7 @@ import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.cmdb.crossover.IResourceBuildSqlCrossoverService;
 import neatlogic.framework.cmdb.crossover.IResourceCrossoverMapper;
 import neatlogic.framework.cmdb.dto.resourcecenter.ResourceVo;
+import neatlogic.framework.cmdb.dto.resourcecenter.entity.AppEnvironmentVo;
 import neatlogic.framework.crossover.CrossoverServiceFactory;
 import neatlogic.framework.deploy.auth.DEPLOY_BASE;
 import neatlogic.framework.deploy.dto.app.DeployAppEnvironmentVo;
@@ -75,6 +76,7 @@ public class DeployAppConfigServiceTestApi extends PrivateApiComponentBase {
         getCmdbDeployAppEnvListByAppSystemIdAndModuleIdListTest();
         getCmdbDeployAppModuleEnvListByAppSystemIdTest();
         getCmdbDeployAppModuleEnvListByAppSystemIdAndAppModuleIdListTest();
+        getCmdbDeployAppModuleEnvListByAppSystemIdAndModuleIdTest();
         return null;
     }
 
@@ -315,6 +317,125 @@ public class DeployAppConfigServiceTestApi extends PrivateApiComponentBase {
                         itemObj.put("count", count);
                         itemObj.put("appSystemId", appSystemId);
                         itemObj.put("appModuleIdList", List.of(appModuleId));
+                        itemObj.put("groupedColumn", groupedColumn.toString());
+                        logger.info(itemObj.toJSONString());
+                    }
+                }
+            }
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+        }
+    }
+
+    private void getCmdbDeployAppModuleEnvListByAppSystemIdAndModuleIdTest() {
+        getCmdbDeployAppModuleEnvListByAppSystemIdAndModuleIdTestForAppSystemId();
+        getCmdbDeployAppModuleEnvListByAppSystemIdAndModuleIdTestForAppModuleId();
+    }
+
+    private void getCmdbDeployAppModuleEnvListByAppSystemIdAndModuleIdTestForAppSystemId() {
+        IResourceCrossoverMapper resourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
+        try {
+            String sql = deployResourceBuildSqlService.buildGetCmdbDeployAppModuleEnvListByAppSystemIdAndModuleIdSql(-1L, -1L);
+//            System.out.println("sql = " + sql);
+            Column groupedColumn = new Column("cientity_APP.id");
+            String groupBySql = buildGroupBySql(sql, groupedColumn);
+//            System.out.println("groupBySql = " + groupBySql);
+            List<Map<String, Object>> mapList = resourceCrossoverMapper.getMapListBySql(groupBySql);
+//            System.out.println("mapList = " + JSONObject.toJSONString(mapList));
+            for (Map<String, Object> rowMap : mapList) {
+                Object fieldValue = rowMap.get("fieldValue");
+                if (fieldValue != null) {
+                    Long appSystemId = ((Number) fieldValue).longValue();
+//                    System.out.println("appSystemId = " + appSystemId);
+                    Long count = ((Number) rowMap.get("count")).longValue();
+//                    System.out.println("count = " + count);
+                    Long appModuleId = null;
+                    List<DeployAppModuleEnvVo> allModuleEnvList = deployAppConfigService.getCmdbDeployAppModuleEnvListByAppSystemId(appSystemId);
+//                    System.out.println("allModuleEnvList = " + JSONObject.toJSONString(allModuleEnvList));
+                    if (allModuleEnvList != null) {
+                        for (DeployAppModuleEnvVo moduleEnvVo : allModuleEnvList) {
+                            if (moduleEnvVo != null && moduleEnvVo.getId() != null) {
+                                appModuleId = moduleEnvVo.getId();
+                                break;
+                            }
+                        }
+                    }
+                    if (appModuleId == null) {
+                        JSONObject itemObj = new JSONObject(true);
+                        itemObj.put("count", count);
+                        itemObj.put("appSystemId", appSystemId);
+                        itemObj.put("appModuleId", appModuleId);
+                        itemObj.put("groupedColumn", groupedColumn.toString());
+                        logger.info(itemObj.toJSONString());
+                        continue;
+                    }
+//                    System.out.println("appModuleId = " + appModuleId);
+                    List<AppEnvironmentVo> envList = deployAppConfigService.getCmdbDeployAppModuleEnvListByAppSystemIdAndModuleId(appSystemId, appModuleId);
+//                    System.out.println("envList = " + JSONObject.toJSONString(envList));
+                    if (envList == null || envList.isEmpty()) {
+                        JSONObject itemObj = new JSONObject(true);
+                        itemObj.put("envList", envList);
+                        itemObj.put("count", count);
+                        itemObj.put("appSystemId", appSystemId);
+                        itemObj.put("appModuleId", appModuleId);
+                        itemObj.put("groupedColumn", groupedColumn.toString());
+                        logger.info(itemObj.toJSONString());
+                    }
+                }
+            }
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+        }
+    }
+
+    private void getCmdbDeployAppModuleEnvListByAppSystemIdAndModuleIdTestForAppModuleId() {
+        IResourceCrossoverMapper resourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
+        try {
+            String sql = deployResourceBuildSqlService.buildGetCmdbDeployAppModuleEnvListByAppSystemIdAndModuleIdSql(-1L, -1L);
+//            System.out.println("sql = " + sql);
+            Column groupedColumn = new Column("cientity_APPComponent.id");
+            String groupBySql = buildGroupBySql(sql, groupedColumn);
+//            System.out.println("groupBySql = " + groupBySql);
+            List<Map<String, Object>> mapList = resourceCrossoverMapper.getMapListBySql(groupBySql);
+//            System.out.println("mapList = " + JSONObject.toJSONString(mapList));
+            for (Map<String, Object> rowMap : mapList) {
+                Object fieldValue = rowMap.get("fieldValue");
+                if (fieldValue != null) {
+                    Long appModuleId = ((Number) fieldValue).longValue();
+//                    System.out.println("appModuleId = " + appModuleId);
+                    Long count = ((Number) rowMap.get("count")).longValue();
+//                    System.out.println("count = " + count);
+                    Long appSystemId = null;
+                    String appSystemSql = deployResourceBuildSqlService.buildGetCmdbDeployAppModuleEnvListByAppSystemIdAndModuleIdSql(null, appModuleId);
+//                    System.out.println("appSystemSql = " + appSystemSql);
+                    String groupByAppSystemSql = buildGroupBySql(appSystemSql, new Column("cientity_APP.id"), true);
+//                    System.out.println("groupByAppSystemSql = " + groupByAppSystemSql);
+                    List<Map<String, Object>> appSystemMapList = resourceCrossoverMapper.getMapListBySql(groupByAppSystemSql);
+//                    System.out.println("appSystemMapList = " + JSONObject.toJSONString(appSystemMapList));
+                    if (appSystemMapList != null && !appSystemMapList.isEmpty()) {
+                        Object appSystemIdValue = appSystemMapList.get(0).get("fieldValue");
+                        if (appSystemIdValue != null) {
+                            appSystemId = ((Number) appSystemIdValue).longValue();
+                        }
+                    }
+                    if (appSystemId == null) {
+                        JSONObject itemObj = new JSONObject(true);
+                        itemObj.put("count", count);
+                        itemObj.put("appSystemId", appSystemId);
+                        itemObj.put("appModuleId", appModuleId);
+                        itemObj.put("groupedColumn", groupedColumn.toString());
+                        logger.info(itemObj.toJSONString());
+                        continue;
+                    }
+//                    System.out.println("appSystemId = " + appSystemId);
+                    List<AppEnvironmentVo> envList = deployAppConfigService.getCmdbDeployAppModuleEnvListByAppSystemIdAndModuleId(appSystemId, appModuleId);
+//                    System.out.println("envList = " + JSONObject.toJSONString(envList));
+                    if (envList == null || envList.isEmpty()) {
+                        JSONObject itemObj = new JSONObject(true);
+                        itemObj.put("envList", envList);
+                        itemObj.put("count", count);
+                        itemObj.put("appSystemId", appSystemId);
+                        itemObj.put("appModuleId", appModuleId);
                         itemObj.put("groupedColumn", groupedColumn.toString());
                         logger.info(itemObj.toJSONString());
                     }
