@@ -101,6 +101,8 @@ public interface DeployAppConfigService {
 
     List<AppEnvironmentVo> getDeployAppModuleEnvListByAppSystemIdAndModuleId(Long systemId, Long moduleId);
 
+    List<DeployAppEnvironmentVo> getCmdbAppConfigEnvListIncludeDBCSchemaListAndAutoCfgKeyListByAppSystemIdAndAppModuleIdAndEnvId(Long appSystemId, Long appModuleId, List<Long> envIdList);
+
     List<DeployAppEnvironmentVo> getAppConfigEnvListIncludeDBCSchemaListAndAutoCfgKeyListByAppSystemIdAndAppModuleIdAndEnvId(Long appSystemId, Long appModuleId, List<Long> envIdList);
 
     List<DeployAppEnvironmentVo> getDeployHasNotConfigAppEnvListByAppSystemIdAndAppModuleIdAndEnvId(Long appSystemId, Long appModuleId, Long envId);

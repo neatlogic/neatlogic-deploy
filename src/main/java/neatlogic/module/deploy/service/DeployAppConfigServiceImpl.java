@@ -520,6 +520,33 @@ public class DeployAppConfigServiceImpl implements DeployAppConfigService {
     }
 
     @Override
+    public List<DeployAppEnvironmentVo> getCmdbAppConfigEnvListIncludeDBCSchemaListAndAutoCfgKeyListByAppSystemIdAndAppModuleIdAndEnvId(Long appSystemId, Long appModuleId, List<Long> envIdList) {
+        String enable = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_DATA_COMPARISON_MODE_ENABLE);
+        String mode = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_SQL_MODE);
+        List<DeployAppEnvironmentVo> newEnvList = new ArrayList<>();
+        List<DeployAppEnvironmentVo> oldEnvList = new ArrayList<>();
+        if (Objects.equals(mode, JSQLPARSER_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
+            String sql = deployResourceBuildSqlService.buildGetCmdbAppConfigEnvListIncludeDBCSchemaListAndAutoCfgKeyListByAppSystemIdAndAppModuleIdAndEnvIdSql(appSystemId, appModuleId, envIdList);
+            if (StringUtils.isNotBlank(sql)) {
+                newEnvList = deployAppConfigMapper.getCmdbAppConfigEnvListIncludeDBCSchemaListAndAutoCfgKeyListBySql(sql);
+            }
+        }
+        if (Objects.equals(mode, MYBATIS_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
+            oldEnvList = deployAppConfigMapper.getCmdbAppConfigEnvListIncludeDBCSchemaListAndAutoCfgKeyListByAppSystemIdAndAppModuleIdAndEnvId(appSystemId, appModuleId, envIdList);
+        }
+        if (Objects.equals(enable, COMPARISON_ENABLED)) {
+//            System.out.println("比较 = ");
+            checkDeployAppEnvironmentListIsEquals(newEnvList, oldEnvList);
+        }
+        if (Objects.equals(mode, JSQLPARSER_MODE)) {
+            return newEnvList;
+        } else if (Objects.equals(mode, MYBATIS_MODE)) {
+            return oldEnvList;
+        }
+        return new ArrayList<>();
+    }
+
+    @Override
     public List<DeployAppEnvironmentVo> getAppConfigEnvListIncludeDBCSchemaListAndAutoCfgKeyListByAppSystemIdAndAppModuleIdAndEnvId(Long appSystemId, Long appModuleId, List<Long> envIdList) {
         List<DeployAppEnvironmentVo> cmdbEnvList = deployAppConfigMapper.getCmdbAppConfigEnvListIncludeDBCSchemaListAndAutoCfgKeyListByAppSystemIdAndAppModuleIdAndEnvId(appSystemId, appModuleId, envIdList);
         List<DeployAppEnvironmentVo> configEnvList = deployAppConfigMapper.getConfigAppConfigEnvListIncludeDBCSchemaListAndAutoCfgKeyListByAppSystemIdAndAppModuleIdAndEnvId(appSystemId, appModuleId, envIdList);
