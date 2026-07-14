@@ -236,7 +236,7 @@
     </select>
 
     <resultMap id="appEnvMap" type="neatlogic.framework.deploy.dto.app.DeployAppEnvironmentVo">
-        <result column="envId" property="id"/>
+        <id column="envId" property="id"/>
         <result column="envName" property="name"/>
         <collection property="appModuleList" ofType="neatlogic.framework.cmdb.dto.resourcecenter.entity.AppModuleVo">
             <id column="appModuleId" property="id"/>
@@ -500,6 +500,10 @@
         <foreach collection="envIdList" separator="," item="envId" open="(" close=")">
             #{envId}
         </foreach>
+    </select>
+
+    <select id="getEnvListBySql" parameterType="java.lang.String" resultType="neatlogic.framework.deploy.dto.app.DeployAppEnvironmentVo" useCache="false">
+        ${sql}
     </select>
 
     <select id="getCmdbEnvListByAppSystemIdAndModuleId"
