@@ -83,6 +83,8 @@ public interface DeployAppConfigService {
 
     List<DeployAppEnvironmentVo> getCmdbDeployAppEnvListByAppSystemIdAndModuleIdList(Long appSystemId, List<Long> appModuleIdList);
 
+    List<DeployAppEnvironmentVo> getCmdbEnvListByAppSystemIdAndModuleId(Long appSystemId, Long appModuleId);
+
     List<DeployAppEnvironmentVo> getDeployAppEnvListByAppSystemIdAndModuleIdList(Long appSystemId, List<Long> appModuleIdList);
 
     List<Long> getHasEnvAppModuleIdListByAppSystemIdAndModuleIdList(Long appSystemId, List<Long> appModuleIdList);
