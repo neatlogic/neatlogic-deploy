@@ -452,6 +452,7 @@ public class DeployAppConfigServiceImpl implements DeployAppConfigService {
             oldAppModuleIdList = deployAppConfigMapper.getCmdbHasEnvAppModuleIdListByAppSystemIdAndModuleIdList(appSystemId, appModuleIdList);
         }
         if (Objects.equals(enable, COMPARISON_ENABLED)) {
+//            System.out.println("比较 = ");
             checkLongListIsEquals(newAppModuleIdList, oldAppModuleIdList);
         }
         if (Objects.equals(mode, JSQLPARSER_MODE)) {

@@ -297,7 +297,7 @@ public class DeployAppConfigServiceTestApi extends PrivateApiComponentBase {
 
     private void getCmdbHasEnvAppModuleIdListByAppSystemIdAndModuleIdListTest() {
         getCmdbHasEnvAppModuleIdListByAppSystemIdAndModuleIdListTestForAppSystemId();
-        getCmdbHasEnvAppModuleIdListByAppSystemIdAndModuleIdListTestForAppModuleId();
+        getCmdbHasEnvAppModuleIdListByAppSystemIdAndModuleIdListTestForAppModuleIdList();
     }
 
     private void getCmdbHasEnvAppModuleIdListByAppSystemIdAndModuleIdListTestForAppSystemId() {
@@ -354,7 +354,7 @@ public class DeployAppConfigServiceTestApi extends PrivateApiComponentBase {
         }
     }
 
-    private void getCmdbHasEnvAppModuleIdListByAppSystemIdAndModuleIdListTestForAppModuleId() {
+    private void getCmdbHasEnvAppModuleIdListByAppSystemIdAndModuleIdListTestForAppModuleIdList() {
         IResourceCrossoverMapper resourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
         try {
             String sql = deployResourceBuildSqlService.buildGetCmdbHasEnvAppModuleIdListByAppSystemIdAndModuleIdListSql(-1L, List.of(-1L));
