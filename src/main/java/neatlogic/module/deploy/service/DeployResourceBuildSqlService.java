@@ -20,6 +20,8 @@ public interface DeployResourceBuildSqlService {
 
     String buildGetCmdbDeployAppEnvListByAppSystemIdAndModuleIdListSql(Long appSystemId, List<Long> appModuleIdList);
 
+    String buildGetCmdbHasEnvAppModuleIdListByAppSystemIdAndModuleIdListSql(Long appSystemId, List<Long> appModuleIdList);
+
     String buildGetCmdbEnvListByAppSystemIdAndModuleIdSql(Long appSystemId, Long appModuleId);
 
     String buildGetCmdbDeployAppModuleEnvListByAppSystemIdSql(Long appSystemId);

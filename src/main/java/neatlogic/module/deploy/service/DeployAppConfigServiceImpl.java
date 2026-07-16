@@ -436,6 +436,34 @@ public class DeployAppConfigServiceImpl implements DeployAppConfigService {
     }
 
     @Override
+    public List<Long> getCmdbHasEnvAppModuleIdListByAppSystemIdAndModuleIdList(Long appSystemId, List<Long> appModuleIdList) {
+        IResourceCrossoverMapper resourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
+        String enable = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_DATA_COMPARISON_MODE_ENABLE);
+        String mode = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_SQL_MODE);
+        List<Long> newAppModuleIdList = new ArrayList<>();
+        List<Long> oldAppModuleIdList = new ArrayList<>();
+        if (Objects.equals(mode, JSQLPARSER_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
+            String sql = deployResourceBuildSqlService.buildGetCmdbHasEnvAppModuleIdListByAppSystemIdAndModuleIdListSql(appSystemId, appModuleIdList);
+            if (StringUtils.isNotBlank(sql)) {
+                newAppModuleIdList = resourceCrossoverMapper.getIdListBySql(sql);
+            }
+        }
+        if (Objects.equals(mode, MYBATIS_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
+            oldAppModuleIdList = deployAppConfigMapper.getCmdbHasEnvAppModuleIdListByAppSystemIdAndModuleIdList(appSystemId, appModuleIdList);
+        }
+        if (Objects.equals(enable, COMPARISON_ENABLED)) {
+//            System.out.println("比较 = ");
+            checkLongListIsEquals(newAppModuleIdList, oldAppModuleIdList);
+        }
+        if (Objects.equals(mode, JSQLPARSER_MODE)) {
+            return newAppModuleIdList;
+        } else if (Objects.equals(mode, MYBATIS_MODE)) {
+            return oldAppModuleIdList;
+        }
+        return new ArrayList<>();
+    }
+
+    @Override
     public List<Long> getHasEnvAppModuleIdListByAppSystemIdAndModuleIdList(Long appSystemId, List<Long> appModuleIdList) {
         List<Long> cmdbAppModuleIdList = deployAppConfigMapper.getCmdbHasEnvAppModuleIdListByAppSystemIdAndModuleIdList(appSystemId, appModuleIdList);
         List<Long> configAppModuleIdList = deployAppConfigMapper.getConfigHasEnvAppModuleIdListByAppSystemIdAndModuleIdList(appSystemId, appModuleIdList);
@@ -648,6 +676,35 @@ public class DeployAppConfigServiceImpl implements DeployAppConfigService {
             return oldIdList;
         }
         return new ArrayList<>();
+    }
+
+    private boolean checkLongListIsEquals(List<Long> idList, List<Long> oldIdList) {
+        List<Long> sortedIdList = new ArrayList<>();
+        if (CollectionUtils.isNotEmpty(idList)) {
+            for (Long id : idList) {
+                if (id != null) {
+                    sortedIdList.add(id);
+                }
+            }
+        }
+        List<Long> sortedOldIdList = new ArrayList<>();
+        if (CollectionUtils.isNotEmpty(oldIdList)) {
+            for (Long id : oldIdList) {
+                if (id != null) {
+                    sortedOldIdList.add(id);
+                }
+            }
+        }
+        sortedIdList.sort(Comparator.naturalOrder());
+        sortedOldIdList.sort(Comparator.naturalOrder());
+        if (!Objects.equals(sortedIdList, sortedOldIdList)) {
+            JSONObject errorObj = new JSONObject();
+            errorObj.put("newIdList", idList);
+            errorObj.put("oldIdList", oldIdList);
+            logger.error("资产清单新旧SQL获取tbodyList结果不一致：{}", errorObj);
+            return false;
+        }
+        return true;
     }
 
     private boolean checkResourceListIsEquals(List<ResourceVo> resourceList, List<ResourceVo> oldResourceList) {
