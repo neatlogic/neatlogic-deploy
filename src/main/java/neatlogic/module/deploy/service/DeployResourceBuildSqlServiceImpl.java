@@ -14,6 +14,7 @@ import neatlogic.framework.cmdb.crossover.IResourceBuildSqlCrossoverService;
 import neatlogic.framework.cmdb.crossover.IResourceEntityCrossoverMapper;
 import neatlogic.framework.cmdb.dto.resourcecenter.config.*;
 import neatlogic.framework.crossover.CrossoverServiceFactory;
+import neatlogic.framework.deploy.dto.app.DeployAppEnvAutoConfigVo;
 import neatlogic.framework.deploy.dto.app.DeployResourceSearchVo;
 import neatlogic.framework.sqlgenerator.$sql;
 import neatlogic.framework.sqlgenerator.ExpressionVo;
@@ -343,6 +344,76 @@ public class DeployResourceBuildSqlServiceImpl implements DeployResourceBuildSql
             } else {
                 $sql.addWhereExpression(plainSelect, $sql.exp(envIdColumn, "is not null"));
             }
+            return plainSelect.toString();
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+        }
+        return null;
+    }
+
+    @Override
+    public String buildGetAppModuleEnvAutoConfigInstanceIdCountSql(DeployAppEnvAutoConfigVo searchVo) {
+        IResourceEntityCrossoverMapper resourceEntityCrossoverMapper = CrossoverServiceFactory.getApi(IResourceEntityCrossoverMapper.class);
+        IResourceBuildSqlCrossoverService resourceBuildSqlCrossoverService = CrossoverServiceFactory.getApi(IResourceBuildSqlCrossoverService.class);
+        try {
+            ResourceEntityVo resourceEntityVo = resourceEntityCrossoverMapper.getResourceEntityByName("scence_appinstance_env_appmodule_appsystem");
+            ResourceEntityConfigVo config = resourceBuildSqlCrossoverService.getResourceEntityConfigVo(resourceEntityVo);
+            List<String> selectItemFieldNameList = new ArrayList<>();
+            selectItemFieldNameList.add("id");
+            List<String> filterItemFieldNameList = new ArrayList<>();
+            filterItemFieldNameList.add("id");
+            filterItemFieldNameList.add("name");
+            filterItemFieldNameList.add("ip");
+            filterItemFieldNameList.add("port");
+            filterItemFieldNameList.add("app_system_id");
+            filterItemFieldNameList.add("app_module_id");
+            filterItemFieldNameList.add("env_id");
+            config.setSelectItemFieldNameList(selectItemFieldNameList);
+            config.setFilterItemFieldNameList(filterItemFieldNameList);
+            Map<String, Column> fieldName2ColumnMap = new HashMap<>();
+            PlainSelect plainSelect = resourceBuildSqlCrossoverService.getPlainSelect(config, fieldName2ColumnMap);
+            Column idColumn = fieldName2ColumnMap.get("id");
+            Column nameColumn = fieldName2ColumnMap.get("name");
+            Column ipColumn = fieldName2ColumnMap.get("ip");
+            Column portColumn = fieldName2ColumnMap.get("port");
+            Column appSystemIdColumn = fieldName2ColumnMap.get("app_system_id");
+            Column appModuleIdColumn = fieldName2ColumnMap.get("app_module_id");
+            Column envIdColumn = fieldName2ColumnMap.get("env_id");
+            if (searchVo != null) {
+                Long appSystemId = searchVo.getAppSystemId();
+                Long appModuleId = searchVo.getAppModuleId();
+                Long envId = searchVo.getEnvId();
+                Integer isAutoConfig = searchVo.getIsAutoConfig();
+                if (isAutoConfig != null) {
+                    ExpressionVo daeacOn = $sql.exp($sql.exp("daeac.app_system_id", "=", appSystemId), "AND",
+                            $sql.exp($sql.exp("daeac.app_module_id", "=", appModuleId), "AND",
+                                    $sql.exp($sql.exp("daeac.env_id", "=", envId), "AND", $sql.exp("daeac.instance_id", "=", idColumn.toString()))));
+                    $sql.addJoin(plainSelect, "left join", "deploy_app_env_auto_config", "daeac", daeacOn);
+                }
+                if (appSystemId != null) {
+                    $sql.addWhereExpression(plainSelect, $sql.exp(appSystemIdColumn.toString(), "=", appSystemId));
+                }
+                if (appModuleId != null) {
+                    $sql.addWhereExpression(plainSelect, $sql.exp(appModuleIdColumn.toString(), "=", appModuleId));
+                }
+                if (envId != null) {
+                    $sql.addWhereExpression(plainSelect, $sql.exp(envIdColumn.toString(), "=", envId));
+                }
+                if (Objects.equals(isAutoConfig, 1)) {
+                    $sql.addWhereExpression(plainSelect, $sql.exp("daeac.instance_id", "is not null"));
+                } else if (Objects.equals(isAutoConfig, 0)) {
+                    $sql.addWhereExpression(plainSelect, $sql.exp("daeac.instance_id", "is null"));
+                }
+                String keyword = searchVo.getKeyword();
+                if (StringUtils.isNotBlank(keyword)) {
+                    keyword = "%" + keyword + "%";
+                    ExpressionVo orExp = $sql.exp(nameColumn.toString(), "like", $sql.value(keyword));
+                    orExp = $sql.exp(orExp, "OR", $sql.exp(ipColumn.toString(), "like", $sql.value(keyword)));
+                    orExp = $sql.exp(orExp, "OR", $sql.exp(portColumn.toString(), "like", $sql.value(keyword)));
+                    $sql.addWhereExpression(plainSelect, $sql.exp("(", orExp, ")"));
+                }
+            }
+            $sql.setSelectColumn(plainSelect, $sql.fun("COUNT", idColumn.toString()).withDistinct(true));
             return plainSelect.toString();
         } catch (Exception e) {
             logger.error(e.getMessage(), e);

@@ -10,6 +10,7 @@
 
 package neatlogic.module.deploy.service;
 
+import neatlogic.framework.deploy.dto.app.DeployAppEnvAutoConfigVo;
 import neatlogic.framework.deploy.dto.app.DeployResourceSearchVo;
 
 import java.util.List;
@@ -31,6 +32,8 @@ public interface DeployResourceBuildSqlService {
     String buildGetCmdbDeployAppModuleEnvListByAppSystemIdAndModuleIdSql(Long systemId, Long moduleId);
 
     String buildGetCmdbAppConfigEnvListIncludeDBCSchemaListAndAutoCfgKeyListByAppSystemIdAndAppModuleIdAndEnvIdSql(Long appSystemId, Long appModuleId, List<Long> envIdList);
+
+    String buildGetAppModuleEnvAutoConfigInstanceIdCountSql(DeployAppEnvAutoConfigVo searchVo);
 
     String buildGetAppConfigEnvDatabaseCountSql(DeployResourceSearchVo searchVo);
 

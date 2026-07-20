@@ -23,6 +23,7 @@ import neatlogic.framework.config.ConfigManager;
 import neatlogic.framework.crossover.CrossoverServiceFactory;
 import neatlogic.framework.deploy.dto.app.DeployAppConfigEnvDBConfigVo;
 import neatlogic.framework.deploy.dto.app.DeployAppConfigVo;
+import neatlogic.framework.deploy.dto.app.DeployAppEnvAutoConfigVo;
 import neatlogic.framework.deploy.dto.app.DeployAppEnvAutoConfigKeyValueVo;
 import neatlogic.framework.deploy.dto.app.DeployAppEnvironmentVo;
 import neatlogic.framework.deploy.dto.app.DeployAppModuleEnvVo;
@@ -639,6 +640,36 @@ public class DeployAppConfigServiceImpl implements DeployAppConfigService {
             errorObj.put("newRowNum", newRowNum);
             errorObj.put("oldRowNum", oldRowNum);
             logger.error("资产清单新旧SQL获取结果不一致：{}", errorObj);
+        }
+        if (Objects.equals(mode, JSQLPARSER_MODE)) {
+            return newRowNum;
+        } else if (Objects.equals(mode, MYBATIS_MODE)) {
+            return oldRowNum;
+        }
+        return 0;
+    }
+
+    @Override
+    public int getAppModuleEnvAutoConfigInstanceIdCount(DeployAppEnvAutoConfigVo searchVo) {
+        IResourceCrossoverMapper resourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
+        String enable = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_DATA_COMPARISON_MODE_ENABLE);
+        String mode = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_SQL_MODE);
+        int newRowNum = 0;
+        int oldRowNum = 0;
+        if (Objects.equals(mode, JSQLPARSER_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
+            String sql = deployResourceBuildSqlService.buildGetAppModuleEnvAutoConfigInstanceIdCountSql(searchVo);
+            if (StringUtils.isNotBlank(sql)) {
+                newRowNum = resourceCrossoverMapper.getCountBySql(sql);
+            }
+        }
+        if (Objects.equals(mode, MYBATIS_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
+            oldRowNum = deployAppConfigMapper.getAppModuleEnvAutoConfigInstanceIdCount(searchVo);
+        }
+        if (Objects.equals(enable, COMPARISON_ENABLED) && oldRowNum != newRowNum) {
+            JSONObject errorObj = new JSONObject();
+            errorObj.put("newRowNum", newRowNum);
+            errorObj.put("oldRowNum", oldRowNum);
+            logger.error("璧勪骇娓呭崟鏂版棫SQL鑾峰彇缁撴灉涓嶄竴鑷达細{}", errorObj);
         }
         if (Objects.equals(mode, JSQLPARSER_MODE)) {
             return newRowNum;
