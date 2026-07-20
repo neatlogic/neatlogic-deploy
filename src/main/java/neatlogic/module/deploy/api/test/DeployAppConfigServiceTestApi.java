@@ -890,7 +890,7 @@ public class DeployAppConfigServiceTestApi extends PrivateApiComponentBase {
     }
 
     private void getAppModuleEnvAutoConfigInstanceIdCountTest() {
-        getAppModuleEnvAutoConfigInstanceIdCountTestForAppSystemId();
+//        getAppModuleEnvAutoConfigInstanceIdCountTestForAppSystemId();
         getAppModuleEnvAutoConfigInstanceIdCountTestForAppModuleId();
         getAppModuleEnvAutoConfigInstanceIdCountTestForEnvId();
         getAppModuleEnvAutoConfigInstanceIdCountTestForIsAutoConfig();
@@ -904,14 +904,19 @@ public class DeployAppConfigServiceTestApi extends PrivateApiComponentBase {
         try {
             DeployAppEnvAutoConfigVo baseSearchVo = new DeployAppEnvAutoConfigVo(-1L, -1L, -1L);
             String sql = deployResourceBuildSqlService.buildGetAppModuleEnvAutoConfigInstanceIdCountSql(baseSearchVo);
+            System.out.println("sql = " + sql);
             Column groupedColumn = new Column("cientity_APP.id");
             String groupBySql = buildGroupBySql(sql, groupedColumn);
+            System.out.println("groupBySql = " + groupBySql);
             List<Map<String, Object>> mapList = resourceCrossoverMapper.getMapListBySql(groupBySql);
+            System.out.println("mapList = " + mapList);
             for (Map<String, Object> rowMap : mapList) {
                 Object fieldValue = rowMap.get("fieldValue");
                 if (fieldValue != null) {
                     Long appSystemId = ((Number) fieldValue).longValue();
+                    System.out.println("appSystemId = " + appSystemId);
                     Long count = ((Number) rowMap.get("count")).longValue();
+                    System.out.println("count = " + count);
                     DeployAppEnvAutoConfigVo searchVo = buildAppModuleEnvAutoConfigSearchVo(appSystemId, null, null);
                     if (searchVo == null) {
                         JSONObject itemObj = new JSONObject(true);
@@ -923,6 +928,7 @@ public class DeployAppConfigServiceTestApi extends PrivateApiComponentBase {
                         continue;
                     }
                     int resourceCount = deployAppConfigService.getAppModuleEnvAutoConfigInstanceIdCount(searchVo);
+                    System.out.println("resourceCount = " + resourceCount);
                     if (resourceCount <= 0) {
                         JSONObject itemObj = new JSONObject(true);
                         itemObj.put("resourceCount", resourceCount);
@@ -943,14 +949,19 @@ public class DeployAppConfigServiceTestApi extends PrivateApiComponentBase {
         try {
             DeployAppEnvAutoConfigVo baseSearchVo = new DeployAppEnvAutoConfigVo(-1L, -1L, -1L);
             String sql = deployResourceBuildSqlService.buildGetAppModuleEnvAutoConfigInstanceIdCountSql(baseSearchVo);
+            System.out.println("sql = " + sql);
             Column groupedColumn = new Column("cientity_APPComponent.id");
             String groupBySql = buildGroupBySql(sql, groupedColumn);
+            System.out.println("groupBySql = " + groupBySql);
             List<Map<String, Object>> mapList = resourceCrossoverMapper.getMapListBySql(groupBySql);
+            System.out.println("mapList = " + mapList);
             for (Map<String, Object> rowMap : mapList) {
                 Object fieldValue = rowMap.get("fieldValue");
                 if (fieldValue != null) {
                     Long appModuleId = ((Number) fieldValue).longValue();
+                    System.out.println("appModuleId = " + appModuleId);
                     Long count = ((Number) rowMap.get("count")).longValue();
+                    System.out.println("count = " + count);
                     DeployAppEnvAutoConfigVo searchVo = buildAppModuleEnvAutoConfigSearchVo(null, appModuleId, null);
                     if (searchVo == null) {
                         JSONObject itemObj = new JSONObject(true);
@@ -962,6 +973,7 @@ public class DeployAppConfigServiceTestApi extends PrivateApiComponentBase {
                         continue;
                     }
                     int resourceCount = deployAppConfigService.getAppModuleEnvAutoConfigInstanceIdCount(searchVo);
+                    System.out.println("resourceCount = " + resourceCount);
                     if (resourceCount <= 0) {
                         JSONObject itemObj = new JSONObject(true);
                         itemObj.put("resourceCount", resourceCount);
@@ -982,14 +994,19 @@ public class DeployAppConfigServiceTestApi extends PrivateApiComponentBase {
         try {
             DeployAppEnvAutoConfigVo baseSearchVo = new DeployAppEnvAutoConfigVo(-1L, -1L, -1L);
             String sql = deployResourceBuildSqlService.buildGetAppModuleEnvAutoConfigInstanceIdCountSql(baseSearchVo);
+            System.out.println("sql = " + sql);
             Column groupedColumn = new Column("cientity_APP.id");
             String groupBySql = buildGroupBySql(sql, groupedColumn);
+            System.out.println("groupBySql = " + groupBySql);
             List<Map<String, Object>> mapList = resourceCrossoverMapper.getMapListBySql(groupBySql);
+            System.out.println("mapList = " + mapList);
             for (Map<String, Object> rowMap : mapList) {
                 Object fieldValue = rowMap.get("fieldValue");
                 if (fieldValue != null) {
                     Long appSystemId = ((Number) fieldValue).longValue();
+                    System.out.println("appSystemId = " + appSystemId);
                     Long count = ((Number) rowMap.get("count")).longValue();
+                    System.out.println("count = " + count);
                     DeployAppEnvAutoConfigVo searchVo = buildAppModuleEnvAutoConfigSearchVo(appSystemId, null, null);
                     if (searchVo == null || searchVo.getEnvId() == null) {
                         JSONObject itemObj = new JSONObject(true);
@@ -1001,6 +1018,7 @@ public class DeployAppConfigServiceTestApi extends PrivateApiComponentBase {
                         continue;
                     }
                     int resourceCount = deployAppConfigService.getAppModuleEnvAutoConfigInstanceIdCount(searchVo);
+                    System.out.println("resourceCount = " + resourceCount);
                     if (resourceCount <= 0) {
                         JSONObject itemObj = new JSONObject(true);
                         itemObj.put("resourceCount", resourceCount);
@@ -1021,14 +1039,19 @@ public class DeployAppConfigServiceTestApi extends PrivateApiComponentBase {
         try {
             DeployAppEnvAutoConfigVo baseSearchVo = new DeployAppEnvAutoConfigVo(-1L, -1L, -1L);
             String sql = deployResourceBuildSqlService.buildGetAppModuleEnvAutoConfigInstanceIdCountSql(baseSearchVo);
+            System.out.println("sql = " + sql);
             Column groupedColumn = new Column("cientity_APP.id");
             String groupBySql = buildGroupBySql(sql, groupedColumn);
+            System.out.println("groupBySql = " + groupBySql);
             List<Map<String, Object>> mapList = resourceCrossoverMapper.getMapListBySql(groupBySql);
+            System.out.println("mapList = " + mapList);
             for (Map<String, Object> rowMap : mapList) {
                 Object fieldValue = rowMap.get("fieldValue");
                 if (fieldValue != null) {
                     Long appSystemId = ((Number) fieldValue).longValue();
+                    System.out.println("appSystemId = " + appSystemId);
                     Long count = ((Number) rowMap.get("count")).longValue();
+                    System.out.println("count = " + count);
                     DeployAppEnvAutoConfigVo searchVo = buildAppModuleEnvAutoConfigSearchVo(appSystemId, null, null);
                     if (searchVo == null) {
                         JSONObject itemObj = new JSONObject(true);
@@ -1040,8 +1063,10 @@ public class DeployAppConfigServiceTestApi extends PrivateApiComponentBase {
                         continue;
                     }
                     for (Integer isAutoConfig : List.of(1, 0)) {
+                        System.out.println("isAutoConfig = " + isAutoConfig);
                         searchVo.setIsAutoConfig(isAutoConfig);
                         int resourceCount = deployAppConfigService.getAppModuleEnvAutoConfigInstanceIdCount(searchVo);
+                        System.out.println("resourceCount = " + resourceCount);
                         if (resourceCount <= 0) {
                             JSONObject itemObj = new JSONObject(true);
                             itemObj.put("resourceCount", resourceCount);
@@ -1161,6 +1186,7 @@ public class DeployAppConfigServiceTestApi extends PrivateApiComponentBase {
         if (targetAppModuleId == null || targetEnvId == null) {
             return null;
         }
+        System.out.println("targetAppSystemId = " + targetAppSystemId + ", targetAppModuleId = " + targetAppModuleId + ", targetEnvId = " + targetEnvId);
         return new DeployAppEnvAutoConfigVo(targetAppSystemId, targetAppModuleId, targetEnvId);
     }
 

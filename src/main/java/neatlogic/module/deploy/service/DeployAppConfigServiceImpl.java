@@ -21,6 +21,7 @@ import neatlogic.framework.cmdb.exception.cientity.CiEntityNotFoundException;
 import neatlogic.framework.cmdb.exception.globalattr.GlobalAttrValueIrregularException;
 import neatlogic.framework.config.ConfigManager;
 import neatlogic.framework.crossover.CrossoverServiceFactory;
+import neatlogic.framework.dao.plugin.SqlCostInterceptor;
 import neatlogic.framework.deploy.dto.app.DeployAppConfigEnvDBConfigVo;
 import neatlogic.framework.deploy.dto.app.DeployAppConfigVo;
 import neatlogic.framework.deploy.dto.app.DeployAppEnvAutoConfigVo;
@@ -30,10 +31,12 @@ import neatlogic.framework.deploy.dto.app.DeployAppModuleEnvVo;
 import neatlogic.framework.deploy.dto.app.DeployAppModuleVo;
 import neatlogic.framework.deploy.dto.app.DeployResourceSearchVo;
 import neatlogic.framework.deploy.exception.DeployAppConfigModuleRunnerGroupNotFoundException;
+import neatlogic.framework.dto.healthcheck.SqlAuditVo;
 import neatlogic.framework.dto.runner.RunnerGroupVo;
 import neatlogic.framework.dto.runner.RunnerMapVo;
 import neatlogic.framework.exception.runner.RunnerGroupRunnerNotFoundException;
 import neatlogic.framework.exception.type.ParamIrregularException;
+import neatlogic.framework.healthcheck.SqlAuditManager;
 import neatlogic.module.deploy.dao.mapper.DeployAppConfigMapper;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
@@ -660,16 +663,31 @@ public class DeployAppConfigServiceImpl implements DeployAppConfigService {
             String sql = deployResourceBuildSqlService.buildGetAppModuleEnvAutoConfigInstanceIdCountSql(searchVo);
             if (StringUtils.isNotBlank(sql)) {
                 newRowNum = resourceCrossoverMapper.getCountBySql(sql);
+                if (newRowNum == 0) {
+                    System.out.println("getAppModuleEnvAutoConfigInstanceIdCount sql = " + sql);
+                }
             }
         }
         if (Objects.equals(mode, MYBATIS_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
+            String sqlId = "getAppModuleEnvAutoConfigInstanceIdCount";
+            SqlCostInterceptor.SqlIdMap.addId(sqlId);
             oldRowNum = deployAppConfigMapper.getAppModuleEnvAutoConfigInstanceIdCount(searchVo);
+            if (oldRowNum == 0) {
+                List<SqlAuditVo> sqlAuditList = new ArrayList<>(SqlAuditManager.getSqlAuditList());
+                for (SqlAuditVo sqlAuditVo : sqlAuditList) {
+                    if (sqlAuditVo.getId().endsWith(sqlId)) {
+                        System.out.println("sqlAuditVo.getSql() = " + sqlAuditVo.getSql());
+                    }
+                }
+            }
+            SqlCostInterceptor.SqlIdMap.removeId(sqlId);
+            SqlAuditManager.removeSqlAudit(sqlId);
         }
         if (Objects.equals(enable, COMPARISON_ENABLED) && oldRowNum != newRowNum) {
             JSONObject errorObj = new JSONObject();
             errorObj.put("newRowNum", newRowNum);
             errorObj.put("oldRowNum", oldRowNum);
-            logger.error("璧勪骇娓呭崟鏂版棫SQL鑾峰彇缁撴灉涓嶄竴鑷达細{}", errorObj);
+            logger.error("资产清单新旧SQL获取结果不一致：{}", errorObj);
         }
         if (Objects.equals(mode, JSQLPARSER_MODE)) {
             return newRowNum;
