@@ -16,7 +16,7 @@ import neatlogic.framework.portal.widget.core.IPortalWidgetGroup;
 public enum DeployPortalWidget implements IPortalWidget {
     deployPendingRelease("deployPendingRelease", "待发布版本", 1, DeployPortalWidgetGroup.deployGroup1),
     deployRunningDeployment("deployRunningDeployment", "执行中部署", 2, DeployPortalWidgetGroup.deployGroup1),
-    deployReleaseRisk("失败与风险发布", "", 3, DeployPortalWidgetGroup.deployGroup2),
+    deployReleaseRisk("deployReleaseRisk", "失败与风险发布", 3, DeployPortalWidgetGroup.deployGroup2),
     deployReleaseCalendar("deployReleaseCalendar", "发布日程与维护窗口", 4, DeployPortalWidgetGroup.deployGroup2),
     ;
     private final String value;
