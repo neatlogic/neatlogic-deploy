@@ -11,24 +11,21 @@
 package neatlogic.module.deploy.portal.widget;
 
 import neatlogic.framework.portal.widget.core.IPortalWidget;
-import neatlogic.framework.portal.widget.core.IPortalWidgetGroup;
 
 public enum DeployPortalWidget implements IPortalWidget {
-    deployPendingRelease("deployPendingRelease", "待发布版本", 1, DeployPortalWidgetGroup.deployGroup1),
-    deployRunningDeployment("deployRunningDeployment", "执行中部署", 2, DeployPortalWidgetGroup.deployGroup1),
-    deployReleaseRisk("deployReleaseRisk", "失败与风险发布", 3, DeployPortalWidgetGroup.deployGroup2),
-    deployReleaseCalendar("deployReleaseCalendar", "发布日程与维护窗口", 4, DeployPortalWidgetGroup.deployGroup2),
+    deployPendingRelease("deployPendingRelease", "待发布版本", 1),
+    deployRunningDeployment("deployRunningDeployment", "执行中部署", 2),
+    deployReleaseRisk("deployReleaseRisk", "失败与风险发布", 3),
+    deployReleaseCalendar("deployReleaseCalendar", "发布日程与维护窗口", 4),
     ;
     private final String value;
     private final String text;
     private final Integer sort;
-    private final IPortalWidgetGroup group;
 
-    DeployPortalWidget(String value, String text, Integer sort, IPortalWidgetGroup group) {
+    DeployPortalWidget(String value, String text, Integer sort) {
         this.value = value;
         this.text = text;
         this.sort = sort;
-        this.group = group;
     }
 
     @Override
@@ -44,10 +41,5 @@ public enum DeployPortalWidget implements IPortalWidget {
     @Override
     public Integer getSort() {
         return this.sort;
-    }
-
-    @Override
-    public IPortalWidgetGroup getGroup() {
-        return this.group;
     }
 }
