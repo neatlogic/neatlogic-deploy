@@ -23,55 +23,55 @@ public class AppInstanceEnvAppModuleAppSystemVo {
     @ResourceField(name = "id")
     private Long id;
 
-    @EntityField(name = "名称", type = ApiParamType.STRING)
+    @EntityField(name = "nmddrs.appinstanceenvappmoduleappsystemvo.name.name", type = ApiParamType.STRING)
     @ResourceField(name = "name")
     private String name;
 
-    @EntityField(name = "IP地址", type = ApiParamType.STRING)
+    @EntityField(name = "nmddrs.appinstanceenvappmoduleappsystemvo.ip.name", type = ApiParamType.STRING)
     @ResourceField(name = "ip")
     private String ip;
 
-    @EntityField(name = "端口", type = ApiParamType.INTEGER)
+    @EntityField(name = "nmddrs.appinstanceenvappmoduleappsystemvo.port.name", type = ApiParamType.INTEGER)
     @ResourceField(name = "port")
     private Integer port;
 
-    @EntityField(name = "类型ID", type = ApiParamType.LONG)
+    @EntityField(name = "nmddrs.appinstanceenvappmoduleappsystemvo.typeid.name", type = ApiParamType.LONG)
     @ResourceField(name = "type_id")
     private Long typeId;
-    @EntityField(name = "类型名称", type = ApiParamType.STRING)
+    @EntityField(name = "nmddrs.appinstanceenvappmoduleappsystemvo.typename.name", type = ApiParamType.STRING)
     @ResourceField(name = "type_name")
     private String typeName;
-    @EntityField(name = "类型Label", type = ApiParamType.STRING)
+    @EntityField(name = "nmddrs.appinstanceenvappmoduleappsystemvo.typelabel.name", type = ApiParamType.STRING)
     @ResourceField(name = "type_label")
     private String typeLabel;
 
-    @EntityField(name = "环境ID", type = ApiParamType.LONG)
+    @EntityField(name = "nmddrs.appinstanceenvappmoduleappsystemvo.envid.name", type = ApiParamType.LONG)
     @ResourceField(name = "env_id")
     private Long envId;
-    @EntityField(name = "环境名称", type = ApiParamType.STRING)
+    @EntityField(name = "nmddrs.appinstanceenvappmoduleappsystemvo.envname.name", type = ApiParamType.STRING)
     @ResourceField(name = "env_name")
     private String envName;
-    @EntityField(name = "环境序号", type = ApiParamType.INTEGER)
+    @EntityField(name = "nmddrs.appinstanceenvappmoduleappsystemvo.envseqno.name", type = ApiParamType.INTEGER)
     @ResourceField(name = "env_seq_no")
     private Integer envSeqNo;
 
-    @EntityField(name = "应用模块ID", type = ApiParamType.LONG)
+    @EntityField(name = "nmddrs.appinstanceenvappmoduleappsystemvo.appmoduleid.name", type = ApiParamType.LONG)
     @ResourceField(name = "app_module_id")
     private Long appModuleId;
-    @EntityField(name = "应用模块名", type = ApiParamType.STRING)
+    @EntityField(name = "nmddrs.appinstanceenvappmoduleappsystemvo.appmodulename.name", type = ApiParamType.STRING)
     @ResourceField(name = "app_module_name")
     private String appModuleName;
-    @EntityField(name = "应用模块简称", type = ApiParamType.STRING)
+    @EntityField(name = "nmddrs.appinstanceenvappmoduleappsystemvo.appmoduleabbrname.name", type = ApiParamType.STRING)
     @ResourceField(name = "app_module_abbr_name")
     private String appModuleAbbrName;
 
-    @EntityField(name = "应用系统ID", type = ApiParamType.LONG)
+    @EntityField(name = "nmddrs.appinstanceenvappmoduleappsystemvo.appsystemid.name", type = ApiParamType.LONG)
     @ResourceField(name = "app_system_id")
     private Long appSystemId;
-    @EntityField(name = "应用系统名", type = ApiParamType.STRING)
+    @EntityField(name = "nmddrs.appinstanceenvappmoduleappsystemvo.appsystemname.name", type = ApiParamType.STRING)
     @ResourceField(name = "app_system_name")
     private String appSystemName;
-    @EntityField(name = "应用系统简称", type = ApiParamType.STRING)
+    @EntityField(name = "nmddrs.appinstanceenvappmoduleappsystemvo.appsystemabbrname.name", type = ApiParamType.STRING)
     @ResourceField(name = "app_system_abbr_name")
     private String appSystemAbbrName;
 }

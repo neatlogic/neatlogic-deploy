@@ -69,7 +69,7 @@ public class ListDeployAppConfigEnvAttrApi extends PrivateApiComponentBase {
     })
     @Output({
             @Param(explode = BasePageVo.class),
-            @Param(name = "tbodyList", explode = DeployAppEnvAutoConfigVo[].class, desc = "应用配置环境autoConfig列表")
+            @Param(name = "tbodyList", explode = DeployAppEnvAutoConfigVo[].class, desc = "nmdaae.listdeployappconfigenvattrapi.output.param.desc.tbodylist")
     })
     @Description(desc = "nmdaae.listdeployappconfigenvattrapi.getname")
     @Override

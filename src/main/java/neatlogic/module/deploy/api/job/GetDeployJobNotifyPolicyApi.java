@@ -42,7 +42,7 @@ public class GetDeployJobNotifyPolicyApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "获取发布应用的通知策略id";
+        return "nmdaj.getdeployjobnotifypolicyapi.getname";
     }
 
     @Override
@@ -51,12 +51,12 @@ public class GetDeployJobNotifyPolicyApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "应用系统id")
+            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaj.getdeployjobnotifypolicyapi.input.param.desc.appsystemid")
     })
     @Output({
-            @Param(explode = InvokeNotifyPolicyConfigVo.class, desc = "通知策略配置信息")
+            @Param(explode = InvokeNotifyPolicyConfigVo.class, desc = "nmdaj.getdeployjobnotifypolicyapi.output.param.desc.invokenotifypolicyconfigvo")
     })
-    @Description(desc = "获取发布应用的通知策略id")
+    @Description(desc = "nmdaj.getdeployjobnotifypolicyapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         Long appSystemId = paramObj.getLong("appSystemId");

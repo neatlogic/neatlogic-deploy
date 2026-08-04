@@ -44,7 +44,7 @@ public class SearchDeployJobWebhookAuditApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "查询发布作业触发器记录";
+        return "nmdaw.searchdeployjobwebhookauditapi.getname";
     }
 
     @Override
@@ -53,10 +53,10 @@ public class SearchDeployJobWebhookAuditApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "webhookId", type = ApiParamType.LONG, isRequired = true, desc = "触发器id"),
-            @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "当前页码"),
-            @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "页大小")})
-    @Output({@Param(explode = BasePageVo.class), @Param(name = "tbodyList", explode = DeployJobWebhookAuditVo[].class, desc = "作业触发器记录列表"),})
+            @Param(name = "webhookId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaw.searchdeployjobwebhookauditapi.input.param.desc.webhookid"),
+            @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "nmdaw.searchdeployjobwebhookauditapi.input.param.desc.currentpage"),
+            @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "nmdaw.searchdeployjobwebhookauditapi.input.param.desc.pagesize")})
+    @Output({@Param(explode = BasePageVo.class), @Param(name = "tbodyList", explode = DeployJobWebhookAuditVo[].class, desc = "nmdaw.searchdeployjobwebhookauditapi.output.param.desc.tbodylist"),})
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         DeployJobWebhookAuditVo deployJobWebhookAuditVo = paramObj.toJavaObject(DeployJobWebhookAuditVo.class);

@@ -36,7 +36,7 @@ public class RollbackDeployEnvVersionApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "回退环境的版本";
+        return "nmdae.rollbackdeployenvversionapi.getname";
     }
 
     @Override
@@ -50,13 +50,13 @@ public class RollbackDeployEnvVersionApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "sysId", desc = "应用ID", isRequired = true, type = ApiParamType.LONG),
-            @Param(name = "moduleId", desc = "应用模块id", isRequired = true, type = ApiParamType.LONG),
-            @Param(name = "envId", desc = "环境id", isRequired = true, type = ApiParamType.LONG),
+            @Param(name = "sysId", desc = "nmdae.rollbackdeployenvversionapi.input.param.desc.sysid", isRequired = true, type = ApiParamType.LONG),
+            @Param(name = "moduleId", desc = "nmdae.rollbackdeployenvversionapi.input.param.desc.moduleid", isRequired = true, type = ApiParamType.LONG),
+            @Param(name = "envId", desc = "nmdae.rollbackdeployenvversionapi.input.param.desc.envid", isRequired = true, type = ApiParamType.LONG),
     })
     @Output({
     })
-    @Description(desc = "回退环境的版本")
+    @Description(desc = "nmdae.rollbackdeployenvversionapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         Long sysId = paramObj.getLong("sysId");

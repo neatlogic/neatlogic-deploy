@@ -64,7 +64,7 @@ public class SaveDeployAppPipelineParamApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "保存应用流水线作业参数";
+        return "nmdaa.savedeployapppipelineparamapi.getname";
     }
 
     @Override
@@ -73,10 +73,10 @@ public class SaveDeployAppPipelineParamApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "应用系统ID"),
-            @Param(name = "paramList", type = ApiParamType.JSONARRAY, isRequired = true, desc = "参数列表[{\"key\": \"参数名\", \"name\": \"中文名\", \"defaultValue\": \"默认值\", \"description\": \"描述\", \"isRequired\": \"是否必填\", \"type\": \"参数类型\"}]")
+            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaa.savedeployapppipelineparamapi.input.param.desc.appsystemid"),
+            @Param(name = "paramList", type = ApiParamType.JSONARRAY, isRequired = true, desc = "nmdaa.savedeployapppipelineparamapi.input.param.desc.paramlist")
     })
-    @Description(desc = "保存应用流水线作业参数")
+    @Description(desc = "nmdaa.savedeployapppipelineparamapi.getname")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         //校验环境权限、编辑配置的操作权限

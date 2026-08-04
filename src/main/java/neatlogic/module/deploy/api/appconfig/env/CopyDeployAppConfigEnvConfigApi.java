@@ -55,7 +55,7 @@ public class CopyDeployAppConfigEnvConfigApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "复制环境层配置";
+        return "nmdaae.copydeployappconfigenvconfigapi.getname";
     }
 
     @Override
@@ -69,15 +69,15 @@ public class CopyDeployAppConfigEnvConfigApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "应用系统id"),
-            @Param(name = "appModuleId", type = ApiParamType.LONG, isRequired = true, desc = "应用模块id"),
-            @Param(name = "fromEnvId", type = ApiParamType.LONG, isRequired = true, desc = "来源环境id"),
-            @Param(name = "toEnvIdList", type = ApiParamType.JSONARRAY, isRequired = true, desc = "目标环境id列表"),
-            @Param(name = "isAdd", type = ApiParamType.INTEGER, isRequired = true, desc = "是否新增(0:现有，1:新增)")
+            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaae.copydeployappconfigenvconfigapi.input.param.desc.appsystemid"),
+            @Param(name = "appModuleId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaae.copydeployappconfigenvconfigapi.input.param.desc.appmoduleid"),
+            @Param(name = "fromEnvId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaae.copydeployappconfigenvconfigapi.input.param.desc.fromenvid"),
+            @Param(name = "toEnvIdList", type = ApiParamType.JSONARRAY, isRequired = true, desc = "nmdaae.copydeployappconfigenvconfigapi.input.param.desc.toenvidlist"),
+            @Param(name = "isAdd", type = ApiParamType.INTEGER, isRequired = true, desc = "nmdaae.copydeployappconfigenvconfigapi.input.param.desc.isadd")
     })
     @Output({
     })
-    @Description(desc = "复制环境层配置(复制环境层配置)")
+    @Description(desc = "nmdaae.copydeployappconfigenvconfigapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         Long appSystemId = paramObj.getLong("appSystemId");

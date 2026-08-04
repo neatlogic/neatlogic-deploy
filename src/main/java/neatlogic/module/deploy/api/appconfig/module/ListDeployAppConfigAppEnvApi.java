@@ -75,7 +75,7 @@ public class ListDeployAppConfigAppEnvApi extends PrivateApiComponentBase {
             @Param(name = "needPage", type = ApiParamType.BOOLEAN, defaultValue = "false", desc = "common.isneedpage"),
             @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.appsystemid"),
             @Param(name = "appModuleId", type = ApiParamType.LONG, desc = "term.cmdb.appmoduleid"),
-            @Param(name = "isHasEnv", type = ApiParamType.INTEGER, desc = "term.cmdb.isexistingenv", help = "0:查找现没有的环境，1：查找现有的环境"),
+            @Param(name = "isHasEnv", type = ApiParamType.INTEGER, desc = "term.cmdb.isexistingenv", help = "nmdaam.listdeployappconfigappenvapi.input.param.help.ishasenv"),
     })
     @Output({
             @Param(explode = AppEnvironmentVo[].class, desc = "common.tbodylist"),

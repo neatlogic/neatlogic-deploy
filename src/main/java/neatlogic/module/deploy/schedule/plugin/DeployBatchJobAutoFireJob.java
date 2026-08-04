@@ -50,7 +50,7 @@ import java.util.List;
 public class DeployBatchJobAutoFireJob extends JobBase {
     @Override
     public String getName() {
-        return "发布批量作业计划启动";
+        return "nmdsp.deploybatchjobautofirejob.getname";
     }
 
     static Logger logger = LoggerFactory.getLogger(DeployBatchJobAutoFireJob.class);

@@ -57,7 +57,7 @@ public class SearchDeployActiveVersionApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "查询发布活动版本";
+        return "nmdaa.searchdeployactiveversionapi.getname";
     }
 
     @Override
@@ -71,14 +71,14 @@ public class SearchDeployActiveVersionApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "defaultValue", type = ApiParamType.JSONARRAY, desc = "默认应用系统ID列表(为空则代表查看所有应用)"),
-            @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "当前页"),
-            @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "每页数据条目"),
-            @Param(name = "needPage", type = ApiParamType.BOOLEAN, desc = "是否需要分页，默认true"),
+            @Param(name = "defaultValue", type = ApiParamType.JSONARRAY, desc = "nmdaa.searchdeployactiveversionapi.input.param.desc.defaultvalue"),
+            @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "nmdaa.searchdeployactiveversionapi.input.param.desc.currentpage"),
+            @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "nmdaa.searchdeployactiveversionapi.input.param.desc.pagesize"),
+            @Param(name = "needPage", type = ApiParamType.BOOLEAN, desc = "nmdaa.searchdeployactiveversionapi.input.param.desc.needpage"),
     })
     @Output({
     })
-    @Description(desc = "查询发布活动版本")
+    @Description(desc = "nmdaa.searchdeployactiveversionapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         DeployResourceSearchVo searchVo = paramObj.toJavaObject(DeployResourceSearchVo.class);

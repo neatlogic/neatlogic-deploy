@@ -1,5 +1,6 @@
 package neatlogic.module.deploy.api.version.resource;
 
+import neatlogic.framework.exception.file.FilePathIllegalException;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.common.constvalue.ResponseCode;
@@ -44,7 +45,7 @@ public class GetDirectoryContentApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "获取目录内容";
+        return "nmdavr.getdirectorycontentapi.getname";
     }
 
     @Override
@@ -58,22 +59,22 @@ public class GetDirectoryContentApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "id", desc = "版本id", isRequired = true, type = ApiParamType.LONG),
-            @Param(name = "buildNo", desc = "buildNo(当resourceType为[mirror*|workspace]时不需要)", type = ApiParamType.INTEGER),
-            @Param(name = "envId", desc = "环境ID(当resourceType为[build*|workspace]时不需要)", type = ApiParamType.LONG),
-            @Param(name = "resourceType", member = DeployResourceType.class, desc = "制品类型", isRequired = true, type = ApiParamType.ENUM),
-            @Param(name = "path", desc = "目标路径(路径一律以'/'开头，HOME本身的路径为'/')", isRequired = true, type = ApiParamType.STRING)
+            @Param(name = "id", desc = "nmdavr.getdirectorycontentapi.input.param.desc.id", isRequired = true, type = ApiParamType.LONG),
+            @Param(name = "buildNo", desc = "nmdavr.getdirectorycontentapi.input.param.desc.buildno", type = ApiParamType.INTEGER),
+            @Param(name = "envId", desc = "nmdavr.getdirectorycontentapi.input.param.desc.envid", type = ApiParamType.LONG),
+            @Param(name = "resourceType", member = DeployResourceType.class, desc = "nmdavr.getdirectorycontentapi.input.param.desc.resourcetype", isRequired = true, type = ApiParamType.ENUM),
+            @Param(name = "path", desc = "nmdavr.getdirectorycontentapi.input.param.desc.path", isRequired = true, type = ApiParamType.STRING)
     })
     @Output({
-            @Param(name = "name", type = ApiParamType.STRING, desc = "文件名"),
-            @Param(name = "type", type = ApiParamType.STRING, desc = "文件类型"),
-            @Param(name = "size", type = ApiParamType.LONG, desc = "文件大小"),
-            @Param(name = "fcd", type = ApiParamType.LONG, desc = "最后修改时间"),
-            @Param(name = "fcdText", type = ApiParamType.STRING, desc = "最后修改时间(格式化为yyyy-MM-dd HH:mm:ss)"),
-            @Param(name = "permission", type = ApiParamType.STRING, desc = "文件权限"),
-            @Param(name = "hasItems", type = ApiParamType.INTEGER, desc = "目录是否有内容")
+            @Param(name = "name", type = ApiParamType.STRING, desc = "nmdavr.getdirectorycontentapi.output.param.desc.name"),
+            @Param(name = "type", type = ApiParamType.STRING, desc = "nmdavr.getdirectorycontentapi.output.param.desc.type"),
+            @Param(name = "size", type = ApiParamType.LONG, desc = "nmdavr.getdirectorycontentapi.output.param.desc.size"),
+            @Param(name = "fcd", type = ApiParamType.LONG, desc = "nmdavr.getdirectorycontentapi.output.param.desc.fcd"),
+            @Param(name = "fcdText", type = ApiParamType.STRING, desc = "nmdavr.getdirectorycontentapi.output.param.desc.fcdtext"),
+            @Param(name = "permission", type = ApiParamType.STRING, desc = "nmdavr.getdirectorycontentapi.output.param.desc.permission"),
+            @Param(name = "hasItems", type = ApiParamType.INTEGER, desc = "nmdavr.getdirectorycontentapi.output.param.desc.hasitems")
     })
-    @Description(desc = "获取目录内容")
+    @Description(desc = "nmdavr.getdirectorycontentapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         Long id = paramObj.getLong("id");
@@ -122,7 +123,7 @@ public class GetDirectoryContentApi extends PrivateApiComponentBase {
             // 目录列表同样先在deploy侧限制为安全相对路径，再交给runner做真实路径边界校验。
             return StringUtils.isBlank(safePath) ? "/" : "/" + safePath;
         } catch (IllegalArgumentException ex) {
-            throw new GetDirectoryFailedException("文件路径不合法");
+            throw new FilePathIllegalException(path);
         }
     }
 }

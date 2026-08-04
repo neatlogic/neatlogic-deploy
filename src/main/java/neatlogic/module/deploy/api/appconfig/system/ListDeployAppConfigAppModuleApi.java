@@ -38,7 +38,7 @@ public class ListDeployAppConfigAppModuleApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "查询发布应用配置的应用系统模块列表";
+        return "nmdaas.listdeployappconfigappmoduleapi.getname";
     }
 
     @Override
@@ -52,13 +52,13 @@ public class ListDeployAppConfigAppModuleApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "appSystemId", type = ApiParamType.LONG, desc = "应用系统id"),
-            @Param(name = "appModuleIdList", type = ApiParamType.JSONARRAY, desc = "应用模块id列表")
+            @Param(name = "appSystemId", type = ApiParamType.LONG, desc = "nmdaas.listdeployappconfigappmoduleapi.input.param.desc.appsystemid"),
+            @Param(name = "appModuleIdList", type = ApiParamType.JSONARRAY, desc = "nmdaas.listdeployappconfigappmoduleapi.input.param.desc.appmoduleidlist")
     })
     @Output({
-            @Param(explode = DeployAppModuleVo[].class, desc = "发布应用配置的应用系统模块列表")
+            @Param(explode = DeployAppModuleVo[].class, desc = "nmdaas.listdeployappconfigappmoduleapi.output.param.desc.return")
     })
-    @Description(desc = "查询发布应用配置的应用系统模块列表(树的模块下拉)")
+    @Description(desc = "nmdaas.listdeployappconfigappmoduleapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         List<ResourceVo> moduleResourceList = new ArrayList<>();

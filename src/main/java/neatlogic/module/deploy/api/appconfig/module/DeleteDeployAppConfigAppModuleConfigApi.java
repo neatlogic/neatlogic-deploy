@@ -37,7 +37,7 @@ public class DeleteDeployAppConfigAppModuleConfigApi extends PrivateApiComponent
 
     @Override
     public String getName() {
-        return "删除发布应用配置模块配置";
+        return "nmdaam.deletedeployappconfigappmoduleconfigapi.getname";
     }
 
     @Override
@@ -51,10 +51,10 @@ public class DeleteDeployAppConfigAppModuleConfigApi extends PrivateApiComponent
     }
 
     @Input({
-            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "应用系统id"),
-            @Param(name = "appModuleId", type = ApiParamType.LONG, isRequired = true, desc = "应用模块id")
+            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaam.deletedeployappconfigappmoduleconfigapi.input.param.desc.appsystemid"),
+            @Param(name = "appModuleId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaam.deletedeployappconfigappmoduleconfigapi.input.param.desc.appmoduleid")
     })
-    @Description(desc = "删除发布应用配置模块")
+    @Description(desc = "nmdaam.deletedeployappconfigappmoduleconfigapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
 

@@ -34,7 +34,7 @@ public class GetJobTemplateApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "获取作业模板信息";
+        return "nmdap.getjobtemplateapi.getname";
     }
 
     @Override
@@ -47,9 +47,9 @@ public class GetJobTemplateApi extends PrivateApiComponentBase {
         return "/deploy/pipeline/jobtemplate/get";
     }
 
-    @Input({@Param(name = "id", type = ApiParamType.LONG, isRequired = true, desc = "id")})
+    @Input({@Param(name = "id", type = ApiParamType.LONG, isRequired = true, desc = "nmdap.getjobtemplateapi.input.param.desc.id")})
     @Output({@Param(explode = PipelineJobTemplateVo.class)})
-    @Description(desc = "获取作业模板信息接口")
+    @Description(desc = "nmdap.getjobtemplateapi.getname")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         return deployPipelineMapper.getJobTemplateById(jsonObj.getLong("id"));

@@ -36,7 +36,7 @@ public class GetBatchDeployJobStatusApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "获取单个批量作业状态信息";
+        return "nmdajb.getbatchdeployjobstatusapi.getname";
     }
 
     @Override
@@ -44,9 +44,9 @@ public class GetBatchDeployJobStatusApi extends PrivateApiComponentBase {
         return null;
     }
 
-    @Input({@Param(name = "id", type = ApiParamType.LONG, isRequired = true, desc = "作业id")})
+    @Input({@Param(name = "id", type = ApiParamType.LONG, isRequired = true, desc = "nmdajb.getbatchdeployjobstatusapi.input.param.desc.id")})
     @Output({@Param(explode = DeployJobVo.class)})
-    @Description(desc = "获取单个批量作业状态信息接口，主要用于刷新状态")
+    @Description(desc = "nmdajb.getbatchdeployjobstatusapi.getname")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         return deployJobMapper.getJobBaseInfoById(jsonObj.getLong("id"));

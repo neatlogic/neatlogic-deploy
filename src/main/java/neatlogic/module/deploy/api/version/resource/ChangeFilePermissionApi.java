@@ -52,7 +52,7 @@ public class ChangeFilePermissionApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "修改文件权限";
+        return "nmdavr.changefilepermissionapi.getname";
     }
 
     @Override
@@ -66,13 +66,13 @@ public class ChangeFilePermissionApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "id", desc = "版本id", isRequired = true, type = ApiParamType.LONG),
-            @Param(name = "buildNo", desc = "buildNo(当resourceType为[mirror*|workspace]时不需要)", type = ApiParamType.INTEGER),
-            @Param(name = "envId", desc = "环境ID(当resourceType为[build*|workspace]时不需要)", type = ApiParamType.LONG),
-            @Param(name = "resourceType", member = DeployResourceType.class, desc = "制品类型", isRequired = true, type = ApiParamType.ENUM),
-            @Param(name = "mode", desc = "权限(e.g:rwxr-xr-x)", isRequired = true, type = ApiParamType.STRING)
+            @Param(name = "id", desc = "nmdavr.changefilepermissionapi.input.param.desc.id", isRequired = true, type = ApiParamType.LONG),
+            @Param(name = "buildNo", desc = "nmdavr.changefilepermissionapi.input.param.desc.buildno", type = ApiParamType.INTEGER),
+            @Param(name = "envId", desc = "nmdavr.changefilepermissionapi.input.param.desc.envid", type = ApiParamType.LONG),
+            @Param(name = "resourceType", member = DeployResourceType.class, desc = "nmdavr.changefilepermissionapi.input.param.desc.resourcetype", isRequired = true, type = ApiParamType.ENUM),
+            @Param(name = "mode", desc = "nmdavr.changefilepermissionapi.input.param.desc.mode", isRequired = true, type = ApiParamType.STRING)
     })
-    @Description(desc = "修改文件权限")
+    @Description(desc = "nmdavr.changefilepermissionapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         Long id = paramObj.getLong("id");

@@ -94,11 +94,11 @@ public class CallbackDeployCiSvnEventApi extends PrivateApiComponentBase {
             @Param(name = "dirsChanged", desc = "nmdac.callbackdeploycisvneventapi.input.param.desc.dirschanged", type = ApiParamType.STRING, isRequired = true),
             @Param(name = "revision", desc = "nmdac.callbackdeploycisvneventapi.input.param.desc.revision", type = ApiParamType.STRING, isRequired = true),
             @Param(name = "author", desc = "nmdac.callbackdeploycisvneventapi.input.param.desc.author", type = ApiParamType.STRING, isRequired = true),
-            @Param(name = "date", desc = "nmdac.callbackdeploycisvneventapi.input.param.desc.date", help = "格式yyyy-MM-dd hh:mm:ss", type = ApiParamType.STRING, isRequired = true),
-            @Param(name = "message", desc = "nmdac.callbackdeploycisvneventapi.input.param.desc.message", help = "包含'--nodeploy'时不会执行动作", type = ApiParamType.STRING),
-            @Param(name = "added", desc = "nmdac.callbackdeploycisvneventapi.input.param.desc.added", help = "多个“,”分割", type = ApiParamType.STRING),
-            @Param(name = "modified", desc = "nmdac.callbackdeploycisvneventapi.input.param.desc.modified", help = "多个“,”分割", type = ApiParamType.STRING),
-            @Param(name = "deleted", desc = "nmdac.callbackdeploycisvneventapi.input.param.desc.deleted", help = "多个“,”分割", type = ApiParamType.STRING)
+            @Param(name = "date", desc = "nmdac.callbackdeploycisvneventapi.input.param.desc.date", help = "nmdac.callbackdeploycisvneventapi.input.param.help.date", type = ApiParamType.STRING, isRequired = true),
+            @Param(name = "message", desc = "nmdac.callbackdeploycisvneventapi.input.param.desc.message", help = "nmdac.callbackdeploycisvneventapi.input.param.help.message", type = ApiParamType.STRING),
+            @Param(name = "added", desc = "nmdac.callbackdeploycisvneventapi.input.param.desc.added", help = "nmdac.callbackdeploycisvneventapi.input.param.help.added", type = ApiParamType.STRING),
+            @Param(name = "modified", desc = "nmdac.callbackdeploycisvneventapi.input.param.desc.modified", help = "nmdac.callbackdeploycisvneventapi.input.param.help.modified", type = ApiParamType.STRING),
+            @Param(name = "deleted", desc = "nmdac.callbackdeploycisvneventapi.input.param.desc.deleted", help = "nmdac.callbackdeploycisvneventapi.input.param.help.deleted", type = ApiParamType.STRING)
     })
     @Description(desc = "nmdac.callbackdeploycisvneventapi.getname")
     @Override

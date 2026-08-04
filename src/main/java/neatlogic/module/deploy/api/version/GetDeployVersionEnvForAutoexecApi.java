@@ -61,7 +61,7 @@ public class GetDeployVersionEnvForAutoexecApi extends PrivateApiComponentBase {
             @Param(name = "moduleName", type = ApiParamType.STRING, isRequired = true, desc = "term.cmdb.modulename"),
             @Param(name = "envName", type = ApiParamType.STRING, isRequired = true, desc = "term.cmdb.envname"),
             @Param(name = "version", desc = "common.versionnum", isRequired = true, type = ApiParamType.STRING),
-            @Param(name = "proxyToUrl", desc = "term.deploy.proxytourl", help = "可选，如果有则表示去其他环境获取", rule = RegexUtils.CONNECT_URL, type = ApiParamType.REGEX),
+            @Param(name = "proxyToUrl", desc = "term.deploy.proxytourl", help = "nmdav.getdeployversionenvforautoexecapi.input.param.help.proxytourl", rule = RegexUtils.CONNECT_URL, type = ApiParamType.REGEX),
     })
     @Description(desc = "nmdav.getdeployversionenvforautoexecapi.getname")
     @Override

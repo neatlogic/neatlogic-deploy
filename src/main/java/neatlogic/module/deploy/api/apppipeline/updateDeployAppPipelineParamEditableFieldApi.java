@@ -49,7 +49,7 @@ public class updateDeployAppPipelineParamEditableFieldApi extends PrivateApiComp
 
     @Override
     public String getName() {
-        return "更新应用流水线作业参数的可编辑字段值";
+        return "nmdaa.updatedeployapppipelineparameditablefieldapi.getname";
     }
 
     @Override
@@ -58,7 +58,7 @@ public class updateDeployAppPipelineParamEditableFieldApi extends PrivateApiComp
     }
 
     @Input({})
-    @Description(desc = "更新应用流水线作业参数的可编辑字段值")
+    @Description(desc = "nmdaa.updatedeployapppipelineparameditablefieldapi.getname")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         JSONArray resultList = new JSONArray();

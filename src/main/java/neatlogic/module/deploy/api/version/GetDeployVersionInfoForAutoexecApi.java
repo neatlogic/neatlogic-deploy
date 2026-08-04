@@ -26,7 +26,7 @@ public class GetDeployVersionInfoForAutoexecApi extends PrivateApiComponentBase 
 
     @Override
     public String getName() {
-        return "获取发布版本配置";
+        return "nmdav.getdeployversioninfoforautoexecapi.getname";
     }
 
     @Override
@@ -40,12 +40,12 @@ public class GetDeployVersionInfoForAutoexecApi extends PrivateApiComponentBase 
     }
 
     @Input({
-            @Param(name = "sysId", desc = "应用ID", isRequired = true, type = ApiParamType.LONG),
-            @Param(name = "moduleId", desc = "应用模块id", isRequired = true, type = ApiParamType.LONG),
-            @Param(name = "version", desc = "版本号", isRequired = true, type = ApiParamType.STRING),
-            @Param(name = "buildNo", desc = "builNo", isRequired = true, type = ApiParamType.INTEGER),
+            @Param(name = "sysId", desc = "nmdav.getdeployversioninfoforautoexecapi.input.param.desc.sysid", isRequired = true, type = ApiParamType.LONG),
+            @Param(name = "moduleId", desc = "nmdav.getdeployversioninfoforautoexecapi.input.param.desc.moduleid", isRequired = true, type = ApiParamType.LONG),
+            @Param(name = "version", desc = "nmdav.getdeployversioninfoforautoexecapi.input.param.desc.version", isRequired = true, type = ApiParamType.STRING),
+            @Param(name = "buildNo", desc = "nmdav.getdeployversioninfoforautoexecapi.input.param.desc.buildno", isRequired = true, type = ApiParamType.INTEGER),
     })
-    @Description(desc = "获取发布版本配置")
+    @Description(desc = "nmdav.getdeployversioninfoforautoexecapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         Long sysId = paramObj.getLong("sysId");

@@ -72,7 +72,7 @@ public class UploadloadFileApi extends PrivateBinaryStreamApiComponentBase {
 
     @Override
     public String getName() {
-        return "上传文件";
+        return "nmdavr.uploadloadfileapi.getname";
     }
 
     @Override
@@ -81,16 +81,16 @@ public class UploadloadFileApi extends PrivateBinaryStreamApiComponentBase {
     }
 
     @Input({
-            @Param(name = "id", desc = "版本id", isRequired = true, type = ApiParamType.LONG),
-            @Param(name = "buildNo", desc = "buildNo(当resourceType为[mirror*|workspace]时不需要)", type = ApiParamType.INTEGER),
-            @Param(name = "envId", desc = "环境ID(当resourceType为[build*|workspace]时不需要)", type = ApiParamType.LONG),
-            @Param(name = "resourceType", member = DeployResourceType.class, desc = "制品类型", isRequired = true, type = ApiParamType.ENUM),
-            @Param(name = "path", type = ApiParamType.STRING, desc = "文件路径(路径一律以'/'开头，HOME本身的路径为'/')", isRequired = true),
-            @Param(name = "unpack", type = ApiParamType.ENUM, rule = "1,0", desc = "是否解压"),
-            @Param(name = "fileParamName", type = ApiParamType.STRING, desc = "文件参数名称", isRequired = true),
+            @Param(name = "id", desc = "nmdavr.uploadloadfileapi.input.param.desc.id", isRequired = true, type = ApiParamType.LONG),
+            @Param(name = "buildNo", desc = "nmdavr.uploadloadfileapi.input.param.desc.buildno", type = ApiParamType.INTEGER),
+            @Param(name = "envId", desc = "nmdavr.uploadloadfileapi.input.param.desc.envid", type = ApiParamType.LONG),
+            @Param(name = "resourceType", member = DeployResourceType.class, desc = "nmdavr.uploadloadfileapi.input.param.desc.resourcetype", isRequired = true, type = ApiParamType.ENUM),
+            @Param(name = "path", type = ApiParamType.STRING, desc = "nmdavr.uploadloadfileapi.input.param.desc.path", isRequired = true),
+            @Param(name = "unpack", type = ApiParamType.ENUM, rule = "1,0", desc = "nmdavr.uploadloadfileapi.input.param.desc.unpack"),
+            @Param(name = "fileParamName", type = ApiParamType.STRING, desc = "nmdavr.uploadloadfileapi.input.param.desc.fileparamname", isRequired = true),
     })
     @Output({})
-    @Description(desc = "上传文件")
+    @Description(desc = "nmdavr.uploadloadfileapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj, HttpServletRequest request, HttpServletResponse response) throws Exception {
         Long id = paramObj.getLong("id");

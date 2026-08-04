@@ -51,7 +51,7 @@ public class CreateDirectoryApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "新建目录";
+        return "nmdavr.createdirectoryapi.getname";
     }
 
     @Override
@@ -65,13 +65,13 @@ public class CreateDirectoryApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "id", desc = "版本id", isRequired = true, type = ApiParamType.LONG),
-            @Param(name = "buildNo", desc = "buildNo(当resourceType为[mirror*|workspace]时不需要)", type = ApiParamType.INTEGER),
-            @Param(name = "envId", desc = "环境ID(当resourceType为[build*|workspace]时不需要)", type = ApiParamType.LONG),
-            @Param(name = "resourceType", member = DeployResourceType.class, desc = "制品类型", isRequired = true, type = ApiParamType.ENUM),
-            @Param(name = "path", desc = "目标路径(路径一律以'/'开头，HOME本身的路径为'/')", isRequired = true, type = ApiParamType.STRING)
+            @Param(name = "id", desc = "nmdavr.createdirectoryapi.input.param.desc.id", isRequired = true, type = ApiParamType.LONG),
+            @Param(name = "buildNo", desc = "nmdavr.createdirectoryapi.input.param.desc.buildno", type = ApiParamType.INTEGER),
+            @Param(name = "envId", desc = "nmdavr.createdirectoryapi.input.param.desc.envid", type = ApiParamType.LONG),
+            @Param(name = "resourceType", member = DeployResourceType.class, desc = "nmdavr.createdirectoryapi.input.param.desc.resourcetype", isRequired = true, type = ApiParamType.ENUM),
+            @Param(name = "path", desc = "nmdavr.createdirectoryapi.input.param.desc.path", isRequired = true, type = ApiParamType.STRING)
     })
-    @Description(desc = "新建目录")
+    @Description(desc = "nmdavr.createdirectoryapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         Long id = paramObj.getLong("id");

@@ -29,7 +29,7 @@ public class SaveDeployVersionBuildQualityApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "保存发布版本构建质量";
+        return "nmdav.savedeployversionbuildqualityapi.getname";
     }
 
     @Override
@@ -43,14 +43,14 @@ public class SaveDeployVersionBuildQualityApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "sysId", desc = "应用ID", isRequired = true, type = ApiParamType.LONG),
-            @Param(name = "moduleId", desc = "应用模块id", isRequired = true, type = ApiParamType.LONG),
-            @Param(name = "version", desc = "版本号", isRequired = true, type = ApiParamType.STRING),
-            @Param(explode = DeployVersionBuildQualityVo.class, desc = "代码质量指标", type = ApiParamType.JSONOBJECT),
+            @Param(name = "sysId", desc = "nmdav.savedeployversionbuildqualityapi.input.param.desc.sysid", isRequired = true, type = ApiParamType.LONG),
+            @Param(name = "moduleId", desc = "nmdav.savedeployversionbuildqualityapi.input.param.desc.moduleid", isRequired = true, type = ApiParamType.LONG),
+            @Param(name = "version", desc = "nmdav.savedeployversionbuildqualityapi.input.param.desc.version", isRequired = true, type = ApiParamType.STRING),
+            @Param(explode = DeployVersionBuildQualityVo.class, desc = "nmdav.savedeployversionbuildqualityapi.input.param.desc.deployversionbuildqualityvo", type = ApiParamType.JSONOBJECT),
     })
     @Output({
     })
-    @Description(desc = "保存发布版本构建质量")
+    @Description(desc = "nmdav.savedeployversionbuildqualityapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
 

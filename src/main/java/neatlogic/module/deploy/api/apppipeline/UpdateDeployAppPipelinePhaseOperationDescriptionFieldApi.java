@@ -55,7 +55,7 @@ public class UpdateDeployAppPipelinePhaseOperationDescriptionFieldApi extends Pr
 
     @Override
     public String getName() {
-        return "更新应用流水线阶段操作的描述字段值";
+        return "nmdaa.updatedeployapppipelinephaseoperationdescriptionfieldapi.getname";
     }
 
     @Override
@@ -64,7 +64,7 @@ public class UpdateDeployAppPipelinePhaseOperationDescriptionFieldApi extends Pr
     }
 
     @Input({})
-    @Description(desc = "更新应用流水线阶段操作的描述字段值")
+    @Description(desc = "nmdaa.updatedeployapppipelinephaseoperationdescriptionfieldapi.getname")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         JSONArray resultList = new JSONArray();

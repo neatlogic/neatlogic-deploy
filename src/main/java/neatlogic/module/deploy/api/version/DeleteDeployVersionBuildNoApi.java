@@ -30,7 +30,7 @@ public class DeleteDeployVersionBuildNoApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "删除发布版本buildNo";
+        return "nmdav.deletedeployversionbuildnoapi.getname";
     }
 
     @Override
@@ -44,12 +44,12 @@ public class DeleteDeployVersionBuildNoApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "sysId", desc = "应用ID", isRequired = true, type = ApiParamType.LONG),
-            @Param(name = "moduleId", desc = "应用模块id", isRequired = true, type = ApiParamType.LONG),
-            @Param(name = "version", desc = "版本号", isRequired = true, type = ApiParamType.STRING),
-            @Param(name = "buildNo", desc = "buildNo", isRequired = true, type = ApiParamType.INTEGER),
+            @Param(name = "sysId", desc = "nmdav.deletedeployversionbuildnoapi.input.param.desc.sysid", isRequired = true, type = ApiParamType.LONG),
+            @Param(name = "moduleId", desc = "nmdav.deletedeployversionbuildnoapi.input.param.desc.moduleid", isRequired = true, type = ApiParamType.LONG),
+            @Param(name = "version", desc = "nmdav.deletedeployversionbuildnoapi.input.param.desc.version", isRequired = true, type = ApiParamType.STRING),
+            @Param(name = "buildNo", desc = "nmdav.deletedeployversionbuildnoapi.input.param.desc.buildno", isRequired = true, type = ApiParamType.INTEGER),
     })
-    @Description(desc = "删除发布版本buildNo")
+    @Description(desc = "nmdav.deletedeployversionbuildnoapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
 

@@ -38,7 +38,7 @@ public class DeleteDeployAppConfigEnvApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "删除发布应用配置的应用系统环境";
+        return "nmdaae.deletedeployappconfigenvapi.getname";
     }
 
     @Override
@@ -52,13 +52,13 @@ public class DeleteDeployAppConfigEnvApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "应用系统id"),
-            @Param(name = "appModuleId", type = ApiParamType.LONG, isRequired = true, desc = "应用模块id"),
-            @Param(name = "envId", type = ApiParamType.LONG, isRequired = true, desc = "环境id"),
+            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaae.deletedeployappconfigenvapi.input.param.desc.appsystemid"),
+            @Param(name = "appModuleId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaae.deletedeployappconfigenvapi.input.param.desc.appmoduleid"),
+            @Param(name = "envId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaae.deletedeployappconfigenvapi.input.param.desc.envid"),
     })
     @Output({
     })
-    @Description(desc = "删除发布应用配置的应用系统环境")
+    @Description(desc = "nmdaae.deletedeployappconfigenvapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
 

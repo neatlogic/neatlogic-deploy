@@ -33,7 +33,7 @@ public class SearchDeployAppConfigInstanceApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "查询发布应用配置的应用实例下的无模块无环境、无模块同环境、同模块无环境的实例列表";
+        return "nmdaae.searchdeployappconfiginstanceapi.getname";
     }
 
     @Override
@@ -47,19 +47,19 @@ public class SearchDeployAppConfigInstanceApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "keyword", type = ApiParamType.STRING, desc = "模糊查询"),
-            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "应用系统id"),
-            @Param(name = "appModuleId", type = ApiParamType.LONG, isRequired = true, desc = "应用模块id"),
-            @Param(name = "envId", type = ApiParamType.LONG, isRequired = true, desc = "环境id"),
-            @Param(name = "currentPage", desc = "当前页", type = ApiParamType.INTEGER),
-            @Param(name = "needPage", desc = "是否分页", type = ApiParamType.BOOLEAN),
-            @Param(name = "pageSize", desc = "每页最大数", type = ApiParamType.INTEGER)
+            @Param(name = "keyword", type = ApiParamType.STRING, desc = "nmdaae.searchdeployappconfiginstanceapi.input.param.desc.keyword"),
+            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaae.searchdeployappconfiginstanceapi.input.param.desc.appsystemid"),
+            @Param(name = "appModuleId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaae.searchdeployappconfiginstanceapi.input.param.desc.appmoduleid"),
+            @Param(name = "envId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaae.searchdeployappconfiginstanceapi.input.param.desc.envid"),
+            @Param(name = "currentPage", desc = "nmdaae.searchdeployappconfiginstanceapi.input.param.desc.currentpage", type = ApiParamType.INTEGER),
+            @Param(name = "needPage", desc = "nmdaae.searchdeployappconfiginstanceapi.input.param.desc.needpage", type = ApiParamType.BOOLEAN),
+            @Param(name = "pageSize", desc = "nmdaae.searchdeployappconfiginstanceapi.input.param.desc.pagesize", type = ApiParamType.INTEGER)
     })
     @Output({
             @Param(explode = BasePageVo.class),
-            @Param(name = "tbodyList", explode = ResourceVo[].class, desc = "实例列表"),
+            @Param(name = "tbodyList", explode = ResourceVo[].class, desc = "nmdaae.searchdeployappconfiginstanceapi.output.param.desc.tbodylist"),
     })
-    @Description(desc = "查询发布应用配置的应用实例下的无模块无环境、无模块同环境、同模块无环境的实例")
+    @Description(desc = "nmdaae.searchdeployappconfiginstanceapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         DeployAppConfigInstanceVo searchVo = paramObj.toJavaObject(DeployAppConfigInstanceVo.class);

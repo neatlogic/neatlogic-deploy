@@ -46,7 +46,7 @@ public class SaveDeployEnvVersionApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "设置环境的版本号";
+        return "nmdae.savedeployenvversionapi.getname";
     }
 
     @Override
@@ -60,17 +60,17 @@ public class SaveDeployEnvVersionApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "sysId", desc = "应用ID", isRequired = true, type = ApiParamType.LONG),
-            @Param(name = "moduleId", desc = "应用模块id", isRequired = true, type = ApiParamType.LONG),
-            @Param(name = "envId", desc = "环境id", isRequired = true, type = ApiParamType.LONG),
-            @Param(name = "version", desc = "版本号", isRequired = true, type = ApiParamType.STRING),
-            @Param(name = "buildNo", desc = "编译号", isRequired = true, type = ApiParamType.INTEGER),
-            @Param(name = "execUser", desc = "发布用户", isRequired = true, type = ApiParamType.STRING),
-            @Param(name = "deployTime", desc = "发布时间（时间戳为秒数）", isRequired = true, type = ApiParamType.LONG),
+            @Param(name = "sysId", desc = "nmdae.savedeployenvversionapi.input.param.desc.sysid", isRequired = true, type = ApiParamType.LONG),
+            @Param(name = "moduleId", desc = "nmdae.savedeployenvversionapi.input.param.desc.moduleid", isRequired = true, type = ApiParamType.LONG),
+            @Param(name = "envId", desc = "nmdae.savedeployenvversionapi.input.param.desc.envid", isRequired = true, type = ApiParamType.LONG),
+            @Param(name = "version", desc = "nmdae.savedeployenvversionapi.input.param.desc.version", isRequired = true, type = ApiParamType.STRING),
+            @Param(name = "buildNo", desc = "nmdae.savedeployenvversionapi.input.param.desc.buildno", isRequired = true, type = ApiParamType.INTEGER),
+            @Param(name = "execUser", desc = "nmdae.savedeployenvversionapi.input.param.desc.execuser", isRequired = true, type = ApiParamType.STRING),
+            @Param(name = "deployTime", desc = "nmdae.savedeployenvversionapi.input.param.desc.deploytime", isRequired = true, type = ApiParamType.LONG),
     })
     @Output({
     })
-    @Description(desc = "设置环境的版本号")
+    @Description(desc = "nmdae.savedeployenvversionapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         Long sysId = paramObj.getLong("sysId");

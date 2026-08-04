@@ -41,6 +41,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+import neatlogic.framework.util.$;
 /**
  * 发布应用流水线阶段操作输入参数映射引用全局参数处理器
  */
@@ -130,7 +131,7 @@ public class AutoexecGlobalParam2DeployAppPipelinePhaseOperationInputParamDepend
                             }
                         }
                         List<String> pathList = new ArrayList<>();
-                        pathList.add("应用配置");
+                        pathList.add($.t("nmddh.autoexecglobalparam2deployapppipelinephaseoperationinputparamdependencyhandler.runtime.label.appconfig"));
                         ICiEntityCrossoverMapper ciEntityCrossoverMapper = CrossoverServiceFactory.getApi(ICiEntityCrossoverMapper.class);
                         if (appSystemId != null && appSystemId != 0) {
                             CiEntityVo ciEntityVo = ciEntityCrossoverMapper.getCiEntityBaseInfoById(appSystemId);
@@ -152,7 +153,7 @@ public class AutoexecGlobalParam2DeployAppPipelinePhaseOperationInputParamDepend
                         }
                         pathList.add(phaseName);
                         pathList.add(operationName);
-                        pathList.add("输入参数映射");
+                        pathList.add($.t("nmddh.autoexecglobalparam2deployapppipelinephaseoperationinputparamdependencyhandler.runtime.label.inputparammapping"));
                         StringBuilder stringBuilder = new StringBuilder();
                         stringBuilder.append("/");
                         stringBuilder.append(TenantContext.get().getTenantUuid());

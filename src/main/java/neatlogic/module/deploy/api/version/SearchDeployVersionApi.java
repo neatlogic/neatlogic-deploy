@@ -54,7 +54,7 @@ public class SearchDeployVersionApi extends PrivateApiComponentBase {
     @Input({
             @Param(name = "defaultValue", desc = "common.defaultvalue", type = ApiParamType.JSONARRAY),
             @Param(name = "keyword", desc = "common.keyword", type = ApiParamType.STRING),
-            @Param(name = "startTimeRange", type = ApiParamType.JSONOBJECT, desc = "common.planstarttime", help = "入参：{startTime（开始时间）与endTime（结束时间）}，或者{timeRange（时间范围）与timeUnit（时间范围参数）}"),
+            @Param(name = "startTimeRange", type = ApiParamType.JSONOBJECT, desc = "common.planstarttime", help = "nmdav.searchdeployversionapi.input.param.help.starttimerange"),
             @Param(name = "appSystemIdList", desc = "term.appsystemidlist", type = ApiParamType.JSONARRAY),
             @Param(name = "appModuleIdList", desc = "term.cmdb.appmoduleidlist", type = ApiParamType.JSONARRAY),
             @Param(name = "statusList", desc = "common.status", type = ApiParamType.JSONARRAY),

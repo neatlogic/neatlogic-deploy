@@ -34,7 +34,7 @@ public class SearchDeployCiApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "查询持续集成配置";
+        return "nmdac.searchdeployciapi.getname";
     }
 
     @Override
@@ -48,12 +48,12 @@ public class SearchDeployCiApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "appSystemId", desc = "系统ID", isRequired = true, type = ApiParamType.LONG),
-            @Param(name = "keyword", desc = "关键词", type = ApiParamType.STRING),
-            @Param(name = "currentPage", desc = "当前页", type = ApiParamType.INTEGER),
-            @Param(name = "pageSize", desc = "每页最大数", type = ApiParamType.INTEGER)
+            @Param(name = "appSystemId", desc = "nmdac.searchdeployciapi.input.param.desc.appsystemid", isRequired = true, type = ApiParamType.LONG),
+            @Param(name = "keyword", desc = "nmdac.searchdeployciapi.input.param.desc.keyword", type = ApiParamType.STRING),
+            @Param(name = "currentPage", desc = "nmdac.searchdeployciapi.input.param.desc.currentpage", type = ApiParamType.INTEGER),
+            @Param(name = "pageSize", desc = "nmdac.searchdeployciapi.input.param.desc.pagesize", type = ApiParamType.INTEGER)
     })
-    @Description(desc = "查询持续集成配置")
+    @Description(desc = "nmdac.searchdeployciapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         DeployCiVo deployCiVo = paramObj.toJavaObject(DeployCiVo.class);

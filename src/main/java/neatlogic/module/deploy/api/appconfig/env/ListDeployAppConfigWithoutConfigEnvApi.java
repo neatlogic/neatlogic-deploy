@@ -38,7 +38,7 @@ public class ListDeployAppConfigWithoutConfigEnvApi extends PrivateApiComponentB
 
     @Override
     public String getName() {
-        return "获取没有继承应用配置的环境列表";
+        return "nmdaae.listdeployappconfigwithoutconfigenvapi.getname";
     }
 
     @Override
@@ -52,14 +52,14 @@ public class ListDeployAppConfigWithoutConfigEnvApi extends PrivateApiComponentB
     }
 
     @Input({
-            @Param(name = "appSystemId", type = ApiParamType.LONG, desc = "应用系统id"),
-            @Param(name = "appModuleId", type = ApiParamType.LONG, desc = "应用模块id"),
-            @Param(name = "envId", type = ApiParamType.LONG, desc = "环境id")
+            @Param(name = "appSystemId", type = ApiParamType.LONG, desc = "nmdaae.listdeployappconfigwithoutconfigenvapi.input.param.desc.appsystemid"),
+            @Param(name = "appModuleId", type = ApiParamType.LONG, desc = "nmdaae.listdeployappconfigwithoutconfigenvapi.input.param.desc.appmoduleid"),
+            @Param(name = "envId", type = ApiParamType.LONG, desc = "nmdaae.listdeployappconfigwithoutconfigenvapi.input.param.desc.envid")
     })
     @Output({
-            @Param(explode = DeployAppEnvironmentVo[].class, desc = "没有继承应用配置的环境列表")
+            @Param(explode = DeployAppEnvironmentVo[].class, desc = "nmdaae.listdeployappconfigwithoutconfigenvapi.output.param.desc.return")
     })
-    @Description(desc = "获取没有继承应用配置的环境列表(复制配置到现有环境时的环境下拉)")
+    @Description(desc = "nmdaae.listdeployappconfigwithoutconfigenvapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         return deployAppConfigService.getDeployHasNotConfigAppEnvListByAppSystemIdAndAppModuleIdAndEnvId(paramObj.getLong("appSystemId"), paramObj.getLong("appModuleId"), paramObj.getLong("envId"));

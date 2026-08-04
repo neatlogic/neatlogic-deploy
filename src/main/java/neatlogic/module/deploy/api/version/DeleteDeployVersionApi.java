@@ -48,7 +48,7 @@ public class DeleteDeployVersionApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "删除发布版本";
+        return "nmdav.deletedeployversionapi.getname";
     }
 
     @Override
@@ -62,12 +62,12 @@ public class DeleteDeployVersionApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "id", desc = "版本id", type = ApiParamType.LONG),
-            @Param(name = "sysId", desc = "应用ID", type = ApiParamType.LONG),
-            @Param(name = "moduleId", desc = "应用模块id", type = ApiParamType.LONG),
-            @Param(name = "version", desc = "版本号", type = ApiParamType.STRING),
+            @Param(name = "id", desc = "nmdav.deletedeployversionapi.input.param.desc.id", type = ApiParamType.LONG),
+            @Param(name = "sysId", desc = "nmdav.deletedeployversionapi.input.param.desc.sysid", type = ApiParamType.LONG),
+            @Param(name = "moduleId", desc = "nmdav.deletedeployversionapi.input.param.desc.moduleid", type = ApiParamType.LONG),
+            @Param(name = "version", desc = "nmdav.deletedeployversionapi.input.param.desc.version", type = ApiParamType.STRING),
     })
-    @Description(desc = "删除发布版本")
+    @Description(desc = "nmdav.deletedeployversionapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         DeployVersionVo versionVo;

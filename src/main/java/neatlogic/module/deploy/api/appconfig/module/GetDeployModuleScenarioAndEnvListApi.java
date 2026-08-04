@@ -49,7 +49,7 @@ public class GetDeployModuleScenarioAndEnvListApi extends PrivateApiComponentBas
 
     @Override
     public String getName() {
-        return "获取应用模块的场景与环境列表";
+        return "nmdaam.getdeploymodulescenarioandenvlistapi.getname";
     }
 
     @Override
@@ -58,12 +58,12 @@ public class GetDeployModuleScenarioAndEnvListApi extends PrivateApiComponentBas
     }
 
     @Input({
-            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "应用系统id"),
-            @Param(name = "appModuleId", type = ApiParamType.LONG, isRequired = true, desc = "模块id")
+            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaam.getdeploymodulescenarioandenvlistapi.input.param.desc.appsystemid"),
+            @Param(name = "appModuleId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaam.getdeploymodulescenarioandenvlistapi.input.param.desc.appmoduleid")
     })
     @Output({
     })
-    @Description(desc = "获取应用模块的场景与环境列表")
+    @Description(desc = "nmdaam.getdeploymodulescenarioandenvlistapi.getname")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         JSONObject result = new JSONObject();

@@ -51,7 +51,7 @@ public class SaveDeployVersionApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "保存发布版本";
+        return "nmdav.savedeployversionapi.getname";
     }
 
     @Override
@@ -65,15 +65,15 @@ public class SaveDeployVersionApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "version", desc = "版本", isRequired = true, type = ApiParamType.STRING),
-            @Param(name = "appSystemId", desc = "应用系统id", isRequired = true, type = ApiParamType.LONG),
-            @Param(name = "appSystemName", desc = "应用名称", type = ApiParamType.STRING),
-            @Param(name = "appModuleId", desc = "应用模块id", isRequired = true, type = ApiParamType.LONG),
-            @Param(name = "appModuleName", desc = "应用模块名称", type = ApiParamType.STRING),
-            @Param(name = "isFreeze", desc = "是否封版", isRequired = true, type = ApiParamType.INTEGER),
-            @Param(name = "description", desc = "描述", type = ApiParamType.STRING)
+            @Param(name = "version", desc = "nmdav.savedeployversionapi.input.param.desc.version", isRequired = true, type = ApiParamType.STRING),
+            @Param(name = "appSystemId", desc = "nmdav.savedeployversionapi.input.param.desc.appsystemid", isRequired = true, type = ApiParamType.LONG),
+            @Param(name = "appSystemName", desc = "nmdav.savedeployversionapi.input.param.desc.appsystemname", type = ApiParamType.STRING),
+            @Param(name = "appModuleId", desc = "nmdav.savedeployversionapi.input.param.desc.appmoduleid", isRequired = true, type = ApiParamType.LONG),
+            @Param(name = "appModuleName", desc = "nmdav.savedeployversionapi.input.param.desc.appmodulename", type = ApiParamType.STRING),
+            @Param(name = "isFreeze", desc = "nmdav.savedeployversionapi.input.param.desc.isfreeze", isRequired = true, type = ApiParamType.INTEGER),
+            @Param(name = "description", desc = "nmdav.savedeployversionapi.input.param.desc.description", type = ApiParamType.STRING)
     })
-    @Description(desc = "保存发布版本")
+    @Description(desc = "nmdav.savedeployversionapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
 

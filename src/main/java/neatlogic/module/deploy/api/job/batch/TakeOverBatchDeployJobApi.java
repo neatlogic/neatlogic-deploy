@@ -55,7 +55,7 @@ public class TakeOverBatchDeployJobApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "接管批量发布作业";
+        return "nmdajb.takeoverbatchdeployjobapi.getname";
     }
 
     @Override
@@ -64,11 +64,11 @@ public class TakeOverBatchDeployJobApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "id", type = ApiParamType.LONG, desc = "批量发布作业id", isRequired = true),
+            @Param(name = "id", type = ApiParamType.LONG, desc = "nmdajb.takeoverbatchdeployjobapi.input.param.desc.id", isRequired = true),
     })
     @Output({
     })
-    @Description(desc = "接管批量发布作业接口")
+    @Description(desc = "nmdajb.takeoverbatchdeployjobapi.getname")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         Long batchJobId = jsonObj.getLong("id");

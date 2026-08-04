@@ -44,7 +44,7 @@ public class GetDeployJobWebhookApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "获取触发器配置";
+        return "nmdaw.getdeployjobwebhookapi.getname";
     }
 
     @Override
@@ -57,10 +57,10 @@ public class GetDeployJobWebhookApi extends PrivateApiComponentBase {
         return "/deploy/job/webhook/get";
     }
 
-    @Input({@Param(name = "id", type = ApiParamType.LONG, isRequired = true, desc = "触发器id")
+    @Input({@Param(name = "id", type = ApiParamType.LONG, isRequired = true, desc = "nmdaw.getdeployjobwebhookapi.input.param.desc.id")
     })
     @Output({
-            @Param(explode = DeployScheduleVo.class, desc = "触发器详情")
+            @Param(explode = DeployScheduleVo.class, desc = "nmdaw.getdeployjobwebhookapi.output.param.desc.deployschedulevo")
     })
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {

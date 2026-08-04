@@ -44,7 +44,7 @@ public class GetDeployRunnerGroupForAutoexecApi extends PrivateApiComponentBase 
 
     @Override
     public String getName() {
-        return "获取发布runner组";
+        return "nmdaam.getdeployrunnergroupforautoexecapi.getname";
     }
 
     @Override
@@ -58,12 +58,12 @@ public class GetDeployRunnerGroupForAutoexecApi extends PrivateApiComponentBase 
     }
 
     @Input({
-            @Param(name = "sysId", type = ApiParamType.LONG, isRequired = true, desc = "应用id"),
-            @Param(name = "moduleId", type = ApiParamType.LONG, isRequired = true, desc = "模块id")
+            @Param(name = "sysId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaam.getdeployrunnergroupforautoexecapi.input.param.desc.sysid"),
+            @Param(name = "moduleId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaam.getdeployrunnergroupforautoexecapi.input.param.desc.moduleid")
     })
     @Output({@Param(type = ApiParamType.JSONOBJECT)})
     @Example(example = "{\"1\": \"192.168.1.140\"}")
-    @Description(desc = "获取发布runner组接口")
+    @Description(desc = "nmdaam.getdeployrunnergroupforautoexecapi.getname")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         JSONObject result = new JSONObject();

@@ -39,6 +39,7 @@ import neatlogic.framework.deploy.exception.*;
 import neatlogic.framework.dto.runner.RunnerGroupVo;
 import neatlogic.framework.dto.runner.RunnerMapVo;
 import neatlogic.framework.exception.core.ApiRuntimeException;
+import neatlogic.framework.exception.file.FilePathIllegalException;
 import neatlogic.framework.exception.runner.RunnerNotFoundByRunnerMapIdException;
 import neatlogic.framework.exception.runner.RunnerNotFoundInGroupException;
 import neatlogic.framework.filter.core.LoginAuthHandlerBase;
@@ -102,11 +103,11 @@ public class DownloadDeployAppBuildApi extends PrivateBinaryStreamApiComponentBa
             @Param(name = "sysName", type = ApiParamType.STRING, isRequired = true, desc = "term.cmdb.sysname"),
             @Param(name = "moduleName", type = ApiParamType.STRING, isRequired = true, desc = "term.cmdb.modulename"),
             @Param(name = "envName", type = ApiParamType.STRING, isRequired = true, desc = "term.cmdb.envname"),
-            @Param(name = "buildNo", type = ApiParamType.INTEGER, desc = "build no", help = "如果是空的，那么就要到版本对应的envName找到buildNo"),
+            @Param(name = "buildNo", type = ApiParamType.INTEGER, desc = "nmdaa.downloaddeployappbuildapi.input.param.desc.buildno", help = "nmdaa.downloaddeployappbuildapi.input.param.help.buildno"),
             @Param(name = "subDirs", type = ApiParamType.JSONARRAY, desc = "nmdaa.downloaddeployappbuildapi.input.param.desc.subdirs"),
-            @Param(name = "runnerId", type = ApiParamType.LONG, desc = "term.deploy.runnerid", help = "-1则根据应用和模块对应的group随意选择一个runner"),
-            @Param(name = "proxyToUrl", type = ApiParamType.STRING, desc = "term.deploy.proxytourl", help = "不从当前环境runner下载,则需要传跳转url，即协议+IP地址（域名）+端口号，不传默认本地环境"),
-            @Param(name = "proxyTenantJdbcUrl", type = ApiParamType.STRING, desc = "proxy license"),
+            @Param(name = "runnerId", type = ApiParamType.LONG, desc = "term.deploy.runnerid", help = "nmdaa.downloaddeployappbuildapi.input.param.help.runnerid"),
+            @Param(name = "proxyToUrl", type = ApiParamType.STRING, desc = "term.deploy.proxytourl", help = "nmdaa.downloaddeployappbuildapi.input.param.help.proxytourl"),
+            @Param(name = "proxyTenantJdbcUrl", type = ApiParamType.STRING, desc = "nmdaa.downloaddeployappbuildapi.input.param.desc.proxytenantjdbcurl"),
     })
     @Output({
     })
@@ -142,7 +143,7 @@ public class DownloadDeployAppBuildApi extends PrivateBinaryStreamApiComponentBa
     private void validateAppBuildPathParam(JSONObject jsonObj) {
         String version = jsonObj.getString("version");
         if (!StringUtils.equals(version, getSafeAppBuildRelativePath(version, false))) {
-            throw new ApiRuntimeException("文件路径不合法");
+            throw new FilePathIllegalException(version);
         }
         JSONArray subDirs = jsonObj.getJSONArray("subDirs");
         if (CollectionUtils.isNotEmpty(subDirs)) {
@@ -157,14 +158,14 @@ public class DownloadDeployAppBuildApi extends PrivateBinaryStreamApiComponentBa
     private String getSafeAppBuildRelativePath(String path, boolean allowCurrentDirectory) {
         String normalizedPath = StringUtils.defaultString(path).replace("\\", "/");
         if (normalizedPath.startsWith("/") || (!allowCurrentDirectory && normalizedPath.contains("/"))) {
-            throw new ApiRuntimeException("文件路径不合法");
+            throw new FilePathIllegalException(path);
         }
         String safePath = FileSafeUtil.getSafeRelativePath(path);
         if (StringUtils.isBlank(safePath)) {
             if (allowCurrentDirectory) {
                 return ".";
             }
-            throw new ApiRuntimeException("文件路径不合法");
+            throw new FilePathIllegalException(path);
         }
         // appbuild的version和subDirs会转发给runner，先保持为安全相对路径，避免旧runner被../带出制品目录。
         return safePath;

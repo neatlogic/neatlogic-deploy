@@ -48,7 +48,7 @@ public class SaveDeployAppConfigDbSchemaForAutoexecApi extends PrivateApiCompone
 
     @Override
     public String getName() {
-        return "保存某个环境的DBConfig配置的schema";
+        return "nmdaae.savedeployappconfigdbschemaforautoexecapi.getname";
     }
 
     @Override
@@ -62,21 +62,21 @@ public class SaveDeployAppConfigDbSchemaForAutoexecApi extends PrivateApiCompone
     }
 
     @Input({
-            @Param(name = "runnerId", type = ApiParamType.LONG, desc = "Runner的ID"),
-            @Param(name = "runnerGroup", type = ApiParamType.JSONOBJECT, desc = "runner组信息"),
-            @Param(name = "jobId", type = ApiParamType.LONG, desc = "作业ID"),
-            @Param(name = "phaseName", type = ApiParamType.STRING, desc = "阶段名"),
-            @Param(name = "sysId", type = ApiParamType.LONG, desc = "应用ID"),
-            @Param(name = "moduleId", type = ApiParamType.LONG, desc = "模块ID"),
-            @Param(name = "envId", type = ApiParamType.LONG, desc = "环境ID"),
-            @Param(name = "sysName", type = ApiParamType.STRING, desc = "应用名"),
-            @Param(name = "moduleName", type = ApiParamType.STRING, desc = "模块名"),
-            @Param(name = "envName", type = ApiParamType.STRING, desc = "环境名"),
-            @Param(name = "dbSchemas", type = ApiParamType.JSONARRAY, desc = "数据库schema列表（schema格式为：dbname.username）"),
+            @Param(name = "runnerId", type = ApiParamType.LONG, desc = "nmdaae.savedeployappconfigdbschemaforautoexecapi.input.param.desc.runnerid"),
+            @Param(name = "runnerGroup", type = ApiParamType.JSONOBJECT, desc = "nmdaae.savedeployappconfigdbschemaforautoexecapi.input.param.desc.runnergroup"),
+            @Param(name = "jobId", type = ApiParamType.LONG, desc = "nmdaae.savedeployappconfigdbschemaforautoexecapi.input.param.desc.jobid"),
+            @Param(name = "phaseName", type = ApiParamType.STRING, desc = "nmdaae.savedeployappconfigdbschemaforautoexecapi.input.param.desc.phasename"),
+            @Param(name = "sysId", type = ApiParamType.LONG, desc = "nmdaae.savedeployappconfigdbschemaforautoexecapi.input.param.desc.sysid"),
+            @Param(name = "moduleId", type = ApiParamType.LONG, desc = "nmdaae.savedeployappconfigdbschemaforautoexecapi.input.param.desc.moduleid"),
+            @Param(name = "envId", type = ApiParamType.LONG, desc = "nmdaae.savedeployappconfigdbschemaforautoexecapi.input.param.desc.envid"),
+            @Param(name = "sysName", type = ApiParamType.STRING, desc = "nmdaae.savedeployappconfigdbschemaforautoexecapi.input.param.desc.sysname"),
+            @Param(name = "moduleName", type = ApiParamType.STRING, desc = "nmdaae.savedeployappconfigdbschemaforautoexecapi.input.param.desc.modulename"),
+            @Param(name = "envName", type = ApiParamType.STRING, desc = "nmdaae.savedeployappconfigdbschemaforautoexecapi.input.param.desc.envname"),
+            @Param(name = "dbSchemas", type = ApiParamType.JSONARRAY, desc = "nmdaae.savedeployappconfigdbschemaforautoexecapi.input.param.desc.dbschemas"),
     })
     @Output({
     })
-    @Description(desc = "发布作业专用-保存某个环境的DBConfig配置的schema")
+    @Description(desc = "nmdaae.savedeployappconfigdbschemaforautoexecapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         JSONArray dbSchemaArray = paramObj.getJSONArray("dbSchemas");

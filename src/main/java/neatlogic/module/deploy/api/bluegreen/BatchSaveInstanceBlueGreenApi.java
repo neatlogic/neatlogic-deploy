@@ -54,11 +54,11 @@ public class BatchSaveInstanceBlueGreenApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "appSystemId", type = ApiParamType.LONG, desc = "应用id", isRequired = true),
-            @Param(name = "appModuleId", type = ApiParamType.LONG, desc = "模块id", isRequired = true),
-            @Param(name = "envId", type = ApiParamType.LONG, desc = "环境id", isRequired = true),
-            @Param(name = "resourceIdList", type = ApiParamType.JSONARRAY, desc = "实例id列表", minSize = 1, isRequired = true),
-            @Param(name = "blueGreenId", type = ApiParamType.LONG, isRequired = true, desc = "蓝绿id")
+            @Param(name = "appSystemId", type = ApiParamType.LONG, desc = "nmdab.batchsaveinstancebluegreenapi.input.param.desc.appsystemid", isRequired = true),
+            @Param(name = "appModuleId", type = ApiParamType.LONG, desc = "nmdab.batchsaveinstancebluegreenapi.input.param.desc.appmoduleid", isRequired = true),
+            @Param(name = "envId", type = ApiParamType.LONG, desc = "nmdab.batchsaveinstancebluegreenapi.input.param.desc.envid", isRequired = true),
+            @Param(name = "resourceIdList", type = ApiParamType.JSONARRAY, desc = "nmdab.batchsaveinstancebluegreenapi.input.param.desc.resourceidlist", minSize = 1, isRequired = true),
+            @Param(name = "blueGreenId", type = ApiParamType.LONG, isRequired = true, desc = "nmdab.batchsaveinstancebluegreenapi.input.param.desc.bluegreenid")
     })
     @Description(desc = "nmdab.batchsaveinstancebluegreenapi.getname")
     @Override

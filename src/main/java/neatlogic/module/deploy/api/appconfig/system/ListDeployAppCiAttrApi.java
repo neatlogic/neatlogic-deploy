@@ -42,7 +42,7 @@ public class ListDeployAppCiAttrApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "获取发布应用模型的属性列表";
+        return "nmdaas.listdeployappciattrapi.getname";
     }
 
     @Override
@@ -56,11 +56,11 @@ public class ListDeployAppCiAttrApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "isAll", type = ApiParamType.INTEGER, isRequired = true, desc = "是否返回全部属性"),
-            @Param(name = "attrNameList", type = ApiParamType.JSONARRAY, desc = "需要返回的属性列表")
+            @Param(name = "isAll", type = ApiParamType.INTEGER, isRequired = true, desc = "nmdaas.listdeployappciattrapi.input.param.desc.isall"),
+            @Param(name = "attrNameList", type = ApiParamType.JSONARRAY, desc = "nmdaas.listdeployappciattrapi.input.param.desc.attrnamelist")
     })
-    @Output({@Param(type = ApiParamType.JSONOBJECT, desc = "发布应用模型的属性列表")})
-    @Description(desc = "获取发布应用模型的属性列表")
+    @Output({@Param(type = ApiParamType.JSONOBJECT, desc = "nmdaas.listdeployappciattrapi.output.param.desc.return")})
+    @Description(desc = "nmdaas.listdeployappciattrapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         ICiCrossoverMapper ciCrossoverMapper = CrossoverServiceFactory.getApi(ICiCrossoverMapper.class);

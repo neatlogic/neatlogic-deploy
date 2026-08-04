@@ -35,6 +35,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+import neatlogic.framework.util.$;
 /**
  * 发布应用流水线作业参数引用矩阵关系处理器
  **/
@@ -93,7 +94,7 @@ public class Matrix2DeployAppPipelineParamDependencyHandler extends DefaultDepen
                 continue;
             }
             List<String> pathList = new ArrayList<>();
-            pathList.add("应用配置");
+            pathList.add($.t("nmddh.matrix2deployapppipelineparamdependencyhandler.runtime.label.appconfig"));
             ICiEntityCrossoverMapper ciEntityCrossoverMapper = CrossoverServiceFactory.getApi(ICiEntityCrossoverMapper.class);
             if (appSystemId != null && appSystemId != 0) {
                 CiEntityVo ciEntityVo = ciEntityCrossoverMapper.getCiEntityBaseInfoById(appSystemId);
@@ -101,7 +102,7 @@ public class Matrix2DeployAppPipelineParamDependencyHandler extends DefaultDepen
                     pathList.add(ciEntityVo.getName());
                 }
             }
-            pathList.add("作业参数");
+            pathList.add($.t("nmddh.matrix2deployapppipelineparamdependencyhandler.runtime.label.jobparams"));
             JSONObject dependencyInfoConfig = new JSONObject();
             dependencyInfoConfig.put("appSystemId", appSystemId);
             String urlFormat = "/" + TenantContext.get().getTenantUuid() + "/deploy.html#/application-config-manage?appSystemId=${DATA.appSystemId}";

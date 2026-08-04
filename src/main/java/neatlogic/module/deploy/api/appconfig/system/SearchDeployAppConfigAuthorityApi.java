@@ -99,7 +99,7 @@ public class SearchDeployAppConfigAuthorityApi extends PrivateApiComponentBase {
         boolean isNeedEnv = CollectionUtils.isEmpty(includeActionList) || includeActionList.contains(DeployAppConfigActionType.ENV.getValue());
         theadList.add(new JSONObject() {{
             put("name", "user");
-            put("displayName", $.t("用户"));
+            put("displayName", $.t("nmdaas.searchdeployappconfigauthorityapi.runtime.label.label"));
         }});
         for (DeployAppConfigAction action : DeployAppConfigAction.values()) {
             if (CollectionUtils.isEmpty(includeActionList) || includeActionList.contains(action.getValue())) {

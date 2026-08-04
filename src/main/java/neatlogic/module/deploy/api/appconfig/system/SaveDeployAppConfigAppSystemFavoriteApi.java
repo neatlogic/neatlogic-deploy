@@ -31,7 +31,7 @@ public class SaveDeployAppConfigAppSystemFavoriteApi extends PrivateApiComponent
 
     @Override
     public String getName() {
-        return "收藏发布应用配置的应用";
+        return "nmdaas.savedeployappconfigappsystemfavoriteapi.getname";
     }
 
     @Override
@@ -45,12 +45,12 @@ public class SaveDeployAppConfigAppSystemFavoriteApi extends PrivateApiComponent
     }
 
     @Input({
-            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "应用系统id"),
-            @Param(name = "isFavorite", type = ApiParamType.INTEGER, isRequired = true, desc = "是否被收藏（1：收藏，0：取消收藏）")
+            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaas.savedeployappconfigappsystemfavoriteapi.input.param.desc.appsystemid"),
+            @Param(name = "isFavorite", type = ApiParamType.INTEGER, isRequired = true, desc = "nmdaas.savedeployappconfigappsystemfavoriteapi.input.param.desc.isfavorite")
     })
     @Output({
     })
-    @Description(desc = "收藏发布应用配置的应用")
+    @Description(desc = "nmdaas.savedeployappconfigappsystemfavoriteapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
 

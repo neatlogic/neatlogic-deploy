@@ -26,12 +26,12 @@ public class DeployJobMessageHandler extends MessageHandlerBase {
 
     @Override
     public String getName() {
-        return "发布";
+        return "nmdh.deployjobmessagehandler.getname";
     }
 
     @Override
     public String getDescription() {
-        return "实时显示发布作业相关信息";
+        return "nmdh.deployjobmessagehandler.getdescription";
     }
 
     @Override

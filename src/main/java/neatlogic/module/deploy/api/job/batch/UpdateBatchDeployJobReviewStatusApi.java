@@ -39,7 +39,7 @@ public class UpdateBatchDeployJobReviewStatusApi extends PrivateApiComponentBase
 
     @Override
     public String getName() {
-        return "修改批量发布作业审核状态";
+        return "nmdajb.updatebatchdeployjobreviewstatusapi.getname";
     }
 
     @Override
@@ -52,10 +52,10 @@ public class UpdateBatchDeployJobReviewStatusApi extends PrivateApiComponentBase
         return "/deploy/batchjob/updatereviewstatus";
     }
 
-    @Input({@Param(name = "id", type = ApiParamType.LONG, desc = "作业id", isRequired = true),
-            @Param(name = "reviewStatus", type = ApiParamType.ENUM, member = ReviewStatus.class, isRequired = true, desc = "审批动作")})
+    @Input({@Param(name = "id", type = ApiParamType.LONG, desc = "nmdajb.updatebatchdeployjobreviewstatusapi.input.param.desc.id", isRequired = true),
+            @Param(name = "reviewStatus", type = ApiParamType.ENUM, member = ReviewStatus.class, isRequired = true, desc = "nmdajb.updatebatchdeployjobreviewstatusapi.input.param.desc.reviewstatus")})
     @Output({@Param(explode = DeployJobVo.class)})
-    @Description(desc = "修改批量发布作业审核状态接口")
+    @Description(desc = "nmdajb.updatebatchdeployjobreviewstatusapi.getname")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         DeployJobVo deployJobVo = JSONObject.toJavaObject(jsonObj, DeployJobVo.class);

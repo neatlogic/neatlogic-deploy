@@ -19,7 +19,7 @@ public class GetDeployVersionChartApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "获取发布版本图表数据";
+        return "nmdav.getdeployversionchartapi.getname";
     }
 
     @Override
@@ -33,13 +33,13 @@ public class GetDeployVersionChartApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "versionId", desc = "版本号", isRequired = true, type = ApiParamType.LONG),
-            @Param(name = "name", desc = "DeployVersionChart定义的图表tab名称", member = DeployVersionChart.class, isRequired = true, type = ApiParamType.ENUM),
-            @Param(name = "chart", desc = "图表名称", isRequired = true, type = ApiParamType.STRING),
+            @Param(name = "versionId", desc = "nmdav.getdeployversionchartapi.input.param.desc.versionid", isRequired = true, type = ApiParamType.LONG),
+            @Param(name = "name", desc = "nmdav.getdeployversionchartapi.input.param.desc.name", member = DeployVersionChart.class, isRequired = true, type = ApiParamType.ENUM),
+            @Param(name = "chart", desc = "nmdav.getdeployversionchartapi.input.param.desc.chart", isRequired = true, type = ApiParamType.STRING),
     })
     @Output({
     })
-    @Description(desc = "获取发布版本图表数据")
+    @Description(desc = "nmdav.getdeployversionchartapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         IDeployVersionChartHandler handler = DeployVersionChartHandlerFactory.getHandler(paramObj.getString("name"));

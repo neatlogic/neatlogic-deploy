@@ -52,7 +52,7 @@ public class CreateDeployJobApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "创建单个模块发布作业";
+        return "nmdaj.createdeployjobapi.getname";
     }
 
     @Override
@@ -61,19 +61,19 @@ public class CreateDeployJobApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "scenarioId", type = ApiParamType.LONG, desc = "场景id"),
-            @Param(name = "scenarioName", type = ApiParamType.STRING, desc = "场景名, 如果入参也有scenarioId，则会以scenarioName为准"),
-            @Param(name = "appSystemId", type = ApiParamType.LONG, desc = "应用系统id"),
-            @Param(name = "appSystemAbbrName", type = ApiParamType.STRING, desc = "应用系统简称，如果入参也有appSystemId，则会以appSystemName为准"),
-            @Param(name = "appModuleId", type = ApiParamType.LONG, desc = "应用模块id"),
-            @Param(name = "appModuleAbbrName", type = ApiParamType.STRING, desc = "应用模块简称"),
-            @Param(name = "envId", type = ApiParamType.LONG, desc = "环境id"),
-            @Param(name = "envName", type = ApiParamType.STRING, desc = "环境id，如果入参也有envId，则会以envName为准"),
-            @Param(name = "source", type = ApiParamType.STRING, desc = "来源 itsm|human|deploy   ITSM|人工发起的等，不传默认是发布发起的"),
-            @Param(name = "isNeedFire", type = ApiParamType.INTEGER, desc = "创建完作业是否激活，默认1 激活"),
+            @Param(name = "scenarioId", type = ApiParamType.LONG, desc = "nmdaj.createdeployjobapi.input.param.desc.scenarioid"),
+            @Param(name = "scenarioName", type = ApiParamType.STRING, desc = "nmdaj.createdeployjobapi.input.param.desc.scenarioname"),
+            @Param(name = "appSystemId", type = ApiParamType.LONG, desc = "nmdaj.createdeployjobapi.input.param.desc.appsystemid"),
+            @Param(name = "appSystemAbbrName", type = ApiParamType.STRING, desc = "nmdaj.createdeployjobapi.input.param.desc.appsystemabbrname"),
+            @Param(name = "appModuleId", type = ApiParamType.LONG, desc = "nmdaj.createdeployjobapi.input.param.desc.appmoduleid"),
+            @Param(name = "appModuleAbbrName", type = ApiParamType.STRING, desc = "nmdaj.createdeployjobapi.input.param.desc.appmoduleabbrname"),
+            @Param(name = "envId", type = ApiParamType.LONG, desc = "nmdaj.createdeployjobapi.input.param.desc.envid"),
+            @Param(name = "envName", type = ApiParamType.STRING, desc = "nmdaj.createdeployjobapi.input.param.desc.envname"),
+            @Param(name = "source", type = ApiParamType.STRING, desc = "nmdaj.createdeployjobapi.input.param.desc.source"),
+            @Param(name = "isNeedFire", type = ApiParamType.INTEGER, desc = "nmdaj.createdeployjobapi.input.param.desc.isneedfire"),
 
     })
-    @Description(desc = "创建单个模块发布作业接口")
+    @Description(desc = "nmdaj.createdeployjobapi.getname")
     @ResubmitInterval(value = 2)
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {

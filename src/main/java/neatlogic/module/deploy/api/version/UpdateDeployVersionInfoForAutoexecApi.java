@@ -31,7 +31,7 @@ public class UpdateDeployVersionInfoForAutoexecApi extends PrivateApiComponentBa
 
     @Override
     public String getName() {
-        return "更新发布版本配置";
+        return "nmdav.updatedeployversioninfoforautoexecapi.getname";
     }
 
     @Override
@@ -45,15 +45,15 @@ public class UpdateDeployVersionInfoForAutoexecApi extends PrivateApiComponentBa
     }
 
     @Input({
-            @Param(name = "runnerId", desc = "runnerId", type = ApiParamType.LONG),
-            @Param(name = "runnerGroup", desc = "runnerGroup", type = ApiParamType.JSONOBJECT),
-            @Param(name = "sysId", desc = "应用ID", isRequired = true, type = ApiParamType.LONG),
-            @Param(name = "moduleId", desc = "应用模块id", isRequired = true, type = ApiParamType.LONG),
-            @Param(name = "version", desc = "版本号", isRequired = true, type = ApiParamType.STRING),
-            @Param(name = "buildNo", desc = "buildNo", isRequired = true, type = ApiParamType.STRING),
-            @Param(name = "verInfo", desc = "版本信息", isRequired = true, type = ApiParamType.JSONOBJECT),
+            @Param(name = "runnerId", desc = "nmdav.updatedeployversioninfoforautoexecapi.input.param.desc.runnerid", type = ApiParamType.LONG),
+            @Param(name = "runnerGroup", desc = "nmdav.updatedeployversioninfoforautoexecapi.input.param.desc.runnergroup", type = ApiParamType.JSONOBJECT),
+            @Param(name = "sysId", desc = "nmdav.updatedeployversioninfoforautoexecapi.input.param.desc.sysid", isRequired = true, type = ApiParamType.LONG),
+            @Param(name = "moduleId", desc = "nmdav.updatedeployversioninfoforautoexecapi.input.param.desc.moduleid", isRequired = true, type = ApiParamType.LONG),
+            @Param(name = "version", desc = "nmdav.updatedeployversioninfoforautoexecapi.input.param.desc.version", isRequired = true, type = ApiParamType.STRING),
+            @Param(name = "buildNo", desc = "nmdav.updatedeployversioninfoforautoexecapi.input.param.desc.buildno", isRequired = true, type = ApiParamType.STRING),
+            @Param(name = "verInfo", desc = "nmdav.updatedeployversioninfoforautoexecapi.input.param.desc.verinfo", isRequired = true, type = ApiParamType.JSONOBJECT),
     })
-    @Description(desc = "更新发布版本配置")
+    @Description(desc = "nmdav.updatedeployversioninfoforautoexecapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         Long runnerId = paramObj.getLong("runnerId");

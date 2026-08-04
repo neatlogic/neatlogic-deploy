@@ -23,11 +23,12 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.List;
 
+import neatlogic.framework.util.$;
 @Component
 public class DeployTriggerIntegrationHandler extends IntegrationHandlerBase {
     @Override
     public String getName() {
-        return "发布触发器数据规范";
+        return "nmdih.deploytriggerintegrationhandler.getname";
     }
 
     @Override
@@ -38,16 +39,16 @@ public class DeployTriggerIntegrationHandler extends IntegrationHandlerBase {
     @Override
     public List<PatternVo> getInputPattern() {
         List<PatternVo> jsonList = new ArrayList<>();
-        jsonList.add(new PatternVo("appSystemId", "input", ApiParamType.LONG, 0, "应用系统id",0));
-        jsonList.add(new PatternVo("appSystemName", "input", ApiParamType.STRING, 0, "应用系统名",0));
-        jsonList.add(new PatternVo("appSystemAbbrName", "input", ApiParamType.STRING, 0, "应用系统简称",0));
-        jsonList.add(new PatternVo("appModuleId", "input", ApiParamType.LONG, 0, "应用模块id",0));
-        jsonList.add(new PatternVo("appModuleName", "input", ApiParamType.STRING, 0, "应用模块名",0));
-        jsonList.add(new PatternVo("appModuleAbbrName", "input", ApiParamType.STRING, 0, "应用模块简称",0));
-        jsonList.add(new PatternVo("envName", "input", ApiParamType.STRING, 0, "目标环境名",0));
-        jsonList.add(new PatternVo("buildNo", "input", ApiParamType.INTEGER, 0, "编译号",0));
-        jsonList.add(new PatternVo("scenarioName", "input", ApiParamType.STRING, 0, "场景"));
-        jsonList.add(new PatternVo("targetEnvName", "input", ApiParamType.STRING, 0, "目标环境"));
+        jsonList.add(new PatternVo("appSystemId", "input", ApiParamType.LONG, 0, $.t("nmdih.deploytriggerintegrationhandler.runtime.pattern.appsystemid"),0));
+        jsonList.add(new PatternVo("appSystemName", "input", ApiParamType.STRING, 0, $.t("nmdih.deploytriggerintegrationhandler.runtime.pattern.appsystemname"),0));
+        jsonList.add(new PatternVo("appSystemAbbrName", "input", ApiParamType.STRING, 0, $.t("nmdih.deploytriggerintegrationhandler.runtime.pattern.appsystemabbrname"),0));
+        jsonList.add(new PatternVo("appModuleId", "input", ApiParamType.LONG, 0, $.t("nmdih.deploytriggerintegrationhandler.runtime.pattern.appmoduleid"),0));
+        jsonList.add(new PatternVo("appModuleName", "input", ApiParamType.STRING, 0, $.t("nmdih.deploytriggerintegrationhandler.runtime.pattern.appmodulename"),0));
+        jsonList.add(new PatternVo("appModuleAbbrName", "input", ApiParamType.STRING, 0, $.t("nmdih.deploytriggerintegrationhandler.runtime.pattern.appmoduleabbrname"),0));
+        jsonList.add(new PatternVo("envName", "input", ApiParamType.STRING, 0, $.t("nmdih.deploytriggerintegrationhandler.runtime.pattern.envname"),0));
+        jsonList.add(new PatternVo("buildNo", "input", ApiParamType.INTEGER, 0, $.t("nmdih.deploytriggerintegrationhandler.runtime.pattern.buildno"),0));
+        jsonList.add(new PatternVo("scenarioName", "input", ApiParamType.STRING, 0, $.t("nmdih.deploytriggerintegrationhandler.runtime.pattern.scenarioname")));
+        jsonList.add(new PatternVo("targetEnvName", "input", ApiParamType.STRING, 0, $.t("nmdih.deploytriggerintegrationhandler.runtime.pattern.targetenvname")));
         return jsonList;
     }
 

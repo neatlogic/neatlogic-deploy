@@ -45,7 +45,7 @@ public class SaveDeployJobNotifyPolicyApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "保存发布作业通知策略";
+        return "nmdaj.savedeployjobnotifypolicyapi.getname";
     }
 
     @Override
@@ -60,15 +60,15 @@ public class SaveDeployJobNotifyPolicyApi extends PrivateApiComponentBase {
     private DeployAppConfigMapper deployAppConfigMapper;
 
     @Input({
-            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "应用系统id"),
-            @Param(name = "policyId", type = ApiParamType.LONG, desc = "通知策略id"),
-            @Param(name = "isCustom", type = ApiParamType.ENUM, rule = "0,1", isRequired = true, desc = "通知策略id"),
-            @Param(name = "paramMappingList", type = ApiParamType.JSONARRAY, desc = "参数映射列表"),
-            @Param(name = "excludeTriggerList", type = ApiParamType.JSONARRAY, desc = "排除的触发点列表")
+            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaj.savedeployjobnotifypolicyapi.input.param.desc.appsystemid"),
+            @Param(name = "policyId", type = ApiParamType.LONG, desc = "nmdaj.savedeployjobnotifypolicyapi.input.param.desc.policyid"),
+            @Param(name = "isCustom", type = ApiParamType.ENUM, rule = "0,1", isRequired = true, desc = "nmdaj.savedeployjobnotifypolicyapi.input.param.desc.iscustom"),
+            @Param(name = "paramMappingList", type = ApiParamType.JSONARRAY, desc = "nmdaj.savedeployjobnotifypolicyapi.input.param.desc.parammappinglist"),
+            @Param(name = "excludeTriggerList", type = ApiParamType.JSONARRAY, desc = "nmdaj.savedeployjobnotifypolicyapi.input.param.desc.excludetriggerlist")
     })
     @Output({
     })
-    @Description(desc = "保存发布作业通知策略")
+    @Description(desc = "nmdaj.savedeployjobnotifypolicyapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         Long appSystemId = paramObj.getLong("appSystemId");

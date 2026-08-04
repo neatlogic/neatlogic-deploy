@@ -52,7 +52,7 @@ public class DeployAppConfigServiceTestApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "测试DeployAppConfigService方法";
+        return "nmdat.deployappconfigservicetestapi.getname";
     }
 
     @Override
@@ -67,7 +67,7 @@ public class DeployAppConfigServiceTestApi extends PrivateApiComponentBase {
 
     @Input({})
     @Output({})
-    @Description(desc = "测试DeployAppConfigService方法")
+    @Description(desc = "nmdat.deployappconfigservicetestapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         getDatabaseByIdTest();

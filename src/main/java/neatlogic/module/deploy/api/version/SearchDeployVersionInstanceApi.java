@@ -36,7 +36,7 @@ public class SearchDeployVersionInstanceApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "查询版本实例发布状态";
+        return "nmdav.searchdeployversioninstanceapi.getname";
     }
 
     @Override
@@ -50,14 +50,14 @@ public class SearchDeployVersionInstanceApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "keyword", type = ApiParamType.STRING, xss = true, desc = "关键词"),
-            @Param(name = "versionId", type = ApiParamType.LONG, isRequired = true, desc = "版本id"),
-            @Param(name = "envId", type = ApiParamType.LONG, isRequired = true, desc = "环境id")
+            @Param(name = "keyword", type = ApiParamType.STRING, xss = true, desc = "nmdav.searchdeployversioninstanceapi.input.param.desc.keyword"),
+            @Param(name = "versionId", type = ApiParamType.LONG, isRequired = true, desc = "nmdav.searchdeployversioninstanceapi.input.param.desc.versionid"),
+            @Param(name = "envId", type = ApiParamType.LONG, isRequired = true, desc = "nmdav.searchdeployversioninstanceapi.input.param.desc.envid")
     })
     @Output({
             @Param(name = "tbodyList", explode = DeployVersionEnvInstanceVo[].class),
     })
-    @Description(desc = "查询版本实例发布状态")
+    @Description(desc = "nmdav.searchdeployversioninstanceapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         String keyword = paramObj.getString("keyword");

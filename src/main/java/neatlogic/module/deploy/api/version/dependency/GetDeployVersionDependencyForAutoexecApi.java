@@ -24,7 +24,7 @@ public class GetDeployVersionDependencyForAutoexecApi extends PrivateApiComponen
 
     @Override
     public String getName() {
-        return "获取发布版本依赖";
+        return "nmdavd.getdeployversiondependencyforautoexecapi.getname";
     }
 
     @Override
@@ -38,13 +38,13 @@ public class GetDeployVersionDependencyForAutoexecApi extends PrivateApiComponen
     }
 
     @Input({
-            @Param(name = "sysId", desc = "应用ID", isRequired = true, type = ApiParamType.LONG),
-            @Param(name = "moduleId", desc = "应用模块id", isRequired = true, type = ApiParamType.LONG),
-            @Param(name = "version", desc = "版本号", isRequired = true, type = ApiParamType.STRING),
+            @Param(name = "sysId", desc = "nmdavd.getdeployversiondependencyforautoexecapi.input.param.desc.sysid", isRequired = true, type = ApiParamType.LONG),
+            @Param(name = "moduleId", desc = "nmdavd.getdeployversiondependencyforautoexecapi.input.param.desc.moduleid", isRequired = true, type = ApiParamType.LONG),
+            @Param(name = "version", desc = "nmdavd.getdeployversiondependencyforautoexecapi.input.param.desc.version", isRequired = true, type = ApiParamType.STRING),
     })
     @Output({
     })
-    @Description(desc = "获取发布版本依赖")
+    @Description(desc = "nmdavd.getdeployversiondependencyforautoexecapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         Long sysId = paramObj.getLong("sysId");

@@ -55,7 +55,7 @@ public class CheckBatchDeployJobApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "验证批量发布作业";
+        return "nmdajb.checkbatchdeployjobapi.getname";
     }
 
     @Override
@@ -64,11 +64,11 @@ public class CheckBatchDeployJobApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "id", type = ApiParamType.LONG, desc = "批量发布作业id", isRequired = true),
+            @Param(name = "id", type = ApiParamType.LONG, desc = "nmdajb.checkbatchdeployjobapi.input.param.desc.id", isRequired = true),
     })
     @Output({
     })
-    @Description(desc = "验证批量发布作业接口")
+    @Description(desc = "nmdajb.checkbatchdeployjobapi.getname")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         Long batchJobId = jsonObj.getLong("id");

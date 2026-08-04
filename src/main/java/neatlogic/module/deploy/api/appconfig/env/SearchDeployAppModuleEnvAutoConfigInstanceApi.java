@@ -39,7 +39,7 @@ public class SearchDeployAppModuleEnvAutoConfigInstanceApi extends PrivateApiCom
 
     @Override
     public String getName() {
-        return "获取发布应用模块环境AutoConfig实例差异的资产列表";
+        return "nmdaae.searchdeployappmoduleenvautoconfiginstanceapi.getname";
     }
 
     @Override
@@ -53,19 +53,19 @@ public class SearchDeployAppModuleEnvAutoConfigInstanceApi extends PrivateApiCom
     }
 
     @Input({
-            @Param(name = "keyword", type = ApiParamType.STRING, desc = "模糊查询"),
-            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "应用 id"),
-            @Param(name = "appModuleId", type = ApiParamType.LONG, isRequired = true, desc = "模块 id"),
-            @Param(name = "envId", type = ApiParamType.LONG, isRequired = true, desc = "环境 id"),
-            @Param(name = "isAutoConfig", type = ApiParamType.INTEGER, desc = "是否有AutoConfig"),
-            @Param(name = "defaultValue", type = ApiParamType.JSONARRAY, desc = "默认值"),
-            @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "当前页"),
-            @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "每页数据条目"),
-            @Param(name = "needPage", type = ApiParamType.BOOLEAN, desc = "是否需要分页，默认true")
+            @Param(name = "keyword", type = ApiParamType.STRING, desc = "nmdaae.searchdeployappmoduleenvautoconfiginstanceapi.input.param.desc.keyword"),
+            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaae.searchdeployappmoduleenvautoconfiginstanceapi.input.param.desc.appsystemid"),
+            @Param(name = "appModuleId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaae.searchdeployappmoduleenvautoconfiginstanceapi.input.param.desc.appmoduleid"),
+            @Param(name = "envId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaae.searchdeployappmoduleenvautoconfiginstanceapi.input.param.desc.envid"),
+            @Param(name = "isAutoConfig", type = ApiParamType.INTEGER, desc = "nmdaae.searchdeployappmoduleenvautoconfiginstanceapi.input.param.desc.isautoconfig"),
+            @Param(name = "defaultValue", type = ApiParamType.JSONARRAY, desc = "nmdaae.searchdeployappmoduleenvautoconfiginstanceapi.input.param.desc.defaultvalue"),
+            @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "nmdaae.searchdeployappmoduleenvautoconfiginstanceapi.input.param.desc.currentpage"),
+            @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "nmdaae.searchdeployappmoduleenvautoconfiginstanceapi.input.param.desc.pagesize"),
+            @Param(name = "needPage", type = ApiParamType.BOOLEAN, desc = "nmdaae.searchdeployappmoduleenvautoconfiginstanceapi.input.param.desc.needpage")
     })
     @Output({
             @Param(explode = BasePageVo.class),
-            @Param(name = "tbodyList", explode = ResourceVo[].class, desc = "发布应用模块环境AutoConfig实例差异的资产列表")
+            @Param(name = "tbodyList", explode = ResourceVo[].class, desc = "nmdaae.searchdeployappmoduleenvautoconfiginstanceapi.output.param.desc.tbodylist")
     })
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {

@@ -27,6 +27,7 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.List;
 
+import neatlogic.framework.util.$;
 /**
  * @author longrf
  * @date 2022/10/14 18:31
@@ -63,7 +64,7 @@ public class AutoexecScenarioDeployPipelineDependencyHandler extends DefaultDepe
             }
         }
         List<String> pathList = new ArrayList<>();
-        pathList.add("应用配置");
+        pathList.add($.t("nmddh.autoexecscenariodeploypipelinedependencyhandler.runtime.label.appconfig"));
         ICiEntityCrossoverMapper ciEntityCrossoverMapper = CrossoverServiceFactory.getApi(ICiEntityCrossoverMapper.class);
         if (appSystemId != null && appSystemId != 0) {
             CiEntityVo ciEntityVo = ciEntityCrossoverMapper.getCiEntityBaseInfoById(appSystemId);
@@ -85,7 +86,7 @@ public class AutoexecScenarioDeployPipelineDependencyHandler extends DefaultDepe
         }
 
         String urlFormat = stringBuilder.toString();
-        return new DependencyInfoVo(configId, dependencyInfoConfig, "发布流水线", pathList, urlFormat, this.getGroupName());
+        return new DependencyInfoVo(configId, dependencyInfoConfig, $.t("nmddh.autoexecscenariodeploypipelinedependencyhandler.runtime.label.deploymentpipeline"), pathList, urlFormat, this.getGroupName());
 
     }
 

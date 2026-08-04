@@ -27,7 +27,7 @@ public class GetDeployAppConfigEnvDBConfigApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "获取发布应用配置DB配置";
+        return "nmdaae.getdeployappconfigenvdbconfigapi.getname";
     }
 
     @Override
@@ -41,12 +41,12 @@ public class GetDeployAppConfigEnvDBConfigApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "id", type = ApiParamType.LONG, isRequired = true, desc = "id")
+            @Param(name = "id", type = ApiParamType.LONG, isRequired = true, desc = "nmdaae.getdeployappconfigenvdbconfigapi.input.param.desc.id")
     })
     @Output({
-            @Param(name = "tbodyList", explode = DeployAppConfigEnvDBConfigVo[].class, desc = "DB配置")
+            @Param(name = "tbodyList", explode = DeployAppConfigEnvDBConfigVo[].class, desc = "nmdaae.getdeployappconfigenvdbconfigapi.output.param.desc.tbodylist")
     })
-    @Description(desc = "获取发布应用配置DB配置")
+    @Description(desc = "nmdaae.getdeployappconfigenvdbconfigapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         return deployAppConfigMapper.getAppConfigEnvDBConfigById(paramObj.getLong("id"));

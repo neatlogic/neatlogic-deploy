@@ -78,12 +78,12 @@ public class CreateMultiDeployJobApi extends PrivateApiComponentBase {
 
     @Input({
             @Param(name = "scenarioId", type = ApiParamType.LONG, desc = "term.autoexec.scenarioid"),
-            @Param(name = "scenarioName", type = ApiParamType.STRING, desc = "term.autoexec.scenarioname", help = "如果入参也有scenarioId，则会以scenarioName为准"),
+            @Param(name = "scenarioName", type = ApiParamType.STRING, desc = "term.autoexec.scenarioname", help = "nmdaj.createmultideployjobapi.input.param.help.scenarioname"),
             @Param(name = "appSystemId", type = ApiParamType.LONG, desc = "term.cmdb.appsystemid"),
-            @Param(name = "appSystemAbbrName", type = ApiParamType.STRING, desc = "term.cmdb.sysname", help = "如果入参也有appSystemId，则会以appSystemName为准"),
+            @Param(name = "appSystemAbbrName", type = ApiParamType.STRING, desc = "term.cmdb.sysname", help = "nmdaj.createmultideployjobapi.input.param.help.appsystemabbrname"),
             @Param(name = "moduleList", type = ApiParamType.JSONARRAY, isRequired = true, desc = "nfd.licensevo.entityfield.name.modules"),
             @Param(name = "envId", type = ApiParamType.LONG, desc = "term.cmdb.envid"),
-            @Param(name = "envName", type = ApiParamType.STRING, desc = "term.cmdb.envname", help = "如果入参也有envId，则会以envName为准"),
+            @Param(name = "envName", type = ApiParamType.STRING, desc = "term.cmdb.envname", help = "nmdaj.createmultideployjobapi.input.param.help.envname"),
             @Param(name = "param", type = ApiParamType.JSONOBJECT, desc = "term.autoexec.executeparam"),
             @Param(name = "roundCount", type = ApiParamType.LONG, desc = "term.autoexec.roundcount"),
             @Param(name = "executeConfig", type = ApiParamType.JSONOBJECT, desc = "term.autoexec.executeconfig"),
@@ -91,7 +91,7 @@ public class CreateMultiDeployJobApi extends PrivateApiComponentBase {
             @Param(name = "triggerType", type = ApiParamType.ENUM, rule = "auto,manual", desc = "common.triggertype"),
             @Param(name = "assignExecUser", type = ApiParamType.STRING, desc = "term.autoexec.assignexecuser"),
             @Param(name = "parentId", type = ApiParamType.LONG, desc = "common.parentid"),
-            @Param(name = "proxyToUrl", type = ApiParamType.STRING, desc = "term.deploy.proxytourl", help = "不从当前环境runner下载,则需要传跳转url，即协议+IP地址（域名）+端口号")
+            @Param(name = "proxyToUrl", type = ApiParamType.STRING, desc = "term.deploy.proxytourl", help = "nmdaj.createmultideployjobapi.input.param.help.proxytourl")
 
     })
     @Description(desc = "nmdaj.createmultideployjobapi.getname")

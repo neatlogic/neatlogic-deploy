@@ -59,7 +59,7 @@ public class FallbackDeployAppConfigEnvAutoConfigApi extends PrivateApiComponent
 
     @Override
     public String getName() {
-        return "回滚应用环境实例autoConfig";
+        return "nmdaae.fallbackdeployappconfigenvautoconfigapi.getname";
     }
 
     @Override
@@ -68,15 +68,15 @@ public class FallbackDeployAppConfigEnvAutoConfigApi extends PrivateApiComponent
     }
 
     @Input({
-            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "应用 id"),
-            @Param(name = "appModuleId", type = ApiParamType.LONG, isRequired = true, desc = "模块 id"),
-            @Param(name = "envId", type = ApiParamType.LONG, isRequired = true, desc = "环境 id"),
-            @Param(name = "instanceId", type = ApiParamType.LONG, desc = "应用实例 id"),
-            @Param(name = "uuidList", type = ApiParamType.JSONARRAY,  isRequired = true, minSize = 1, desc = "变量名列表"),
+            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaae.fallbackdeployappconfigenvautoconfigapi.input.param.desc.appsystemid"),
+            @Param(name = "appModuleId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaae.fallbackdeployappconfigenvautoconfigapi.input.param.desc.appmoduleid"),
+            @Param(name = "envId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaae.fallbackdeployappconfigenvautoconfigapi.input.param.desc.envid"),
+            @Param(name = "instanceId", type = ApiParamType.LONG, desc = "nmdaae.fallbackdeployappconfigenvautoconfigapi.input.param.desc.instanceid"),
+            @Param(name = "uuidList", type = ApiParamType.JSONARRAY,  isRequired = true, minSize = 1, desc = "nmdaae.fallbackdeployappconfigenvautoconfigapi.input.param.desc.uuidlist"),
     })
     @Output({
     })
-    @Description(desc = "回滚应用环境实例autoConfig")
+    @Description(desc = "nmdaae.fallbackdeployappconfigenvautoconfigapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj) {
         Long appSystemId = paramObj.getLong("appSystemId");

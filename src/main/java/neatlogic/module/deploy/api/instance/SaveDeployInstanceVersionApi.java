@@ -54,7 +54,7 @@ public class SaveDeployInstanceVersionApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "设置实例的版本号";
+        return "nmdai.savedeployinstanceversionapi.getname";
     }
 
     @Override
@@ -68,18 +68,18 @@ public class SaveDeployInstanceVersionApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "sysId", desc = "应用ID", isRequired = true, type = ApiParamType.LONG),
-            @Param(name = "moduleId", desc = "应用模块id", isRequired = true, type = ApiParamType.LONG),
-            @Param(name = "envId", desc = "环境id", isRequired = true, type = ApiParamType.LONG),
-            @Param(name = "resourceId", desc = "实例id", isRequired = true, type = ApiParamType.LONG),
-            @Param(name = "version", desc = "版本号", isRequired = true, type = ApiParamType.STRING),
-            @Param(name = "buildNo", desc = "编译号", isRequired = true, type = ApiParamType.INTEGER),
-            @Param(name = "execUser", desc = "发布用户", isRequired = true, type = ApiParamType.STRING),
-            @Param(name = "deployTime", desc = "发布时间（时间戳为秒数）", isRequired = true, type = ApiParamType.LONG),
+            @Param(name = "sysId", desc = "nmdai.savedeployinstanceversionapi.input.param.desc.sysid", isRequired = true, type = ApiParamType.LONG),
+            @Param(name = "moduleId", desc = "nmdai.savedeployinstanceversionapi.input.param.desc.moduleid", isRequired = true, type = ApiParamType.LONG),
+            @Param(name = "envId", desc = "nmdai.savedeployinstanceversionapi.input.param.desc.envid", isRequired = true, type = ApiParamType.LONG),
+            @Param(name = "resourceId", desc = "nmdai.savedeployinstanceversionapi.input.param.desc.resourceid", isRequired = true, type = ApiParamType.LONG),
+            @Param(name = "version", desc = "nmdai.savedeployinstanceversionapi.input.param.desc.version", isRequired = true, type = ApiParamType.STRING),
+            @Param(name = "buildNo", desc = "nmdai.savedeployinstanceversionapi.input.param.desc.buildno", isRequired = true, type = ApiParamType.INTEGER),
+            @Param(name = "execUser", desc = "nmdai.savedeployinstanceversionapi.input.param.desc.execuser", isRequired = true, type = ApiParamType.STRING),
+            @Param(name = "deployTime", desc = "nmdai.savedeployinstanceversionapi.input.param.desc.deploytime", isRequired = true, type = ApiParamType.LONG),
     })
     @Output({
     })
-    @Description(desc = "设置实例的版本号")
+    @Description(desc = "nmdai.savedeployinstanceversionapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         Long sysId = paramObj.getLong("sysId");

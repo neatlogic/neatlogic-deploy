@@ -43,6 +43,7 @@ import javax.annotation.Resource;
 import java.util.List;
 import java.util.Objects;
 
+import neatlogic.framework.util.$;
 @Service
 @Transactional
 @AuthAction(action = DEPLOY_BASE.class)
@@ -109,7 +110,7 @@ public class SaveDeployAppConfigEnvDBPrivateAccountApi extends PrivateApiCompone
             } else {
                 Long resourceId = vo.getResourceId();
                 if (resourceId == null) {
-                    throw new ParamNotExistsException("资产ID（resourceId）");
+                    throw new ParamNotExistsException($.t("nmdaae.savedeployappconfigenvdbprivateaccountapi.runtime.param.idresourceid"));
                 }
                 List<AccountVo> accountVoList = resourceAccountCrossoverMapper.getResourceAccountListByResourceId(resourceId);
                 for (AccountVo accountVo : accountVoList) {

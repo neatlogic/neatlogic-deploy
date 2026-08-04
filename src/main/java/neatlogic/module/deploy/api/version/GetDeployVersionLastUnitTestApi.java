@@ -22,7 +22,7 @@ public class GetDeployVersionLastUnitTestApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "获取发布版本最近一次单元测试记录";
+        return "nmdav.getdeployversionlastunittestapi.getname";
     }
 
     @Override
@@ -36,11 +36,11 @@ public class GetDeployVersionLastUnitTestApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "versionId", desc = "版本号", isRequired = true, type = ApiParamType.LONG),
+            @Param(name = "versionId", desc = "nmdav.getdeployversionlastunittestapi.input.param.desc.versionid", isRequired = true, type = ApiParamType.LONG),
     })
     @Output({
     })
-    @Description(desc = "获取发布版本最近一次单元测试记录")
+    @Description(desc = "nmdav.getdeployversionlastunittestapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         return deployVersionMapper.getDeployVersionUnitTestListByVersionIdWithLimit(paramObj.getLong("versionId"), 1);

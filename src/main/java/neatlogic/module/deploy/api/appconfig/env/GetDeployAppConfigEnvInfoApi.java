@@ -77,7 +77,7 @@ public class GetDeployAppConfigEnvInfoApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "查询应用环境详细配置信息";
+        return "nmdaae.getdeployappconfigenvinfoapi.getname";
     }
 
     @Override
@@ -86,15 +86,15 @@ public class GetDeployAppConfigEnvInfoApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "应用 id"),
-            @Param(name = "appModuleId", type = ApiParamType.LONG, isRequired = true, desc = "模块 id"),
-            @Param(name = "envId", type = ApiParamType.LONG, isRequired = true, desc = "环境 id")
+            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaae.getdeployappconfigenvinfoapi.input.param.desc.appsystemid"),
+            @Param(name = "appModuleId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaae.getdeployappconfigenvinfoapi.input.param.desc.appmoduleid"),
+            @Param(name = "envId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaae.getdeployappconfigenvinfoapi.input.param.desc.envid")
     })
     @Output({
             @Param(explode = BasePageVo.class),
-            @Param(name = "tbodyList", explode = DeployAppEnvAutoConfigVo[].class, desc = "应用配置环境autoConfig列表")
+            @Param(name = "tbodyList", explode = DeployAppEnvAutoConfigVo[].class, desc = "nmdaae.getdeployappconfigenvinfoapi.output.param.desc.tbodylist")
     })
-    @Description(desc = "查询应用环境详细配置信息接口")
+    @Description(desc = "nmdaae.getdeployappconfigenvinfoapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj) {
         JSONObject envInfo = new JSONObject();

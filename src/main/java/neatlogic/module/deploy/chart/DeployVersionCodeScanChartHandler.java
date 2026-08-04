@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
+import neatlogic.framework.util.$;
 @Component
 public class DeployVersionCodeScanChartHandler extends DeployVersionChartHandlerBase {
 
@@ -60,8 +61,8 @@ public class DeployVersionCodeScanChartHandler extends DeployVersionChartHandler
             JSONObject data = new JSONObject();
             data.put("legend", new JSONObject() {
                 {
-                    this.put("commentLinesDensity", "行注释率");
-                    this.put("publicDocumentedApiDensity", "API注释率");
+                    this.put("commentLinesDensity", $.t("nmdc.deployversioncodescancharthandler.runtime.commentlinesdensity"));
+                    this.put("publicDocumentedApiDensity", $.t("nmdc.deployversioncodescancharthandler.runtime.publicdocumentedapidensity"));
                 }
             });
             JSONArray dataList = new JSONArray();
@@ -86,8 +87,8 @@ public class DeployVersionCodeScanChartHandler extends DeployVersionChartHandler
             JSONObject data = new JSONObject();
             data.put("legend", new JSONObject() {
                 {
-                    this.put("lines", "代码总行数");
-                    this.put("ncloc", "代码有效行");
+                    this.put("lines", $.t("nmdc.deployversioncodescancharthandler.runtime.lines"));
+                    this.put("ncloc", $.t("nmdc.deployversioncodescancharthandler.runtime.ncloc"));
                 }
             });
             JSONArray dataList = new JSONArray();
@@ -113,8 +114,8 @@ public class DeployVersionCodeScanChartHandler extends DeployVersionChartHandler
             data.put("legend", new JSONObject() {
                 {
                     this.put("bugs", "Bugs");
-                    this.put("vulnerabilities", "漏洞");
-                    this.put("codeSmells", "代码异味");
+                    this.put("vulnerabilities", $.t("nmdc.deployversioncodescancharthandler.runtime.vulnerabilities"));
+                    this.put("codeSmells", $.t("nmdc.deployversioncodescancharthandler.runtime.codesmells"));
                 }
             });
             JSONArray dataList = new JSONArray();
@@ -140,7 +141,7 @@ public class DeployVersionCodeScanChartHandler extends DeployVersionChartHandler
             JSONObject data = new JSONObject();
             data.put("legend", new JSONObject() {
                 {
-                    this.put("duplicatedLinesDensity", "重复度");
+                    this.put("duplicatedLinesDensity", $.t("nmdc.deployversioncodescancharthandler.runtime.duplicatedlinesdensity"));
                 }
             });
             JSONArray dataList = new JSONArray();

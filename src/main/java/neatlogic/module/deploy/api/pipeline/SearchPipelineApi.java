@@ -41,7 +41,7 @@ public class SearchPipelineApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "查询超级流水线";
+        return "nmdap.searchpipelineapi.getname";
     }
 
     @Override
@@ -55,18 +55,18 @@ public class SearchPipelineApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "keyword", type = ApiParamType.STRING, desc = "关键字"),
-            @Param(name = "type", type = ApiParamType.ENUM, member = PipelineType.class, desc = "类型"),
-            @Param(name = "appSystemId", type = ApiParamType.LONG, desc = "应用ID"),
-            @Param(name = "needVerifyAuth", type = ApiParamType.INTEGER, desc = "是否需要验证权限"),
-            @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "当前页码"),
-            @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "页大小")
+            @Param(name = "keyword", type = ApiParamType.STRING, desc = "nmdap.searchpipelineapi.input.param.desc.keyword"),
+            @Param(name = "type", type = ApiParamType.ENUM, member = PipelineType.class, desc = "nmdap.searchpipelineapi.input.param.desc.type"),
+            @Param(name = "appSystemId", type = ApiParamType.LONG, desc = "nmdap.searchpipelineapi.input.param.desc.appsystemid"),
+            @Param(name = "needVerifyAuth", type = ApiParamType.INTEGER, desc = "nmdap.searchpipelineapi.input.param.desc.needverifyauth"),
+            @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "nmdap.searchpipelineapi.input.param.desc.currentpage"),
+            @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "nmdap.searchpipelineapi.input.param.desc.pagesize")
     })
     @Output({
             @Param(explode = BasePageVo.class),
-            @Param(name = "tbodyList", explode = PipelineVo[].class, desc = "超级流水线列表")
+            @Param(name = "tbodyList", explode = PipelineVo[].class, desc = "nmdap.searchpipelineapi.output.param.desc.tbodylist")
     })
-    @Description(desc = "查询超级流水线接口")
+    @Description(desc = "nmdap.searchpipelineapi.getname")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         PipelineSearchVo searchVo = JSON.toJavaObject(jsonObj, PipelineSearchVo.class);

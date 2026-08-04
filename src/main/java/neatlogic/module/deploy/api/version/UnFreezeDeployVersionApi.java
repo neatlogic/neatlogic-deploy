@@ -36,7 +36,7 @@ public class UnFreezeDeployVersionApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "解/封发布版本";
+        return "nmdav.unfreezedeployversionapi.getname";
     }
 
     @Override
@@ -50,10 +50,10 @@ public class UnFreezeDeployVersionApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "id", desc = "版本id", isRequired = true, type = ApiParamType.LONG),
-            @Param(name = "isFreeze", desc = "是否封版(0：解版，1：封版)", isRequired = true, type = ApiParamType.INTEGER)
+            @Param(name = "id", desc = "nmdav.unfreezedeployversionapi.input.param.desc.id", isRequired = true, type = ApiParamType.LONG),
+            @Param(name = "isFreeze", desc = "nmdav.unfreezedeployversionapi.input.param.desc.isfreeze", isRequired = true, type = ApiParamType.INTEGER)
     })
-    @Description(desc = "解/封发布版本")
+    @Description(desc = "nmdav.unfreezedeployversionapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         Long versionId = paramObj.getLong("id");

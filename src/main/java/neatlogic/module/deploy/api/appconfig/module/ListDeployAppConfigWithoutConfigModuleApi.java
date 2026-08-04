@@ -38,7 +38,7 @@ public class ListDeployAppConfigWithoutConfigModuleApi extends PrivateApiCompone
 
     @Override
     public String getName() {
-        return "获取没有继承应用配置的模块列表";
+        return "nmdaam.listdeployappconfigwithoutconfigmoduleapi.getname";
     }
 
     @Override
@@ -52,13 +52,13 @@ public class ListDeployAppConfigWithoutConfigModuleApi extends PrivateApiCompone
     }
 
     @Input({
-            @Param(name = "appSystemId", type = ApiParamType.LONG, desc = "应用系统id"),
-            @Param(name = "appModuleId", type = ApiParamType.LONG, desc = "应用模块id")
+            @Param(name = "appSystemId", type = ApiParamType.LONG, desc = "nmdaam.listdeployappconfigwithoutconfigmoduleapi.input.param.desc.appsystemid"),
+            @Param(name = "appModuleId", type = ApiParamType.LONG, desc = "nmdaam.listdeployappconfigwithoutconfigmoduleapi.input.param.desc.appmoduleid")
     })
     @Output({
-            @Param(explode = DeployAppModuleVo[].class, desc = "发布应用配置的应用系统模块列表")
+            @Param(explode = DeployAppModuleVo[].class, desc = "nmdaam.listdeployappconfigwithoutconfigmoduleapi.output.param.desc.return")
     })
-    @Description(desc = "获取没有继承应用配置的模块列表(复制配置到现有模块时的模块下拉)")
+    @Description(desc = "nmdaam.listdeployappconfigwithoutconfigmoduleapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         return deployAppConfigMapper.getDeployHasNotConfigAppModuleListByAppSystemIdAndAppModuleId(paramObj.getLong("appSystemId"), paramObj.getLong("appModuleId"));

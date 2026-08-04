@@ -22,7 +22,7 @@ public class GetDeployVersionLastBuildQualityApi extends PrivateApiComponentBase
 
     @Override
     public String getName() {
-        return "获取发布版本最后一次构建质量记录";
+        return "nmdav.getdeployversionlastbuildqualityapi.getname";
     }
 
     @Override
@@ -36,11 +36,11 @@ public class GetDeployVersionLastBuildQualityApi extends PrivateApiComponentBase
     }
 
     @Input({
-            @Param(name = "versionId", desc = "版本号", isRequired = true, type = ApiParamType.LONG),
+            @Param(name = "versionId", desc = "nmdav.getdeployversionlastbuildqualityapi.input.param.desc.versionid", isRequired = true, type = ApiParamType.LONG),
     })
     @Output({
     })
-    @Description(desc = "获取发布版本最后一次构建质量记录")
+    @Description(desc = "nmdav.getdeployversionlastbuildqualityapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         return deployVersionMapper.getDeployVersionBuildQualityListByVersionIdWithLimit(paramObj.getLong("versionId"), 1);

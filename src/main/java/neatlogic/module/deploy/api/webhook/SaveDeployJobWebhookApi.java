@@ -50,7 +50,7 @@ public class SaveDeployJobWebhookApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "保存发布作业触发器";
+        return "nmdaw.savedeployjobwebhookapi.getname";
     }
 
     @Override
@@ -59,14 +59,14 @@ public class SaveDeployJobWebhookApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "id", type = ApiParamType.LONG, desc = "触发器id"),
-            @Param(name = "name", type = ApiParamType.STRING, isRequired = true, desc = "触发器名称"),
-            @Param(name = "isActive", type = ApiParamType.INTEGER, isRequired = true, desc = "是否激活"),
-            @Param(name = "integrationUuid", type = ApiParamType.STRING, isRequired = true, desc = "集成uuid"),
-            @Param(name = "type", type = ApiParamType.ENUM, member = ScheduleType.class, isRequired = true, desc = "作业类型"),
-            @Param(name = "pipelineType", type = ApiParamType.ENUM, member = PipelineType.class, desc = "流水线类型"),
-            @Param(name = "buildNoPolicy", type = ApiParamType.ENUM, member = DeployWebhookBuildNoPolicy.class, desc = "编译号策略"),
-            @Param(name = "config", type = ApiParamType.JSONOBJECT, isRequired = true, desc = "配置信息")
+            @Param(name = "id", type = ApiParamType.LONG, desc = "nmdaw.savedeployjobwebhookapi.input.param.desc.id"),
+            @Param(name = "name", type = ApiParamType.STRING, isRequired = true, desc = "nmdaw.savedeployjobwebhookapi.input.param.desc.name"),
+            @Param(name = "isActive", type = ApiParamType.INTEGER, isRequired = true, desc = "nmdaw.savedeployjobwebhookapi.input.param.desc.isactive"),
+            @Param(name = "integrationUuid", type = ApiParamType.STRING, isRequired = true, desc = "nmdaw.savedeployjobwebhookapi.input.param.desc.integrationuuid"),
+            @Param(name = "type", type = ApiParamType.ENUM, member = ScheduleType.class, isRequired = true, desc = "nmdaw.savedeployjobwebhookapi.input.param.desc.type"),
+            @Param(name = "pipelineType", type = ApiParamType.ENUM, member = PipelineType.class, desc = "nmdaw.savedeployjobwebhookapi.input.param.desc.pipelinetype"),
+            @Param(name = "buildNoPolicy", type = ApiParamType.ENUM, member = DeployWebhookBuildNoPolicy.class, desc = "nmdaw.savedeployjobwebhookapi.input.param.desc.buildnopolicy"),
+            @Param(name = "config", type = ApiParamType.JSONOBJECT, isRequired = true, desc = "nmdaw.savedeployjobwebhookapi.input.param.desc.config")
 
     })
     @Output({})

@@ -48,7 +48,7 @@ public class SaveDeployAppConfigModuleRunnerGroupApi extends PrivateApiComponent
 
     @Override
     public String getName() {
-        return "保存应用模块runner组";
+        return "nmdaam.savedeployappconfigmodulerunnergroupapi.getname";
     }
 
     @Override
@@ -57,13 +57,13 @@ public class SaveDeployAppConfigModuleRunnerGroupApi extends PrivateApiComponent
     }
 
     @Input({
-            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "应用id"),
-            @Param(name = "appModuleId", type = ApiParamType.LONG, isRequired = true, desc = "模块id"),
-            @Param(name = "runnerGroupId", type = ApiParamType.LONG, isRequired = true, desc = "runner组id")
+            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaam.savedeployappconfigmodulerunnergroupapi.input.param.desc.appsystemid"),
+            @Param(name = "appModuleId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaam.savedeployappconfigmodulerunnergroupapi.input.param.desc.appmoduleid"),
+            @Param(name = "runnerGroupId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaam.savedeployappconfigmodulerunnergroupapi.input.param.desc.runnergroupid")
     })
     @Output({
     })
-    @Description(desc = "保存应用模块runner组接口")
+    @Description(desc = "nmdaam.savedeployappconfigmodulerunnergroupapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj) {
 

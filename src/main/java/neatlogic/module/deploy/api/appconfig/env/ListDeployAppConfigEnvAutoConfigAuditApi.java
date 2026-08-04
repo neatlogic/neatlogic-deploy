@@ -34,6 +34,7 @@ import javax.annotation.Resource;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import neatlogic.framework.util.$;
 @Service
 @AuthAction(action = DEPLOY_BASE.class)
 @OperationType(type = OperationTypeEnum.OPERATE)
@@ -47,19 +48,19 @@ public class ListDeployAppConfigEnvAutoConfigAuditApi extends PrivateApiComponen
 
     @Override
     public String getName() {
-        return "查询应用环境实例autoConfig审计列表";
+        return "nmdaae.listdeployappconfigenvautoconfigauditapi.getname";
     }
     @Input({
-            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "应用 id"),
-            @Param(name = "appModuleId", type = ApiParamType.LONG, isRequired = true, desc = "模块 id"),
-            @Param(name = "envId", type = ApiParamType.LONG, isRequired = true, desc = "环境 id"),
-            @Param(name = "instanceId", type = ApiParamType.LONG, desc = "应用实例 id"),
+            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaae.listdeployappconfigenvautoconfigauditapi.input.param.desc.appsystemid"),
+            @Param(name = "appModuleId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaae.listdeployappconfigenvautoconfigauditapi.input.param.desc.appmoduleid"),
+            @Param(name = "envId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaae.listdeployappconfigenvautoconfigauditapi.input.param.desc.envid"),
+            @Param(name = "instanceId", type = ApiParamType.LONG, desc = "nmdaae.listdeployappconfigenvautoconfigauditapi.input.param.desc.instanceid"),
             @Param(name = "currentPage", type = ApiParamType.INTEGER, defaultValue = "1", desc = "common.currentpage"),
             @Param(name = "pageSize", type = ApiParamType.INTEGER, defaultValue = "10",  desc = "common.pagesize"),
     })
     @Output({
     })
-    @Description(desc = "查询应用环境实例autoConfig审计列表")
+    @Description(desc = "nmdaae.listdeployappconfigenvautoconfigauditapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         JSONObject resultObj = new JSONObject();
@@ -113,11 +114,11 @@ public class ListDeployAppConfigEnvAutoConfigAuditApi extends PrivateApiComponen
 //                    }
                     Integer beforeIsEmpty = tbody.getInteger("beforeIsEmpty");
                     if (Objects.equals(beforeIsEmpty, 1)) {
-                        tbody.put("beforeValue", "设为空");
+                        tbody.put("beforeValue", $.t("nmdaae.listdeployappconfigenvautoconfigauditapi.runtime.beforevalue"));
                     }
                     Integer afterIsEmpty = tbody.getInteger("afterIsEmpty");
                     if (Objects.equals(afterIsEmpty, 1)) {
-                        tbody.put("afterValue", "设为空");
+                        tbody.put("afterValue", $.t("nmdaae.listdeployappconfigenvautoconfigauditapi.runtime.aftervalue"));
                     }
                     String beforeType = tbody.getString("beforeType");
                     if (StringUtils.isNotBlank(beforeType)) {
