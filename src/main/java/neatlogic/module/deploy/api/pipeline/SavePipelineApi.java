@@ -80,7 +80,7 @@ public class SavePipelineApi extends PrivateApiComponentBase {
             @Param(name = "appSystemId", type = ApiParamType.LONG, desc = "nmraa.getappapi.input.param.desc"),
             @Param(name = "laneList", type = ApiParamType.JSONARRAY, desc = "term.deploy.lanelist"),
             @Param(name = "authList", type = ApiParamType.JSONARRAY, desc = "common.authlist"),
-            @Param(name = "defaultVersion", type = ApiParamType.STRING, desc = "nmdap.savepipelineapi.input.param.desc"),
+            @Param(name = "defaultVersion", type = ApiParamType.STRING, desc = "nmdap.savepipelineapi.input.param.desc.defaultversion"),
         }
     )
     @ResubmitInterval(3)

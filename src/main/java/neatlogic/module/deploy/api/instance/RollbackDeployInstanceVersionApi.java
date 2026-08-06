@@ -43,7 +43,7 @@ public class RollbackDeployInstanceVersionApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "回退实例的版本";
+        return "nmdai.rollbackdeployinstanceversionapi.getname";
     }
 
     @Override
@@ -57,14 +57,14 @@ public class RollbackDeployInstanceVersionApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "sysId", desc = "应用ID", isRequired = true, type = ApiParamType.LONG),
-            @Param(name = "moduleId", desc = "应用模块id", isRequired = true, type = ApiParamType.LONG),
-            @Param(name = "envId", desc = "环境id", isRequired = true, type = ApiParamType.LONG),
-            @Param(name = "resourceId", desc = "实例id", isRequired = true, type = ApiParamType.LONG),
+            @Param(name = "sysId", desc = "nmdai.rollbackdeployinstanceversionapi.input.param.desc.sysid", isRequired = true, type = ApiParamType.LONG),
+            @Param(name = "moduleId", desc = "nmdai.rollbackdeployinstanceversionapi.input.param.desc.moduleid", isRequired = true, type = ApiParamType.LONG),
+            @Param(name = "envId", desc = "nmdai.rollbackdeployinstanceversionapi.input.param.desc.envid", isRequired = true, type = ApiParamType.LONG),
+            @Param(name = "resourceId", desc = "nmdai.rollbackdeployinstanceversionapi.input.param.desc.resourceid", isRequired = true, type = ApiParamType.LONG),
     })
     @Output({
     })
-    @Description(desc = "回退实例的版本")
+    @Description(desc = "nmdai.rollbackdeployinstanceversionapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         Long sysId = paramObj.getLong("sysId");

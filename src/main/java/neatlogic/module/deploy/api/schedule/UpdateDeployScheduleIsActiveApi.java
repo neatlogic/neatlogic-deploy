@@ -58,7 +58,7 @@ public class UpdateDeployScheduleIsActiveApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "启用/禁用定时作业";
+        return "nmdas.updatedeployscheduleisactiveapi.getname";
     }
 
     @Override
@@ -67,10 +67,10 @@ public class UpdateDeployScheduleIsActiveApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "id", type = ApiParamType.LONG, isRequired = true, desc = "定时作业id")
+            @Param(name = "id", type = ApiParamType.LONG, isRequired = true, desc = "nmdas.updatedeployscheduleisactiveapi.input.param.desc.id")
     })
     @Output({})
-    @Description(desc = "启用/禁用定时作业")
+    @Description(desc = "nmdas.updatedeployscheduleisactiveapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         Long id = paramObj.getLong("id");

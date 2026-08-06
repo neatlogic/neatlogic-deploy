@@ -42,7 +42,7 @@ public class SaveDeployVersionDependencyForAutoexecApi extends PrivateApiCompone
 
     @Override
     public String getName() {
-        return "保存发布版本依赖";
+        return "nmdavd.savedeployversiondependencyforautoexecapi.getname";
     }
 
     @Override
@@ -56,22 +56,22 @@ public class SaveDeployVersionDependencyForAutoexecApi extends PrivateApiCompone
     }
 
     @Input({
-            @Param(name = "sysId", desc = "应用ID", isRequired = true, type = ApiParamType.LONG),
-            @Param(name = "moduleId", desc = "应用模块id", isRequired = true, type = ApiParamType.LONG),
-            @Param(name = "version", desc = "版本号", isRequired = true, type = ApiParamType.STRING),
-            @Param(name = "dependenceList", type = ApiParamType.JSONARRAY, desc = "包列表，每一个元素都是一个json", isRequired = true),
-            @Param(name = "dependenceList.groupId", type = ApiParamType.STRING, desc = "dependenceList->json中的属性，项目组标识"),
-            @Param(name = "dependenceList.artifactId", type = ApiParamType.STRING, desc = "dependenceList->json中的属性，项目标识"),
-            @Param(name = "dependenceList.version", type = ApiParamType.STRING, desc = "dependenceList->json中的属性，项目版本号"),
-            @Param(name = "dependenceList.licenses", type = ApiParamType.STRING, desc = "dependenceList->json中的属性，版权许可，开源协议等"),
-            @Param(name = "dependenceList.scope", type = ApiParamType.STRING, desc = "dependenceList->json中的属性，依赖作用域，默认compile"),
-            @Param(name = "dependenceList.type", type = ApiParamType.STRING, desc = "dependenceList->json中的属性，包类型，默认jar"),
-            @Param(name = "dependenceList.url", type = ApiParamType.STRING, desc = "dependenceList->json中的属性，此包在maven仓库的地址"),
-            @Param(name = "dependenceList.parent", type = ApiParamType.JSONOBJECT, desc = "dependenceList->json中的属性，父依赖属性集，包含groupId、artifactId、version三个属性"),
+            @Param(name = "sysId", desc = "nmdavd.savedeployversiondependencyforautoexecapi.input.param.desc.sysid", isRequired = true, type = ApiParamType.LONG),
+            @Param(name = "moduleId", desc = "nmdavd.savedeployversiondependencyforautoexecapi.input.param.desc.moduleid", isRequired = true, type = ApiParamType.LONG),
+            @Param(name = "version", desc = "nmdavd.savedeployversiondependencyforautoexecapi.input.param.desc.version", isRequired = true, type = ApiParamType.STRING),
+            @Param(name = "dependenceList", type = ApiParamType.JSONARRAY, desc = "nmdavd.savedeployversiondependencyforautoexecapi.input.param.desc.dependencelist.name", isRequired = true),
+            @Param(name = "dependenceList.groupId", type = ApiParamType.STRING, desc = "nmdavd.savedeployversiondependencyforautoexecapi.input.param.desc.dependencelist.groupid"),
+            @Param(name = "dependenceList.artifactId", type = ApiParamType.STRING, desc = "nmdavd.savedeployversiondependencyforautoexecapi.input.param.desc.dependencelist.artifactid"),
+            @Param(name = "dependenceList.version", type = ApiParamType.STRING, desc = "nmdavd.savedeployversiondependencyforautoexecapi.input.param.desc.dependencelist.version"),
+            @Param(name = "dependenceList.licenses", type = ApiParamType.STRING, desc = "nmdavd.savedeployversiondependencyforautoexecapi.input.param.desc.dependencelist.licenses"),
+            @Param(name = "dependenceList.scope", type = ApiParamType.STRING, desc = "nmdavd.savedeployversiondependencyforautoexecapi.input.param.desc.dependencelist.scope"),
+            @Param(name = "dependenceList.type", type = ApiParamType.STRING, desc = "nmdavd.savedeployversiondependencyforautoexecapi.input.param.desc.dependencelist.type"),
+            @Param(name = "dependenceList.url", type = ApiParamType.STRING, desc = "nmdavd.savedeployversiondependencyforautoexecapi.input.param.desc.dependencelist.url"),
+            @Param(name = "dependenceList.parent", type = ApiParamType.JSONOBJECT, desc = "nmdavd.savedeployversiondependencyforautoexecapi.input.param.desc.dependencelist.parent"),
     })
     @Output({
     })
-    @Description(desc = "保存发布版本依赖")
+    @Description(desc = "nmdavd.savedeployversiondependencyforautoexecapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         Long sysId = paramObj.getLong("sysId");

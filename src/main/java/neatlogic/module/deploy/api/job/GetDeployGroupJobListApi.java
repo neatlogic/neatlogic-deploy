@@ -39,7 +39,7 @@ public class GetDeployGroupJobListApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "根据指定id获取发布作业组列表";
+        return "nmdaj.getdeploygroupjoblistapi.getname";
     }
 
     @Override
@@ -53,10 +53,10 @@ public class GetDeployGroupJobListApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "idList", type = ApiParamType.JSONARRAY, desc = "id列表，用于精确查找作业刷新状态"),
+            @Param(name = "idList", type = ApiParamType.JSONARRAY, desc = "nmdaj.getdeploygroupjoblistapi.input.param.desc.idlist"),
     })
     @Output({@Param(type = ApiParamType.JSONARRAY, explode = LaneGroupVo[].class)})
-    @Description(desc = "根据指定id获取发布作业组列表接口，用于刷新作业状态")
+    @Description(desc = "nmdaj.getdeploygroupjoblistapi.getname")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         List<Long> idList = new ArrayList<>();

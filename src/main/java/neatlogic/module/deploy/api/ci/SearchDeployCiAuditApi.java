@@ -37,7 +37,7 @@ public class SearchDeployCiAuditApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "查询持续集成触发记录";
+        return "nmdac.searchdeployciauditapi.getname";
     }
 
     @Override
@@ -51,11 +51,11 @@ public class SearchDeployCiAuditApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "ciId", desc = "持续集成配置id", type = ApiParamType.LONG, isRequired = true),
-            @Param(name = "currentPage", desc = "当前页", type = ApiParamType.INTEGER),
-            @Param(name = "pageSize", desc = "每页最大数", type = ApiParamType.INTEGER)
+            @Param(name = "ciId", desc = "nmdac.searchdeployciauditapi.input.param.desc.ciid", type = ApiParamType.LONG, isRequired = true),
+            @Param(name = "currentPage", desc = "nmdac.searchdeployciauditapi.input.param.desc.currentpage", type = ApiParamType.INTEGER),
+            @Param(name = "pageSize", desc = "nmdac.searchdeployciauditapi.input.param.desc.pagesize", type = ApiParamType.INTEGER)
     })
-    @Description(desc = "查询持续集成触发记录")
+    @Description(desc = "nmdac.searchdeployciauditapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         DeployCiAuditVo auditVo = paramObj.toJavaObject(DeployCiAuditVo.class);

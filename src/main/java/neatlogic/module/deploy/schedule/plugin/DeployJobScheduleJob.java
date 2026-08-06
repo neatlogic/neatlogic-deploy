@@ -57,7 +57,7 @@ import java.util.Objects;
 public class DeployJobScheduleJob extends JobBase {
     @Override
     public String getName() {
-        return "发布定时作业执行";
+        return "nmdsp.deployjobschedulejob.getname";
     }
 
     static Logger logger = LoggerFactory.getLogger(DeployJobScheduleJob.class);

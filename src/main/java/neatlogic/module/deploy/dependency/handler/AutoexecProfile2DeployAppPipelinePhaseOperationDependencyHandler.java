@@ -38,6 +38,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+import neatlogic.framework.util.$;
 /**
  * 发布应用流水线阶段操作引用预置参数集处理器
  */
@@ -110,7 +111,7 @@ public class AutoexecProfile2DeployAppPipelinePhaseOperationDependencyHandler ex
                 String operationName = phaseOperationVo.getOperationName();
                 String phaseName = combopPhaseVo.getName();
                 List<String> pathList = new ArrayList<>();
-                pathList.add("应用配置");
+                pathList.add($.t("nmddh.autoexecprofile2deployapppipelinephaseoperationdependencyhandler.runtime.label"));
                 ICiEntityCrossoverMapper ciEntityCrossoverMapper = CrossoverServiceFactory.getApi(ICiEntityCrossoverMapper.class);
                 if (appSystemId != null && appSystemId != 0) {
                     CiEntityVo ciEntityVo = ciEntityCrossoverMapper.getCiEntityBaseInfoById(appSystemId);

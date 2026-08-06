@@ -34,7 +34,7 @@ public class GetDeployAppEnvAutoConfigApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "获取指定环境下所有实例的autoConfig";
+        return "nmdaae.getdeployappenvautoconfigapi.getname";
     }
 
     @Override
@@ -48,11 +48,11 @@ public class GetDeployAppEnvAutoConfigApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "sysId", desc = "应用ID", isRequired = true, type = ApiParamType.LONG),
-            @Param(name = "moduleId", desc = "应用系统id", isRequired = true, type = ApiParamType.LONG),
-            @Param(name = "envId", desc = "版本号", isRequired = true, type = ApiParamType.LONG),
+            @Param(name = "sysId", desc = "nmdaae.getdeployappenvautoconfigapi.input.param.desc.sysid", isRequired = true, type = ApiParamType.LONG),
+            @Param(name = "moduleId", desc = "nmdaae.getdeployappenvautoconfigapi.input.param.desc.moduleid", isRequired = true, type = ApiParamType.LONG),
+            @Param(name = "envId", desc = "nmdaae.getdeployappenvautoconfigapi.input.param.desc.envid", isRequired = true, type = ApiParamType.LONG),
     })
-    @Description(desc = "获取指定环境下所有实例的autoConfig")
+    @Description(desc = "nmdaae.getdeployappenvautoconfigapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         JSONObject result = new JSONObject();

@@ -45,6 +45,7 @@ import javax.annotation.Resource;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import neatlogic.framework.util.$;
 @Service
 @AuthAction(action = ADMIN.class)
 @OperationType(type = OperationTypeEnum.UPDATE)
@@ -59,16 +60,16 @@ public class MoveDeployAppPipelinePhaseBelongGroupApi extends PrivateApiComponen
 
     @Override
     public String getName() {
-        return "移动阶段到指定组";
+        return "nmdaa.movedeployapppipelinephasebelonggroupapi.getname";
     }
 
     @Input({
-            @Param(name = "appSystemAbbrNameList", type = ApiParamType.JSONARRAY, isRequired = true, desc = "应用系统简称列表", help = "isAllAppSystem=0才生效"),
-            @Param(name = "phaseList", type = ApiParamType.JSONARRAY,  isRequired = true, desc = "阶段列表", help = "[{\"name\":\"阶段名\",\"groupSort\":\"阶段组序号\"}]"),
-            @Param(name = "targetPhaseName", type = ApiParamType.STRING, isRequired = true,  desc = "目标阶段名"),
-            @Param(name = "targetPhaseGroupSort", type = ApiParamType.STRING,  isRequired = true, desc = "目标阶段组号"),
-            @Param(name = "isSave", type = ApiParamType.ENUM, rule = "0,1",  isRequired = true, desc = "是否保存"),
-            @Param(name = "isAllAppSystem", type = ApiParamType.ENUM, rule = "0,1", isRequired = true, desc = "是否扫描所有应用系统"),
+            @Param(name = "appSystemAbbrNameList", type = ApiParamType.JSONARRAY, isRequired = true, desc = "nmdaa.movedeployapppipelinephasebelonggroupapi.input.param.desc.appsystemabbrnamelist", help = "nmdaa.movedeployapppipelinephasebelonggroupapi.input.param.help.appsystemabbrnamelist"),
+            @Param(name = "phaseList", type = ApiParamType.JSONARRAY,  isRequired = true, desc = "nmdaa.movedeployapppipelinephasebelonggroupapi.input.param.desc.phaselist", help = "nmdaa.movedeployapppipelinephasebelonggroupapi.input.param.help.phaselist"),
+            @Param(name = "targetPhaseName", type = ApiParamType.STRING, isRequired = true,  desc = "nmdaa.movedeployapppipelinephasebelonggroupapi.input.param.desc.targetphasename"),
+            @Param(name = "targetPhaseGroupSort", type = ApiParamType.STRING,  isRequired = true, desc = "nmdaa.movedeployapppipelinephasebelonggroupapi.input.param.desc.targetphasegroupsort"),
+            @Param(name = "isSave", type = ApiParamType.ENUM, rule = "0,1",  isRequired = true, desc = "nmdaa.movedeployapppipelinephasebelonggroupapi.input.param.desc.issave"),
+            @Param(name = "isAllAppSystem", type = ApiParamType.ENUM, rule = "0,1", isRequired = true, desc = "nmdaa.movedeployapppipelinephasebelonggroupapi.input.param.desc.isallappsystem"),
     })
     @Output({
 
@@ -90,7 +91,7 @@ public class MoveDeployAppPipelinePhaseBelongGroupApi extends PrivateApiComponen
                 BasePageVo basePageVo = new BasePageVo();
                 List<ResourceVo> appEnvList = resourceCenterDataSource.getAppEnvListForSelect(basePageVo, false);
                 Map<Long, String> appEnvId2NameMap = appEnvList.stream().filter(Objects::nonNull).collect(Collectors.toMap(ResourceVo::getId, ResourceVo::getName));
-                appEnvId2NameMap.put(-2L, "未配置环境");
+                appEnvId2NameMap.put(-2L, $.t("nmdaa.movedeployapppipelinephasebelonggroupapi.runtime.label"));
                 for (Long appSystemId : appSystemIdList) {
                     ResourceVo appSystemVo = resourceCrossoverMapper.getAppSystemById(appSystemId);
                     if (appSystemVo == null) {

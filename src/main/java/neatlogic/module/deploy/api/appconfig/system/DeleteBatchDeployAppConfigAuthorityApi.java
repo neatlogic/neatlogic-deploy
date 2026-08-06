@@ -50,7 +50,7 @@ public class DeleteBatchDeployAppConfigAuthorityApi extends PrivateApiComponentB
 
     @Override
     public String getName() {
-        return "批量删除应用配置权限";
+        return "nmdaas.deletebatchdeployappconfigauthorityapi.getname";
     }
 
     @Override
@@ -59,12 +59,12 @@ public class DeleteBatchDeployAppConfigAuthorityApi extends PrivateApiComponentB
     }
 
     @Input({
-            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "应用资产id"),
-            @Param(name = "uuidList", type = ApiParamType.JSONARRAY, isRequired = true,  desc = "授权列表")
+            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaas.deletebatchdeployappconfigauthorityapi.input.param.desc.appsystemid"),
+            @Param(name = "uuidList", type = ApiParamType.JSONARRAY, isRequired = true,  desc = "nmdaas.deletebatchdeployappconfigauthorityapi.input.param.desc.uuidlist")
     })
     @Output({
     })
-    @Description(desc = "批量删除应用配置权限")
+    @Description(desc = "nmdaas.deletebatchdeployappconfigauthorityapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj) {
 

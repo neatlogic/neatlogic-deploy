@@ -55,7 +55,7 @@ import java.util.Objects;
 public class DeployJobAutoFireJob extends JobBase {
     @Override
     public String getName() {
-        return "发布作业计划启动";
+        return "nmdsp.deployjobautofirejob.getname";
     }
 
     static Logger logger = LoggerFactory.getLogger(DeployJobAutoFireJob.class);

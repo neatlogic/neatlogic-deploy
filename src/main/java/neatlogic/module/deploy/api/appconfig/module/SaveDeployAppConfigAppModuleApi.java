@@ -46,7 +46,7 @@ public class SaveDeployAppConfigAppModuleApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "保存发布应用配置的应用模块";
+        return "nmdaam.savedeployappconfigappmoduleapi.getname";
     }
 
     @Override
@@ -60,17 +60,17 @@ public class SaveDeployAppConfigAppModuleApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "id", type = ApiParamType.LONG, desc = "id"),
-            @Param(name = "abbrName", type = ApiParamType.STRING, isRequired = true, desc = "简称"),
-            @Param(name = "name", type = ApiParamType.STRING, desc = "名称"),
-            @Param(name = "state", type = ApiParamType.JSONARRAY, desc = "状态"),
-            @Param(name = "owner", type = ApiParamType.JSONARRAY, desc = "负责人"),
-            @Param(name = "maintenanceWindow", type = ApiParamType.STRING, desc = "维护窗口"),
-            @Param(name = "description", type = ApiParamType.STRING, desc = "备注"),
-            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "应用系统id")
+            @Param(name = "id", type = ApiParamType.LONG, desc = "nmdaam.savedeployappconfigappmoduleapi.input.param.desc.id"),
+            @Param(name = "abbrName", type = ApiParamType.STRING, isRequired = true, desc = "nmdaam.savedeployappconfigappmoduleapi.input.param.desc.abbrname"),
+            @Param(name = "name", type = ApiParamType.STRING, desc = "nmdaam.savedeployappconfigappmoduleapi.input.param.desc.name"),
+            @Param(name = "state", type = ApiParamType.JSONARRAY, desc = "nmdaam.savedeployappconfigappmoduleapi.input.param.desc.state"),
+            @Param(name = "owner", type = ApiParamType.JSONARRAY, desc = "nmdaam.savedeployappconfigappmoduleapi.input.param.desc.owner"),
+            @Param(name = "maintenanceWindow", type = ApiParamType.STRING, desc = "nmdaam.savedeployappconfigappmoduleapi.input.param.desc.maintenancewindow"),
+            @Param(name = "description", type = ApiParamType.STRING, desc = "nmdaam.savedeployappconfigappmoduleapi.input.param.desc.description"),
+            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaam.savedeployappconfigappmoduleapi.input.param.desc.appsystemid")
     })
-    @Output({@Param(name = "Return", type = ApiParamType.LONG, desc = "应用模块id")})
-    @Description(desc = "保存发布应用配置的应用模块")
+    @Output({@Param(name = "Return", type = ApiParamType.LONG, desc = "nmdaam.savedeployappconfigappmoduleapi.output.param.desc.return")})
+    @Description(desc = "nmdaam.savedeployappconfigappmoduleapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
 

@@ -70,6 +70,7 @@ import javax.annotation.Resource;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import neatlogic.framework.util.$;
 @Service
 @AuthAction(action = DEPLOY_SCHEDULE_MODIFY.class)
 @OperationType(type = OperationTypeEnum.UPDATE)
@@ -90,7 +91,7 @@ public class SaveDeployScheduleApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "保存定时作业信息";
+        return "nmdas.savedeployscheduleapi.getname";
     }
 
     @Override
@@ -99,23 +100,23 @@ public class SaveDeployScheduleApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "id", type = ApiParamType.LONG, desc = "定时作业id"),
-            @Param(name = "name", type = ApiParamType.STRING, isRequired = true, desc = "定时作业名称"),
-            @Param(name = "beginTime", type = ApiParamType.LONG, desc = "开始时间"),
-            @Param(name = "endTime", type = ApiParamType.LONG, desc = "结束时间"),
-            @Param(name = "cron", type = ApiParamType.STRING, isRequired = true, desc = "corn表达式"),
-            @Param(name = "isActive", type = ApiParamType.ENUM, isRequired = true, rule = "0,1", desc = "是否激活(0:禁用，1：激活)"),
-            @Param(name = "config", type = ApiParamType.JSONOBJECT, isRequired = true, desc = "执行配置信息"),
-            @Param(name = "type", type = ApiParamType.ENUM, member = ScheduleType.class, isRequired = true, desc = "作业类型"),
-            @Param(name = "appSystemId", type = ApiParamType.LONG, desc = "应用id"),
-            @Param(name = "appModuleId", type = ApiParamType.LONG, desc = "模块id"),
-            @Param(name = "pipelineId", type = ApiParamType.LONG, desc = "流水线id"),
-            @Param(name = "pipelineType", type = ApiParamType.ENUM, member = PipelineType.class, desc = "流水线类型")
+            @Param(name = "id", type = ApiParamType.LONG, desc = "nmdas.savedeployscheduleapi.input.param.desc.id"),
+            @Param(name = "name", type = ApiParamType.STRING, isRequired = true, desc = "nmdas.savedeployscheduleapi.input.param.desc.name"),
+            @Param(name = "beginTime", type = ApiParamType.LONG, desc = "nmdas.savedeployscheduleapi.input.param.desc.begintime"),
+            @Param(name = "endTime", type = ApiParamType.LONG, desc = "nmdas.savedeployscheduleapi.input.param.desc.endtime"),
+            @Param(name = "cron", type = ApiParamType.STRING, isRequired = true, desc = "nmdas.savedeployscheduleapi.input.param.desc.cron"),
+            @Param(name = "isActive", type = ApiParamType.ENUM, isRequired = true, rule = "0,1", desc = "nmdas.savedeployscheduleapi.input.param.desc.isactive"),
+            @Param(name = "config", type = ApiParamType.JSONOBJECT, isRequired = true, desc = "nmdas.savedeployscheduleapi.input.param.desc.config"),
+            @Param(name = "type", type = ApiParamType.ENUM, member = ScheduleType.class, isRequired = true, desc = "nmdas.savedeployscheduleapi.input.param.desc.type"),
+            @Param(name = "appSystemId", type = ApiParamType.LONG, desc = "nmdas.savedeployscheduleapi.input.param.desc.appsystemid"),
+            @Param(name = "appModuleId", type = ApiParamType.LONG, desc = "nmdas.savedeployscheduleapi.input.param.desc.appmoduleid"),
+            @Param(name = "pipelineId", type = ApiParamType.LONG, desc = "nmdas.savedeployscheduleapi.input.param.desc.pipelineid"),
+            @Param(name = "pipelineType", type = ApiParamType.ENUM, member = PipelineType.class, desc = "nmdas.savedeployscheduleapi.input.param.desc.pipelinetype")
     })
     @Output({
-            @Param(name = "id", type = ApiParamType.STRING, isRequired = true, desc = "定时作业id")
+            @Param(name = "id", type = ApiParamType.STRING, isRequired = true, desc = "nmdas.savedeployscheduleapi.output.param.desc.id")
     })
-    @Description(desc = "保存定时作业信息")
+    @Description(desc = "nmdas.savedeployscheduleapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         IJob jobHandler = SchedulerManager.getHandler(DeployJobScheduleJob.class.getName());
@@ -146,7 +147,7 @@ public class SaveDeployScheduleApi extends PrivateApiComponentBase {
             DeployScheduleConfigVo config = scheduleVo.getConfig();
             Long scenarioId = config.getScenarioId();
             if (scenarioId == null) {
-                throw new ParamNotExistsException("场景ID（config.scenarioId）");
+                throw new ParamNotExistsException($.t("nmdas.savedeployscheduleapi.runtime.param.idconfigscenarioid"));
             }
             IAutoexecScenarioCrossoverMapper autoexecScenarioCrossoverMapper = CrossoverServiceFactory.getApi(IAutoexecScenarioCrossoverMapper.class);
             AutoexecScenarioVo autoexecScenarioVo = autoexecScenarioCrossoverMapper.getScenarioById(scenarioId);
@@ -155,7 +156,7 @@ public class SaveDeployScheduleApi extends PrivateApiComponentBase {
             }
             Long envId = config.getEnvId();
             if (envId == null) {
-                throw new ParamNotExistsException("环境ID（config.envId）");
+                throw new ParamNotExistsException($.t("nmdas.savedeployscheduleapi.runtime.param.idconfigenvid"));
             }
             IResourceCrossoverMapper resourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
             ResourceVo resourceVo = resourceCrossoverMapper.getAppEnvById(envId);
@@ -175,7 +176,7 @@ public class SaveDeployScheduleApi extends PrivateApiComponentBase {
             }
             List<DeployJobModuleVo> moduleList = config.getModuleList();
             if (CollectionUtils.isEmpty(moduleList)) {
-                throw new ParamNotExistsException("模块版本列表（config.moduleList）");
+                throw new ParamNotExistsException($.t("nmdas.savedeployscheduleapi.runtime.param.configmodulelist"));
             }
             Map<Long, AppModuleVo> appModuleMap = new HashMap<>();
             List<Long> appModuleIdList = moduleList.stream().map(DeployJobModuleVo::getId).collect(Collectors.toList());
@@ -186,7 +187,7 @@ public class SaveDeployScheduleApi extends PrivateApiComponentBase {
             for (DeployJobModuleVo deployJobModuleVo : moduleList) {
                 Long appModuleId = deployJobModuleVo.getId();
                 if (appModuleId == null) {
-                    throw new ParamNotExistsException("模块ID（config.moduleList.id）");
+                    throw new ParamNotExistsException($.t("nmdas.savedeployscheduleapi.runtime.param.idconfigmodulelistid"));
                 }
                 AppModuleVo appModule = appModuleMap.get(appModuleId);
                 if (appModule == null) {
@@ -233,7 +234,7 @@ public class SaveDeployScheduleApi extends PrivateApiComponentBase {
             DeployScheduleConfigVo config = scheduleVo.getConfig();
             List<DeploySystemModuleVersionVo> deploySystemModuleVersionList = config.getAppSystemModuleVersionList();
             if (CollectionUtils.isEmpty(deploySystemModuleVersionList)) {
-                throw new ParamNotExistsException("应用模块环境（场景）版本列表（config.deploySystemModuleVersionList）");
+                throw new ParamNotExistsException($.t("nmdas.savedeployscheduleapi.runtime.param.configdeploysystemmodulevers"));
             }
             Map<Long, AppSystemVo> appSystemMap = new HashMap<>();
             List<Long> appSystemIdList = deploySystemModuleVersionList.stream().map(DeploySystemModuleVersionVo::getAppSystemId).collect(Collectors.toList());
@@ -250,7 +251,7 @@ public class SaveDeployScheduleApi extends PrivateApiComponentBase {
             for (DeploySystemModuleVersionVo deploySystemModuleVersionVo : deploySystemModuleVersionList) {
                 Long appSystemId = deploySystemModuleVersionVo.getAppSystemId();
                 if (appSystemId == null) {
-                    throw new ParamNotExistsException("模块ID（config.deploySystemModuleVersionList.appSystemId）");
+                    throw new ParamNotExistsException($.t("nmdas.savedeployscheduleapi.runtime.param.appsystemid"));
                 }
                 AppSystemVo appSystem = appSystemMap.get(appSystemId);
                 if (appSystem == null) {
@@ -258,7 +259,7 @@ public class SaveDeployScheduleApi extends PrivateApiComponentBase {
                 }
                 Long appModuleId = deploySystemModuleVersionVo.getAppModuleId();
                 if (appModuleId == null) {
-                    throw new ParamNotExistsException("应用ID（config.deploySystemModuleVersionList.appModuleId）");
+                    throw new ParamNotExistsException($.t("nmdas.savedeployscheduleapi.runtime.param.appmoduleid"));
                 }
                 AppModuleVo appModule = appModuleMap.get(appModuleId);
                 if (appModule == null) {

@@ -40,6 +40,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+import neatlogic.framework.util.$;
 /**
  * 发布应用流水线阶段操作自由参数映射引用全局参数处理器
  */
@@ -121,7 +122,7 @@ public class AutoexecGlobalParam2DeployAppPipelinePhaseOperationArgumentParamDep
                         String operationName = phaseOperationVo.getOperationName();
                         String phaseName = combopPhaseVo.getName();
                         List<String> pathList = new ArrayList<>();
-                        pathList.add("应用配置");
+                        pathList.add($.t("nmddh.autoexecglobalparam2deployapppipelinephaseoperationargumentparamdependencyhandler.runtime.label.appconfig"));
                         ICiEntityCrossoverMapper ciEntityCrossoverMapper = CrossoverServiceFactory.getApi(ICiEntityCrossoverMapper.class);
                         if (appSystemId != null && appSystemId != 0) {
                             CiEntityVo ciEntityVo = ciEntityCrossoverMapper.getCiEntityBaseInfoById(appSystemId);
@@ -160,7 +161,7 @@ public class AutoexecGlobalParam2DeployAppPipelinePhaseOperationArgumentParamDep
 
                         String urlFormat = stringBuilder.toString();
                         String value = id + "_" + System.currentTimeMillis();
-                        return new DependencyInfoVo(value, dependencyInfoConfig, "自由参数", pathList, urlFormat, this.getGroupName());
+                        return new DependencyInfoVo(value, dependencyInfoConfig, $.t("nmddh.autoexecglobalparam2deployapppipelinephaseoperationargumentparamdependencyhandler.runtime.label.freeparam"), pathList, urlFormat, this.getGroupName());
                     }
                 }
             }

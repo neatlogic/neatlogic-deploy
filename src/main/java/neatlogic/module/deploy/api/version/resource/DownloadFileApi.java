@@ -68,7 +68,7 @@ public class DownloadFileApi extends PrivateBinaryStreamApiComponentBase {
 
     @Override
     public String getName() {
-        return "下载文件";
+        return "nmdavr.downloadfileapi.getname";
     }
 
     @Override
@@ -77,15 +77,15 @@ public class DownloadFileApi extends PrivateBinaryStreamApiComponentBase {
     }
 
     @Input({
-            @Param(name = "id", desc = "版本id", isRequired = true, type = ApiParamType.LONG),
-            @Param(name = "buildNo", desc = "buildNo(当resourceType为[mirror*|workspace]时不需要)", type = ApiParamType.INTEGER),
-            @Param(name = "envId", desc = "环境ID(当resourceType为[build*|workspace]时不需要)", type = ApiParamType.LONG),
-            @Param(name = "resourceType", member = DeployResourceType.class, desc = "制品类型", isRequired = true, type = ApiParamType.ENUM),
-            @Param(name = "path", type = ApiParamType.STRING, desc = "文件路径(路径一律以'/'开头，HOME本身的路径为'/')", isRequired = true),
-            @Param(name = "isPack", type = ApiParamType.ENUM, rule = "1,0", desc = "是否打包")
+            @Param(name = "id", desc = "nmdavr.downloadfileapi.input.param.desc.id", isRequired = true, type = ApiParamType.LONG),
+            @Param(name = "buildNo", desc = "nmdavr.downloadfileapi.input.param.desc.buildno", type = ApiParamType.INTEGER),
+            @Param(name = "envId", desc = "nmdavr.downloadfileapi.input.param.desc.envid", type = ApiParamType.LONG),
+            @Param(name = "resourceType", member = DeployResourceType.class, desc = "nmdavr.downloadfileapi.input.param.desc.resourcetype", isRequired = true, type = ApiParamType.ENUM),
+            @Param(name = "path", type = ApiParamType.STRING, desc = "nmdavr.downloadfileapi.input.param.desc.path", isRequired = true),
+            @Param(name = "isPack", type = ApiParamType.ENUM, rule = "1,0", desc = "nmdavr.downloadfileapi.input.param.desc.ispack")
     })
     @Output({})
-    @Description(desc = "下载文件(若选择打包下载，下载的文件为压缩包)")
+    @Description(desc = "nmdavr.downloadfileapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj, HttpServletRequest request, HttpServletResponse response) throws Exception {
         Long id = paramObj.getLong("id");

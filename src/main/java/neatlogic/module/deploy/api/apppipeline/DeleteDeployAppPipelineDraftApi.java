@@ -45,7 +45,7 @@ public class DeleteDeployAppPipelineDraftApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "删除流水线草稿";
+        return "nmdaa.deletedeployapppipelinedraftapi.getname";
     }
 
     @Override
@@ -59,11 +59,11 @@ public class DeleteDeployAppPipelineDraftApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "应用系统ID"),
-            @Param(name = "appModuleId", type = ApiParamType.LONG, desc = "模块ID"),
-            @Param(name = "envId", type = ApiParamType.LONG, desc = "环境ID")
+            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaa.deletedeployapppipelinedraftapi.input.param.desc.appsystemid"),
+            @Param(name = "appModuleId", type = ApiParamType.LONG, desc = "nmdaa.deletedeployapppipelinedraftapi.input.param.desc.appmoduleid"),
+            @Param(name = "envId", type = ApiParamType.LONG, desc = "nmdaa.deletedeployapppipelinedraftapi.input.param.desc.envid")
     })
-    @Description(desc = "删除流水线草稿")
+    @Description(desc = "nmdaa.deletedeployapppipelinedraftapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
 

@@ -45,7 +45,7 @@ public class SaveDeployAppConfigAutoConfigForAutoexecApi extends PrivateApiCompo
 
     @Override
     public String getName() {
-        return "保存某个环境的AutoConfig配置的key";
+        return "nmdaae.savedeployappconfigautoconfigforautoexecapi.getname";
     }
 
     @Override
@@ -59,21 +59,21 @@ public class SaveDeployAppConfigAutoConfigForAutoexecApi extends PrivateApiCompo
     }
 
     @Input({
-            @Param(name = "runnerId", type = ApiParamType.LONG, desc = "Runner的ID"),
-            @Param(name = "runnerGroup", type = ApiParamType.JSONOBJECT, desc = "runner组信息"),
-            @Param(name = "jobId", type = ApiParamType.LONG, desc = "作业ID"),
-            @Param(name = "phaseName", type = ApiParamType.STRING, desc = "阶段名"),
-            @Param(name = "sysId", type = ApiParamType.LONG, desc = "应用ID"),
-            @Param(name = "moduleId", type = ApiParamType.LONG, desc = "模块ID"),
-            @Param(name = "envId", type = ApiParamType.LONG, desc = "环境ID"),
-            @Param(name = "sysName", type = ApiParamType.STRING, desc = "应用名"),
-            @Param(name = "moduleName", type = ApiParamType.STRING, desc = "模块名"),
-            @Param(name = "envName", type = ApiParamType.STRING, desc = "环境名"),
-            @Param(name = "autoCfgKeys", type = ApiParamType.JSONARRAY, desc = "key列表"),
+            @Param(name = "runnerId", type = ApiParamType.LONG, desc = "nmdaae.savedeployappconfigautoconfigforautoexecapi.input.param.desc.runnerid"),
+            @Param(name = "runnerGroup", type = ApiParamType.JSONOBJECT, desc = "nmdaae.savedeployappconfigautoconfigforautoexecapi.input.param.desc.runnergroup"),
+            @Param(name = "jobId", type = ApiParamType.LONG, desc = "nmdaae.savedeployappconfigautoconfigforautoexecapi.input.param.desc.jobid"),
+            @Param(name = "phaseName", type = ApiParamType.STRING, desc = "nmdaae.savedeployappconfigautoconfigforautoexecapi.input.param.desc.phasename"),
+            @Param(name = "sysId", type = ApiParamType.LONG, desc = "nmdaae.savedeployappconfigautoconfigforautoexecapi.input.param.desc.sysid"),
+            @Param(name = "moduleId", type = ApiParamType.LONG, desc = "nmdaae.savedeployappconfigautoconfigforautoexecapi.input.param.desc.moduleid"),
+            @Param(name = "envId", type = ApiParamType.LONG, desc = "nmdaae.savedeployappconfigautoconfigforautoexecapi.input.param.desc.envid"),
+            @Param(name = "sysName", type = ApiParamType.STRING, desc = "nmdaae.savedeployappconfigautoconfigforautoexecapi.input.param.desc.sysname"),
+            @Param(name = "moduleName", type = ApiParamType.STRING, desc = "nmdaae.savedeployappconfigautoconfigforautoexecapi.input.param.desc.modulename"),
+            @Param(name = "envName", type = ApiParamType.STRING, desc = "nmdaae.savedeployappconfigautoconfigforautoexecapi.input.param.desc.envname"),
+            @Param(name = "autoCfgKeys", type = ApiParamType.JSONARRAY, desc = "nmdaae.savedeployappconfigautoconfigforautoexecapi.input.param.desc.autocfgkeys"),
     })
     @Output({
     })
-    @Description(desc = "发布作业专用-保存某个环境的AutoConfig配置的key")
+    @Description(desc = "nmdaae.savedeployappconfigautoconfigforautoexecapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         JSONArray autoCfgKeyArray = paramObj.getJSONArray("autoCfgKeys");

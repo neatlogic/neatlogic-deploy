@@ -27,7 +27,7 @@ public class SaveDeployVersionUnitTestApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "保存发布版本单元测试指标";
+        return "nmdav.savedeployversionunittestapi.getname";
     }
 
     @Override
@@ -41,14 +41,14 @@ public class SaveDeployVersionUnitTestApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "sysId", desc = "应用ID", isRequired = true, type = ApiParamType.LONG),
-            @Param(name = "moduleId", desc = "应用模块id", isRequired = true, type = ApiParamType.LONG),
-            @Param(name = "version", desc = "版本号", isRequired = true, type = ApiParamType.STRING),
-            @Param(explode = DeployVersionUnitTestVo.class, desc = "单元测试指标", type = ApiParamType.JSONOBJECT),
+            @Param(name = "sysId", desc = "nmdav.savedeployversionunittestapi.input.param.desc.sysid", isRequired = true, type = ApiParamType.LONG),
+            @Param(name = "moduleId", desc = "nmdav.savedeployversionunittestapi.input.param.desc.moduleid", isRequired = true, type = ApiParamType.LONG),
+            @Param(name = "version", desc = "nmdav.savedeployversionunittestapi.input.param.desc.version", isRequired = true, type = ApiParamType.STRING),
+            @Param(explode = DeployVersionUnitTestVo.class, desc = "nmdav.savedeployversionunittestapi.input.param.desc.deployversionunittestvo", type = ApiParamType.JSONOBJECT),
     })
     @Output({
     })
-    @Description(desc = "保存发布版本单元测试指标")
+    @Description(desc = "nmdav.savedeployversionunittestapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
 

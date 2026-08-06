@@ -57,7 +57,7 @@ public class SaveDeployAppConfigInstanceApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "保存发布应用配置的应用模块环境的实例";
+        return "nmdaae.savedeployappconfiginstanceapi.getname";
     }
 
     @Override
@@ -71,16 +71,16 @@ public class SaveDeployAppConfigInstanceApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "应用系统id"),
-            @Param(name = "appModuleId", type = ApiParamType.LONG, isRequired = true, desc = "应用模块id"),
-            @Param(name = "envId", type = ApiParamType.LONG, isRequired = true, desc = "环境id"),
-            @Param(name = "instanceIdList", type = ApiParamType.JSONARRAY, desc = "实例id列表"),
-            @Param(name = "id", type = ApiParamType.LONG, desc = "实例id"),
-            @Param(name = "ciId", type = ApiParamType.LONG, desc = "模型id"),
-            @Param(name = "ip", type = ApiParamType.STRING, desc = "ip"),
-            @Param(name = "port", type = ApiParamType.INTEGER, desc = "端口"),
-            @Param(name = "name", type = ApiParamType.STRING, desc = "名称"),
-            @Param(name = "maintenanceWindow", type = ApiParamType.STRING, desc = "维护窗口")
+            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaae.savedeployappconfiginstanceapi.input.param.desc.appsystemid"),
+            @Param(name = "appModuleId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaae.savedeployappconfiginstanceapi.input.param.desc.appmoduleid"),
+            @Param(name = "envId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaae.savedeployappconfiginstanceapi.input.param.desc.envid"),
+            @Param(name = "instanceIdList", type = ApiParamType.JSONARRAY, desc = "nmdaae.savedeployappconfiginstanceapi.input.param.desc.instanceidlist"),
+            @Param(name = "id", type = ApiParamType.LONG, desc = "nmdaae.savedeployappconfiginstanceapi.input.param.desc.id"),
+            @Param(name = "ciId", type = ApiParamType.LONG, desc = "nmdaae.savedeployappconfiginstanceapi.input.param.desc.ciid"),
+            @Param(name = "ip", type = ApiParamType.STRING, desc = "nmdaae.savedeployappconfiginstanceapi.input.param.desc.ip"),
+            @Param(name = "port", type = ApiParamType.INTEGER, desc = "nmdaae.savedeployappconfiginstanceapi.input.param.desc.port"),
+            @Param(name = "name", type = ApiParamType.STRING, desc = "nmdaae.savedeployappconfiginstanceapi.input.param.desc.name"),
+            @Param(name = "maintenanceWindow", type = ApiParamType.STRING, desc = "nmdaae.savedeployappconfiginstanceapi.input.param.desc.maintenancewindow")
     })
     @Output({
     })

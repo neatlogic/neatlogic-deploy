@@ -47,7 +47,7 @@ public class ListDeployAppPipelineParamApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "查询应用流水线作业参数列表";
+        return "nmdaa.listdeployapppipelineparamapi.getname";
     }
 
     @Override
@@ -56,12 +56,12 @@ public class ListDeployAppPipelineParamApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "应用系统ID")
+            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaa.listdeployapppipelineparamapi.input.param.desc.appsystemid")
     })
     @Output({
-            @Param(explode = AutoexecParamVo[].class, desc = "参数列表")
+            @Param(explode = AutoexecParamVo[].class, desc = "nmdaa.listdeployapppipelineparamapi.output.param.desc.return")
     })
-    @Description(desc = "查询应用流水线作业参数列表")
+    @Description(desc = "nmdaa.listdeployapppipelineparamapi.getname")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         Long appSystemId = jsonObj.getLong("appSystemId");

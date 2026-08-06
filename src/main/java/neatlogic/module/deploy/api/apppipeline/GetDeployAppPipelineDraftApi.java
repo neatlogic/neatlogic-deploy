@@ -37,7 +37,7 @@ public class GetDeployAppPipelineDraftApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "获取应用流水线草稿";
+        return "nmdaa.getdeployapppipelinedraftapi.getname";
     }
 
     @Override
@@ -51,14 +51,14 @@ public class GetDeployAppPipelineDraftApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "应用系统ID"),
-            @Param(name = "appModuleId", type = ApiParamType.LONG, desc = "模块ID"),
-            @Param(name = "envId", type = ApiParamType.LONG, desc = "环境ID")
+            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaa.getdeployapppipelinedraftapi.input.param.desc.appsystemid"),
+            @Param(name = "appModuleId", type = ApiParamType.LONG, desc = "nmdaa.getdeployapppipelinedraftapi.input.param.desc.appmoduleid"),
+            @Param(name = "envId", type = ApiParamType.LONG, desc = "nmdaa.getdeployapppipelinedraftapi.input.param.desc.envid")
     })
     @Output({
-            @Param(name = "Return", explode = DeployAppConfigVo.class, desc = "应用流水线草稿")
+            @Param(name = "Return", explode = DeployAppConfigVo.class, desc = "nmdaa.getdeployapppipelinedraftapi.output.param.desc.return")
     })
-    @Description(desc = "获取应用流水线草稿")
+    @Description(desc = "nmdaa.getdeployapppipelinedraftapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         DeployAppConfigVo searchVo = paramObj.toJavaObject(DeployAppConfigVo.class);

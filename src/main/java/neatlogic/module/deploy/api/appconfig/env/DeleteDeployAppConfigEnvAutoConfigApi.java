@@ -49,7 +49,7 @@ public class DeleteDeployAppConfigEnvAutoConfigApi extends PrivateApiComponentBa
 
     @Override
     public String getName() {
-        return "删除应用环境实例autoConfig";
+        return "nmdaae.deletedeployappconfigenvautoconfigapi.getname";
     }
 
     @Override
@@ -58,14 +58,14 @@ public class DeleteDeployAppConfigEnvAutoConfigApi extends PrivateApiComponentBa
     }
 
     @Input({
-            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "应用 id"),
-            @Param(name = "appModuleId", type = ApiParamType.LONG, isRequired = true, desc = "模块 id"),
-            @Param(name = "envId", type = ApiParamType.LONG, isRequired = true, desc = "环境 id"),
-            @Param(name = "instanceId", type = ApiParamType.LONG, isRequired = true, desc = "应用实例 id"),
+            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaae.deletedeployappconfigenvautoconfigapi.input.param.desc.appsystemid"),
+            @Param(name = "appModuleId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaae.deletedeployappconfigenvautoconfigapi.input.param.desc.appmoduleid"),
+            @Param(name = "envId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaae.deletedeployappconfigenvautoconfigapi.input.param.desc.envid"),
+            @Param(name = "instanceId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaae.deletedeployappconfigenvautoconfigapi.input.param.desc.instanceid"),
     })
     @Output({
     })
-    @Description(desc = "删除应用环境实例autoConfig接口")
+    @Description(desc = "nmdaae.deletedeployappconfigenvautoconfigapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj) {
 

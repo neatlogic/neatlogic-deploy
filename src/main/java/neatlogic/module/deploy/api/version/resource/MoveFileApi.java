@@ -56,7 +56,7 @@ public class MoveFileApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "文件移动或重命名";
+        return "nmdavr.movefileapi.getname";
     }
 
     @Override
@@ -70,16 +70,16 @@ public class MoveFileApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "id", desc = "版本id", isRequired = true, type = ApiParamType.LONG),
-            @Param(name = "buildNo", desc = "buildNo(当resourceType为[mirror*|workspace]时不需要)", type = ApiParamType.INTEGER),
-            @Param(name = "envId", desc = "环境ID(当resourceType为[build*|workspace]时不需要)", type = ApiParamType.LONG),
-            @Param(name = "resourceType", member = DeployResourceType.class, desc = "制品类型", isRequired = true, type = ApiParamType.ENUM),
-            @Param(name = "name", desc = "新文件名(重命名时需指定)", rule = RegexUtils.NAME, maxLength = 50, type = ApiParamType.REGEX),
-            @Param(name = "src", desc = "源文件路径(路径一律以'/'开头，HOME本身的路径为'/')", isRequired = true, type = ApiParamType.STRING),
-            @Param(name = "dest", desc = "目标文件路径(路径一律以'/'开头，HOME本身的路径为'/')", type = ApiParamType.STRING),
-            @Param(name = "operation", desc = "操作(move:移动;rename:重命名)", rule = "move,rename", isRequired = true, type = ApiParamType.ENUM)
+            @Param(name = "id", desc = "nmdavr.movefileapi.input.param.desc.id", isRequired = true, type = ApiParamType.LONG),
+            @Param(name = "buildNo", desc = "nmdavr.movefileapi.input.param.desc.buildno", type = ApiParamType.INTEGER),
+            @Param(name = "envId", desc = "nmdavr.movefileapi.input.param.desc.envid", type = ApiParamType.LONG),
+            @Param(name = "resourceType", member = DeployResourceType.class, desc = "nmdavr.movefileapi.input.param.desc.resourcetype", isRequired = true, type = ApiParamType.ENUM),
+            @Param(name = "name", desc = "nmdavr.movefileapi.input.param.desc.name", rule = RegexUtils.NAME, maxLength = 50, type = ApiParamType.REGEX),
+            @Param(name = "src", desc = "nmdavr.movefileapi.input.param.desc.src", isRequired = true, type = ApiParamType.STRING),
+            @Param(name = "dest", desc = "nmdavr.movefileapi.input.param.desc.dest", type = ApiParamType.STRING),
+            @Param(name = "operation", desc = "nmdavr.movefileapi.input.param.desc.operation", rule = "move,rename", isRequired = true, type = ApiParamType.ENUM)
     })
-    @Description(desc = "文件移动或重命名")
+    @Description(desc = "nmdavr.movefileapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         Long id = paramObj.getLong("id");

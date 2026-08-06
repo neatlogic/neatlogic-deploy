@@ -47,7 +47,7 @@ public class DeleteDeployCiApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "删除持续集成配置";
+        return "nmdac.deletedeployciapi.getname";
     }
 
     @Override
@@ -61,9 +61,9 @@ public class DeleteDeployCiApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "id", desc = "id", type = ApiParamType.LONG, isRequired = true),
+            @Param(name = "id", desc = "nmdac.deletedeployciapi.input.param.desc.id", type = ApiParamType.LONG, isRequired = true),
     })
-    @Description(desc = "删除持续集成配置")
+    @Description(desc = "nmdac.deletedeployciapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         Long id = paramObj.getLong("id");

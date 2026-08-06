@@ -29,7 +29,7 @@ public class GetDeployCiApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "获取持续集成配置";
+        return "nmdac.getdeployciapi.getname";
     }
 
     @Override
@@ -43,9 +43,9 @@ public class GetDeployCiApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "id", desc = "id", isRequired = true, type = ApiParamType.LONG),
+            @Param(name = "id", desc = "nmdac.getdeployciapi.input.param.desc.id", isRequired = true, type = ApiParamType.LONG),
     })
-    @Description(desc = "获取持续集成配置")
+    @Description(desc = "nmdac.getdeployciapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         DeployCiVo ciVo = deployCiMapper.getDeployCiById(paramObj.getLong("id"));

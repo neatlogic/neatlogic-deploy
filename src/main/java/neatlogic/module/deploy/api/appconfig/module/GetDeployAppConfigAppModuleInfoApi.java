@@ -33,7 +33,7 @@ public class GetDeployAppConfigAppModuleInfoApi extends PrivateApiComponentBase 
 
     @Override
     public String getName() {
-        return "查询应用模块详细配置信息";
+        return "nmdaam.getdeployappconfigappmoduleinfoapi.getname";
     }
 
     @Override
@@ -47,14 +47,14 @@ public class GetDeployAppConfigAppModuleInfoApi extends PrivateApiComponentBase 
     }
 
     @Input({
-            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "应用系统id"),
-            @Param(name = "appModuleId", type = ApiParamType.LONG, isRequired = true, desc = "应用模块id")
+            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaam.getdeployappconfigappmoduleinfoapi.input.param.desc.appsystemid"),
+            @Param(name = "appModuleId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaam.getdeployappconfigappmoduleinfoapi.input.param.desc.appmoduleid")
     })
     @Output({
             @Param(explode = BasePageVo.class),
-            @Param(name = "tbodyList", explode = CiEntityVo[].class, desc = "应用模块详细配置信息")
+            @Param(name = "tbodyList", explode = CiEntityVo[].class, desc = "nmdaam.getdeployappconfigappmoduleinfoapi.output.param.desc.tbodylist")
     })
-    @Description(desc = "查询应用模块详细配置信息")
+    @Description(desc = "nmdaam.getdeployappconfigappmoduleinfoapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
 

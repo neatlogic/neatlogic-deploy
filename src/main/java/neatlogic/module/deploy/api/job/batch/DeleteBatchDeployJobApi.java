@@ -40,7 +40,7 @@ public class DeleteBatchDeployJobApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "删除批量发布作业";
+        return "nmdajb.deletebatchdeployjobapi.getname";
     }
 
     @Override
@@ -53,9 +53,9 @@ public class DeleteBatchDeployJobApi extends PrivateApiComponentBase {
         return "/deploy/batchjob/delete";
     }
 
-    @Input({@Param(name = "id", type = ApiParamType.LONG, desc = "作业id", isRequired = true)})
+    @Input({@Param(name = "id", type = ApiParamType.LONG, desc = "nmdajb.deletebatchdeployjobapi.input.param.desc.id", isRequired = true)})
     @Output({@Param(explode = DeployJobVo.class)})
-    @Description(desc = "删除批量发布作业接口")
+    @Description(desc = "nmdajb.deletebatchdeployjobapi.getname")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         Long id = jsonObj.getLong("id");

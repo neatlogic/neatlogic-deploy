@@ -53,7 +53,7 @@ public class UpdateDeployAppPipelineExecuteUserFieldApi extends PrivateApiCompon
 
     @Override
     public String getName() {
-        return "更新应用流水线的执行用户字段值";
+        return "nmdaa.updatedeployapppipelineexecuteuserfieldapi.getname";
     }
 
     @Override
@@ -62,7 +62,7 @@ public class UpdateDeployAppPipelineExecuteUserFieldApi extends PrivateApiCompon
     }
 
     @Input({})
-    @Description(desc = "更新应用流水线的执行用户字段值")
+    @Description(desc = "nmdaa.updatedeployapppipelineexecuteuserfieldapi.getname")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         JSONObject resultObj = new JSONObject();

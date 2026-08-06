@@ -74,7 +74,7 @@ public class SearchDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "查询发布应用配置的应用系统列表";
+        return "nmdaas.searchdeployappconfigappsystemapi.getname";
     }
 
     @Override
@@ -83,21 +83,21 @@ public class SearchDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "keyword", type = ApiParamType.STRING, desc = "模糊搜索-应用名|模块名"),
-            @Param(name = "isFavorite", type = ApiParamType.ENUM, rule = "0,1", desc = "是否只显示已收藏的"),
-            @Param(name = "isConfig", type = ApiParamType.ENUM, rule = "0,1", desc = "是否只显示已配置的"),
-            @Param(name = "appSystemIdList", type = ApiParamType.JSONARRAY, desc = "应用系统id列表"),
-            @Param(name = "appModuleIdList", type = ApiParamType.JSONARRAY, desc = "应用模块id列表"),
-            @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "当前页"),
-            @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "每页数据条目"),
-            @Param(name = "needPage", type = ApiParamType.BOOLEAN, desc = "是否需要分页，默认true"),
-            @Param(name = "pageRange", type = ApiParamType.JSONARRAY, desc = "分页范围")
+            @Param(name = "keyword", type = ApiParamType.STRING, desc = "nmdaas.searchdeployappconfigappsystemapi.input.param.desc.keyword"),
+            @Param(name = "isFavorite", type = ApiParamType.ENUM, rule = "0,1", desc = "nmdaas.searchdeployappconfigappsystemapi.input.param.desc.isfavorite"),
+            @Param(name = "isConfig", type = ApiParamType.ENUM, rule = "0,1", desc = "nmdaas.searchdeployappconfigappsystemapi.input.param.desc.isconfig"),
+            @Param(name = "appSystemIdList", type = ApiParamType.JSONARRAY, desc = "nmdaas.searchdeployappconfigappsystemapi.input.param.desc.appsystemidlist"),
+            @Param(name = "appModuleIdList", type = ApiParamType.JSONARRAY, desc = "nmdaas.searchdeployappconfigappsystemapi.input.param.desc.appmoduleidlist"),
+            @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "nmdaas.searchdeployappconfigappsystemapi.input.param.desc.currentpage"),
+            @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "nmdaas.searchdeployappconfigappsystemapi.input.param.desc.pagesize"),
+            @Param(name = "needPage", type = ApiParamType.BOOLEAN, desc = "nmdaas.searchdeployappconfigappsystemapi.input.param.desc.needpage"),
+            @Param(name = "pageRange", type = ApiParamType.JSONARRAY, desc = "nmdaas.searchdeployappconfigappsystemapi.input.param.desc.pagerange")
     })
     @Output({
             @Param(explode = BasePageVo.class),
-            @Param(name = "tbodyList", explode = DeployAppSystemVo[].class, desc = "发布应用配置的应用系统列表")
+            @Param(name = "tbodyList", explode = DeployAppSystemVo[].class, desc = "nmdaas.searchdeployappconfigappsystemapi.output.param.desc.tbodylist")
     })
-    @Description(desc = "查询发布应用配置的应用系统列表（含关键字过滤）")
+    @Description(desc = "nmdaas.searchdeployappconfigappsystemapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj) {
         DeployResourceSearchVo searchVo = paramObj.toJavaObject(DeployResourceSearchVo.class);

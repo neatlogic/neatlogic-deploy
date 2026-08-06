@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
+import neatlogic.framework.util.$;
 @Component
 public class DeployVersionUnitTestChartHandler extends DeployVersionChartHandlerBase {
 
@@ -41,13 +42,13 @@ public class DeployVersionUnitTestChartHandler extends DeployVersionChartHandler
                 dataList.add(new JSONObject() {
                     {
                         this.put("value", Math.round(unitTestVo.getTests() * unitTestVo.getTestSuccessDensity() / 100));
-                        this.put("name", "成功");
+                        this.put("name", $.t("nmdc.deployversionunittestcharthandler.runtime.name.succeeded"));
                     }
                 });
                 dataList.add(new JSONObject() {
                     {
                         this.put("value", unitTestVo.getTestErrors());
-                        this.put("name", "失败");
+                        this.put("name", $.t("nmdc.deployversionunittestcharthandler.runtime.name.failed"));
                     }
                 });
             }
@@ -58,8 +59,8 @@ public class DeployVersionUnitTestChartHandler extends DeployVersionChartHandler
             JSONObject data = new JSONObject();
             data.put("legend", new JSONObject() {
                 {
-                    this.put("newBranchCoverage", "分支");
-                    this.put("newLineCoverage", "行");
+                    this.put("newBranchCoverage", $.t("nmdc.deployversionunittestcharthandler.runtime.newbranchcoverage"));
+                    this.put("newLineCoverage", $.t("nmdc.deployversionunittestcharthandler.runtime.newlinecoverage"));
                 }
             });
             JSONArray dataList = new JSONArray();
@@ -84,8 +85,8 @@ public class DeployVersionUnitTestChartHandler extends DeployVersionChartHandler
             JSONObject data = new JSONObject();
             data.put("legend", new JSONObject() {
                 {
-                    this.put("branchCoverage", "分支");
-                    this.put("lineCoverage", "行");
+                    this.put("branchCoverage", $.t("nmdc.deployversionunittestcharthandler.runtime.branchcoverage"));
+                    this.put("lineCoverage", $.t("nmdc.deployversionunittestcharthandler.runtime.linecoverage"));
                 }
             });
             JSONArray dataList = new JSONArray();

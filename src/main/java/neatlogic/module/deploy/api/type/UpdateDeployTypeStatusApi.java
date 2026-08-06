@@ -43,7 +43,7 @@ public class UpdateDeployTypeStatusApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "激活/禁用发布工具类型";
+        return "nmdat.updatedeploytypestatusapi.getname";
     }
 
     @Override
@@ -57,12 +57,12 @@ public class UpdateDeployTypeStatusApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "id", type = ApiParamType.LONG, isRequired = true, desc = "工具类型D"),
-            @Param(name = "isActive", type = ApiParamType.ENUM, rule = "0,1", isRequired = true, desc = "是否激活(0:禁用，1：激活)"),
+            @Param(name = "id", type = ApiParamType.LONG, isRequired = true, desc = "nmdat.updatedeploytypestatusapi.input.param.desc.id"),
+            @Param(name = "isActive", type = ApiParamType.ENUM, rule = "0,1", isRequired = true, desc = "nmdat.updatedeploytypestatusapi.input.param.desc.isactive"),
     })
     @Output({
     })
-    @Description(desc = "激活/禁用发布工具类型")
+    @Description(desc = "nmdat.updatedeploytypestatusapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         Long id = paramObj.getLong("id");

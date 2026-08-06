@@ -33,7 +33,7 @@ public class GetDeployModuleVersionAuditListApi extends PrivateApiComponentBase 
 
     @Override
     public String getName() {
-        return "获取模块版本历史";
+        return "nmdaa.getdeploymoduleversionauditlistapi.getname";
     }
 
     @Override
@@ -47,13 +47,13 @@ public class GetDeployModuleVersionAuditListApi extends PrivateApiComponentBase 
     }
 
     @Input({
-            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "应用 id"),
-            @Param(name = "appModuleId", type = ApiParamType.LONG, isRequired = true, desc = "模块 id"),
-            @Param(name = "envId", type = ApiParamType.LONG, isRequired = true, desc = "环境 id"),
+            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaa.getdeploymoduleversionauditlistapi.input.param.desc.appsystemid"),
+            @Param(name = "appModuleId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaa.getdeploymoduleversionauditlistapi.input.param.desc.appmoduleid"),
+            @Param(name = "envId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaa.getdeploymoduleversionauditlistapi.input.param.desc.envid"),
     })
     @Output({
     })
-    @Description(desc = "获取模块版本历史")
+    @Description(desc = "nmdaa.getdeploymoduleversionauditlistapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         Long appSystemId = paramObj.getLong("appSystemId");

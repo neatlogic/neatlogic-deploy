@@ -59,7 +59,7 @@ public class CopyDeployAppConfigModuleConfigApi extends PrivateApiComponentBase 
 
     @Override
     public String getName() {
-        return "复制模块层配置";
+        return "nmdaam.copydeployappconfigmoduleconfigapi.getname";
     }
 
     @Override
@@ -73,20 +73,20 @@ public class CopyDeployAppConfigModuleConfigApi extends PrivateApiComponentBase 
     }
 
     @Input({
-            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "应用系统id"),
-            @Param(name = "fromAppModuleId", type = ApiParamType.LONG, isRequired = true, desc = "来源模块id"),
-            @Param(name = "toAppModuleIdList", type = ApiParamType.JSONARRAY, desc = "目标模块id列表"),
-            @Param(name = "abbrName", type = ApiParamType.STRING, desc = "简称(复制配置，并新建模块时使用)"),
-            @Param(name = "name", type = ApiParamType.STRING, desc = "名称(复制配置，并新建模块时使用)"),
-            @Param(name = "stateIdList", type = ApiParamType.JSONARRAY, desc = "状态(复制配置，并新建模块时使用)"),
-            @Param(name = "ownerIdList", type = ApiParamType.JSONARRAY, desc = "负责人(复制配置，并新建模块时使用)"),
-            @Param(name = "maintenanceWindow", type = ApiParamType.JSONARRAY, desc = "维护窗口(复制配置，并新建模块时使用)"),
-            @Param(name = "description", type = ApiParamType.STRING, desc = "备注(复制配置，并新建模块时使用)"),
-            @Param(name = "isAdd", type = ApiParamType.INTEGER, isRequired = true, desc = "是否新增(0:现有，1:新增)")
+            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaam.copydeployappconfigmoduleconfigapi.input.param.desc.appsystemid"),
+            @Param(name = "fromAppModuleId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaam.copydeployappconfigmoduleconfigapi.input.param.desc.fromappmoduleid"),
+            @Param(name = "toAppModuleIdList", type = ApiParamType.JSONARRAY, desc = "nmdaam.copydeployappconfigmoduleconfigapi.input.param.desc.toappmoduleidlist"),
+            @Param(name = "abbrName", type = ApiParamType.STRING, desc = "nmdaam.copydeployappconfigmoduleconfigapi.input.param.desc.abbrname"),
+            @Param(name = "name", type = ApiParamType.STRING, desc = "nmdaam.copydeployappconfigmoduleconfigapi.input.param.desc.name"),
+            @Param(name = "stateIdList", type = ApiParamType.JSONARRAY, desc = "nmdaam.copydeployappconfigmoduleconfigapi.input.param.desc.stateidlist"),
+            @Param(name = "ownerIdList", type = ApiParamType.JSONARRAY, desc = "nmdaam.copydeployappconfigmoduleconfigapi.input.param.desc.owneridlist"),
+            @Param(name = "maintenanceWindow", type = ApiParamType.JSONARRAY, desc = "nmdaam.copydeployappconfigmoduleconfigapi.input.param.desc.maintenancewindow"),
+            @Param(name = "description", type = ApiParamType.STRING, desc = "nmdaam.copydeployappconfigmoduleconfigapi.input.param.desc.description"),
+            @Param(name = "isAdd", type = ApiParamType.INTEGER, isRequired = true, desc = "nmdaam.copydeployappconfigmoduleconfigapi.input.param.desc.isadd")
     })
     @Output({
     })
-    @Description(desc = "复制模块层配置(复制模块配置，以及来源模块下的环境配置)")
+    @Description(desc = "nmdaam.copydeployappconfigmoduleconfigapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
 

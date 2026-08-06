@@ -73,9 +73,9 @@ public class SaveBatchDeployJobApi extends PrivateApiComponentBase {
         return "/deploy/batchjob/save";
     }
 
-    @Input({@Param(name = "id", type = ApiParamType.LONG, desc = "common.id", help = "不提供代表添加作业"),
+    @Input({@Param(name = "id", type = ApiParamType.LONG, desc = "common.id", help = "nmdajb.savebatchdeployjobapi.input.param.help.id"),
             @Param(name = "name", type = ApiParamType.STRING, isRequired = true, desc = "common.name"),
-            @Param(name = "saveMode", type = ApiParamType.ENUM, rule = "save,commit", isRequired = true, desc = "common.savemode", help = "暂存或提交"),
+            @Param(name = "saveMode", type = ApiParamType.ENUM, rule = "save,commit", isRequired = true, desc = "common.savemode", help = "nmdajb.savebatchdeployjobapi.input.param.help.savemode"),
             @Param(name = "triggerType", type = ApiParamType.ENUM, rule = "manual,auto", desc = "common.triggertype"),
             @Param(name = "planStartTime", type = ApiParamType.LONG, desc = "common.planstarttime"),
             @Param(name = "laneList", type = ApiParamType.JSONARRAY, desc = "term.deploy.lanelist"),

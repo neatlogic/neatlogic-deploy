@@ -36,7 +36,7 @@ public class SearchJobTemplateApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "搜索流水线作业模板";
+        return "nmdap.searchjobtemplateapi.getname";
     }
 
     @Override
@@ -49,13 +49,13 @@ public class SearchJobTemplateApi extends PrivateApiComponentBase {
         return "/deploy/pipeline/jobtemplate/search";
     }
 
-    @Input({@Param(name = "keyword", type = ApiParamType.STRING, desc = "关键字"),
-            @Param(name = "excludeIdList", type = ApiParamType.JSONARRAY, desc = "排除id列表"),
-            @Param(name = "appSystemId", type = ApiParamType.LONG, desc = "应用系统id"),
-            @Param(name = "appModuleId", type = ApiParamType.LONG, desc = "应用模块id"),
-            @Param(name = "envId", type = ApiParamType.LONG, desc = "环境id")})
+    @Input({@Param(name = "keyword", type = ApiParamType.STRING, desc = "nmdap.searchjobtemplateapi.input.param.desc.keyword"),
+            @Param(name = "excludeIdList", type = ApiParamType.JSONARRAY, desc = "nmdap.searchjobtemplateapi.input.param.desc.excludeidlist"),
+            @Param(name = "appSystemId", type = ApiParamType.LONG, desc = "nmdap.searchjobtemplateapi.input.param.desc.appsystemid"),
+            @Param(name = "appModuleId", type = ApiParamType.LONG, desc = "nmdap.searchjobtemplateapi.input.param.desc.appmoduleid"),
+            @Param(name = "envId", type = ApiParamType.LONG, desc = "nmdap.searchjobtemplateapi.input.param.desc.envid")})
     @Output({@Param(explode = BasePageVo.class)})
-    @Description(desc = "搜索流水线作业模板接口")
+    @Description(desc = "nmdap.searchjobtemplateapi.getname")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         PipelineJobTemplateVo pipelineJobTemplateVo = JSONObject.toJavaObject(jsonObj, PipelineJobTemplateVo.class);

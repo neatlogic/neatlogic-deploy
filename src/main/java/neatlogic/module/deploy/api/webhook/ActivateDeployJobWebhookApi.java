@@ -42,7 +42,7 @@ public class ActivateDeployJobWebhookApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "激活/禁用触发器配置";
+        return "nmdaw.activatedeployjobwebhookapi.getname";
     }
 
     @Override
@@ -55,8 +55,8 @@ public class ActivateDeployJobWebhookApi extends PrivateApiComponentBase {
         return "/deploy/job/webhook/activate";
     }
 
-    @Input({@Param(name = "id", type = ApiParamType.LONG, isRequired = true, desc = "触发器id"),
-            @Param(name = "isActive", type = ApiParamType.INTEGER, isRequired = true, desc = "是否激活（1：激活，0：禁用）")
+    @Input({@Param(name = "id", type = ApiParamType.LONG, isRequired = true, desc = "nmdaw.activatedeployjobwebhookapi.input.param.desc.id"),
+            @Param(name = "isActive", type = ApiParamType.INTEGER, isRequired = true, desc = "nmdaw.activatedeployjobwebhookapi.input.param.desc.isactive")
     })
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {

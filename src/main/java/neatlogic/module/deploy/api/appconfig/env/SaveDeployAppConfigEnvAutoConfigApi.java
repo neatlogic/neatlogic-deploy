@@ -65,7 +65,7 @@ public class SaveDeployAppConfigEnvAutoConfigApi extends PrivateApiComponentBase
 
     @Override
     public String getName() {
-        return "保存应用环境实例autoConfig";
+        return "nmdaae.savedeployappconfigenvautoconfigapi.getname";
     }
 
     @Override
@@ -74,16 +74,16 @@ public class SaveDeployAppConfigEnvAutoConfigApi extends PrivateApiComponentBase
     }
 
     @Input({
-            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "应用 id"),
-            @Param(name = "appModuleId", type = ApiParamType.LONG, isRequired = true, desc = "模块 id"),
-            @Param(name = "envId", type = ApiParamType.LONG, isRequired = true, desc = "环境 id"),
-            @Param(name = "deleteInstanceId", type = ApiParamType.LONG, desc = "删除的应用实例 id"),
-            @Param(name = "instanceId", type = ApiParamType.LONG, desc = "应用实例 id"),
-            @Param(name = "keyValueList", type = ApiParamType.JSONARRAY, desc = "[{\"id\": xxx,\"key\": xxx,\"value\":xxx}]"),
+            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaae.savedeployappconfigenvautoconfigapi.input.param.desc.appsystemid"),
+            @Param(name = "appModuleId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaae.savedeployappconfigenvautoconfigapi.input.param.desc.appmoduleid"),
+            @Param(name = "envId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaae.savedeployappconfigenvautoconfigapi.input.param.desc.envid"),
+            @Param(name = "deleteInstanceId", type = ApiParamType.LONG, desc = "nmdaae.savedeployappconfigenvautoconfigapi.input.param.desc.deleteinstanceid"),
+            @Param(name = "instanceId", type = ApiParamType.LONG, desc = "nmdaae.savedeployappconfigenvautoconfigapi.input.param.desc.instanceid"),
+            @Param(name = "keyValueList", type = ApiParamType.JSONARRAY, desc = "nmdaae.savedeployappconfigenvautoconfigapi.input.param.desc.keyvaluelist"),
     })
     @Output({
     })
-    @Description(desc = "保存应用环境实例autoConfig接口")
+    @Description(desc = "nmdaae.savedeployappconfigenvautoconfigapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj) {
         Long appSystemId = paramObj.getLong("appSystemId");

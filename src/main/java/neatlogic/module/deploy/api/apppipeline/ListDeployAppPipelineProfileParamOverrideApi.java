@@ -39,6 +39,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import java.util.*;
 
+import neatlogic.framework.util.$;
 @Service
 @AuthAction(action = DEPLOY_BASE.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
@@ -54,7 +55,7 @@ public class ListDeployAppPipelineProfileParamOverrideApi extends PrivateApiComp
 
     @Override
     public String getName() {
-        return "获取当前应用下游对某个预置参数修改的列表";
+        return "nmdaa.listdeployapppipelineprofileparamoverrideapi.getname";
     }
 
     @Override
@@ -68,14 +69,14 @@ public class ListDeployAppPipelineProfileParamOverrideApi extends PrivateApiComp
     }
 
     @Input({
-            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "应用系统ID"),
-            @Param(name = "profileId", type = ApiParamType.LONG, isRequired = true, desc = "预置参数集ID"),
-            @Param(name = "key", type = ApiParamType.STRING, isRequired = true, desc = "参数key")
+            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaa.listdeployapppipelineprofileparamoverrideapi.input.param.desc.appsystemid"),
+            @Param(name = "profileId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaa.listdeployapppipelineprofileparamoverrideapi.input.param.desc.profileid"),
+            @Param(name = "key", type = ApiParamType.STRING, isRequired = true, desc = "nmdaa.listdeployapppipelineprofileparamoverrideapi.input.param.desc.key")
     })
     @Output({
-            @Param(name = "tbodyList", type = ApiParamType.JSONARRAY, desc = "数据列表")
+            @Param(name = "tbodyList", type = ApiParamType.JSONARRAY, desc = "nmdaa.listdeployapppipelineprofileparamoverrideapi.output.param.desc.tbodylist")
     })
-    @Description(desc = "获取当前应用下游对某个预置参数修改的列表")
+    @Description(desc = "nmdaa.listdeployapppipelineprofileparamoverrideapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         JSONObject resultObj = new JSONObject();
@@ -89,7 +90,7 @@ public class ListDeployAppPipelineProfileParamOverrideApi extends PrivateApiComp
         for (AutoexecProfileParamVo profileParamVo : profileParamList) {
             if (Objects.equals(profileParamVo.getKey(), key)) {
                 originalProfileParamVo = profileParamVo;
-                ValueTextVo valueTextVo = new ValueTextVo(profileParamVo, "预置参数");
+                ValueTextVo valueTextVo = new ValueTextVo(profileParamVo, $.t("nmdaa.listdeployapppipelineprofileparamoverrideapi.runtime.label.label"));
                 tbodyList.add(valueTextVo);
                 break;
             }

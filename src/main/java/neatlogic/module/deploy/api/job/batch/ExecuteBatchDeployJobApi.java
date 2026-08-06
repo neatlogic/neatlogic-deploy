@@ -40,7 +40,7 @@ public class ExecuteBatchDeployJobApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "执行批量发布作业";
+        return "nmdajb.executebatchdeployjobapi.getname";
     }
 
     @Override
@@ -49,11 +49,11 @@ public class ExecuteBatchDeployJobApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "id", type = ApiParamType.LONG, isRequired = true, desc = "批量作业id"),
-            @Param(name = "batchJobAction", type = ApiParamType.ENUM,rule = "refireAll,refireResetAll",isRequired = true, desc = "批量作业执行策略，refireAll：跳过所有已完成的子作业；refireResetAll:执行所有子作业"),
-            @Param(name = "jobAction", type = ApiParamType.ENUM,rule = "refireAll,refireResetAll", isRequired = true, desc = "子作业执行策略，refireAll：跳过所有已完成、已忽略的节点；refireResetAll:执行所有节点"),
+            @Param(name = "id", type = ApiParamType.LONG, isRequired = true, desc = "nmdajb.executebatchdeployjobapi.input.param.desc.id"),
+            @Param(name = "batchJobAction", type = ApiParamType.ENUM,rule = "refireAll,refireResetAll",isRequired = true, desc = "nmdajb.executebatchdeployjobapi.input.param.desc.batchjobaction"),
+            @Param(name = "jobAction", type = ApiParamType.ENUM,rule = "refireAll,refireResetAll", isRequired = true, desc = "nmdajb.executebatchdeployjobapi.input.param.desc.jobaction"),
     })
-    @Description(desc = "执行批量发布作业接口")
+    @Description(desc = "nmdajb.executebatchdeployjobapi.getname")
     @ResubmitInterval(value = 2)
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {

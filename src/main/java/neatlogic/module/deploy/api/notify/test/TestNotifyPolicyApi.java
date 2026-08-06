@@ -41,16 +41,16 @@ public class TestNotifyPolicyApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "测试作业通知策略";
+        return "nmdant.testnotifypolicyapi.getname";
     }
 
     @Input({
-            @Param(name = "jobId", type = ApiParamType.LONG, isRequired = true, desc = "作业ID"),
-            @Param(name = "jobStatus", type = ApiParamType.STRING, desc = "作业状态")
+            @Param(name = "jobId", type = ApiParamType.LONG, isRequired = true, desc = "nmdant.testnotifypolicyapi.input.param.desc.jobid"),
+            @Param(name = "jobStatus", type = ApiParamType.STRING, desc = "nmdant.testnotifypolicyapi.input.param.desc.jobstatus")
     })
     @Output({
     })
-    @Description(desc = "测试通知策略")
+    @Description(desc = "nmdant.testnotifypolicyapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         Long jobId = paramObj.getLong("jobId");

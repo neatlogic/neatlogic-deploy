@@ -29,7 +29,7 @@ public class GetDeployVersionEnvListApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "获取版本的环境列表";
+        return "nmdav.getdeployversionenvlistapi.getname";
     }
 
     @Override
@@ -43,12 +43,12 @@ public class GetDeployVersionEnvListApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "versionId", type = ApiParamType.LONG, isRequired = true, desc = "版本id"),
+            @Param(name = "versionId", type = ApiParamType.LONG, isRequired = true, desc = "nmdav.getdeployversionenvlistapi.input.param.desc.versionid"),
     })
     @Output({
             @Param(name = "Return", explode = AppEnvironmentVo[].class),
     })
-    @Description(desc = "获取版本的环境列表")
+    @Description(desc = "nmdav.getdeployversionenvlistapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         Long versionId = paramObj.getLong("versionId");

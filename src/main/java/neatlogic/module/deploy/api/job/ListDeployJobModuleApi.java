@@ -59,7 +59,7 @@ public class ListDeployJobModuleApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "根据系统、环境、场景查询一键发布页面的模块信息列表";
+        return "nmdaj.listdeployjobmoduleapi.getname";
     }
 
     @Override
@@ -73,12 +73,12 @@ public class ListDeployJobModuleApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "应用系统id"),
-            @Param(name = "envId", type = ApiParamType.LONG, isRequired = true, desc = "环境id"),
-            @Param(name = "scenarioId", type = ApiParamType.LONG, isRequired = true, desc = "场景id")
+            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaj.listdeployjobmoduleapi.input.param.desc.appsystemid"),
+            @Param(name = "envId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaj.listdeployjobmoduleapi.input.param.desc.envid"),
+            @Param(name = "scenarioId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaj.listdeployjobmoduleapi.input.param.desc.scenarioid")
     })
     @Output({
-            @Param(explode = DeployAppModuleVo[].class, desc = "根据系统、环境、场景查询一键发布页面的模块信息列表")
+            @Param(explode = DeployAppModuleVo[].class, desc = "nmdaj.listdeployjobmoduleapi.output.param.desc.return")
     })
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {

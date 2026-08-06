@@ -29,7 +29,7 @@ public class SaveDeployVersionForAutoexecApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "保存发布版本";
+        return "nmdav.savedeployversionforautoexecapi.getname";
     }
 
     @Override
@@ -43,16 +43,16 @@ public class SaveDeployVersionForAutoexecApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "runnerId", desc = "runnerId", type = ApiParamType.LONG),
-            @Param(name = "runnerGroup", desc = "runnerGroup", type = ApiParamType.JSONOBJECT),
-            @Param(name = "jobId", desc = "作业id", isRequired = true, type = ApiParamType.LONG),
-            @Param(name = "sysId", desc = "应用ID", isRequired = true, type = ApiParamType.LONG),
-            @Param(name = "moduleId", desc = "应用模块id", isRequired = true, type = ApiParamType.LONG),
-            @Param(name = "version", desc = "版本号", isRequired = true, type = ApiParamType.STRING),
-            @Param(name = "buildNo", desc = "buildNo", isRequired = true, type = ApiParamType.STRING),
-            @Param(name = "verInfo", desc = "版本信息", isRequired = true, type = ApiParamType.JSONOBJECT),
+            @Param(name = "runnerId", desc = "nmdav.savedeployversionforautoexecapi.input.param.desc.runnerid", type = ApiParamType.LONG),
+            @Param(name = "runnerGroup", desc = "nmdav.savedeployversionforautoexecapi.input.param.desc.runnergroup", type = ApiParamType.JSONOBJECT),
+            @Param(name = "jobId", desc = "nmdav.savedeployversionforautoexecapi.input.param.desc.jobid", isRequired = true, type = ApiParamType.LONG),
+            @Param(name = "sysId", desc = "nmdav.savedeployversionforautoexecapi.input.param.desc.sysid", isRequired = true, type = ApiParamType.LONG),
+            @Param(name = "moduleId", desc = "nmdav.savedeployversionforautoexecapi.input.param.desc.moduleid", isRequired = true, type = ApiParamType.LONG),
+            @Param(name = "version", desc = "nmdav.savedeployversionforautoexecapi.input.param.desc.version", isRequired = true, type = ApiParamType.STRING),
+            @Param(name = "buildNo", desc = "nmdav.savedeployversionforautoexecapi.input.param.desc.buildno", isRequired = true, type = ApiParamType.STRING),
+            @Param(name = "verInfo", desc = "nmdav.savedeployversionforautoexecapi.input.param.desc.verinfo", isRequired = true, type = ApiParamType.JSONOBJECT),
     })
-    @Description(desc = "保存发布版本")
+    @Description(desc = "nmdav.savedeployversionforautoexecapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         Long runnerId = paramObj.getLong("runnerId");

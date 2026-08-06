@@ -27,6 +27,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 
+import neatlogic.framework.util.$;
 /**
  * @author longrf
  * @date 2022/12/29 16:36
@@ -71,7 +72,7 @@ public class NotifyPolicyDeployJobDependencyHandler extends DefaultDependencyHan
 //                    JSONObject dependencyInfoConfig = new JSONObject();
 //                    dependencyInfoConfig.put("appSystemId", appConfigVo.getAppSystemId());
 //                    List<String> pathList = new ArrayList<>();
-//                    pathList.add("应用配置");
+//                    pathList.add($.t("nmddh.notifypolicydeployjobdependencyhandler.runtime.label"));
 //                    String urlFormat = "/" + TenantContext.get().getTenantUuid() + "/deploy.html#/application-config-manage?appSystemId=${DATA.appSystemId}";
 //                    return new DependencyInfoVo(appConfigVo.getAppSystemId(), dependencyInfoConfig, lastName, pathList, urlFormat, this.getGroupName());
 //                }
@@ -95,7 +96,7 @@ public class NotifyPolicyDeployJobDependencyHandler extends DefaultDependencyHan
             JSONObject dependencyInfoConfig = new JSONObject();
             dependencyInfoConfig.put("appSystemId", appSystemId);
             List<String> pathList = new ArrayList<>();
-            pathList.add("应用配置");
+            pathList.add($.t("nmddh.notifypolicydeployjobdependencyhandler.runtime.label"));
             String urlFormat = "/" + TenantContext.get().getTenantUuid() + "/deploy.html#/application-config-manage?appSystemId=${DATA.appSystemId}";
             return new DependencyInfoVo(appSystemId, dependencyInfoConfig, lastName, pathList, urlFormat, this.getGroupName());
         }

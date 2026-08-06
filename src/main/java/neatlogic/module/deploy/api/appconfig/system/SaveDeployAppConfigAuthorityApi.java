@@ -57,7 +57,7 @@ public class SaveDeployAppConfigAuthorityApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "保存应用配置权限";
+        return "nmdaas.savedeployappconfigauthorityapi.getname";
     }
 
     @Override
@@ -66,14 +66,14 @@ public class SaveDeployAppConfigAuthorityApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "应用资产id"),
-            @Param(name = "authorityStrList", type = ApiParamType.JSONARRAY, isRequired = true, desc = "授权列表"),
-            @Param(name = "actionList", type = ApiParamType.JSONARRAY, isRequired = true, minSize = 1, desc = "授权操作列表"),
-            @Param(name = "isEdit", type = ApiParamType.INTEGER, isRequired = true, desc = "是否编辑，0：否，1：是"),
+            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaas.savedeployappconfigauthorityapi.input.param.desc.appsystemid"),
+            @Param(name = "authorityStrList", type = ApiParamType.JSONARRAY, isRequired = true, desc = "nmdaas.savedeployappconfigauthorityapi.input.param.desc.authoritystrlist"),
+            @Param(name = "actionList", type = ApiParamType.JSONARRAY, isRequired = true, minSize = 1, desc = "nmdaas.savedeployappconfigauthorityapi.input.param.desc.actionlist"),
+            @Param(name = "isEdit", type = ApiParamType.INTEGER, isRequired = true, desc = "nmdaas.savedeployappconfigauthorityapi.input.param.desc.isedit"),
     })
     @Output({
     })
-    @Description(desc = "保存应用配置权限")
+    @Description(desc = "nmdaas.savedeployappconfigauthorityapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj) {
 

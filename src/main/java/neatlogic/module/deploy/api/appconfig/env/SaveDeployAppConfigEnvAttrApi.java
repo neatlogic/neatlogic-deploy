@@ -69,7 +69,7 @@ public class SaveDeployAppConfigEnvAttrApi extends PrivateApiComponentBase {
             @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "nmraa.getappapi.input.param.desc"),
             @Param(name = "appModuleId", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.moduleid"),
             @Param(name = "envId", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.envid"),
-            @Param(name = "keyValueList", type = ApiParamType.JSONARRAY, desc = "[{\"id\": xxx,\"key\": xxx,\"value\":xxx}]"),
+            @Param(name = "keyValueList", type = ApiParamType.JSONARRAY, desc = "nmdaae.savedeployappconfigenvattrapi.input.param.desc.keyvaluelist"),
     })
     @Output({
     })

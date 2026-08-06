@@ -38,7 +38,7 @@ public class DeleteDeployAppConfigEnvDbConfigApi extends PrivateApiComponentBase
 
     @Override
     public String getName() {
-        return "删除发布应用配置的DB配置";
+        return "nmdaae.deletedeployappconfigenvdbconfigapi.getname";
     }
 
     @Override
@@ -52,9 +52,9 @@ public class DeleteDeployAppConfigEnvDbConfigApi extends PrivateApiComponentBase
     }
 
     @Input({
-            @Param(name = "id", type = ApiParamType.LONG, isRequired = true, desc = "id")
+            @Param(name = "id", type = ApiParamType.LONG, isRequired = true, desc = "nmdaae.deletedeployappconfigenvdbconfigapi.input.param.desc.id")
     })
-    @Description(desc = "删除发布应用配置的DB配置")
+    @Description(desc = "nmdaae.deletedeployappconfigenvdbconfigapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         Long id = paramObj.getLong("id");

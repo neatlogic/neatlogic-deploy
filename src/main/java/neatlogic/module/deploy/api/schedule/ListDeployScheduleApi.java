@@ -66,7 +66,7 @@ public class ListDeployScheduleApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "查询定时作业列表";
+        return "nmdas.listdeployscheduleapi.getname";
     }
 
     @Override
@@ -75,18 +75,18 @@ public class ListDeployScheduleApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "keyword", type = ApiParamType.STRING, desc = "模糊查询"),
-            @Param(name = "isActive", type = ApiParamType.ENUM, rule = "0,1", desc = "是否启用"),
-            @Param(name = "appSystemId", type = ApiParamType.LONG, desc = "应用id"),
-            @Param(name = "appModuleId", type = ApiParamType.LONG, desc = "模块id"),
-            @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "当前页码"),
-            @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "页大小")
+            @Param(name = "keyword", type = ApiParamType.STRING, desc = "nmdas.listdeployscheduleapi.input.param.desc.keyword"),
+            @Param(name = "isActive", type = ApiParamType.ENUM, rule = "0,1", desc = "nmdas.listdeployscheduleapi.input.param.desc.isactive"),
+            @Param(name = "appSystemId", type = ApiParamType.LONG, desc = "nmdas.listdeployscheduleapi.input.param.desc.appsystemid"),
+            @Param(name = "appModuleId", type = ApiParamType.LONG, desc = "nmdas.listdeployscheduleapi.input.param.desc.appmoduleid"),
+            @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "nmdas.listdeployscheduleapi.input.param.desc.currentpage"),
+            @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "nmdas.listdeployscheduleapi.input.param.desc.pagesize")
     })
     @Output({
             @Param(explode = BasePageVo.class),
-            @Param(name = "tbodyList", explode = DeployScheduleVo[].class, desc = "定时作业列表"),
+            @Param(name = "tbodyList", explode = DeployScheduleVo[].class, desc = "nmdas.listdeployscheduleapi.output.param.desc.tbodylist"),
     })
-    @Description(desc = "查询定时作业列表")
+    @Description(desc = "nmdas.listdeployscheduleapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         DeployScheduleSearchVo searchVo = JSON.toJavaObject(paramObj, DeployScheduleSearchVo.class);

@@ -45,7 +45,7 @@ public class SearchDeployJobWebhookApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "查询发布作业触发器";
+        return "nmdaw.searchdeployjobwebhookapi.getname";
     }
 
     @Override
@@ -53,10 +53,10 @@ public class SearchDeployJobWebhookApi extends PrivateApiComponentBase {
         return null;
     }
 
-    @Input({@Param(name = "keyword", type = ApiParamType.STRING, desc = "模糊查询"),
-            @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "当前页码"),
-            @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "页大小")})
-    @Output({@Param(explode = BasePageVo.class), @Param(name = "tbodyList", explode = DeployScheduleVo[].class, desc = "定时作业列表"),})
+    @Input({@Param(name = "keyword", type = ApiParamType.STRING, desc = "nmdaw.searchdeployjobwebhookapi.input.param.desc.keyword"),
+            @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "nmdaw.searchdeployjobwebhookapi.input.param.desc.currentpage"),
+            @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "nmdaw.searchdeployjobwebhookapi.input.param.desc.pagesize")})
+    @Output({@Param(explode = BasePageVo.class), @Param(name = "tbodyList", explode = DeployScheduleVo[].class, desc = "nmdaw.searchdeployjobwebhookapi.output.param.desc.tbodylist"),})
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         DeployJobWebhookVo deployJobWebhookVo = paramObj.toJavaObject(DeployJobWebhookVo.class);

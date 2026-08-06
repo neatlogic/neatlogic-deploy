@@ -61,7 +61,7 @@ public class SaveDeployAppConfigEnvDBConfigApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "保存发布应用配置DB配置";
+        return "nmdaae.savedeployappconfigenvdbconfigapi.getname";
     }
 
     @Override
@@ -75,16 +75,16 @@ public class SaveDeployAppConfigEnvDBConfigApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "应用系统id"),
-            @Param(name = "appModuleId", type = ApiParamType.LONG, isRequired = true, desc = "应用模块id"),
-            @Param(name = "envId", type = ApiParamType.LONG, isRequired = true, desc = "环境id"),
-            @Param(name = "id", type = ApiParamType.LONG, desc = "id"),
-            @Param(name = "dbSchema", type = ApiParamType.REGEX, isRequired = true, rule = RegexUtils.DB_SCHEMA, desc = "数据库schema"),
-            @Param(name = "dbResourceId", type = ApiParamType.LONG, isRequired = true, desc = "数据库资产id"),
-            @Param(name = "accountId", type = ApiParamType.LONG, isRequired = true, desc = "执行用户id"),
-            @Param(name = "config", type = ApiParamType.JSONOBJECT, desc = "高级设置")
+            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaae.savedeployappconfigenvdbconfigapi.input.param.desc.appsystemid"),
+            @Param(name = "appModuleId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaae.savedeployappconfigenvdbconfigapi.input.param.desc.appmoduleid"),
+            @Param(name = "envId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaae.savedeployappconfigenvdbconfigapi.input.param.desc.envid"),
+            @Param(name = "id", type = ApiParamType.LONG, desc = "nmdaae.savedeployappconfigenvdbconfigapi.input.param.desc.id"),
+            @Param(name = "dbSchema", type = ApiParamType.REGEX, isRequired = true, rule = RegexUtils.DB_SCHEMA, desc = "nmdaae.savedeployappconfigenvdbconfigapi.input.param.desc.dbschema"),
+            @Param(name = "dbResourceId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaae.savedeployappconfigenvdbconfigapi.input.param.desc.dbresourceid"),
+            @Param(name = "accountId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaae.savedeployappconfigenvdbconfigapi.input.param.desc.accountid"),
+            @Param(name = "config", type = ApiParamType.JSONOBJECT, desc = "nmdaae.savedeployappconfigenvdbconfigapi.input.param.desc.config")
     })
-    @Description(desc = "保存发布应用配置DB配置")
+    @Description(desc = "nmdaae.savedeployappconfigenvdbconfigapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
 

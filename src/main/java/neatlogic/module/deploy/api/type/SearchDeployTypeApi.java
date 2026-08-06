@@ -43,7 +43,7 @@ public class SearchDeployTypeApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "查询发布工具类型列表";
+        return "nmdat.searchdeploytypeapi.getname";
     }
 
     @Override
@@ -57,17 +57,17 @@ public class SearchDeployTypeApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "keyword", type = ApiParamType.STRING, desc = "关键词", xss = true),
-            @Param(name = "isActive", type = ApiParamType.INTEGER, desc = "是否激活(0:禁用，1：激活)"),
-            @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "当前页"),
-            @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "每页数据条目"),
-            @Param(name = "needPage", type = ApiParamType.BOOLEAN, desc = "是否需要分页，默认true")
+            @Param(name = "keyword", type = ApiParamType.STRING, desc = "nmdat.searchdeploytypeapi.input.param.desc.keyword", xss = true),
+            @Param(name = "isActive", type = ApiParamType.INTEGER, desc = "nmdat.searchdeploytypeapi.input.param.desc.isactive"),
+            @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "nmdat.searchdeploytypeapi.input.param.desc.currentpage"),
+            @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "nmdat.searchdeploytypeapi.input.param.desc.pagesize"),
+            @Param(name = "needPage", type = ApiParamType.BOOLEAN, desc = "nmdat.searchdeploytypeapi.input.param.desc.needpage")
     })
     @Output({
-            @Param(name = "tbodyList", type = ApiParamType.JSONARRAY, explode = DeployTypeVo[].class, desc = "类型列表"),
+            @Param(name = "tbodyList", type = ApiParamType.JSONARRAY, explode = DeployTypeVo[].class, desc = "nmdat.searchdeploytypeapi.output.param.desc.tbodylist"),
             @Param(explode = BasePageVo.class)
     })
-    @Description(desc = "查询发布工具类型列表")
+    @Description(desc = "nmdat.searchdeploytypeapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         DeployTypeVo deployTypeSearchVo = paramObj.toJavaObject(DeployTypeVo.class);

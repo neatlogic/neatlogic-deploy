@@ -40,7 +40,7 @@ public class ExecuteBatchDeployJobGroupApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "执行批量发布作业组";
+        return "nmdajb.executebatchdeployjobgroupapi.getname";
     }
 
     @Override
@@ -49,12 +49,12 @@ public class ExecuteBatchDeployJobGroupApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "id", type = ApiParamType.LONG, isRequired = true, desc = "批量作业组id"),
-            @Param(name = "isGoon", type = ApiParamType.ENUM, rule = "1,0", isRequired = true, desc = "执行完当前组是否继续执行后续组，但仍受needWait约束，1：是，0：否"),
-            @Param(name = "batchJobAction", type = ApiParamType.ENUM, rule = "refireAll,refireResetAll", isRequired = true, desc = "批量作业执行策略，refireAll：跳过所有已完成的子作业；refireResetAll:执行所有子作业"),
-            @Param(name = "jobAction", type = ApiParamType.ENUM, rule = "refireAll,refireResetAll", isRequired = true, desc = "子作业执行策略，refireAll：跳过所有已完成、已忽略的节点；refireResetAll:执行所有节点"),
+            @Param(name = "id", type = ApiParamType.LONG, isRequired = true, desc = "nmdajb.executebatchdeployjobgroupapi.input.param.desc.id"),
+            @Param(name = "isGoon", type = ApiParamType.ENUM, rule = "1,0", isRequired = true, desc = "nmdajb.executebatchdeployjobgroupapi.input.param.desc.isgoon"),
+            @Param(name = "batchJobAction", type = ApiParamType.ENUM, rule = "refireAll,refireResetAll", isRequired = true, desc = "nmdajb.executebatchdeployjobgroupapi.input.param.desc.batchjobaction"),
+            @Param(name = "jobAction", type = ApiParamType.ENUM, rule = "refireAll,refireResetAll", isRequired = true, desc = "nmdajb.executebatchdeployjobgroupapi.input.param.desc.jobaction"),
     })
-    @Description(desc = "执行批量发布作业组接口")
+    @Description(desc = "nmdajb.executebatchdeployjobgroupapi.getname")
     @ResubmitInterval(value = 2)
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {

@@ -32,7 +32,7 @@ public class TreeDeployAppConfigAppSystemAppModuleEnvApi extends PrivateApiCompo
 
     @Override
     public String getName() {
-        return "查询发布应用配置的应用系统模块环境树";
+        return "nmdaas.treedeployappconfigappsystemappmoduleenvapi.getname";
     }
 
     @Override
@@ -41,12 +41,12 @@ public class TreeDeployAppConfigAppSystemAppModuleEnvApi extends PrivateApiCompo
     }
 
     @Input({
-            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "应用系统ID")
+            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaas.treedeployappconfigappsystemappmoduleenvapi.input.param.desc.appsystemid")
     })
     @Output({
             @Param(explode = DeployAppSystemVo[].class)
     })
-    @Description(desc = "查询发布应用配置的应用系统模块环境树")
+    @Description(desc = "nmdaas.treedeployappconfigappsystemappmoduleenvapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         Long appSystemId = paramObj.getLong("appSystemId");

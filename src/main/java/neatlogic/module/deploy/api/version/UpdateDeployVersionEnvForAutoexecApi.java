@@ -32,7 +32,7 @@ public class UpdateDeployVersionEnvForAutoexecApi extends PrivateApiComponentBas
 
     @Override
     public String getName() {
-        return "更新发布版本环境信息";
+        return "nmdav.updatedeployversionenvforautoexecapi.getname";
     }
 
     @Override
@@ -46,18 +46,18 @@ public class UpdateDeployVersionEnvForAutoexecApi extends PrivateApiComponentBas
     }
 
     @Input({
-            @Param(name = "runnerId", desc = "runnerId", type = ApiParamType.LONG),
-            @Param(name = "runnerGroup", desc = "runnerGroup", type = ApiParamType.JSONOBJECT),
-            @Param(name = "jobId", desc = "作业ID", type = ApiParamType.LONG),
-            @Param(name = "sysId", desc = "应用ID", isRequired = true, type = ApiParamType.LONG),
-            @Param(name = "moduleId", desc = "应用模块id", isRequired = true, type = ApiParamType.LONG),
-            @Param(name = "envId", desc = "环境id", isRequired = true, type = ApiParamType.LONG),
-            @Param(name = "version", desc = "版本号", isRequired = true, type = ApiParamType.STRING),
-            @Param(name = "buildNo", desc = "buildNo", type = ApiParamType.INTEGER),
-            @Param(name = "isMirror", desc = "是否镜像发布", rule = "0,1", type = ApiParamType.ENUM),
-            @Param(name = "status", desc = "环境状态", member = VersionEnvStatus.class, type = ApiParamType.ENUM),
+            @Param(name = "runnerId", desc = "nmdav.updatedeployversionenvforautoexecapi.input.param.desc.runnerid", type = ApiParamType.LONG),
+            @Param(name = "runnerGroup", desc = "nmdav.updatedeployversionenvforautoexecapi.input.param.desc.runnergroup", type = ApiParamType.JSONOBJECT),
+            @Param(name = "jobId", desc = "nmdav.updatedeployversionenvforautoexecapi.input.param.desc.jobid", type = ApiParamType.LONG),
+            @Param(name = "sysId", desc = "nmdav.updatedeployversionenvforautoexecapi.input.param.desc.sysid", isRequired = true, type = ApiParamType.LONG),
+            @Param(name = "moduleId", desc = "nmdav.updatedeployversionenvforautoexecapi.input.param.desc.moduleid", isRequired = true, type = ApiParamType.LONG),
+            @Param(name = "envId", desc = "nmdav.updatedeployversionenvforautoexecapi.input.param.desc.envid", isRequired = true, type = ApiParamType.LONG),
+            @Param(name = "version", desc = "nmdav.updatedeployversionenvforautoexecapi.input.param.desc.version", isRequired = true, type = ApiParamType.STRING),
+            @Param(name = "buildNo", desc = "nmdav.updatedeployversionenvforautoexecapi.input.param.desc.buildno", type = ApiParamType.INTEGER),
+            @Param(name = "isMirror", desc = "nmdav.updatedeployversionenvforautoexecapi.input.param.desc.ismirror", rule = "0,1", type = ApiParamType.ENUM),
+            @Param(name = "status", desc = "nmdav.updatedeployversionenvforautoexecapi.input.param.desc.status", member = VersionEnvStatus.class, type = ApiParamType.ENUM),
     })
-    @Description(desc = "更新发布版本环境信息")
+    @Description(desc = "nmdav.updatedeployversionenvforautoexecapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         Long runnerId = paramObj.getLong("runnerId");

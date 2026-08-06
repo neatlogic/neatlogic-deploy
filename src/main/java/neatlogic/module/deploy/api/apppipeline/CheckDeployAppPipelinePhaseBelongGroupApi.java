@@ -41,6 +41,7 @@ import javax.annotation.Resource;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import neatlogic.framework.util.$;
 @Service
 @AuthAction(action = DEPLOY_BASE.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
@@ -52,19 +53,19 @@ public class CheckDeployAppPipelinePhaseBelongGroupApi extends PrivateApiCompone
 
     @Override
     public String getName() {
-        return "检查两个阶段是否在同一个组";
+        return "nmdaa.checkdeployapppipelinephasebelonggroupapi.getname";
     }
 
     @Input({
-            @Param(name = "phaseName", type = ApiParamType.STRING, desc = "阶段名"),
-//            @Param(name = "phaseGroupSort", type = ApiParamType.STRING, desc = "阶段组号"),
-            @Param(name = "targetPhaseName", type = ApiParamType.STRING, desc = "目标阶段名"),
-//            @Param(name = "targetPhaseGroupSort", type = ApiParamType.STRING, desc = "阶段组号"),
+            @Param(name = "phaseName", type = ApiParamType.STRING, desc = "nmdaa.checkdeployapppipelinephasebelonggroupapi.input.param.desc.phasename"),
+//            @Param(name = "phaseGroupSort", type = ApiParamType.STRING, desc = "nmdaa.checkdeployapppipelinephasebelonggroupapi.input.param.desc.phasegroupsort"),
+            @Param(name = "targetPhaseName", type = ApiParamType.STRING, desc = "nmdaa.checkdeployapppipelinephasebelonggroupapi.input.param.desc.targetphasename"),
+//            @Param(name = "targetPhaseGroupSort", type = ApiParamType.STRING, desc = "nmdaa.checkdeployapppipelinephasebelonggroupapi.input.param.desc.targetphasegroupsort"),
     })
     @Output({
 
     })
-    @Description(desc = "检查两个阶段是否在同一个组")
+    @Description(desc = "nmdaa.checkdeployapppipelinephasebelonggroupapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         JSONArray resultList = new JSONArray();
@@ -77,7 +78,7 @@ public class CheckDeployAppPipelinePhaseBelongGroupApi extends PrivateApiCompone
             BasePageVo basePageVo = new BasePageVo();
             List<ResourceVo> appEnvList = resourceCenterDataSource.getAppEnvListForSelect(basePageVo, false);
             Map<Long, String> appEnvId2NameMap = appEnvList.stream().filter(Objects::nonNull).collect(Collectors.toMap(ResourceVo::getId, ResourceVo::getName));
-            appEnvId2NameMap.put(-2L, "未配置环境");
+            appEnvId2NameMap.put(-2L, $.t("nmdaa.checkdeployapppipelinephasebelonggroupapi.runtime.label"));
             for (Long appSystemId : appSystemIdList) {
                 List<AppModuleVo> appModuleList = resourceCenterDataSource.getAppModuleListForTree(appSystemId);
                 Map<Long, AppModuleVo> appModuleMap = appModuleList.stream().filter(Objects::nonNull).collect(Collectors.toMap(AppModuleVo::getId, e -> e));

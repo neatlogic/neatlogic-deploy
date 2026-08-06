@@ -38,7 +38,7 @@ public class SearchDeployAppAttrApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "查询发布应用属性下拉列表";
+        return "nmdaas.searchdeployappattrapi.getname";
     }
 
     @Override
@@ -52,17 +52,17 @@ public class SearchDeployAppAttrApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "attrName", type = ApiParamType.STRING, desc = "属性名称", isRequired = true),
-            @Param(name = "ciName", type = ApiParamType.STRING, desc = "模型名称", isRequired = true),
-            @Param(name = "keyword", type = ApiParamType.STRING, desc = "关键字", xss = true),
-            @Param(name = "defaultValue", type = ApiParamType.JSONARRAY, desc = "用于回显列表"),
+            @Param(name = "attrName", type = ApiParamType.STRING, desc = "nmdaas.searchdeployappattrapi.input.param.desc.attrname", isRequired = true),
+            @Param(name = "ciName", type = ApiParamType.STRING, desc = "nmdaas.searchdeployappattrapi.input.param.desc.ciname", isRequired = true),
+            @Param(name = "keyword", type = ApiParamType.STRING, desc = "nmdaas.searchdeployappattrapi.input.param.desc.keyword", xss = true),
+            @Param(name = "defaultValue", type = ApiParamType.JSONARRAY, desc = "nmdaas.searchdeployappattrapi.input.param.desc.defaultvalue"),
             @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "common.pagesize"),
             @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "common.currentpage")
     })
     @Output({
             @Param(name = "tbodyList", type = ApiParamType.JSONARRAY, explode = CiEntityVo[].class)
     })
-    @Description(desc = "查询发布应用属性下拉列表")
+    @Description(desc = "nmdaas.searchdeployappattrapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         JSONObject returnObj = new JSONObject();

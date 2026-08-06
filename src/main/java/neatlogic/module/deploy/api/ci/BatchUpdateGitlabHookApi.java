@@ -32,7 +32,7 @@ public class BatchUpdateGitlabHookApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "批量更新gitlab webhook";
+        return "nmdac.batchupdategitlabhookapi.getname";
     }
 
     @Override
@@ -46,23 +46,23 @@ public class BatchUpdateGitlabHookApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "runnerUrl", desc = "runner url", type = ApiParamType.STRING, isRequired = true),
-            @Param(name = "repoServerAddress", desc = "仓库服务器地址", type = ApiParamType.STRING, isRequired = true),
-            @Param(name = "callbackUrl", desc = "回调url", type = ApiParamType.JSONARRAY),
-            @Param(name = "branchFilter", desc = "分支", type = ApiParamType.STRING),
-            @Param(name = "username", desc = "gitlab用户", type = ApiParamType.STRING),
-            @Param(name = "password", desc = "gitlab密码", type = ApiParamType.STRING),
-            @Param(name = "action", desc = "动作类型", type = ApiParamType.ENUM, rule = "insert,delete"),
-            @Param(name = "configList", desc = "hook配置列表", type = ApiParamType.JSONARRAY, isRequired = true),
-            @Param(name = "configList.repoServerAddress", desc = "仓库服务器地址"),
-            @Param(name = "configList.repoName", desc = "仓库名称"),
-            @Param(name = "configList.branchFilter", desc = "分支", type = ApiParamType.STRING),
-            @Param(name = "configList.callbackUrl", desc = "回调url", type = ApiParamType.JSONARRAY),
-            @Param(name = "configList.username", desc = "gitlab用户", type = ApiParamType.STRING),
-            @Param(name = "configList.password", desc = "gitlab密码", type = ApiParamType.STRING),
-            @Param(name = "configList.action", desc = "动作类型", type = ApiParamType.ENUM, rule = "insert,delete"),
+            @Param(name = "runnerUrl", desc = "nmdac.batchupdategitlabhookapi.input.param.desc.runnerurl", type = ApiParamType.STRING, isRequired = true),
+            @Param(name = "repoServerAddress", desc = "nmdac.batchupdategitlabhookapi.input.param.desc.reposerveraddress", type = ApiParamType.STRING, isRequired = true),
+            @Param(name = "callbackUrl", desc = "nmdac.batchupdategitlabhookapi.input.param.desc.callbackurl", type = ApiParamType.JSONARRAY),
+            @Param(name = "branchFilter", desc = "nmdac.batchupdategitlabhookapi.input.param.desc.branchfilter", type = ApiParamType.STRING),
+            @Param(name = "username", desc = "nmdac.batchupdategitlabhookapi.input.param.desc.username", type = ApiParamType.STRING),
+            @Param(name = "password", desc = "nmdac.batchupdategitlabhookapi.input.param.desc.password", type = ApiParamType.STRING),
+            @Param(name = "action", desc = "nmdac.batchupdategitlabhookapi.input.param.desc.action", type = ApiParamType.ENUM, rule = "insert,delete"),
+            @Param(name = "configList", desc = "nmdac.batchupdategitlabhookapi.input.param.desc.configlist.name", type = ApiParamType.JSONARRAY, isRequired = true),
+            @Param(name = "configList.repoServerAddress", desc = "nmdac.batchupdategitlabhookapi.input.param.desc.configlist.reposerveraddress"),
+            @Param(name = "configList.repoName", desc = "nmdac.batchupdategitlabhookapi.input.param.desc.configlist.reponame"),
+            @Param(name = "configList.branchFilter", desc = "nmdac.batchupdategitlabhookapi.input.param.desc.configlist.branchfilter", type = ApiParamType.STRING),
+            @Param(name = "configList.callbackUrl", desc = "nmdac.batchupdategitlabhookapi.input.param.desc.configlist.callbackurl", type = ApiParamType.JSONARRAY),
+            @Param(name = "configList.username", desc = "nmdac.batchupdategitlabhookapi.input.param.desc.configlist.username", type = ApiParamType.STRING),
+            @Param(name = "configList.password", desc = "nmdac.batchupdategitlabhookapi.input.param.desc.configlist.password", type = ApiParamType.STRING),
+            @Param(name = "configList.action", desc = "nmdac.batchupdategitlabhookapi.input.param.desc.configlist.action", type = ApiParamType.ENUM, rule = "insert,delete"),
     })
-    @Description(desc = "批量更新gitlab webhook")
+    @Description(desc = "nmdac.batchupdategitlabhookapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         JSONArray array = new JSONArray();

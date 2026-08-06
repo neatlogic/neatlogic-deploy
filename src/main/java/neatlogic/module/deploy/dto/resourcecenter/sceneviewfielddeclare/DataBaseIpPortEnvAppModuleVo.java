@@ -23,45 +23,45 @@ public class DataBaseIpPortEnvAppModuleVo {
     @ResourceField(name = "id")
     private Long id;
 
-    @EntityField(name = "名称", type = ApiParamType.STRING)
+    @EntityField(name = "nmddrs.databaseipportenvappmodulevo.name.name", type = ApiParamType.STRING)
     @ResourceField(name = "name")
     private String name;
 
-    @EntityField(name = "IP地址", type = ApiParamType.STRING)
+    @EntityField(name = "nmddrs.databaseipportenvappmodulevo.ip.name", type = ApiParamType.STRING)
     @ResourceField(name = "ip")
     private String ip;
 
-    @EntityField(name = "端口", type = ApiParamType.INTEGER)
+    @EntityField(name = "nmddrs.databaseipportenvappmodulevo.port.name", type = ApiParamType.INTEGER)
     @ResourceField(name = "port")
     private Integer port;
 
-    @EntityField(name = "类型ID", type = ApiParamType.LONG)
+    @EntityField(name = "nmddrs.databaseipportenvappmodulevo.typeid.name", type = ApiParamType.LONG)
     @ResourceField(name = "type_id")
     private Long typeId;
-    @EntityField(name = "类型名称", type = ApiParamType.STRING)
+    @EntityField(name = "nmddrs.databaseipportenvappmodulevo.typename.name", type = ApiParamType.STRING)
     @ResourceField(name = "type_name")
     private String typeName;
-    @EntityField(name = "类型Label", type = ApiParamType.STRING)
+    @EntityField(name = "nmddrs.databaseipportenvappmodulevo.typelabel.name", type = ApiParamType.STRING)
     @ResourceField(name = "type_label")
     private String typeLabel;
 
-    @EntityField(name = "环境ID", type = ApiParamType.LONG)
+    @EntityField(name = "nmddrs.databaseipportenvappmodulevo.envid.name", type = ApiParamType.LONG)
     @ResourceField(name = "env_id")
     private Long envId;
-    @EntityField(name = "环境名称", type = ApiParamType.STRING)
+    @EntityField(name = "nmddrs.databaseipportenvappmodulevo.envname.name", type = ApiParamType.STRING)
     @ResourceField(name = "env_name")
     private String envName;
-    @EntityField(name = "环境序号", type = ApiParamType.INTEGER)
+    @EntityField(name = "nmddrs.databaseipportenvappmodulevo.envseqno.name", type = ApiParamType.INTEGER)
     @ResourceField(name = "env_seq_no")
     private Integer envSeqNo;
 
-    @EntityField(name = "应用模块ID", type = ApiParamType.LONG)
+    @EntityField(name = "nmddrs.databaseipportenvappmodulevo.appmoduleid.name", type = ApiParamType.LONG)
     @ResourceField(name = "app_module_id")
     private Long appModuleId;
-    @EntityField(name = "应用模块名", type = ApiParamType.STRING)
+    @EntityField(name = "nmddrs.databaseipportenvappmodulevo.appmodulename.name", type = ApiParamType.STRING)
     @ResourceField(name = "app_module_name")
     private String appModuleName;
-    @EntityField(name = "应用模块简称", type = ApiParamType.STRING)
+    @EntityField(name = "nmddrs.databaseipportenvappmodulevo.appmoduleabbrname.name", type = ApiParamType.STRING)
     @ResourceField(name = "app_module_abbr_name")
     private String appModuleAbbrName;
 }

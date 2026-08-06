@@ -37,7 +37,7 @@ public class DeleteDeployAppConfigAppSystemConfigApi extends PrivateApiComponent
 
     @Override
     public String getName() {
-        return "删除发布应用配置应用配置";
+        return "nmdaas.deletedeployappconfigappsystemconfigapi.getname";
     }
 
     @Override
@@ -51,9 +51,9 @@ public class DeleteDeployAppConfigAppSystemConfigApi extends PrivateApiComponent
     }
 
 
-    @Input({@Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "应用系统id")
+    @Input({@Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaas.deletedeployappconfigappsystemconfigapi.input.param.desc.appsystemid")
     })
-    @Description(desc = "删除发布应用配置应用")
+    @Description(desc = "nmdaas.deletedeployappconfigappsystemconfigapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
 

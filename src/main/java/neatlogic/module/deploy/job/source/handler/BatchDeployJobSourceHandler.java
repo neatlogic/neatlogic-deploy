@@ -22,6 +22,7 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.List;
 
+import neatlogic.framework.util.$;
 @Component
 public class BatchDeployJobSourceHandler implements IAutoexecJobSource {
 
@@ -40,10 +41,10 @@ public class BatchDeployJobSourceHandler implements IAutoexecJobSource {
         List<AutoexecJobRouteVo> resultList = new ArrayList<>();
 
         if (CollectionUtils.isEmpty(uniqueKeyList)) {
-            String label = "直接创建";
+            String label = $.t("nmdjsh.batchdeployjobsourcehandler.runtime.label.directcreate");
             resultList.add(new AutoexecJobRouteVo(null, label, new JSONObject()));
         } else {
-            String label = "超级流水线";
+            String label = $.t("nmdjsh.batchdeployjobsourcehandler.runtime.label.superpipeline");
             for (String str : uniqueKeyList) {
                 resultList.add(new AutoexecJobRouteVo(str, label, new JSONObject()));
             }

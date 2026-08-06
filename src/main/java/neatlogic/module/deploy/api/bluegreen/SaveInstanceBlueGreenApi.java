@@ -57,11 +57,11 @@ public class SaveInstanceBlueGreenApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "appSystemId", type = ApiParamType.LONG, desc = "应用id", isRequired = true),
-            @Param(name = "appModuleId", type = ApiParamType.LONG, desc = "模块id", isRequired = true),
-            @Param(name = "envId", type = ApiParamType.LONG, desc = "环境id", isRequired = true),
-            @Param(name = "resourceId", type = ApiParamType.LONG, desc = "实例id", isRequired = true),
-            @Param(name = "blueGreenId", type = ApiParamType.LONG, desc = "蓝绿id")
+            @Param(name = "appSystemId", type = ApiParamType.LONG, desc = "nmdab.saveinstancebluegreenapi.input.param.desc.appsystemid", isRequired = true),
+            @Param(name = "appModuleId", type = ApiParamType.LONG, desc = "nmdab.saveinstancebluegreenapi.input.param.desc.appmoduleid", isRequired = true),
+            @Param(name = "envId", type = ApiParamType.LONG, desc = "nmdab.saveinstancebluegreenapi.input.param.desc.envid", isRequired = true),
+            @Param(name = "resourceId", type = ApiParamType.LONG, desc = "nmdab.saveinstancebluegreenapi.input.param.desc.resourceid", isRequired = true),
+            @Param(name = "blueGreenId", type = ApiParamType.LONG, desc = "nmdab.saveinstancebluegreenapi.input.param.desc.bluegreenid")
     })
     @Description(desc = "nmdab.saveinstancebluegreenapi.getname")
     @Override

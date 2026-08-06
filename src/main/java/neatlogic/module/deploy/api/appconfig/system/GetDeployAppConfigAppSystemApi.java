@@ -31,7 +31,7 @@ public class GetDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "查询应用系统（配置项）信息";
+        return "nmdaas.getdeployappconfigappsystemapi.getname";
     }
 
     @Override
@@ -45,12 +45,12 @@ public class GetDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "id", type = ApiParamType.LONG, isRequired = true, desc = "应用系统id")
+            @Param(name = "id", type = ApiParamType.LONG, isRequired = true, desc = "nmdaas.getdeployappconfigappsystemapi.input.param.desc.id")
     })
     @Output({
-            @Param(explode = CiEntityVo[].class, desc = "应用系统（配置项）信息")
+            @Param(explode = CiEntityVo[].class, desc = "nmdaas.getdeployappconfigappsystemapi.output.param.desc.return")
     })
-    @Description(desc = "查询应用系统（配置项）信息")
+    @Description(desc = "nmdaas.getdeployappconfigappsystemapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
 

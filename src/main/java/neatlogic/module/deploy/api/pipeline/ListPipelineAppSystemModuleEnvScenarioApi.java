@@ -39,7 +39,7 @@ public class ListPipelineAppSystemModuleEnvScenarioApi extends PrivateApiCompone
 
     @Override
     public String getName() {
-        return "获取超级流水线应用模块环境列表";
+        return "nmdap.listpipelineappsystemmoduleenvscenarioapi.getname";
     }
 
     @Override
@@ -52,10 +52,10 @@ public class ListPipelineAppSystemModuleEnvScenarioApi extends PrivateApiCompone
         return "/deploy/pipeline/appsystemmoduleenvscenario/list";
     }
 
-    @Input({@Param(name = "id", type = ApiParamType.LONG, desc = "id", isRequired = true)
+    @Input({@Param(name = "id", type = ApiParamType.LONG, desc = "nmdap.listpipelineappsystemmoduleenvscenarioapi.input.param.desc.id", isRequired = true)
     })
     @Output({@Param(explode = PipelineJobTemplateVo[].class)})
-    @Description(desc = "获取超级流水线应用模块环境列表接口")
+    @Description(desc = "nmdap.listpipelineappsystemmoduleenvscenarioapi.getname")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         Long id = jsonObj.getLong("id");

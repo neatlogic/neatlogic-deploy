@@ -38,7 +38,7 @@ public class DeleteDeployJobWebhookApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "删除发布作业触发器";
+        return "nmdaw.deletedeployjobwebhookapi.getname";
     }
 
     @Override
@@ -47,7 +47,7 @@ public class DeleteDeployJobWebhookApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "id", type = ApiParamType.LONG, isRequired = true, desc = "触发器id")
+            @Param(name = "id", type = ApiParamType.LONG, isRequired = true, desc = "nmdaw.deletedeployjobwebhookapi.input.param.desc.id")
     })
     @Output({})
     @Override

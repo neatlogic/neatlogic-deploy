@@ -59,7 +59,7 @@ public class DeleteDeployScheduleApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "删除定时作业";
+        return "nmdas.deletedeployscheduleapi.getname";
     }
 
     @Override
@@ -68,9 +68,9 @@ public class DeleteDeployScheduleApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "id", type = ApiParamType.LONG, isRequired = true, desc = "定时作业id")
+            @Param(name = "id", type = ApiParamType.LONG, isRequired = true, desc = "nmdas.deletedeployscheduleapi.input.param.desc.id")
     })
-    @Description(desc = "删除定时作业")
+    @Description(desc = "nmdas.deletedeployscheduleapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         Long id = paramObj.getLong("id");

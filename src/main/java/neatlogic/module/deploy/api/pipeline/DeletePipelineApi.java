@@ -49,7 +49,7 @@ public class DeletePipelineApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "删除超级流水线";
+        return "nmdap.deletepipelineapi.getname";
     }
 
     @Override
@@ -62,8 +62,8 @@ public class DeletePipelineApi extends PrivateApiComponentBase {
         return "/deploy/pipeline/delete";
     }
 
-    @Input({@Param(name = "id", type = ApiParamType.LONG, desc = "id", isRequired = true)})
-    @Description(desc = "删除超级流水线接口")
+    @Input({@Param(name = "id", type = ApiParamType.LONG, desc = "nmdap.deletepipelineapi.input.param.desc.id", isRequired = true)})
+    @Description(desc = "nmdap.deletepipelineapi.getname")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         Long id = jsonObj.getLong("id");

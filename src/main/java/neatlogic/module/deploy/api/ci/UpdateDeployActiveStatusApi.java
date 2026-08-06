@@ -32,7 +32,7 @@ public class UpdateDeployActiveStatusApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "激活或禁用持续集成配置";
+        return "nmdac.updatedeployactivestatusapi.getname";
     }
 
     @Override
@@ -46,10 +46,10 @@ public class UpdateDeployActiveStatusApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "id", desc = "id", type = ApiParamType.LONG, isRequired = true),
-            @Param(name = "isActive", desc = "是否激活", rule = "0,1", type = ApiParamType.ENUM, isRequired = true),
+            @Param(name = "id", desc = "nmdac.updatedeployactivestatusapi.input.param.desc.id", type = ApiParamType.LONG, isRequired = true),
+            @Param(name = "isActive", desc = "nmdac.updatedeployactivestatusapi.input.param.desc.isactive", rule = "0,1", type = ApiParamType.ENUM, isRequired = true),
     })
-    @Description(desc = "激活或禁用持续集成配置")
+    @Description(desc = "nmdac.updatedeployactivestatusapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         Long id = paramObj.getLong("id");

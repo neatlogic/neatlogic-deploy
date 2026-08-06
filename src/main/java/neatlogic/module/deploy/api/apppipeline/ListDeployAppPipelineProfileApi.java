@@ -43,7 +43,7 @@ public class ListDeployAppPipelineProfileApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "获取应用流水线预置参数集列表";
+        return "nmdaa.listdeployapppipelineprofileapi.getname";
     }
 
     @Override
@@ -57,15 +57,15 @@ public class ListDeployAppPipelineProfileApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "应用系统ID"),
-            @Param(name = "appModuleId", type = ApiParamType.LONG, desc = "模块ID"),
-            @Param(name = "envId", type = ApiParamType.LONG, desc = "环境ID"),
-            @Param(name = "defaultValue", type = ApiParamType.JSONARRAY, desc = "默认值")
+            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaa.listdeployapppipelineprofileapi.input.param.desc.appsystemid"),
+            @Param(name = "appModuleId", type = ApiParamType.LONG, desc = "nmdaa.listdeployapppipelineprofileapi.input.param.desc.appmoduleid"),
+            @Param(name = "envId", type = ApiParamType.LONG, desc = "nmdaa.listdeployapppipelineprofileapi.input.param.desc.envid"),
+            @Param(name = "defaultValue", type = ApiParamType.JSONARRAY, desc = "nmdaa.listdeployapppipelineprofileapi.input.param.desc.defaultvalue")
     })
     @Output({
-            @Param(name = "Return", explode = DeployProfileVo[].class, desc = "应用流水线预置参数集列表")
+            @Param(name = "Return", explode = DeployProfileVo[].class, desc = "nmdaa.listdeployapppipelineprofileapi.output.param.desc.return")
     })
-    @Description(desc = "获取应用流水线预置参数集列表")
+    @Description(desc = "nmdaa.listdeployapppipelineprofileapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         DeployAppConfigVo searchVo = paramObj.toJavaObject(DeployAppConfigVo.class);

@@ -33,7 +33,7 @@ public class SearchDeployVersionBuildNoApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "查询发布作业模块下的版本编译号列表";
+        return "nmdav.searchdeployversionbuildnoapi.getname";
     }
 
     @Override
@@ -47,16 +47,16 @@ public class SearchDeployVersionBuildNoApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "keyword", type = ApiParamType.STRING, desc = "模糊搜索", xss = true),
-            @Param(name = "appSystemIdList", type = ApiParamType.JSONARRAY, desc = "应用系统id列表"),
-            @Param(name = "appModuleIdList", type = ApiParamType.JSONARRAY, desc = "应用模块id列表"),
-            @Param(name = "startTimeRange", type = ApiParamType.JSONOBJECT, desc = "上传时间范围 (入参：{startTime（开始时间）与endTime（结束时间）}，或者{timeRange（时间范围）与timeUnit（时间范围参数）})"),
-            @Param(name = "needPage", type = ApiParamType.BOOLEAN, desc = "是否需要分页，默认true"),
-            @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "每页条目"),
-            @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "当前页")
+            @Param(name = "keyword", type = ApiParamType.STRING, desc = "nmdav.searchdeployversionbuildnoapi.input.param.desc.keyword", xss = true),
+            @Param(name = "appSystemIdList", type = ApiParamType.JSONARRAY, desc = "nmdav.searchdeployversionbuildnoapi.input.param.desc.appsystemidlist"),
+            @Param(name = "appModuleIdList", type = ApiParamType.JSONARRAY, desc = "nmdav.searchdeployversionbuildnoapi.input.param.desc.appmoduleidlist"),
+            @Param(name = "startTimeRange", type = ApiParamType.JSONOBJECT, desc = "nmdav.searchdeployversionbuildnoapi.input.param.desc.starttimerange"),
+            @Param(name = "needPage", type = ApiParamType.BOOLEAN, desc = "nmdav.searchdeployversionbuildnoapi.input.param.desc.needpage"),
+            @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "nmdav.searchdeployversionbuildnoapi.input.param.desc.pagesize"),
+            @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "nmdav.searchdeployversionbuildnoapi.input.param.desc.currentpage")
     })
     @Output({
-            @Param(explode = DeployAppModuleVo[].class, desc = "查询发布作业模块下的版本编译号列表")
+            @Param(explode = DeployAppModuleVo[].class, desc = "nmdav.searchdeployversionbuildnoapi.output.param.desc.return")
     })
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {

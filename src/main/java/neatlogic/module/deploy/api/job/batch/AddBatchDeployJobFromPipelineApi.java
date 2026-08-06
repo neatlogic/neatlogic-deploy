@@ -67,7 +67,7 @@ public class AddBatchDeployJobFromPipelineApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "通过超级流水线添加批量发布作业";
+        return "nmdajb.addbatchdeployjobfrompipelineapi.getname";
     }
 
     @Override
@@ -80,14 +80,14 @@ public class AddBatchDeployJobFromPipelineApi extends PrivateApiComponentBase {
         return "/deploy/pipeline/addbatchjob";
     }
 
-    @Input({@Param(name = "pipelineId", type = ApiParamType.LONG, isRequired = true, desc = "超级流水线id"),
-            @Param(name = "name", type = ApiParamType.STRING, isRequired = true, desc = "作业名称"),
-            @Param(name = "appSystemModuleVersionList", type = ApiParamType.JSONARRAY, isRequired = true, desc = "选中的系统模块和版本，数组对象需要包含appSystemId,appModuleId和versionId三个字段"),
-            @Param(name = "triggerType", type = ApiParamType.ENUM, rule = "manual,auto,instant", desc = "触发方式"),
-            @Param(name = "planStartTime", type = ApiParamType.LONG, desc = "计划开始时间")})
+    @Input({@Param(name = "pipelineId", type = ApiParamType.LONG, isRequired = true, desc = "nmdajb.addbatchdeployjobfrompipelineapi.input.param.desc.pipelineid"),
+            @Param(name = "name", type = ApiParamType.STRING, isRequired = true, desc = "nmdajb.addbatchdeployjobfrompipelineapi.input.param.desc.name"),
+            @Param(name = "appSystemModuleVersionList", type = ApiParamType.JSONARRAY, isRequired = true, desc = "nmdajb.addbatchdeployjobfrompipelineapi.input.param.desc.appsystemmoduleversionlist"),
+            @Param(name = "triggerType", type = ApiParamType.ENUM, rule = "manual,auto,instant", desc = "nmdajb.addbatchdeployjobfrompipelineapi.input.param.desc.triggertype"),
+            @Param(name = "planStartTime", type = ApiParamType.LONG, desc = "nmdajb.addbatchdeployjobfrompipelineapi.input.param.desc.planstarttime")})
     @Output({@Param(explode = DeployJobVo.class)})
     @ResubmitInterval(3)
-    @Description(desc = "通过超级流水线添加批量发布作业接口")
+    @Description(desc = "nmdajb.addbatchdeployjobfrompipelineapi.getname")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         JSONArray appSystemModuleVersionList = jsonObj.getJSONArray("appSystemModuleVersionList");

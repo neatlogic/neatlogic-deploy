@@ -34,7 +34,7 @@ public class SearchDeployAppConfigEnvDatabaseApi extends PrivateApiComponentBase
 
     @Override
     public String getName() {
-        return "查询发布应用配置DB库下的无模块无环境、无模块同环境、同模块无环境、同模块同环境的数据库";
+        return "nmdaae.searchdeployappconfigenvdatabaseapi.getname";
     }
 
     @Override
@@ -48,19 +48,19 @@ public class SearchDeployAppConfigEnvDatabaseApi extends PrivateApiComponentBase
     }
 
     @Input({
-            @Param(name = "keyword", type = ApiParamType.STRING, desc = "关键词", xss = true),
-            @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "当前页"),
-            @Param(name = "defaultValue", type = ApiParamType.JSONARRAY, desc = "默认值"),
-            @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "每页数据条目"),
-            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "应用系统id"),
-            @Param(name = "appModuleId", type = ApiParamType.LONG, isRequired = true, desc = "应用模块id"),
-            @Param(name = "envId", type = ApiParamType.LONG, isRequired = true, desc = "环境id"),
+            @Param(name = "keyword", type = ApiParamType.STRING, desc = "nmdaae.searchdeployappconfigenvdatabaseapi.input.param.desc.keyword", xss = true),
+            @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "nmdaae.searchdeployappconfigenvdatabaseapi.input.param.desc.currentpage"),
+            @Param(name = "defaultValue", type = ApiParamType.JSONARRAY, desc = "nmdaae.searchdeployappconfigenvdatabaseapi.input.param.desc.defaultvalue"),
+            @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "nmdaae.searchdeployappconfigenvdatabaseapi.input.param.desc.pagesize"),
+            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaae.searchdeployappconfigenvdatabaseapi.input.param.desc.appsystemid"),
+            @Param(name = "appModuleId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaae.searchdeployappconfigenvdatabaseapi.input.param.desc.appmoduleid"),
+            @Param(name = "envId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaae.searchdeployappconfigenvdatabaseapi.input.param.desc.envid"),
     })
     @Output({
-            @Param(name = "tbodyList", type = ApiParamType.JSONARRAY, explode = ResourceVo[].class, desc = "数据库资产列表"),
+            @Param(name = "tbodyList", type = ApiParamType.JSONARRAY, explode = ResourceVo[].class, desc = "nmdaae.searchdeployappconfigenvdatabaseapi.output.param.desc.tbodylist"),
             @Param(explode = BasePageVo.class)
     })
-    @Description(desc = "查询发布应用配置DB库下的无模块无环境、无模块同环境、同模块无环境、同模块同环境的数据库")
+    @Description(desc = "nmdaae.searchdeployappconfigenvdatabaseapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         DeployResourceSearchVo searchVo = paramObj.toJavaObject(DeployResourceSearchVo.class);
