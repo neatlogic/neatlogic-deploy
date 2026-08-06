@@ -31,6 +31,7 @@ import neatlogic.framework.deploy.dto.pipeline.PipelineJobTemplateVo;
 import neatlogic.framework.deploy.dto.pipeline.PipelineLaneVo;
 import neatlogic.framework.deploy.dto.pipeline.PipelineVo;
 import neatlogic.framework.exception.type.ParamNotExistsException;
+import neatlogic.framework.util.$;
 import neatlogic.module.deploy.dao.mapper.DeployAppConfigMapper;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.ListUtils;
@@ -739,21 +740,21 @@ public class DeployPipelineConfigManager {
 
         } else if (Objects.equals(targetLevel, "模块")) {
             initPipelineAppConfig(appConfig);
-            pipelinePhaseSetSource(appConfig.getCombopPhaseList(), "应用");
+            pipelinePhaseSetSource(appConfig.getCombopPhaseList(), "nfdc.deploypipelineconfigsource.text.appsystem");
             if (moduleOverrideConfig != null) {
-                pipelinePhaseSetSource(moduleOverrideConfig.getCombopPhaseList(), "模块");
+                pipelinePhaseSetSource(moduleOverrideConfig.getCombopPhaseList(), "nfdc.deploypipelineconfigsource.text.appmodule");
                 mergeDeployPipelineConfig(appConfig, moduleOverrideConfig);
             }
         } else if (Objects.equals(targetLevel, "环境")) {
             initPipelineAppConfig(appConfig);
-            pipelinePhaseSetSource(appConfig.getCombopPhaseList(), "应用");
+            pipelinePhaseSetSource(appConfig.getCombopPhaseList(), "nfdc.deploypipelineconfigsource.text.appsystem");
             if (moduleOverrideConfig != null) {
-                pipelinePhaseSetSource(moduleOverrideConfig.getCombopPhaseList(), "模块");
+                pipelinePhaseSetSource(moduleOverrideConfig.getCombopPhaseList(), "nfdc.deploypipelineconfigsource.text.appmodule");
                 mergeDeployPipelineConfig(appConfig, moduleOverrideConfig);
             }
             pipelineConfigReSetOverrideAndParentIsActiveAndInheritFieldValue(appConfig);
             if (envOverrideConfig != null) {
-                pipelinePhaseSetSource(envOverrideConfig.getCombopPhaseList(), "环境");
+                pipelinePhaseSetSource(envOverrideConfig.getCombopPhaseList(), "nfdc.deploypipelineconfigsource.text.env");
                 mergeDeployPipelineConfig(appConfig, envOverrideConfig);
             }
         }
@@ -974,12 +975,12 @@ public class DeployPipelineConfigManager {
      * 设置阶段中source字段值
      *
      * @param pipelinePhaseList
-     * @param source
+     * @param sourceKey 配置来源的国际化 key
      */
-    private static void pipelinePhaseSetSource(List<DeployPipelinePhaseVo> pipelinePhaseList, String source) {
+    private static void pipelinePhaseSetSource(List<DeployPipelinePhaseVo> pipelinePhaseList, String sourceKey) {
         if (CollectionUtils.isNotEmpty(pipelinePhaseList)) {
             for (DeployPipelinePhaseVo pipelinePhaseVo : pipelinePhaseList) {
-                pipelinePhaseVo.setSource(source);
+                pipelinePhaseVo.setSource($.t(sourceKey));
             }
         }
     }
