@@ -17,17 +17,17 @@ import neatlogic.framework.cmdb.annotation.ResourceType;
 import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.restful.annotation.EntityField;
 
-@ResourceType(name = "scence_database_ip_port_env_appmodule", label = "DB库IP端口环境和模块场景", moduleId= "deploy", functionPathList = {"查询发布应用配置DB库下的无模块无环境、无模块同环境、同模块无环境、同模块同环境的数据库接口/deploy/app/config/env/database/search"})
+@ResourceType(name = "scence_database_ip_port_env_appmodule", label = "nmddrs.databaseipportenvappmodulevo.resourcetype.label", moduleId= "deploy", functionPathList = {"nmddrs.databaseipportenvappmodulevo.resourcetype.description"})
 public class DataBaseIpPortEnvAppModuleVo {
     @EntityField(name = "ID", type = ApiParamType.LONG)
     @ResourceField(name = "id")
     private Long id;
 
-    @EntityField(name = "nmddrs.databaseipportenvappmodulevo.name.name", type = ApiParamType.STRING)
+    @EntityField(name = "common.name", type = ApiParamType.STRING)
     @ResourceField(name = "name")
     private String name;
 
-    @EntityField(name = "nmddrs.databaseipportenvappmodulevo.ip.name", type = ApiParamType.STRING)
+    @EntityField(name = "term.cmdb.ip", type = ApiParamType.STRING)
     @ResourceField(name = "ip")
     private String ip;
 
@@ -35,33 +35,33 @@ public class DataBaseIpPortEnvAppModuleVo {
     @ResourceField(name = "port")
     private Integer port;
 
-    @EntityField(name = "nmddrs.databaseipportenvappmodulevo.typeid.name", type = ApiParamType.LONG)
+    @EntityField(name = "common.typeid", type = ApiParamType.LONG)
     @ResourceField(name = "type_id")
     private Long typeId;
-    @EntityField(name = "nmddrs.databaseipportenvappmodulevo.typename.name", type = ApiParamType.STRING)
+    @EntityField(name = "common.typename", type = ApiParamType.STRING)
     @ResourceField(name = "type_name")
     private String typeName;
     @EntityField(name = "nmddrs.databaseipportenvappmodulevo.typelabel.name", type = ApiParamType.STRING)
     @ResourceField(name = "type_label")
     private String typeLabel;
 
-    @EntityField(name = "nmddrs.databaseipportenvappmodulevo.envid.name", type = ApiParamType.LONG)
+    @EntityField(name = "term.cmdb.envid", type = ApiParamType.LONG)
     @ResourceField(name = "env_id")
     private Long envId;
-    @EntityField(name = "nmddrs.databaseipportenvappmodulevo.envname.name", type = ApiParamType.STRING)
+    @EntityField(name = "term.cmdb.envname", type = ApiParamType.STRING)
     @ResourceField(name = "env_name")
     private String envName;
     @EntityField(name = "nmddrs.databaseipportenvappmodulevo.envseqno.name", type = ApiParamType.INTEGER)
     @ResourceField(name = "env_seq_no")
     private Integer envSeqNo;
 
-    @EntityField(name = "nmddrs.databaseipportenvappmodulevo.appmoduleid.name", type = ApiParamType.LONG)
+    @EntityField(name = "term.cmdb.appmoduleid", type = ApiParamType.LONG)
     @ResourceField(name = "app_module_id")
     private Long appModuleId;
-    @EntityField(name = "nmddrs.databaseipportenvappmodulevo.appmodulename.name", type = ApiParamType.STRING)
+    @EntityField(name = "term.cmdb.appmodulename", type = ApiParamType.STRING)
     @ResourceField(name = "app_module_name")
     private String appModuleName;
-    @EntityField(name = "nmddrs.databaseipportenvappmodulevo.appmoduleabbrname.name", type = ApiParamType.STRING)
+    @EntityField(name = "term.cmdb.appmoduleabbrname", type = ApiParamType.STRING)
     @ResourceField(name = "app_module_abbr_name")
     private String appModuleAbbrName;
 }

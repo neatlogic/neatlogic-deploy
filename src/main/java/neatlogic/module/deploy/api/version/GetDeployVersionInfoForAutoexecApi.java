@@ -40,9 +40,9 @@ public class GetDeployVersionInfoForAutoexecApi extends PrivateApiComponentBase 
     }
 
     @Input({
-            @Param(name = "sysId", desc = "nmdav.getdeployversioninfoforautoexecapi.input.param.desc.sysid", isRequired = true, type = ApiParamType.LONG),
-            @Param(name = "moduleId", desc = "nmdav.getdeployversioninfoforautoexecapi.input.param.desc.moduleid", isRequired = true, type = ApiParamType.LONG),
-            @Param(name = "version", desc = "nmdav.getdeployversioninfoforautoexecapi.input.param.desc.version", isRequired = true, type = ApiParamType.STRING),
+            @Param(name = "sysId", desc = "term.cmdb.appsystemid", isRequired = true, type = ApiParamType.LONG),
+            @Param(name = "moduleId", desc = "term.cmdb.appmoduleid", isRequired = true, type = ApiParamType.LONG),
+            @Param(name = "version", desc = "common.versionnum", isRequired = true, type = ApiParamType.STRING),
             @Param(name = "buildNo", desc = "nmdav.getdeployversioninfoforautoexecapi.input.param.desc.buildno", isRequired = true, type = ApiParamType.INTEGER),
     })
     @Description(desc = "nmdav.getdeployversioninfoforautoexecapi.getname")

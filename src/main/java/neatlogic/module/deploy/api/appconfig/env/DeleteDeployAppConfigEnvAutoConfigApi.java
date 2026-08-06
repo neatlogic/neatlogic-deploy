@@ -58,9 +58,9 @@ public class DeleteDeployAppConfigEnvAutoConfigApi extends PrivateApiComponentBa
     }
 
     @Input({
-            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaae.deletedeployappconfigenvautoconfigapi.input.param.desc.appsystemid"),
-            @Param(name = "appModuleId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaae.deletedeployappconfigenvautoconfigapi.input.param.desc.appmoduleid"),
-            @Param(name = "envId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaae.deletedeployappconfigenvautoconfigapi.input.param.desc.envid"),
+            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.appsystemid"),
+            @Param(name = "appModuleId", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.appmoduleid"),
+            @Param(name = "envId", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.envid"),
             @Param(name = "instanceId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaae.deletedeployappconfigenvautoconfigapi.input.param.desc.instanceid"),
     })
     @Output({

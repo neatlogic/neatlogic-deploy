@@ -77,10 +77,10 @@ public class ListDeployScheduleApi extends PrivateApiComponentBase {
     @Input({
             @Param(name = "keyword", type = ApiParamType.STRING, desc = "nmdas.listdeployscheduleapi.input.param.desc.keyword"),
             @Param(name = "isActive", type = ApiParamType.ENUM, rule = "0,1", desc = "nmdas.listdeployscheduleapi.input.param.desc.isactive"),
-            @Param(name = "appSystemId", type = ApiParamType.LONG, desc = "nmdas.listdeployscheduleapi.input.param.desc.appsystemid"),
-            @Param(name = "appModuleId", type = ApiParamType.LONG, desc = "nmdas.listdeployscheduleapi.input.param.desc.appmoduleid"),
-            @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "nmdas.listdeployscheduleapi.input.param.desc.currentpage"),
-            @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "nmdas.listdeployscheduleapi.input.param.desc.pagesize")
+            @Param(name = "appSystemId", type = ApiParamType.LONG, desc = "term.cmdb.appsystemid"),
+            @Param(name = "appModuleId", type = ApiParamType.LONG, desc = "term.cmdb.appmoduleid"),
+            @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "common.currentpage"),
+            @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "common.pagesize")
     })
     @Output({
             @Param(explode = BasePageVo.class),

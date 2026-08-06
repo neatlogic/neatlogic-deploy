@@ -66,7 +66,7 @@ public class ChangeFilePermissionApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "id", desc = "nmdavr.changefilepermissionapi.input.param.desc.id", isRequired = true, type = ApiParamType.LONG),
+            @Param(name = "id", desc = "common.versionid", isRequired = true, type = ApiParamType.LONG),
             @Param(name = "buildNo", desc = "nmdavr.changefilepermissionapi.input.param.desc.buildno", type = ApiParamType.INTEGER),
             @Param(name = "envId", desc = "nmdavr.changefilepermissionapi.input.param.desc.envid", type = ApiParamType.LONG),
             @Param(name = "resourceType", member = DeployResourceType.class, desc = "nmdavr.changefilepermissionapi.input.param.desc.resourcetype", isRequired = true, type = ApiParamType.ENUM),

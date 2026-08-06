@@ -62,7 +62,7 @@ public class DeletePipelineApi extends PrivateApiComponentBase {
         return "/deploy/pipeline/delete";
     }
 
-    @Input({@Param(name = "id", type = ApiParamType.LONG, desc = "nmdap.deletepipelineapi.input.param.desc.id", isRequired = true)})
+    @Input({@Param(name = "id", type = ApiParamType.LONG, desc = "common.id", isRequired = true)})
     @Description(desc = "nmdap.deletepipelineapi.getname")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {

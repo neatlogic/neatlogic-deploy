@@ -65,13 +65,13 @@ public class SaveDeployVersionApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "version", desc = "nmdav.savedeployversionapi.input.param.desc.version", isRequired = true, type = ApiParamType.STRING),
-            @Param(name = "appSystemId", desc = "nmdav.savedeployversionapi.input.param.desc.appsystemid", isRequired = true, type = ApiParamType.LONG),
-            @Param(name = "appSystemName", desc = "nmdav.savedeployversionapi.input.param.desc.appsystemname", type = ApiParamType.STRING),
-            @Param(name = "appModuleId", desc = "nmdav.savedeployversionapi.input.param.desc.appmoduleid", isRequired = true, type = ApiParamType.LONG),
-            @Param(name = "appModuleName", desc = "nmdav.savedeployversionapi.input.param.desc.appmodulename", type = ApiParamType.STRING),
-            @Param(name = "isFreeze", desc = "nmdav.savedeployversionapi.input.param.desc.isfreeze", isRequired = true, type = ApiParamType.INTEGER),
-            @Param(name = "description", desc = "nmdav.savedeployversionapi.input.param.desc.description", type = ApiParamType.STRING)
+            @Param(name = "version", desc = "term.deploy.version", isRequired = true, type = ApiParamType.STRING),
+            @Param(name = "appSystemId", desc = "term.cmdb.appsystemid", isRequired = true, type = ApiParamType.LONG),
+            @Param(name = "appSystemName", desc = "term.cmdb.appsystemname", type = ApiParamType.STRING),
+            @Param(name = "appModuleId", desc = "term.cmdb.appmoduleid", isRequired = true, type = ApiParamType.LONG),
+            @Param(name = "appModuleName", desc = "term.cmdb.appmodulename", type = ApiParamType.STRING),
+            @Param(name = "isFreeze", desc = "term.deploy.isfreeze", isRequired = true, type = ApiParamType.INTEGER),
+            @Param(name = "description", desc = "common.description", type = ApiParamType.STRING)
     })
     @Description(desc = "nmdav.savedeployversionapi.getname")
     @Override

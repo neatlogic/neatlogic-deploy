@@ -47,7 +47,7 @@ public class ListDeployPipelineJobTemplateVersionApi extends PrivateApiComponent
 
     @Input({
             @Param(name = "jobTemplateIdList", desc = "nmdav.listdeploypipelinejobtemplateversionapi.input.param.desc.jobtemplateidlist", isRequired = true, type = ApiParamType.JSONARRAY),
-            @Param(name = "version", desc = "nmdav.listdeploypipelinejobtemplateversionapi.input.param.desc.version", isRequired = true, type = ApiParamType. STRING),
+            @Param(name = "version", desc = "term.deploy.version", isRequired = true, type = ApiParamType. STRING),
     })
     @Description(desc = "nmdav.listdeploypipelinejobtemplateversionapi.getname")
     @Override

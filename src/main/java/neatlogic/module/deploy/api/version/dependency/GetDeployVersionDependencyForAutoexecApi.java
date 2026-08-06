@@ -38,9 +38,9 @@ public class GetDeployVersionDependencyForAutoexecApi extends PrivateApiComponen
     }
 
     @Input({
-            @Param(name = "sysId", desc = "nmdavd.getdeployversiondependencyforautoexecapi.input.param.desc.sysid", isRequired = true, type = ApiParamType.LONG),
-            @Param(name = "moduleId", desc = "nmdavd.getdeployversiondependencyforautoexecapi.input.param.desc.moduleid", isRequired = true, type = ApiParamType.LONG),
-            @Param(name = "version", desc = "nmdavd.getdeployversiondependencyforautoexecapi.input.param.desc.version", isRequired = true, type = ApiParamType.STRING),
+            @Param(name = "sysId", desc = "term.cmdb.appsystemid", isRequired = true, type = ApiParamType.LONG),
+            @Param(name = "moduleId", desc = "term.cmdb.appmoduleid", isRequired = true, type = ApiParamType.LONG),
+            @Param(name = "version", desc = "common.versionnum", isRequired = true, type = ApiParamType.STRING),
     })
     @Output({
     })

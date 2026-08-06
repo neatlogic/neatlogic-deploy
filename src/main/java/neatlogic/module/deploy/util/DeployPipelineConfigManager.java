@@ -634,7 +634,7 @@ public class DeployPipelineConfigManager {
                 for (AutoexecProfileParamVo autoexecProfileParamVo : profileParamList) {
                     DeployProfileParamVo deployProfileParamVo = new DeployProfileParamVo(autoexecProfileParamVo);
                     deployProfileParamVo.setInherit(1);
-                    deployProfileParamVo.setSource("预置参数集");
+                    deployProfileParamVo.setSource($.t("term.autoexec.profile"));
                     deployProfileParamList.add(deployProfileParamVo);
                 }
                 deployProfileVo.setParamList(deployProfileParamList);

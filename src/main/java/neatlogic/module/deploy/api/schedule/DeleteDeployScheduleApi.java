@@ -68,7 +68,7 @@ public class DeleteDeployScheduleApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "id", type = ApiParamType.LONG, isRequired = true, desc = "nmdas.deletedeployscheduleapi.input.param.desc.id")
+            @Param(name = "id", type = ApiParamType.LONG, isRequired = true, desc = "term.autoexec.scheduleid")
     })
     @Description(desc = "nmdas.deletedeployscheduleapi.getname")
     @Override

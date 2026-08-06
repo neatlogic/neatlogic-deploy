@@ -46,7 +46,7 @@ public class GetDeployAppConfigAppModuleApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "id", type = ApiParamType.LONG, isRequired = true, desc = "nmdaam.getdeployappconfigappmoduleapi.input.param.desc.id")
+            @Param(name = "id", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.appmoduleid")
     })
     @Output({
             @Param(explode = BasePageVo.class),

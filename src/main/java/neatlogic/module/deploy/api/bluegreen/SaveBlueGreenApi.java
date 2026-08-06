@@ -57,7 +57,7 @@ public class SaveBlueGreenApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "id", type = ApiParamType.LONG, desc = "nmdab.savebluegreenapi.input.param.desc.id"),
+            @Param(name = "id", type = ApiParamType.LONG, desc = "common.id"),
             @Param(name = "name", type = ApiParamType.STRING, desc = "common.name", isRequired = true, xss = true),
             @Param(name = "sort", type = ApiParamType.INTEGER, desc = "common.sort", isRequired = true),
             @Param(name = "isActive", type = ApiParamType.INTEGER, desc = "common.isactive", isRequired = true),

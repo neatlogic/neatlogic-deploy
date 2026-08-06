@@ -74,8 +74,8 @@ public class SavePipelineApi extends PrivateApiComponentBase {
         return "/deploy/pipeline/save";
     }
 
-    @Input({@Param(name = "id", type = ApiParamType.LONG, desc = "nmdap.savepipelineapi.input.param.desc.id"),
-            @Param(name = "name", type = ApiParamType.STRING, isRequired = true, desc = "nmdap.savepipelineapi.input.param.desc.name"),
+    @Input({@Param(name = "id", type = ApiParamType.LONG, desc = "common.id"),
+            @Param(name = "name", type = ApiParamType.STRING, isRequired = true, desc = "common.name"),
             @Param(name = "type", type = ApiParamType.ENUM, member = PipelineType.class, isRequired = true, desc = "common.type"),
             @Param(name = "appSystemId", type = ApiParamType.LONG, desc = "nmraa.getappapi.input.param.desc"),
             @Param(name = "laneList", type = ApiParamType.JSONARRAY, desc = "term.deploy.lanelist"),

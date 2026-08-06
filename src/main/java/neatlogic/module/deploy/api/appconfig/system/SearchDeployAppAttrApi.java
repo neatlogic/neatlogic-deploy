@@ -53,8 +53,8 @@ public class SearchDeployAppAttrApi extends PrivateApiComponentBase {
 
     @Input({
             @Param(name = "attrName", type = ApiParamType.STRING, desc = "nmdaas.searchdeployappattrapi.input.param.desc.attrname", isRequired = true),
-            @Param(name = "ciName", type = ApiParamType.STRING, desc = "nmdaas.searchdeployappattrapi.input.param.desc.ciname", isRequired = true),
-            @Param(name = "keyword", type = ApiParamType.STRING, desc = "nmdaas.searchdeployappattrapi.input.param.desc.keyword", xss = true),
+            @Param(name = "ciName", type = ApiParamType.STRING, desc = "term.cmdb.ciname", isRequired = true),
+            @Param(name = "keyword", type = ApiParamType.STRING, desc = "common.keyword", xss = true),
             @Param(name = "defaultValue", type = ApiParamType.JSONARRAY, desc = "nmdaas.searchdeployappattrapi.input.param.desc.defaultvalue"),
             @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "common.pagesize"),
             @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "common.currentpage")

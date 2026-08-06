@@ -62,10 +62,10 @@ public class SaveDeployAppConfigEnvCiEntityApi extends PrivateApiComponentBase {
             @Param(name = "envId", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.envid"),
             @Param(name = "id", type = ApiParamType.LONG, desc = "common.id"),
             @Param(name = "ciId", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.ciid"),
-            @Param(name = "ip", type = ApiParamType.STRING, desc = "nmdaae.savedeployappconfigenvcientityapi.input.param.desc.ip"),
+            @Param(name = "ip", type = ApiParamType.STRING, desc = "term.cmdb.ip"),
             @Param(name = "port", type = ApiParamType.INTEGER, desc = "nmdaae.savedeployappconfigenvcientityapi.input.param.desc.port"),
             @Param(name = "name", type = ApiParamType.STRING, desc = "common.name"),
-//            @Param(name = "attrList", type = ApiParamType.JSONARRAY, isRequired = true, minSize = 1, desc = "nmdaae.savedeployappconfigenvcientityapi.input.param.desc.attrlist"),
+//            @Param(name = "attrList", type = ApiParamType.JSONARRAY, isRequired = true, minSize = 1, desc = "common.attributelist"),
 //            @Param(name = "relList", type = ApiParamType.JSONARRAY, desc = "nmdaae.savedeployappconfigenvcientityapi.input.param.desc.rellist"),
 //            @Param(name = "globalAttrList", type = ApiParamType.JSONARRAY, desc = "nmdaae.savedeployappconfigenvcientityapi.input.param.desc.globalattrlist"),
     })

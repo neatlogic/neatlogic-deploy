@@ -74,9 +74,9 @@ public class SaveDeployAppConfigEnvAutoConfigApi extends PrivateApiComponentBase
     }
 
     @Input({
-            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaae.savedeployappconfigenvautoconfigapi.input.param.desc.appsystemid"),
-            @Param(name = "appModuleId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaae.savedeployappconfigenvautoconfigapi.input.param.desc.appmoduleid"),
-            @Param(name = "envId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaae.savedeployappconfigenvautoconfigapi.input.param.desc.envid"),
+            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.appsystemid"),
+            @Param(name = "appModuleId", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.appmoduleid"),
+            @Param(name = "envId", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.envid"),
             @Param(name = "deleteInstanceId", type = ApiParamType.LONG, desc = "nmdaae.savedeployappconfigenvautoconfigapi.input.param.desc.deleteinstanceid"),
             @Param(name = "instanceId", type = ApiParamType.LONG, desc = "nmdaae.savedeployappconfigenvautoconfigapi.input.param.desc.instanceid"),
             @Param(name = "keyValueList", type = ApiParamType.JSONARRAY, desc = "nmdaae.savedeployappconfigenvautoconfigapi.input.param.desc.keyvaluelist"),

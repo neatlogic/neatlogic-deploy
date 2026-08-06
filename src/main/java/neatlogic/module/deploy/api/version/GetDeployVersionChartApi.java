@@ -33,7 +33,7 @@ public class GetDeployVersionChartApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "versionId", desc = "nmdav.getdeployversionchartapi.input.param.desc.versionid", isRequired = true, type = ApiParamType.LONG),
+            @Param(name = "versionId", desc = "common.versionid", isRequired = true, type = ApiParamType.LONG),
             @Param(name = "name", desc = "nmdav.getdeployversionchartapi.input.param.desc.name", member = DeployVersionChart.class, isRequired = true, type = ApiParamType.ENUM),
             @Param(name = "chart", desc = "nmdav.getdeployversionchartapi.input.param.desc.chart", isRequired = true, type = ApiParamType.STRING),
     })

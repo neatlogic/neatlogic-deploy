@@ -50,9 +50,9 @@ public class SearchDeployVersionInstanceApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "keyword", type = ApiParamType.STRING, xss = true, desc = "nmdav.searchdeployversioninstanceapi.input.param.desc.keyword"),
-            @Param(name = "versionId", type = ApiParamType.LONG, isRequired = true, desc = "nmdav.searchdeployversioninstanceapi.input.param.desc.versionid"),
-            @Param(name = "envId", type = ApiParamType.LONG, isRequired = true, desc = "nmdav.searchdeployversioninstanceapi.input.param.desc.envid")
+            @Param(name = "keyword", type = ApiParamType.STRING, xss = true, desc = "common.keyword"),
+            @Param(name = "versionId", type = ApiParamType.LONG, isRequired = true, desc = "common.versionid"),
+            @Param(name = "envId", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.envid")
     })
     @Output({
             @Param(name = "tbodyList", explode = DeployVersionEnvInstanceVo[].class),

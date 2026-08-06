@@ -49,11 +49,11 @@ public class SearchJobTemplateApi extends PrivateApiComponentBase {
         return "/deploy/pipeline/jobtemplate/search";
     }
 
-    @Input({@Param(name = "keyword", type = ApiParamType.STRING, desc = "nmdap.searchjobtemplateapi.input.param.desc.keyword"),
+    @Input({@Param(name = "keyword", type = ApiParamType.STRING, desc = "common.keyword"),
             @Param(name = "excludeIdList", type = ApiParamType.JSONARRAY, desc = "nmdap.searchjobtemplateapi.input.param.desc.excludeidlist"),
-            @Param(name = "appSystemId", type = ApiParamType.LONG, desc = "nmdap.searchjobtemplateapi.input.param.desc.appsystemid"),
-            @Param(name = "appModuleId", type = ApiParamType.LONG, desc = "nmdap.searchjobtemplateapi.input.param.desc.appmoduleid"),
-            @Param(name = "envId", type = ApiParamType.LONG, desc = "nmdap.searchjobtemplateapi.input.param.desc.envid")})
+            @Param(name = "appSystemId", type = ApiParamType.LONG, desc = "term.cmdb.appsystemid"),
+            @Param(name = "appModuleId", type = ApiParamType.LONG, desc = "term.cmdb.appmoduleid"),
+            @Param(name = "envId", type = ApiParamType.LONG, desc = "term.cmdb.envid")})
     @Output({@Param(explode = BasePageVo.class)})
     @Description(desc = "nmdap.searchjobtemplateapi.getname")
     @Override

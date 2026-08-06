@@ -36,7 +36,7 @@ public class GetDeployVersionLastUnitTestApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "versionId", desc = "nmdav.getdeployversionlastunittestapi.input.param.desc.versionid", isRequired = true, type = ApiParamType.LONG),
+            @Param(name = "versionId", desc = "common.versionid", isRequired = true, type = ApiParamType.LONG),
     })
     @Output({
     })

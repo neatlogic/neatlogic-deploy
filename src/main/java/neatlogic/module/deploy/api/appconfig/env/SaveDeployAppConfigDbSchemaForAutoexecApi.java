@@ -62,16 +62,16 @@ public class SaveDeployAppConfigDbSchemaForAutoexecApi extends PrivateApiCompone
     }
 
     @Input({
-            @Param(name = "runnerId", type = ApiParamType.LONG, desc = "nmdaae.savedeployappconfigdbschemaforautoexecapi.input.param.desc.runnerid"),
+            @Param(name = "runnerId", type = ApiParamType.LONG, desc = "term.deploy.runnerid"),
             @Param(name = "runnerGroup", type = ApiParamType.JSONOBJECT, desc = "nmdaae.savedeployappconfigdbschemaforautoexecapi.input.param.desc.runnergroup"),
-            @Param(name = "jobId", type = ApiParamType.LONG, desc = "nmdaae.savedeployappconfigdbschemaforautoexecapi.input.param.desc.jobid"),
-            @Param(name = "phaseName", type = ApiParamType.STRING, desc = "nmdaae.savedeployappconfigdbschemaforautoexecapi.input.param.desc.phasename"),
-            @Param(name = "sysId", type = ApiParamType.LONG, desc = "nmdaae.savedeployappconfigdbschemaforautoexecapi.input.param.desc.sysid"),
-            @Param(name = "moduleId", type = ApiParamType.LONG, desc = "nmdaae.savedeployappconfigdbschemaforautoexecapi.input.param.desc.moduleid"),
-            @Param(name = "envId", type = ApiParamType.LONG, desc = "nmdaae.savedeployappconfigdbschemaforautoexecapi.input.param.desc.envid"),
+            @Param(name = "jobId", type = ApiParamType.LONG, desc = "term.autoexec.jobid"),
+            @Param(name = "phaseName", type = ApiParamType.STRING, desc = "term.autoexec.phasename"),
+            @Param(name = "sysId", type = ApiParamType.LONG, desc = "term.cmdb.appsystemid"),
+            @Param(name = "moduleId", type = ApiParamType.LONG, desc = "term.cmdb.appmoduleid"),
+            @Param(name = "envId", type = ApiParamType.LONG, desc = "term.cmdb.envid"),
             @Param(name = "sysName", type = ApiParamType.STRING, desc = "nmdaae.savedeployappconfigdbschemaforautoexecapi.input.param.desc.sysname"),
             @Param(name = "moduleName", type = ApiParamType.STRING, desc = "nmdaae.savedeployappconfigdbschemaforautoexecapi.input.param.desc.modulename"),
-            @Param(name = "envName", type = ApiParamType.STRING, desc = "nmdaae.savedeployappconfigdbschemaforautoexecapi.input.param.desc.envname"),
+            @Param(name = "envName", type = ApiParamType.STRING, desc = "term.cmdb.envname"),
             @Param(name = "dbSchemas", type = ApiParamType.JSONARRAY, desc = "nmdaae.savedeployappconfigdbschemaforautoexecapi.input.param.desc.dbschemas"),
     })
     @Output({

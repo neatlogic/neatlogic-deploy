@@ -60,8 +60,8 @@ public class SaveDeployJobNotifyPolicyApi extends PrivateApiComponentBase {
     private DeployAppConfigMapper deployAppConfigMapper;
 
     @Input({
-            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaj.savedeployjobnotifypolicyapi.input.param.desc.appsystemid"),
-            @Param(name = "policyId", type = ApiParamType.LONG, desc = "nmdaj.savedeployjobnotifypolicyapi.input.param.desc.policyid"),
+            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.appsystemid"),
+            @Param(name = "policyId", type = ApiParamType.LONG, desc = "term.framework.policyid"),
             @Param(name = "isCustom", type = ApiParamType.ENUM, rule = "0,1", isRequired = true, desc = "nmdaj.savedeployjobnotifypolicyapi.input.param.desc.iscustom"),
             @Param(name = "paramMappingList", type = ApiParamType.JSONARRAY, desc = "nmdaj.savedeployjobnotifypolicyapi.input.param.desc.parammappinglist"),
             @Param(name = "excludeTriggerList", type = ApiParamType.JSONARRAY, desc = "nmdaj.savedeployjobnotifypolicyapi.input.param.desc.excludetriggerlist")

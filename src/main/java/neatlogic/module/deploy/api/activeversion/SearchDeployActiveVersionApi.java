@@ -72,8 +72,8 @@ public class SearchDeployActiveVersionApi extends PrivateApiComponentBase {
 
     @Input({
             @Param(name = "defaultValue", type = ApiParamType.JSONARRAY, desc = "nmdaa.searchdeployactiveversionapi.input.param.desc.defaultvalue"),
-            @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "nmdaa.searchdeployactiveversionapi.input.param.desc.currentpage"),
-            @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "nmdaa.searchdeployactiveversionapi.input.param.desc.pagesize"),
+            @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "common.currentpage"),
+            @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "common.pagesize"),
             @Param(name = "needPage", type = ApiParamType.BOOLEAN, desc = "nmdaa.searchdeployactiveversionapi.input.param.desc.needpage"),
     })
     @Output({

@@ -52,8 +52,8 @@ public class ListDeployAppConfigAppModuleApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "appSystemId", type = ApiParamType.LONG, desc = "nmdaas.listdeployappconfigappmoduleapi.input.param.desc.appsystemid"),
-            @Param(name = "appModuleIdList", type = ApiParamType.JSONARRAY, desc = "nmdaas.listdeployappconfigappmoduleapi.input.param.desc.appmoduleidlist")
+            @Param(name = "appSystemId", type = ApiParamType.LONG, desc = "term.cmdb.appsystemid"),
+            @Param(name = "appModuleIdList", type = ApiParamType.JSONARRAY, desc = "term.cmdb.appmoduleidlist")
     })
     @Output({
             @Param(explode = DeployAppModuleVo[].class, desc = "nmdaas.listdeployappconfigappmoduleapi.output.param.desc.return")

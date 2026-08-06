@@ -46,13 +46,13 @@ public class UpdateDeployVersionEnvForAutoexecApi extends PrivateApiComponentBas
     }
 
     @Input({
-            @Param(name = "runnerId", desc = "nmdav.updatedeployversionenvforautoexecapi.input.param.desc.runnerid", type = ApiParamType.LONG),
+            @Param(name = "runnerId", desc = "term.deploy.runnerid", type = ApiParamType.LONG),
             @Param(name = "runnerGroup", desc = "nmdav.updatedeployversionenvforautoexecapi.input.param.desc.runnergroup", type = ApiParamType.JSONOBJECT),
-            @Param(name = "jobId", desc = "nmdav.updatedeployversionenvforautoexecapi.input.param.desc.jobid", type = ApiParamType.LONG),
-            @Param(name = "sysId", desc = "nmdav.updatedeployversionenvforautoexecapi.input.param.desc.sysid", isRequired = true, type = ApiParamType.LONG),
-            @Param(name = "moduleId", desc = "nmdav.updatedeployversionenvforautoexecapi.input.param.desc.moduleid", isRequired = true, type = ApiParamType.LONG),
-            @Param(name = "envId", desc = "nmdav.updatedeployversionenvforautoexecapi.input.param.desc.envid", isRequired = true, type = ApiParamType.LONG),
-            @Param(name = "version", desc = "nmdav.updatedeployversionenvforautoexecapi.input.param.desc.version", isRequired = true, type = ApiParamType.STRING),
+            @Param(name = "jobId", desc = "term.autoexec.jobid", type = ApiParamType.LONG),
+            @Param(name = "sysId", desc = "term.cmdb.appsystemid", isRequired = true, type = ApiParamType.LONG),
+            @Param(name = "moduleId", desc = "term.cmdb.appmoduleid", isRequired = true, type = ApiParamType.LONG),
+            @Param(name = "envId", desc = "term.cmdb.envid", isRequired = true, type = ApiParamType.LONG),
+            @Param(name = "version", desc = "common.versionnum", isRequired = true, type = ApiParamType.STRING),
             @Param(name = "buildNo", desc = "nmdav.updatedeployversionenvforautoexecapi.input.param.desc.buildno", type = ApiParamType.INTEGER),
             @Param(name = "isMirror", desc = "nmdav.updatedeployversionenvforautoexecapi.input.param.desc.ismirror", rule = "0,1", type = ApiParamType.ENUM),
             @Param(name = "status", desc = "nmdav.updatedeployversionenvforautoexecapi.input.param.desc.status", member = VersionEnvStatus.class, type = ApiParamType.ENUM),

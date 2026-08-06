@@ -54,8 +54,8 @@ public class SearchDeployJobWebhookApi extends PrivateApiComponentBase {
     }
 
     @Input({@Param(name = "keyword", type = ApiParamType.STRING, desc = "nmdaw.searchdeployjobwebhookapi.input.param.desc.keyword"),
-            @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "nmdaw.searchdeployjobwebhookapi.input.param.desc.currentpage"),
-            @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "nmdaw.searchdeployjobwebhookapi.input.param.desc.pagesize")})
+            @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "common.currentpage"),
+            @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "common.pagesize")})
     @Output({@Param(explode = BasePageVo.class), @Param(name = "tbodyList", explode = DeployScheduleVo[].class, desc = "nmdaw.searchdeployjobwebhookapi.output.param.desc.tbodylist"),})
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {

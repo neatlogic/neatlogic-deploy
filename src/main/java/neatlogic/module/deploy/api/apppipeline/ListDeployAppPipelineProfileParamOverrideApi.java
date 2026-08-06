@@ -69,7 +69,7 @@ public class ListDeployAppPipelineProfileParamOverrideApi extends PrivateApiComp
     }
 
     @Input({
-            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaa.listdeployapppipelineprofileparamoverrideapi.input.param.desc.appsystemid"),
+            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.appsystemid"),
             @Param(name = "profileId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaa.listdeployapppipelineprofileparamoverrideapi.input.param.desc.profileid"),
             @Param(name = "key", type = ApiParamType.STRING, isRequired = true, desc = "nmdaa.listdeployapppipelineprofileparamoverrideapi.input.param.desc.key")
     })

@@ -52,8 +52,8 @@ public class ListDeployAppConfigWithoutConfigModuleApi extends PrivateApiCompone
     }
 
     @Input({
-            @Param(name = "appSystemId", type = ApiParamType.LONG, desc = "nmdaam.listdeployappconfigwithoutconfigmoduleapi.input.param.desc.appsystemid"),
-            @Param(name = "appModuleId", type = ApiParamType.LONG, desc = "nmdaam.listdeployappconfigwithoutconfigmoduleapi.input.param.desc.appmoduleid")
+            @Param(name = "appSystemId", type = ApiParamType.LONG, desc = "term.cmdb.appsystemid"),
+            @Param(name = "appModuleId", type = ApiParamType.LONG, desc = "term.cmdb.appmoduleid")
     })
     @Output({
             @Param(explode = DeployAppModuleVo[].class, desc = "nmdaam.listdeployappconfigwithoutconfigmoduleapi.output.param.desc.return")

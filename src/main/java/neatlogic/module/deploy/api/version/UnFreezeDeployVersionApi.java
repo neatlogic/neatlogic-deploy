@@ -50,7 +50,7 @@ public class UnFreezeDeployVersionApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "id", desc = "nmdav.unfreezedeployversionapi.input.param.desc.id", isRequired = true, type = ApiParamType.LONG),
+            @Param(name = "id", desc = "common.versionid", isRequired = true, type = ApiParamType.LONG),
             @Param(name = "isFreeze", desc = "nmdav.unfreezedeployversionapi.input.param.desc.isfreeze", isRequired = true, type = ApiParamType.INTEGER)
     })
     @Description(desc = "nmdav.unfreezedeployversionapi.getname")

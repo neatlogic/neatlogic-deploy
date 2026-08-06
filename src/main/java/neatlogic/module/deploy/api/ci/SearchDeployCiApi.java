@@ -48,10 +48,10 @@ public class SearchDeployCiApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "appSystemId", desc = "nmdac.searchdeployciapi.input.param.desc.appsystemid", isRequired = true, type = ApiParamType.LONG),
-            @Param(name = "keyword", desc = "nmdac.searchdeployciapi.input.param.desc.keyword", type = ApiParamType.STRING),
-            @Param(name = "currentPage", desc = "nmdac.searchdeployciapi.input.param.desc.currentpage", type = ApiParamType.INTEGER),
-            @Param(name = "pageSize", desc = "nmdac.searchdeployciapi.input.param.desc.pagesize", type = ApiParamType.INTEGER)
+            @Param(name = "appSystemId", desc = "term.cmdb.appsystemid", isRequired = true, type = ApiParamType.LONG),
+            @Param(name = "keyword", desc = "common.keyword", type = ApiParamType.STRING),
+            @Param(name = "currentPage", desc = "common.currentpage", type = ApiParamType.INTEGER),
+            @Param(name = "pageSize", desc = "common.pagesize", type = ApiParamType.INTEGER)
     })
     @Description(desc = "nmdac.searchdeployciapi.getname")
     @Override

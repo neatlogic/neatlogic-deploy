@@ -88,7 +88,7 @@ public class CallbackDeployCiSvnEventApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "ip", desc = "nmdac.callbackdeploycisvneventapi.input.param.desc.ip", type = ApiParamType.STRING, isRequired = true),
+            @Param(name = "ip", desc = "term.cmdb.ip", type = ApiParamType.STRING, isRequired = true),
             @Param(name = "repo", desc = "nmdac.savedeployciapi.input.param.desc.reponame", type = ApiParamType.STRING, isRequired = true),
             @Param(name = "event", desc = "common.event", type = ApiParamType.STRING, isRequired = true),
             @Param(name = "dirsChanged", desc = "nmdac.callbackdeploycisvneventapi.input.param.desc.dirschanged", type = ApiParamType.STRING, isRequired = true),

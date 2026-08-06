@@ -75,10 +75,10 @@ public class SaveDeployAppConfigEnvDBConfigApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaae.savedeployappconfigenvdbconfigapi.input.param.desc.appsystemid"),
-            @Param(name = "appModuleId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaae.savedeployappconfigenvdbconfigapi.input.param.desc.appmoduleid"),
-            @Param(name = "envId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaae.savedeployappconfigenvdbconfigapi.input.param.desc.envid"),
-            @Param(name = "id", type = ApiParamType.LONG, desc = "nmdaae.savedeployappconfigenvdbconfigapi.input.param.desc.id"),
+            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.appsystemid"),
+            @Param(name = "appModuleId", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.appmoduleid"),
+            @Param(name = "envId", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.envid"),
+            @Param(name = "id", type = ApiParamType.LONG, desc = "common.id"),
             @Param(name = "dbSchema", type = ApiParamType.REGEX, isRequired = true, rule = RegexUtils.DB_SCHEMA, desc = "nmdaae.savedeployappconfigenvdbconfigapi.input.param.desc.dbschema"),
             @Param(name = "dbResourceId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaae.savedeployappconfigenvdbconfigapi.input.param.desc.dbresourceid"),
             @Param(name = "accountId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaae.savedeployappconfigenvdbconfigapi.input.param.desc.accountid"),

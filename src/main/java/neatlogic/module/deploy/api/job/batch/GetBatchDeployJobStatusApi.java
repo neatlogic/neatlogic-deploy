@@ -44,7 +44,7 @@ public class GetBatchDeployJobStatusApi extends PrivateApiComponentBase {
         return null;
     }
 
-    @Input({@Param(name = "id", type = ApiParamType.LONG, isRequired = true, desc = "nmdajb.getbatchdeployjobstatusapi.input.param.desc.id")})
+    @Input({@Param(name = "id", type = ApiParamType.LONG, isRequired = true, desc = "term.autoexec.jobid")})
     @Output({@Param(explode = DeployJobVo.class)})
     @Description(desc = "nmdajb.getbatchdeployjobstatusapi.getname")
     @Override

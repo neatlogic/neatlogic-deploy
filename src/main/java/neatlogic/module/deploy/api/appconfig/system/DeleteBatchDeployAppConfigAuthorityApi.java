@@ -59,8 +59,8 @@ public class DeleteBatchDeployAppConfigAuthorityApi extends PrivateApiComponentB
     }
 
     @Input({
-            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaas.deletebatchdeployappconfigauthorityapi.input.param.desc.appsystemid"),
-            @Param(name = "uuidList", type = ApiParamType.JSONARRAY, isRequired = true,  desc = "nmdaas.deletebatchdeployappconfigauthorityapi.input.param.desc.uuidlist")
+            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.appsystemid"),
+            @Param(name = "uuidList", type = ApiParamType.JSONARRAY, isRequired = true,  desc = "common.authlist")
     })
     @Output({
     })

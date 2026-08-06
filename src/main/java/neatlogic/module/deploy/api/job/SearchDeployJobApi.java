@@ -61,12 +61,12 @@ public class SearchDeployJobApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "appSystemId", type = ApiParamType.LONG, desc = "nmdaj.searchdeployjobapi.input.param.desc.appsystemid"),
-            @Param(name = "appModuleId", type = ApiParamType.LONG, desc = "nmdaj.searchdeployjobapi.input.param.desc.appmoduleid"),
-            @Param(name = "envId", type = ApiParamType.LONG, desc = "nmdaj.searchdeployjobapi.input.param.desc.envid"),
+            @Param(name = "appSystemId", type = ApiParamType.LONG, desc = "term.cmdb.appsystemid"),
+            @Param(name = "appModuleId", type = ApiParamType.LONG, desc = "term.cmdb.appmoduleid"),
+            @Param(name = "envId", type = ApiParamType.LONG, desc = "term.cmdb.envid"),
             @Param(name = "parentId", type = ApiParamType.LONG, desc = "nmdaj.searchdeployjobapi.input.param.desc.parentid"),
             @Param(name = "pipelineId", type = ApiParamType.LONG, desc = "nmdaj.searchdeployjobapi.input.param.desc.pipelineid"),
-            @Param(name = "statusList", type = ApiParamType.JSONARRAY, desc = "nmdaj.searchdeployjobapi.input.param.desc.statuslist"),
+            @Param(name = "statusList", type = ApiParamType.JSONARRAY, desc = "term.autoexec.jobstatuslabel"),
             @Param(name = "invokeIdList", type = ApiParamType.JSONARRAY, desc = "nmdaj.searchdeployjobapi.input.param.desc.invokeidlist"),
             @Param(name = "typeIdList", type = ApiParamType.JSONARRAY, desc = "nmdaj.searchdeployjobapi.input.param.desc.typeidlist"),
             @Param(name = "idList", type = ApiParamType.JSONARRAY, desc = "nmdaj.searchdeployjobapi.input.param.desc.idlist"),
@@ -76,11 +76,11 @@ public class SearchDeployJobApi extends PrivateApiComponentBase {
             @Param(name = "endTimeRange", type = ApiParamType.JSONARRAY, desc = "nmdaj.searchdeployjobapi.input.param.desc.endtimerange"),
             @Param(name = "planStartTimeRange", type = ApiParamType.JSONARRAY, desc = "nmdaj.searchdeployjobapi.input.param.desc.planstarttimerange"),
             @Param(name = "execUserList", type = ApiParamType.JSONARRAY, desc = "nmdaj.searchdeployjobapi.input.param.desc.execuserlist"),
-            @Param(name = "keyword", type = ApiParamType.STRING, desc = "nmdaj.searchdeployjobapi.input.param.desc.keyword", xss = true),
-            @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "nmdaj.searchdeployjobapi.input.param.desc.currentpage"),
+            @Param(name = "keyword", type = ApiParamType.STRING, desc = "common.keyword", xss = true),
+            @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "common.currentpage"),
             @Param(name = "hasParent", type = ApiParamType.BOOLEAN, desc = "nmdaj.searchdeployjobapi.input.param.desc.hasparent"),
             @Param(name = "sourceList", type = ApiParamType.JSONARRAY, desc = "nmdaj.searchdeployjobapi.input.param.desc.sourcelist"),
-            @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "nmdaj.searchdeployjobapi.input.param.desc.pagesize"),
+            @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "common.pagesize"),
             @Param(name = "parentId", type = ApiParamType.LONG, desc = "nmdaj.searchdeployjobapi.input.param.desc.parentid"),
             @Param(name = "isNeedNameAndAbbrName", type = ApiParamType.INTEGER, desc = "nmdaj.searchdeployjobapi.input.param.desc.isneednameandabbrname")
     })

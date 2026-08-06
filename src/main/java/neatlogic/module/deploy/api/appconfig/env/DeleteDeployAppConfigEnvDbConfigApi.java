@@ -52,7 +52,7 @@ public class DeleteDeployAppConfigEnvDbConfigApi extends PrivateApiComponentBase
     }
 
     @Input({
-            @Param(name = "id", type = ApiParamType.LONG, isRequired = true, desc = "nmdaae.deletedeployappconfigenvdbconfigapi.input.param.desc.id")
+            @Param(name = "id", type = ApiParamType.LONG, isRequired = true, desc = "common.id")
     })
     @Description(desc = "nmdaae.deletedeployappconfigenvdbconfigapi.getname")
     @Override

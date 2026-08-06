@@ -55,12 +55,12 @@ public class SearchPipelineApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "keyword", type = ApiParamType.STRING, desc = "nmdap.searchpipelineapi.input.param.desc.keyword"),
-            @Param(name = "type", type = ApiParamType.ENUM, member = PipelineType.class, desc = "nmdap.searchpipelineapi.input.param.desc.type"),
-            @Param(name = "appSystemId", type = ApiParamType.LONG, desc = "nmdap.searchpipelineapi.input.param.desc.appsystemid"),
+            @Param(name = "keyword", type = ApiParamType.STRING, desc = "common.keyword"),
+            @Param(name = "type", type = ApiParamType.ENUM, member = PipelineType.class, desc = "common.type"),
+            @Param(name = "appSystemId", type = ApiParamType.LONG, desc = "term.cmdb.appsystemid"),
             @Param(name = "needVerifyAuth", type = ApiParamType.INTEGER, desc = "nmdap.searchpipelineapi.input.param.desc.needverifyauth"),
-            @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "nmdap.searchpipelineapi.input.param.desc.currentpage"),
-            @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "nmdap.searchpipelineapi.input.param.desc.pagesize")
+            @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "common.currentpage"),
+            @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "common.pagesize")
     })
     @Output({
             @Param(explode = BasePageVo.class),

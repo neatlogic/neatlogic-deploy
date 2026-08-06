@@ -47,7 +47,7 @@ public class GetJobTemplateApi extends PrivateApiComponentBase {
         return "/deploy/pipeline/jobtemplate/get";
     }
 
-    @Input({@Param(name = "id", type = ApiParamType.LONG, isRequired = true, desc = "nmdap.getjobtemplateapi.input.param.desc.id")})
+    @Input({@Param(name = "id", type = ApiParamType.LONG, isRequired = true, desc = "common.id")})
     @Output({@Param(explode = PipelineJobTemplateVo.class)})
     @Description(desc = "nmdap.getjobtemplateapi.getname")
     @Override

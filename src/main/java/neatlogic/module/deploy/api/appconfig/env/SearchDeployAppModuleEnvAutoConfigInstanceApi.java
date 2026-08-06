@@ -54,13 +54,13 @@ public class SearchDeployAppModuleEnvAutoConfigInstanceApi extends PrivateApiCom
 
     @Input({
             @Param(name = "keyword", type = ApiParamType.STRING, desc = "nmdaae.searchdeployappmoduleenvautoconfiginstanceapi.input.param.desc.keyword"),
-            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaae.searchdeployappmoduleenvautoconfiginstanceapi.input.param.desc.appsystemid"),
-            @Param(name = "appModuleId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaae.searchdeployappmoduleenvautoconfiginstanceapi.input.param.desc.appmoduleid"),
-            @Param(name = "envId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaae.searchdeployappmoduleenvautoconfiginstanceapi.input.param.desc.envid"),
+            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.appsystemid"),
+            @Param(name = "appModuleId", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.appmoduleid"),
+            @Param(name = "envId", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.envid"),
             @Param(name = "isAutoConfig", type = ApiParamType.INTEGER, desc = "nmdaae.searchdeployappmoduleenvautoconfiginstanceapi.input.param.desc.isautoconfig"),
-            @Param(name = "defaultValue", type = ApiParamType.JSONARRAY, desc = "nmdaae.searchdeployappmoduleenvautoconfiginstanceapi.input.param.desc.defaultvalue"),
-            @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "nmdaae.searchdeployappmoduleenvautoconfiginstanceapi.input.param.desc.currentpage"),
-            @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "nmdaae.searchdeployappmoduleenvautoconfiginstanceapi.input.param.desc.pagesize"),
+            @Param(name = "defaultValue", type = ApiParamType.JSONARRAY, desc = "term.autoexec.defaultvalue"),
+            @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "common.currentpage"),
+            @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "common.pagesize"),
             @Param(name = "needPage", type = ApiParamType.BOOLEAN, desc = "nmdaae.searchdeployappmoduleenvautoconfiginstanceapi.input.param.desc.needpage")
     })
     @Output({

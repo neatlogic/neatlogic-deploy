@@ -43,12 +43,12 @@ public class SaveDeployVersionForAutoexecApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "runnerId", desc = "nmdav.savedeployversionforautoexecapi.input.param.desc.runnerid", type = ApiParamType.LONG),
+            @Param(name = "runnerId", desc = "term.deploy.runnerid", type = ApiParamType.LONG),
             @Param(name = "runnerGroup", desc = "nmdav.savedeployversionforautoexecapi.input.param.desc.runnergroup", type = ApiParamType.JSONOBJECT),
-            @Param(name = "jobId", desc = "nmdav.savedeployversionforautoexecapi.input.param.desc.jobid", isRequired = true, type = ApiParamType.LONG),
-            @Param(name = "sysId", desc = "nmdav.savedeployversionforautoexecapi.input.param.desc.sysid", isRequired = true, type = ApiParamType.LONG),
-            @Param(name = "moduleId", desc = "nmdav.savedeployversionforautoexecapi.input.param.desc.moduleid", isRequired = true, type = ApiParamType.LONG),
-            @Param(name = "version", desc = "nmdav.savedeployversionforautoexecapi.input.param.desc.version", isRequired = true, type = ApiParamType.STRING),
+            @Param(name = "jobId", desc = "term.autoexec.jobid", isRequired = true, type = ApiParamType.LONG),
+            @Param(name = "sysId", desc = "term.cmdb.appsystemid", isRequired = true, type = ApiParamType.LONG),
+            @Param(name = "moduleId", desc = "term.cmdb.appmoduleid", isRequired = true, type = ApiParamType.LONG),
+            @Param(name = "version", desc = "common.versionnum", isRequired = true, type = ApiParamType.STRING),
             @Param(name = "buildNo", desc = "nmdav.savedeployversionforautoexecapi.input.param.desc.buildno", isRequired = true, type = ApiParamType.STRING),
             @Param(name = "verInfo", desc = "nmdav.savedeployversionforautoexecapi.input.param.desc.verinfo", isRequired = true, type = ApiParamType.JSONOBJECT),
     })

@@ -41,7 +41,7 @@ public class GetDeployAppConfigEnvDBConfigApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "id", type = ApiParamType.LONG, isRequired = true, desc = "nmdaae.getdeployappconfigenvdbconfigapi.input.param.desc.id")
+            @Param(name = "id", type = ApiParamType.LONG, isRequired = true, desc = "common.id")
     })
     @Output({
             @Param(name = "tbodyList", explode = DeployAppConfigEnvDBConfigVo[].class, desc = "nmdaae.getdeployappconfigenvdbconfigapi.output.param.desc.tbodylist")

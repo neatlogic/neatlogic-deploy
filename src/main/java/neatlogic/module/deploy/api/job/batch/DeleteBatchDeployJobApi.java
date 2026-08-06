@@ -53,7 +53,7 @@ public class DeleteBatchDeployJobApi extends PrivateApiComponentBase {
         return "/deploy/batchjob/delete";
     }
 
-    @Input({@Param(name = "id", type = ApiParamType.LONG, desc = "nmdajb.deletebatchdeployjobapi.input.param.desc.id", isRequired = true)})
+    @Input({@Param(name = "id", type = ApiParamType.LONG, desc = "term.autoexec.jobid", isRequired = true)})
     @Output({@Param(explode = DeployJobVo.class)})
     @Description(desc = "nmdajb.deletebatchdeployjobapi.getname")
     @Override

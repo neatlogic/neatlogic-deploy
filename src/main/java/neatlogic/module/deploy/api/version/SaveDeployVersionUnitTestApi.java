@@ -41,9 +41,9 @@ public class SaveDeployVersionUnitTestApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "sysId", desc = "nmdav.savedeployversionunittestapi.input.param.desc.sysid", isRequired = true, type = ApiParamType.LONG),
-            @Param(name = "moduleId", desc = "nmdav.savedeployversionunittestapi.input.param.desc.moduleid", isRequired = true, type = ApiParamType.LONG),
-            @Param(name = "version", desc = "nmdav.savedeployversionunittestapi.input.param.desc.version", isRequired = true, type = ApiParamType.STRING),
+            @Param(name = "sysId", desc = "term.cmdb.appsystemid", isRequired = true, type = ApiParamType.LONG),
+            @Param(name = "moduleId", desc = "term.cmdb.appmoduleid", isRequired = true, type = ApiParamType.LONG),
+            @Param(name = "version", desc = "common.versionnum", isRequired = true, type = ApiParamType.STRING),
             @Param(explode = DeployVersionUnitTestVo.class, desc = "nmdav.savedeployversionunittestapi.input.param.desc.deployversionunittestvo", type = ApiParamType.JSONOBJECT),
     })
     @Output({

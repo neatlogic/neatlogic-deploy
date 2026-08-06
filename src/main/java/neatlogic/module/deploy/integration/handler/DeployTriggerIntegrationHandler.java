@@ -39,15 +39,15 @@ public class DeployTriggerIntegrationHandler extends IntegrationHandlerBase {
     @Override
     public List<PatternVo> getInputPattern() {
         List<PatternVo> jsonList = new ArrayList<>();
-        jsonList.add(new PatternVo("appSystemId", "input", ApiParamType.LONG, 0, $.t("nmdih.deploytriggerintegrationhandler.runtime.pattern.appsystemid"),0));
-        jsonList.add(new PatternVo("appSystemName", "input", ApiParamType.STRING, 0, $.t("nmdih.deploytriggerintegrationhandler.runtime.pattern.appsystemname"),0));
-        jsonList.add(new PatternVo("appSystemAbbrName", "input", ApiParamType.STRING, 0, $.t("nmdih.deploytriggerintegrationhandler.runtime.pattern.appsystemabbrname"),0));
-        jsonList.add(new PatternVo("appModuleId", "input", ApiParamType.LONG, 0, $.t("nmdih.deploytriggerintegrationhandler.runtime.pattern.appmoduleid"),0));
-        jsonList.add(new PatternVo("appModuleName", "input", ApiParamType.STRING, 0, $.t("nmdih.deploytriggerintegrationhandler.runtime.pattern.appmodulename"),0));
-        jsonList.add(new PatternVo("appModuleAbbrName", "input", ApiParamType.STRING, 0, $.t("nmdih.deploytriggerintegrationhandler.runtime.pattern.appmoduleabbrname"),0));
-        jsonList.add(new PatternVo("envName", "input", ApiParamType.STRING, 0, $.t("nmdih.deploytriggerintegrationhandler.runtime.pattern.envname"),0));
+        jsonList.add(new PatternVo("appSystemId", "input", ApiParamType.LONG, 0, $.t("term.cmdb.appsystemid"),0));
+        jsonList.add(new PatternVo("appSystemName", "input", ApiParamType.STRING, 0, $.t("term.cmdb.appsystemname"),0));
+        jsonList.add(new PatternVo("appSystemAbbrName", "input", ApiParamType.STRING, 0, $.t("term.cmdb.appsystemabbrname"),0));
+        jsonList.add(new PatternVo("appModuleId", "input", ApiParamType.LONG, 0, $.t("term.cmdb.appmoduleid"),0));
+        jsonList.add(new PatternVo("appModuleName", "input", ApiParamType.STRING, 0, $.t("term.cmdb.appmodulename"),0));
+        jsonList.add(new PatternVo("appModuleAbbrName", "input", ApiParamType.STRING, 0, $.t("term.cmdb.appmoduleabbrname"),0));
+        jsonList.add(new PatternVo("envName", "input", ApiParamType.STRING, 0, $.t("term.cmdb.envname"),0));
         jsonList.add(new PatternVo("buildNo", "input", ApiParamType.INTEGER, 0, $.t("nmdih.deploytriggerintegrationhandler.runtime.pattern.buildno"),0));
-        jsonList.add(new PatternVo("scenarioName", "input", ApiParamType.STRING, 0, $.t("nmdih.deploytriggerintegrationhandler.runtime.pattern.scenarioname")));
+        jsonList.add(new PatternVo("scenarioName", "input", ApiParamType.STRING, 0, $.t("term.autoexec.scenario")));
         jsonList.add(new PatternVo("targetEnvName", "input", ApiParamType.STRING, 0, $.t("nmdih.deploytriggerintegrationhandler.runtime.pattern.targetenvname")));
         return jsonList;
     }

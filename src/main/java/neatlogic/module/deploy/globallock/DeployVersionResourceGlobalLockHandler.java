@@ -20,6 +20,7 @@ import neatlogic.framework.deploy.constvalue.JobSourceType;
 import neatlogic.framework.dto.globallock.GlobalLockVo;
 import neatlogic.framework.globallock.GlobalLockManager;
 import neatlogic.framework.globallock.core.GlobalLockHandlerBase;
+import neatlogic.framework.util.$;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 
@@ -40,7 +41,7 @@ public class DeployVersionResourceGlobalLockHandler extends GlobalLockHandlerBas
 
     @Override
     public String getHandlerName() {
-        return "发布-版本中心文件打包下载Lock";
+        return $.t("nmdgl.deployversionresourcegloballockhandler.gethandlername");
     }
 
     @Override

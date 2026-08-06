@@ -48,9 +48,9 @@ public class GetDeployAppEnvAutoConfigApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "sysId", desc = "nmdaae.getdeployappenvautoconfigapi.input.param.desc.sysid", isRequired = true, type = ApiParamType.LONG),
-            @Param(name = "moduleId", desc = "nmdaae.getdeployappenvautoconfigapi.input.param.desc.moduleid", isRequired = true, type = ApiParamType.LONG),
-            @Param(name = "envId", desc = "nmdaae.getdeployappenvautoconfigapi.input.param.desc.envid", isRequired = true, type = ApiParamType.LONG),
+            @Param(name = "sysId", desc = "term.cmdb.appsystemid", isRequired = true, type = ApiParamType.LONG),
+            @Param(name = "moduleId", desc = "term.cmdb.appmoduleid", isRequired = true, type = ApiParamType.LONG),
+            @Param(name = "envId", desc = "term.cmdb.envid", isRequired = true, type = ApiParamType.LONG),
     })
     @Description(desc = "nmdaae.getdeployappenvautoconfigapi.getname")
     @Override

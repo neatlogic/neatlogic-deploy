@@ -45,8 +45,8 @@ public class TestNotifyPolicyApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "jobId", type = ApiParamType.LONG, isRequired = true, desc = "nmdant.testnotifypolicyapi.input.param.desc.jobid"),
-            @Param(name = "jobStatus", type = ApiParamType.STRING, desc = "nmdant.testnotifypolicyapi.input.param.desc.jobstatus")
+            @Param(name = "jobId", type = ApiParamType.LONG, isRequired = true, desc = "term.autoexec.jobid"),
+            @Param(name = "jobStatus", type = ApiParamType.STRING, desc = "term.autoexec.jobstatuslabel")
     })
     @Output({
     })

@@ -56,9 +56,9 @@ public class SaveDeployVersionDependencyForAutoexecApi extends PrivateApiCompone
     }
 
     @Input({
-            @Param(name = "sysId", desc = "nmdavd.savedeployversiondependencyforautoexecapi.input.param.desc.sysid", isRequired = true, type = ApiParamType.LONG),
-            @Param(name = "moduleId", desc = "nmdavd.savedeployversiondependencyforautoexecapi.input.param.desc.moduleid", isRequired = true, type = ApiParamType.LONG),
-            @Param(name = "version", desc = "nmdavd.savedeployversiondependencyforautoexecapi.input.param.desc.version", isRequired = true, type = ApiParamType.STRING),
+            @Param(name = "sysId", desc = "term.cmdb.appsystemid", isRequired = true, type = ApiParamType.LONG),
+            @Param(name = "moduleId", desc = "term.cmdb.appmoduleid", isRequired = true, type = ApiParamType.LONG),
+            @Param(name = "version", desc = "common.versionnum", isRequired = true, type = ApiParamType.STRING),
             @Param(name = "dependenceList", type = ApiParamType.JSONARRAY, desc = "nmdavd.savedeployversiondependencyforautoexecapi.input.param.desc.dependencelist.name", isRequired = true),
             @Param(name = "dependenceList.groupId", type = ApiParamType.STRING, desc = "nmdavd.savedeployversiondependencyforautoexecapi.input.param.desc.dependencelist.groupid"),
             @Param(name = "dependenceList.artifactId", type = ApiParamType.STRING, desc = "nmdavd.savedeployversiondependencyforautoexecapi.input.param.desc.dependencelist.artifactid"),

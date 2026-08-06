@@ -66,8 +66,8 @@ public class SaveDeployAppConfigAuthorityApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaas.savedeployappconfigauthorityapi.input.param.desc.appsystemid"),
-            @Param(name = "authorityStrList", type = ApiParamType.JSONARRAY, isRequired = true, desc = "nmdaas.savedeployappconfigauthorityapi.input.param.desc.authoritystrlist"),
+            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.appsystemid"),
+            @Param(name = "authorityStrList", type = ApiParamType.JSONARRAY, isRequired = true, desc = "common.authlist"),
             @Param(name = "actionList", type = ApiParamType.JSONARRAY, isRequired = true, minSize = 1, desc = "nmdaas.savedeployappconfigauthorityapi.input.param.desc.actionlist"),
             @Param(name = "isEdit", type = ApiParamType.INTEGER, isRequired = true, desc = "nmdaas.savedeployappconfigauthorityapi.input.param.desc.isedit"),
     })

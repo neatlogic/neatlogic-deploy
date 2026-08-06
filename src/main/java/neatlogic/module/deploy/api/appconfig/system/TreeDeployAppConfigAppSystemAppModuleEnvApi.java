@@ -41,7 +41,7 @@ public class TreeDeployAppConfigAppSystemAppModuleEnvApi extends PrivateApiCompo
     }
 
     @Input({
-            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaas.treedeployappconfigappsystemappmoduleenvapi.input.param.desc.appsystemid")
+            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.appsystemid")
     })
     @Output({
             @Param(explode = DeployAppSystemVo[].class)

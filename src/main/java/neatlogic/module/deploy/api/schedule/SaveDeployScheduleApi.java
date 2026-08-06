@@ -100,21 +100,21 @@ public class SaveDeployScheduleApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "id", type = ApiParamType.LONG, desc = "nmdas.savedeployscheduleapi.input.param.desc.id"),
-            @Param(name = "name", type = ApiParamType.STRING, isRequired = true, desc = "nmdas.savedeployscheduleapi.input.param.desc.name"),
-            @Param(name = "beginTime", type = ApiParamType.LONG, desc = "nmdas.savedeployscheduleapi.input.param.desc.begintime"),
-            @Param(name = "endTime", type = ApiParamType.LONG, desc = "nmdas.savedeployscheduleapi.input.param.desc.endtime"),
+            @Param(name = "id", type = ApiParamType.LONG, desc = "term.autoexec.scheduleid"),
+            @Param(name = "name", type = ApiParamType.STRING, isRequired = true, desc = "term.autoexec.schedulename"),
+            @Param(name = "beginTime", type = ApiParamType.LONG, desc = "common.starttime"),
+            @Param(name = "endTime", type = ApiParamType.LONG, desc = "common.endtime"),
             @Param(name = "cron", type = ApiParamType.STRING, isRequired = true, desc = "nmdas.savedeployscheduleapi.input.param.desc.cron"),
             @Param(name = "isActive", type = ApiParamType.ENUM, isRequired = true, rule = "0,1", desc = "nmdas.savedeployscheduleapi.input.param.desc.isactive"),
             @Param(name = "config", type = ApiParamType.JSONOBJECT, isRequired = true, desc = "nmdas.savedeployscheduleapi.input.param.desc.config"),
             @Param(name = "type", type = ApiParamType.ENUM, member = ScheduleType.class, isRequired = true, desc = "nmdas.savedeployscheduleapi.input.param.desc.type"),
-            @Param(name = "appSystemId", type = ApiParamType.LONG, desc = "nmdas.savedeployscheduleapi.input.param.desc.appsystemid"),
-            @Param(name = "appModuleId", type = ApiParamType.LONG, desc = "nmdas.savedeployscheduleapi.input.param.desc.appmoduleid"),
+            @Param(name = "appSystemId", type = ApiParamType.LONG, desc = "term.cmdb.appsystemid"),
+            @Param(name = "appModuleId", type = ApiParamType.LONG, desc = "term.cmdb.appmoduleid"),
             @Param(name = "pipelineId", type = ApiParamType.LONG, desc = "nmdas.savedeployscheduleapi.input.param.desc.pipelineid"),
             @Param(name = "pipelineType", type = ApiParamType.ENUM, member = PipelineType.class, desc = "nmdas.savedeployscheduleapi.input.param.desc.pipelinetype")
     })
     @Output({
-            @Param(name = "id", type = ApiParamType.STRING, isRequired = true, desc = "nmdas.savedeployscheduleapi.output.param.desc.id")
+            @Param(name = "id", type = ApiParamType.STRING, isRequired = true, desc = "term.autoexec.scheduleid")
     })
     @Description(desc = "nmdas.savedeployscheduleapi.getname")
     @Override
@@ -251,7 +251,7 @@ public class SaveDeployScheduleApi extends PrivateApiComponentBase {
             for (DeploySystemModuleVersionVo deploySystemModuleVersionVo : deploySystemModuleVersionList) {
                 Long appSystemId = deploySystemModuleVersionVo.getAppSystemId();
                 if (appSystemId == null) {
-                    throw new ParamNotExistsException($.t("nmdas.savedeployscheduleapi.runtime.param.appsystemid"));
+                    throw new ParamNotExistsException($.t("term.cmdb.appsystemid"));
                 }
                 AppSystemVo appSystem = appSystemMap.get(appSystemId);
                 if (appSystem == null) {
@@ -259,7 +259,7 @@ public class SaveDeployScheduleApi extends PrivateApiComponentBase {
                 }
                 Long appModuleId = deploySystemModuleVersionVo.getAppModuleId();
                 if (appModuleId == null) {
-                    throw new ParamNotExistsException($.t("nmdas.savedeployscheduleapi.runtime.param.appmoduleid"));
+                    throw new ParamNotExistsException($.t("term.cmdb.appmoduleid"));
                 }
                 AppModuleVo appModule = appModuleMap.get(appModuleId);
                 if (appModule == null) {

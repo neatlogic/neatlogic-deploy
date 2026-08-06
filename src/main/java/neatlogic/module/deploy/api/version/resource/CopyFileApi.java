@@ -68,7 +68,7 @@ public class CopyFileApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "id", desc = "nmdavr.copyfileapi.input.param.desc.id", isRequired = true, type = ApiParamType.LONG),
+            @Param(name = "id", desc = "common.versionid", isRequired = true, type = ApiParamType.LONG),
             @Param(name = "buildNo", desc = "nmdavr.copyfileapi.input.param.desc.buildno", type = ApiParamType.INTEGER),
             @Param(name = "envId", desc = "nmdavr.copyfileapi.input.param.desc.envid", type = ApiParamType.LONG),
             @Param(name = "resourceType", member = DeployResourceType.class, desc = "nmdavr.copyfileapi.input.param.desc.resourcetype", isRequired = true, type = ApiParamType.ENUM),

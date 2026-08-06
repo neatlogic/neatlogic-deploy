@@ -46,8 +46,8 @@ public class UpdateDeployActiveStatusApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "id", desc = "nmdac.updatedeployactivestatusapi.input.param.desc.id", type = ApiParamType.LONG, isRequired = true),
-            @Param(name = "isActive", desc = "nmdac.updatedeployactivestatusapi.input.param.desc.isactive", rule = "0,1", type = ApiParamType.ENUM, isRequired = true),
+            @Param(name = "id", desc = "common.id", type = ApiParamType.LONG, isRequired = true),
+            @Param(name = "isActive", desc = "common.isactive", rule = "0,1", type = ApiParamType.ENUM, isRequired = true),
     })
     @Description(desc = "nmdac.updatedeployactivestatusapi.getname")
     @Override

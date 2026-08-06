@@ -48,13 +48,13 @@ public class SearchDeployAppConfigEnvDatabaseApi extends PrivateApiComponentBase
     }
 
     @Input({
-            @Param(name = "keyword", type = ApiParamType.STRING, desc = "nmdaae.searchdeployappconfigenvdatabaseapi.input.param.desc.keyword", xss = true),
-            @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "nmdaae.searchdeployappconfigenvdatabaseapi.input.param.desc.currentpage"),
-            @Param(name = "defaultValue", type = ApiParamType.JSONARRAY, desc = "nmdaae.searchdeployappconfigenvdatabaseapi.input.param.desc.defaultvalue"),
-            @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "nmdaae.searchdeployappconfigenvdatabaseapi.input.param.desc.pagesize"),
-            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaae.searchdeployappconfigenvdatabaseapi.input.param.desc.appsystemid"),
-            @Param(name = "appModuleId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaae.searchdeployappconfigenvdatabaseapi.input.param.desc.appmoduleid"),
-            @Param(name = "envId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaae.searchdeployappconfigenvdatabaseapi.input.param.desc.envid"),
+            @Param(name = "keyword", type = ApiParamType.STRING, desc = "common.keyword", xss = true),
+            @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "common.currentpage"),
+            @Param(name = "defaultValue", type = ApiParamType.JSONARRAY, desc = "term.autoexec.defaultvalue"),
+            @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "common.pagesize"),
+            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.appsystemid"),
+            @Param(name = "appModuleId", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.appmoduleid"),
+            @Param(name = "envId", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.envid"),
     })
     @Output({
             @Param(name = "tbodyList", type = ApiParamType.JSONARRAY, explode = ResourceVo[].class, desc = "nmdaae.searchdeployappconfigenvdatabaseapi.output.param.desc.tbodylist"),

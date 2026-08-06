@@ -43,7 +43,7 @@ public class GetDeployCiApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "id", desc = "nmdac.getdeployciapi.input.param.desc.id", isRequired = true, type = ApiParamType.LONG),
+            @Param(name = "id", desc = "common.id", isRequired = true, type = ApiParamType.LONG),
     })
     @Description(desc = "nmdac.getdeployciapi.getname")
     @Override

@@ -62,10 +62,10 @@ public class DeleteDeployVersionApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "id", desc = "nmdav.deletedeployversionapi.input.param.desc.id", type = ApiParamType.LONG),
-            @Param(name = "sysId", desc = "nmdav.deletedeployversionapi.input.param.desc.sysid", type = ApiParamType.LONG),
-            @Param(name = "moduleId", desc = "nmdav.deletedeployversionapi.input.param.desc.moduleid", type = ApiParamType.LONG),
-            @Param(name = "version", desc = "nmdav.deletedeployversionapi.input.param.desc.version", type = ApiParamType.STRING),
+            @Param(name = "id", desc = "common.versionid", type = ApiParamType.LONG),
+            @Param(name = "sysId", desc = "term.cmdb.appsystemid", type = ApiParamType.LONG),
+            @Param(name = "moduleId", desc = "term.cmdb.appmoduleid", type = ApiParamType.LONG),
+            @Param(name = "version", desc = "common.versionnum", type = ApiParamType.STRING),
     })
     @Description(desc = "nmdav.deletedeployversionapi.getname")
     @Override

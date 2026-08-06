@@ -43,7 +43,7 @@ public class GetDeployVersionEnvListApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "versionId", type = ApiParamType.LONG, isRequired = true, desc = "nmdav.getdeployversionenvlistapi.input.param.desc.versionid"),
+            @Param(name = "versionId", type = ApiParamType.LONG, isRequired = true, desc = "common.versionid"),
     })
     @Output({
             @Param(name = "Return", explode = AppEnvironmentVo[].class),

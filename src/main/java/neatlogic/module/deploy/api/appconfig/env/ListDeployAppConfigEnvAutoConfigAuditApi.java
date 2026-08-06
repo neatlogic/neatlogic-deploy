@@ -51,9 +51,9 @@ public class ListDeployAppConfigEnvAutoConfigAuditApi extends PrivateApiComponen
         return "nmdaae.listdeployappconfigenvautoconfigauditapi.getname";
     }
     @Input({
-            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaae.listdeployappconfigenvautoconfigauditapi.input.param.desc.appsystemid"),
-            @Param(name = "appModuleId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaae.listdeployappconfigenvautoconfigauditapi.input.param.desc.appmoduleid"),
-            @Param(name = "envId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaae.listdeployappconfigenvautoconfigauditapi.input.param.desc.envid"),
+            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.appsystemid"),
+            @Param(name = "appModuleId", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.appmoduleid"),
+            @Param(name = "envId", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.envid"),
             @Param(name = "instanceId", type = ApiParamType.LONG, desc = "nmdaae.listdeployappconfigenvautoconfigauditapi.input.param.desc.instanceid"),
             @Param(name = "currentPage", type = ApiParamType.INTEGER, defaultValue = "1", desc = "common.currentpage"),
             @Param(name = "pageSize", type = ApiParamType.INTEGER, defaultValue = "10",  desc = "common.pagesize"),

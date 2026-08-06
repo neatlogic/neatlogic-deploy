@@ -56,10 +56,10 @@ public class ListDeployAppPipelineParamApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaa.listdeployapppipelineparamapi.input.param.desc.appsystemid")
+            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.appsystemid")
     })
     @Output({
-            @Param(explode = AutoexecParamVo[].class, desc = "nmdaa.listdeployapppipelineparamapi.output.param.desc.return")
+            @Param(explode = AutoexecParamVo[].class, desc = "term.autoexec.paramlist")
     })
     @Description(desc = "nmdaa.listdeployapppipelineparamapi.getname")
     @Override

@@ -52,7 +52,7 @@ public class UpdateBatchDeployJobReviewStatusApi extends PrivateApiComponentBase
         return "/deploy/batchjob/updatereviewstatus";
     }
 
-    @Input({@Param(name = "id", type = ApiParamType.LONG, desc = "nmdajb.updatebatchdeployjobreviewstatusapi.input.param.desc.id", isRequired = true),
+    @Input({@Param(name = "id", type = ApiParamType.LONG, desc = "term.autoexec.jobid", isRequired = true),
             @Param(name = "reviewStatus", type = ApiParamType.ENUM, member = ReviewStatus.class, isRequired = true, desc = "nmdajb.updatebatchdeployjobreviewstatusapi.input.param.desc.reviewstatus")})
     @Output({@Param(explode = DeployJobVo.class)})
     @Description(desc = "nmdajb.updatebatchdeployjobreviewstatusapi.getname")

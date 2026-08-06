@@ -61,14 +61,14 @@ public class CreateDeployJobApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "scenarioId", type = ApiParamType.LONG, desc = "nmdaj.createdeployjobapi.input.param.desc.scenarioid"),
+            @Param(name = "scenarioId", type = ApiParamType.LONG, desc = "term.autoexec.scenarioid"),
             @Param(name = "scenarioName", type = ApiParamType.STRING, desc = "nmdaj.createdeployjobapi.input.param.desc.scenarioname"),
-            @Param(name = "appSystemId", type = ApiParamType.LONG, desc = "nmdaj.createdeployjobapi.input.param.desc.appsystemid"),
-            @Param(name = "appSystemAbbrName", type = ApiParamType.STRING, desc = "nmdaj.createdeployjobapi.input.param.desc.appsystemabbrname"),
-            @Param(name = "appModuleId", type = ApiParamType.LONG, desc = "nmdaj.createdeployjobapi.input.param.desc.appmoduleid"),
-            @Param(name = "appModuleAbbrName", type = ApiParamType.STRING, desc = "nmdaj.createdeployjobapi.input.param.desc.appmoduleabbrname"),
-            @Param(name = "envId", type = ApiParamType.LONG, desc = "nmdaj.createdeployjobapi.input.param.desc.envid"),
-            @Param(name = "envName", type = ApiParamType.STRING, desc = "nmdaj.createdeployjobapi.input.param.desc.envname"),
+            @Param(name = "appSystemId", type = ApiParamType.LONG, desc = "term.cmdb.appsystemid"),
+            @Param(name = "appSystemAbbrName", type = ApiParamType.STRING, desc = "term.cmdb.appsystemabbrname"),
+            @Param(name = "appModuleId", type = ApiParamType.LONG, desc = "term.cmdb.appmoduleid"),
+            @Param(name = "appModuleAbbrName", type = ApiParamType.STRING, desc = "term.cmdb.appmoduleabbrname"),
+            @Param(name = "envId", type = ApiParamType.LONG, desc = "term.cmdb.envid"),
+            @Param(name = "envName", type = ApiParamType.STRING, desc = "term.cmdb.envname"),
             @Param(name = "source", type = ApiParamType.STRING, desc = "nmdaj.createdeployjobapi.input.param.desc.source"),
             @Param(name = "isNeedFire", type = ApiParamType.INTEGER, desc = "nmdaj.createdeployjobapi.input.param.desc.isneedfire"),
 

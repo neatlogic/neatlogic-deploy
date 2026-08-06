@@ -53,16 +53,16 @@ public class GetDeployAppConfigEnvDBConfigForAutoexecApi extends PrivateApiCompo
     }
 
     @Input({
-            @Param(name = "runnerId", type = ApiParamType.LONG, desc = "nmdaae.getdeployappconfigenvdbconfigforautoexecapi.input.param.desc.runnerid"),
+            @Param(name = "runnerId", type = ApiParamType.LONG, desc = "term.deploy.runnerid"),
             @Param(name = "runnerGroup", type = ApiParamType.JSONOBJECT, desc = "nmdaae.getdeployappconfigenvdbconfigforautoexecapi.input.param.desc.runnergroup"),
-            @Param(name = "jobId", type = ApiParamType.LONG, desc = "nmdaae.getdeployappconfigenvdbconfigforautoexecapi.input.param.desc.jobid"),
-            @Param(name = "phaseName", type = ApiParamType.STRING, desc = "nmdaae.getdeployappconfigenvdbconfigforautoexecapi.input.param.desc.phasename"),
-            @Param(name = "sysId", type = ApiParamType.LONG, desc = "nmdaae.getdeployappconfigenvdbconfigforautoexecapi.input.param.desc.sysid"),
-            @Param(name = "moduleId", type = ApiParamType.LONG, desc = "nmdaae.getdeployappconfigenvdbconfigforautoexecapi.input.param.desc.moduleid"),
-            @Param(name = "envId", type = ApiParamType.LONG, desc = "nmdaae.getdeployappconfigenvdbconfigforautoexecapi.input.param.desc.envid"),
+            @Param(name = "jobId", type = ApiParamType.LONG, desc = "term.autoexec.jobid"),
+            @Param(name = "phaseName", type = ApiParamType.STRING, desc = "term.autoexec.phasename"),
+            @Param(name = "sysId", type = ApiParamType.LONG, desc = "term.cmdb.appsystemid"),
+            @Param(name = "moduleId", type = ApiParamType.LONG, desc = "term.cmdb.appmoduleid"),
+            @Param(name = "envId", type = ApiParamType.LONG, desc = "term.cmdb.envid"),
             @Param(name = "sysName", type = ApiParamType.STRING, desc = "nmdaae.getdeployappconfigenvdbconfigforautoexecapi.input.param.desc.sysname"),
             @Param(name = "moduleName", type = ApiParamType.STRING, desc = "nmdaae.getdeployappconfigenvdbconfigforautoexecapi.input.param.desc.modulename"),
-            @Param(name = "envName", type = ApiParamType.STRING, desc = "nmdaae.getdeployappconfigenvdbconfigforautoexecapi.input.param.desc.envname")
+            @Param(name = "envName", type = ApiParamType.STRING, desc = "term.cmdb.envname")
     })
     @Output({
             @Param(name = "tbodyList", desc = "nmdaae.getdeployappconfigenvdbconfigforautoexecapi.output.param.desc.tbodylist")

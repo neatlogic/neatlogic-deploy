@@ -57,10 +57,10 @@ public class ListDeployAppPipelineProfileApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaa.listdeployapppipelineprofileapi.input.param.desc.appsystemid"),
-            @Param(name = "appModuleId", type = ApiParamType.LONG, desc = "nmdaa.listdeployapppipelineprofileapi.input.param.desc.appmoduleid"),
-            @Param(name = "envId", type = ApiParamType.LONG, desc = "nmdaa.listdeployapppipelineprofileapi.input.param.desc.envid"),
-            @Param(name = "defaultValue", type = ApiParamType.JSONARRAY, desc = "nmdaa.listdeployapppipelineprofileapi.input.param.desc.defaultvalue")
+            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.appsystemid"),
+            @Param(name = "appModuleId", type = ApiParamType.LONG, desc = "term.cmdb.appmoduleid"),
+            @Param(name = "envId", type = ApiParamType.LONG, desc = "term.cmdb.envid"),
+            @Param(name = "defaultValue", type = ApiParamType.JSONARRAY, desc = "term.autoexec.defaultvalue")
     })
     @Output({
             @Param(name = "Return", explode = DeployProfileVo[].class, desc = "nmdaa.listdeployapppipelineprofileapi.output.param.desc.return")

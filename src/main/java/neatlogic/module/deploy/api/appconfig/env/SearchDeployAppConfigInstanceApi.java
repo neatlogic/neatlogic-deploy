@@ -48,12 +48,12 @@ public class SearchDeployAppConfigInstanceApi extends PrivateApiComponentBase {
 
     @Input({
             @Param(name = "keyword", type = ApiParamType.STRING, desc = "nmdaae.searchdeployappconfiginstanceapi.input.param.desc.keyword"),
-            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaae.searchdeployappconfiginstanceapi.input.param.desc.appsystemid"),
-            @Param(name = "appModuleId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaae.searchdeployappconfiginstanceapi.input.param.desc.appmoduleid"),
-            @Param(name = "envId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaae.searchdeployappconfiginstanceapi.input.param.desc.envid"),
-            @Param(name = "currentPage", desc = "nmdaae.searchdeployappconfiginstanceapi.input.param.desc.currentpage", type = ApiParamType.INTEGER),
+            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.appsystemid"),
+            @Param(name = "appModuleId", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.appmoduleid"),
+            @Param(name = "envId", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.envid"),
+            @Param(name = "currentPage", desc = "common.currentpage", type = ApiParamType.INTEGER),
             @Param(name = "needPage", desc = "nmdaae.searchdeployappconfiginstanceapi.input.param.desc.needpage", type = ApiParamType.BOOLEAN),
-            @Param(name = "pageSize", desc = "nmdaae.searchdeployappconfiginstanceapi.input.param.desc.pagesize", type = ApiParamType.INTEGER)
+            @Param(name = "pageSize", desc = "common.pagesize", type = ApiParamType.INTEGER)
     })
     @Output({
             @Param(explode = BasePageVo.class),

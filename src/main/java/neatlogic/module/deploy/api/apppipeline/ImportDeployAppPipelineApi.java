@@ -70,7 +70,7 @@ public class ImportDeployAppPipelineApi extends PrivateBinaryStreamApiComponentB
             @Param(name = "userSelection", type = ApiParamType.JSONOBJECT, desc = "common.userselectionimportoption")
     })
     @Output({
-            @Param(name = "typeList", explode = ImportDependencyTypeVo[].class, desc = "commom.tbodylist")
+            @Param(name = "typeList", explode = ImportDependencyTypeVo[].class, desc = "common.tbodylist")
     })
     @Description(desc = "nmdaa.importdeployapppipelineapi.getname")
     @Override

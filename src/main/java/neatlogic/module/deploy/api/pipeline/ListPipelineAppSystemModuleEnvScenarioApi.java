@@ -52,7 +52,7 @@ public class ListPipelineAppSystemModuleEnvScenarioApi extends PrivateApiCompone
         return "/deploy/pipeline/appsystemmoduleenvscenario/list";
     }
 
-    @Input({@Param(name = "id", type = ApiParamType.LONG, desc = "nmdap.listpipelineappsystemmoduleenvscenarioapi.input.param.desc.id", isRequired = true)
+    @Input({@Param(name = "id", type = ApiParamType.LONG, desc = "common.id", isRequired = true)
     })
     @Output({@Param(explode = PipelineJobTemplateVo[].class)})
     @Description(desc = "nmdap.listpipelineappsystemmoduleenvscenarioapi.getname")

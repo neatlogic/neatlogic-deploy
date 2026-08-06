@@ -45,7 +45,7 @@ public class SaveDeployAppConfigAppSystemFavoriteApi extends PrivateApiComponent
     }
 
     @Input({
-            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaas.savedeployappconfigappsystemfavoriteapi.input.param.desc.appsystemid"),
+            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.appsystemid"),
             @Param(name = "isFavorite", type = ApiParamType.INTEGER, isRequired = true, desc = "nmdaas.savedeployappconfigappsystemfavoriteapi.input.param.desc.isfavorite")
     })
     @Output({

@@ -51,7 +51,7 @@ public class GetDeployJobNotifyPolicyApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaj.getdeployjobnotifypolicyapi.input.param.desc.appsystemid")
+            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.appsystemid")
     })
     @Output({
             @Param(explode = InvokeNotifyPolicyConfigVo.class, desc = "nmdaj.getdeployjobnotifypolicyapi.output.param.desc.invokenotifypolicyconfigvo")

@@ -52,9 +52,9 @@ public class ListDeployAppConfigWithoutConfigEnvApi extends PrivateApiComponentB
     }
 
     @Input({
-            @Param(name = "appSystemId", type = ApiParamType.LONG, desc = "nmdaae.listdeployappconfigwithoutconfigenvapi.input.param.desc.appsystemid"),
-            @Param(name = "appModuleId", type = ApiParamType.LONG, desc = "nmdaae.listdeployappconfigwithoutconfigenvapi.input.param.desc.appmoduleid"),
-            @Param(name = "envId", type = ApiParamType.LONG, desc = "nmdaae.listdeployappconfigwithoutconfigenvapi.input.param.desc.envid")
+            @Param(name = "appSystemId", type = ApiParamType.LONG, desc = "term.cmdb.appsystemid"),
+            @Param(name = "appModuleId", type = ApiParamType.LONG, desc = "term.cmdb.appmoduleid"),
+            @Param(name = "envId", type = ApiParamType.LONG, desc = "term.cmdb.envid")
     })
     @Output({
             @Param(explode = DeployAppEnvironmentVo[].class, desc = "nmdaae.listdeployappconfigwithoutconfigenvapi.output.param.desc.return")

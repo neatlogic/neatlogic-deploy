@@ -73,14 +73,14 @@ public class CopyDeployAppConfigModuleConfigApi extends PrivateApiComponentBase 
     }
 
     @Input({
-            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaam.copydeployappconfigmoduleconfigapi.input.param.desc.appsystemid"),
+            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.appsystemid"),
             @Param(name = "fromAppModuleId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaam.copydeployappconfigmoduleconfigapi.input.param.desc.fromappmoduleid"),
             @Param(name = "toAppModuleIdList", type = ApiParamType.JSONARRAY, desc = "nmdaam.copydeployappconfigmoduleconfigapi.input.param.desc.toappmoduleidlist"),
             @Param(name = "abbrName", type = ApiParamType.STRING, desc = "nmdaam.copydeployappconfigmoduleconfigapi.input.param.desc.abbrname"),
             @Param(name = "name", type = ApiParamType.STRING, desc = "nmdaam.copydeployappconfigmoduleconfigapi.input.param.desc.name"),
             @Param(name = "stateIdList", type = ApiParamType.JSONARRAY, desc = "nmdaam.copydeployappconfigmoduleconfigapi.input.param.desc.stateidlist"),
             @Param(name = "ownerIdList", type = ApiParamType.JSONARRAY, desc = "nmdaam.copydeployappconfigmoduleconfigapi.input.param.desc.owneridlist"),
-            @Param(name = "maintenanceWindow", type = ApiParamType.JSONARRAY, desc = "nmdaam.copydeployappconfigmoduleconfigapi.input.param.desc.maintenancewindow"),
+            @Param(name = "maintenanceWindow", type = ApiParamType.JSONARRAY, desc = "term.cmdb.maintenancewindow"),
             @Param(name = "description", type = ApiParamType.STRING, desc = "nmdaam.copydeployappconfigmoduleconfigapi.input.param.desc.description"),
             @Param(name = "isAdd", type = ApiParamType.INTEGER, isRequired = true, desc = "nmdaam.copydeployappconfigmoduleconfigapi.input.param.desc.isadd")
     })

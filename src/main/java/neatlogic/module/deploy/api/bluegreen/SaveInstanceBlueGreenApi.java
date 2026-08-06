@@ -57,9 +57,9 @@ public class SaveInstanceBlueGreenApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "appSystemId", type = ApiParamType.LONG, desc = "nmdab.saveinstancebluegreenapi.input.param.desc.appsystemid", isRequired = true),
-            @Param(name = "appModuleId", type = ApiParamType.LONG, desc = "nmdab.saveinstancebluegreenapi.input.param.desc.appmoduleid", isRequired = true),
-            @Param(name = "envId", type = ApiParamType.LONG, desc = "nmdab.saveinstancebluegreenapi.input.param.desc.envid", isRequired = true),
+            @Param(name = "appSystemId", type = ApiParamType.LONG, desc = "term.cmdb.appsystemid", isRequired = true),
+            @Param(name = "appModuleId", type = ApiParamType.LONG, desc = "term.cmdb.appmoduleid", isRequired = true),
+            @Param(name = "envId", type = ApiParamType.LONG, desc = "term.cmdb.envid", isRequired = true),
             @Param(name = "resourceId", type = ApiParamType.LONG, desc = "nmdab.saveinstancebluegreenapi.input.param.desc.resourceid", isRequired = true),
             @Param(name = "blueGreenId", type = ApiParamType.LONG, desc = "nmdab.saveinstancebluegreenapi.input.param.desc.bluegreenid")
     })

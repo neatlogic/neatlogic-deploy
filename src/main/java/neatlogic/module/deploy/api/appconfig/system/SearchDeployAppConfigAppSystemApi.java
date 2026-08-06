@@ -86,10 +86,10 @@ public class SearchDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
             @Param(name = "keyword", type = ApiParamType.STRING, desc = "nmdaas.searchdeployappconfigappsystemapi.input.param.desc.keyword"),
             @Param(name = "isFavorite", type = ApiParamType.ENUM, rule = "0,1", desc = "nmdaas.searchdeployappconfigappsystemapi.input.param.desc.isfavorite"),
             @Param(name = "isConfig", type = ApiParamType.ENUM, rule = "0,1", desc = "nmdaas.searchdeployappconfigappsystemapi.input.param.desc.isconfig"),
-            @Param(name = "appSystemIdList", type = ApiParamType.JSONARRAY, desc = "nmdaas.searchdeployappconfigappsystemapi.input.param.desc.appsystemidlist"),
-            @Param(name = "appModuleIdList", type = ApiParamType.JSONARRAY, desc = "nmdaas.searchdeployappconfigappsystemapi.input.param.desc.appmoduleidlist"),
-            @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "nmdaas.searchdeployappconfigappsystemapi.input.param.desc.currentpage"),
-            @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "nmdaas.searchdeployappconfigappsystemapi.input.param.desc.pagesize"),
+            @Param(name = "appSystemIdList", type = ApiParamType.JSONARRAY, desc = "term.appsystemidlist"),
+            @Param(name = "appModuleIdList", type = ApiParamType.JSONARRAY, desc = "term.cmdb.appmoduleidlist"),
+            @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "common.currentpage"),
+            @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "common.pagesize"),
             @Param(name = "needPage", type = ApiParamType.BOOLEAN, desc = "nmdaas.searchdeployappconfigappsystemapi.input.param.desc.needpage"),
             @Param(name = "pageRange", type = ApiParamType.JSONARRAY, desc = "nmdaas.searchdeployappconfigappsystemapi.input.param.desc.pagerange")
     })

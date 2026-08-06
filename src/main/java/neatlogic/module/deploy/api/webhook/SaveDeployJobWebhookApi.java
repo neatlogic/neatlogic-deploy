@@ -61,7 +61,7 @@ public class SaveDeployJobWebhookApi extends PrivateApiComponentBase {
     @Input({
             @Param(name = "id", type = ApiParamType.LONG, desc = "nmdaw.savedeployjobwebhookapi.input.param.desc.id"),
             @Param(name = "name", type = ApiParamType.STRING, isRequired = true, desc = "nmdaw.savedeployjobwebhookapi.input.param.desc.name"),
-            @Param(name = "isActive", type = ApiParamType.INTEGER, isRequired = true, desc = "nmdaw.savedeployjobwebhookapi.input.param.desc.isactive"),
+            @Param(name = "isActive", type = ApiParamType.INTEGER, isRequired = true, desc = "common.isactive"),
             @Param(name = "integrationUuid", type = ApiParamType.STRING, isRequired = true, desc = "nmdaw.savedeployjobwebhookapi.input.param.desc.integrationuuid"),
             @Param(name = "type", type = ApiParamType.ENUM, member = ScheduleType.class, isRequired = true, desc = "nmdaw.savedeployjobwebhookapi.input.param.desc.type"),
             @Param(name = "pipelineType", type = ApiParamType.ENUM, member = PipelineType.class, desc = "nmdaw.savedeployjobwebhookapi.input.param.desc.pipelinetype"),

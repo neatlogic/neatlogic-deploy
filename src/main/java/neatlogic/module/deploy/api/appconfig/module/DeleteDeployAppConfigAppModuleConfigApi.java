@@ -51,8 +51,8 @@ public class DeleteDeployAppConfigAppModuleConfigApi extends PrivateApiComponent
     }
 
     @Input({
-            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaam.deletedeployappconfigappmoduleconfigapi.input.param.desc.appsystemid"),
-            @Param(name = "appModuleId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaam.deletedeployappconfigappmoduleconfigapi.input.param.desc.appmoduleid")
+            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.appsystemid"),
+            @Param(name = "appModuleId", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.appmoduleid")
     })
     @Description(desc = "nmdaam.deletedeployappconfigappmoduleconfigapi.getname")
     @Override

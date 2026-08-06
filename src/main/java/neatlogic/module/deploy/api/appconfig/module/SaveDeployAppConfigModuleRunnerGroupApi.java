@@ -57,8 +57,8 @@ public class SaveDeployAppConfigModuleRunnerGroupApi extends PrivateApiComponent
     }
 
     @Input({
-            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaam.savedeployappconfigmodulerunnergroupapi.input.param.desc.appsystemid"),
-            @Param(name = "appModuleId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaam.savedeployappconfigmodulerunnergroupapi.input.param.desc.appmoduleid"),
+            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.appsystemid"),
+            @Param(name = "appModuleId", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.appmoduleid"),
             @Param(name = "runnerGroupId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaam.savedeployappconfigmodulerunnergroupapi.input.param.desc.runnergroupid")
     })
     @Output({

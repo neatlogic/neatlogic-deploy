@@ -61,7 +61,7 @@ public class DeleteDeployCiApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "id", desc = "nmdac.deletedeployciapi.input.param.desc.id", type = ApiParamType.LONG, isRequired = true),
+            @Param(name = "id", desc = "common.id", type = ApiParamType.LONG, isRequired = true),
     })
     @Description(desc = "nmdac.deletedeployciapi.getname")
     @Override

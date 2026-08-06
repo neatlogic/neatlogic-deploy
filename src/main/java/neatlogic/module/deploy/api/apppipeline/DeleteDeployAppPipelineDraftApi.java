@@ -59,9 +59,9 @@ public class DeleteDeployAppPipelineDraftApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaa.deletedeployapppipelinedraftapi.input.param.desc.appsystemid"),
-            @Param(name = "appModuleId", type = ApiParamType.LONG, desc = "nmdaa.deletedeployapppipelinedraftapi.input.param.desc.appmoduleid"),
-            @Param(name = "envId", type = ApiParamType.LONG, desc = "nmdaa.deletedeployapppipelinedraftapi.input.param.desc.envid")
+            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.appsystemid"),
+            @Param(name = "appModuleId", type = ApiParamType.LONG, desc = "term.cmdb.appmoduleid"),
+            @Param(name = "envId", type = ApiParamType.LONG, desc = "term.cmdb.envid")
     })
     @Description(desc = "nmdaa.deletedeployapppipelinedraftapi.getname")
     @Override

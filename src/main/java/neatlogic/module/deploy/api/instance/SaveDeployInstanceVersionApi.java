@@ -68,11 +68,11 @@ public class SaveDeployInstanceVersionApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "sysId", desc = "nmdai.savedeployinstanceversionapi.input.param.desc.sysid", isRequired = true, type = ApiParamType.LONG),
-            @Param(name = "moduleId", desc = "nmdai.savedeployinstanceversionapi.input.param.desc.moduleid", isRequired = true, type = ApiParamType.LONG),
-            @Param(name = "envId", desc = "nmdai.savedeployinstanceversionapi.input.param.desc.envid", isRequired = true, type = ApiParamType.LONG),
+            @Param(name = "sysId", desc = "term.cmdb.appsystemid", isRequired = true, type = ApiParamType.LONG),
+            @Param(name = "moduleId", desc = "term.cmdb.appmoduleid", isRequired = true, type = ApiParamType.LONG),
+            @Param(name = "envId", desc = "term.cmdb.envid", isRequired = true, type = ApiParamType.LONG),
             @Param(name = "resourceId", desc = "nmdai.savedeployinstanceversionapi.input.param.desc.resourceid", isRequired = true, type = ApiParamType.LONG),
-            @Param(name = "version", desc = "nmdai.savedeployinstanceversionapi.input.param.desc.version", isRequired = true, type = ApiParamType.STRING),
+            @Param(name = "version", desc = "common.versionnum", isRequired = true, type = ApiParamType.STRING),
             @Param(name = "buildNo", desc = "nmdai.savedeployinstanceversionapi.input.param.desc.buildno", isRequired = true, type = ApiParamType.INTEGER),
             @Param(name = "execUser", desc = "nmdai.savedeployinstanceversionapi.input.param.desc.execuser", isRequired = true, type = ApiParamType.STRING),
             @Param(name = "deployTime", desc = "nmdai.savedeployinstanceversionapi.input.param.desc.deploytime", isRequired = true, type = ApiParamType.LONG),

@@ -69,8 +69,8 @@ public class CopyDeployAppConfigEnvConfigApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaae.copydeployappconfigenvconfigapi.input.param.desc.appsystemid"),
-            @Param(name = "appModuleId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaae.copydeployappconfigenvconfigapi.input.param.desc.appmoduleid"),
+            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.appsystemid"),
+            @Param(name = "appModuleId", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.appmoduleid"),
             @Param(name = "fromEnvId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaae.copydeployappconfigenvconfigapi.input.param.desc.fromenvid"),
             @Param(name = "toEnvIdList", type = ApiParamType.JSONARRAY, isRequired = true, desc = "nmdaae.copydeployappconfigenvconfigapi.input.param.desc.toenvidlist"),
             @Param(name = "isAdd", type = ApiParamType.INTEGER, isRequired = true, desc = "nmdaae.copydeployappconfigenvconfigapi.input.param.desc.isadd")

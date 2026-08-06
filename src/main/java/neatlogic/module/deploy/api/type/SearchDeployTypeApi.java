@@ -57,10 +57,10 @@ public class SearchDeployTypeApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "keyword", type = ApiParamType.STRING, desc = "nmdat.searchdeploytypeapi.input.param.desc.keyword", xss = true),
+            @Param(name = "keyword", type = ApiParamType.STRING, desc = "common.keyword", xss = true),
             @Param(name = "isActive", type = ApiParamType.INTEGER, desc = "nmdat.searchdeploytypeapi.input.param.desc.isactive"),
-            @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "nmdat.searchdeploytypeapi.input.param.desc.currentpage"),
-            @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "nmdat.searchdeploytypeapi.input.param.desc.pagesize"),
+            @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "common.currentpage"),
+            @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "common.pagesize"),
             @Param(name = "needPage", type = ApiParamType.BOOLEAN, desc = "nmdat.searchdeploytypeapi.input.param.desc.needpage")
     })
     @Output({

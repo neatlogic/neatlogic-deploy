@@ -58,8 +58,8 @@ public class GetDeployModuleScenarioAndEnvListApi extends PrivateApiComponentBas
     }
 
     @Input({
-            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaam.getdeploymodulescenarioandenvlistapi.input.param.desc.appsystemid"),
-            @Param(name = "appModuleId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaam.getdeploymodulescenarioandenvlistapi.input.param.desc.appmoduleid")
+            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.appsystemid"),
+            @Param(name = "appModuleId", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.appmoduleid")
     })
     @Output({
     })

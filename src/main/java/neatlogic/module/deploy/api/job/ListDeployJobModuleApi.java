@@ -73,9 +73,9 @@ public class ListDeployJobModuleApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaj.listdeployjobmoduleapi.input.param.desc.appsystemid"),
-            @Param(name = "envId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaj.listdeployjobmoduleapi.input.param.desc.envid"),
-            @Param(name = "scenarioId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaj.listdeployjobmoduleapi.input.param.desc.scenarioid")
+            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.appsystemid"),
+            @Param(name = "envId", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.envid"),
+            @Param(name = "scenarioId", type = ApiParamType.LONG, isRequired = true, desc = "term.autoexec.scenarioid")
     })
     @Output({
             @Param(explode = DeployAppModuleVo[].class, desc = "nmdaj.listdeployjobmoduleapi.output.param.desc.return")

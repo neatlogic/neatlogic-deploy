@@ -71,16 +71,16 @@ public class SaveDeployAppConfigInstanceApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaae.savedeployappconfiginstanceapi.input.param.desc.appsystemid"),
-            @Param(name = "appModuleId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaae.savedeployappconfiginstanceapi.input.param.desc.appmoduleid"),
-            @Param(name = "envId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaae.savedeployappconfiginstanceapi.input.param.desc.envid"),
+            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.appsystemid"),
+            @Param(name = "appModuleId", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.appmoduleid"),
+            @Param(name = "envId", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.envid"),
             @Param(name = "instanceIdList", type = ApiParamType.JSONARRAY, desc = "nmdaae.savedeployappconfiginstanceapi.input.param.desc.instanceidlist"),
             @Param(name = "id", type = ApiParamType.LONG, desc = "nmdaae.savedeployappconfiginstanceapi.input.param.desc.id"),
-            @Param(name = "ciId", type = ApiParamType.LONG, desc = "nmdaae.savedeployappconfiginstanceapi.input.param.desc.ciid"),
-            @Param(name = "ip", type = ApiParamType.STRING, desc = "nmdaae.savedeployappconfiginstanceapi.input.param.desc.ip"),
+            @Param(name = "ciId", type = ApiParamType.LONG, desc = "term.cmdb.ciid"),
+            @Param(name = "ip", type = ApiParamType.STRING, desc = "term.cmdb.ip"),
             @Param(name = "port", type = ApiParamType.INTEGER, desc = "nmdaae.savedeployappconfiginstanceapi.input.param.desc.port"),
-            @Param(name = "name", type = ApiParamType.STRING, desc = "nmdaae.savedeployappconfiginstanceapi.input.param.desc.name"),
-            @Param(name = "maintenanceWindow", type = ApiParamType.STRING, desc = "nmdaae.savedeployappconfiginstanceapi.input.param.desc.maintenancewindow")
+            @Param(name = "name", type = ApiParamType.STRING, desc = "common.name"),
+            @Param(name = "maintenanceWindow", type = ApiParamType.STRING, desc = "term.cmdb.maintenancewindow")
     })
     @Output({
     })

@@ -51,9 +51,9 @@ public class SearchDeployCiAuditApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "ciId", desc = "nmdac.searchdeployciauditapi.input.param.desc.ciid", type = ApiParamType.LONG, isRequired = true),
-            @Param(name = "currentPage", desc = "nmdac.searchdeployciauditapi.input.param.desc.currentpage", type = ApiParamType.INTEGER),
-            @Param(name = "pageSize", desc = "nmdac.searchdeployciauditapi.input.param.desc.pagesize", type = ApiParamType.INTEGER)
+            @Param(name = "ciId", desc = "term.deploy.ciid", type = ApiParamType.LONG, isRequired = true),
+            @Param(name = "currentPage", desc = "common.currentpage", type = ApiParamType.INTEGER),
+            @Param(name = "pageSize", desc = "common.pagesize", type = ApiParamType.INTEGER)
     })
     @Description(desc = "nmdac.searchdeployciauditapi.getname")
     @Override

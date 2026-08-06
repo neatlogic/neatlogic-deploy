@@ -48,12 +48,12 @@ public class SearchDeployVersionBuildNoApi extends PrivateApiComponentBase {
 
     @Input({
             @Param(name = "keyword", type = ApiParamType.STRING, desc = "nmdav.searchdeployversionbuildnoapi.input.param.desc.keyword", xss = true),
-            @Param(name = "appSystemIdList", type = ApiParamType.JSONARRAY, desc = "nmdav.searchdeployversionbuildnoapi.input.param.desc.appsystemidlist"),
-            @Param(name = "appModuleIdList", type = ApiParamType.JSONARRAY, desc = "nmdav.searchdeployversionbuildnoapi.input.param.desc.appmoduleidlist"),
+            @Param(name = "appSystemIdList", type = ApiParamType.JSONARRAY, desc = "term.appsystemidlist"),
+            @Param(name = "appModuleIdList", type = ApiParamType.JSONARRAY, desc = "term.cmdb.appmoduleidlist"),
             @Param(name = "startTimeRange", type = ApiParamType.JSONOBJECT, desc = "nmdav.searchdeployversionbuildnoapi.input.param.desc.starttimerange"),
             @Param(name = "needPage", type = ApiParamType.BOOLEAN, desc = "nmdav.searchdeployversionbuildnoapi.input.param.desc.needpage"),
-            @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "nmdav.searchdeployversionbuildnoapi.input.param.desc.pagesize"),
-            @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "nmdav.searchdeployversionbuildnoapi.input.param.desc.currentpage")
+            @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "common.pagesize"),
+            @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "common.currentpage")
     })
     @Output({
             @Param(explode = DeployAppModuleVo[].class, desc = "nmdav.searchdeployversionbuildnoapi.output.param.desc.return")

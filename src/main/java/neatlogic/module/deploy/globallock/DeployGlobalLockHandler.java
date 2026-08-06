@@ -31,6 +31,7 @@ import neatlogic.framework.integration.authentication.enums.AuthenticateType;
 import neatlogic.framework.util.HttpRequestUtil;
 import neatlogic.framework.util.TableResultUtil;
 import neatlogic.framework.util.TimeUtil;
+import neatlogic.framework.util.$;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -59,7 +60,7 @@ public class DeployGlobalLockHandler extends GlobalLockHandlerBase {
 
     @Override
     public String getHandlerName() {
-        return "发布 fileLock";
+        return $.t("nmdgl.deploygloballockhandler.gethandlername");
     }
 
     @Override

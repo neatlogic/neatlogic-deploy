@@ -68,9 +68,9 @@ public class FallbackDeployAppConfigEnvAutoConfigApi extends PrivateApiComponent
     }
 
     @Input({
-            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaae.fallbackdeployappconfigenvautoconfigapi.input.param.desc.appsystemid"),
-            @Param(name = "appModuleId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaae.fallbackdeployappconfigenvautoconfigapi.input.param.desc.appmoduleid"),
-            @Param(name = "envId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaae.fallbackdeployappconfigenvautoconfigapi.input.param.desc.envid"),
+            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.appsystemid"),
+            @Param(name = "appModuleId", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.appmoduleid"),
+            @Param(name = "envId", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.envid"),
             @Param(name = "instanceId", type = ApiParamType.LONG, desc = "nmdaae.fallbackdeployappconfigenvautoconfigapi.input.param.desc.instanceid"),
             @Param(name = "uuidList", type = ApiParamType.JSONARRAY,  isRequired = true, minSize = 1, desc = "nmdaae.fallbackdeployappconfigenvautoconfigapi.input.param.desc.uuidlist"),
     })

@@ -73,7 +73,7 @@ public class SaveDeployAppPipelineParamApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaa.savedeployapppipelineparamapi.input.param.desc.appsystemid"),
+            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.appsystemid"),
             @Param(name = "paramList", type = ApiParamType.JSONARRAY, isRequired = true, desc = "nmdaa.savedeployapppipelineparamapi.input.param.desc.paramlist")
     })
     @Description(desc = "nmdaa.savedeployapppipelineparamapi.getname")

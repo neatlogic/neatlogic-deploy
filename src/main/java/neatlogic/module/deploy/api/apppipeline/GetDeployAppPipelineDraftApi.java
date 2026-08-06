@@ -51,9 +51,9 @@ public class GetDeployAppPipelineDraftApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaa.getdeployapppipelinedraftapi.input.param.desc.appsystemid"),
-            @Param(name = "appModuleId", type = ApiParamType.LONG, desc = "nmdaa.getdeployapppipelinedraftapi.input.param.desc.appmoduleid"),
-            @Param(name = "envId", type = ApiParamType.LONG, desc = "nmdaa.getdeployapppipelinedraftapi.input.param.desc.envid")
+            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.appsystemid"),
+            @Param(name = "appModuleId", type = ApiParamType.LONG, desc = "term.cmdb.appmoduleid"),
+            @Param(name = "envId", type = ApiParamType.LONG, desc = "term.cmdb.envid")
     })
     @Output({
             @Param(name = "Return", explode = DeployAppConfigVo.class, desc = "nmdaa.getdeployapppipelinedraftapi.output.param.desc.return")

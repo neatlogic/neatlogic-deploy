@@ -67,7 +67,7 @@ public class UpdateDeployScheduleIsActiveApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "id", type = ApiParamType.LONG, isRequired = true, desc = "nmdas.updatedeployscheduleisactiveapi.input.param.desc.id")
+            @Param(name = "id", type = ApiParamType.LONG, isRequired = true, desc = "term.autoexec.scheduleid")
     })
     @Output({})
     @Description(desc = "nmdas.updatedeployscheduleisactiveapi.getname")

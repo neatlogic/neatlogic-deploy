@@ -58,8 +58,8 @@ public class GetDeployRunnerGroupForAutoexecApi extends PrivateApiComponentBase 
     }
 
     @Input({
-            @Param(name = "sysId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaam.getdeployrunnergroupforautoexecapi.input.param.desc.sysid"),
-            @Param(name = "moduleId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaam.getdeployrunnergroupforautoexecapi.input.param.desc.moduleid")
+            @Param(name = "sysId", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.appsystemid"),
+            @Param(name = "moduleId", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.appmoduleid")
     })
     @Output({@Param(type = ApiParamType.JSONOBJECT)})
     @Example(example = "{\"1\": \"192.168.1.140\"}")

@@ -17,17 +17,17 @@ import neatlogic.framework.cmdb.annotation.ResourceType;
 import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.restful.annotation.EntityField;
 
-@ResourceType(name = "scence_appinstance_env_appmodule_appsystem", label = "应用实例环境和模块及应用场景", moduleId= "deploy", functionPathList = {"集成与发布模块"})
+@ResourceType(name = "scence_appinstance_env_appmodule_appsystem", label = "nmddrs.appinstanceenvappmoduleappsystemvo.resourcetype.label", moduleId= "deploy", functionPathList = {"nmddrs.appinstanceenvappmoduleappsystemvo.resourcetype.description"})
 public class AppInstanceEnvAppModuleAppSystemVo {
     @EntityField(name = "ID", type = ApiParamType.LONG)
     @ResourceField(name = "id")
     private Long id;
 
-    @EntityField(name = "nmddrs.appinstanceenvappmoduleappsystemvo.name.name", type = ApiParamType.STRING)
+    @EntityField(name = "common.name", type = ApiParamType.STRING)
     @ResourceField(name = "name")
     private String name;
 
-    @EntityField(name = "nmddrs.appinstanceenvappmoduleappsystemvo.ip.name", type = ApiParamType.STRING)
+    @EntityField(name = "term.cmdb.ip", type = ApiParamType.STRING)
     @ResourceField(name = "ip")
     private String ip;
 
@@ -35,43 +35,43 @@ public class AppInstanceEnvAppModuleAppSystemVo {
     @ResourceField(name = "port")
     private Integer port;
 
-    @EntityField(name = "nmddrs.appinstanceenvappmoduleappsystemvo.typeid.name", type = ApiParamType.LONG)
+    @EntityField(name = "common.typeid", type = ApiParamType.LONG)
     @ResourceField(name = "type_id")
     private Long typeId;
-    @EntityField(name = "nmddrs.appinstanceenvappmoduleappsystemvo.typename.name", type = ApiParamType.STRING)
+    @EntityField(name = "common.typename", type = ApiParamType.STRING)
     @ResourceField(name = "type_name")
     private String typeName;
     @EntityField(name = "nmddrs.appinstanceenvappmoduleappsystemvo.typelabel.name", type = ApiParamType.STRING)
     @ResourceField(name = "type_label")
     private String typeLabel;
 
-    @EntityField(name = "nmddrs.appinstanceenvappmoduleappsystemvo.envid.name", type = ApiParamType.LONG)
+    @EntityField(name = "term.cmdb.envid", type = ApiParamType.LONG)
     @ResourceField(name = "env_id")
     private Long envId;
-    @EntityField(name = "nmddrs.appinstanceenvappmoduleappsystemvo.envname.name", type = ApiParamType.STRING)
+    @EntityField(name = "term.cmdb.envname", type = ApiParamType.STRING)
     @ResourceField(name = "env_name")
     private String envName;
     @EntityField(name = "nmddrs.appinstanceenvappmoduleappsystemvo.envseqno.name", type = ApiParamType.INTEGER)
     @ResourceField(name = "env_seq_no")
     private Integer envSeqNo;
 
-    @EntityField(name = "nmddrs.appinstanceenvappmoduleappsystemvo.appmoduleid.name", type = ApiParamType.LONG)
+    @EntityField(name = "term.cmdb.appmoduleid", type = ApiParamType.LONG)
     @ResourceField(name = "app_module_id")
     private Long appModuleId;
-    @EntityField(name = "nmddrs.appinstanceenvappmoduleappsystemvo.appmodulename.name", type = ApiParamType.STRING)
+    @EntityField(name = "term.cmdb.appmodulename", type = ApiParamType.STRING)
     @ResourceField(name = "app_module_name")
     private String appModuleName;
-    @EntityField(name = "nmddrs.appinstanceenvappmoduleappsystemvo.appmoduleabbrname.name", type = ApiParamType.STRING)
+    @EntityField(name = "term.cmdb.appmoduleabbrname", type = ApiParamType.STRING)
     @ResourceField(name = "app_module_abbr_name")
     private String appModuleAbbrName;
 
-    @EntityField(name = "nmddrs.appinstanceenvappmoduleappsystemvo.appsystemid.name", type = ApiParamType.LONG)
+    @EntityField(name = "term.cmdb.appsystemid", type = ApiParamType.LONG)
     @ResourceField(name = "app_system_id")
     private Long appSystemId;
-    @EntityField(name = "nmddrs.appinstanceenvappmoduleappsystemvo.appsystemname.name", type = ApiParamType.STRING)
+    @EntityField(name = "term.cmdb.appsystemname", type = ApiParamType.STRING)
     @ResourceField(name = "app_system_name")
     private String appSystemName;
-    @EntityField(name = "nmddrs.appinstanceenvappmoduleappsystemvo.appsystemabbrname.name", type = ApiParamType.STRING)
+    @EntityField(name = "term.cmdb.appsystemabbrname", type = ApiParamType.STRING)
     @ResourceField(name = "app_system_abbr_name")
     private String appSystemAbbrName;
 }

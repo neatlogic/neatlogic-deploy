@@ -54,9 +54,9 @@ public class BatchSaveInstanceBlueGreenApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "appSystemId", type = ApiParamType.LONG, desc = "nmdab.batchsaveinstancebluegreenapi.input.param.desc.appsystemid", isRequired = true),
-            @Param(name = "appModuleId", type = ApiParamType.LONG, desc = "nmdab.batchsaveinstancebluegreenapi.input.param.desc.appmoduleid", isRequired = true),
-            @Param(name = "envId", type = ApiParamType.LONG, desc = "nmdab.batchsaveinstancebluegreenapi.input.param.desc.envid", isRequired = true),
+            @Param(name = "appSystemId", type = ApiParamType.LONG, desc = "term.cmdb.appsystemid", isRequired = true),
+            @Param(name = "appModuleId", type = ApiParamType.LONG, desc = "term.cmdb.appmoduleid", isRequired = true),
+            @Param(name = "envId", type = ApiParamType.LONG, desc = "term.cmdb.envid", isRequired = true),
             @Param(name = "resourceIdList", type = ApiParamType.JSONARRAY, desc = "nmdab.batchsaveinstancebluegreenapi.input.param.desc.resourceidlist", minSize = 1, isRequired = true),
             @Param(name = "blueGreenId", type = ApiParamType.LONG, isRequired = true, desc = "nmdab.batchsaveinstancebluegreenapi.input.param.desc.bluegreenid")
     })

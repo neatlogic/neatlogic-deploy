@@ -60,16 +60,16 @@ public class SaveDeployAppConfigAppModuleApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "id", type = ApiParamType.LONG, desc = "nmdaam.savedeployappconfigappmoduleapi.input.param.desc.id"),
-            @Param(name = "abbrName", type = ApiParamType.STRING, isRequired = true, desc = "nmdaam.savedeployappconfigappmoduleapi.input.param.desc.abbrname"),
-            @Param(name = "name", type = ApiParamType.STRING, desc = "nmdaam.savedeployappconfigappmoduleapi.input.param.desc.name"),
-            @Param(name = "state", type = ApiParamType.JSONARRAY, desc = "nmdaam.savedeployappconfigappmoduleapi.input.param.desc.state"),
+            @Param(name = "id", type = ApiParamType.LONG, desc = "common.id"),
+            @Param(name = "abbrName", type = ApiParamType.STRING, isRequired = true, desc = "term.cmdb.abbrname"),
+            @Param(name = "name", type = ApiParamType.STRING, desc = "common.name"),
+            @Param(name = "state", type = ApiParamType.JSONARRAY, desc = "common.status"),
             @Param(name = "owner", type = ApiParamType.JSONARRAY, desc = "nmdaam.savedeployappconfigappmoduleapi.input.param.desc.owner"),
-            @Param(name = "maintenanceWindow", type = ApiParamType.STRING, desc = "nmdaam.savedeployappconfigappmoduleapi.input.param.desc.maintenancewindow"),
-            @Param(name = "description", type = ApiParamType.STRING, desc = "nmdaam.savedeployappconfigappmoduleapi.input.param.desc.description"),
-            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "nmdaam.savedeployappconfigappmoduleapi.input.param.desc.appsystemid")
+            @Param(name = "maintenanceWindow", type = ApiParamType.STRING, desc = "term.cmdb.maintenancewindow"),
+            @Param(name = "description", type = ApiParamType.STRING, desc = "common.memo"),
+            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.appsystemid")
     })
-    @Output({@Param(name = "Return", type = ApiParamType.LONG, desc = "nmdaam.savedeployappconfigappmoduleapi.output.param.desc.return")})
+    @Output({@Param(name = "Return", type = ApiParamType.LONG, desc = "term.cmdb.appmoduleid")})
     @Description(desc = "nmdaam.savedeployappconfigappmoduleapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
