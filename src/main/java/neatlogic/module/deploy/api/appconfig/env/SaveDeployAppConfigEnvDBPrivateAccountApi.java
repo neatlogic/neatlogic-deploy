@@ -22,6 +22,7 @@ import neatlogic.framework.cmdb.enums.resourcecenter.AccountType;
 import neatlogic.framework.cmdb.exception.resourcecenter.ResourceCenterAccountNameRepeatsException;
 import neatlogic.framework.cmdb.exception.resourcecenter.ResourceNotFoundException;
 import neatlogic.framework.common.constvalue.ApiParamType;
+import neatlogic.framework.common.util.RC4Util;
 import neatlogic.framework.crossover.CrossoverServiceFactory;
 import neatlogic.framework.deploy.auth.DEPLOY_BASE;
 import neatlogic.framework.deploy.constvalue.DeployAppConfigAction;
@@ -34,8 +35,10 @@ import neatlogic.framework.restful.annotation.Param;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.IValid;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
+import neatlogic.framework.util.PasswordRSAUtil;
 import neatlogic.module.deploy.dao.mapper.DeployAppConfigMapper;
 import neatlogic.module.deploy.service.DeployAppAuthorityService;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -69,7 +72,7 @@ public class SaveDeployAppConfigEnvDBPrivateAccountApi extends PrivateApiCompone
             @Param(name = "id", type = ApiParamType.LONG, desc = "common.id"),
             @Param(name = "name", type = ApiParamType.STRING, maxLength = 200, isRequired = true, desc = "common.name"),
             @Param(name = "account", type = ApiParamType.STRING, maxLength = 80, desc = "common.username"),
-            @Param(name = "passwordPlain", type = ApiParamType.STRING, isRequired = false, desc = "common.password"),
+            @Param(name = "passwordCipher", type = ApiParamType.STRING, isRequired = false, desc = "common.password"),
             @Param(name = "protocolId", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.protocol"),
             @Param(name = "port", type = ApiParamType.INTEGER, isRequired = false, desc = "term.cmdb.port"),
             @Param(name = "tagIdList", type = ApiParamType.JSONARRAY, isRequired = false, desc = "common.tagidlist"),
@@ -90,6 +93,12 @@ public class SaveDeployAppConfigEnvDBPrivateAccountApi extends PrivateApiCompone
         }
         IResourceCenterAccountCrossoverService resourceCenterAccountCrossoverService = CrossoverServiceFactory.getApi(IResourceCenterAccountCrossoverService.class);
         AccountVo paramAccountVo = JSON.toJavaObject(paramObj, AccountVo.class);
+        String passwordCipher = paramAccountVo.getPasswordCipher();
+        if (StringUtils.isNotBlank(passwordCipher)) {
+            // 前端提交RSA密文，解密后继续按现有RC4格式保存，避免改变数据库密码格式。
+            String passwordPlain = PasswordRSAUtil.decrypt(passwordCipher);
+            paramAccountVo.setPasswordCipher(RC4Util.encrypt(passwordPlain));
+        }
         Long id = paramObj.getLong("id");
         return resourceCenterAccountCrossoverService.saveAccount(id, paramAccountVo);
     }
