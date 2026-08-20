@@ -94,11 +94,9 @@ public class SaveDeployAppConfigEnvDBPrivateAccountApi extends PrivateApiCompone
         IResourceCenterAccountCrossoverService resourceCenterAccountCrossoverService = CrossoverServiceFactory.getApi(IResourceCenterAccountCrossoverService.class);
         AccountVo paramAccountVo = JSON.toJavaObject(paramObj, AccountVo.class);
         String passwordCipher = paramAccountVo.getPasswordCipher();
-        System.out.println("passwordCipher = " + passwordCipher);
         if (StringUtils.isNotBlank(passwordCipher)) {
             // 前端提交RSA密文，解密后继续按现有RC4格式保存，避免改变数据库密码格式。
             String passwordPlain = PasswordRSAUtil.decrypt(passwordCipher);
-            System.out.println("passwordPlain = " + passwordPlain);
             paramAccountVo.setPasswordCipher(RC4Util.encrypt(passwordPlain));
         }
         Long id = paramObj.getLong("id");
