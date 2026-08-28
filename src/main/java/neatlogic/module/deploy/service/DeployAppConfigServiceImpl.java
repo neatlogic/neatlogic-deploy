@@ -659,32 +659,27 @@ public class DeployAppConfigServiceImpl implements DeployAppConfigService {
         String mode = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_SQL_MODE);
         int newRowNum = 0;
         int oldRowNum = 0;
+        String sql = null;
         if (Objects.equals(mode, JSQLPARSER_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
-            String sql = deployResourceBuildSqlService.buildGetAppModuleEnvAutoConfigInstanceIdCountSql(searchVo);
+            sql = deployResourceBuildSqlService.buildGetAppModuleEnvAutoConfigInstanceIdCountSql(searchVo);
             if (StringUtils.isNotBlank(sql)) {
                 newRowNum = resourceCrossoverMapper.getCountBySql(sql);
-                if (newRowNum == 0) {
-                    System.out.println("getAppModuleEnvAutoConfigInstanceIdCount sql = " + sql);
-                }
             }
         }
         if (Objects.equals(mode, MYBATIS_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
-            String sqlId = "getAppModuleEnvAutoConfigInstanceIdCount";
-            SqlCostInterceptor.SqlIdMap.addId(sqlId);
             oldRowNum = deployAppConfigMapper.getAppModuleEnvAutoConfigInstanceIdCount(searchVo);
-            if (oldRowNum == 0) {
-                List<SqlAuditVo> sqlAuditList = new ArrayList<>(SqlAuditManager.getSqlAuditList());
-                for (SqlAuditVo sqlAuditVo : sqlAuditList) {
-                    if (sqlAuditVo.getId().endsWith(sqlId)) {
-                        System.out.println("sqlAuditVo.getSql() = " + sqlAuditVo.getSql());
-                    }
-                }
-            }
-            SqlCostInterceptor.SqlIdMap.removeId(sqlId);
-            SqlAuditManager.removeSqlAudit(sqlId);
         }
         if (Objects.equals(enable, COMPARISON_ENABLED) && oldRowNum != newRowNum) {
             JSONObject errorObj = new JSONObject();
+            errorObj.put("method", "getAppModuleEnvAutoConfigInstanceIdCount");
+            if (searchVo != null) {
+                errorObj.put("appSystemId", searchVo.getAppSystemId());
+                errorObj.put("appModuleId", searchVo.getAppModuleId());
+                errorObj.put("envId", searchVo.getEnvId());
+                errorObj.put("isAutoConfig", searchVo.getIsAutoConfig());
+                errorObj.put("keyword", searchVo.getKeyword());
+            }
+            errorObj.put("sql", sql);
             errorObj.put("newRowNum", newRowNum);
             errorObj.put("oldRowNum", oldRowNum);
             logger.error("资产清单新旧SQL获取结果不一致：{}", errorObj);

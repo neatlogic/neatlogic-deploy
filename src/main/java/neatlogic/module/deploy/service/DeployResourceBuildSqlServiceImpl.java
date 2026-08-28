@@ -353,6 +353,11 @@ public class DeployResourceBuildSqlServiceImpl implements DeployResourceBuildSql
 
     @Override
     public String buildGetAppModuleEnvAutoConfigInstanceIdCountSql(DeployAppEnvAutoConfigVo searchVo) {
+        return buildGetAppModuleEnvAutoConfigInstanceIdCountSql(searchVo, new HashMap<>());
+    }
+
+    @Override
+    public String buildGetAppModuleEnvAutoConfigInstanceIdCountSql(DeployAppEnvAutoConfigVo searchVo, Map<String, Column> fieldName2ColumnMap) {
         IResourceEntityCrossoverMapper resourceEntityCrossoverMapper = CrossoverServiceFactory.getApi(IResourceEntityCrossoverMapper.class);
         IResourceBuildSqlCrossoverService resourceBuildSqlCrossoverService = CrossoverServiceFactory.getApi(IResourceBuildSqlCrossoverService.class);
         try {
@@ -370,7 +375,6 @@ public class DeployResourceBuildSqlServiceImpl implements DeployResourceBuildSql
             filterItemFieldNameList.add("env_id");
             config.setSelectItemFieldNameList(selectItemFieldNameList);
             config.setFilterItemFieldNameList(filterItemFieldNameList);
-            Map<String, Column> fieldName2ColumnMap = new HashMap<>();
             PlainSelect plainSelect = resourceBuildSqlCrossoverService.getPlainSelect(config, fieldName2ColumnMap);
             Column idColumn = fieldName2ColumnMap.get("id");
             Column nameColumn = fieldName2ColumnMap.get("name");
@@ -379,7 +383,10 @@ public class DeployResourceBuildSqlServiceImpl implements DeployResourceBuildSql
             Column appSystemIdColumn = fieldName2ColumnMap.get("app_system_id");
             Column appModuleIdColumn = fieldName2ColumnMap.get("app_module_id");
             Column envIdColumn = fieldName2ColumnMap.get("env_id");
-            if (searchVo != null) {
+            // 旧 XML 的三个等值条件始终存在，缺少任意 ID 时不能扩大查询范围。
+            if (searchVo == null || searchVo.getAppSystemId() == null || searchVo.getAppModuleId() == null || searchVo.getEnvId() == null) {
+                $sql.addWhereExpression(plainSelect, $sql.exp(1, "=", 0));
+            } else {
                 Long appSystemId = searchVo.getAppSystemId();
                 Long appModuleId = searchVo.getAppModuleId();
                 Long envId = searchVo.getEnvId();
@@ -390,15 +397,9 @@ public class DeployResourceBuildSqlServiceImpl implements DeployResourceBuildSql
                                     $sql.exp($sql.exp("daeac.env_id", "=", envId), "AND", $sql.exp("daeac.instance_id", "=", idColumn.toString()))));
                     $sql.addJoin(plainSelect, "left join", "deploy_app_env_auto_config", "daeac", daeacOn);
                 }
-                if (appSystemId != null) {
-                    $sql.addWhereExpression(plainSelect, $sql.exp(appSystemIdColumn.toString(), "=", appSystemId));
-                }
-                if (appModuleId != null) {
-                    $sql.addWhereExpression(plainSelect, $sql.exp(appModuleIdColumn.toString(), "=", appModuleId));
-                }
-                if (envId != null) {
-                    $sql.addWhereExpression(plainSelect, $sql.exp(envIdColumn.toString(), "=", envId));
-                }
+                $sql.addWhereExpression(plainSelect, $sql.exp(appSystemIdColumn.toString(), "=", appSystemId));
+                $sql.addWhereExpression(plainSelect, $sql.exp(appModuleIdColumn.toString(), "=", appModuleId));
+                $sql.addWhereExpression(plainSelect, $sql.exp(envIdColumn.toString(), "=", envId));
                 if (Objects.equals(isAutoConfig, 1)) {
                     $sql.addWhereExpression(plainSelect, $sql.exp("daeac.instance_id", "is not null"));
                 } else if (Objects.equals(isAutoConfig, 0)) {
@@ -407,6 +408,7 @@ public class DeployResourceBuildSqlServiceImpl implements DeployResourceBuildSql
                 String keyword = searchVo.getKeyword();
                 if (StringUtils.isNotBlank(keyword)) {
                     keyword = "%" + keyword + "%";
+//                    keyword = "%" + keyword.replace("\\", "\\\\").replace("'", "''") + "%";
                     ExpressionVo orExp = $sql.exp(nameColumn.toString(), "like", $sql.value(keyword));
                     orExp = $sql.exp(orExp, "OR", $sql.exp(ipColumn.toString(), "like", $sql.value(keyword)));
                     orExp = $sql.exp(orExp, "OR", $sql.exp(portColumn.toString(), "like", $sql.value(keyword)));
