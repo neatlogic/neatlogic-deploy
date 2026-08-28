@@ -25,9 +25,9 @@ import net.sf.jsqlparser.expression.operators.relational.EqualsTo;
 import net.sf.jsqlparser.expression.operators.relational.ExistsExpression;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.expression.operators.relational.IsNullExpression;
-import net.sf.jsqlparser.expression.operators.relational.LikeExpression;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.schema.Column;
+import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.select.*;
 import org.apache.commons.lang3.StringUtils;
@@ -37,6 +37,7 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -72,16 +73,16 @@ public class DeployAppConfigServiceTestApi extends PrivateApiComponentBase {
     @Description(desc = "测试DeployAppConfigService方法")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
-//        getDatabaseByIdTest();
-//        getAppConfigEnvDatabaseCountTest();
-//        getAppConfigEnvDatabaseResourceIdListTest();
-//        getCmdbDeployAppEnvListByAppSystemIdAndModuleIdListTest();
-//        getCmdbDeployAppModuleEnvListByAppSystemIdTest();
-//        getCmdbDeployAppModuleEnvListByAppSystemIdAndAppModuleIdListTest();
-//        getCmdbDeployAppModuleEnvListByAppSystemIdAndModuleIdTest();
-//        getCmdbAppConfigEnvListIncludeDBCSchemaListAndAutoCfgKeyListByAppSystemIdAndAppModuleIdAndEnvIdTest();
-//        getCmdbEnvListByAppSystemIdAndModuleIdTest();
-//        getCmdbHasEnvAppModuleIdListByAppSystemIdAndModuleIdListTest();
+        getDatabaseByIdTest();
+        getAppConfigEnvDatabaseCountTest();
+        getAppConfigEnvDatabaseResourceIdListTest();
+        getCmdbDeployAppEnvListByAppSystemIdAndModuleIdListTest();
+        getCmdbDeployAppModuleEnvListByAppSystemIdTest();
+        getCmdbDeployAppModuleEnvListByAppSystemIdAndAppModuleIdListTest();
+        getCmdbDeployAppModuleEnvListByAppSystemIdAndModuleIdTest();
+        getCmdbAppConfigEnvListIncludeDBCSchemaListAndAutoCfgKeyListByAppSystemIdAndAppModuleIdAndEnvIdTest();
+        getCmdbEnvListByAppSystemIdAndModuleIdTest();
+        getCmdbHasEnvAppModuleIdListByAppSystemIdAndModuleIdListTest();
         getAppModuleEnvAutoConfigInstanceIdCountTest();
         return null;
     }
@@ -890,362 +891,204 @@ public class DeployAppConfigServiceTestApi extends PrivateApiComponentBase {
     }
 
     private void getAppModuleEnvAutoConfigInstanceIdCountTest() {
-//        getAppModuleEnvAutoConfigInstanceIdCountTestForAppSystemId();
-        getAppModuleEnvAutoConfigInstanceIdCountTestForAppModuleId();
-        getAppModuleEnvAutoConfigInstanceIdCountTestForEnvId();
-        getAppModuleEnvAutoConfigInstanceIdCountTestForIsAutoConfig();
-        getAppModuleEnvAutoConfigInstanceIdCountTestForKeywordLikeName();
-        getAppModuleEnvAutoConfigInstanceIdCountTestForKeywordLikeIp();
-        getAppModuleEnvAutoConfigInstanceIdCountTestForKeywordLikePort();
+        getAppModuleEnvAutoConfigInstanceIdCountTestForAppSystemIdAndAppModuleIdAndEnvId();
+        getAppModuleEnvAutoConfigInstanceIdCountTestForAppSystemIdAndAppModuleIdAndEnvIdAndIsAutoConfig();
+        getAppModuleEnvAutoConfigInstanceIdCountTestForAppSystemIdAndAppModuleIdAndEnvIdAndKeywordLikeName();
+        getAppModuleEnvAutoConfigInstanceIdCountTestForAppSystemIdAndAppModuleIdAndEnvIdAndKeywordLikeIp();
+        getAppModuleEnvAutoConfigInstanceIdCountTestForAppSystemIdAndAppModuleIdAndEnvIdAndKeywordLikePort();
     }
 
-    private void getAppModuleEnvAutoConfigInstanceIdCountTestForAppSystemId() {
+    private void getAppModuleEnvAutoConfigInstanceIdCountTestForAppSystemIdAndAppModuleIdAndEnvId() {
+        testAppModuleEnvAutoConfigInstanceIdCount(null, null);
+    }
+
+    private void getAppModuleEnvAutoConfigInstanceIdCountTestForAppSystemIdAndAppModuleIdAndEnvIdAndIsAutoConfig() {
+        testAppModuleEnvAutoConfigInstanceIdCount(1, null);
+        testAppModuleEnvAutoConfigInstanceIdCount(0, null);
+    }
+
+    private void getAppModuleEnvAutoConfigInstanceIdCountTestForAppSystemIdAndAppModuleIdAndEnvIdAndKeywordLikeName() {
+        testAppModuleEnvAutoConfigInstanceIdCount(null, "name");
+    }
+
+    private void getAppModuleEnvAutoConfigInstanceIdCountTestForAppSystemIdAndAppModuleIdAndEnvIdAndKeywordLikeIp() {
+        testAppModuleEnvAutoConfigInstanceIdCount(null, "ip");
+    }
+
+    private void getAppModuleEnvAutoConfigInstanceIdCountTestForAppSystemIdAndAppModuleIdAndEnvIdAndKeywordLikePort() {
+        testAppModuleEnvAutoConfigInstanceIdCount(null, "port");
+    }
+
+    private void testAppModuleEnvAutoConfigInstanceIdCount(Integer isAutoConfig, String keywordFieldName) {
         IResourceCrossoverMapper resourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
         try {
-            DeployAppEnvAutoConfigVo baseSearchVo = new DeployAppEnvAutoConfigVo(-1L, -1L, -1L);
-            String sql = deployResourceBuildSqlService.buildGetAppModuleEnvAutoConfigInstanceIdCountSql(baseSearchVo);
-            System.out.println("sql = " + sql);
-            Column groupedColumn = new Column("cientity_APP.id");
-            String groupBySql = buildGroupBySql(sql, groupedColumn);
-            System.out.println("groupBySql = " + groupBySql);
+            String groupBySql = buildAppModuleEnvAutoConfigInstanceIdCountProbeSql(isAutoConfig, keywordFieldName);
+//            System.out.println("groupBySql = " + groupBySql);
             List<Map<String, Object>> mapList = resourceCrossoverMapper.getMapListBySql(groupBySql);
-            System.out.println("mapList = " + mapList);
-            for (Map<String, Object> rowMap : mapList) {
-                Object fieldValue = rowMap.get("fieldValue");
-                if (fieldValue != null) {
-                    Long appSystemId = ((Number) fieldValue).longValue();
-                    System.out.println("appSystemId = " + appSystemId);
-                    Long count = ((Number) rowMap.get("count")).longValue();
-                    System.out.println("count = " + count);
-                    DeployAppEnvAutoConfigVo searchVo = buildAppModuleEnvAutoConfigSearchVo(appSystemId, null, null);
-                    if (searchVo == null) {
-                        JSONObject itemObj = new JSONObject(true);
-                        itemObj.put("count", count);
-                        itemObj.put("appSystemId", appSystemId);
-                        itemObj.put("searchVo", searchVo);
-                        itemObj.put("groupedColumn", groupedColumn.toString());
-                        logger.info(itemObj.toJSONString());
-                        continue;
-                    }
-                    int resourceCount = deployAppConfigService.getAppModuleEnvAutoConfigInstanceIdCount(searchVo);
-                    System.out.println("resourceCount = " + resourceCount);
-                    if (resourceCount <= 0) {
-                        JSONObject itemObj = new JSONObject(true);
-                        itemObj.put("resourceCount", resourceCount);
-                        itemObj.put("count", count);
-                        itemObj.put("searchVo", searchVo);
-                        itemObj.put("groupedColumn", groupedColumn.toString());
-                        logger.info(itemObj.toJSONString());
-                    }
-                }
-            }
-        } catch (Exception e) {
-            logger.error(e.getMessage(), e);
-        }
-    }
-
-    private void getAppModuleEnvAutoConfigInstanceIdCountTestForAppModuleId() {
-        IResourceCrossoverMapper resourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
-        try {
-            DeployAppEnvAutoConfigVo baseSearchVo = new DeployAppEnvAutoConfigVo(-1L, -1L, -1L);
-            String sql = deployResourceBuildSqlService.buildGetAppModuleEnvAutoConfigInstanceIdCountSql(baseSearchVo);
-            System.out.println("sql = " + sql);
-            Column groupedColumn = new Column("cientity_APPComponent.id");
-            String groupBySql = buildGroupBySql(sql, groupedColumn);
-            System.out.println("groupBySql = " + groupBySql);
-            List<Map<String, Object>> mapList = resourceCrossoverMapper.getMapListBySql(groupBySql);
-            System.out.println("mapList = " + mapList);
-            for (Map<String, Object> rowMap : mapList) {
-                Object fieldValue = rowMap.get("fieldValue");
-                if (fieldValue != null) {
-                    Long appModuleId = ((Number) fieldValue).longValue();
-                    System.out.println("appModuleId = " + appModuleId);
-                    Long count = ((Number) rowMap.get("count")).longValue();
-                    System.out.println("count = " + count);
-                    DeployAppEnvAutoConfigVo searchVo = buildAppModuleEnvAutoConfigSearchVo(null, appModuleId, null);
-                    if (searchVo == null) {
-                        JSONObject itemObj = new JSONObject(true);
-                        itemObj.put("count", count);
-                        itemObj.put("appModuleId", appModuleId);
-                        itemObj.put("searchVo", searchVo);
-                        itemObj.put("groupedColumn", groupedColumn.toString());
-                        logger.info(itemObj.toJSONString());
-                        continue;
-                    }
-                    int resourceCount = deployAppConfigService.getAppModuleEnvAutoConfigInstanceIdCount(searchVo);
-                    System.out.println("resourceCount = " + resourceCount);
-                    if (resourceCount <= 0) {
-                        JSONObject itemObj = new JSONObject(true);
-                        itemObj.put("resourceCount", resourceCount);
-                        itemObj.put("count", count);
-                        itemObj.put("searchVo", searchVo);
-                        itemObj.put("groupedColumn", groupedColumn.toString());
-                        logger.info(itemObj.toJSONString());
-                    }
-                }
-            }
-        } catch (Exception e) {
-            logger.error(e.getMessage(), e);
-        }
-    }
-
-    private void getAppModuleEnvAutoConfigInstanceIdCountTestForEnvId() {
-        IResourceCrossoverMapper resourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
-        try {
-            DeployAppEnvAutoConfigVo baseSearchVo = new DeployAppEnvAutoConfigVo(-1L, -1L, -1L);
-            String sql = deployResourceBuildSqlService.buildGetAppModuleEnvAutoConfigInstanceIdCountSql(baseSearchVo);
-            System.out.println("sql = " + sql);
-            Column groupedColumn = new Column("cientity_APP.id");
-            String groupBySql = buildGroupBySql(sql, groupedColumn);
-            System.out.println("groupBySql = " + groupBySql);
-            List<Map<String, Object>> mapList = resourceCrossoverMapper.getMapListBySql(groupBySql);
-            System.out.println("mapList = " + mapList);
-            for (Map<String, Object> rowMap : mapList) {
-                Object fieldValue = rowMap.get("fieldValue");
-                if (fieldValue != null) {
-                    Long appSystemId = ((Number) fieldValue).longValue();
-                    System.out.println("appSystemId = " + appSystemId);
-                    Long count = ((Number) rowMap.get("count")).longValue();
-                    System.out.println("count = " + count);
-                    DeployAppEnvAutoConfigVo searchVo = buildAppModuleEnvAutoConfigSearchVo(appSystemId, null, null);
-                    if (searchVo == null || searchVo.getEnvId() == null) {
-                        JSONObject itemObj = new JSONObject(true);
-                        itemObj.put("count", count);
-                        itemObj.put("appSystemId", appSystemId);
-                        itemObj.put("searchVo", searchVo);
-                        itemObj.put("groupedColumn", "envId");
-                        logger.info(itemObj.toJSONString());
-                        continue;
-                    }
-                    int resourceCount = deployAppConfigService.getAppModuleEnvAutoConfigInstanceIdCount(searchVo);
-                    System.out.println("resourceCount = " + resourceCount);
-                    if (resourceCount <= 0) {
-                        JSONObject itemObj = new JSONObject(true);
-                        itemObj.put("resourceCount", resourceCount);
-                        itemObj.put("count", count);
-                        itemObj.put("searchVo", searchVo);
-                        itemObj.put("groupedColumn", "envId");
-                        logger.info(itemObj.toJSONString());
-                    }
-                }
-            }
-        } catch (Exception e) {
-            logger.error(e.getMessage(), e);
-        }
-    }
-
-    private void getAppModuleEnvAutoConfigInstanceIdCountTestForIsAutoConfig() {
-        IResourceCrossoverMapper resourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
-        try {
-            DeployAppEnvAutoConfigVo baseSearchVo = new DeployAppEnvAutoConfigVo(-1L, -1L, -1L);
-            String sql = deployResourceBuildSqlService.buildGetAppModuleEnvAutoConfigInstanceIdCountSql(baseSearchVo);
-            System.out.println("sql = " + sql);
-            Column groupedColumn = new Column("cientity_APP.id");
-            String groupBySql = buildGroupBySql(sql, groupedColumn);
-            System.out.println("groupBySql = " + groupBySql);
-            List<Map<String, Object>> mapList = resourceCrossoverMapper.getMapListBySql(groupBySql);
-            System.out.println("mapList = " + mapList);
-            for (Map<String, Object> rowMap : mapList) {
-                Object fieldValue = rowMap.get("fieldValue");
-                if (fieldValue != null) {
-                    Long appSystemId = ((Number) fieldValue).longValue();
-                    System.out.println("appSystemId = " + appSystemId);
-                    Long count = ((Number) rowMap.get("count")).longValue();
-                    System.out.println("count = " + count);
-                    DeployAppEnvAutoConfigVo searchVo = buildAppModuleEnvAutoConfigSearchVo(appSystemId, null, null);
-                    if (searchVo == null) {
-                        JSONObject itemObj = new JSONObject(true);
-                        itemObj.put("count", count);
-                        itemObj.put("appSystemId", appSystemId);
-                        itemObj.put("searchVo", searchVo);
-                        itemObj.put("groupedColumn", "isAutoConfig");
-                        logger.info(itemObj.toJSONString());
-                        continue;
-                    }
-                    for (Integer isAutoConfig : List.of(1, 0)) {
-                        System.out.println("isAutoConfig = " + isAutoConfig);
-                        searchVo.setIsAutoConfig(isAutoConfig);
-                        int resourceCount = deployAppConfigService.getAppModuleEnvAutoConfigInstanceIdCount(searchVo);
-                        System.out.println("resourceCount = " + resourceCount);
-                        if (resourceCount <= 0) {
-                            JSONObject itemObj = new JSONObject(true);
-                            itemObj.put("resourceCount", resourceCount);
-                            itemObj.put("count", count);
-                            itemObj.put("searchVo", searchVo);
-                            itemObj.put("groupedColumn", "isAutoConfig");
-                            logger.info(itemObj.toJSONString());
-                        }
-                    }
-                }
-            }
-        } catch (Exception e) {
-            logger.error(e.getMessage(), e);
-        }
-    }
-
-    private void getAppModuleEnvAutoConfigInstanceIdCountTestForKeywordLikeName() {
-        getAppModuleEnvAutoConfigInstanceIdCountTestForKeyword("name");
-    }
-
-    private void getAppModuleEnvAutoConfigInstanceIdCountTestForKeywordLikeIp() {
-        getAppModuleEnvAutoConfigInstanceIdCountTestForKeyword("ip");
-    }
-
-    private void getAppModuleEnvAutoConfigInstanceIdCountTestForKeywordLikePort() {
-        getAppModuleEnvAutoConfigInstanceIdCountTestForKeyword("port");
-    }
-
-    private void getAppModuleEnvAutoConfigInstanceIdCountTestForKeyword(String fieldName) {
-        IResourceCrossoverMapper resourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
-        try {
-            DeployAppEnvAutoConfigVo baseSearchVo = new DeployAppEnvAutoConfigVo();
-            baseSearchVo.setKeyword("test");
-            String sql = deployResourceBuildSqlService.buildGetAppModuleEnvAutoConfigInstanceIdCountSql(baseSearchVo);
-            Column groupedColumn = getLikeColumn(sql, fieldName);
-            if (groupedColumn == null) {
-                JSONObject itemObj = new JSONObject(true);
-                itemObj.put("fieldName", fieldName);
-                itemObj.put("sql", sql);
-                itemObj.put("groupedColumn", groupedColumn);
-                logger.info(itemObj.toJSONString());
+//            System.out.println("mapList = " + JSONObject.toJSONString(mapList));
+            if (mapList == null || mapList.isEmpty()) {
+                logger.info("自动配置实例数量探针未采到样本：isAutoConfig={}, keywordFieldName={}", isAutoConfig, keywordFieldName);
                 return;
             }
-            String groupBySql = buildGroupBySql(sql, groupedColumn);
-            List<Map<String, Object>> mapList = resourceCrossoverMapper.getMapListBySql(groupBySql);
             for (Map<String, Object> rowMap : mapList) {
-                Object fieldValue = rowMap.get("fieldValue");
-                if (fieldValue != null) {
-                    String keyword = String.valueOf(fieldValue);
+                Long appSystemId = ((Number) rowMap.get("appSystemId")).longValue();
+                Long appModuleId = ((Number) rowMap.get("appModuleId")).longValue();
+                Long envId = ((Number) rowMap.get("envId")).longValue();
+//                System.out.println("appSystemId = " + appSystemId);
+//                System.out.println("appModuleId = " + appModuleId);
+//                System.out.println("envId = " + envId);
+//                System.out.println("count = " + rowMap.get("count"));
+                DeployAppEnvAutoConfigVo searchVo = new DeployAppEnvAutoConfigVo(appSystemId, appModuleId, envId);
+                searchVo.setIsAutoConfig(isAutoConfig);
+                if (keywordFieldName != null) {
+                    String keyword = String.valueOf(rowMap.get("fieldValue"));
+                    System.out.println("keyword = " + keyword);
                     if (StringUtils.isBlank(keyword)) {
                         continue;
                     }
-                    Long count = ((Number) rowMap.get("count")).longValue();
-                    DeployAppEnvAutoConfigVo searchVo = buildAppModuleEnvAutoConfigSearchVoByKeyword(keyword);
-                    if (searchVo == null) {
-                        JSONObject itemObj = new JSONObject(true);
-                        itemObj.put("count", count);
-                        itemObj.put("keyword", keyword);
-                        itemObj.put("searchVo", searchVo);
-                        itemObj.put("groupedColumn", groupedColumn.toString());
-                        logger.info(itemObj.toJSONString());
-                        continue;
-                    }
-                    searchVo.setKeyword(keyword);
-                    int resourceCount = deployAppConfigService.getAppModuleEnvAutoConfigInstanceIdCount(searchVo);
-                    if (resourceCount <= 0) {
-                        JSONObject itemObj = new JSONObject(true);
-                        itemObj.put("resourceCount", resourceCount);
-                        itemObj.put("count", count);
-                        itemObj.put("keyword", keyword);
-                        itemObj.put("searchVo", searchVo);
-                        itemObj.put("groupedColumn", groupedColumn.toString());
-                        logger.info(itemObj.toJSONString());
-                    }
+                    // 样本按字面值匹配，避免样本中的 LIKE 通配符或反斜杠改变含义。
+                    searchVo.setKeyword(keyword.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_"));
                 }
+                long expectedCount = ((Number) rowMap.get("count")).longValue();
+//                System.out.println("searchVo = " + JSONObject.toJSONString(searchVo));
+                int resourceCount = deployAppConfigService.getAppModuleEnvAutoConfigInstanceIdCount(searchVo);
+//                System.out.println("resourceCount = " + resourceCount);
+                // OR LIKE 可能额外匹配其他实例，但至少必须覆盖当前字段的样本。
+                boolean matched = keywordFieldName == null ? resourceCount == expectedCount : resourceCount >= expectedCount;
+                if (!matched) {
+                    JSONObject itemObj = new JSONObject(true);
+                    itemObj.put("resourceCount", resourceCount);
+                    itemObj.put("expectedCount", expectedCount);
+                    itemObj.put("appSystemId", appSystemId);
+                    itemObj.put("appModuleId", appModuleId);
+                    itemObj.put("envId", envId);
+                    itemObj.put("isAutoConfig", isAutoConfig);
+                    itemObj.put("keyword", searchVo.getKeyword());
+                    itemObj.put("keywordFieldName", keywordFieldName);
+                    itemObj.put("groupBySql", groupBySql);
+                    logger.error("自动配置实例数量探针结果不一致：{}", itemObj);
+                }
+//                if (isAutoConfig != null) {
+//                    DeployAppEnvAutoConfigVo allSearchVo = new DeployAppEnvAutoConfigVo(appSystemId, appModuleId, envId);
+//                    int allCount = deployAppConfigService.getAppModuleEnvAutoConfigInstanceIdCount(allSearchVo);
+//                    System.out.println("allCount = " + allCount);
+//                    DeployAppEnvAutoConfigVo oppositeSearchVo = new DeployAppEnvAutoConfigVo(appSystemId, appModuleId, envId);
+//                    oppositeSearchVo.setIsAutoConfig(1 - isAutoConfig);
+//                    int oppositeCount = deployAppConfigService.getAppModuleEnvAutoConfigInstanceIdCount(oppositeSearchVo);
+//                    System.out.println("oppositeCount = " + oppositeCount);
+//                    // 另一分支为零也是有效用例，仍然通过 service 执行双轨比对。
+//                    if ((long) resourceCount + oppositeCount != allCount) {
+//                        JSONObject itemObj = new JSONObject(true);
+//                        itemObj.put("appSystemId", appSystemId);
+//                        itemObj.put("appModuleId", appModuleId);
+//                        itemObj.put("envId", envId);
+//                        itemObj.put("isAutoConfig", isAutoConfig);
+//                        itemObj.put("resourceCount", resourceCount);
+//                        itemObj.put("oppositeCount", oppositeCount);
+//                        itemObj.put("allCount", allCount);
+//                        logger.error("自动配置与未配置实例数量之和不等于总数：{}", itemObj);
+//                    }
+//                }
             }
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
         }
     }
 
-    private DeployAppEnvAutoConfigVo buildAppModuleEnvAutoConfigSearchVo(Long appSystemId, Long appModuleId, Long envId) throws Exception {
-        Long targetAppSystemId = appSystemId;
-        Long targetAppModuleId = appModuleId;
-        Long targetEnvId = envId;
-        IResourceCrossoverMapper resourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
-        if (targetAppSystemId == null && targetAppModuleId != null) {
-            String appSystemSql = deployResourceBuildSqlService.buildGetCmdbDeployAppModuleEnvListByAppSystemIdAndModuleIdSql(null, targetAppModuleId);
-            String groupByAppSystemSql = buildGroupBySql(appSystemSql, new Column("cientity_APP.id"), true);
-            List<Map<String, Object>> appSystemMapList = resourceCrossoverMapper.getMapListBySql(groupByAppSystemSql);
-            if (appSystemMapList != null && !appSystemMapList.isEmpty()) {
-                Object appSystemIdValue = appSystemMapList.get(0).get("fieldValue");
-                if (appSystemIdValue != null) {
-                    targetAppSystemId = ((Number) appSystemIdValue).longValue();
-                }
+    private String buildAppModuleEnvAutoConfigInstanceIdCountProbeSql(Integer isAutoConfig, String keywordFieldName) throws Exception {
+        DeployAppEnvAutoConfigVo baseSearchVo = new DeployAppEnvAutoConfigVo(-1L, -1L, -1L);
+        baseSearchVo.setIsAutoConfig(isAutoConfig);
+        Map<String, Column> fieldName2ColumnMap = new LinkedHashMap<>();
+        String sql = deployResourceBuildSqlService.buildGetAppModuleEnvAutoConfigInstanceIdCountSql(baseSearchVo, fieldName2ColumnMap);
+        if (StringUtils.isBlank(sql)) {
+            throw new IllegalStateException("Failed to build auto-config instance count SQL");
+        }
+        PlainSelect plainSelect = (PlainSelect) ((Select) CCJSqlParserUtil.parse(sql)).getSelectBody();
+        Map<String, Column> groupedColumns = new LinkedHashMap<>();
+        groupedColumns.put("appSystemId", fieldName2ColumnMap.get("app_system_id"));
+        groupedColumns.put("appModuleId", fieldName2ColumnMap.get("app_module_id"));
+        groupedColumns.put("envId", fieldName2ColumnMap.get("env_id"));
+        List<Column> idColumns = new ArrayList<>(groupedColumns.values());
+        Expression where = resetAppModuleEnvAutoConfigProbeIds(plainSelect.getWhere(), idColumns);
+        if (keywordFieldName != null) {
+            groupedColumns.put("fieldValue", fieldName2ColumnMap.get(keywordFieldName));
+        }
+        List<SelectItem> selectItemList = new ArrayList<>();
+        List<Expression> groupByExpressions = new ArrayList<>();
+        for (Map.Entry<String, Column> entry : groupedColumns.entrySet()) {
+            Column column = entry.getValue();
+            if (column == null) {
+                throw new IllegalStateException("Missing probe column: " + entry.getKey());
             }
+            selectItemList.add(new SelectExpressionItem(column).withAlias(new Alias(entry.getKey())));
+            groupByExpressions.add(column);
+            IsNullExpression notNull = new IsNullExpression().withLeftExpression(column).withNot(true);
+            where = where == null ? notNull : new AndExpression(where, notNull);
         }
-        if (targetAppSystemId == null) {
-            return null;
-        }
-        if (targetAppModuleId == null || targetEnvId == null) {
-            List<DeployAppModuleEnvVo> moduleEnvList = deployAppConfigService.getCmdbDeployAppModuleEnvListByAppSystemId(targetAppSystemId);
-            if (moduleEnvList != null) {
-                for (DeployAppModuleEnvVo moduleEnvVo : moduleEnvList) {
-                    if (moduleEnvVo != null && moduleEnvVo.getId() != null && moduleEnvVo.getEnvList() != null && !moduleEnvVo.getEnvList().isEmpty()) {
-                        if (targetAppModuleId == null) {
-                            targetAppModuleId = moduleEnvVo.getId();
-                        }
-                        if (targetEnvId == null) {
-                            targetEnvId = moduleEnvVo.getEnvList().get(0).getEnvId();
-                        }
-                        break;
+        // 自动配置表中同一实例可有多行，探针与被测 SQL 一样按实例去重。
+        Function count = new Function();
+        count.setName("COUNT");
+        count.setDistinct(true);
+        count.setParameters(new ExpressionList(fieldName2ColumnMap.get("id")));
+        selectItemList.add(new SelectExpressionItem(count).withAlias(new Alias("count")));
+        plainSelect.setSelectItems(selectItemList);
+        plainSelect.setWhere(where);
+        GroupByElement groupByElement = new GroupByElement();
+        groupByElement.addGroupByExpressions(groupByExpressions);
+        plainSelect.setGroupByElement(groupByElement);
+        OrderByElement orderByElement = new OrderByElement();
+        orderByElement.setExpression(new Column("count"));
+        orderByElement.setAsc(false);
+        plainSelect.setOrderByElements(List.of(orderByElement));
+        plainSelect.setLimit(new Limit().withRowCount(new LongValue(10)));
+
+        if (isAutoConfig != null) {
+            boolean joinFound = false;
+            for (Join join : plainSelect.getJoins()) {
+                if (join.getRightItem() instanceof Table table && table.getAlias() != null && "daeac".equals(table.getAlias().getName())) {
+                    // 探针一次采样多个三元组，JOIN 中的占位 ID 必须改为当前资源行的真实 ID。
+                    Expression on = new EqualsTo(new Column("daeac.instance_id"), fieldName2ColumnMap.get("id"));
+                    for (String fieldName : List.of("app_system_id", "app_module_id", "env_id")) {
+                        on = new AndExpression(on, new EqualsTo(new Column("daeac." + fieldName), fieldName2ColumnMap.get(fieldName)));
                     }
+                    join.setOnExpressions(List.of(on));
+                    joinFound = true;
+                    break;
                 }
             }
-        }
-        if (targetAppModuleId == null || targetEnvId == null) {
-            return null;
-        }
-        System.out.println("targetAppSystemId = " + targetAppSystemId + ", targetAppModuleId = " + targetAppModuleId + ", targetEnvId = " + targetEnvId);
-        return new DeployAppEnvAutoConfigVo(targetAppSystemId, targetAppModuleId, targetEnvId);
-    }
-
-    private Column getLikeColumn(String sql, String fieldName) throws Exception {
-        Statement statement = CCJSqlParserUtil.parse(sql);
-        PlainSelect plainSelect = (PlainSelect) ((Select) statement).getSelectBody();
-        return findLikeColumn(plainSelect.getWhere(), fieldName);
-    }
-
-    private Column findLikeColumn(Expression expression, String fieldName) {
-        if (expression == null) {
-            return null;
-        }
-        if (expression instanceof LikeExpression likeExpression) {
-            Expression leftExpression = likeExpression.getLeftExpression();
-            if (leftExpression instanceof Column column && column.getColumnName() != null && column.getColumnName().equalsIgnoreCase(fieldName)) {
-                return column;
+            if (!joinFound) {
+                throw new IllegalStateException("Missing auto-config join in probe SQL");
             }
-            return null;
         }
+        return plainSelect.toString();
+    }
+
+    private Expression resetAppModuleEnvAutoConfigProbeIds(Expression expression, List<Column> idColumns) {
         if (expression instanceof AndExpression andExpression) {
-            Column column = findLikeColumn(andExpression.getLeftExpression(), fieldName);
-            return column != null ? column : findLikeColumn(andExpression.getRightExpression(), fieldName);
-        }
-        if (expression instanceof OrExpression orExpression) {
-            Column column = findLikeColumn(orExpression.getLeftExpression(), fieldName);
-            return column != null ? column : findLikeColumn(orExpression.getRightExpression(), fieldName);
+            return new AndExpression(
+                    resetAppModuleEnvAutoConfigProbeIds(andExpression.getLeftExpression(), idColumns),
+                    resetAppModuleEnvAutoConfigProbeIds(andExpression.getRightExpression(), idColumns));
         }
         if (expression instanceof Parenthesis parenthesis) {
-            return findLikeColumn(parenthesis.getExpression(), fieldName);
+            return new Parenthesis(resetAppModuleEnvAutoConfigProbeIds(parenthesis.getExpression(), idColumns));
         }
-        return null;
+        if (expression instanceof EqualsTo equalsTo && equalsTo.getLeftExpression() instanceof Column column
+                && isAppModuleEnvAutoConfigProbeId(equalsTo.getRightExpression())) {
+            for (Column idColumn : idColumns) {
+                if (idColumn != null && normalizeColumnExpression(column.toString()).equals(normalizeColumnExpression(idColumn.toString()))) {
+                    return buildTrueExpression();
+                }
+            }
+        }
+        return expression;
     }
 
-    private DeployAppEnvAutoConfigVo buildAppModuleEnvAutoConfigSearchVoByKeyword(String keyword) throws Exception {
-        DeployAppEnvAutoConfigVo appSystemSearchVo = new DeployAppEnvAutoConfigVo();
-        appSystemSearchVo.setKeyword(keyword);
-        String appSystemSql = deployResourceBuildSqlService.buildGetAppModuleEnvAutoConfigInstanceIdCountSql(appSystemSearchVo);
-        Long appSystemId = getFirstLongFieldValue(appSystemSql, new Column("cientity_APP.id"));
-        if (appSystemId == null) {
-            return null;
+    private boolean isAppModuleEnvAutoConfigProbeId(Expression expression) {
+        if (expression instanceof LongValue longValue) {
+            return longValue.getValue() == -1L;
         }
-
-        DeployAppEnvAutoConfigVo appModuleSearchVo = new DeployAppEnvAutoConfigVo();
-        appModuleSearchVo.setAppSystemId(appSystemId);
-        appModuleSearchVo.setKeyword(keyword);
-        String appModuleSql = deployResourceBuildSqlService.buildGetAppModuleEnvAutoConfigInstanceIdCountSql(appModuleSearchVo);
-        Long appModuleId = getFirstLongFieldValue(appModuleSql, new Column("cientity_APPComponent.id"));
-        return buildAppModuleEnvAutoConfigSearchVo(appSystemId, appModuleId, null);
-    }
-
-    private Long getFirstLongFieldValue(String sql, Column groupedColumn) throws Exception {
-        IResourceCrossoverMapper resourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
-        List<Map<String, Object>> mapList = resourceCrossoverMapper.getMapListBySql(buildGroupBySql(sql, groupedColumn, true));
-        if (mapList == null || mapList.isEmpty()) {
-            return null;
-        }
-        Object fieldValue = mapList.get(0).get("fieldValue");
-        return fieldValue instanceof Number ? ((Number) fieldValue).longValue() : null;
+        return expression instanceof SignedExpression signedExpression && signedExpression.getSign() == '-'
+                && signedExpression.getExpression() instanceof LongValue longValue && longValue.getValue() == 1L;
     }
 
     private void getAppConfigEnvDatabaseCountTestForKeyword() {
