@@ -40,6 +40,11 @@ public interface DeployResourceBuildSqlService {
     /** 同次构建返回真实列映射，供联合条件探针使用。 */
     String buildGetAppModuleEnvAutoConfigInstanceIdCountSql(DeployAppEnvAutoConfigVo searchVo, Map<String, Column> fieldName2ColumnMap);
 
+    String buildGetAppModuleEnvAutoConfigInstanceIdListSql(DeployAppEnvAutoConfigVo searchVo);
+
+    /** 同次构建返回真实列映射，供联合条件探针使用。 */
+    String buildGetAppModuleEnvAutoConfigInstanceIdListSql(DeployAppEnvAutoConfigVo searchVo, Map<String, Column> fieldName2ColumnMap);
+
     String buildGetAppConfigEnvDatabaseCountSql(DeployResourceSearchVo searchVo);
 
     String buildGetAppConfigEnvDatabaseResourceIdListSql(DeployResourceSearchVo searchVo);

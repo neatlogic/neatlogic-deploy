@@ -73,17 +73,18 @@ public class DeployAppConfigServiceTestApi extends PrivateApiComponentBase {
     @Description(desc = "测试DeployAppConfigService方法")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
-        getDatabaseByIdTest();
-        getAppConfigEnvDatabaseCountTest();
-        getAppConfigEnvDatabaseResourceIdListTest();
-        getCmdbDeployAppEnvListByAppSystemIdAndModuleIdListTest();
-        getCmdbDeployAppModuleEnvListByAppSystemIdTest();
-        getCmdbDeployAppModuleEnvListByAppSystemIdAndAppModuleIdListTest();
-        getCmdbDeployAppModuleEnvListByAppSystemIdAndModuleIdTest();
-        getCmdbAppConfigEnvListIncludeDBCSchemaListAndAutoCfgKeyListByAppSystemIdAndAppModuleIdAndEnvIdTest();
-        getCmdbEnvListByAppSystemIdAndModuleIdTest();
-        getCmdbHasEnvAppModuleIdListByAppSystemIdAndModuleIdListTest();
-        getAppModuleEnvAutoConfigInstanceIdCountTest();
+//        getDatabaseByIdTest();
+//        getAppConfigEnvDatabaseCountTest();
+//        getAppConfigEnvDatabaseResourceIdListTest();
+//        getCmdbDeployAppEnvListByAppSystemIdAndModuleIdListTest();
+//        getCmdbDeployAppModuleEnvListByAppSystemIdTest();
+//        getCmdbDeployAppModuleEnvListByAppSystemIdAndAppModuleIdListTest();
+//        getCmdbDeployAppModuleEnvListByAppSystemIdAndModuleIdTest();
+//        getCmdbAppConfigEnvListIncludeDBCSchemaListAndAutoCfgKeyListByAppSystemIdAndAppModuleIdAndEnvIdTest();
+//        getCmdbEnvListByAppSystemIdAndModuleIdTest();
+//        getCmdbHasEnvAppModuleIdListByAppSystemIdAndModuleIdListTest();
+//        getAppModuleEnvAutoConfigInstanceIdCountTest();
+        getAppModuleEnvAutoConfigInstanceIdListTest();
         return null;
     }
 
@@ -890,6 +891,99 @@ public class DeployAppConfigServiceTestApi extends PrivateApiComponentBase {
         getAppConfigEnvDatabaseCountTestForDefaultValue();
     }
 
+    private void getAppModuleEnvAutoConfigInstanceIdListTest() {
+        getAppModuleEnvAutoConfigInstanceIdListTestForAppSystemIdAndAppModuleIdAndEnvId();
+        getAppModuleEnvAutoConfigInstanceIdListTestForAppSystemIdAndAppModuleIdAndEnvIdAndIsAutoConfig();
+        getAppModuleEnvAutoConfigInstanceIdListTestForAppSystemIdAndAppModuleIdAndEnvIdAndKeywordLikeName();
+        getAppModuleEnvAutoConfigInstanceIdListTestForAppSystemIdAndAppModuleIdAndEnvIdAndKeywordLikeIp();
+        getAppModuleEnvAutoConfigInstanceIdListTestForAppSystemIdAndAppModuleIdAndEnvIdAndKeywordLikePort();
+    }
+
+    private void getAppModuleEnvAutoConfigInstanceIdListTestForAppSystemIdAndAppModuleIdAndEnvId() {
+        testAppModuleEnvAutoConfigInstanceIdList(null, null);
+    }
+
+    private void getAppModuleEnvAutoConfigInstanceIdListTestForAppSystemIdAndAppModuleIdAndEnvIdAndIsAutoConfig() {
+        testAppModuleEnvAutoConfigInstanceIdList(1, null);
+        testAppModuleEnvAutoConfigInstanceIdList(0, null);
+    }
+
+    private void getAppModuleEnvAutoConfigInstanceIdListTestForAppSystemIdAndAppModuleIdAndEnvIdAndKeywordLikeName() {
+        testAppModuleEnvAutoConfigInstanceIdList(null, "name");
+    }
+
+    private void getAppModuleEnvAutoConfigInstanceIdListTestForAppSystemIdAndAppModuleIdAndEnvIdAndKeywordLikeIp() {
+        testAppModuleEnvAutoConfigInstanceIdList(null, "ip");
+    }
+
+    private void getAppModuleEnvAutoConfigInstanceIdListTestForAppSystemIdAndAppModuleIdAndEnvIdAndKeywordLikePort() {
+        testAppModuleEnvAutoConfigInstanceIdList(null, "port");
+    }
+
+    private void testAppModuleEnvAutoConfigInstanceIdList(Integer isAutoConfig, String keywordFieldName) {
+        IResourceCrossoverMapper resourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
+        try {
+            String groupBySql = buildAppModuleEnvAutoConfigInstanceIdListProbeSql(isAutoConfig, keywordFieldName);
+            List<Map<String, Object>> mapList = resourceCrossoverMapper.getMapListBySql(groupBySql);
+            if (mapList == null || mapList.isEmpty()) {
+                logger.info("自动配置实例ID列表探针未采到样本：isAutoConfig={}, keywordFieldName={}", isAutoConfig, keywordFieldName);
+                return;
+            }
+            for (Map<String, Object> rowMap : mapList) {
+                Long appSystemId = ((Number) rowMap.get("appSystemId")).longValue();
+                Long appModuleId = ((Number) rowMap.get("appModuleId")).longValue();
+                Long envId = ((Number) rowMap.get("envId")).longValue();
+                DeployAppEnvAutoConfigVo searchVo = new DeployAppEnvAutoConfigVo(appSystemId, appModuleId, envId);
+                searchVo.setIsAutoConfig(isAutoConfig);
+                searchVo.setCurrentPage(1);
+                searchVo.setPageSize(1000);
+                if (keywordFieldName != null) {
+                    String keyword = String.valueOf(rowMap.get("fieldValue"));
+                    if (StringUtils.isBlank(keyword)) {
+                        continue;
+                    }
+                    searchVo.setKeyword(keyword.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_"));
+                }
+                long expectedCount = ((Number) rowMap.get("count")).longValue();
+                List<Long> resourceIdList = deployAppConfigService.getAppModuleEnvAutoConfigInstanceIdList(searchVo);
+                int expectedPageSize = (int) Math.min(expectedCount, searchVo.getPageSize());
+                boolean sizeMatched = keywordFieldName == null
+                        ? resourceIdList != null && resourceIdList.size() == expectedPageSize
+                        : resourceIdList != null && !resourceIdList.isEmpty();
+                boolean orderMatched = isStrictlyDescending(resourceIdList);
+                if (!sizeMatched || !orderMatched) {
+                    JSONObject itemObj = new JSONObject(true);
+                    itemObj.put("resourceIdList", resourceIdList);
+                    itemObj.put("expectedCount", expectedCount);
+                    itemObj.put("appSystemId", appSystemId);
+                    itemObj.put("appModuleId", appModuleId);
+                    itemObj.put("envId", envId);
+                    itemObj.put("isAutoConfig", isAutoConfig);
+                    itemObj.put("keyword", searchVo.getKeyword());
+                    itemObj.put("keywordFieldName", keywordFieldName);
+                    itemObj.put("groupBySql", groupBySql);
+                    logger.error("自动配置实例ID列表探针结果不一致：{}", itemObj);
+                }
+            }
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+        }
+    }
+
+    private boolean isStrictlyDescending(List<Long> idList) {
+        if (idList == null) {
+            return false;
+        }
+        for (int i = 1; i < idList.size(); i++) {
+            Long previousId = idList.get(i - 1);
+            Long currentId = idList.get(i);
+            if (previousId == null || currentId == null || previousId <= currentId) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     private void getAppModuleEnvAutoConfigInstanceIdCountTest() {
         getAppModuleEnvAutoConfigInstanceIdCountTestForAppSystemIdAndAppModuleIdAndEnvId();
         getAppModuleEnvAutoConfigInstanceIdCountTestForAppSystemIdAndAppModuleIdAndEnvIdAndIsAutoConfig();
@@ -996,14 +1090,25 @@ public class DeployAppConfigServiceTestApi extends PrivateApiComponentBase {
     }
 
     private String buildAppModuleEnvAutoConfigInstanceIdCountProbeSql(Integer isAutoConfig, String keywordFieldName) throws Exception {
+        return buildAppModuleEnvAutoConfigInstanceProbeSql(isAutoConfig, keywordFieldName, false);
+    }
+
+    private String buildAppModuleEnvAutoConfigInstanceIdListProbeSql(Integer isAutoConfig, String keywordFieldName) throws Exception {
+        return buildAppModuleEnvAutoConfigInstanceProbeSql(isAutoConfig, keywordFieldName, true);
+    }
+
+    private String buildAppModuleEnvAutoConfigInstanceProbeSql(Integer isAutoConfig, String keywordFieldName, boolean isIdList) throws Exception {
         DeployAppEnvAutoConfigVo baseSearchVo = new DeployAppEnvAutoConfigVo(-1L, -1L, -1L);
         baseSearchVo.setIsAutoConfig(isAutoConfig);
         Map<String, Column> fieldName2ColumnMap = new LinkedHashMap<>();
-        String sql = deployResourceBuildSqlService.buildGetAppModuleEnvAutoConfigInstanceIdCountSql(baseSearchVo, fieldName2ColumnMap);
+        String sql = isIdList
+                ? deployResourceBuildSqlService.buildGetAppModuleEnvAutoConfigInstanceIdListSql(baseSearchVo, fieldName2ColumnMap)
+                : deployResourceBuildSqlService.buildGetAppModuleEnvAutoConfigInstanceIdCountSql(baseSearchVo, fieldName2ColumnMap);
         if (StringUtils.isBlank(sql)) {
-            throw new IllegalStateException("Failed to build auto-config instance count SQL");
+            throw new IllegalStateException("Failed to build auto-config instance SQL");
         }
         PlainSelect plainSelect = (PlainSelect) ((Select) CCJSqlParserUtil.parse(sql)).getSelectBody();
+        plainSelect.setDistinct(null);
         Map<String, Column> groupedColumns = new LinkedHashMap<>();
         groupedColumns.put("appSystemId", fieldName2ColumnMap.get("app_system_id"));
         groupedColumns.put("appModuleId", fieldName2ColumnMap.get("app_module_id"));

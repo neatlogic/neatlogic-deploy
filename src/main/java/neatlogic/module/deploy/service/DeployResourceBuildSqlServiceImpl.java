@@ -18,8 +18,11 @@ import neatlogic.framework.deploy.dto.app.DeployAppEnvAutoConfigVo;
 import neatlogic.framework.deploy.dto.app.DeployResourceSearchVo;
 import neatlogic.framework.sqlgenerator.$sql;
 import neatlogic.framework.sqlgenerator.ExpressionVo;
+import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.schema.Column;
+import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.select.PlainSelect;
+import net.sf.jsqlparser.statement.select.Select;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -416,6 +419,34 @@ public class DeployResourceBuildSqlServiceImpl implements DeployResourceBuildSql
                 }
             }
             $sql.setSelectColumn(plainSelect, $sql.fun("COUNT", idColumn.toString()).withDistinct(true));
+            return plainSelect.toString();
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+        }
+        return null;
+    }
+
+    @Override
+    public String buildGetAppModuleEnvAutoConfigInstanceIdListSql(DeployAppEnvAutoConfigVo searchVo) {
+        return buildGetAppModuleEnvAutoConfigInstanceIdListSql(searchVo, new HashMap<>());
+    }
+
+    @Override
+    public String buildGetAppModuleEnvAutoConfigInstanceIdListSql(DeployAppEnvAutoConfigVo searchVo, Map<String, Column> fieldName2ColumnMap) {
+        try {
+            String sql = buildGetAppModuleEnvAutoConfigInstanceIdCountSql(searchVo, fieldName2ColumnMap);
+            if (StringUtils.isBlank(sql)) {
+                return null;
+            }
+            Statement statement = CCJSqlParserUtil.parse(sql);
+            PlainSelect plainSelect = (PlainSelect) ((Select) statement).getSelectBody();
+            Column idColumn = fieldName2ColumnMap.get("id");
+            $sql.setSelectColumn(plainSelect, idColumn.toString());
+            $sql.setDistinct(plainSelect, true);
+            plainSelect.setOrderByElements(null);
+            $sql.addOrderBy(plainSelect, idColumn.toString(), "desc");
+            DeployAppEnvAutoConfigVo pageSearchVo = searchVo == null ? new DeployAppEnvAutoConfigVo() : searchVo;
+            $sql.setLimit(plainSelect, pageSearchVo.getStartNum(), pageSearchVo.getPageSize());
             return plainSelect.toString();
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
