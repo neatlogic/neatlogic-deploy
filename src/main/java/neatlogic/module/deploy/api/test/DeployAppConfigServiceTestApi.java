@@ -73,17 +73,17 @@ public class DeployAppConfigServiceTestApi extends PrivateApiComponentBase {
     @Description(desc = "测试DeployAppConfigService方法")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
-//        getDatabaseByIdTest();
-//        getAppConfigEnvDatabaseCountTest();
-//        getAppConfigEnvDatabaseResourceIdListTest();
-//        getCmdbDeployAppEnvListByAppSystemIdAndModuleIdListTest();
-//        getCmdbDeployAppModuleEnvListByAppSystemIdTest();
-//        getCmdbDeployAppModuleEnvListByAppSystemIdAndAppModuleIdListTest();
-//        getCmdbDeployAppModuleEnvListByAppSystemIdAndModuleIdTest();
-//        getCmdbAppConfigEnvListIncludeDBCSchemaListAndAutoCfgKeyListByAppSystemIdAndAppModuleIdAndEnvIdTest();
-//        getCmdbEnvListByAppSystemIdAndModuleIdTest();
-//        getCmdbHasEnvAppModuleIdListByAppSystemIdAndModuleIdListTest();
-//        getAppModuleEnvAutoConfigInstanceIdCountTest();
+        getDatabaseByIdTest();
+        getAppConfigEnvDatabaseCountTest();
+        getAppConfigEnvDatabaseResourceIdListTest();
+        getCmdbDeployAppEnvListByAppSystemIdAndModuleIdListTest();
+        getCmdbDeployAppModuleEnvListByAppSystemIdTest();
+        getCmdbDeployAppModuleEnvListByAppSystemIdAndAppModuleIdListTest();
+        getCmdbDeployAppModuleEnvListByAppSystemIdAndModuleIdTest();
+        getCmdbAppConfigEnvListIncludeDBCSchemaListAndAutoCfgKeyListByAppSystemIdAndAppModuleIdAndEnvIdTest();
+        getCmdbEnvListByAppSystemIdAndModuleIdTest();
+        getCmdbHasEnvAppModuleIdListByAppSystemIdAndModuleIdListTest();
+        getAppModuleEnvAutoConfigInstanceIdCountTest();
         getAppModuleEnvAutoConfigInstanceIdListTest();
         return null;
     }
@@ -924,7 +924,9 @@ public class DeployAppConfigServiceTestApi extends PrivateApiComponentBase {
         IResourceCrossoverMapper resourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
         try {
             String groupBySql = buildAppModuleEnvAutoConfigInstanceIdListProbeSql(isAutoConfig, keywordFieldName);
+//            System.out.println("groupBySql = " + groupBySql);
             List<Map<String, Object>> mapList = resourceCrossoverMapper.getMapListBySql(groupBySql);
+//            System.out.println("mapList = " + JSONObject.toJSONString(mapList));
             if (mapList == null || mapList.isEmpty()) {
                 logger.info("自动配置实例ID列表探针未采到样本：isAutoConfig={}, keywordFieldName={}", isAutoConfig, keywordFieldName);
                 return;
@@ -933,19 +935,26 @@ public class DeployAppConfigServiceTestApi extends PrivateApiComponentBase {
                 Long appSystemId = ((Number) rowMap.get("appSystemId")).longValue();
                 Long appModuleId = ((Number) rowMap.get("appModuleId")).longValue();
                 Long envId = ((Number) rowMap.get("envId")).longValue();
+//                System.out.println("appSystemId = " + appSystemId);
+//                System.out.println("appModuleId = " + appModuleId);
+//                System.out.println("envId = " + envId);
                 DeployAppEnvAutoConfigVo searchVo = new DeployAppEnvAutoConfigVo(appSystemId, appModuleId, envId);
                 searchVo.setIsAutoConfig(isAutoConfig);
                 searchVo.setCurrentPage(1);
                 searchVo.setPageSize(1000);
                 if (keywordFieldName != null) {
                     String keyword = String.valueOf(rowMap.get("fieldValue"));
+//                    System.out.println("keyword = " + keyword);
                     if (StringUtils.isBlank(keyword)) {
                         continue;
                     }
                     searchVo.setKeyword(keyword.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_"));
                 }
                 long expectedCount = ((Number) rowMap.get("count")).longValue();
+//                System.out.println("expectedCount = " + expectedCount);
                 List<Long> resourceIdList = deployAppConfigService.getAppModuleEnvAutoConfigInstanceIdList(searchVo);
+//                System.out.println("resourceIdList.size() = " + resourceIdList.size());
+//                System.out.println("resourceIdList = " + JSONObject.toJSONString(resourceIdList));
                 int expectedPageSize = (int) Math.min(expectedCount, searchVo.getPageSize());
                 boolean sizeMatched = keywordFieldName == null
                         ? resourceIdList != null && resourceIdList.size() == expectedPageSize
