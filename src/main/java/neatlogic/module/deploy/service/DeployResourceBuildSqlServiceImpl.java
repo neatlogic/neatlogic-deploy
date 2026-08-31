@@ -14,6 +14,7 @@ import neatlogic.framework.cmdb.crossover.IResourceBuildSqlCrossoverService;
 import neatlogic.framework.cmdb.crossover.IResourceEntityCrossoverMapper;
 import neatlogic.framework.cmdb.dto.resourcecenter.config.*;
 import neatlogic.framework.crossover.CrossoverServiceFactory;
+import neatlogic.framework.deploy.dto.app.DeployAppConfigInstanceVo;
 import neatlogic.framework.deploy.dto.app.DeployAppEnvAutoConfigVo;
 import neatlogic.framework.deploy.dto.app.DeployResourceSearchVo;
 import neatlogic.framework.sqlgenerator.$sql;
@@ -447,6 +448,71 @@ public class DeployResourceBuildSqlServiceImpl implements DeployResourceBuildSql
             $sql.addOrderBy(plainSelect, idColumn.toString(), "desc");
             DeployAppEnvAutoConfigVo pageSearchVo = searchVo == null ? new DeployAppEnvAutoConfigVo() : searchVo;
             $sql.setLimit(plainSelect, pageSearchVo.getStartNum(), pageSearchVo.getPageSize());
+            return plainSelect.toString();
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+        }
+        return null;
+    }
+
+    @Override
+    public String buildGetAppConfigEnvInstanceCountSql(DeployAppConfigInstanceVo searchVo) {
+        return buildGetAppConfigEnvInstanceCountSql(searchVo, new HashMap<>());
+    }
+
+    @Override
+    public String buildGetAppConfigEnvInstanceCountSql(DeployAppConfigInstanceVo searchVo, Map<String, Column> fieldName2ColumnMap) {
+        IResourceEntityCrossoverMapper resourceEntityCrossoverMapper = CrossoverServiceFactory.getApi(IResourceEntityCrossoverMapper.class);
+        IResourceBuildSqlCrossoverService resourceBuildSqlCrossoverService = CrossoverServiceFactory.getApi(IResourceBuildSqlCrossoverService.class);
+        try {
+            ResourceEntityVo resourceEntityVo = resourceEntityCrossoverMapper.getResourceEntityByName("scence_appinstance_env_appmodule_appsystem");
+            ResourceEntityConfigVo config = resourceBuildSqlCrossoverService.getResourceEntityConfigVo(resourceEntityVo);
+            List<String> selectItemFieldNameList = new ArrayList<>();
+            selectItemFieldNameList.add("id");
+            List<String> filterItemFieldNameList = new ArrayList<>();
+            filterItemFieldNameList.add("id");
+            filterItemFieldNameList.add("ip");
+            filterItemFieldNameList.add("port");
+            filterItemFieldNameList.add("app_module_id");
+            filterItemFieldNameList.add("env_id");
+            config.setSelectItemFieldNameList(selectItemFieldNameList);
+            config.setFilterItemFieldNameList(filterItemFieldNameList);
+            PlainSelect plainSelect = resourceBuildSqlCrossoverService.getPlainSelect(config, fieldName2ColumnMap);
+            Column idColumn = fieldName2ColumnMap.get("id");
+            Column ipColumn = fieldName2ColumnMap.get("ip");
+            Column portColumn = fieldName2ColumnMap.get("port");
+            Column appModuleIdColumn = fieldName2ColumnMap.get("app_module_id");
+            Column envIdColumn = fieldName2ColumnMap.get("env_id");
+
+            ExpressionVo appModuleAndEnvIsNullExp = $sql.exp(
+                    $sql.exp(appModuleIdColumn.toString(), "is null"),
+                    "AND",
+                    $sql.exp(envIdColumn.toString(), "is null"));
+            ExpressionVo appConfigEnvInstanceExp = appModuleAndEnvIsNullExp;
+            if (searchVo != null && searchVo.getEnvId() != null) {
+                ExpressionVo appModuleIsNullAndEnvEqualsExp = $sql.exp(
+                        $sql.exp(appModuleIdColumn.toString(), "is null"),
+                        "AND",
+                        $sql.exp(envIdColumn.toString(), "=", searchVo.getEnvId()));
+                appConfigEnvInstanceExp = $sql.exp(appConfigEnvInstanceExp, "OR", appModuleIsNullAndEnvEqualsExp);
+            }
+            if (searchVo != null && searchVo.getAppModuleId() != null) {
+                ExpressionVo appModuleEqualsAndEnvIsNullExp = $sql.exp(
+                        $sql.exp(appModuleIdColumn.toString(), "=", searchVo.getAppModuleId()),
+                        "AND",
+                        $sql.exp(envIdColumn.toString(), "is null"));
+                appConfigEnvInstanceExp = $sql.exp(appConfigEnvInstanceExp, "OR", appModuleEqualsAndEnvIsNullExp);
+            }
+            $sql.addWhereExpression(plainSelect, $sql.exp("(", appConfigEnvInstanceExp, ")"));
+
+            String keyword = searchVo == null ? null : searchVo.getKeyword();
+            if (StringUtils.isNotBlank(keyword)) {
+                keyword = "%" + keyword + "%";
+                ExpressionVo keywordExp = $sql.exp(ipColumn.toString(), "like", $sql.value(keyword));
+                keywordExp = $sql.exp(keywordExp, "OR", $sql.exp(portColumn.toString(), "like", $sql.value(keyword)));
+                $sql.addWhereExpression(plainSelect, $sql.exp("(", keywordExp, ")"));
+            }
+            $sql.setSelectColumn(plainSelect, $sql.fun("COUNT", idColumn.toString()).withDistinct(true));
             return plainSelect.toString();
         } catch (Exception e) {
             logger.error(e.getMessage(), e);

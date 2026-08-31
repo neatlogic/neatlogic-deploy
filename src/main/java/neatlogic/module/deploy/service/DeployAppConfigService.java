@@ -4,6 +4,7 @@ import neatlogic.framework.cmdb.dto.resourcecenter.ResourceVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.entity.AppEnvironmentVo;
 import neatlogic.framework.cmdb.dto.transaction.CiEntityTransactionVo;
 import neatlogic.framework.deploy.dto.app.DeployAppEnvAutoConfigVo;
+import neatlogic.framework.deploy.dto.app.DeployAppConfigInstanceVo;
 import neatlogic.framework.deploy.dto.app.DeployAppConfigVo;
 import neatlogic.framework.deploy.dto.app.DeployAppEnvironmentVo;
 import neatlogic.framework.deploy.dto.app.DeployAppModuleEnvVo;
@@ -123,6 +124,8 @@ public interface DeployAppConfigService {
     int getAppModuleEnvAutoConfigInstanceIdCount(DeployAppEnvAutoConfigVo searchVo);
 
     List<Long> getAppModuleEnvAutoConfigInstanceIdList(DeployAppEnvAutoConfigVo searchVo);
+
+    int getAppConfigEnvInstanceCount(DeployAppConfigInstanceVo searchVo);
 
     List<Long> getAppConfigEnvDatabaseResourceIdList(DeployResourceSearchVo searchVo);
 }
