@@ -21,18 +21,22 @@ import neatlogic.framework.cmdb.exception.cientity.CiEntityNotFoundException;
 import neatlogic.framework.cmdb.exception.globalattr.GlobalAttrValueIrregularException;
 import neatlogic.framework.config.ConfigManager;
 import neatlogic.framework.crossover.CrossoverServiceFactory;
+import neatlogic.framework.dao.plugin.SqlCostInterceptor;
 import neatlogic.framework.deploy.dto.app.DeployAppConfigEnvDBConfigVo;
 import neatlogic.framework.deploy.dto.app.DeployAppConfigVo;
+import neatlogic.framework.deploy.dto.app.DeployAppEnvAutoConfigVo;
 import neatlogic.framework.deploy.dto.app.DeployAppEnvAutoConfigKeyValueVo;
 import neatlogic.framework.deploy.dto.app.DeployAppEnvironmentVo;
 import neatlogic.framework.deploy.dto.app.DeployAppModuleEnvVo;
 import neatlogic.framework.deploy.dto.app.DeployAppModuleVo;
 import neatlogic.framework.deploy.dto.app.DeployResourceSearchVo;
 import neatlogic.framework.deploy.exception.DeployAppConfigModuleRunnerGroupNotFoundException;
+import neatlogic.framework.dto.healthcheck.SqlAuditVo;
 import neatlogic.framework.dto.runner.RunnerGroupVo;
 import neatlogic.framework.dto.runner.RunnerMapVo;
 import neatlogic.framework.exception.runner.RunnerGroupRunnerNotFoundException;
 import neatlogic.framework.exception.type.ParamIrregularException;
+import neatlogic.framework.healthcheck.SqlAuditManager;
 import neatlogic.module.deploy.dao.mapper.DeployAppConfigMapper;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
@@ -646,6 +650,88 @@ public class DeployAppConfigServiceImpl implements DeployAppConfigService {
             return oldRowNum;
         }
         return 0;
+    }
+
+    @Override
+    public int getAppModuleEnvAutoConfigInstanceIdCount(DeployAppEnvAutoConfigVo searchVo) {
+        IResourceCrossoverMapper resourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
+        String enable = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_DATA_COMPARISON_MODE_ENABLE);
+        String mode = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_SQL_MODE);
+        int newRowNum = 0;
+        int oldRowNum = 0;
+        String sql = null;
+        if (Objects.equals(mode, JSQLPARSER_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
+            sql = deployResourceBuildSqlService.buildGetAppModuleEnvAutoConfigInstanceIdCountSql(searchVo);
+            if (StringUtils.isNotBlank(sql)) {
+                newRowNum = resourceCrossoverMapper.getCountBySql(sql);
+            }
+        }
+        if (Objects.equals(mode, MYBATIS_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
+            oldRowNum = deployAppConfigMapper.getAppModuleEnvAutoConfigInstanceIdCount(searchVo);
+        }
+        if (Objects.equals(enable, COMPARISON_ENABLED) && oldRowNum != newRowNum) {
+            JSONObject errorObj = new JSONObject();
+            errorObj.put("method", "getAppModuleEnvAutoConfigInstanceIdCount");
+            if (searchVo != null) {
+                errorObj.put("appSystemId", searchVo.getAppSystemId());
+                errorObj.put("appModuleId", searchVo.getAppModuleId());
+                errorObj.put("envId", searchVo.getEnvId());
+                errorObj.put("isAutoConfig", searchVo.getIsAutoConfig());
+                errorObj.put("keyword", searchVo.getKeyword());
+            }
+            errorObj.put("sql", sql);
+            errorObj.put("newRowNum", newRowNum);
+            errorObj.put("oldRowNum", oldRowNum);
+            logger.error("资产清单新旧SQL获取结果不一致：{}", errorObj);
+        }
+        if (Objects.equals(mode, JSQLPARSER_MODE)) {
+            return newRowNum;
+        } else if (Objects.equals(mode, MYBATIS_MODE)) {
+            return oldRowNum;
+        }
+        return 0;
+    }
+
+    @Override
+    public List<Long> getAppModuleEnvAutoConfigInstanceIdList(DeployAppEnvAutoConfigVo searchVo) {
+        IResourceCrossoverMapper resourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
+        String enable = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_DATA_COMPARISON_MODE_ENABLE);
+        String mode = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_SQL_MODE);
+        List<Long> newIdList = new ArrayList<>();
+        List<Long> oldIdList = new ArrayList<>();
+        String sql = null;
+        if (Objects.equals(mode, JSQLPARSER_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
+            sql = deployResourceBuildSqlService.buildGetAppModuleEnvAutoConfigInstanceIdListSql(searchVo);
+            if (StringUtils.isNotBlank(sql)) {
+                newIdList = resourceCrossoverMapper.getIdListBySql(sql);
+            }
+        }
+        if (Objects.equals(mode, MYBATIS_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
+            oldIdList = deployAppConfigMapper.getAppModuleEnvAutoConfigInstanceIdList(searchVo);
+        }
+        if (Objects.equals(enable, COMPARISON_ENABLED) && !Objects.equals(oldIdList, newIdList)) {
+            JSONObject errorObj = new JSONObject();
+            errorObj.put("method", "getAppModuleEnvAutoConfigInstanceIdList");
+            if (searchVo != null) {
+                errorObj.put("appSystemId", searchVo.getAppSystemId());
+                errorObj.put("appModuleId", searchVo.getAppModuleId());
+                errorObj.put("envId", searchVo.getEnvId());
+                errorObj.put("isAutoConfig", searchVo.getIsAutoConfig());
+                errorObj.put("keyword", searchVo.getKeyword());
+                errorObj.put("startNum", searchVo.getStartNum());
+                errorObj.put("pageSize", searchVo.getPageSize());
+            }
+            errorObj.put("sql", sql);
+            errorObj.put("newIdList", newIdList);
+            errorObj.put("oldIdList", oldIdList);
+            logger.error("资产清单新旧SQL获取idList结果不一致：{}", errorObj);
+        }
+        if (Objects.equals(mode, JSQLPARSER_MODE)) {
+            return newIdList;
+        } else if (Objects.equals(mode, MYBATIS_MODE)) {
+            return oldIdList;
+        }
+        return new ArrayList<>();
     }
 
     @Override
