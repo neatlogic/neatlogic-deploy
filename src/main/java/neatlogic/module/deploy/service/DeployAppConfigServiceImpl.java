@@ -774,6 +774,46 @@ public class DeployAppConfigServiceImpl implements DeployAppConfigService {
     }
 
     @Override
+    public List<Long> searchAppConfigEnvInstanceIdList(DeployAppConfigInstanceVo searchVo) {
+        IResourceCrossoverMapper resourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
+        String enable = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_DATA_COMPARISON_MODE_ENABLE);
+        String mode = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_SQL_MODE);
+        List<Long> newIdList = new ArrayList<>();
+        List<Long> oldIdList = new ArrayList<>();
+        String sql = null;
+        if (Objects.equals(mode, JSQLPARSER_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
+            sql = deployResourceBuildSqlService.buildSearchAppConfigEnvInstanceIdListSql(searchVo);
+            if (StringUtils.isNotBlank(sql)) {
+                newIdList = resourceCrossoverMapper.getIdListBySql(sql);
+            }
+        }
+        if (Objects.equals(mode, MYBATIS_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
+            oldIdList = deployAppConfigMapper.searchAppConfigEnvInstanceIdList(searchVo);
+        }
+        if (Objects.equals(enable, COMPARISON_ENABLED) && !Objects.equals(oldIdList, newIdList)) {
+            JSONObject errorObj = new JSONObject();
+            errorObj.put("method", "searchAppConfigEnvInstanceIdList");
+            if (searchVo != null) {
+                errorObj.put("appModuleId", searchVo.getAppModuleId());
+                errorObj.put("envId", searchVo.getEnvId());
+                errorObj.put("keyword", searchVo.getKeyword());
+                errorObj.put("startNum", searchVo.getStartNum());
+                errorObj.put("pageSize", searchVo.getPageSize());
+            }
+            errorObj.put("sql", sql);
+            errorObj.put("newIdList", newIdList);
+            errorObj.put("oldIdList", oldIdList);
+            logger.error("资产清单新旧SQL获取idList结果不一致：{}", errorObj);
+        }
+        if (Objects.equals(mode, JSQLPARSER_MODE)) {
+            return newIdList;
+        } else if (Objects.equals(mode, MYBATIS_MODE)) {
+            return oldIdList;
+        }
+        return new ArrayList<>();
+    }
+
+    @Override
     public List<Long> getAppConfigEnvDatabaseResourceIdList(DeployResourceSearchVo searchVo) {
         IResourceCrossoverMapper resourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
         String enable = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_DATA_COMPARISON_MODE_ENABLE);

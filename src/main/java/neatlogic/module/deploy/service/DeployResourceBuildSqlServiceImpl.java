@@ -521,6 +521,34 @@ public class DeployResourceBuildSqlServiceImpl implements DeployResourceBuildSql
     }
 
     @Override
+    public String buildSearchAppConfigEnvInstanceIdListSql(DeployAppConfigInstanceVo searchVo) {
+        return buildSearchAppConfigEnvInstanceIdListSql(searchVo, new HashMap<>());
+    }
+
+    @Override
+    public String buildSearchAppConfigEnvInstanceIdListSql(DeployAppConfigInstanceVo searchVo, Map<String, Column> fieldName2ColumnMap) {
+        try {
+            String sql = buildGetAppConfigEnvInstanceCountSql(searchVo, fieldName2ColumnMap);
+            if (StringUtils.isBlank(sql)) {
+                return null;
+            }
+            Statement statement = CCJSqlParserUtil.parse(sql);
+            PlainSelect plainSelect = (PlainSelect) ((Select) statement).getSelectBody();
+            Column idColumn = fieldName2ColumnMap.get("id");
+            $sql.setSelectColumn(plainSelect, idColumn.toString());
+            $sql.setDistinct(plainSelect, true);
+            plainSelect.setOrderByElements(null);
+            $sql.addOrderBy(plainSelect, idColumn.toString(), "desc");
+            DeployAppConfigInstanceVo pageSearchVo = searchVo == null ? new DeployAppConfigInstanceVo() : searchVo;
+            $sql.setLimit(plainSelect, pageSearchVo.getStartNum(), pageSearchVo.getPageSize());
+            return plainSelect.toString();
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+        }
+        return null;
+    }
+
+    @Override
     public String buildGetAppConfigEnvDatabaseCountSql(DeployResourceSearchVo searchVo) {
         IResourceEntityCrossoverMapper resourceEntityCrossoverMapper = CrossoverServiceFactory.getApi(IResourceEntityCrossoverMapper.class);
         IResourceBuildSqlCrossoverService resourceBuildSqlCrossoverService = CrossoverServiceFactory.getApi(IResourceBuildSqlCrossoverService.class);

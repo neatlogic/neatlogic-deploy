@@ -127,5 +127,7 @@ public interface DeployAppConfigService {
 
     int getAppConfigEnvInstanceCount(DeployAppConfigInstanceVo searchVo);
 
+    List<Long> searchAppConfigEnvInstanceIdList(DeployAppConfigInstanceVo searchVo);
+
     List<Long> getAppConfigEnvDatabaseResourceIdList(DeployResourceSearchVo searchVo);
 }
