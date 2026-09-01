@@ -11,6 +11,7 @@
 package neatlogic.module.deploy.service;
 
 import neatlogic.framework.deploy.dto.app.DeployAppEnvAutoConfigVo;
+import neatlogic.framework.deploy.dto.app.DeployAppConfigInstanceVo;
 import neatlogic.framework.deploy.dto.app.DeployResourceSearchVo;
 import net.sf.jsqlparser.schema.Column;
 
@@ -44,6 +45,16 @@ public interface DeployResourceBuildSqlService {
 
     /** 同次构建返回真实列映射，供联合条件探针使用。 */
     String buildGetAppModuleEnvAutoConfigInstanceIdListSql(DeployAppEnvAutoConfigVo searchVo, Map<String, Column> fieldName2ColumnMap);
+
+    String buildGetAppConfigEnvInstanceCountSql(DeployAppConfigInstanceVo searchVo);
+
+    /** 同次构建返回真实列映射，供联合条件探针使用。 */
+    String buildGetAppConfigEnvInstanceCountSql(DeployAppConfigInstanceVo searchVo, Map<String, Column> fieldName2ColumnMap);
+
+    String buildSearchAppConfigEnvInstanceIdListSql(DeployAppConfigInstanceVo searchVo);
+
+    /** 同次构建返回真实列映射，供联合条件探针使用。 */
+    String buildSearchAppConfigEnvInstanceIdListSql(DeployAppConfigInstanceVo searchVo, Map<String, Column> fieldName2ColumnMap);
 
     String buildGetAppConfigEnvDatabaseCountSql(DeployResourceSearchVo searchVo);
 

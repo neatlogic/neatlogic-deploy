@@ -9,6 +9,7 @@ import neatlogic.framework.cmdb.dto.resourcecenter.ResourceVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.entity.AppEnvironmentVo;
 import neatlogic.framework.crossover.CrossoverServiceFactory;
 import neatlogic.framework.deploy.auth.DEPLOY_BASE;
+import neatlogic.framework.deploy.dto.app.DeployAppConfigInstanceVo;
 import neatlogic.framework.deploy.dto.app.DeployAppEnvAutoConfigVo;
 import neatlogic.framework.deploy.dto.app.DeployAppEnvironmentVo;
 import neatlogic.framework.deploy.dto.app.DeployAppModuleEnvVo;
@@ -85,6 +86,8 @@ public class DeployAppConfigServiceTestApi extends PrivateApiComponentBase {
         getCmdbHasEnvAppModuleIdListByAppSystemIdAndModuleIdListTest();
         getAppModuleEnvAutoConfigInstanceIdCountTest();
         getAppModuleEnvAutoConfigInstanceIdListTest();
+        getAppConfigEnvInstanceCountTest();
+        searchAppConfigEnvInstanceIdListTest();
         return null;
     }
 
@@ -889,6 +892,214 @@ public class DeployAppConfigServiceTestApi extends PrivateApiComponentBase {
     private void getAppConfigEnvDatabaseCountTest() {
         getAppConfigEnvDatabaseCountTestForKeyword();
         getAppConfigEnvDatabaseCountTestForDefaultValue();
+    }
+
+    private void getAppConfigEnvInstanceCountTest() {
+        getAppConfigEnvInstanceCountForAppModuleIdAndEnvId();
+        getAppConfigEnvInstanceCountForAppModuleIdAndEnvIdAndKeywordLikeIp();
+        getAppConfigEnvInstanceCountForAppModuleIdAndEnvIdAndKeywordLikePort();
+    }
+
+    private void getAppConfigEnvInstanceCountForAppModuleIdAndEnvId() {
+        testAppConfigEnvInstanceCount(null);
+    }
+
+    private void getAppConfigEnvInstanceCountForAppModuleIdAndEnvIdAndKeywordLikeIp() {
+        testAppConfigEnvInstanceCount("ip");
+    }
+
+    private void getAppConfigEnvInstanceCountForAppModuleIdAndEnvIdAndKeywordLikePort() {
+        testAppConfigEnvInstanceCount("port");
+    }
+
+    private void searchAppConfigEnvInstanceIdListTest() {
+        searchAppConfigEnvInstanceIdListForAppModuleIdAndEnvId();
+        searchAppConfigEnvInstanceIdListForAppModuleIdAndEnvIdAndKeywordLikeIp();
+        searchAppConfigEnvInstanceIdListForAppModuleIdAndEnvIdAndKeywordLikePort();
+    }
+
+    private void searchAppConfigEnvInstanceIdListForAppModuleIdAndEnvId() {
+        testSearchAppConfigEnvInstanceIdList(null);
+    }
+
+    private void searchAppConfigEnvInstanceIdListForAppModuleIdAndEnvIdAndKeywordLikeIp() {
+        testSearchAppConfigEnvInstanceIdList("ip");
+    }
+
+    private void searchAppConfigEnvInstanceIdListForAppModuleIdAndEnvIdAndKeywordLikePort() {
+        testSearchAppConfigEnvInstanceIdList("port");
+    }
+
+    private void testSearchAppConfigEnvInstanceIdList(String keywordFieldName) {
+        IResourceCrossoverMapper resourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
+        try {
+            DeployAppConfigInstanceVo probeSearchVo = buildSearchAppConfigEnvInstanceIdListProbeSearchVo();
+            if (probeSearchVo == null) {
+                logger.info("应用配置实例ID列表探针未采到模块或环境样本：keywordFieldName={}", keywordFieldName);
+                return;
+            }
+            probeSearchVo.setCurrentPage(1);
+            probeSearchVo.setPageSize(1000);
+            if (keywordFieldName == null) {
+                List<Long> resourceIdList = deployAppConfigService.searchAppConfigEnvInstanceIdList(probeSearchVo);
+//                System.out.println("resourceIdList = " + resourceIdList);
+                return;
+            }
+            Map<String, Column> fieldName2ColumnMap = new LinkedHashMap<>();
+            String sql = deployResourceBuildSqlService.buildSearchAppConfigEnvInstanceIdListSql(probeSearchVo, fieldName2ColumnMap);
+//            System.out.println("sql = " + sql);
+            Column groupedColumn = fieldName2ColumnMap.get(keywordFieldName);
+            if (StringUtils.isBlank(sql) || groupedColumn == null) {
+                throw new IllegalStateException("Failed to build app-config instance ID list keyword probe SQL");
+            }
+            String groupBySql = buildGroupBySql(sql, groupedColumn, true);
+//            System.out.println("groupBySql = " + groupBySql);
+            List<Map<String, Object>> mapList = resourceCrossoverMapper.getMapListBySql(groupBySql);
+//            System.out.println("mapList = " + JSONObject.toJSONString(mapList));
+            if (mapList == null || mapList.isEmpty()) {
+                logger.info("应用配置实例ID列表探针未采到关键字样本：keywordFieldName={}", keywordFieldName);
+                return;
+            }
+            for (Map<String, Object> rowMap : mapList) {
+                Object fieldValue = rowMap.get("fieldValue");
+//                System.out.println("fieldValue = " + fieldValue);
+                if (fieldValue == null || StringUtils.isBlank(String.valueOf(fieldValue))) {
+                    continue;
+                }
+//                Long count = (Long) rowMap.get("count");
+//                System.out.println("count = " + count);
+                DeployAppConfigInstanceVo searchVo = new DeployAppConfigInstanceVo();
+                searchVo.setAppModuleId(probeSearchVo.getAppModuleId());
+                searchVo.setEnvId(probeSearchVo.getEnvId());
+                searchVo.setCurrentPage(1);
+                searchVo.setPageSize(1000);
+                String keyword = String.valueOf(fieldValue);
+                searchVo.setKeyword(keyword.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_"));
+                List<Long> resourceIdList = deployAppConfigService.searchAppConfigEnvInstanceIdList(searchVo);
+//                System.out.println("resourceIdList = " + resourceIdList);
+            }
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+        }
+    }
+
+    private DeployAppConfigInstanceVo buildSearchAppConfigEnvInstanceIdListProbeSearchVo() throws Exception {
+        Long appModuleId = getSearchAppConfigEnvInstanceIdListProbeValue("app_module_id");
+        Long envId = getSearchAppConfigEnvInstanceIdListProbeValue("env_id");
+//        System.out.println("appModuleId = " + appModuleId);
+//        System.out.println("envId = " + envId);
+        if (appModuleId == null || envId == null) {
+            return null;
+        }
+        DeployAppConfigInstanceVo searchVo = new DeployAppConfigInstanceVo();
+        searchVo.setAppModuleId(appModuleId);
+        searchVo.setEnvId(envId);
+        return searchVo;
+    }
+
+    private Long getSearchAppConfigEnvInstanceIdListProbeValue(String fieldName) throws Exception {
+        DeployAppConfigInstanceVo baseSearchVo = new DeployAppConfigInstanceVo();
+        baseSearchVo.setAppModuleId(-1L);
+        baseSearchVo.setEnvId(-1L);
+        Map<String, Column> fieldName2ColumnMap = new LinkedHashMap<>();
+        String sql = deployResourceBuildSqlService.buildSearchAppConfigEnvInstanceIdListSql(baseSearchVo, fieldName2ColumnMap);
+//        System.out.println("getSearchAppConfigEnvInstanceIdListProbeValue sql = " + sql);
+        Column groupedColumn = fieldName2ColumnMap.get(fieldName);
+        if (StringUtils.isBlank(sql) || groupedColumn == null) {
+            throw new IllegalStateException("Failed to build app-config instance ID list probe SQL: " + fieldName);
+        }
+        String groupBySql = buildGroupBySql(sql, groupedColumn, true);
+//        System.out.println("getSearchAppConfigEnvInstanceIdListProbeValue groupBySql = " + groupBySql);
+        IResourceCrossoverMapper resourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
+        List<Map<String, Object>> mapList = resourceCrossoverMapper.getMapListBySql(groupBySql);
+//        System.out.println("mapList = " + JSONObject.toJSONString(mapList));
+        if (mapList == null || mapList.isEmpty() || !(mapList.get(0).get("fieldValue") instanceof Number number)) {
+            return null;
+        }
+        return number.longValue();
+    }
+
+    private void testAppConfigEnvInstanceCount(String keywordFieldName) {
+        IResourceCrossoverMapper resourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
+        try {
+            DeployAppConfigInstanceVo probeSearchVo = buildAppConfigEnvInstanceCountProbeSearchVo();
+            if (probeSearchVo == null) {
+                logger.info("应用配置实例数量探针未采到模块或环境样本：keywordFieldName={}", keywordFieldName);
+                return;
+            }
+            if (keywordFieldName == null) {
+                deployAppConfigService.getAppConfigEnvInstanceCount(probeSearchVo);
+                return;
+            }
+            Map<String, Column> fieldName2ColumnMap = new LinkedHashMap<>();
+            String sql = deployResourceBuildSqlService.buildGetAppConfigEnvInstanceCountSql(probeSearchVo, fieldName2ColumnMap);
+//            System.out.println("testAppConfigEnvInstanceCount sql = " + sql);
+            Column groupedColumn = fieldName2ColumnMap.get(keywordFieldName);
+            if (StringUtils.isBlank(sql) || groupedColumn == null) {
+                throw new IllegalStateException("Failed to build app-config instance keyword probe SQL");
+            }
+            String groupBySql = buildGroupBySql(sql, groupedColumn, true);
+//            System.out.println("groupBySql = " + groupBySql);
+            List<Map<String, Object>> mapList = resourceCrossoverMapper.getMapListBySql(groupBySql);
+//            System.out.println("mapList = " + JSONObject.toJSONString(mapList));
+            if (mapList == null || mapList.isEmpty()) {
+                logger.info("应用配置实例数量探针未采到关键字样本：keywordFieldName={}", keywordFieldName);
+                return;
+            }
+            for (Map<String, Object> rowMap : mapList) {
+                Object fieldValue = rowMap.get("fieldValue");
+                if (fieldValue == null || StringUtils.isBlank(String.valueOf(fieldValue))) {
+                    continue;
+                }
+                Long count = (Long) rowMap.get("count");
+//                System.out.println("fieldValue = " + fieldValue);
+//                System.out.println("count = " + count);
+                DeployAppConfigInstanceVo searchVo = new DeployAppConfigInstanceVo();
+                searchVo.setAppModuleId(probeSearchVo.getAppModuleId());
+                searchVo.setEnvId(probeSearchVo.getEnvId());
+                String keyword = String.valueOf(fieldValue);
+                searchVo.setKeyword(keyword.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_"));
+                int resourceCount = deployAppConfigService.getAppConfigEnvInstanceCount(searchVo);
+//                System.out.println("resourceCount = " + resourceCount);
+            }
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+        }
+    }
+
+    private DeployAppConfigInstanceVo buildAppConfigEnvInstanceCountProbeSearchVo() throws Exception {
+        Long appModuleId = getAppConfigEnvInstanceCountProbeValue("app_module_id");
+        Long envId = getAppConfigEnvInstanceCountProbeValue("env_id");
+//        System.out.println("appModuleId = " + appModuleId);
+//        System.out.println("envId = " + envId);
+        if (appModuleId == null || envId == null) {
+            return null;
+        }
+        DeployAppConfigInstanceVo searchVo = new DeployAppConfigInstanceVo();
+        searchVo.setAppModuleId(appModuleId);
+        searchVo.setEnvId(envId);
+        return searchVo;
+    }
+
+    private Long getAppConfigEnvInstanceCountProbeValue(String fieldName) throws Exception {
+        DeployAppConfigInstanceVo baseSearchVo = new DeployAppConfigInstanceVo();
+        baseSearchVo.setAppModuleId(-1L);
+        baseSearchVo.setEnvId(-1L);
+        Map<String, Column> fieldName2ColumnMap = new LinkedHashMap<>();
+        String sql = deployResourceBuildSqlService.buildGetAppConfigEnvInstanceCountSql(baseSearchVo, fieldName2ColumnMap);
+        Column groupedColumn = fieldName2ColumnMap.get(fieldName);
+        if (StringUtils.isBlank(sql) || groupedColumn == null) {
+            throw new IllegalStateException("Failed to build app-config instance ID probe SQL: " + fieldName);
+        }
+        String groupBySql = buildGroupBySql(sql, groupedColumn, true);
+//        System.out.println("getAppConfigEnvInstanceCountProbeValue groupBySql = " + groupBySql);
+        IResourceCrossoverMapper resourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
+        List<Map<String, Object>> mapList = resourceCrossoverMapper.getMapListBySql(groupBySql);
+//        System.out.println("getAppConfigEnvInstanceCountProbeValue mapList = " + JSONObject.toJSONString(mapList));
+        if (mapList == null || mapList.isEmpty() || !(mapList.get(0).get("fieldValue") instanceof Number number)) {
+            return null;
+        }
+        return number.longValue();
     }
 
     private void getAppModuleEnvAutoConfigInstanceIdListTest() {

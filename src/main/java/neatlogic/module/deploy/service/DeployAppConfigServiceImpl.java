@@ -23,6 +23,7 @@ import neatlogic.framework.config.ConfigManager;
 import neatlogic.framework.crossover.CrossoverServiceFactory;
 import neatlogic.framework.dao.plugin.SqlCostInterceptor;
 import neatlogic.framework.deploy.dto.app.DeployAppConfigEnvDBConfigVo;
+import neatlogic.framework.deploy.dto.app.DeployAppConfigInstanceVo;
 import neatlogic.framework.deploy.dto.app.DeployAppConfigVo;
 import neatlogic.framework.deploy.dto.app.DeployAppEnvAutoConfigVo;
 import neatlogic.framework.deploy.dto.app.DeployAppEnvAutoConfigKeyValueVo;
@@ -717,6 +718,84 @@ public class DeployAppConfigServiceImpl implements DeployAppConfigService {
                 errorObj.put("appModuleId", searchVo.getAppModuleId());
                 errorObj.put("envId", searchVo.getEnvId());
                 errorObj.put("isAutoConfig", searchVo.getIsAutoConfig());
+                errorObj.put("keyword", searchVo.getKeyword());
+                errorObj.put("startNum", searchVo.getStartNum());
+                errorObj.put("pageSize", searchVo.getPageSize());
+            }
+            errorObj.put("sql", sql);
+            errorObj.put("newIdList", newIdList);
+            errorObj.put("oldIdList", oldIdList);
+            logger.error("资产清单新旧SQL获取idList结果不一致：{}", errorObj);
+        }
+        if (Objects.equals(mode, JSQLPARSER_MODE)) {
+            return newIdList;
+        } else if (Objects.equals(mode, MYBATIS_MODE)) {
+            return oldIdList;
+        }
+        return new ArrayList<>();
+    }
+
+    @Override
+    public int getAppConfigEnvInstanceCount(DeployAppConfigInstanceVo searchVo) {
+        IResourceCrossoverMapper resourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
+        String enable = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_DATA_COMPARISON_MODE_ENABLE);
+        String mode = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_SQL_MODE);
+        int newRowNum = 0;
+        int oldRowNum = 0;
+        String sql = null;
+        if (Objects.equals(mode, JSQLPARSER_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
+            sql = deployResourceBuildSqlService.buildGetAppConfigEnvInstanceCountSql(searchVo);
+            if (StringUtils.isNotBlank(sql)) {
+                newRowNum = resourceCrossoverMapper.getCountBySql(sql);
+            }
+        }
+        if (Objects.equals(mode, MYBATIS_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
+            oldRowNum = deployAppConfigMapper.getAppConfigEnvInstanceCount(searchVo);
+        }
+        if (Objects.equals(enable, COMPARISON_ENABLED) && oldRowNum != newRowNum) {
+            JSONObject errorObj = new JSONObject();
+            errorObj.put("method", "getAppConfigEnvInstanceCount");
+            if (searchVo != null) {
+                errorObj.put("appModuleId", searchVo.getAppModuleId());
+                errorObj.put("envId", searchVo.getEnvId());
+                errorObj.put("keyword", searchVo.getKeyword());
+            }
+            errorObj.put("sql", sql);
+            errorObj.put("newRowNum", newRowNum);
+            errorObj.put("oldRowNum", oldRowNum);
+            logger.error("资产清单新旧SQL获取结果不一致：{}", errorObj);
+        }
+        if (Objects.equals(mode, JSQLPARSER_MODE)) {
+            return newRowNum;
+        } else if (Objects.equals(mode, MYBATIS_MODE)) {
+            return oldRowNum;
+        }
+        return 0;
+    }
+
+    @Override
+    public List<Long> searchAppConfigEnvInstanceIdList(DeployAppConfigInstanceVo searchVo) {
+        IResourceCrossoverMapper resourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
+        String enable = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_DATA_COMPARISON_MODE_ENABLE);
+        String mode = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_SQL_MODE);
+        List<Long> newIdList = new ArrayList<>();
+        List<Long> oldIdList = new ArrayList<>();
+        String sql = null;
+        if (Objects.equals(mode, JSQLPARSER_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
+            sql = deployResourceBuildSqlService.buildSearchAppConfigEnvInstanceIdListSql(searchVo);
+            if (StringUtils.isNotBlank(sql)) {
+                newIdList = resourceCrossoverMapper.getIdListBySql(sql);
+            }
+        }
+        if (Objects.equals(mode, MYBATIS_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
+            oldIdList = deployAppConfigMapper.searchAppConfigEnvInstanceIdList(searchVo);
+        }
+        if (Objects.equals(enable, COMPARISON_ENABLED) && !Objects.equals(oldIdList, newIdList)) {
+            JSONObject errorObj = new JSONObject();
+            errorObj.put("method", "searchAppConfigEnvInstanceIdList");
+            if (searchVo != null) {
+                errorObj.put("appModuleId", searchVo.getAppModuleId());
+                errorObj.put("envId", searchVo.getEnvId());
                 errorObj.put("keyword", searchVo.getKeyword());
                 errorObj.put("startNum", searchVo.getStartNum());
                 errorObj.put("pageSize", searchVo.getPageSize());
