@@ -129,5 +129,7 @@ public interface DeployAppConfigService {
 
     List<Long> searchAppConfigEnvInstanceIdList(DeployAppConfigInstanceVo searchVo);
 
+    List<DeployAppConfigInstanceVo> searchAppConfigEnvInstanceListByIdList(List<Long> idList);
+
     List<Long> getAppConfigEnvDatabaseResourceIdList(DeployResourceSearchVo searchVo);
 }
