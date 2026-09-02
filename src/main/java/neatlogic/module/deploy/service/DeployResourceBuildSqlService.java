@@ -26,6 +26,11 @@ public interface DeployResourceBuildSqlService {
 
     String buildGetCmdbHasEnvAppModuleIdListByAppSystemIdAndModuleIdListSql(Long appSystemId, List<Long> appModuleIdList);
 
+    String buildGetCmdbHasEnvAppSystemIdListByAppSystemIdListSql(List<Long> idList);
+
+    /** 同次构建返回真实列映射，供 idList 条件探针使用。 */
+    String buildGetCmdbHasEnvAppSystemIdListByAppSystemIdListSql(List<Long> idList, Map<String, Column> fieldName2ColumnMap);
+
     String buildGetCmdbEnvListByAppSystemIdAndModuleIdSql(Long appSystemId, Long appModuleId);
 
     String buildGetCmdbDeployAppModuleEnvListByAppSystemIdSql(Long appSystemId);
