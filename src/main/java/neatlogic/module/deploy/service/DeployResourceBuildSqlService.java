@@ -56,6 +56,11 @@ public interface DeployResourceBuildSqlService {
     /** 同次构建返回真实列映射，供联合条件探针使用。 */
     String buildSearchAppConfigEnvInstanceIdListSql(DeployAppConfigInstanceVo searchVo, Map<String, Column> fieldName2ColumnMap);
 
+    String buildSearchAppConfigEnvInstanceListByIdListSql(List<Long> idList);
+
+    /** 同次构建返回真实列映射，供 idList 条件探针使用。 */
+    String buildSearchAppConfigEnvInstanceListByIdListSql(List<Long> idList, Map<String, Column> fieldName2ColumnMap);
+
     String buildGetAppConfigEnvDatabaseCountSql(DeployResourceSearchVo searchVo);
 
     String buildGetAppConfigEnvDatabaseResourceIdListSql(DeployResourceSearchVo searchVo);

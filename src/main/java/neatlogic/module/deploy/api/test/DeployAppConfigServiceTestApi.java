@@ -88,6 +88,7 @@ public class DeployAppConfigServiceTestApi extends PrivateApiComponentBase {
         getAppModuleEnvAutoConfigInstanceIdListTest();
         getAppConfigEnvInstanceCountTest();
         searchAppConfigEnvInstanceIdListTest();
+        searchAppConfigEnvInstanceListByIdList();
         return null;
     }
 
@@ -1017,6 +1018,47 @@ public class DeployAppConfigServiceTestApi extends PrivateApiComponentBase {
             return null;
         }
         return number.longValue();
+    }
+
+    private void searchAppConfigEnvInstanceListByIdList() {
+        IResourceCrossoverMapper resourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
+        try {
+            Map<String, Column> fieldName2ColumnMap = new LinkedHashMap<>();
+            String sql = deployResourceBuildSqlService.buildSearchAppConfigEnvInstanceListByIdListSql(List.of(-1L), fieldName2ColumnMap);
+//            System.out.println("sql = " + sql);
+            Column groupedColumn = fieldName2ColumnMap.get("id");
+            if (StringUtils.isBlank(sql) || groupedColumn == null) {
+                throw new IllegalStateException("Failed to build app-config instance list id probe SQL");
+            }
+            String groupBySql = buildGroupBySql(sql, groupedColumn, true);
+//            System.out.println("groupBySql = " + groupBySql);
+            List<Map<String, Object>> mapList = resourceCrossoverMapper.getMapListBySql(groupBySql);
+//            System.out.println("mapList = " + JSONObject.toJSONString(mapList));
+            if (mapList == null || mapList.isEmpty()) {
+                logger.info("应用配置实例列表探针未采到ID样本");
+                return;
+            }
+            for (Map<String, Object> rowMap : mapList) {
+                Object fieldValue = rowMap.get("fieldValue");
+                if (!(fieldValue instanceof Number number)) {
+                    continue;
+                }
+                Long id = number.longValue();
+//                System.out.println("id = " + id);
+                List<DeployAppConfigInstanceVo> instanceList = deployAppConfigService.searchAppConfigEnvInstanceListByIdList(List.of(id));
+//                System.out.println("instanceList.get(0).getId() = " + instanceList.get(0).getId());
+                if (instanceList == null || instanceList.isEmpty() || !id.equals(instanceList.get(0).getId())) {
+                    JSONObject itemObj = new JSONObject(true);
+                    itemObj.put("instanceList", instanceList);
+                    itemObj.put("count", rowMap.get("count"));
+                    itemObj.put("idList", List.of(id));
+                    itemObj.put("groupedColumn", groupedColumn.toString());
+                    logger.info(itemObj.toJSONString());
+                }
+            }
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+        }
     }
 
     private void testAppConfigEnvInstanceCount(String keywordFieldName) {

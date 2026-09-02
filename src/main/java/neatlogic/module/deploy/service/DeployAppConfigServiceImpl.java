@@ -814,6 +814,77 @@ public class DeployAppConfigServiceImpl implements DeployAppConfigService {
     }
 
     @Override
+    public List<DeployAppConfigInstanceVo> searchAppConfigEnvInstanceListByIdList(List<Long> idList) {
+        if (CollectionUtils.isEmpty(idList)) {
+            return new ArrayList<>();
+        }
+        IResourceCrossoverMapper resourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
+        String enable = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_DATA_COMPARISON_MODE_ENABLE);
+        String mode = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_SQL_MODE);
+        List<DeployAppConfigInstanceVo> newInstanceList = new ArrayList<>();
+        List<DeployAppConfigInstanceVo> oldInstanceList = new ArrayList<>();
+        String sql = null;
+        if (Objects.equals(mode, JSQLPARSER_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
+            sql = deployResourceBuildSqlService.buildSearchAppConfigEnvInstanceListByIdListSql(idList);
+            if (StringUtils.isNotBlank(sql)) {
+                List<ResourceVo> resourceList = resourceCrossoverMapper.getResourceListBySql(sql);
+                if (CollectionUtils.isNotEmpty(resourceList)) {
+                    for (ResourceVo resourceVo : resourceList) {
+                        DeployAppConfigInstanceVo instanceVo = new DeployAppConfigInstanceVo();
+                        instanceVo.setId(resourceVo.getId());
+                        instanceVo.setIp(resourceVo.getIp());
+                        instanceVo.setPort(resourceVo.getPort());
+                        instanceVo.setName(resourceVo.getName());
+                        newInstanceList.add(instanceVo);
+                    }
+                }
+            }
+        }
+        if (Objects.equals(mode, MYBATIS_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
+            oldInstanceList = deployAppConfigMapper.searchAppConfigEnvInstanceListByIdList(idList);
+            if (oldInstanceList == null) {
+                oldInstanceList = new ArrayList<>();
+            }
+        }
+        if (Objects.equals(enable, COMPARISON_ENABLED) && !checkDeployAppConfigInstanceListIsEquals(newInstanceList, oldInstanceList)) {
+            JSONObject errorObj = new JSONObject();
+            errorObj.put("method", "searchAppConfigEnvInstanceListByIdList");
+            errorObj.put("idList", idList);
+            errorObj.put("sql", sql);
+            errorObj.put("newInstanceList", newInstanceList);
+            errorObj.put("oldInstanceList", oldInstanceList);
+            logger.error("资产清单新旧SQL获取实例列表结果不一致：{}", errorObj);
+        }
+        if (Objects.equals(mode, JSQLPARSER_MODE)) {
+            return newInstanceList;
+        } else if (Objects.equals(mode, MYBATIS_MODE)) {
+            return oldInstanceList;
+        }
+        return new ArrayList<>();
+    }
+
+    private boolean checkDeployAppConfigInstanceListIsEquals(List<DeployAppConfigInstanceVo> instanceList, List<DeployAppConfigInstanceVo> oldInstanceList) {
+        if (instanceList.size() != oldInstanceList.size()) {
+            return false;
+        }
+        for (int i = 0; i < instanceList.size(); i++) {
+            DeployAppConfigInstanceVo instanceVo = instanceList.get(i);
+            DeployAppConfigInstanceVo oldInstanceVo = oldInstanceList.get(i);
+            if (instanceVo == oldInstanceVo) {
+                continue;
+            }
+            if (instanceVo == null || oldInstanceVo == null
+                    || !Objects.equals(instanceVo.getId(), oldInstanceVo.getId())
+                    || !Objects.equals(instanceVo.getIp(), oldInstanceVo.getIp())
+                    || !Objects.equals(instanceVo.getPort(), oldInstanceVo.getPort())
+                    || !Objects.equals(instanceVo.getName(), oldInstanceVo.getName())) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    @Override
     public List<Long> getAppConfigEnvDatabaseResourceIdList(DeployResourceSearchVo searchVo) {
         IResourceCrossoverMapper resourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
         String enable = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_DATA_COMPARISON_MODE_ENABLE);

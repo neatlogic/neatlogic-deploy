@@ -549,6 +549,43 @@ public class DeployResourceBuildSqlServiceImpl implements DeployResourceBuildSql
     }
 
     @Override
+    public String buildSearchAppConfigEnvInstanceListByIdListSql(List<Long> idList) {
+        return buildSearchAppConfigEnvInstanceListByIdListSql(idList, new HashMap<>());
+    }
+
+    @Override
+    public String buildSearchAppConfigEnvInstanceListByIdListSql(List<Long> idList, Map<String, Column> fieldName2ColumnMap) {
+        if (CollectionUtils.isEmpty(idList)) {
+            return null;
+        }
+        IResourceEntityCrossoverMapper resourceEntityCrossoverMapper = CrossoverServiceFactory.getApi(IResourceEntityCrossoverMapper.class);
+        IResourceBuildSqlCrossoverService resourceBuildSqlCrossoverService = CrossoverServiceFactory.getApi(IResourceBuildSqlCrossoverService.class);
+        try {
+            ResourceEntityVo resourceEntityVo = resourceEntityCrossoverMapper.getResourceEntityByName("scence_appinstance_env_appmodule_appsystem");
+            ResourceEntityConfigVo config = resourceBuildSqlCrossoverService.getResourceEntityConfigVo(resourceEntityVo);
+            List<String> selectItemFieldNameList = new ArrayList<>();
+            selectItemFieldNameList.add("id");
+            selectItemFieldNameList.add("ip");
+            selectItemFieldNameList.add("port");
+            selectItemFieldNameList.add("name");
+            List<String> filterItemFieldNameList = new ArrayList<>();
+            filterItemFieldNameList.add("id");
+            config.setSelectItemFieldNameList(selectItemFieldNameList);
+            config.setFilterItemFieldNameList(filterItemFieldNameList);
+            PlainSelect plainSelect = resourceBuildSqlCrossoverService.getPlainSelect(config, fieldName2ColumnMap);
+            Column idColumn = fieldName2ColumnMap.get("id");
+            $sql.addWhereExpression(plainSelect, $sql.exp(idColumn.toString(), "in", idList));
+            $sql.setDistinct(plainSelect, true);
+            plainSelect.setOrderByElements(null);
+            $sql.addOrderBy(plainSelect, idColumn.toString(), "desc");
+            return plainSelect.toString();
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+        }
+        return null;
+    }
+
+    @Override
     public String buildGetAppConfigEnvDatabaseCountSql(DeployResourceSearchVo searchVo) {
         IResourceEntityCrossoverMapper resourceEntityCrossoverMapper = CrossoverServiceFactory.getApi(IResourceEntityCrossoverMapper.class);
         IResourceBuildSqlCrossoverService resourceBuildSqlCrossoverService = CrossoverServiceFactory.getApi(IResourceBuildSqlCrossoverService.class);
