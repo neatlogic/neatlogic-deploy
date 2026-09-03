@@ -89,6 +89,7 @@ public class DeployAppConfigServiceTestApi extends PrivateApiComponentBase {
         getAppConfigEnvInstanceCountTest();
         searchAppConfigEnvInstanceIdListTest();
         searchAppConfigEnvInstanceListByIdList();
+        getCmdbHasEnvAppSystemIdListByAppSystemIdListTest();
         return null;
     }
 
@@ -414,6 +415,46 @@ public class DeployAppConfigServiceTestApi extends PrivateApiComponentBase {
                         itemObj.put("groupedColumn", groupedColumn.toString());
                         logger.info(itemObj.toJSONString());
                     }
+                }
+            }
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+        }
+    }
+
+    private void getCmdbHasEnvAppSystemIdListByAppSystemIdListTest() {
+        IResourceCrossoverMapper resourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
+        try {
+            Map<String, Column> fieldName2ColumnMap = new LinkedHashMap<>();
+            String sql = deployResourceBuildSqlService.buildGetCmdbHasEnvAppSystemIdListByAppSystemIdListSql(List.of(-1L), fieldName2ColumnMap);
+//            System.out.println("sql = " + sql);
+            Column groupedColumn = fieldName2ColumnMap.get("app_system_id");
+            if (StringUtils.isBlank(sql) || groupedColumn == null) {
+                throw new IllegalStateException("Failed to build app-system ID list probe SQL");
+            }
+            String groupBySql = buildGroupBySql(sql, groupedColumn, true);
+//            System.out.println("groupBySql = " + groupBySql);
+            List<Map<String, Object>> mapList = resourceCrossoverMapper.getMapListBySql(groupBySql);
+//            System.out.println("mapList = " + JSONObject.toJSONString(mapList));
+            if (mapList == null || mapList.isEmpty()) {
+                logger.info("有环境应用系统ID列表探针未采到系统样本");
+                return;
+            }
+            for (Map<String, Object> rowMap : mapList) {
+                Object fieldValue = rowMap.get("fieldValue");
+                if (!(fieldValue instanceof Number number)) {
+                    continue;
+                }
+                Long appSystemId = number.longValue();
+//                System.out.println("appSystemId = " + appSystemId);
+                List<Long> appSystemIdList = deployAppConfigService.getCmdbHasEnvAppSystemIdListByAppSystemIdList(List.of(appSystemId));
+                if (appSystemIdList == null || !appSystemIdList.contains(appSystemId)) {
+                    JSONObject itemObj = new JSONObject(true);
+                    itemObj.put("appSystemIdList", appSystemIdList);
+                    itemObj.put("count", rowMap.get("count"));
+                    itemObj.put("idList", List.of(appSystemId));
+                    itemObj.put("groupedColumn", groupedColumn.toString());
+                    logger.info(itemObj.toJSONString());
                 }
             }
         } catch (Exception e) {
