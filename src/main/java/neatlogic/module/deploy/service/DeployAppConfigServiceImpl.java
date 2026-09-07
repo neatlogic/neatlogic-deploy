@@ -476,6 +476,36 @@ public class DeployAppConfigServiceImpl implements DeployAppConfigService {
     }
 
     @Override
+    public List<Long> getCmdbHasEnvAppSystemIdListByAppSystemIdList(List<Long> idList) {
+        if (CollectionUtils.isEmpty(idList)) {
+            return new ArrayList<>();
+        }
+        IResourceCrossoverMapper resourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
+        String enable = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_DATA_COMPARISON_MODE_ENABLE);
+        String mode = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_SQL_MODE);
+        List<Long> newAppSystemIdList = new ArrayList<>();
+        List<Long> oldAppSystemIdList = new ArrayList<>();
+        if (Objects.equals(mode, JSQLPARSER_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
+            String sql = deployResourceBuildSqlService.buildGetCmdbHasEnvAppSystemIdListByAppSystemIdListSql(idList);
+            if (StringUtils.isNotBlank(sql)) {
+                newAppSystemIdList = resourceCrossoverMapper.getIdListBySql(sql);
+            }
+        }
+        if (Objects.equals(mode, MYBATIS_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
+            oldAppSystemIdList = deployAppConfigMapper.getCmdbHasEnvAppSystemIdListByAppSystemIdList(idList);
+        }
+        if (Objects.equals(enable, COMPARISON_ENABLED)) {
+            checkLongListIsEquals(newAppSystemIdList, oldAppSystemIdList);
+        }
+        if (Objects.equals(mode, JSQLPARSER_MODE)) {
+            return newAppSystemIdList;
+        } else if (Objects.equals(mode, MYBATIS_MODE)) {
+            return oldAppSystemIdList;
+        }
+        return new ArrayList<>();
+    }
+
+    @Override
     public List<Long> getHasEnvAppSystemIdListByAppSystemIdList(List<Long> idList) {
         List<Long> cmdbAppSystemIdList = deployAppConfigMapper.getCmdbHasEnvAppSystemIdListByAppSystemIdList(idList);
         List<Long> configAppSystemIdList = deployAppConfigMapper.getConfigHasEnvAppSystemIdListByAppSystemIdList(idList);
