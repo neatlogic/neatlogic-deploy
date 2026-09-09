@@ -62,7 +62,6 @@ public class GetDeployRunnerGroupForAutoexecApi extends PrivateApiComponentBase 
             @Param(name = "moduleId", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.appmoduleid")
     })
     @Output({@Param(type = ApiParamType.JSONOBJECT)})
-    @Example(example = "{\"1\": \"192.168.1.140\"}")
     @Description(desc = "nmdaam.getdeployrunnergroupforautoexecapi.getname")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
