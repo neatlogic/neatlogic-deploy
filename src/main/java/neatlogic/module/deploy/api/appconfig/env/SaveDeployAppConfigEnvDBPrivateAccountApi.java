@@ -22,8 +22,8 @@ import neatlogic.framework.cmdb.enums.resourcecenter.AccountType;
 import neatlogic.framework.cmdb.exception.resourcecenter.ResourceCenterAccountNameRepeatsException;
 import neatlogic.framework.cmdb.exception.resourcecenter.ResourceNotFoundException;
 import neatlogic.framework.common.constvalue.ApiParamType;
-import neatlogic.framework.common.util.RC4Util;
 import neatlogic.framework.crossover.CrossoverServiceFactory;
+import neatlogic.framework.crypto.core.CryptoHandlerFactory;
 import neatlogic.framework.deploy.auth.DEPLOY_BASE;
 import neatlogic.framework.deploy.constvalue.DeployAppConfigAction;
 import neatlogic.framework.dto.FieldValidResultVo;
@@ -35,7 +35,6 @@ import neatlogic.framework.restful.annotation.Param;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.IValid;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
-import neatlogic.framework.util.PasswordRSAUtil;
 import neatlogic.module.deploy.dao.mapper.DeployAppConfigMapper;
 import neatlogic.module.deploy.service.DeployAppAuthorityService;
 import org.apache.commons.lang3.StringUtils;
@@ -95,9 +94,9 @@ public class SaveDeployAppConfigEnvDBPrivateAccountApi extends PrivateApiCompone
         AccountVo paramAccountVo = JSON.toJavaObject(paramObj, AccountVo.class);
         String passwordCipher = paramAccountVo.getPasswordCipher();
         if (StringUtils.isNotBlank(passwordCipher)) {
-            // 前端提交RSA密文，解密后继续按现有RC4格式保存，避免改变数据库密码格式。
-            String passwordPlain = PasswordRSAUtil.decrypt(passwordCipher);
-            paramAccountVo.setPasswordCipher(RC4Util.encrypt(passwordPlain));
+            // 前端提交密文，解密后继续按现有RC4格式保存，避免改变数据库密码格式。
+            String passwordPlain = CryptoHandlerFactory.getCryptoHandlerByCiphertext(passwordCipher).decrypt(passwordCipher);
+            paramAccountVo.setPasswordCipher(CryptoHandlerFactory.getCryptoHandlerByHandler("{RC4}").encrypt(passwordPlain));
         }
         Long id = paramObj.getLong("id");
         return resourceCenterAccountCrossoverService.saveAccount(id, paramAccountVo);
