@@ -40,12 +40,33 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import java.util.*;
 import java.util.stream.Collectors;
+import neatlogic.framework.autoexec.globallock.AutoexecJobGlobalLockService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static java.util.stream.Collectors.collectingAndThen;
 import static java.util.stream.Collectors.toCollection;
 
 @Service
 public class DeployGlobalLockHandler extends GlobalLockHandlerBase {
+    private static final Logger logger = LoggerFactory.getLogger(DeployGlobalLockHandler.class);
+    @Resource
+    private AutoexecJobGlobalLockService jobLockService;
+
+    /** 在每次获锁事务内，通过作业行锁校验当前作业状态。 */
+    @Override
+    public void validateAcquisition(GlobalLockVo lock) { jobLockService.validate(lock); }
+
+    /** 作业身份和归属规则由自动化业务层统一提供。 */
+    @Override public void validateIdentity(GlobalLockVo existing, GlobalLockVo request) { jobLockService.validateIdentity(existing, request); }
+
+    /** 兼容尚未回填归属字段的历史作业锁。 */
+    @Override public boolean ownsLock(GlobalLockVo lock, String ownerId) { return jobLockService.ownsLock(lock, ownerId); }
+
+    /** 提供作业及执行实例展示信息，不要求框架理解这些字段。 */
+    @Override public JSONObject getLockIdentity(GlobalLockVo lock) { return jobLockService.identity(lock); }
+
+
     @Resource
     AutoexecJobMapper autoexecJobMapper;
     @Resource
@@ -63,6 +84,7 @@ public class DeployGlobalLockHandler extends GlobalLockHandlerBase {
         return $.t("nmdgl.deploygloballockhandler.gethandlername");
     }
 
+    /** 检查读写冲突，等待原因同时标明申请锁和阻塞它的持有锁 ID。 */
     @Override
     public boolean getIsCanLock(List<GlobalLockVo> globalLockVoList, GlobalLockVo globalLockVo) {
         String lockMode = globalLockVo.getHandlerParam().getString("lockMode");
@@ -73,11 +95,15 @@ public class DeployGlobalLockHandler extends GlobalLockHandlerBase {
         if (lockedGlobalLockOptional.isPresent()) {
             GlobalLockVo lockedGlobalLock = lockedGlobalLockOptional.get();
             if (!Objects.equals(lockedGlobalLock.getHandlerParam().getString("lockMode"), lockMode)) {
-                globalLockVo.setWaitReason("your mode is '" + lockMode + "',already has '" + lockedGlobalLock.getHandlerParam().getString("lockMode") + "' lock");
+                globalLockVo.setWaitReason("your mode is '" + lockMode + "' (lockId=" + globalLockVo.getId()
+                        + "), already has '" + lockedGlobalLock.getHandlerParam().getString("lockMode")
+                        + "' lock (lockId=" + lockedGlobalLock.getId() + ")");
                 return false;
             }
             if (StringUtils.isNotBlank(lockMode) && Objects.equals("write", lockMode) && Objects.equals(lockedGlobalLock.getHandlerParam().getString("lockMode"), lockMode)) {
-                globalLockVo.setWaitReason("your mode is '" + lockMode + "',already has '" + lockedGlobalLock.getHandlerParam().getString("lockMode") + "' lock");
+                globalLockVo.setWaitReason("your mode is '" + lockMode + "' (lockId=" + globalLockVo.getId()
+                        + "), already has '" + lockedGlobalLock.getHandlerParam().getString("lockMode")
+                        + "' lock (lockId=" + lockedGlobalLock.getId() + ")");
                 return false;
             }
         }
@@ -120,17 +146,27 @@ public class DeployGlobalLockHandler extends GlobalLockHandlerBase {
 
     @Override
     protected boolean getMyIsCanInsertLock(List<GlobalLockVo> globalLockVoList, GlobalLockVo globalLockVo) {
-        //如果uuid存在则共享lockId
+        // 仅同一作业执行实例和 Runner 可复用，PID 可能被不同进程重复使用。
         if (CollectionUtils.isNotEmpty(globalLockVoList)) {
             Optional<GlobalLockVo> globalLockVoOptional = globalLockVoList.stream().filter(g -> Objects.equals(g.getHandlerParam().getString("lockOwner"), globalLockVo.getHandlerParam().getString("lockOwner"))
                     && Objects.equals(g.getHandlerParam().getString("lockTarget"), globalLockVo.getHandlerParam().getString("lockTarget"))
                     && Objects.equals(g.getHandlerParam().getLong("pid"), globalLockVo.getHandlerParam().getLong("pid"))
+                    && sameExecution(g, globalLockVo)
                     && g.getIsLock() == 1).findFirst();
             if (globalLockVoOptional.isPresent()) {
                 globalLockVo.setId(globalLockVoOptional.get().getId());
                 globalLockVo.setIsLock(1);
                 return false;
             }
+        }
+        return true;
+    }
+
+    /** 缺少执行归属时不推断为同一实例，避免旧锁被错误复用。 */
+    private boolean sameExecution(GlobalLockVo existing, GlobalLockVo request) {
+        for (String field : new String[]{"jobId", "execId", "runnerId"}) {
+            String value = request.getHandlerParam().getString(field);
+            if (value == null || !value.equals(existing.getHandlerParam().getString(field))) return false;
         }
         return true;
     }
@@ -153,12 +189,13 @@ public class DeployGlobalLockHandler extends GlobalLockHandlerBase {
         JSONObject result = TableResultUtil.getResult(tbody, globalLockVo);
         for (int i = 0; i < tbody.size(); i++) {
             JSONObject data = tbody.getJSONObject(i);
+            data.put("jobId", data.getJSONObject("handlerParam").getString("jobId"));
             AutoexecJobVo jobVo = jobMap.get(data.getJSONObject("handlerParam").getLong("jobId"));
             if (jobVo != null) {
                 data.put("jobStatusName", jobVo.getStatusName());
                 data.put("jobStatus", jobVo.getStatus());
                 data.put("jobName", jobVo.getName());
-                data.put("jobId", jobVo.getId());
+                data.put("jobId", jobVo.getId().toString());
             }
             if (data.getInteger("isLock") == 1) {
                 data.put("lockCostTime", TimeUtil.millisecondsTransferMaxTimeUnit(System.currentTimeMillis() - data.getLong("fcd")));
@@ -170,21 +207,21 @@ public class DeployGlobalLockHandler extends GlobalLockHandlerBase {
 
     @Override
     public void initSearchParam(GlobalLockVo globalLockVo) {
-        JSONObject keywordParam = globalLockVo.getKeywordParam();
-        if (MapUtils.isNotEmpty(keywordParam)) {
-
-            String key = String.format("%s/%s/", keywordParam.getString("appSystemId"), keywordParam.getString("appModuleId"));
-
-            if (keywordParam.containsKey("jobId")) {
-                List<Long> idList = globalLockMapper.getGlobalLockIdByKey(getHandler(), key, keywordParam.getString("jobId"));
-                if (CollectionUtils.isNotEmpty(idList)) {
-                    globalLockVo.setIdList(idList.stream().collect(collectingAndThen(toCollection(() -> new TreeSet<>(Comparator.comparing(r -> r))), ArrayList::new)));
-                } else {
-                    //不存在则没有资源锁
-                    globalLockVo.setIdList(Collections.singletonList(-1L));
-                }
-            }
+        JSONObject filter = globalLockVo.getKeywordParam();
+        if (filter == null || filter.isEmpty()) return;
+        Long start = filter.getLong("startTime"), end = filter.getLong("endTime");
+        if (start != null && end != null && start > end) throw new ParamIrregularException("startTime/endTime");
+        String mode = filter.getString("lockMode");
+        if (mode != null && !"read".equals(mode) && !"write".equals(mode)) throw new ParamIrregularException("lockMode");
+        List<GlobalLockVo> candidates = filter.getLong("jobId") == null
+                ? globalLockMapper.getLockCandidates(getHandler())
+                : globalLockMapper.getOwnerLockCandidates(Collections.singletonList(getHandler()), filter.getLong("jobId").toString());
+        List<Long> ids = new ArrayList<>();
+        for (GlobalLockVo candidate : candidates) {
+            try { if (DeployGlobalLockFilter.matches(candidate, filter)) ids.add(candidate.getId()); }
+            catch (Exception ex) { logger.error("Filter deploy lock {} failed", candidate.getId(), ex); }
         }
+        globalLockVo.setIdList(ids.isEmpty() ? Collections.singletonList(-1L) : ids);
     }
 
     @Override
@@ -208,9 +245,8 @@ public class DeployGlobalLockHandler extends GlobalLockHandlerBase {
                 .sendRequest().getError();
         if (StringUtils.isNotBlank(result)) {
             //如果是进程不存在导致没法写入的问题，则跳过，直接解锁
-            if (!result.contains("No such file")) {
-                throw new RunnerHttpRequestException(url + ":" + result);
-            }
+            // socket 不存在也属于通知失败，保留等待锁并继续通知下一个。
+            throw new RunnerHttpRequestException(url + ":" + result);
         }
 
     }
