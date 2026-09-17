@@ -90,7 +90,7 @@ public class BatchDeployAuthChecker {
     public static boolean isCanEdit(DeployJobVo deployJobVo) {
         if (!Objects.equals(JobStatus.CHECKED.getValue(), deployJobVo.getStatus()) && !Objects.equals(deployJobVo.getReviewStatus(), ReviewStatus.WAITING.getValue())) {
             return Arrays.asList(JobStatus.READY.getValue(), JobStatus.PENDING.getValue(), JobStatus.SAVED.getValue(), JobStatus.COMPLETED.getValue(), JobStatus.FAILED.getValue()).contains(deployJobVo.getStatus())
-                    && (AuthActionChecker.checkByUserUuid(UserContext.get().getUserUuid(true), BATCHDEPLOY_MODIFY.class.getSimpleName()));
+                    && (AuthActionChecker.check(BATCHDEPLOY_MODIFY.class));
         }
         return false;
     }
@@ -104,7 +104,7 @@ public class BatchDeployAuthChecker {
     public static boolean isCanCheck(DeployJobVo deployJobVo) {
         if (Objects.equals(deployJobVo.getReviewStatus(), ReviewStatus.PASSED.getValue())) {
             int authCount = instance.deployJobMapper.getDeployJobAuthCountByJobIdAndUuid(deployJobVo.getId(), UserContext.get().getUserUuid(true));
-            return (authCount > 0 || AuthActionChecker.checkByUserUuid(UserContext.get().getUserUuid(true), BATCHDEPLOY_MODIFY.class.getSimpleName()));
+            return (authCount > 0 || AuthActionChecker.check(BATCHDEPLOY_MODIFY.class));
         }
         return false;
     }

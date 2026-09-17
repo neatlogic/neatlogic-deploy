@@ -13,6 +13,7 @@ package neatlogic.module.deploy.notify.handler;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import neatlogic.framework.auth.core.AuthBase;
 import neatlogic.framework.autoexec.constvalue.JobGroupSearch;
 import neatlogic.framework.deploy.auth.DEPLOY_MODIFY;
 import neatlogic.framework.deploy.constvalue.DeployJobNotifyParam;
@@ -41,8 +42,8 @@ public class DeployJobNotifyPolicyHandler extends NotifyPolicyHandlerBase {
      * 绑定权限，每种handler对应不同的权限
      */
     @Override
-    public String getAuthName() {
-        return DEPLOY_MODIFY.class.getSimpleName();
+    public Class<? extends AuthBase> getAuthClass() {
+        return DEPLOY_MODIFY.class;
     }
 
     @Override

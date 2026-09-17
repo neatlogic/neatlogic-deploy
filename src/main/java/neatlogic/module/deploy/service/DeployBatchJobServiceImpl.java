@@ -461,7 +461,7 @@ public class DeployBatchJobServiceImpl implements DeployBatchJobService, IDeploy
 
     @Override
     public void isHasPipelineAuth(Long appSystemId, Long pipelineId) {
-        if (Boolean.FALSE.equals(AuthActionChecker.checkByUserUuid(UserContext.get().getUserUuid(true), BATCHDEPLOY_MODIFY.class.getSimpleName()))) {
+        if (Boolean.FALSE.equals(AuthActionChecker.check(BATCHDEPLOY_MODIFY.class))) {
             PipelineVo pipeline = pipelineMapper.getPipelineSimpleInfoById(pipelineId);
             if (pipeline == null) {
                 throw new DeployPipelineNotFoundException(pipelineId);
@@ -489,7 +489,7 @@ public class DeployBatchJobServiceImpl implements DeployBatchJobService, IDeploy
 
     @Override
     public void isJobHasPipelineAuth(Long jobId) {
-        if (Boolean.TRUE.equals(AuthActionChecker.checkByUserUuid(UserContext.get().getUserUuid(true), BATCHDEPLOY_MODIFY.class.getSimpleName()))) {
+        if (Boolean.TRUE.equals(AuthActionChecker.check(BATCHDEPLOY_MODIFY.class))) {
             return;
         }
         int authCount = deployJobMapper.getDeployJobAuthCountByJobIdAndUuid(jobId, UserContext.get().getUserUuid(true));

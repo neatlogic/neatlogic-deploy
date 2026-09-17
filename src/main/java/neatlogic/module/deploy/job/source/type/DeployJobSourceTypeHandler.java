@@ -614,7 +614,7 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
     @Override
     public void myExecuteAuthCheck(AutoexecJobVo jobVo) {
         //包含BATCHJOB_MODIFY 或 系统用户 则拥有所有应用的执行权限
-        if (Boolean.TRUE.equals(AuthActionChecker.checkByUserUuid(UserContext.get().getUserUuid(true), BATCHDEPLOY_MODIFY.class.getSimpleName())) || Objects.equals(UserContext.get().getUserUuid(), SystemUser.SYSTEM.getUserUuid())) {
+        if (Boolean.TRUE.equals(AuthActionChecker.check(BATCHDEPLOY_MODIFY.class)) || Objects.equals(UserContext.get().getUserUuid(), SystemUser.SYSTEM.getUserUuid())) {
             return;
         }
         DeployJobVo deployJobVo;
@@ -654,7 +654,7 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
     public void getJobActionAuth(AutoexecJobVo jobVo) {
         boolean isHasAuth = false;
         //包含BATCHJOB_MODIFY 则拥有所有应用的执行权限
-        if (Boolean.TRUE.equals(AuthActionChecker.checkByUserUuid(UserContext.get().getUserUuid(true), BATCHDEPLOY_MODIFY.class.getSimpleName()))) {
+        if (Boolean.TRUE.equals(AuthActionChecker.check(BATCHDEPLOY_MODIFY.class))) {
             isHasAuth = true;
         } else {
             if (JobSource.isBatch(jobVo.getSource())) {
