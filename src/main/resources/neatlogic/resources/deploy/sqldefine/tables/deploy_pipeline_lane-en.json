@@ -1,0 +1,35 @@
+{
+  "moduleId": "deploy",
+  "name": "deploy_pipeline_lane",
+  "label": "Release Job Stream Super Pipeline Table",
+  "description": "Release job swimlane super pipeline table used for related queries and reporting scenarios related to releases.",
+  "fields": [
+    {
+      "name": "id",
+      "type": "bigint",
+      "description": "Pipeline lane ID, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "pipeline_id",
+      "type": "bigint",
+      "description": "Pipeline ID."
+    },
+    {
+      "name": "sort",
+      "type": "int",
+      "description": "Sort."
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "id"
+      ],
+      "description": "Primary key index covering the ID field, suitable for uniquely identifying records and queries that join the primary table."
+    }
+  ]
+}

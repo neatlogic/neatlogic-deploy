@@ -1,0 +1,30 @@
+{
+  "moduleId": "deploy",
+  "name": "deploy_type_status",
+  "label": "Release Tool Type Status Table",
+  "description": "The tool type status table is used for enabling state filtering and related queries in the release scenario.",
+  "fields": [
+    {
+      "name": "type_id",
+      "type": "bigint",
+      "description": "Tool type ID, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "is_active",
+      "type": "int",
+      "description": "Is activated (0: disabled, 1: activated)."
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "type_id"
+      ],
+      "description": "Primary key index covering the type_id field, suitable for uniquely identifying records and queries that join the primary table."
+    }
+  ]
+}

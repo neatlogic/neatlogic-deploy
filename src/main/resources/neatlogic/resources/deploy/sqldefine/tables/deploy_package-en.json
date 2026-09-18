@@ -1,0 +1,67 @@
+{
+  "moduleId": "deploy",
+  "name": "deploy_package",
+  "label": "Package Information",
+  "description": "The package information is used for related queries for package-related operations such as reporting.",
+  "fields": [
+    {
+      "name": "id",
+      "type": "bigint",
+      "description": "Primary key, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "group_id",
+      "type": "varchar(100)",
+      "description": "The engineering group identifier is typically unique within an organization or a project. A standard index is defined on this field, making it suitable for filtering, join, and sort queries."
+    },
+    {
+      "name": "artifact_id",
+      "type": "varchar(50)",
+      "description": "The engineering identifier typically consists of the project name, along with the groupId and artifactId, which define the artifact's location in the repository."
+    },
+    {
+      "name": "version",
+      "type": "varchar(50)",
+      "description": "Engineering version number."
+    },
+    {
+      "name": "type",
+      "type": "varchar(20)",
+      "description": "The package type is by default `jar`."
+    },
+    {
+      "name": "license",
+      "type": "varchar(255)",
+      "description": "Copyright license, open-source protocol, etc."
+    },
+    {
+      "name": "url",
+      "type": "varchar(255)",
+      "description": "The URL for the package in the maven repository."
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "id"
+      ],
+      "description": "Primary key index covering the ID field, suitable for uniquely identifying records and queries that join the primary table."
+    },
+    {
+      "name": "uk_pkg",
+      "type": "BTREE",
+      "unique": true,
+      "primary": false,
+      "columns": [
+        "group_id",
+        "artifact_id",
+        "version"
+      ],
+      "description": "Unique index covering the group_id, artifact_id, version fields, suitable for exact-match retrieval, uniqueness checks, and duplicate detection."
+    }
+  ]
+}

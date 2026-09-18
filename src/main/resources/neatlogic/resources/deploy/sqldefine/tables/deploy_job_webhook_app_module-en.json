@@ -1,0 +1,37 @@
+{
+  "moduleId": "deploy",
+  "name": "deploy_job_webhook_app_module",
+  "label": "Release job_webhook_app_module Table",
+  "description": "The release job_webhook_app_module table belongs to the deployment module and supports relational queries and other release-related reporting scenarios.",
+  "fields": [
+    {
+      "name": "webhook_id",
+      "type": "bigint",
+      "description": "Trigger ID, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "app_system_id",
+      "type": "bigint",
+      "description": "Application system ID, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "app_module_id",
+      "type": "bigint",
+      "description": "Application module ID, used as the primary key or unique identifier for records in this table."
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "webhook_id",
+        "app_system_id",
+        "app_module_id"
+      ],
+      "description": "Primary key index covering the webhook_id, app_system_id, app_module_id fields, suitable for uniquely identifying records and queries that join the primary table."
+    }
+  ]
+}

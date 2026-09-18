@@ -1,0 +1,31 @@
+{
+  "moduleId": "deploy",
+  "name": "deploy_app_config_user",
+  "label": "Release Application System Configuration Collection",
+  "description": "Release application system configuration for use in related queries for releases and reporting scenarios.",
+  "fields": [
+    {
+      "name": "app_system_id",
+      "type": "bigint",
+      "description": "Application asset ID, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "user_uuid",
+      "type": "char(32)",
+      "description": "Collection, used as the primary key or unique identifier for records in this table."
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "app_system_id",
+        "user_uuid"
+      ],
+      "description": "Primary key index covering the app_system_id, user_uuid fields, suitable for uniquely identifying records and queries that join the primary table."
+    }
+  ]
+}

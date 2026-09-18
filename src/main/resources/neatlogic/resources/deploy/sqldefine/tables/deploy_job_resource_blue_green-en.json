@@ -1,0 +1,41 @@
+{
+  "moduleId": "deploy",
+  "name": "deploy_job_resource_blue_green",
+  "label": "Blue-Green Deployment ID",
+  "description": "The ID for the blue-green deployment of the job can be used for related queries such as reporting and statistical analysis.",
+  "fields": [
+    {
+      "name": "job_id",
+      "type": "bigint",
+      "description": "Job ID, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "resource_id",
+      "type": "bigint",
+      "description": "Asset ID, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "blue_green_id",
+      "type": "bigint",
+      "description": "Blue-green ID."
+    },
+    {
+      "name": "update_tag",
+      "type": "bigint",
+      "description": "Update the tag."
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "job_id",
+        "resource_id"
+      ],
+      "description": "Primary key index covering the job_id, resource_id fields, suitable for uniquely identifying records and queries that join the primary table."
+    }
+  ]
+}

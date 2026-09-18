@@ -1,0 +1,31 @@
+{
+  "moduleId": "deploy",
+  "name": "deploy_version_issue",
+  "label": "Release Version Requirements Table",
+  "description": "Release version requirement table - used for related queries for release and other reporting scenarios.",
+  "fields": [
+    {
+      "name": "version_id",
+      "type": "bigint",
+      "description": "Version_id, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "issue_id",
+      "type": "varchar(255)",
+      "description": "Demand ID, used as the primary key or unique identifier for records in this table."
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "version_id",
+        "issue_id"
+      ],
+      "description": "Primary key index covering the version_id, issue_id fields, suitable for uniquely identifying records and queries that join the primary table."
+    }
+  ]
+}

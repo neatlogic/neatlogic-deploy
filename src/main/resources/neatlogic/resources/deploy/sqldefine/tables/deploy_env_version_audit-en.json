@@ -1,0 +1,88 @@
+{
+  "moduleId": "deploy",
+  "name": "deploy_env_version_audit",
+  "label": "Environment Version Change Log",
+  "description": "Version changes in the environment can be used for time dimension statistical reports and query scenarios related to release times.",
+  "fields": [
+    {
+      "name": "id",
+      "type": "bigint",
+      "description": "ID, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "app_system_id",
+      "type": "bigint",
+      "description": "Application ID. A standard index is defined on this field, making it suitable for filtering, join, and sort queries."
+    },
+    {
+      "name": "app_module_id",
+      "type": "bigint",
+      "description": "Module ID."
+    },
+    {
+      "name": "env_id",
+      "type": "bigint",
+      "description": "Environment_id."
+    },
+    {
+      "name": "new_version_id",
+      "type": "bigint",
+      "description": "New version ID."
+    },
+    {
+      "name": "old_version_id",
+      "type": "bigint",
+      "description": "Old version ID."
+    },
+    {
+      "name": "new_build_no",
+      "type": "int",
+      "description": "New version build number."
+    },
+    {
+      "name": "old_build_no",
+      "type": "int",
+      "description": "Old version build number."
+    },
+    {
+      "name": "direction",
+      "type": "enum('forward','rollback')",
+      "description": "Forward: release version; rollback: rollback version."
+    },
+    {
+      "name": "fcu",
+      "type": "char(32)",
+      "description": "Creator."
+    },
+    {
+      "name": "fcd",
+      "type": "timestamp(3)",
+      "description": "Creation time."
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "id"
+      ],
+      "description": "Primary key index covering the ID field, suitable for uniquely identifying records and queries that join the primary table."
+    },
+    {
+      "name": "idx_system_module_env_new_version",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "app_system_id",
+        "app_module_id",
+        "env_id",
+        "new_version_id"
+      ],
+      "description": "Standard index covering the app_system_id, app_module_id, env_id, new_version_id fields, suitable for filtering, join, and sort queries."
+    }
+  ]
+}

@@ -1,0 +1,70 @@
+{
+  "moduleId": "deploy",
+  "name": "deploy_ci_audit",
+  "label": "Release Continuous Integration Records Table",
+  "description": "The continuous integration (CI) record table is designed for reporting purposes, including status tracking, time dimension statistics, and query scenarios related to the release process.",
+  "fields": [
+    {
+      "name": "id",
+      "type": "bigint",
+      "description": "ID, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "ci_id",
+      "type": "bigint",
+      "description": "Continuous integration configuration ID."
+    },
+    {
+      "name": "commit_id",
+      "type": "varchar(255)",
+      "description": "Submit ID."
+    },
+    {
+      "name": "action",
+      "type": "varchar(50)",
+      "description": "Action."
+    },
+    {
+      "name": "status",
+      "type": "varchar(50)",
+      "description": "Status."
+    },
+    {
+      "name": "job_id",
+      "type": "bigint",
+      "description": "Job ID."
+    },
+    {
+      "name": "param_file_path",
+      "type": "varchar(255)",
+      "description": "Parameter content file path."
+    },
+    {
+      "name": "result_file_path",
+      "type": "varchar(255)",
+      "description": "Result content file path."
+    },
+    {
+      "name": "error_file_path",
+      "type": "varchar(255)",
+      "description": "Error content file path."
+    },
+    {
+      "name": "fcd",
+      "type": "timestamp(3)",
+      "description": "Trigger time."
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "id"
+      ],
+      "description": "Primary key index covering the ID field, suitable for uniquely identifying records and queries that join the primary table."
+    }
+  ]
+}

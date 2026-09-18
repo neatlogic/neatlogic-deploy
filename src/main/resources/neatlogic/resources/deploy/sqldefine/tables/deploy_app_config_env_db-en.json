@@ -1,0 +1,73 @@
+{
+  "moduleId": "deploy",
+  "name": "deploy_app_config_env_db",
+  "label": "Release Application Configuration Environment Layer DB Configuration Table",
+  "description": "Release the application configuration environment layer DB configuration table for related queries and report scenarios.",
+  "fields": [
+    {
+      "name": "id",
+      "type": "bigint",
+      "description": "ID, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "db_schema",
+      "type": "varchar(50)",
+      "description": "Database schema. A standard index is defined on this field, making it suitable for filtering, join, and sort queries."
+    },
+    {
+      "name": "app_system_id",
+      "type": "bigint",
+      "description": "Application system ID."
+    },
+    {
+      "name": "app_module_id",
+      "type": "bigint",
+      "description": "Application module ID."
+    },
+    {
+      "name": "env_id",
+      "type": "bigint",
+      "description": "Environment_id."
+    },
+    {
+      "name": "db_resource_id",
+      "type": "bigint",
+      "description": "Database ID."
+    },
+    {
+      "name": "config",
+      "type": "text",
+      "description": "Advanced settings."
+    },
+    {
+      "name": "account_id",
+      "type": "bigint",
+      "description": "Account ID."
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "id"
+      ],
+      "description": "Primary key index covering the ID field, suitable for uniquely identifying records and queries that join the primary table."
+    },
+    {
+      "name": "un_app_system_id_app_module_id_env_id_db_schema",
+      "type": "BTREE",
+      "unique": true,
+      "primary": false,
+      "columns": [
+        "db_schema",
+        "app_system_id",
+        "app_module_id",
+        "env_id"
+      ],
+      "description": "Unique index covering the db_schema, app_system_id, app_module_id, env_id fields, suitable for exact-match retrieval, uniqueness checks, and duplicate detection."
+    }
+  ]
+}

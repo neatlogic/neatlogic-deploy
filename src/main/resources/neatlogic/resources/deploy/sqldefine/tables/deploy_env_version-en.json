@@ -1,0 +1,57 @@
+{
+  "moduleId": "deploy",
+  "name": "deploy_env_version",
+  "label": "Current Environment Version",
+  "description": "The current version of the environment is used for time dimension statistical reports, association queries, and other reporting scenarios related to releases.",
+  "fields": [
+    {
+      "name": "app_system_id",
+      "type": "bigint",
+      "description": "Application ID, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "app_module_id",
+      "type": "bigint",
+      "description": "Module ID, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "env_id",
+      "type": "bigint",
+      "description": "Environment ID, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "version_id",
+      "type": "bigint",
+      "description": "Version_id."
+    },
+    {
+      "name": "build_no",
+      "type": "int",
+      "description": "Build number."
+    },
+    {
+      "name": "lcu",
+      "type": "char(32)",
+      "description": "Updated by."
+    },
+    {
+      "name": "lcd",
+      "type": "timestamp(3)",
+      "description": "Update the timestamp."
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "app_system_id",
+        "app_module_id",
+        "env_id"
+      ],
+      "description": "Primary key index covering the app_system_id, app_module_id, env_id fields, suitable for uniquely identifying records and queries that join the primary table."
+    }
+  ]
+}

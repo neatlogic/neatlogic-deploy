@@ -1,0 +1,125 @@
+{
+  "moduleId": "deploy",
+  "name": "deploy_ci",
+  "label": "Release Continuous Integration Table",
+  "description": "The continuous integration (CI) table for releases is designed to support reporting scenarios for enabled statuses, time dimensions, and associated queries related to the release process.",
+  "fields": [
+    {
+      "name": "id",
+      "type": "bigint",
+      "description": "ID, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "name",
+      "type": "varchar(255)",
+      "description": "Name."
+    },
+    {
+      "name": "is_active",
+      "type": "tinyint(1)",
+      "description": "Indicates whether it is active."
+    },
+    {
+      "name": "app_system_id",
+      "type": "bigint",
+      "description": "Application ID."
+    },
+    {
+      "name": "app_module_id",
+      "type": "bigint",
+      "description": "Module ID."
+    },
+    {
+      "name": "repo_type",
+      "type": "enum('gitlab','svn')",
+      "description": "Inventory type."
+    },
+    {
+      "name": "repo_server_address",
+      "type": "varchar(255)",
+      "description": "Warehouse server address."
+    },
+    {
+      "name": "repo_name",
+      "type": "varchar(255)",
+      "description": "Warehouse name."
+    },
+    {
+      "name": "branch_filter",
+      "type": "varchar(255)",
+      "description": "Branch filtering."
+    },
+    {
+      "name": "event",
+      "type": "enum('post-receive','post-commit')",
+      "description": "Events."
+    },
+    {
+      "name": "action",
+      "type": "varchar(50)",
+      "description": "Action."
+    },
+    {
+      "name": "trigger_type",
+      "type": "enum('auto','manual','instant','delay')",
+      "description": "Trigger type."
+    },
+    {
+      "name": "trigger_time",
+      "type": "char(8)",
+      "description": "Trigger time."
+    },
+    {
+      "name": "delay_time",
+      "type": "int",
+      "description": "Delay time."
+    },
+    {
+      "name": "version_rule",
+      "type": "varchar(255)",
+      "description": "Versioning rules."
+    },
+    {
+      "name": "config",
+      "type": "text",
+      "description": "Configuration."
+    },
+    {
+      "name": "hook_id",
+      "type": "varchar(50)",
+      "description": "Webhook ID."
+    },
+    {
+      "name": "fcu",
+      "type": "char(32)",
+      "description": "Creator."
+    },
+    {
+      "name": "fcd",
+      "type": "timestamp(3)",
+      "description": "Creation time."
+    },
+    {
+      "name": "lcu",
+      "type": "char(32)",
+      "description": "Updated by."
+    },
+    {
+      "name": "lcd",
+      "type": "timestamp(3)",
+      "description": "Update the timestamp."
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "id"
+      ],
+      "description": "Primary key index covering the ID field, suitable for uniquely identifying records and queries that join the primary table."
+    }
+  ]
+}

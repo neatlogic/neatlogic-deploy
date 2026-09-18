@@ -1,0 +1,36 @@
+{
+  "moduleId": "deploy",
+  "name": "deploy_job_lane_group_job",
+  "label": "Batch Job Lane Group Job Association Table",
+  "description": "The batch job lane group job association table is used for release related queries, such as reporting scenarios.",
+  "fields": [
+    {
+      "name": "group_id",
+      "type": "bigint",
+      "description": "Lane group ID, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "job_id",
+      "type": "bigint",
+      "description": "Job ID, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "sort",
+      "type": "int",
+      "description": "Sequence."
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "group_id",
+        "job_id"
+      ],
+      "description": "Primary key index covering the group_id, job_id fields, suitable for uniquely identifying records and queries that join the primary table."
+    }
+  ]
+}

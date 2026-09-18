@@ -1,0 +1,71 @@
+{
+  "moduleId": "deploy",
+  "name": "deploy_version_dependency",
+  "label": "Release Version Dependencies",
+  "description": "Release version dependencies are used for related queries for release and other reporting scenarios.",
+  "fields": [
+    {
+      "name": "id",
+      "type": "bigint",
+      "description": "Primary key, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "version_id",
+      "type": "bigint",
+      "description": "Version_id. A standard index is defined on this field, making it suitable for filtering, join, and sort queries."
+    },
+    {
+      "name": "package_id",
+      "type": "bigint",
+      "description": "Join the deploy_pkg table on the ID column."
+    },
+    {
+      "name": "scope",
+      "type": "enum('compile','provided','runtime','test','system','import')",
+      "description": "Dependency scope, default compile."
+    },
+    {
+      "name": "parent_id",
+      "type": "bigint",
+      "description": "Parent dependency ID, associated with the ID in the deploy_pkg table."
+    },
+    {
+      "name": "build_time",
+      "type": "timestamp(3)",
+      "description": "Build time."
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "id"
+      ],
+      "description": "Primary key index covering the ID field, suitable for uniquely identifying records and queries that join the primary table."
+    },
+    {
+      "name": "idx_version_id",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "version_id"
+      ],
+      "description": "Standard index covering the version_id field, suitable for filtering, join, and sort queries."
+    },
+    {
+      "name": "uk_version_id_package_id",
+      "type": "BTREE",
+      "unique": true,
+      "primary": false,
+      "columns": [
+        "version_id",
+        "package_id"
+      ],
+      "description": "Unique index covering the version_id, package_id fields, suitable for exact-match retrieval, uniqueness checks, and duplicate detection."
+    }
+  ]
+}

@@ -1,0 +1,50 @@
+{
+  "moduleId": "deploy",
+  "name": "deploy_blue_green",
+  "label": "Release Blue-Green Table",
+  "description": "The \"Blue-Green table\" is designed for reporting scenarios related to enabling statuses during deployment, such as querying data.",
+  "fields": [
+    {
+      "name": "id",
+      "type": "bigint",
+      "description": "ID, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "name",
+      "type": "varchar(50)",
+      "description": "Name."
+    },
+    {
+      "name": "sort",
+      "type": "int",
+      "description": "Sort."
+    },
+    {
+      "name": "is_active",
+      "type": "tinyint(1)",
+      "description": "Indicates whether it is active."
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "id"
+      ],
+      "description": "Primary key index covering the ID field, suitable for uniquely identifying records and queries that join the primary table."
+    },
+    {
+      "name": "uniqu",
+      "type": "BTREE",
+      "unique": true,
+      "primary": false,
+      "columns": [
+        "id"
+      ],
+      "description": "Unique index covering the ID field, suitable for exact-match retrieval, uniqueness checks, and duplicate detection."
+    }
+  ]
+}

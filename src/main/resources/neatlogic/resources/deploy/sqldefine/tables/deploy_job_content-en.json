@@ -1,0 +1,30 @@
+{
+  "moduleId": "deploy",
+  "name": "deploy_job_content",
+  "label": "Release Job Configuration Hash",
+  "description": "The job configuration hash can be used for querying, filtering, and reporting on related data.",
+  "fields": [
+    {
+      "name": "hash",
+      "type": "char(32)",
+      "description": "Configuration hash, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "content",
+      "type": "longtext",
+      "description": "Configuration."
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "hash"
+      ],
+      "description": "Primary key index covering the hash field, suitable for uniquely identifying records and queries that join the primary table."
+    }
+  ]
+}

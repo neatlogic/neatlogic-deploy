@@ -1,0 +1,71 @@
+{
+  "moduleId": "deploy",
+  "name": "deploy_app_config_authority",
+  "label": "Release Application System Configuration Authorization",
+  "description": "Granting configuration authorization for the application system allows for reporting scenarios such as time dimension statistics and query associations.",
+  "fields": [
+    {
+      "name": "app_system_id",
+      "type": "bigint",
+      "description": "Application asset ID, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "auth_type",
+      "type": "enum('team','user','role','common')",
+      "description": "Authorization type user|team|role, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "auth_uuid",
+      "type": "char(32)",
+      "description": "Authorization user object, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "action_type",
+      "type": "varchar(50)",
+      "description": "Authorization operation type, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "action",
+      "type": "varchar(50)",
+      "description": "Authorization operation, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "lcd",
+      "type": "timestamp(3)",
+      "description": "Last_modified_time."
+    },
+    {
+      "name": "lcu",
+      "type": "char(32)",
+      "description": "Last modified by."
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "app_system_id",
+        "auth_type",
+        "auth_uuid",
+        "action_type",
+        "action"
+      ],
+      "description": "Primary key index covering the app_system_id, auth_type, auth_uuid, action_type, action fields, suitable for uniquely identifying records and queries that join the primary table."
+    },
+    {
+      "name": "idx_app_env_authuuid_action",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "app_system_id",
+        "action_type",
+        "auth_uuid"
+      ],
+      "description": "Standard index covering the app_system_id, action_type, auth_uuid fields, suitable for filtering, join, and sort queries."
+    }
+  ]
+}

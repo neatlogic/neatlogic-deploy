@@ -1,0 +1,35 @@
+{
+  "moduleId": "deploy",
+  "name": "deploy_job_notify_policy",
+  "label": "Notification Policy for Job References",
+  "description": "Release job reference notification policy table for related queries in the context of release.",
+  "fields": [
+    {
+      "name": "app_system_id",
+      "type": "bigint",
+      "description": "Application system ID, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "notify_policy_id",
+      "type": "bigint",
+      "description": "Notification strategy ID."
+    },
+    {
+      "name": "config",
+      "type": "mediumtext",
+      "description": "Configure personalized notification strategies."
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "app_system_id"
+      ],
+      "description": "Primary key index covering the app_system_id field, suitable for uniquely identifying records and queries that join the primary table."
+    }
+  ]
+}

@@ -1,0 +1,81 @@
+{
+  "moduleId": "deploy",
+  "name": "deploy_version_unit_test",
+  "label": "Versioning Unit Test",
+  "description": "Release version unit tests are used for related queries for release and other reporting scenarios.",
+  "fields": [
+    {
+      "name": "id",
+      "type": "bigint",
+      "description": "ID, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "version_id",
+      "type": "bigint",
+      "description": "Version_id. A standard index is defined on this field, making it suitable for filtering, join, and sort queries."
+    },
+    {
+      "name": "build_time",
+      "type": "timestamp(3)",
+      "description": "Build time."
+    },
+    {
+      "name": "tests",
+      "type": "int",
+      "description": "Total number of unit tests."
+    },
+    {
+      "name": "test_success_density",
+      "type": "int",
+      "description": "Unit test success rate."
+    },
+    {
+      "name": "test_errors",
+      "type": "int",
+      "description": "Number of failed unit tests."
+    },
+    {
+      "name": "branch_coverage",
+      "type": "int",
+      "description": "Total code branch coverage."
+    },
+    {
+      "name": "new_branch_coverage",
+      "type": "int",
+      "description": "Incremental code branch coverage."
+    },
+    {
+      "name": "line_coverage",
+      "type": "int",
+      "description": "Total row coverage."
+    },
+    {
+      "name": "new_line_coverage",
+      "type": "int",
+      "description": "Incremental row coverage."
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "id"
+      ],
+      "description": "Primary key index covering the ID field, suitable for uniquely identifying records and queries that join the primary table."
+    },
+    {
+      "name": "version_build_time",
+      "type": "BTREE",
+      "unique": true,
+      "primary": false,
+      "columns": [
+        "version_id",
+        "build_time"
+      ],
+      "description": "Unique index covering the version_id, build_time fields, suitable for exact-match retrieval, uniqueness checks, and duplicate detection."
+    }
+  ]
+}

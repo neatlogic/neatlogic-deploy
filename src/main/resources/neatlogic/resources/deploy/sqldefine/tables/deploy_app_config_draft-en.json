@@ -1,0 +1,62 @@
+{
+  "moduleId": "deploy",
+  "name": "deploy_app_config_draft",
+  "label": "Application System Module Environment Pipeline Stage Relationship Table",
+  "description": "Application system module environment pipeline stage relationship table used for time dimensional statistics and query scenarios related to release operations.",
+  "fields": [
+    {
+      "name": "app_system_id",
+      "type": "bigint",
+      "description": "Application system ID, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "app_module_id",
+      "type": "bigint",
+      "description": "Module ID, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "env_id",
+      "type": "bigint",
+      "description": "Environment ID, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "config",
+      "type": "longtext",
+      "description": "Pipeline configuration information."
+    },
+    {
+      "name": "fcd",
+      "type": "timestamp",
+      "description": "Creation time."
+    },
+    {
+      "name": "fcu",
+      "type": "char(32)",
+      "description": "Create user."
+    },
+    {
+      "name": "lcd",
+      "type": "timestamp",
+      "description": "Update the timestamp."
+    },
+    {
+      "name": "lcu",
+      "type": "char(32)",
+      "description": "Update user."
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "app_system_id",
+        "app_module_id",
+        "env_id"
+      ],
+      "description": "Primary key index covering the app_system_id, app_module_id, env_id fields, suitable for uniquely identifying records and queries that join the primary table."
+    }
+  ]
+}

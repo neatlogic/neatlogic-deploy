@@ -1,0 +1,70 @@
+{
+  "moduleId": "deploy",
+  "name": "deploy_job_webhook_audit",
+  "label": "Job Trigger Record Table",
+  "description": "Trigger record table for job triggering events used for time dimensional statistics and association queries related to releases.",
+  "fields": [
+    {
+      "name": "id",
+      "type": "bigint",
+      "description": "ID, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "webhook_id",
+      "type": "bigint",
+      "description": "Trigger ID. A standard index is defined on this field, making it suitable for filtering, join, and sort queries."
+    },
+    {
+      "name": "name",
+      "type": "varchar(50)",
+      "description": "Name."
+    },
+    {
+      "name": "integration_audit_id",
+      "type": "bigint",
+      "description": "Integration_record_id. A standard index is defined on this field, making it suitable for filtering, join, and sort queries."
+    },
+    {
+      "name": "lcd",
+      "type": "timestamp(3)",
+      "description": "Trigger event."
+    },
+    {
+      "name": "from_job_id",
+      "type": "bigint",
+      "description": "Source job ID."
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "id"
+      ],
+      "description": "Primary key index covering the ID field, suitable for uniquely identifying records and queries that join the primary table."
+    },
+    {
+      "name": "idx_integration_autditid",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "integration_audit_id"
+      ],
+      "description": "Standard index covering the integration_audit_id field, suitable for filtering, join, and sort queries."
+    },
+    {
+      "name": "idx_triggerid",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "webhook_id"
+      ],
+      "description": "Standard index covering the webhook_id field, suitable for filtering, join, and sort queries."
+    }
+  ]
+}

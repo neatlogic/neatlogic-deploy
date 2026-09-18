@@ -1,0 +1,40 @@
+{
+  "moduleId": "deploy",
+  "name": "deploy_job_lane",
+  "label": "Release Job Workflow Table",
+  "description": "Release job lanes table: this table is designed for reporting scenarios related to the status tracking, association queries, and other functionalities during the release process.",
+  "fields": [
+    {
+      "name": "id",
+      "type": "bigint",
+      "description": "Batch job lane ID, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "batch_job_id",
+      "type": "bigint",
+      "description": "Batch job ID."
+    },
+    {
+      "name": "sort",
+      "type": "int",
+      "description": "Sort."
+    },
+    {
+      "name": "status",
+      "type": "varchar(255)",
+      "description": "Status."
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "id"
+      ],
+      "description": "Primary key index covering the ID field, suitable for uniquely identifying records and queries that join the primary table."
+    }
+  ]
+}

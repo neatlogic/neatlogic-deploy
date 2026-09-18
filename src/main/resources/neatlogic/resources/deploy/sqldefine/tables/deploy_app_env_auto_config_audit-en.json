@@ -1,0 +1,60 @@
+{
+  "moduleId": "deploy",
+  "name": "deploy_app_env_auto_config_audit",
+  "label": "Audit Environment Variable Configuration for Released Application Environment",
+  "description": "Release application environment variable configuration auditing this feature allows for the statistical analysis of time dimensions related to the release process, as well as queries for associated reports.",
+  "fields": [
+    {
+      "name": "id",
+      "type": "bigint",
+      "description": "Primary key ID, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "app_system_id",
+      "type": "bigint",
+      "description": "Application ID."
+    },
+    {
+      "name": "app_module_id",
+      "type": "bigint",
+      "description": "Module ID."
+    },
+    {
+      "name": "env_id",
+      "type": "bigint",
+      "description": "Environment_asset_id."
+    },
+    {
+      "name": "instance_id",
+      "type": "bigint",
+      "description": "Instance asset ID."
+    },
+    {
+      "name": "config",
+      "type": "longtext",
+      "description": "Modification log."
+    },
+    {
+      "name": "fcd",
+      "type": "timestamp(3)",
+      "description": "Creator."
+    },
+    {
+      "name": "fcu",
+      "type": "char(32)",
+      "description": "Creation time."
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "id"
+      ],
+      "description": "Primary key index covering the ID field, suitable for uniquely identifying records and queries that join the primary table."
+    }
+  ]
+}

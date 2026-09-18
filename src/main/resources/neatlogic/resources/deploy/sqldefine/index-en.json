@@ -1,0 +1,280 @@
+{
+  "moduleId": "deploy",
+  "tables": [
+    {
+      "name": "deploy_app_config",
+      "label": "Release Application System Configuration",
+      "description": "Release application system configuration enables querying of time dimension statistics, association queries, and other report scenarios related to the application system."
+    },
+    {
+      "name": "deploy_app_config_authority",
+      "label": "Release Application System Configuration Authorization",
+      "description": "Granting configuration authorization for the application system allows for reporting scenarios such as time dimension statistics and query associations."
+    },
+    {
+      "name": "deploy_app_config_draft",
+      "label": "Application System Module Environment Pipeline Stage Relationship Table",
+      "description": "Application system module environment pipeline stage relationship table used for time dimensional statistics and query scenarios related to release operations."
+    },
+    {
+      "name": "deploy_app_config_env",
+      "label": "Create Application Configuration Environment Table",
+      "description": "Release the application configuration environment table for related queries and reporting scenarios."
+    },
+    {
+      "name": "deploy_app_config_env_attr",
+      "label": "Release Application Environment Attributes",
+      "description": "Release application environment attributes for reporting scenarios related to time dimension statistics, association queries, etc."
+    },
+    {
+      "name": "deploy_app_config_env_db",
+      "label": "Release Application Configuration Environment Layer DB Configuration Table",
+      "description": "Release the application configuration environment layer DB configuration table for related queries and report scenarios."
+    },
+    {
+      "name": "deploy_app_config_env_db_account",
+      "label": "Release Application Configuration Environment Layer DB Configuration Account Table",
+      "description": "Release the application configuration environment layer DB configuration account table for related queries and report scenarios."
+    },
+    {
+      "name": "deploy_app_config_user",
+      "label": "Release Application System Configuration Collection",
+      "description": "Release application system configuration for use in related queries for releases and reporting scenarios."
+    },
+    {
+      "name": "deploy_app_env_auto_config",
+      "label": "Release Application Environment Variables Configuration",
+      "description": "Release application environment variable configuration for reporting scenarios related to time dimension statistics and query associations for time-based data."
+    },
+    {
+      "name": "deploy_app_env_auto_config_audit",
+      "label": "Audit Environment Variable Configuration for Released Application Environment",
+      "description": "Release application environment variable configuration auditing this feature allows for the statistical analysis of time dimensions related to the release process, as well as queries for associated reports."
+    },
+    {
+      "name": "deploy_app_instance_blue_green",
+      "label": "Release Instance Blue-Green Relationship Table",
+      "description": "Release instance Blue-Green relationship table used for related queries related to releases, such as reporting scenarios."
+    },
+    {
+      "name": "deploy_app_module_runner_group",
+      "label": "Release Application Module Runner Group Association",
+      "description": "The application module runner group is associated with queries that are used for release related reports and other reporting scenarios."
+    },
+    {
+      "name": "deploy_blue_green",
+      "label": "Release Blue-Green Table",
+      "description": "The \"Blue-Green table\" is designed for reporting scenarios related to enabling statuses during deployment, such as querying data."
+    },
+    {
+      "name": "deploy_ci",
+      "label": "Release Continuous Integration Table",
+      "description": "The continuous integration (CI) table for releases is designed to support reporting scenarios for enabled statuses, time dimensions, and associated queries related to the release process."
+    },
+    {
+      "name": "deploy_ci_audit",
+      "label": "Release Continuous Integration Records Table",
+      "description": "The continuous integration (CI) record table is designed for reporting purposes, including status tracking, time dimension statistics, and query scenarios related to the release process."
+    },
+    {
+      "name": "deploy_env_version",
+      "label": "Current Environment Version",
+      "description": "The current version of the environment is used for time dimension statistical reports, association queries, and other reporting scenarios related to releases."
+    },
+    {
+      "name": "deploy_env_version_audit",
+      "label": "Environment Version Change Log",
+      "description": "Version changes in the environment can be used for time dimension statistical reports and query scenarios related to release times."
+    },
+    {
+      "name": "deploy_instance_version",
+      "label": "Current Version of the Instance for the Release",
+      "description": "The current version of the instance is used for reporting scenarios such as time dimension statistics and query associations related to release."
+    },
+    {
+      "name": "deploy_instance_version_audit",
+      "label": "Instance Version Change Log",
+      "description": "Instance version change records can be used for time dimension statistical reports and query scenarios related to release times."
+    },
+    {
+      "name": "deploy_job",
+      "label": "Release Job Table",
+      "description": "The release job table is used for related queries for release related reports and other scenarios."
+    },
+    {
+      "name": "deploy_job_auth",
+      "label": "Release Job Authorization",
+      "description": "Granting job authorization is used for related queries such as reporting and statistical analysis."
+    },
+    {
+      "name": "deploy_job_content",
+      "label": "Release Job Configuration Hash",
+      "description": "The job configuration hash can be used for querying, filtering, and reporting on related data."
+    },
+    {
+      "name": "deploy_job_lane",
+      "label": "Release Job Workflow Table",
+      "description": "Release job lanes table: this table is designed for reporting scenarios related to the status tracking, association queries, and other functionalities during the release process."
+    },
+    {
+      "name": "deploy_job_lane_group",
+      "label": "Batch Job Workflow Group Table",
+      "description": "Batch job swimlane group table used for status tracking and related queries for release-related reports."
+    },
+    {
+      "name": "deploy_job_lane_group_job",
+      "label": "Batch Job Lane Group Job Association Table",
+      "description": "The batch job lane group job association table is used for release related queries, such as reporting scenarios."
+    },
+    {
+      "name": "deploy_job_notify_policy",
+      "label": "Notification Policy for Job References",
+      "description": "Release job reference notification policy table for related queries in the context of release."
+    },
+    {
+      "name": "deploy_job_resource_blue_green",
+      "label": "Blue-Green Deployment ID",
+      "description": "The ID for the blue-green deployment of the job can be used for related queries such as reporting and statistical analysis."
+    },
+    {
+      "name": "deploy_job_trigger",
+      "label": "Trigger for Release",
+      "description": "The trigger for release can be used for reporting scenarios such as enabling status filtering, time dimension statistics, etc."
+    },
+    {
+      "name": "deploy_job_webhook",
+      "label": "Trigger for Release",
+      "description": "The trigger for release can be used for reporting scenarios such as enabling status filtering, time dimension statistics, etc."
+    },
+    {
+      "name": "deploy_job_webhook_app_module",
+      "label": "Release job_webhook_app_module Table",
+      "description": "The release job_webhook_app_module table belongs to the deployment module and supports relational queries and other release-related reporting scenarios."
+    },
+    {
+      "name": "deploy_job_webhook_audit",
+      "label": "Job Trigger Record Table",
+      "description": "Trigger record table for job triggering events used for time dimensional statistics and association queries related to releases."
+    },
+    {
+      "name": "deploy_package",
+      "label": "Package Information",
+      "description": "The package information is used for related queries for package-related operations such as reporting."
+    },
+    {
+      "name": "deploy_pipeline",
+      "label": "Super Pipeline",
+      "description": "The super pipeline is designed for reporting scenarios such as enabling status filtering, time dimension statistics, and associated query."
+    },
+    {
+      "name": "deploy_pipeline_auth",
+      "label": "Super Pipeline Authorization",
+      "description": "Super pipeline authorization is used for related query scenarios such as release reports and associated queries."
+    },
+    {
+      "name": "deploy_pipeline_group",
+      "label": "Batch Job Workflow Group Table",
+      "description": "Batch job swimlane group table used for release-related associated query scenarios."
+    },
+    {
+      "name": "deploy_pipeline_jobtemplate",
+      "label": "Create Super Pipeline Job Template Table",
+      "description": "Release the super pipeline job template table, which can be used for related query scenarios such as release associated reports."
+    },
+    {
+      "name": "deploy_pipeline_lane",
+      "label": "Release Job Stream Super Pipeline Table",
+      "description": "Release job swimlane super pipeline table used for related queries and reporting scenarios related to releases."
+    },
+    {
+      "name": "deploy_schedule",
+      "label": "Scheduled Job Information Table",
+      "description": "Scheduled job information table used for filtering enabled status based on release-related scenarios, time dimensional statistics, and association queries."
+    },
+    {
+      "name": "deploy_sql_detail",
+      "label": "Release SQL Status Table",
+      "description": "Release the SQL status table, which can be used for reporting on the status of related releases, association queries, and other scenarios."
+    },
+    {
+      "name": "deploy_sql_job_phase",
+      "label": "SQL and Job Script Relationship Table",
+      "description": "Release the SQL and job script relationship table for related queries and reporting scenarios."
+    },
+    {
+      "name": "deploy_type_status",
+      "label": "Release Tool Type Status Table",
+      "description": "The tool type status table is used for enabling state filtering and related queries in the release scenario."
+    },
+    {
+      "name": "deploy_version",
+      "label": "Release Version Table",
+      "description": "The version table is used for reporting scenarios such as time dimension statistics and query associations related to release times."
+    },
+    {
+      "name": "deploy_version_appbuild_credential",
+      "label": "Release Version Application System Build Certification Association Table",
+      "description": "The release version application system compilation authentication association table is used for querying, filtering, and reporting on related data for release purposes."
+    },
+    {
+      "name": "deploy_version_build_quality",
+      "label": "Release Compilation Quality",
+      "description": "Release compilation quality is used for related queries for release, such as report queries."
+    },
+    {
+      "name": "deploy_version_buildno",
+      "label": "Release Version Build Number Association Table",
+      "description": "Release version build number association table used for tracking the status of releases, time dimension statistics, and query scenarios related to time dimensions."
+    },
+    {
+      "name": "deploy_version_commit",
+      "label": "Release Version Commit Log Association",
+      "description": "Version submission records to be associated. This feature can be used for related queries related to releases, such as reporting."
+    },
+    {
+      "name": "deploy_version_cve",
+      "label": "Release version_cve Table",
+      "description": "The release version_cve table belongs to the deployment module and supports relational queries and other release-related reporting scenarios."
+    },
+    {
+      "name": "deploy_version_cve_package",
+      "label": "Release version_cve_package Table",
+      "description": "The release version_cve_package table belongs to the deployment module and supports relational queries and other release-related reporting scenarios."
+    },
+    {
+      "name": "deploy_version_cve_vulnerability",
+      "label": "Release version_cve_vulnerability Table",
+      "description": "The release version_cve_vulnerability table belongs to the deployment module and supports relational queries and other release-related reporting scenarios."
+    },
+    {
+      "name": "deploy_version_dependency",
+      "label": "Release Version Dependencies",
+      "description": "Release version dependencies are used for related queries for release and other reporting scenarios."
+    },
+    {
+      "name": "deploy_version_deployed_instance",
+      "label": "Released Version Instance Table",
+      "description": "Released version instance table used for related queries for release and reporting scenarios."
+    },
+    {
+      "name": "deploy_version_env",
+      "label": "Release Version Environment Association Table",
+      "description": "Release version environment association table is used for tracking the status of related releases, statistical time dimensions, and query scenarios for associated data."
+    },
+    {
+      "name": "deploy_version_issue",
+      "label": "Release Version Requirements Table",
+      "description": "Release version requirement table - used for related queries for release and other reporting scenarios."
+    },
+    {
+      "name": "deploy_version_thead",
+      "label": "Table Header Configuration for Release Version Table",
+      "description": "Table header configuration for version releases, used for querying, filtering, and reporting related data."
+    },
+    {
+      "name": "deploy_version_unit_test",
+      "label": "Versioning Unit Test",
+      "description": "Release version unit tests are used for related queries for release and other reporting scenarios."
+    }
+  ]
+}

@@ -1,0 +1,77 @@
+{
+  "moduleId": "deploy",
+  "name": "deploy_app_config",
+  "label": "Release Application System Configuration",
+  "description": "Release application system configuration enables querying of time dimension statistics, association queries, and other report scenarios related to the application system.",
+  "fields": [
+    {
+      "name": "id",
+      "type": "bigint",
+      "description": "ID, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "app_system_id",
+      "type": "bigint",
+      "description": "Application system ID. A standard index is defined on this field, making it suitable for filtering, join, and sort queries."
+    },
+    {
+      "name": "app_module_id",
+      "type": "bigint",
+      "description": "Module ID."
+    },
+    {
+      "name": "env_id",
+      "type": "bigint",
+      "description": "Environment_id."
+    },
+    {
+      "name": "config",
+      "type": "longtext",
+      "description": "Configuration information."
+    },
+    {
+      "name": "fcd",
+      "type": "timestamp",
+      "description": "Creation time."
+    },
+    {
+      "name": "fcu",
+      "type": "char(32)",
+      "description": "Create user."
+    },
+    {
+      "name": "lcd",
+      "type": "timestamp",
+      "description": "Update the timestamp."
+    },
+    {
+      "name": "lcu",
+      "type": "char(32)",
+      "description": "Update user."
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "id"
+      ],
+      "description": "Primary key index covering the ID field, suitable for uniquely identifying records and queries that join the primary table."
+    },
+    {
+      "name": "uk_appId_moduleId_envId",
+      "type": "BTREE",
+      "unique": true,
+      "primary": false,
+      "columns": [
+        "app_system_id",
+        "app_module_id",
+        "env_id"
+      ],
+      "description": "Unique index covering the app_system_id, app_module_id, env_id fields, suitable for exact-match retrieval, uniqueness checks, and duplicate detection."
+    }
+  ]
+}

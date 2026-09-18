@@ -1,0 +1,30 @@
+{
+  "moduleId": "deploy",
+  "name": "deploy_version_thead",
+  "label": "Table Header Configuration for Release Version Table",
+  "description": "Table header configuration for version releases, used for querying, filtering, and reporting related data.",
+  "fields": [
+    {
+      "name": "config",
+      "type": "text",
+      "description": "Table header configuration."
+    },
+    {
+      "name": "user_uuid",
+      "type": "char(32)",
+      "description": "User_uuid, used as the primary key or unique identifier for records in this table."
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "user_uuid"
+      ],
+      "description": "Primary key index covering the user_uuid field, suitable for uniquely identifying records and queries that join the primary table."
+    }
+  ]
+}

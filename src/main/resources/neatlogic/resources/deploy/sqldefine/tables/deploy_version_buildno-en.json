@@ -1,0 +1,116 @@
+{
+  "moduleId": "deploy",
+  "name": "deploy_version_buildno",
+  "label": "Release Version Build Number Association Table",
+  "description": "Release version build number association table used for tracking the status of releases, time dimension statistics, and query scenarios related to time dimensions.",
+  "fields": [
+    {
+      "name": "version_id",
+      "type": "bigint",
+      "description": "Version table association ID, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "build_no",
+      "type": "int",
+      "description": "Build number, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "job_id",
+      "type": "bigint",
+      "description": "Job ID. A standard index is defined on this field, making it suitable for filtering, join, and sort queries."
+    },
+    {
+      "name": "status",
+      "type": "varchar(50)",
+      "description": "Build status."
+    },
+    {
+      "name": "runner_map_id",
+      "type": "bigint",
+      "description": "Runner mapping ID."
+    },
+    {
+      "name": "runner_group",
+      "type": "text",
+      "description": "Runner group."
+    },
+    {
+      "name": "compile_start_time",
+      "type": "timestamp(3)",
+      "description": "Compile start time. A standard index is defined on this field, making it suitable for filtering, join, and sort queries."
+    },
+    {
+      "name": "compile_end_time",
+      "type": "timestamp(3)",
+      "description": "Compile end time."
+    },
+    {
+      "name": "end_rev",
+      "type": "varchar(50)",
+      "description": "End rev."
+    },
+    {
+      "name": "lcu",
+      "type": "char(32)",
+      "description": "Updated by."
+    },
+    {
+      "name": "lcd",
+      "type": "timestamp(3)",
+      "description": "Update the timestamp."
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "version_id",
+        "build_no"
+      ],
+      "description": "Primary key index covering the version_id, build_no fields, suitable for uniquely identifying records and queries that join the primary table."
+    },
+    {
+      "name": "id_fcd",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "compile_start_time"
+      ],
+      "description": "Standard index covering the compile_start_time field, suitable for filtering, join, and sort queries."
+    },
+    {
+      "name": "idx_buildno",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "build_no"
+      ],
+      "description": "Standard index covering the build_no field, suitable for filtering, join, and sort queries."
+    },
+    {
+      "name": "idx_compile_start_time",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "compile_start_time"
+      ],
+      "description": "Standard index covering the compile_start_time field, suitable for filtering, join, and sort queries."
+    },
+    {
+      "name": "idx_jobId",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "job_id"
+      ],
+      "description": "Standard index covering the job_id field, suitable for filtering, join, and sort queries."
+    }
+  ]
+}

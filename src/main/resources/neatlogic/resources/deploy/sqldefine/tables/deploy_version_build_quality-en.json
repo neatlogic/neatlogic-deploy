@@ -1,0 +1,456 @@
+{
+  "moduleId": "deploy",
+  "name": "deploy_version_build_quality",
+  "label": "Release Compilation Quality",
+  "description": "Release compilation quality is used for related queries for release, such as report queries.",
+  "fields": [
+    {
+      "name": "id",
+      "type": "bigint",
+      "description": "ID, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "version_id",
+      "type": "bigint",
+      "description": "Version_id. A standard index is defined on this field, making it suitable for filtering, join, and sort queries."
+    },
+    {
+      "name": "build_time",
+      "type": "timestamp(3)",
+      "description": "Build time."
+    },
+    {
+      "name": "files",
+      "type": "int",
+      "description": "File count."
+    },
+    {
+      "name": "classes",
+      "type": "int",
+      "description": "Number of classes."
+    },
+    {
+      "name": "lines",
+      "type": "int",
+      "description": "Physical row count (newline count)."
+    },
+    {
+      "name": "ncloc",
+      "type": "int",
+      "description": "Line count."
+    },
+    {
+      "name": "functions",
+      "type": "int",
+      "description": "Number of functions."
+    },
+    {
+      "name": "statements",
+      "type": "int",
+      "description": "Statement count."
+    },
+    {
+      "name": "complexity",
+      "type": "int",
+      "description": "Complexity."
+    },
+    {
+      "name": "file_complexity",
+      "type": "int",
+      "description": "File complexity."
+    },
+    {
+      "name": "class_complexity",
+      "type": "int",
+      "description": "Complexity."
+    },
+    {
+      "name": "function_complexity",
+      "type": "int",
+      "description": "Function complexity."
+    },
+    {
+      "name": "violations",
+      "type": "int",
+      "description": "Total number of violations."
+    },
+    {
+      "name": "blocker_violations",
+      "type": "int",
+      "description": "Restrictive violations."
+    },
+    {
+      "name": "critical_violations",
+      "type": "int",
+      "description": "Severe violation."
+    },
+    {
+      "name": "major_violations",
+      "type": "int",
+      "description": "Main violation."
+    },
+    {
+      "name": "minor_violations",
+      "type": "int",
+      "description": "Minor violation."
+    },
+    {
+      "name": "executable_lines_data",
+      "type": "int",
+      "description": "Execute the row data."
+    },
+    {
+      "name": "it_conditions_to_cover",
+      "type": "int",
+      "description": "It_conditions_to_cover."
+    },
+    {
+      "name": "it_branch_coverage",
+      "type": "int",
+      "description": "It_branch_coverage."
+    },
+    {
+      "name": "it_conditions_by_line",
+      "type": "int",
+      "description": "It_conditions_by_line."
+    },
+    {
+      "name": "it_coverage",
+      "type": "int",
+      "description": "It_coverage."
+    },
+    {
+      "name": "it_coverage_line_hits_data",
+      "type": "int",
+      "description": "It_coverage_line_hits_data."
+    },
+    {
+      "name": "it_covered_conditions_by_line",
+      "type": "int",
+      "description": "It_covered_conditions_by_line."
+    },
+    {
+      "name": "it_line_coverage",
+      "type": "int",
+      "description": "It_line_coverage."
+    },
+    {
+      "name": "it_lines_to_cover",
+      "type": "int",
+      "description": "It_lines_to_cover."
+    },
+    {
+      "name": "comment_lines_density",
+      "type": "double(5,1)",
+      "description": "Comments (%)."
+    },
+    {
+      "name": "public_documented_api_density",
+      "type": "int",
+      "description": "The percentage of public APIs with comments."
+    },
+    {
+      "name": "duplicated_files",
+      "type": "int",
+      "description": "Duplicate file."
+    },
+    {
+      "name": "duplicated_lines",
+      "type": "int",
+      "description": "Duplicate rows."
+    },
+    {
+      "name": "duplicated_lines_density",
+      "type": "double(5,1)",
+      "description": "Duplicate (%)."
+    },
+    {
+      "name": "new_duplicated_lines",
+      "type": "int",
+      "description": "New duplicate row."
+    },
+    {
+      "name": "new_duplicated_lines_density",
+      "type": "int",
+      "description": "New duplicates (%)."
+    },
+    {
+      "name": "duplicated_blocks",
+      "type": "int",
+      "description": "Duplicate block."
+    },
+    {
+      "name": "new_duplicated_blocks",
+      "type": "int",
+      "description": "New duplicate block."
+    },
+    {
+      "name": "bugs",
+      "type": "int",
+      "description": "Vulnerability."
+    },
+    {
+      "name": "vulnerabilities",
+      "type": "int",
+      "description": "Defect."
+    },
+    {
+      "name": "code_smells",
+      "type": "int",
+      "description": "Code smells."
+    },
+    {
+      "name": "new_security_hotspots",
+      "type": "int",
+      "description": "New code security hotspots."
+    },
+    {
+      "name": "new_security_rating",
+      "type": "varchar(2)",
+      "description": "New code security rate."
+    },
+    {
+      "name": "new_security_remediation_effort",
+      "type": "int",
+      "description": "New code to fix issues."
+    },
+    {
+      "name": "new_vulnerabilities",
+      "type": "int",
+      "description": "New code vulnerabilities."
+    },
+    {
+      "name": "security_hotspots",
+      "type": "int",
+      "description": "Security hotline."
+    },
+    {
+      "name": "security_rating",
+      "type": "varchar(2)",
+      "description": "Security rate."
+    },
+    {
+      "name": "security_remediation_effort",
+      "type": "int",
+      "description": "Fix the work."
+    },
+    {
+      "name": "comment_lines",
+      "type": "int",
+      "description": "Comment lines."
+    },
+    {
+      "name": "ncloc_language_distribution",
+      "type": "varchar(255)",
+      "description": "Count of code lines for each language."
+    },
+    {
+      "name": "new_lines",
+      "type": "int",
+      "description": "Add new code lines."
+    },
+    {
+      "name": "cognitive_complexity",
+      "type": "int",
+      "description": "Complexity."
+    },
+    {
+      "name": "conditions_to_cover",
+      "type": "int",
+      "description": "Coverage conditions."
+    },
+    {
+      "name": "coverage",
+      "type": "double(7,2)",
+      "description": "Coverage."
+    },
+    {
+      "name": "lines_to_cover",
+      "type": "int",
+      "description": "Coverage row."
+    },
+    {
+      "name": "new_conditions_to_cover",
+      "type": "int",
+      "description": "Conditions for new code coverage."
+    },
+    {
+      "name": "new_coverage",
+      "type": "double(7,2)",
+      "description": "New code coverage."
+    },
+    {
+      "name": "new_lines_to_cover",
+      "type": "int",
+      "description": "New code coverage lines."
+    },
+    {
+      "name": "new_uncovered_conditions",
+      "type": "int",
+      "description": "Conditions not covered by new code."
+    },
+    {
+      "name": "new_uncovered_lines",
+      "type": "int",
+      "description": "New code does not cover lines."
+    },
+    {
+      "name": "uncovered_conditions",
+      "type": "int",
+      "description": "Uncovered conditions."
+    },
+    {
+      "name": "uncovered_lines",
+      "type": "int",
+      "description": "Uncovered rows."
+    },
+    {
+      "name": "new_bugs",
+      "type": "int",
+      "description": "New code error."
+    },
+    {
+      "name": "new_reliability_rating",
+      "type": "varchar(2)",
+      "description": "New code reliability."
+    },
+    {
+      "name": "reliability_rating",
+      "type": "varchar(2)",
+      "description": "Reliability."
+    },
+    {
+      "name": "new_code_smells",
+      "type": "int",
+      "description": "New code smells."
+    },
+    {
+      "name": "new_sqale_debt_ratio",
+      "type": "double(7,2)",
+      "description": "Technical debt ratio of the new code."
+    },
+    {
+      "name": "new_technical_debt",
+      "type": "int",
+      "description": "Technical debt in the new code."
+    },
+    {
+      "name": "sqale_debt_ratio",
+      "type": "double(7,2)",
+      "description": "Technical debt ratio."
+    },
+    {
+      "name": "sqale_index",
+      "type": "int",
+      "description": "Technical debt."
+    },
+    {
+      "name": "sqale_rating",
+      "type": "varchar(2)",
+      "description": "Maintainability."
+    },
+    {
+      "name": "confirmed_issues",
+      "type": "int",
+      "description": "Confirm the issue."
+    },
+    {
+      "name": "false_positive_issues",
+      "type": "int",
+      "description": "Error detection."
+    },
+    {
+      "name": "info_violations",
+      "type": "int",
+      "description": "Ask a question."
+    },
+    {
+      "name": "new_blocker_violations",
+      "type": "int",
+      "description": "New code blocking issue."
+    },
+    {
+      "name": "new_critical_violations",
+      "type": "int",
+      "description": "New code has serious issues."
+    },
+    {
+      "name": "new_info_violations",
+      "type": "int",
+      "description": "New code raises an issue."
+    },
+    {
+      "name": "new_major_violations",
+      "type": "int",
+      "description": "The main issue with the new code."
+    },
+    {
+      "name": "new_minor_violations",
+      "type": "int",
+      "description": "New code secondary issues."
+    },
+    {
+      "name": "new_violations",
+      "type": "int",
+      "description": "New violation."
+    },
+    {
+      "name": "open_issues",
+      "type": "int",
+      "description": "Open a question."
+    },
+    {
+      "name": "reopened_issues",
+      "type": "int",
+      "description": "Restart the issue."
+    },
+    {
+      "name": "wont_fix_issues",
+      "type": "int",
+      "description": "Unfixed issues."
+    },
+    {
+      "name": "alert_status",
+      "type": "varchar(255)",
+      "description": "Quality valve."
+    },
+    {
+      "name": "quality_gate_details",
+      "type": "text",
+      "description": "Quality valve details."
+    },
+    {
+      "name": "threshold",
+      "type": "bigint",
+      "description": "Vulnerability threshold."
+    },
+    {
+      "name": "new_maintainability_rating",
+      "type": "varchar(2)",
+      "description": "Code maintainability rate."
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "id"
+      ],
+      "description": "Primary key index covering the ID field, suitable for uniquely identifying records and queries that join the primary table."
+    },
+    {
+      "name": "version_build_time",
+      "type": "BTREE",
+      "unique": true,
+      "primary": false,
+      "columns": [
+        "version_id",
+        "build_time"
+      ],
+      "description": "Unique index covering the version_id, build_time fields, suitable for exact-match retrieval, uniqueness checks, and duplicate detection."
+    }
+  ]
+}

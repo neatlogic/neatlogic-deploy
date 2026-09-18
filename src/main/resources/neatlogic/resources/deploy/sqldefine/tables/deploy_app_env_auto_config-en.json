@@ -1,0 +1,74 @@
+{
+  "moduleId": "deploy",
+  "name": "deploy_app_env_auto_config",
+  "label": "Release Application Environment Variables Configuration",
+  "description": "Release application environment variable configuration for reporting scenarios related to time dimension statistics and query associations for time-based data.",
+  "fields": [
+    {
+      "name": "app_system_id",
+      "type": "bigint",
+      "description": "Application ID, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "app_module_id",
+      "type": "bigint",
+      "description": "Module ID, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "env_id",
+      "type": "bigint",
+      "description": "Environment_asset_id, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "instance_id",
+      "type": "bigint",
+      "description": "Instance asset ID, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "key",
+      "type": "varchar(255)",
+      "description": "Variable name, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "type",
+      "type": "enum('text','password','textarea')",
+      "description": "Variable type."
+    },
+    {
+      "name": "value",
+      "type": "text",
+      "description": "Variable values."
+    },
+    {
+      "name": "is_empty",
+      "type": "tinyint(1)",
+      "description": "Is null."
+    },
+    {
+      "name": "lcd",
+      "type": "timestamp(3)",
+      "description": "Last_modified_time."
+    },
+    {
+      "name": "lcu",
+      "type": "char(32)",
+      "description": "Last modified by."
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "app_system_id",
+        "app_module_id",
+        "env_id",
+        "instance_id",
+        "key"
+      ],
+      "description": "Primary key index covering the app_system_id, app_module_id, env_id, instance_id, key fields, suitable for uniquely identifying records and queries that join the primary table."
+    }
+  ]
+}

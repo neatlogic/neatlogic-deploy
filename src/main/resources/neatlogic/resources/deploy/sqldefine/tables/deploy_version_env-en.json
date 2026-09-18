@@ -1,0 +1,81 @@
+{
+  "moduleId": "deploy",
+  "name": "deploy_version_env",
+  "label": "Release Version Environment Association Table",
+  "description": "Release version environment association table is used for tracking the status of related releases, statistical time dimensions, and query scenarios for associated data.",
+  "fields": [
+    {
+      "name": "version_id",
+      "type": "bigint",
+      "description": "Version table association ID, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "env_id",
+      "type": "bigint",
+      "description": "Environment ID, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "job_id",
+      "type": "bigint",
+      "description": "Job ID. A standard index is defined on this field, making it suitable for filtering, join, and sort queries."
+    },
+    {
+      "name": "status",
+      "type": "varchar(50)",
+      "description": "Environment status."
+    },
+    {
+      "name": "runner_map_id",
+      "type": "bigint",
+      "description": "Runner mapping ID."
+    },
+    {
+      "name": "runner_group",
+      "type": "text",
+      "description": "Runner group."
+    },
+    {
+      "name": "build_no",
+      "type": "int",
+      "description": "Build number."
+    },
+    {
+      "name": "is_mirror",
+      "type": "tinyint(1)",
+      "description": "Is it a replica product."
+    },
+    {
+      "name": "lcu",
+      "type": "char(32)",
+      "description": "Updated by."
+    },
+    {
+      "name": "lcd",
+      "type": "timestamp(3)",
+      "description": "Update the timestamp."
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "version_id",
+        "env_id"
+      ],
+      "description": "Primary key index covering the version_id, env_id fields, suitable for uniquely identifying records and queries that join the primary table."
+    },
+    {
+      "name": "idx_jobId",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "job_id"
+      ],
+      "description": "Standard index covering the job_id field, suitable for filtering, join, and sort queries."
+    }
+  ]
+}

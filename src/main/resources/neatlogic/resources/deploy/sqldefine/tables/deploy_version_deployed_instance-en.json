@@ -1,0 +1,61 @@
+{
+  "moduleId": "deploy",
+  "name": "deploy_version_deployed_instance",
+  "label": "Released Version Instance Table",
+  "description": "Released version instance table used for related queries for release and reporting scenarios.",
+  "fields": [
+    {
+      "name": "id",
+      "type": "bigint",
+      "description": "ID, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "resource_id",
+      "type": "bigint",
+      "description": "Instance ID. A standard index is defined on this field, making it suitable for filtering, join, and sort queries."
+    },
+    {
+      "name": "version_id",
+      "type": "bigint",
+      "description": "Version_id."
+    },
+    {
+      "name": "env_id",
+      "type": "bigint",
+      "description": "Environment_id."
+    },
+    {
+      "name": "deploy_user",
+      "type": "char(32)",
+      "description": "The publisher."
+    },
+    {
+      "name": "deploy_time",
+      "type": "timestamp(3)",
+      "description": "Publication date."
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "id"
+      ],
+      "description": "Primary key index covering the ID field, suitable for uniquely identifying records and queries that join the primary table."
+    },
+    {
+      "name": "uk_instance_version",
+      "type": "BTREE",
+      "unique": true,
+      "primary": false,
+      "columns": [
+        "resource_id",
+        "version_id"
+      ],
+      "description": "Unique index covering the resource_id, version_id fields, suitable for exact-match retrieval, uniqueness checks, and duplicate detection."
+    }
+  ]
+}

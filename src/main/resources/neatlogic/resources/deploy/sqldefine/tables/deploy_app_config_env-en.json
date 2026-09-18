@@ -1,0 +1,37 @@
+{
+  "moduleId": "deploy",
+  "name": "deploy_app_config_env",
+  "label": "Create Application Configuration Environment Table",
+  "description": "Release the application configuration environment table for related queries and reporting scenarios.",
+  "fields": [
+    {
+      "name": "app_system_id",
+      "type": "bigint",
+      "description": "Application system ID, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "app_module_id",
+      "type": "bigint",
+      "description": "Application module ID, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "env_id",
+      "type": "bigint",
+      "description": "Environment ID, used as the primary key or unique identifier for records in this table."
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "app_system_id",
+        "app_module_id",
+        "env_id"
+      ],
+      "description": "Primary key index covering the app_system_id, app_module_id, env_id fields, suitable for uniquely identifying records and queries that join the primary table."
+    }
+  ]
+}

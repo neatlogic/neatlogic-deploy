@@ -1,0 +1,35 @@
+{
+  "moduleId": "deploy",
+  "name": "deploy_job_auth",
+  "label": "Release Job Authorization",
+  "description": "Granting job authorization is used for related queries such as reporting and statistical analysis.",
+  "fields": [
+    {
+      "name": "job_id",
+      "type": "bigint",
+      "description": "Job ID. A standard index is defined on this field, making it suitable for filtering, join, and sort queries."
+    },
+    {
+      "name": "auth_uuid",
+      "type": "char(32)",
+      "description": "Authorization object."
+    },
+    {
+      "name": "type",
+      "type": "enum('user','team','role')",
+      "description": "Authorization type."
+    }
+  ],
+  "indexes": [
+    {
+      "name": "idx_job_id",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "job_id"
+      ],
+      "description": "Standard index covering the job_id field, suitable for filtering, join, and sort queries."
+    }
+  ]
+}

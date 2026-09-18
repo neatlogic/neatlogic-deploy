@@ -1,0 +1,150 @@
+{
+  "moduleId": "deploy",
+  "name": "deploy_sql_detail",
+  "label": "Release SQL Status Table",
+  "description": "Release the SQL status table, which can be used for reporting on the status of related releases, association queries, and other scenarios.",
+  "fields": [
+    {
+      "name": "id",
+      "type": "bigint",
+      "description": "Primary key ID, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "system_id",
+      "type": "bigint",
+      "description": "System ID. A standard index is defined on this field, making it suitable for filtering, join, and sort queries."
+    },
+    {
+      "name": "module_id",
+      "type": "bigint",
+      "description": "Module ID."
+    },
+    {
+      "name": "env_id",
+      "type": "bigint",
+      "description": "Environment ID."
+    },
+    {
+      "name": "version",
+      "type": "varchar(50)",
+      "description": "Version."
+    },
+    {
+      "name": "status",
+      "type": "enum('pending','running','aborting','aborted','succeed','failed','ignored','waitInput')",
+      "description": "Status. A standard index is defined on this field, making it suitable for filtering, join, and sort queries."
+    },
+    {
+      "name": "sql_file",
+      "type": "varchar(300)",
+      "description": "SQL file name."
+    },
+    {
+      "name": "md5",
+      "type": "varchar(50)",
+      "description": "SQL file MD5."
+    },
+    {
+      "name": "host",
+      "type": "varchar(200)",
+      "description": "IP."
+    },
+    {
+      "name": "port",
+      "type": "int",
+      "description": "Port."
+    },
+    {
+      "name": "resource_id",
+      "type": "bigint",
+      "description": "Asset ID."
+    },
+    {
+      "name": "node_name",
+      "type": "varchar(50)",
+      "description": "Job node name."
+    },
+    {
+      "name": "is_delete",
+      "type": "tinyint",
+      "description": "DELETE."
+    },
+    {
+      "name": "runner_id",
+      "type": "bigint",
+      "description": "Runner ID."
+    },
+    {
+      "name": "start_time",
+      "type": "timestamp(3)",
+      "description": "Start time."
+    },
+    {
+      "name": "end_time",
+      "type": "timestamp(3)",
+      "description": "End time."
+    },
+    {
+      "name": "node_type",
+      "type": "varchar(50)",
+      "description": "Node type."
+    },
+    {
+      "name": "user_name",
+      "type": "varchar(50)",
+      "description": "Username."
+    },
+    {
+      "name": "sort",
+      "type": "int",
+      "description": "Sort."
+    },
+    {
+      "name": "is_modified",
+      "type": "int",
+      "description": "Is the modification."
+    },
+    {
+      "name": "warn_count",
+      "type": "int",
+      "description": "Number of alerts."
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "id"
+      ],
+      "description": "Primary key index covering the ID field, suitable for uniquely identifying records and queries that join the primary table."
+    },
+    {
+      "name": "idx_status",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "status"
+      ],
+      "description": "Standard index covering the status field, suitable for filtering, join, and sort queries."
+    },
+    {
+      "name": "uk_system_id_module_id_env_id_version_sql_file",
+      "type": "BTREE",
+      "unique": true,
+      "primary": false,
+      "columns": [
+        "system_id",
+        "module_id",
+        "env_id",
+        "version",
+        "sql_file",
+        "resource_id"
+      ],
+      "description": "Unique index covering the system_id, module_id, env_id, version, sql_file, resource_id fields, suitable for exact-match retrieval, uniqueness checks, and duplicate detection."
+    }
+  ]
+}

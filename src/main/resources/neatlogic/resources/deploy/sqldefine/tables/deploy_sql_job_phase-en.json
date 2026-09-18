@@ -1,0 +1,57 @@
+{
+  "moduleId": "deploy",
+  "name": "deploy_sql_job_phase",
+  "label": "SQL and Job Script Relationship Table",
+  "description": "Release the SQL and job script relationship table for related queries and reporting scenarios.",
+  "fields": [
+    {
+      "name": "id",
+      "type": "bigint",
+      "description": "Primary key ID, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "job_id",
+      "type": "bigint",
+      "description": "Job ID. A standard index is defined on this field, making it suitable for filtering, join, and sort queries."
+    },
+    {
+      "name": "sql_id",
+      "type": "bigint",
+      "description": "Execute SQL details ID."
+    },
+    {
+      "name": "job_phase_name",
+      "type": "varchar(50)",
+      "description": "Job script name."
+    },
+    {
+      "name": "job_phase_id",
+      "type": "bigint",
+      "description": "Job script ID."
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "id"
+      ],
+      "description": "Primary key index covering the ID field, suitable for uniquely identifying records and queries that join the primary table."
+    },
+    {
+      "name": "ux_job_id_sql_id_job_phase_name",
+      "type": "BTREE",
+      "unique": true,
+      "primary": false,
+      "columns": [
+        "job_id",
+        "sql_id",
+        "job_phase_name"
+      ],
+      "description": "Unique index covering the job_id, sql_id, job_phase_name fields, suitable for exact-match retrieval, uniqueness checks, and duplicate detection."
+    }
+  ]
+}

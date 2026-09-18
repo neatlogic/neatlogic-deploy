@@ -1,0 +1,36 @@
+{
+  "moduleId": "deploy",
+  "name": "deploy_app_module_runner_group",
+  "label": "Release Application Module Runner Group Association",
+  "description": "The application module runner group is associated with queries that are used for release related reports and other reporting scenarios.",
+  "fields": [
+    {
+      "name": "app_system_id",
+      "type": "bigint",
+      "description": "Application ID, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "app_module_id",
+      "type": "bigint",
+      "description": "Module asset ID, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "runner_group_id",
+      "type": "bigint",
+      "description": "Runner group ID."
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "app_system_id",
+        "app_module_id"
+      ],
+      "description": "Primary key index covering the app_system_id, app_module_id fields, suitable for uniquely identifying records and queries that join the primary table."
+    }
+  ]
+}

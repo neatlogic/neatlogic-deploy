@@ -1,0 +1,107 @@
+{
+  "moduleId": "deploy",
+  "name": "deploy_job",
+  "label": "Release Job Table",
+  "description": "The release job table is used for related queries for release related reports and other scenarios.",
+  "fields": [
+    {
+      "name": "id",
+      "type": "bigint",
+      "description": "ID, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "app_system_id",
+      "type": "bigint",
+      "description": "System_id. A standard index is defined on this field, making it suitable for filtering, join, and sort queries."
+    },
+    {
+      "name": "app_module_id",
+      "type": "bigint",
+      "description": "System_module_id. A standard index is defined on this field, making it suitable for filtering, join, and sort queries."
+    },
+    {
+      "name": "env_id",
+      "type": "bigint",
+      "description": "Environment_id."
+    },
+    {
+      "name": "version_id",
+      "type": "bigint",
+      "description": "Version_id."
+    },
+    {
+      "name": "version",
+      "type": "varchar(50)",
+      "description": "Version."
+    },
+    {
+      "name": "scenario_id",
+      "type": "bigint",
+      "description": "Scene_id."
+    },
+    {
+      "name": "runner_map_id",
+      "type": "bigint",
+      "description": "The runner ID generated during the compilation and construction process."
+    },
+    {
+      "name": "config",
+      "type": "longtext",
+      "description": "Configuration."
+    },
+    {
+      "name": "build_no",
+      "type": "int",
+      "description": "Build number."
+    },
+    {
+      "name": "config_hash",
+      "type": "char(32)",
+      "description": "Configuration hash."
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "id"
+      ],
+      "description": "Primary key index covering the ID field, suitable for uniquely identifying records and queries that join the primary table."
+    },
+    {
+      "name": "idx_appId_modueId_version_jobId",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "app_system_id",
+        "app_module_id",
+        "version"
+      ],
+      "description": "Standard index covering the app_system_id, app_module_id, version fields, suitable for filtering, join, and sort queries."
+    },
+    {
+      "name": "idx_app_id",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "app_system_id"
+      ],
+      "description": "Standard index covering the app_system_id field, suitable for filtering, join, and sort queries."
+    },
+    {
+      "name": "idx_module_id",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "app_module_id"
+      ],
+      "description": "Standard index covering the app_module_id field, suitable for filtering, join, and sort queries."
+    }
+  ]
+}

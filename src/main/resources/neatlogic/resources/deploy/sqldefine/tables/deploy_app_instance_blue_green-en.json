@@ -1,0 +1,48 @@
+{
+  "moduleId": "deploy",
+  "name": "deploy_app_instance_blue_green",
+  "label": "Release Instance Blue-Green Relationship Table",
+  "description": "Release instance Blue-Green relationship table used for related queries related to releases, such as reporting scenarios.",
+  "fields": [
+    {
+      "name": "app_system_id",
+      "type": "bigint",
+      "description": "System_id, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "app_module_id",
+      "type": "bigint",
+      "description": "Module ID, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "env_id",
+      "type": "bigint",
+      "description": "Environment ID, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "resource_id",
+      "type": "bigint",
+      "description": "Instance ID, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "blue_green_id",
+      "type": "bigint",
+      "description": "Blue-green ID."
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "app_system_id",
+        "app_module_id",
+        "env_id",
+        "resource_id"
+      ],
+      "description": "Primary key index covering the app_system_id, app_module_id, env_id, resource_id fields, suitable for uniquely identifying records and queries that join the primary table."
+    }
+  ]
+}

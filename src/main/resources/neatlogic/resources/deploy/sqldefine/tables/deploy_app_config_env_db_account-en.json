@@ -1,0 +1,40 @@
+{
+  "moduleId": "deploy",
+  "name": "deploy_app_config_env_db_account",
+  "label": "Release Application Configuration Environment Layer DB Configuration Account Table",
+  "description": "Release the application configuration environment layer DB configuration account table for related queries and report scenarios.",
+  "fields": [
+    {
+      "name": "id",
+      "type": "bigint",
+      "description": "ID, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "db_config_id",
+      "type": "bigint",
+      "description": "DB configuration ID."
+    },
+    {
+      "name": "account_alias",
+      "type": "varchar(50)",
+      "description": "User alias."
+    },
+    {
+      "name": "account_id",
+      "type": "bigint",
+      "description": "User ID."
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "id"
+      ],
+      "description": "Primary key index covering the ID field, suitable for uniquely identifying records and queries that join the primary table."
+    }
+  ]
+}

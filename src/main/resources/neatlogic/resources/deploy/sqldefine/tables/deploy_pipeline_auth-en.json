@@ -1,0 +1,35 @@
+{
+  "moduleId": "deploy",
+  "name": "deploy_pipeline_auth",
+  "label": "Super Pipeline Authorization",
+  "description": "Super pipeline authorization is used for related query scenarios such as release reports and associated queries.",
+  "fields": [
+    {
+      "name": "pipeline_id",
+      "type": "bigint",
+      "description": "Job ID. A standard index is defined on this field, making it suitable for filtering, join, and sort queries."
+    },
+    {
+      "name": "auth_uuid",
+      "type": "char(32)",
+      "description": "Authorization object."
+    },
+    {
+      "name": "type",
+      "type": "enum('user','team','role')",
+      "description": "Authorization type."
+    }
+  ],
+  "indexes": [
+    {
+      "name": "idx_job_id",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "pipeline_id"
+      ],
+      "description": "Standard index covering the pipeline_id field, suitable for filtering, join, and sort queries."
+    }
+  ]
+}

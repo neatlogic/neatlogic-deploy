@@ -1,0 +1,45 @@
+{
+  "moduleId": "deploy",
+  "name": "deploy_job_lane_group",
+  "label": "Batch Job Workflow Group Table",
+  "description": "Batch job swimlane group table used for status tracking and related queries for release-related reports.",
+  "fields": [
+    {
+      "name": "id",
+      "type": "bigint",
+      "description": "Group ID, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "lane_id",
+      "type": "bigint",
+      "description": "Lane ID."
+    },
+    {
+      "name": "need_wait",
+      "type": "tinyint(1)",
+      "description": "Do we need to wait."
+    },
+    {
+      "name": "sort",
+      "type": "int",
+      "description": "Sort."
+    },
+    {
+      "name": "status",
+      "type": "varchar(20)",
+      "description": "Group status."
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "id"
+      ],
+      "description": "Primary key index covering the ID field, suitable for uniquely identifying records and queries that join the primary table."
+    }
+  ]
+}

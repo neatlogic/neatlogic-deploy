@@ -1,0 +1,202 @@
+{
+  "moduleId": "deploy",
+  "name": "deploy_version",
+  "label": "Release Version Table",
+  "description": "The version table is used for reporting scenarios such as time dimension statistics and query associations related to release times.",
+  "fields": [
+    {
+      "name": "id",
+      "type": "bigint",
+      "description": "Primary key, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "version",
+      "type": "varchar(50)",
+      "description": "Version. A standard index is defined on this field, making it suitable for filtering, join, and sort queries."
+    },
+    {
+      "name": "app_system_id",
+      "type": "bigint",
+      "description": "Application ID."
+    },
+    {
+      "name": "app_system_name",
+      "type": "varchar(50)",
+      "description": "Application name."
+    },
+    {
+      "name": "app_module_id",
+      "type": "bigint",
+      "description": "Application module ID."
+    },
+    {
+      "name": "app_module_name",
+      "type": "varchar(50)",
+      "description": "Module name of the application."
+    },
+    {
+      "name": "is_freeze",
+      "type": "tinyint",
+      "description": "Indicates whether the version is frozen. A standard index is defined on this field, making it suitable for filtering, join, and sort queries."
+    },
+    {
+      "name": "runner_map_id",
+      "type": "bigint",
+      "description": "Runner mapping ID."
+    },
+    {
+      "name": "runner_group",
+      "type": "text",
+      "description": "Runner group."
+    },
+    {
+      "name": "compile_success_count",
+      "type": "int",
+      "description": "Number of successful compilations."
+    },
+    {
+      "name": "compile_fail_count",
+      "type": "int",
+      "description": "Number of failed builds."
+    },
+    {
+      "name": "repo_type",
+      "type": "varchar(10)",
+      "description": "Inventory type."
+    },
+    {
+      "name": "repo",
+      "type": "varchar(300)",
+      "description": "Warehouse address."
+    },
+    {
+      "name": "trunk",
+      "type": "varchar(300)",
+      "description": "Mainline."
+    },
+    {
+      "name": "branch",
+      "type": "varchar(300)",
+      "description": "Branch."
+    },
+    {
+      "name": "tag",
+      "type": "varchar(300)",
+      "description": "Tags."
+    },
+    {
+      "name": "tags_dir",
+      "type": "varchar(50)",
+      "description": "Tag directory."
+    },
+    {
+      "name": "start_rev",
+      "type": "varchar(50)",
+      "description": "Starting revision number."
+    },
+    {
+      "name": "end_rev",
+      "type": "varchar(50)",
+      "description": "End rev."
+    },
+    {
+      "name": "fcu",
+      "type": "char(32)",
+      "description": "Creator."
+    },
+    {
+      "name": "fcd",
+      "type": "timestamp(3)",
+      "description": "Creation time. A standard index is defined on this field, making it suitable for filtering, join, and sort queries."
+    },
+    {
+      "name": "lcu",
+      "type": "char(32)",
+      "description": "Updated by."
+    },
+    {
+      "name": "lcd",
+      "type": "timestamp(3)",
+      "description": "Update the timestamp."
+    },
+    {
+      "name": "description",
+      "type": "text",
+      "description": "Description."
+    },
+    {
+      "name": "file_add_count",
+      "type": "int",
+      "description": "File increase count."
+    },
+    {
+      "name": "file_modify_count",
+      "type": "int",
+      "description": "File modification count."
+    },
+    {
+      "name": "file_delete_count",
+      "type": "int",
+      "description": "File deletion count."
+    },
+    {
+      "name": "line_add_count",
+      "type": "int",
+      "description": "Increase the number of code lines."
+    },
+    {
+      "name": "line_delete_count",
+      "type": "int",
+      "description": "Code line reduction."
+    },
+    {
+      "name": "issue_count",
+      "type": "int",
+      "description": "Needles."
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "id"
+      ],
+      "description": "Primary key index covering the ID field, suitable for uniquely identifying records and queries that join the primary table."
+    },
+    {
+      "name": "id_is_locked",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "is_freeze"
+      ],
+      "description": "Standard index covering the is_freeze field, suitable for filtering, join, and sort queries."
+    },
+    {
+      "name": "idx_fcd",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "fcd"
+      ],
+      "description": "Standard index covering the fcd field, suitable for filtering, join, and sort queries."
+    },
+    {
+      "name": "uk_app_system_id_app_module_id_version",
+      "type": "BTREE",
+      "unique": true,
+      "primary": false,
+      "columns": [
+        "version",
+        "app_system_id",
+        "app_module_id"
+      ],
+      "description": "Unique index covering the version, app_system_id, app_module_id fields, suitable for exact-match retrieval, uniqueness checks, and duplicate detection."
+    }
+  ]
+}

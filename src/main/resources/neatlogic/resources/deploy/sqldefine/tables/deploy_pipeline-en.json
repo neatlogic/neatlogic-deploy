@@ -1,0 +1,70 @@
+{
+  "moduleId": "deploy",
+  "name": "deploy_pipeline",
+  "label": "Super Pipeline",
+  "description": "The super pipeline is designed for reporting scenarios such as enabling status filtering, time dimension statistics, and associated query.",
+  "fields": [
+    {
+      "name": "id",
+      "type": "bigint",
+      "description": "Primary key ID, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "name",
+      "type": "varchar(255)",
+      "description": "Name."
+    },
+    {
+      "name": "is_active",
+      "type": "tinyint",
+      "description": "Indicates whether it is active."
+    },
+    {
+      "name": "fcd",
+      "type": "timestamp(3)",
+      "description": "Creation time."
+    },
+    {
+      "name": "fcu",
+      "type": "char(32)",
+      "description": "Creator."
+    },
+    {
+      "name": "lcd",
+      "type": "timestamp(3)",
+      "description": "Update the timestamp."
+    },
+    {
+      "name": "lcu",
+      "type": "char(32)",
+      "description": "Updated by."
+    },
+    {
+      "name": "type",
+      "type": "enum('appsystem','global')",
+      "description": "Type."
+    },
+    {
+      "name": "app_system_id",
+      "type": "bigint",
+      "description": "App_system ID."
+    },
+    {
+      "name": "default_version",
+      "type": "varchar(255)",
+      "description": "Default version."
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "id"
+      ],
+      "description": "Primary key index covering the ID field, suitable for uniquely identifying records and queries that join the primary table."
+    }
+  ]
+}
