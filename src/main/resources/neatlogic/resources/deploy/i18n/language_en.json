@@ -1,0 +1,2665 @@
+{
+  "nfdc": {
+    "deploypipelineconfigsource": {
+      "text": {
+        "appmodule": "Module",
+        "appsystem": "Application",
+        "env": "Environment"
+      }
+    }
+  },
+  "nmdaa": {
+    "checkdeployapppipelinephasebelonggroupapi": {
+      "getname": "Check Deployment Application Pipeline Phase Belong Group",
+      "input": {
+        "param": {
+          "desc": {
+            "phasegroupsort": "Phase Group Number",
+            "phasename": "Phase Name",
+            "targetphasegroupsort": "Phase Group Number",
+            "targetphasename": "Target Phase Name"
+          }
+        }
+      },
+      "runtime": {
+        "label": "Unconfigured Environment"
+      }
+    },
+    "deletedeployapppipelinedraftapi": {
+      "getname": "Delete Deployment Application Pipeline Draft",
+      "input": {
+        "param": {
+          "desc": {
+            "appmoduleid": "Module ID",
+            "appsystemid": "Application System ID",
+            "envid": "Environment ID"
+          }
+        }
+      }
+    },
+    "downloaddeployappbuildapi": {
+      "getname": "Download App Build",
+      "input": {
+        "param": {
+          "desc": {
+            "buildno": "Build Number",
+            "proxytenantjdbcurl": "Proxy Authorization Information",
+            "subdirs": "Subdirectory"
+          },
+          "help": {
+            "buildno": "If Empty, Find the Build Number by envName for the Corresponding Version",
+            "proxytourl": "When Downloading From Another Environment Runner, Provide the Redirect URL as Protocol + IP Address (or Domain) + Port; Defaults to the Local Environment",
+            "runnerid": "-1 Selects Any Runner From the Group Associated With the Application and Module"
+          }
+        }
+      }
+    },
+    "exportdeployapppipelineapi": {
+      "getname": "Export Application Pipeline"
+    },
+    "getdeployapppipelineapi": {
+      "getname": "Get Deployment Application Pipeline",
+      "input": {
+        "param": {
+          "desc": {
+            "isdeletedisabledphase": "Whether to Delete Disabled Phases"
+          }
+        }
+      }
+    },
+    "getdeployapppipelinedraftapi": {
+      "getname": "Get Deployment Application Pipeline Draft",
+      "input": {
+        "param": {
+          "desc": {
+            "appmoduleid": "Module ID",
+            "appsystemid": "Application System ID",
+            "envid": "Environment ID"
+          }
+        }
+      },
+      "output": {
+        "param": {
+          "desc": {
+            "return": "Application Pipeline Draft"
+          }
+        }
+      }
+    },
+    "getdeploymoduleversionauditlistapi": {
+      "getname": "Get Deployment Module Version Audit List",
+      "input": {
+        "param": {
+          "desc": {
+            "appmoduleid": "Module ID",
+            "appsystemid": "Application ID",
+            "envid": "Environment ID"
+          }
+        }
+      }
+    },
+    "importdeployapppipelineapi": {
+      "getname": "Import Deployment Application Pipeline"
+    },
+    "listdeployapppipelineparamapi": {
+      "getname": "List Deployment Application Pipeline Param",
+      "input": {
+        "param": {
+          "desc": {
+            "appsystemid": "Application System ID"
+          }
+        }
+      },
+      "output": {
+        "param": {
+          "desc": {
+            "return": "Parameter List"
+          }
+        }
+      }
+    },
+    "listdeployapppipelineprofileapi": {
+      "getname": "List Deployment Application Pipeline Profile",
+      "input": {
+        "param": {
+          "desc": {
+            "appmoduleid": "Module ID",
+            "appsystemid": "Application System ID",
+            "defaultvalue": "Default Value",
+            "envid": "Environment ID"
+          }
+        }
+      },
+      "output": {
+        "param": {
+          "desc": {
+            "return": "Application Pipeline Preset Parameter Set List"
+          }
+        }
+      }
+    },
+    "listdeployapppipelineprofileparamoverrideapi": {
+      "getname": "List Deployment Application Pipeline Profile Param Override",
+      "input": {
+        "param": {
+          "desc": {
+            "appsystemid": "Application System ID",
+            "key": "Parameter Key",
+            "profileid": "Preset Parameter Set ID"
+          }
+        }
+      },
+      "output": {
+        "param": {
+          "desc": {
+            "tbodylist": "Data List"
+          }
+        }
+      },
+      "runtime": {
+        "label": {
+          "label": "Preset Parameter"
+        }
+      }
+    },
+    "movedeployapppipelinephasebelonggroupapi": {
+      "getname": "Move Deployment Application Pipeline Phase Belong Group",
+      "input": {
+        "param": {
+          "desc": {
+            "appsystemabbrnamelist": "Application System Abbreviation List",
+            "isallappsystem": "Whether to Scan All Application Systems",
+            "issave": "Save Changes",
+            "phaselist": "Phase List",
+            "targetphasegroupsort": "Target Phase Group Number",
+            "targetphasename": "Target Phase Name"
+          },
+          "help": {
+            "appsystemabbrnamelist": "Effective Only When isAllAppSystem=0",
+            "phaselist": "[{\"name\":\"Phase Name\",\"groupSort\":\"Phase Group Sort\"}]"
+          }
+        }
+      },
+      "runtime": {
+        "label": "Unconfigured Environment"
+      }
+    },
+    "replacedeployappbuildapi": {
+      "getname": "Replace Deployment Job Build Number",
+      "input": {
+        "param": {
+          "desc": {
+            "jobid": "Deployment Job ID",
+            "newbuildno": "New Build Number"
+          }
+        }
+      }
+    },
+    "savedeployapppipelineapi": {
+      "getname": "Save Deployment Application Pipeline"
+    },
+    "savedeployapppipelinedraftapi": {
+      "getname": "Save Deployment Application Pipeline Draft"
+    },
+    "savedeployapppipelineparamapi": {
+      "getname": "Save Deployment Application Pipeline Param",
+      "input": {
+        "param": {
+          "desc": {
+            "appsystemid": "Application System ID",
+            "paramlist": "Parameter List [{\"key\": \"Parameter Key\", \"name\": \"Display Name\", \"defaultValue\": \"Default Value\", \"description\": \"Description\", \"isRequired\": \"Required\", \"type\": \"Parameter Type\"}]"
+          }
+        }
+      }
+    },
+    "searchdeployactiveversionapi": {
+      "getname": "Search Deployment Active Version",
+      "input": {
+        "param": {
+          "desc": {
+            "currentpage": "Current Page",
+            "defaultvalue": "Default Application System ID List (Empty Means View All Application)",
+            "needpage": "Pagination Required; Default: true",
+            "pagesize": "Items Per Page"
+          }
+        }
+      }
+    },
+    "updatedeployapppipelineexecuteuserfieldapi": {
+      "getname": "Update Deployment Application Pipeline Execute User Field"
+    },
+    "updatedeployapppipelineparameditablefieldapi": {
+      "getname": "Update Deployment Application Pipeline Param Editable Field"
+    },
+    "updatedeployapppipelinephaseoperationdescriptionfieldapi": {
+      "getname": "Update Deployment Application Pipeline Phase Operation Description Field"
+    }
+  },
+  "nmdaae": {
+    "copydeployappconfigenvconfigapi": {
+      "getname": "Copy Deployment Application Configuration Environment Configuration",
+      "input": {
+        "param": {
+          "desc": {
+            "appmoduleid": "Application Module ID",
+            "appsystemid": "Application System ID",
+            "fromenvid": "Source Environment ID",
+            "isadd": "Whether to Add a New Item (0: Existing, 1: New)",
+            "toenvidlist": "Target Environment ID List"
+          }
+        }
+      }
+    },
+    "deletedeployappconfigenvapi": {
+      "getname": "Delete Deployment Application Configuration Environment",
+      "input": {
+        "param": {
+          "desc": {
+            "appmoduleid": "Application Module ID",
+            "appsystemid": "Application System ID",
+            "envid": "Environment ID"
+          }
+        }
+      }
+    },
+    "deletedeployappconfigenvautoconfigapi": {
+      "getname": "Delete Deployment Application Configuration Environment Instance AutoConfig",
+      "input": {
+        "param": {
+          "desc": {
+            "appmoduleid": "Module ID",
+            "appsystemid": "Application ID",
+            "envid": "Environment ID",
+            "instanceid": "Application Instance ID"
+          }
+        }
+      }
+    },
+    "deletedeployappconfigenvconfigapi": {
+      "getname": "Delete Deployment Application Configuration Environment Configuration",
+      "input": {
+        "param": {
+          "desc": {
+            "appmoduleid": "Application Module ID",
+            "appsystemid": "Application System ID",
+            "envid": "Environment ID"
+          }
+        }
+      }
+    },
+    "deletedeployappconfigenvdbconfigapi": {
+      "getname": "Delete Deployment Application Configuration Environment DB Configuration",
+      "input": {
+        "param": {
+          "desc": {
+            "id": "ID"
+          }
+        }
+      }
+    },
+    "deletedeployappconfigenvdbprivateaccountapi": {
+      "getname": "Delete Deployment Application Configuration Environment DB Private Account"
+    },
+    "deletedeployappconfiginstanceapi": {
+      "getname": "Delete Deployment Application Configuration Instance",
+      "input": {
+        "param": {
+          "desc": {
+            "appmoduleid": "Application Module ID",
+            "appsystemid": "Application System ID",
+            "envid": "Environment ID",
+            "instanceidlist": "Instance ID List"
+          }
+        }
+      }
+    },
+    "fallbackdeployappconfigenvautoconfigapi": {
+      "getname": "Fallback Deployment Application Configuration Environment Instance AutoConfig",
+      "input": {
+        "param": {
+          "desc": {
+            "appmoduleid": "Module ID",
+            "appsystemid": "Application ID",
+            "envid": "Environment ID",
+            "instanceid": "Application Instance ID",
+            "uuidlist": "Variable Name List"
+          }
+        }
+      }
+    },
+    "getdeployappconfigenvdbconfigapi": {
+      "getname": "Get Deployment Application Configuration Environment DB Configuration",
+      "input": {
+        "param": {
+          "desc": {
+            "id": "ID"
+          }
+        }
+      },
+      "output": {
+        "param": {
+          "desc": {
+            "tbodylist": "DB Configuration"
+          }
+        }
+      }
+    },
+    "getdeployappconfigenvdbconfigforautoexecapi": {
+      "getname": "Get Deployment Application Configuration Environment DB Configuration for Autoexec",
+      "input": {
+        "param": {
+          "desc": {
+            "envid": "Environment ID",
+            "envname": "Environment Name",
+            "jobid": "Job ID",
+            "moduleid": "Module ID",
+            "modulename": "Module Name",
+            "phasename": "Phase Name",
+            "runnergroup": "Runner Group Information",
+            "runnerid": "Runner ID",
+            "sysid": "Application ID",
+            "sysname": "Application Name"
+          }
+        }
+      },
+      "output": {
+        "param": {
+          "desc": {
+            "tbodylist": "DB Configuration"
+          }
+        }
+      }
+    },
+    "getdeployappconfigenvinfoapi": {
+      "getname": "Get Deployment Application Configuration Environment Info",
+      "input": {
+        "param": {
+          "desc": {
+            "appmoduleid": "Module ID",
+            "appsystemid": "Application ID",
+            "envid": "Environment ID"
+          }
+        }
+      },
+      "output": {
+        "param": {
+          "desc": {
+            "tbodylist": "Application Configuration Environment AutoConfig List"
+          }
+        }
+      }
+    },
+    "getdeployappenvautoconfigapi": {
+      "getname": "Get Deployment Application Environment Instance AutoConfig",
+      "input": {
+        "param": {
+          "desc": {
+            "envid": "Environment ID",
+            "moduleid": "Application Module ID",
+            "sysid": "Application System ID"
+          }
+        }
+      }
+    },
+    "listdeployappconfigenvattrapi": {
+      "getname": "Query Application Environment Attributes",
+      "input": {
+        "param": {
+          "desc": {
+            "keylist": "Key List"
+          }
+        }
+      },
+      "output": {
+        "param": {
+          "desc": {
+            "tbodylist": "Application Configuration Environment AutoConfig List"
+          }
+        }
+      }
+    },
+    "listdeployappconfigenvautoconfigauditapi": {
+      "getname": "List Deployment Application Configuration Environment Instance AutoConfig Audit",
+      "input": {
+        "param": {
+          "desc": {
+            "appmoduleid": "Module ID",
+            "appsystemid": "Application ID",
+            "envid": "Environment ID",
+            "instanceid": "Application Instance ID"
+          }
+        }
+      },
+      "runtime": {
+        "aftervalue": "Set to Empty",
+        "beforevalue": "Set to Empty"
+      }
+    },
+    "listdeployappconfigwithoutconfigenvapi": {
+      "getname": "List Deployment Application Configuration Without Configuration Environment",
+      "input": {
+        "param": {
+          "desc": {
+            "appmoduleid": "Application Module ID",
+            "appsystemid": "Application System ID",
+            "envid": "Environment ID"
+          }
+        }
+      },
+      "output": {
+        "param": {
+          "desc": {
+            "return": "Without Inherited Application Configuration Environment List"
+          }
+        }
+      }
+    },
+    "savedeployappconfigautoconfigforautoexecapi": {
+      "getname": "Save Deployment Application Configuration Auto Configuration for Autoexec",
+      "input": {
+        "param": {
+          "desc": {
+            "autocfgkeys": "Key List",
+            "envid": "Environment ID",
+            "envname": "Environment Name",
+            "jobid": "Job ID",
+            "moduleid": "Module ID",
+            "modulename": "Module Name",
+            "phasename": "Phase Name",
+            "runnergroup": "Runner Group Information",
+            "runnerid": "Runner ID",
+            "sysid": "Application ID",
+            "sysname": "Application Name"
+          }
+        }
+      }
+    },
+    "savedeployappconfigdbschemaforautoexecapi": {
+      "getname": "Save Deployment Application Configuration DB Schema for Autoexec",
+      "input": {
+        "param": {
+          "desc": {
+            "dbschemas": "Database schema List (schema Format is: dbname.username)",
+            "envid": "Environment ID",
+            "envname": "Environment Name",
+            "jobid": "Job ID",
+            "moduleid": "Module ID",
+            "modulename": "Module Name",
+            "phasename": "Phase Name",
+            "runnergroup": "Runner Group Information",
+            "runnerid": "Runner ID",
+            "sysid": "Application ID",
+            "sysname": "Application Name"
+          }
+        }
+      }
+    },
+    "savedeployappconfigenvapi": {
+      "getname": "Save Deployment Application Configuration Environment"
+    },
+    "savedeployappconfigenvattrapi": {
+      "getname": "Save Application Environment Attributes",
+      "input": {
+        "param": {
+          "desc": {
+            "keyvaluelist": "[{\"ID\": xxx,\"key\": xxx,\"value\":xxx}]"
+          }
+        }
+      }
+    },
+    "savedeployappconfigenvautoconfigapi": {
+      "getname": "Save Deployment Application Configuration Environment Instance AutoConfig",
+      "input": {
+        "param": {
+          "desc": {
+            "appmoduleid": "Module ID",
+            "appsystemid": "Application ID",
+            "deleteinstanceid": "Delete Application Instance ID",
+            "envid": "Environment ID",
+            "instanceid": "Application Instance ID",
+            "keyvaluelist": "[{\"ID\": xxx,\"key\": xxx,\"value\":xxx}]"
+          }
+        }
+      }
+    },
+    "savedeployappconfigenvcientityapi": {
+      "input": {
+        "param": {
+          "desc": {
+            "attrlist": "Attribute List",
+            "globalattrlist": "Global Attribute List",
+            "ip": "IP Address",
+            "port": "Port",
+            "rellist": "Relationship List"
+          }
+        }
+      }
+    },
+    "savedeployappconfigenvdbapi": {
+      "getname": "Save Deployment Application Configuration Asset Data"
+    },
+    "savedeployappconfigenvdbconfigapi": {
+      "getname": "Save Deployment Application Configuration Environment DB Configuration",
+      "input": {
+        "param": {
+          "desc": {
+            "accountid": "Execute User ID",
+            "appmoduleid": "Application Module ID",
+            "appsystemid": "Application System ID",
+            "config": "Advanced Settings",
+            "dbresourceid": "Database Asset ID",
+            "dbschema": "Database Schema",
+            "envid": "Environment ID",
+            "id": "ID"
+          }
+        }
+      }
+    },
+    "savedeployappconfigenvdbprivateaccountapi": {
+      "getname": "Save Deployment Application Configuration Environment DB Private Account",
+      "runtime": {
+        "param": {
+          "idresourceid": "Asset ID (resourceId)"
+        }
+      }
+    },
+    "savedeployappconfigenvdbpublicaccountapi": {
+      "getname": "Save Deployment Application Configuration Environment DB Public Account"
+    },
+    "savedeployappconfiginstanceapi": {
+      "getname": "Save Deployment Application Configuration Instance",
+      "input": {
+        "param": {
+          "desc": {
+            "appmoduleid": "Application Module ID",
+            "appsystemid": "Application System ID",
+            "ciid": "Model ID",
+            "envid": "Environment ID",
+            "id": "Instance ID",
+            "instanceidlist": "Instance ID List",
+            "ip": "IP Address",
+            "maintenancewindow": "Maintenance Window",
+            "name": "Name",
+            "port": "Port"
+          }
+        }
+      }
+    },
+    "searchdeployappconfigenvdatabaseapi": {
+      "getname": "Search Deployment Application Configuration Environment Database",
+      "input": {
+        "param": {
+          "desc": {
+            "appmoduleid": "Application Module ID",
+            "appsystemid": "Application System ID",
+            "currentpage": "Current Page",
+            "defaultvalue": "Default Value",
+            "envid": "Environment ID",
+            "keyword": "Keyword",
+            "pagesize": "Items Per Page"
+          }
+        }
+      },
+      "output": {
+        "param": {
+          "desc": {
+            "basepagevo": "Query Deployment Application Configuration DB Database under No Module No Environment 、 No Module Same Environment 、 Same Module No Environment 、 Same Module Same Environment Database",
+            "tbodylist": "Database Asset List"
+          }
+        }
+      }
+    },
+    "searchdeployappconfiginstanceapi": {
+      "getname": "Search Deployment Application Configuration Instance",
+      "input": {
+        "param": {
+          "desc": {
+            "appmoduleid": "Application Module ID",
+            "appsystemid": "Application System ID",
+            "currentpage": "Current Page",
+            "envid": "Environment ID",
+            "keyword": "Fuzzy Search",
+            "needpage": "Enable Pagination",
+            "pagesize": "Maximum Items Per Page"
+          }
+        }
+      },
+      "output": {
+        "param": {
+          "desc": {
+            "tbodylist": "Instance List"
+          }
+        }
+      }
+    },
+    "searchdeployappmoduleenvautoconfiginstanceapi": {
+      "getname": "Search Deployment Application Module Environment Auto Configuration Instance",
+      "input": {
+        "param": {
+          "desc": {
+            "appmoduleid": "Module ID",
+            "appsystemid": "Application ID",
+            "currentpage": "Current Page",
+            "defaultvalue": "Default Value",
+            "envid": "Environment ID",
+            "isautoconfig": "AutoConfig Available",
+            "keyword": "Fuzzy Search",
+            "needpage": "Pagination Required; Default: true",
+            "pagesize": "Items Per Page"
+          }
+        }
+      },
+      "output": {
+        "param": {
+          "desc": {
+            "tbodylist": "Deployment Application Module Environment AutoConfig Instance Difference Asset List"
+          }
+        }
+      }
+    }
+  },
+  "nmdaam": {
+    "copydeployappconfigmoduleconfigapi": {
+      "getname": "Copy Deployment Application Configuration Module Configuration",
+      "input": {
+        "param": {
+          "desc": {
+            "abbrname": "Abbreviation (Copy Configuration, and Create Module When Used)",
+            "appsystemid": "Application System ID",
+            "description": "Remarks (Copy Configuration, and Create Module When Used)",
+            "fromappmoduleid": "Source Module ID",
+            "isadd": "Whether to Add a New Item (0: Existing, 1: New)",
+            "maintenancewindow": "Maintenance Window (Copy Configuration, and Create Module When Used)",
+            "name": "Name (Copy Configuration, and Create Module When Used)",
+            "owneridlist": "Owner (Copy Configuration, and Create Module When Used)",
+            "stateidlist": "Status (Copy Configuration, and Create Module When Used)",
+            "toappmoduleidlist": "Target Module ID List"
+          }
+        }
+      }
+    },
+    "deletedeployappconfigappmoduleconfigapi": {
+      "getname": "Delete Deployment Application Configuration Application Module Configuration",
+      "input": {
+        "param": {
+          "desc": {
+            "appmoduleid": "Application Module ID",
+            "appsystemid": "Application System ID"
+          }
+        }
+      }
+    },
+    "getdeployappconfigappmoduleapi": {
+      "getname": "Get Deployment Application Configuration Application Module",
+      "input": {
+        "param": {
+          "desc": {
+            "id": "Application Module ID"
+          }
+        }
+      },
+      "output": {
+        "param": {
+          "desc": {
+            "return": "Application Module (Configuration Item) Information"
+          }
+        }
+      }
+    },
+    "getdeployappconfigappmoduleinfoapi": {
+      "getname": "Get Deployment Application Configuration Application Module Info",
+      "input": {
+        "param": {
+          "desc": {
+            "appmoduleid": "Application Module ID",
+            "appsystemid": "Application System ID"
+          }
+        }
+      },
+      "output": {
+        "param": {
+          "desc": {
+            "tbodylist": "Application Module Detailed Configuration Information"
+          }
+        }
+      }
+    },
+    "getdeploymodulescenarioandenvlistapi": {
+      "getname": "Get Deployment Module Scenario and Environment List",
+      "input": {
+        "param": {
+          "desc": {
+            "appmoduleid": "Module ID",
+            "appsystemid": "Application System ID"
+          }
+        }
+      }
+    },
+    "getdeployrunnergroupforautoexecapi": {
+      "getname": "Get Deployment Runner Group for Autoexec",
+      "input": {
+        "param": {
+          "desc": {
+            "moduleid": "Module ID",
+            "sysid": "Application ID"
+          }
+        }
+      },
+      "output": {
+        "param": {
+          "desc": {
+            "return": "Get Deployment Runner Group API"
+          }
+        }
+      }
+    },
+    "listdeployappconfigappenvapi": {
+      "getname": "Query Deployment Application Configuration Environments for Application Tree Selection and Deployment Job Creation",
+      "input": {
+        "param": {
+          "help": {
+            "ishasenv": "0: Find Missing Environments; 1: Find Existing Environments"
+          }
+        }
+      }
+    },
+    "listdeployappconfigwithoutconfigmoduleapi": {
+      "getname": "List Deployment Application Configuration Without Configuration Module",
+      "input": {
+        "param": {
+          "desc": {
+            "appmoduleid": "Application Module ID",
+            "appsystemid": "Application System ID"
+          }
+        }
+      },
+      "output": {
+        "param": {
+          "desc": {
+            "return": "Deployment Application Configuration Application System Module List"
+          }
+        }
+      }
+    },
+    "savedeployappconfigappmoduleapi": {
+      "getname": "Save Deployment Application Configuration Application Module",
+      "input": {
+        "param": {
+          "desc": {
+            "abbrname": "Abbreviation",
+            "appsystemid": "Application System ID",
+            "description": "Remarks",
+            "id": "ID",
+            "maintenancewindow": "Maintenance Window",
+            "name": "Name",
+            "owner": "Owner",
+            "state": "Status"
+          }
+        }
+      },
+      "output": {
+        "param": {
+          "desc": {
+            "return": "Application Module ID"
+          }
+        }
+      }
+    },
+    "savedeployappconfigmodulerunnergroupapi": {
+      "getname": "Save Deployment Application Configuration Module Runner Group",
+      "input": {
+        "param": {
+          "desc": {
+            "appmoduleid": "Module ID",
+            "appsystemid": "Application ID",
+            "runnergroupid": "Runner Group ID"
+          }
+        }
+      }
+    }
+  },
+  "nmdaas": {
+    "deletebatchdeployappconfigauthorityapi": {
+      "getname": "Delete Batch Deployment Application Configuration Authority",
+      "input": {
+        "param": {
+          "desc": {
+            "appsystemid": "Application Asset ID",
+            "uuidlist": "Authorization List"
+          }
+        }
+      }
+    },
+    "deletedeployappconfigappsystemconfigapi": {
+      "getname": "Delete Deployment Application Configuration Application System Configuration",
+      "input": {
+        "param": {
+          "desc": {
+            "appsystemid": "Application System ID"
+          }
+        }
+      }
+    },
+    "getdeployappconfigappsystemapi": {
+      "getname": "Get Deployment Application Configuration Application System",
+      "input": {
+        "param": {
+          "desc": {
+            "id": "Application System ID"
+          }
+        }
+      },
+      "output": {
+        "param": {
+          "desc": {
+            "return": "Application System (Configuration Item) Information"
+          }
+        }
+      }
+    },
+    "listdeployappciattrapi": {
+      "getname": "List Deployment Application CI Attr",
+      "input": {
+        "param": {
+          "desc": {
+            "attrnamelist": "Need Return Attribute List",
+            "isall": "Return All Attributes"
+          }
+        }
+      },
+      "output": {
+        "param": {
+          "desc": {
+            "return": "Deployment Application Model Attribute List"
+          }
+        }
+      }
+    },
+    "listdeployappconfigappmoduleapi": {
+      "getname": "List Deployment Application Configuration Application Module",
+      "input": {
+        "param": {
+          "desc": {
+            "appmoduleidlist": "Application Module ID List",
+            "appsystemid": "Application System ID"
+          }
+        }
+      },
+      "output": {
+        "param": {
+          "desc": {
+            "return": "Deployment Application Configuration Application System Module List"
+          }
+        }
+      }
+    },
+    "listdeployappconfigauthorityapi": {
+      "getname": "List Deployment Application Configuration Authority",
+      "input": {
+        "param": {
+          "desc": {
+            "appid": "Application Asset ID"
+          }
+        }
+      }
+    },
+    "listdeployappinstanceciattrapi": {
+      "getname": "List Deployment Application Instance CI Attr",
+      "input": {
+        "param": {
+          "desc": {
+            "attrnamelist": "Need Return Attribute List",
+            "isall": "Return All Attributes"
+          }
+        }
+      },
+      "output": {
+        "param": {
+          "desc": {
+            "return": "Deployment Application Module Instance Attribute List"
+          }
+        }
+      }
+    },
+    "listdeployappmoduleciattrapi": {
+      "getname": "List Deployment Application Module CI Attr",
+      "input": {
+        "param": {
+          "desc": {
+            "attrnamelist": "Need Return Attribute List",
+            "isall": "Return All Attributes"
+          }
+        }
+      },
+      "output": {
+        "param": {
+          "desc": {
+            "return": "Deployment Application Module Model Attribute List"
+          }
+        }
+      }
+    },
+    "savedeployappconfigappsystemapi": {
+      "getname": "Save Deployment Application Configuration Application System"
+    },
+    "savedeployappconfigappsystemfavoriteapi": {
+      "getname": "Save Deployment Application Configuration Application System Favorite",
+      "input": {
+        "param": {
+          "desc": {
+            "appsystemid": "Application System ID",
+            "isfavorite": "Favorite (1: Yes, 0: No)"
+          }
+        }
+      }
+    },
+    "savedeployappconfigauthorityapi": {
+      "getname": "Save Deployment Application Configuration Authority",
+      "input": {
+        "param": {
+          "desc": {
+            "actionlist": "Authorization Operation List",
+            "appsystemid": "Application Asset ID",
+            "authoritystrlist": "Authorization List",
+            "isedit": "Editable (0: No, 1: Yes)"
+          }
+        }
+      }
+    },
+    "searchdeployappattrapi": {
+      "getname": "Search Deployment Application Attr",
+      "input": {
+        "param": {
+          "desc": {
+            "attrname": "Attribute Name",
+            "ciname": "Model Name",
+            "defaultvalue": "Used to Display the List",
+            "keyword": "Keyword"
+          }
+        }
+      },
+      "output": {
+        "param": {
+          "desc": {
+            "tbodylist": "Table Body List"
+          }
+        }
+      }
+    },
+    "searchdeployappconfigappsystemapi": {
+      "getname": "Search Deployment Application Configuration Application System",
+      "input": {
+        "param": {
+          "desc": {
+            "appmoduleidlist": "Application Module ID List",
+            "appsystemidlist": "Application System ID List",
+            "currentpage": "Current Page",
+            "isconfig": "Show Configured Items Only",
+            "isfavorite": "Show Favorites Only",
+            "keyword": "Fuzzy Search - Application Name | Module Name",
+            "needpage": "Pagination Required; Default: true",
+            "pagerange": "Pagination Range",
+            "pagesize": "Items Per Page"
+          }
+        }
+      },
+      "output": {
+        "param": {
+          "desc": {
+            "tbodylist": "Deployment Application Configuration Application System List"
+          }
+        }
+      }
+    },
+    "searchdeployappconfigauthorityapi": {
+      "getname": "Search Deployment Application Configuration Authority",
+      "input": {
+        "param": {
+          "desc": {
+            "actionlist": "Action List",
+            "includeactionlist": "Permission Actions to Return, Such As ['view', 'edit', 'scenario', 'env']"
+          }
+        }
+      },
+      "runtime": {
+        "label": {
+          "label": "User"
+        }
+      }
+    },
+    "treedeployappconfigappsystemappmoduleenvapi": {
+      "getname": "Query Deployment Application Configuration Environment Tree",
+      "input": {
+        "param": {
+          "desc": {
+            "appsystemid": "Application System ID"
+          }
+        }
+      },
+      "output": {
+        "param": {
+          "desc": {
+            "return": "Query Deployment Application Configuration Environment Tree"
+          }
+        }
+      }
+    }
+  },
+  "nmdab": {
+    "batchsaveinstancebluegreenapi": {
+      "getname": "Batch Save Instance Blue-green Configuration",
+      "input": {
+        "param": {
+          "desc": {
+            "appmoduleid": "Module ID",
+            "appsystemid": "Application ID",
+            "bluegreenid": "Blue-green ID",
+            "envid": "Environment ID",
+            "resourceidlist": "Instance ID List"
+          }
+        }
+      }
+    },
+    "savebluegreenapi": {
+      "getname": "Save Blue-green Configuration",
+      "input": {
+        "param": {
+          "desc": {
+            "id": "ID"
+          }
+        }
+      }
+    },
+    "saveinstancebluegreenapi": {
+      "getname": "Save Instance Blue-green Configuration",
+      "input": {
+        "param": {
+          "desc": {
+            "appmoduleid": "Module ID",
+            "appsystemid": "Application ID",
+            "bluegreenid": "Blue-green ID",
+            "envid": "Environment ID",
+            "resourceid": "Instance ID"
+          }
+        }
+      }
+    },
+    "searchbluegreenapi": {
+      "getname": "Query Blue-green Configuration List",
+      "input": {
+        "param": {
+          "desc": {
+            "isactive": "Active (0: Disabled, 1: Active)",
+            "keyword": "Keyword",
+            "needpage": "Pagination Required; Default: true",
+            "pagesize": "Items Per Page"
+          }
+        }
+      }
+    }
+  },
+  "nmdac": {
+    "batchupdategitlabhookapi": {
+      "getname": "Batch Update GitLab Hook",
+      "input": {
+        "param": {
+          "desc": {
+            "action": "Action Type",
+            "branchfilter": "Branch",
+            "callbackurl": "Callback URL",
+            "configlist": {
+              "action": "Action Type",
+              "branchfilter": "Branch",
+              "callbackurl": "Callback URL",
+              "name": "Webhook Configuration List",
+              "password": "GitLab Password",
+              "reponame": "Repository Name",
+              "reposerveraddress": "Repository Server URL",
+              "username": "GitLab User"
+            },
+            "password": "GitLab Password",
+            "reposerveraddress": "Repository Server URL",
+            "runnerurl": "Runner URL",
+            "username": "GitLab User"
+          }
+        }
+      }
+    },
+    "callbackdeploycigitlabeventapi": {
+      "getname": "Callback Deployment CI GitLab Event"
+    },
+    "callbackdeploycisvneventapi": {
+      "getname": "Callback Deployment CI SVN Event",
+      "input": {
+        "param": {
+          "desc": {
+            "added": "Files Added in This Commit",
+            "author": "Committer",
+            "date": "Commit Date",
+            "deleted": "Files Deleted in This Commit",
+            "dirschanged": "Affected Directories",
+            "ip": "SVN Server IP",
+            "message": "Commit Message",
+            "modified": "Files Modified in This Commit",
+            "revision": "Commit ID"
+          },
+          "help": {
+            "added": "Separate Multiple Values With Commas",
+            "date": "Format: yyyy-MM-dd HH:mm:ss",
+            "deleted": "Separate Multiple Values With Commas",
+            "message": "No Action Is Executed When the Message Contains '--nodeploy'",
+            "modified": "Separate Multiple Values With Commas"
+          }
+        }
+      }
+    },
+    "deletedeployciapi": {
+      "getname": "Delete Deployment CI",
+      "input": {
+        "param": {
+          "desc": {
+            "id": "ID"
+          }
+        }
+      }
+    },
+    "downloaddeployciauditdetailapi": {
+      "getname": "Down Load Deployment CI Audit Detail"
+    },
+    "getdeployciapi": {
+      "getname": "Get Deployment CI",
+      "input": {
+        "param": {
+          "desc": {
+            "id": "ID"
+          }
+        }
+      }
+    },
+    "getdeployciauditdetailapi": {
+      "getname": "Get Deployment CI Audit Detail"
+    },
+    "savedeployciapi": {
+      "getname": "Save Deployment CI",
+      "input": {
+        "param": {
+          "desc": {
+            "reponame": "Repository Name",
+            "reposerveraddress": "Repository Server URL",
+            "repotype": "Repository Type",
+            "versionrule": "Version Number Rule"
+          }
+        }
+      }
+    },
+    "searchdeployciapi": {
+      "getname": "Search Deployment CI",
+      "input": {
+        "param": {
+          "desc": {
+            "appsystemid": "System ID",
+            "currentpage": "Current Page",
+            "keyword": "Keyword",
+            "pagesize": "Maximum Items Per Page"
+          }
+        }
+      }
+    },
+    "searchdeployciauditapi": {
+      "getname": "Search Deployment CI Audit",
+      "input": {
+        "param": {
+          "desc": {
+            "ciid": "Continuous Integration Configuration ID",
+            "currentpage": "Current Page",
+            "pagesize": "Maximum Items Per Page"
+          }
+        }
+      }
+    },
+    "updatedeployactivestatusapi": {
+      "getname": "Update Deployment Active Status",
+      "input": {
+        "param": {
+          "desc": {
+            "id": "ID",
+            "isactive": "Active"
+          }
+        }
+      }
+    }
+  },
+  "nmdae": {
+    "rollbackdeployenvversionapi": {
+      "getname": "Rollback Deployment Environment Version",
+      "input": {
+        "param": {
+          "desc": {
+            "envid": "Environment ID",
+            "moduleid": "Application Module ID",
+            "sysid": "Application ID"
+          }
+        }
+      }
+    },
+    "savedeployenvversionapi": {
+      "getname": "Save Deployment Environment Version",
+      "input": {
+        "param": {
+          "desc": {
+            "buildno": "Build Number",
+            "deploytime": "Deployment Time (Unix Timestamp in Seconds)",
+            "envid": "Environment ID",
+            "execuser": "Deployment User",
+            "moduleid": "Application Module ID",
+            "sysid": "Application ID",
+            "version": "Version Number"
+          }
+        }
+      }
+    }
+  },
+  "nmdai": {
+    "rollbackdeployinstanceversionapi": {
+      "getname": "Rollback Deployment Instance Version",
+      "input": {
+        "param": {
+          "desc": {
+            "envid": "Environment ID",
+            "moduleid": "Application Module ID",
+            "resourceid": "Instance ID",
+            "sysid": "Application ID"
+          }
+        }
+      }
+    },
+    "savedeployinstanceversionapi": {
+      "getname": "Save Deployment Instance Version",
+      "input": {
+        "param": {
+          "desc": {
+            "buildno": "Build Number",
+            "deploytime": "Deployment Time (Unix Timestamp in Seconds)",
+            "envid": "Environment ID",
+            "execuser": "Deployment User",
+            "moduleid": "Application Module ID",
+            "resourceid": "Instance ID",
+            "sysid": "Application ID",
+            "version": "Version Number"
+          }
+        }
+      }
+    }
+  },
+  "nmdaj": {
+    "createdeployjobapi": {
+      "getname": "Create Deployment Job",
+      "input": {
+        "param": {
+          "desc": {
+            "appmoduleabbrname": "Application Module Abbreviation",
+            "appmoduleid": "Application Module ID",
+            "appsystemabbrname": "Application System Abbreviation, If Input Parameter Also Contains appSystemId, Then by appSystemName Takes Precedence",
+            "appsystemid": "Application System ID",
+            "envid": "Environment ID",
+            "envname": "Environment ID, If Input Parameter Also Contains envId, Then by envName Takes Precedence",
+            "isneedfire": "Whether to Activate the Job After Creation; Default: 1 (Active)",
+            "scenarioid": "Scenario ID",
+            "scenarioname": "Scenario Name, If Input Parameter Also Contains scenarioId, Then by scenarioName Takes Precedence",
+            "source": "Source: itsm, human, or deploy. Defaults to deploy"
+          }
+        }
+      }
+    },
+    "createmultideployjobapi": {
+      "getname": "Create Multi Deployment Job",
+      "input": {
+        "param": {
+          "help": {
+            "appsystemabbrname": "appSystemName Takes Precedence When appSystemId Is Also Provided",
+            "envname": "envName Takes Precedence When envId Is Also Provided",
+            "proxytourl": "When Downloading From Another Environment Runner, Provide the Redirect URL as Protocol + IP Address (or Domain) + Port",
+            "scenarioname": "scenarioName Takes Precedence When scenarioId Is Also Provided"
+          }
+        }
+      }
+    },
+    "getdeploygroupjoblistapi": {
+      "getname": "Get Deployment Group Job List",
+      "input": {
+        "param": {
+          "desc": {
+            "idlist": "ID List Used to Refresh Specific Job Statuses"
+          }
+        }
+      },
+      "output": {
+        "param": {
+          "desc": {
+            "return": "By Specified ID Get Deployment Job Group List API, Used to Refresh Job Status"
+          }
+        }
+      }
+    },
+    "getdeployjobcreateinfoapi": {
+      "getname": "Get Deployment Job Initialization Information"
+    },
+    "getdeployjobnotifypolicyapi": {
+      "getname": "Get Deployment Job Notify Policy",
+      "input": {
+        "param": {
+          "desc": {
+            "appsystemid": "Application System ID"
+          }
+        }
+      },
+      "output": {
+        "param": {
+          "desc": {
+            "invokenotifypolicyconfigvo": "Notification Policy Configuration Information"
+          }
+        }
+      }
+    },
+    "listdeployjobmoduleapi": {
+      "getname": "List Deployment Job Module",
+      "input": {
+        "param": {
+          "desc": {
+            "appsystemid": "Application System ID",
+            "envid": "Environment ID",
+            "scenarioid": "Scenario ID"
+          }
+        }
+      },
+      "output": {
+        "param": {
+          "desc": {
+            "return": "By System 、 Environment 、 Scenario Query One-Click Deployment Page Module Information List"
+          }
+        }
+      }
+    },
+    "savedeployjobnotifypolicyapi": {
+      "getname": "Save Deployment Job Notify Policy",
+      "input": {
+        "param": {
+          "desc": {
+            "appsystemid": "Application System ID",
+            "excludetriggerlist": "Exclude Trigger Point List",
+            "iscustom": "Use Custom Notification Policy",
+            "parammappinglist": "Parameter Mapping List",
+            "policyid": "Notification Policy ID"
+          }
+        }
+      }
+    },
+    "searchdeployjobapi": {
+      "getname": "Search Deployment Job",
+      "input": {
+        "param": {
+          "desc": {
+            "appmoduleid": "Application Module ID",
+            "appsystemid": "Application System ID",
+            "confid": "Automatic Discovery Configuration ID",
+            "currentpage": "Current Page",
+            "endtimerange": "End Time Range",
+            "envid": "Environment ID",
+            "excludeidlist": "Exclude ID List",
+            "execuserlist": "Operation User",
+            "hasparent": "Has Parent Job",
+            "idlist": "ID List Used to Refresh Specific Job Statuses",
+            "invokeidlist": "Reference ID List",
+            "isneednameandabbrname": "Whether to Query System and Module Names and Abbreviations (1: Yes, 0: No)",
+            "keyword": "Keyword",
+            "pagesize": "Items Per Page",
+            "parentid": "Parent Job ID",
+            "pipelineid": "Super Pipeline ID",
+            "planstarttimerange": "Planned Time Range",
+            "sourcelist": "Source; Defaults to deploy or batchdeploy",
+            "starttimerange": "Start Time Range",
+            "statuslist": "Job Status",
+            "typeidlist": "Composite Tool Type"
+          }
+        }
+      },
+      "output": {
+        "param": {
+          "desc": {
+            "basepagevo": "Query Deployment Job API",
+            "tbodylist": "List"
+          }
+        }
+      }
+    }
+  },
+  "nmdajb": {
+    "addbatchdeployjobfrompipelineapi": {
+      "getname": "Add Batch Deployment Job from Pipeline",
+      "input": {
+        "param": {
+          "desc": {
+            "appsystemmoduleversionlist": "Selected System Modules and Versions; Each Array Item Must Contain appSystemId, appModuleId, and versionId",
+            "name": "Job Name",
+            "pipelineid": "Super Pipeline ID",
+            "planstarttime": "Planned Start Time",
+            "triggertype": "Trigger Method"
+          }
+        }
+      },
+      "output": {
+        "param": {
+          "desc": {
+            "deployjobvo": "Through Super Pipeline Add Batch Deployment Job API"
+          }
+        }
+      }
+    },
+    "checkbatchdeployjobapi": {
+      "getname": "Check Batch Deployment Job",
+      "input": {
+        "param": {
+          "desc": {
+            "id": "Batch Deployment Job ID"
+          }
+        }
+      }
+    },
+    "deletebatchdeployjobapi": {
+      "getname": "Delete Batch Deployment Job",
+      "input": {
+        "param": {
+          "desc": {
+            "id": "Job ID"
+          }
+        }
+      },
+      "output": {
+        "param": {
+          "desc": {
+            "deployjobvo": "Delete Batch Deployment Job API"
+          }
+        }
+      }
+    },
+    "executebatchdeployjobapi": {
+      "getname": "Execute Batch Deployment Job",
+      "input": {
+        "param": {
+          "desc": {
+            "batchjobaction": "Batch Job Execute Policy, refireAll: Skip All Completed Child Job; refireResetAll: Execute All Child Job",
+            "id": "Batch Job ID",
+            "jobaction": "Child Job Execute Policy, refireAll: Skip All Completed 、 Ignored Node; refireResetAll: Execute All Node"
+          }
+        }
+      }
+    },
+    "executebatchdeployjobgroupapi": {
+      "getname": "Execute Batch Deployment Job Group",
+      "input": {
+        "param": {
+          "desc": {
+            "batchjobaction": "Batch Job Execute Policy, refireAll: Skip All Completed Child Job; refireResetAll: Execute All Child Job",
+            "id": "Batch Job Group ID",
+            "isgoon": "Whether to Continue With Subsequent Groups After the Current Group Completes; Still Subject to needWait (1: Yes, 0: No)",
+            "jobaction": "Child Job Execute Policy, refireAll: Skip All Completed 、 Ignored Node; refireResetAll: Execute All Node"
+          }
+        }
+      }
+    },
+    "getbatchdeployjobapi": {
+      "getname": "Get Batch Deployment Job"
+    },
+    "getbatchdeployjobstatusapi": {
+      "getname": "Get Batch Deployment Job Status",
+      "input": {
+        "param": {
+          "desc": {
+            "id": "Job ID"
+          }
+        }
+      },
+      "output": {
+        "param": {
+          "desc": {
+            "deployjobvo": "Get Batch Job Status Information for Status Refresh"
+          }
+        }
+      }
+    },
+    "resumebatchdeployjobgroupapi": {
+      "getname": "Resume Batch Deployment Job Group",
+      "input": {
+        "param": {
+          "desc": {
+            "batchjobaction": "Batch Job Execute Policy, refireAll: Skip All Completed Child Job; refireResetAll: Execute All Child Job",
+            "id": "Batch Job Group ID",
+            "jobaction": "Child Job Execute Policy, refireAll: Skip All Completed 、 Ignored Node; refireResetAll: Execute All Node"
+          }
+        }
+      }
+    },
+    "savebatchdeployjobapi": {
+      "getname": "Save Batch Deployment Job",
+      "input": {
+        "param": {
+          "help": {
+            "id": "Omit to Add a Job",
+            "savemode": "Save as Draft or Commit"
+          }
+        }
+      }
+    },
+    "takeoverbatchdeployjobapi": {
+      "getname": "Take Over Batch Deployment Job",
+      "input": {
+        "param": {
+          "desc": {
+            "id": "Batch Deployment Job ID"
+          }
+        }
+      }
+    },
+    "updatebatchdeployjobreviewstatusapi": {
+      "getname": "Update Batch Deployment Job Review Status",
+      "input": {
+        "param": {
+          "desc": {
+            "id": "Job ID",
+            "reviewstatus": "Approval Action"
+          }
+        }
+      },
+      "output": {
+        "param": {
+          "desc": {
+            "deployjobvo": "Update Batch Deployment Job Review Status API"
+          }
+        }
+      }
+    }
+  },
+  "nmdant": {
+    "testnotifypolicyapi": {
+      "getname": "Test Notify Policy",
+      "input": {
+        "param": {
+          "desc": {
+            "jobid": "Job ID",
+            "jobstatus": "Job Status"
+          }
+        }
+      }
+    }
+  },
+  "nmdap": {
+    "deletepipelineapi": {
+      "getname": "Delete Pipeline",
+      "input": {
+        "param": {
+          "desc": {
+            "id": "ID"
+          }
+        }
+      }
+    },
+    "getjobtemplateapi": {
+      "getname": "Get Job Template",
+      "input": {
+        "param": {
+          "desc": {
+            "id": "ID"
+          }
+        }
+      },
+      "output": {
+        "param": {
+          "desc": {
+            "pipelinejobtemplatevo": "Get Job Template Information API"
+          }
+        }
+      }
+    },
+    "getpipelineapi": {
+      "getname": "Get Super Pipeline Details"
+    },
+    "listpipelineappsystemmoduleenvscenarioapi": {
+      "getname": "List Pipeline Application System Module Environment Scenario",
+      "input": {
+        "param": {
+          "desc": {
+            "id": "ID"
+          }
+        }
+      },
+      "output": {
+        "param": {
+          "desc": {
+            "return": "Get Super Pipeline Application Module Environment List API"
+          }
+        }
+      }
+    },
+    "savepipelineapi": {
+      "getname": "Save Pipeline",
+      "input": {
+        "param": {
+          "desc": {
+            "defaultversion": "Default Version",
+            "id": "ID",
+            "name": "Name"
+          }
+        }
+      }
+    },
+    "searchjobtemplateapi": {
+      "getname": "Search Job Template",
+      "input": {
+        "param": {
+          "desc": {
+            "appmoduleid": "Application Module ID",
+            "appsystemid": "Application System ID",
+            "envid": "Environment ID",
+            "excludeidlist": "Exclude ID List",
+            "keyword": "Keyword"
+          }
+        }
+      },
+      "output": {
+        "param": {
+          "desc": {
+            "basepagevo": "Search Pipeline Job Template API"
+          }
+        }
+      }
+    },
+    "searchpipelineapi": {
+      "getname": "Search Pipeline",
+      "input": {
+        "param": {
+          "desc": {
+            "appsystemid": "Application ID",
+            "currentpage": "Current Page",
+            "keyword": "Keyword",
+            "needverifyauth": "Validate Permissions",
+            "pagesize": "Page Size",
+            "type": "Type"
+          }
+        }
+      },
+      "output": {
+        "param": {
+          "desc": {
+            "tbodylist": "Super Pipeline List"
+          }
+        }
+      }
+    }
+  },
+  "nmdas": {
+    "deletedeployscheduleapi": {
+      "getname": "Delete Deployment Schedule",
+      "input": {
+        "param": {
+          "desc": {
+            "id": "Scheduled Job ID"
+          }
+        }
+      }
+    },
+    "deletesceneapi": {
+      "description": {
+        "desc": "Delete scene interface"
+      }
+    },
+    "getsceneapi": {
+      "description": {
+        "desc": "Obtain scene interface"
+      }
+    },
+    "listdeployscheduleapi": {
+      "getname": "List Deployment Schedule",
+      "input": {
+        "param": {
+          "desc": {
+            "appmoduleid": "Module ID",
+            "appsystemid": "Application ID",
+            "currentpage": "Current Page",
+            "isactive": "Enabled",
+            "keyword": "Fuzzy Search",
+            "pagesize": "Page Size"
+          }
+        }
+      },
+      "output": {
+        "param": {
+          "desc": {
+            "tbodylist": "Scheduled Job List"
+          }
+        }
+      }
+    },
+    "listsceneapi": {
+      "description": {
+        "desc": "Get scene list interface"
+      }
+    },
+    "savedeployscheduleapi": {
+      "getname": "Save Deployment Schedule",
+      "input": {
+        "param": {
+          "desc": {
+            "appmoduleid": "Module ID",
+            "appsystemid": "Application ID",
+            "begintime": "Start Time",
+            "config": "Execute Configuration Information",
+            "cron": "Cron Expression",
+            "endtime": "End Time",
+            "id": "Scheduled Job ID",
+            "isactive": "Active (0: Disabled, 1: Active)",
+            "name": "Scheduled Job Name",
+            "pipelineid": "Pipeline ID",
+            "pipelinetype": "Pipeline Type",
+            "type": "Job Type"
+          }
+        }
+      },
+      "output": {
+        "param": {
+          "desc": {
+            "id": "Scheduled Job ID"
+          }
+        }
+      },
+      "runtime": {
+        "param": {
+          "appmoduleid": "Application Module ID (config.deploySystemModuleVersionList.appModuleId)",
+          "appsystemid": "Application System ID (config.deploySystemModuleVersionList.appSystemId)",
+          "configdeploysystemmodulevers": "Application Module Environment (Scenario) Version List (config.deploySystemModuleVersionList)",
+          "configmodulelist": "Module Version List (config.moduleList)",
+          "idconfigenvid": "Environment ID (config.envId)",
+          "idconfigmodulelistid": "Module ID (config.moduleList.ID)",
+          "idconfigscenarioid": "Scenario ID (config.scenarioId)"
+        }
+      }
+    },
+    "savedrserviceapi": {
+      "getname": "Save disaster recovery services"
+    },
+    "updatedeployscheduleisactiveapi": {
+      "getname": "Update Deployment Schedule Is Active",
+      "input": {
+        "param": {
+          "desc": {
+            "id": "Scheduled Job ID"
+          }
+        }
+      }
+    }
+  },
+  "nmdat": {
+    "deployappconfigservicetestapi": {
+      "getname": "Deployment Application Configuration Service Test"
+    },
+    "searchdeploytypeapi": {
+      "getname": "Search Deployment Type",
+      "input": {
+        "param": {
+          "desc": {
+            "currentpage": "Current Page",
+            "isactive": "Active (0: Disabled, 1: Active)",
+            "keyword": "Keyword",
+            "needpage": "Pagination Required; Default: true",
+            "pagesize": "Items Per Page"
+          }
+        }
+      },
+      "output": {
+        "param": {
+          "desc": {
+            "basepagevo": "Query Deployment Tool Type List",
+            "tbodylist": "Type List"
+          }
+        }
+      }
+    },
+    "updatedeploytypestatusapi": {
+      "getname": "Update Deployment Type Status",
+      "input": {
+        "param": {
+          "desc": {
+            "id": "Tool Type D",
+            "isactive": "Active (0: Disabled, 1: Active)"
+          }
+        }
+      }
+    }
+  },
+  "nmdav": {
+    "deletedeployversionapi": {
+      "getname": "Delete Deployment Version",
+      "input": {
+        "param": {
+          "desc": {
+            "id": "Version ID",
+            "moduleid": "Application Module ID",
+            "sysid": "Application ID",
+            "version": "Version Number"
+          }
+        }
+      }
+    },
+    "deletedeployversionbuildnoapi": {
+      "getname": "Delete Deployment Version Build Number",
+      "input": {
+        "param": {
+          "desc": {
+            "buildno": "Build Number",
+            "moduleid": "Application Module ID",
+            "sysid": "Application ID",
+            "version": "Version Number"
+          }
+        }
+      }
+    },
+    "getdeployversionchartapi": {
+      "getname": "Get Deployment Version Chart",
+      "input": {
+        "param": {
+          "desc": {
+            "chart": "Chart Name",
+            "name": "Chart Tab Name Defined by Deployversionchart",
+            "versionid": "Version ID"
+          }
+        }
+      }
+    },
+    "getdeployversioncommitdiffapi": {
+      "getname": "Get Commit Diff for the Deployment Version"
+    },
+    "getdeployversioncvelistapi": {
+      "getname": "Get Version CVE List"
+    },
+    "getdeployversionenvforautoexecapi": {
+      "getname": "Get Deployment Version Environment for Autoexec",
+      "input": {
+        "param": {
+          "help": {
+            "proxytourl": "Optional; When Provided, Data Is Retrieved From Another Environment"
+          }
+        }
+      }
+    },
+    "getdeployversionenvlistapi": {
+      "getname": "Get Deployment Version Environment List",
+      "input": {
+        "param": {
+          "desc": {
+            "versionid": "Version ID"
+          }
+        }
+      },
+      "output": {
+        "param": {
+          "desc": {
+            "return": "Return"
+          }
+        }
+      }
+    },
+    "getdeployversioninfoforautoexecapi": {
+      "getname": "Get Deployment Version Info for Autoexec",
+      "input": {
+        "param": {
+          "desc": {
+            "buildno": "Build Number",
+            "moduleid": "Application Module ID",
+            "sysid": "Application ID",
+            "version": "Version Number"
+          }
+        }
+      }
+    },
+    "getdeployversionissuelistapi": {
+      "description": {
+        "desc": "Get Deployment Version Issue List"
+      }
+    },
+    "getdeployversionlastbuildqualityapi": {
+      "getname": "Get Deployment Version Last Build Quality",
+      "input": {
+        "param": {
+          "desc": {
+            "versionid": "Version ID"
+          }
+        }
+      }
+    },
+    "getdeployversionlastunittestapi": {
+      "getname": "Get Deployment Version Last Unit Test",
+      "input": {
+        "param": {
+          "desc": {
+            "versionid": "Version ID"
+          }
+        }
+      }
+    },
+    "getdeployversiontheadapi": {
+      "getname": "Get Deployment Version Thead"
+    },
+    "listdeploypipelinejobtemplateversionapi": {
+      "getname": "Get Version List by Super Pipeline Job Template",
+      "input": {
+        "param": {
+          "desc": {
+            "jobtemplateidlist": "Template ID List",
+            "version": "Version"
+          }
+        }
+      }
+    },
+    "savedeployversionapi": {
+      "getname": "Save Deployment Version",
+      "input": {
+        "param": {
+          "desc": {
+            "appmoduleid": "Application Module ID",
+            "appmodulename": "Application Module Name",
+            "appsystemid": "Application System ID",
+            "appsystemname": "Application Name Name",
+            "description": "Description",
+            "isfreeze": "Version Frozen",
+            "version": "Version"
+          }
+        }
+      }
+    },
+    "savedeployversionbuildqualityapi": {
+      "getname": "Save Deployment Version Build Quality",
+      "input": {
+        "param": {
+          "desc": {
+            "deployversionbuildqualityvo": "Code Quality Metrics",
+            "moduleid": "Application Module ID",
+            "sysid": "Application ID",
+            "version": "Version Number"
+          }
+        }
+      }
+    },
+    "savedeployversioncommitanalyzeapi": {
+      "description": {
+        "desc": "Save Version Analysis Data"
+      },
+      "input": {
+        "param": {
+          "desc": {
+            "commitlist": "Commit List",
+            "fileaddcount": "File Add Count",
+            "filedeletecount": "File Delete Count",
+            "filemodifycount": "File Modify Count",
+            "lineaddcount": "Line Add Count",
+            "linedeletecount": "Line Delete Count",
+            "repo": "Project Source URL"
+          }
+        }
+      }
+    },
+    "savedeployversioncvelistapi": {
+      "getname": "Save Version CVE List"
+    },
+    "savedeployversionforautoexecapi": {
+      "getname": "Save Deployment Version for Autoexec",
+      "input": {
+        "param": {
+          "desc": {
+            "buildno": "Build Number",
+            "jobid": "Job ID",
+            "moduleid": "Application Module ID",
+            "runnergroup": "Runner Group",
+            "runnerid": "Runner ID",
+            "sysid": "Application ID",
+            "verinfo": "Version Information",
+            "version": "Version Number"
+          }
+        }
+      }
+    },
+    "savedeployversiontheadapi": {
+      "getname": "Save Deployment Version Thead",
+      "input": {
+        "param": {
+          "desc": {
+            "config": "Table Header Configuration"
+          }
+        }
+      }
+    },
+    "savedeployversionunittestapi": {
+      "getname": "Save Deployment Version Unit Test",
+      "input": {
+        "param": {
+          "desc": {
+            "deployversionunittestvo": "Unit Test Metrics",
+            "moduleid": "Application Module ID",
+            "sysid": "Application ID",
+            "version": "Version Number"
+          }
+        }
+      }
+    },
+    "searchdeployversionapi": {
+      "getname": "Search Deployment Version",
+      "input": {
+        "param": {
+          "help": {
+            "starttimerange": "Provide startTime and endTime, or timeRange and timeUnit"
+          }
+        }
+      }
+    },
+    "searchdeployversionbuildnoapi": {
+      "getname": "Search Deployment Version Build Number",
+      "input": {
+        "param": {
+          "desc": {
+            "appmoduleidlist": "Application Module ID List",
+            "appsystemidlist": "Application System ID List",
+            "currentpage": "Current Page",
+            "keyword": "Fuzzy Search",
+            "needpage": "Pagination Required; Default: true",
+            "pagesize": "Items Per Page",
+            "starttimerange": "Upload Time Range: provide startTime and endTime, or timeRange and timeUnit"
+          }
+        }
+      },
+      "output": {
+        "param": {
+          "desc": {
+            "return": "Query Deployment Job Module Under Version Build Number List"
+          }
+        }
+      }
+    },
+    "searchdeployversioninstanceapi": {
+      "getname": "Search Deployment Version Instance",
+      "input": {
+        "param": {
+          "desc": {
+            "envid": "Environment ID",
+            "keyword": "Keyword",
+            "versionid": "Version ID"
+          }
+        }
+      },
+      "output": {
+        "param": {
+          "desc": {
+            "tbodylist": "Version Instance Deployment Status List"
+          }
+        }
+      }
+    },
+    "unfreezedeployversionapi": {
+      "getname": "Un Freeze Deployment Version",
+      "input": {
+        "param": {
+          "desc": {
+            "id": "Version ID",
+            "isfreeze": "Freeze Status (0: Unfrozen, 1: Frozen)"
+          }
+        }
+      }
+    },
+    "updatedeployversionenvforautoexecapi": {
+      "getname": "Update Deployment Version Environment for Autoexec",
+      "input": {
+        "param": {
+          "desc": {
+            "buildno": "Build Number",
+            "envid": "Environment ID",
+            "ismirror": "Image Deployment",
+            "jobid": "Job ID",
+            "moduleid": "Application Module ID",
+            "runnergroup": "Runner Group",
+            "runnerid": "Runner ID",
+            "status": "Environment Status",
+            "sysid": "Application ID",
+            "version": "Version Number"
+          }
+        }
+      }
+    },
+    "updatedeployversioninfoforautoexecapi": {
+      "getname": "Update Deployment Version Info for Autoexec",
+      "input": {
+        "param": {
+          "desc": {
+            "buildno": "Build Number",
+            "moduleid": "Application Module ID",
+            "runnergroup": "Runner Group",
+            "runnerid": "Runner ID",
+            "sysid": "Application ID",
+            "verinfo": "Version Information",
+            "version": "Version Number"
+          }
+        }
+      }
+    }
+  },
+  "nmdavd": {
+    "deletedeployversiondependencyforautoexecapi": {
+      "getname": "Delete Deployment Version Dependency for Autoexec",
+      "input": {
+        "param": {
+          "desc": {
+            "moduleid": "Application Module ID",
+            "sysid": "Application ID",
+            "version": "Version Number"
+          }
+        }
+      }
+    },
+    "getdeployversiondependencyforautoexecapi": {
+      "getname": "Get Deployment Version Dependency for Autoexec",
+      "input": {
+        "param": {
+          "desc": {
+            "moduleid": "Application Module ID",
+            "sysid": "Application ID",
+            "version": "Version Number"
+          }
+        }
+      }
+    },
+    "savedeployversiondependencyforautoexecapi": {
+      "getname": "Save Deployment Version Dependency for Autoexec",
+      "input": {
+        "param": {
+          "desc": {
+            "dependencelist": {
+              "artifactid": "Artifact ID in Each dependenceList JSON Object",
+              "groupid": "Project Group ID in Each dependenceList JSON Object",
+              "licenses": "DependenceList->JSON in Attribute, License, Open-Source License etc.",
+              "name": "Dependency package list; each element is a JSON object",
+              "parent": "DependenceList->JSON in Attribute, Parent Dependency Attribute Set, Contains groupId、artifactId、version Three Attribute",
+              "scope": "DependenceList->JSON in Attribute, Dependency Scope, Default compile",
+              "type": "DependenceList->JSON in Attribute, Package Type, Default jar",
+              "url": "Package URL in the Maven Repository",
+              "version": "Version in Each dependenceList JSON Object"
+            },
+            "moduleid": "Application Module ID",
+            "sysid": "Application ID",
+            "version": "Version Number"
+          }
+        }
+      }
+    }
+  },
+  "nmdavr": {
+    "changefilepermissionapi": {
+      "getname": "Change File Permission",
+      "input": {
+        "param": {
+          "desc": {
+            "buildno": "Build Number(When resourceType Is [mirror*|workspace], It Is Not Required)",
+            "envid": "Environment ID(When resourceType Is [build*|workspace], It Is Not Required)",
+            "id": "Version ID",
+            "mode": "Permission (e.g:rwxr-xr-x)",
+            "resourcetype": "Artifact Type"
+          }
+        }
+      }
+    },
+    "copyfileapi": {
+      "getname": "Copy File",
+      "input": {
+        "param": {
+          "desc": {
+            "buildno": "Build Number(When resourceType Is [mirror*|workspace], It Is Not Required)",
+            "dest": "Target Directory Path (Must Start With '/'; HOME Is '/')",
+            "envid": "Environment ID(When resourceType Is [build*|workspace], It Is Not Required)",
+            "id": "Version ID",
+            "resourcetype": "Artifact Type",
+            "src": "Source File Path (Must Start With '/'; HOME Is '/')"
+          }
+        }
+      }
+    },
+    "createdirectoryapi": {
+      "getname": "Create Directory",
+      "input": {
+        "param": {
+          "desc": {
+            "buildno": "Build Number(When resourceType Is [mirror*|workspace], It Is Not Required)",
+            "envid": "Environment ID(When resourceType Is [build*|workspace], It Is Not Required)",
+            "id": "Version ID",
+            "path": "Target Path (Must Start With '/'; HOME Is '/')",
+            "resourcetype": "Artifact Type"
+          }
+        }
+      }
+    },
+    "deletefileapi": {
+      "getname": "Delete File",
+      "input": {
+        "param": {
+          "desc": {
+            "buildno": "Build Number(When resourceType Is [mirror*|workspace], It Is Not Required)",
+            "envid": "Environment ID(When resourceType Is [build*|workspace], It Is Not Required)",
+            "id": "Version ID",
+            "path": "Directory or File Path (Must Start With '/'; HOME Is '/')",
+            "resourcetype": "Artifact Type"
+          }
+        }
+      }
+    },
+    "downloadfileapi": {
+      "getname": "Download File",
+      "input": {
+        "param": {
+          "desc": {
+            "buildno": "Build Number(When resourceType Is [mirror*|workspace], It Is Not Required)",
+            "envid": "Environment ID(When resourceType Is [build*|workspace], It Is Not Required)",
+            "id": "Version ID",
+            "ispack": "Package Files",
+            "path": "File Path (Must Start With '/'; HOME Is '/')",
+            "resourcetype": "Artifact Type"
+          }
+        }
+      }
+    },
+    "getdirectorycontentapi": {
+      "getname": "Get Directory Content",
+      "input": {
+        "param": {
+          "desc": {
+            "buildno": "Build Number(When resourceType Is [mirror*|workspace], It Is Not Required)",
+            "envid": "Environment ID(When resourceType Is [build*|workspace], It Is Not Required)",
+            "id": "Version ID",
+            "path": "Target Path (Must Start With '/'; HOME Is '/')",
+            "resourcetype": "Artifact Type"
+          }
+        }
+      },
+      "output": {
+        "param": {
+          "desc": {
+            "fcd": "Last Modified at",
+            "fcdtext": "Last Modified Time (yyyy-MM-dd HH:mm:ss)",
+            "hasitems": "Directory Has Content",
+            "name": "File Name",
+            "permission": "File Permission",
+            "size": "File Size",
+            "type": "File Type"
+          }
+        }
+      }
+    },
+    "listresourcetypeapi": {
+      "getname": "List Resource Type",
+      "input": {
+        "param": {
+          "desc": {
+            "ismirror": "Whether an Image Artifact Exists (Required Only When type=env)",
+            "type": "View Artifact Source (build: from Build Number View;env: from Environment View)"
+          }
+        }
+      },
+      "output": {
+        "param": {
+          "desc": {
+            "return": "Get Artifact Type List"
+          }
+        }
+      }
+    },
+    "movefileapi": {
+      "getname": "Move File",
+      "input": {
+        "param": {
+          "desc": {
+            "buildno": "Build Number(When resourceType Is [mirror*|workspace], It Is Not Required)",
+            "dest": "Target File Path (Must Start With '/'; HOME Is '/')",
+            "envid": "Environment ID(When resourceType Is [build*|workspace], It Is Not Required)",
+            "id": "Version ID",
+            "name": "New File Name (Required for Rename)",
+            "operation": "Operation (move: Move; rename: Rename)",
+            "resourcetype": "Artifact Type",
+            "src": "Source File Path (Must Start With '/'; HOME Is '/')"
+          }
+        }
+      }
+    },
+    "uploadloadfileapi": {
+      "getname": "Uploadload File",
+      "input": {
+        "param": {
+          "desc": {
+            "buildno": "Build Number(When resourceType Is [mirror*|workspace], It Is Not Required)",
+            "envid": "Environment ID(When resourceType Is [build*|workspace], It Is Not Required)",
+            "fileparamname": "File Parameter Name",
+            "id": "Version ID",
+            "path": "File Path (Must Start With '/'; HOME Is '/')",
+            "resourcetype": "Artifact Type",
+            "unpack": "Extract Files"
+          }
+        }
+      }
+    }
+  },
+  "nmdaw": {
+    "activatedeployjobwebhookapi": {
+      "getname": "Activate Deployment Job Webhook",
+      "input": {
+        "param": {
+          "desc": {
+            "id": "Trigger ID",
+            "isactive": "Active (1: Active, 0: Disabled)"
+          }
+        }
+      }
+    },
+    "deletedeployjobwebhookapi": {
+      "getname": "Delete Deployment Job Webhook",
+      "input": {
+        "param": {
+          "desc": {
+            "id": "Trigger ID"
+          }
+        }
+      }
+    },
+    "getdeployjobwebhookapi": {
+      "getname": "Get Deployment Job Webhook",
+      "input": {
+        "param": {
+          "desc": {
+            "id": "Trigger ID"
+          }
+        }
+      },
+      "output": {
+        "param": {
+          "desc": {
+            "deployschedulevo": "Trigger Details"
+          }
+        }
+      }
+    },
+    "savedeployjobwebhookapi": {
+      "getname": "Save Deployment Job Webhook",
+      "input": {
+        "param": {
+          "desc": {
+            "buildnopolicy": "Build Number Policy",
+            "config": "Configuration Information",
+            "id": "Trigger ID",
+            "integrationuuid": "Integration UUID",
+            "isactive": "Active",
+            "name": "Trigger Name",
+            "pipelinetype": "Pipeline Type",
+            "type": "Job Type"
+          }
+        }
+      }
+    },
+    "searchdeployjobwebhookapi": {
+      "getname": "Search Deployment Job Webhook",
+      "input": {
+        "param": {
+          "desc": {
+            "currentpage": "Current Page",
+            "keyword": "Fuzzy Search",
+            "pagesize": "Page Size"
+          }
+        }
+      },
+      "output": {
+        "param": {
+          "desc": {
+            "tbodylist": "Scheduled Job List"
+          }
+        }
+      }
+    },
+    "searchdeployjobwebhookauditapi": {
+      "getname": "Search Deployment Job Webhook Audit",
+      "input": {
+        "param": {
+          "desc": {
+            "currentpage": "Current Page",
+            "pagesize": "Page Size",
+            "webhookid": "Trigger ID"
+          }
+        }
+      },
+      "output": {
+        "param": {
+          "desc": {
+            "tbodylist": "Job Trigger Record List"
+          }
+        }
+      }
+    }
+  },
+  "nmdc": {
+    "deployversioncodescancharthandler": {
+      "runtime": {
+        "codesmells": "Code Smells",
+        "commentlinesdensity": "Line Comment Density",
+        "duplicatedlinesdensity": "Duplication",
+        "lines": "Code Total Line Count",
+        "ncloc": "Code Effective Lines",
+        "publicdocumentedapidensity": "API Comment Density",
+        "vulnerabilities": "Vulnerabilities"
+      }
+    },
+    "deployversionunittestcharthandler": {
+      "runtime": {
+        "branchcoverage": "Branch",
+        "linecoverage": "Lines",
+        "name": {
+          "failed": "Failed",
+          "succeeded": "Succeeded"
+        },
+        "newbranchcoverage": "Branch",
+        "newlinecoverage": "Lines"
+      }
+    }
+  },
+  "nmddh": {
+    "autoexecglobalparam2deployapppipelinephaseoperationargumentparamdependencyhandler": {
+      "runtime": {
+        "label": {
+          "appconfig": "Application Configuration",
+          "freeparam": "Free Parameters"
+        }
+      }
+    },
+    "autoexecglobalparam2deployapppipelinephaseoperationinputparamdependencyhandler": {
+      "runtime": {
+        "label": {
+          "appconfig": "Application Configuration",
+          "inputparammapping": "Input Parameter Mapping"
+        }
+      }
+    },
+    "autoexecprofile2deployapppipelinephaseoperationdependencyhandler": {
+      "runtime": {
+        "label": "Application Configuration"
+      }
+    },
+    "autoexecscenariodeploypipelinedependencyhandler": {
+      "runtime": {
+        "label": {
+          "appconfig": "Application Configuration",
+          "deploymentpipeline": "Deployment Pipeline"
+        }
+      }
+    },
+    "matrix2deployapppipelineparamdependencyhandler": {
+      "runtime": {
+        "label": {
+          "appconfig": "Application Configuration",
+          "jobparams": "Job Parameters"
+        }
+      }
+    },
+    "notifypolicydeployjobdependencyhandler": {
+      "runtime": {
+        "label": "Application Configuration"
+      }
+    }
+  },
+  "nmddrs": {
+    "appinstanceenvappmoduleappsystemvo": {
+      "appmoduleabbrname": {
+        "name": "Application Module Abbreviation"
+      },
+      "appmoduleid": {
+        "name": "Application Module ID"
+      },
+      "appmodulename": {
+        "name": "Application Module Name"
+      },
+      "appsystemabbrname": {
+        "name": "Application System Abbreviation"
+      },
+      "appsystemid": {
+        "name": "Application System ID"
+      },
+      "appsystemname": {
+        "name": "Application System Name"
+      },
+      "envid": {
+        "name": "Environment ID"
+      },
+      "envname": {
+        "name": "Environment Name"
+      },
+      "envseqno": {
+        "name": "Environment Sequence Number"
+      },
+      "ip": {
+        "name": "IP Address"
+      },
+      "name": {
+        "name": "Name"
+      },
+      "port": {
+        "name": "Port"
+      },
+      "resourcetype": {
+        "description": "Integration and Deployment Module",
+        "label": "Application Instance, Environment, Module, and Application Scenario"
+      },
+      "typeid": {
+        "name": "Type ID"
+      },
+      "typelabel": {
+        "name": "Type Label"
+      },
+      "typename": {
+        "name": "Type Name"
+      }
+    },
+    "databaseipportenvappmodulevo": {
+      "appmoduleabbrname": {
+        "name": "Application Module Abbreviation"
+      },
+      "appmoduleid": {
+        "name": "Application Module ID"
+      },
+      "appmodulename": {
+        "name": "Application Module Name"
+      },
+      "envid": {
+        "name": "Environment ID"
+      },
+      "envname": {
+        "name": "Environment Name"
+      },
+      "envseqno": {
+        "name": "Environment Sequence Number"
+      },
+      "ip": {
+        "name": "IP Address"
+      },
+      "name": {
+        "name": "Name"
+      },
+      "port": {
+        "name": "Port"
+      },
+      "resourcetype": {
+        "description": "Queries Deploy application configuration databases across combinations of no module/no environment, no module/same environment, same module/no environment, and same module/same environment: /deploy/app/config/env/database/search",
+        "label": "Database IP, Port, Environment, and Module Scenario"
+      },
+      "typeid": {
+        "name": "Type ID"
+      },
+      "typelabel": {
+        "name": "Type Label"
+      },
+      "typename": {
+        "name": "Type Name"
+      }
+    }
+  },
+  "nmdgl": {
+    "deploygloballockhandler": {
+      "gethandlername": "Deployment File Lock"
+    },
+    "deployversionresourcegloballockhandler": {
+      "gethandlername": "Version Center Artifact Package Download Lock"
+    }
+  },
+  "nmdh": {
+    "deployjobmessagehandler": {
+      "getdescription": "Display Deployment Job Information in Real Time",
+      "getname": "Deployment"
+    }
+  },
+  "nmdih": {
+    "deploytriggerintegrationhandler": {
+      "getname": "Deployment Trigger Data Specification",
+      "runtime": {
+        "pattern": {
+          "appmoduleabbrname": "Application Module Abbreviation",
+          "appmoduleid": "Application Module ID",
+          "appmodulename": "Application Module Name",
+          "appsystemabbrname": "Application System Abbreviation",
+          "appsystemid": "Application System ID",
+          "appsystemname": "Application System Name",
+          "buildno": "Build Number",
+          "envname": "Target Environment Name",
+          "scenarioname": "Scenario",
+          "targetenvname": "Target Environment"
+        }
+      }
+    }
+  },
+  "nmdjsh": {
+    "batchdeployjobsourcehandler": {
+      "runtime": {
+        "label": {
+          "directcreate": "Direct Creation",
+          "superpipeline": "Super Pipeline"
+        }
+      }
+    }
+  },
+  "nmdsp": {
+    "deploybatchjobautofirejob": {
+      "getname": "Scheduled Batch Deployment Job Start"
+    },
+    "deployjobautofirejob": {
+      "getname": "Scheduled Deployment Job Start"
+    },
+    "deployjobschedulejob": {
+      "getname": "Scheduled Deployment Job Execute"
+    }
+  }
+}
