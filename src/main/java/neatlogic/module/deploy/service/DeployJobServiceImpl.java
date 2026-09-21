@@ -124,20 +124,17 @@ public class DeployJobServiceImpl implements DeployJobService {
             returnList = deployJobMapper.searchDeployJob(deployJobVo);
         }
 
-        //补充子作业信息
-        /*经产品核实：含有keyword查询时，匹配到的批量作业需要一次性返回子作业信息*/
+        // 根据parentId识别父作业，避免来源类型变化导致子作业未装配。
         if (CollectionUtils.isNotEmpty(returnList)) {
-            List<DeployJobVo> parentJobList = returnList.stream().filter(e -> StringUtils.equals(JobSource.BATCHDEPLOY.getValue(), e.getSource())).collect(Collectors.toList());
+            List<DeployJobVo> parentJobList = returnList.stream().filter(e -> Objects.equals(-1L, e.getParentId())).collect(Collectors.toList());
             if (CollectionUtils.isNotEmpty(parentJobList)) {
                 deployJobVo.setParentIdList(parentJobList.stream().map(AutoexecJobVo::getId).collect(Collectors.toList()));
                 deployJobVo.setIdList(null);
                 List<AutoexecJobVo> parentInfoJobList = deployJobMapper.getDeploySubJobListByFilter(deployJobVo);
                 if (CollectionUtils.isNotEmpty(parentInfoJobList)) {
                     Map<Long, List<AutoexecJobVo>> parentJobChildrenListMap = parentInfoJobList.stream().collect(Collectors.toMap(AutoexecJobVo::getId, AutoexecJobVo::getChildren));
-                    for (DeployJobVo jobVo : returnList) {
-                        if (StringUtils.equals(jobVo.getSource(), JobSource.BATCHDEPLOY.getValue())) {
-                            jobVo.setChildren(parentJobChildrenListMap.get(jobVo.getId()));
-                        }
+                    for (DeployJobVo parentJobVo : parentJobList) {
+                        parentJobVo.setChildren(parentJobChildrenListMap.get(parentJobVo.getId()));
                     }
                 }
             }

@@ -132,16 +132,38 @@
         FROM autoexec_job ajj
         LEFT JOIN deploy_job djj ON djj.id = ajj.id
         left join autoexec_scenario e on djj.scenario_id = e.id
-        <if test="(invokeIdList != null and invokeIdList.size() > 0) or (sourceType != null and sourceType != '')">
+        <if test="(hasParent == null or hasParent == true) and ((invokeIdList != null and invokeIdList.size() > 0) or (sourceType != null and sourceType != ''))">
             JOIN `autoexec_job_invoke` aji ON ajj.`id` = aji.`job_id`
         </if>
         <if test="isHasAllAuthority == 0">
             LEFT JOIN deploy_app_config_authority dacaSub ON dacaSub.app_system_id = djj.app_system_id
         </if>
         <where>
-            <include refid="searchSubJobSql"/>
+            <choose>
+                <when test="hasParent != null and !hasParent">
+                    <!-- 父作业过滤只约束父作业，装配完整子作业时仍保留子作业查看权限。 -->
+                    <include refid="searchAllVisibleSubJobSql"/>
+                </when>
+                <otherwise>
+                    <include refid="searchSubJobSql"/>
+                </otherwise>
+            </choose>
         </where>
     </select>
+
+    <sql id="searchAllVisibleSubJobSql">
+        and ajj.parent_id is not null
+        <if test="parentIdList != null and parentIdList.size() > 0">
+            and ajj.parent_id in
+            <foreach collection="parentIdList" item="parentId" open="(" separator="," close=")">
+                #{parentId}
+            </foreach>
+        </if>
+        <if test="isHasAllAuthority == 0">
+            AND
+            <include refid="checkSubDeployAuthority"/>
+        </if>
+    </sql>
 
     <sql id="searchSubJobSql">
         and ajj.parent_id is not null
