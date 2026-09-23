@@ -28,7 +28,7 @@ import neatlogic.framework.util.$;
 public class DeployTriggerIntegrationHandler extends IntegrationHandlerBase {
     @Override
     public String getName() {
-        return "nmdih.deploytriggerintegrationhandler.getname";
+        return $.t("nmdih.deploytriggerintegrationhandler.getname");
     }
 
     @Override
