@@ -17,7 +17,6 @@ import neatlogic.framework.asynchronization.threadlocal.UserContext;
 import neatlogic.framework.autoexec.constvalue.JobAction;
 import neatlogic.framework.autoexec.constvalue.JobStatus;
 import neatlogic.framework.autoexec.constvalue.ReviewStatus;
-import neatlogic.framework.common.constvalue.systemuser.SystemUser;
 import neatlogic.framework.dao.mapper.UserMapper;
 import neatlogic.framework.deploy.constvalue.JobSource;
 import neatlogic.framework.deploy.constvalue.ScheduleType;
@@ -152,7 +151,8 @@ public class DeployJobScheduleJob extends JobBase {
             return;
         }
         AuthenticationInfoVo authenticationInfo = authenticationInfoService.getAuthenticationInfo(execUser.getUuid());
-        UserContext.init(execUser, authenticationInfo, SystemUser.SYSTEM.getTimezone());
+        // 后台任务使用当前租户默认时区初始化。
+        UserContext.init(execUser, authenticationInfo);
         UserContext.get().setToken("GZIP_" + LoginAuthHandlerBase.buildJwt(execUser).getCc());
         String type = scheduleVo.getType();
         if (type.equals(ScheduleType.GENERAL.getValue())) {

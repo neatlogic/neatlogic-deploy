@@ -133,7 +133,8 @@ public class DeployJobAutoFireJob extends JobBase {
         }
         if (execUser != null) {
             AuthenticationInfoVo authenticationInfo = authenticationInfoService.getAuthenticationInfo(execUser.getUuid());
-            UserContext.init(execUser, authenticationInfo, SystemUser.SYSTEM.getTimezone());
+            // 后台任务使用当前租户默认时区初始化。
+            UserContext.init(execUser, authenticationInfo);
             UserContext.get().setToken("GZIP_" + LoginAuthHandlerBase.buildJwt(execUser).getCc());
             IAutoexecJobActionCrossoverService autoexecJobActionCrossoverService = CrossoverServiceFactory.getApi(IAutoexecJobActionCrossoverService.class);
             autoexecJobActionCrossoverService.getJobDetailAndFireJob(jobVo);
