@@ -46,7 +46,7 @@ import java.util.regex.Pattern;
 
 @Service
 @Transactional
-@AuthUser(SystemUser.ANONYMOUS)
+
 @AuthAction(action = DEPLOY_BASE.class)
 @OperationType(type = OperationTypeEnum.OPERATE)
 public class CallbackDeployCiGitlabEventApi extends PrivateApiComponentBase {

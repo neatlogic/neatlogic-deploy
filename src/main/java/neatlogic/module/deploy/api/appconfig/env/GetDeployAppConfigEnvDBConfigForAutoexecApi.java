@@ -8,7 +8,6 @@ import neatlogic.framework.cmdb.dto.ci.CiVo;
 import neatlogic.framework.cmdb.dto.cientity.AttrEntityVo;
 import neatlogic.framework.cmdb.dto.cientity.CiEntityVo;
 import neatlogic.framework.common.constvalue.ApiParamType;
-import neatlogic.framework.common.constvalue.systemuser.SystemUser;
 import neatlogic.framework.crossover.CrossoverServiceFactory;
 import neatlogic.framework.deploy.auth.DEPLOY_BASE;
 import neatlogic.framework.deploy.dto.app.DeployAppConfigEnvDBConfigVo;
@@ -29,7 +28,7 @@ import java.util.stream.Collectors;
  * @date 2022/7/18 11:29
  */
 @Service
-@AuthUser(SystemUser.AUTOEXEC)
+
 @AuthAction(action = DEPLOY_BASE.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
 public class GetDeployAppConfigEnvDBConfigForAutoexecApi extends PrivateApiComponentBase {

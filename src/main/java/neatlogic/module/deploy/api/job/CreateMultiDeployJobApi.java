@@ -57,7 +57,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  **/
 
 @Service
-@AuthUser(SystemUser.AUTOEXEC)
+
 @AuthAction(action = DEPLOY_BASE.class)
 @OperationType(type = OperationTypeEnum.CREATE)
 public class CreateMultiDeployJobApi extends PrivateApiComponentBase {

@@ -28,7 +28,6 @@ import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.common.constvalue.GroupSearch;
 import neatlogic.framework.crossover.CrossoverServiceFactory;
 import neatlogic.framework.deploy.auth.APP_CONFIG_MODIFY;
-import neatlogic.framework.deploy.auth.APP_CONFIG_MODIFY_SHARE;
 import neatlogic.framework.deploy.constvalue.DeployAppConfigAction;
 import neatlogic.framework.deploy.constvalue.DeployAppConfigActionType;
 import neatlogic.framework.deploy.dto.app.DeployAppConfigAuthorityActionVo;
@@ -50,13 +49,14 @@ import java.util.Date;
 import java.util.List;
 
 /**
+ * 保存应用系统基础信息，编辑已有应用时同时校验应用级编辑权限。
+ *
  * @author longrf
  * @since  2022/7/14 4:17 下午
  */
 @Service
 @Transactional
 @AuthAction(action = APP_CONFIG_MODIFY.class)
-@AuthAction(action = APP_CONFIG_MODIFY_SHARE.class)
 @OperationType(type = OperationTypeEnum.UPDATE)
 public class SaveDeployAppConfigAppSystemApi extends PrivateApiComponentBase {
     @Resource

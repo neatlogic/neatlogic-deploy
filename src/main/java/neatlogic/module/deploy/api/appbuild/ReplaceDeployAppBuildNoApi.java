@@ -16,14 +16,12 @@ import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.auth.label.NoAuth;
 import neatlogic.framework.common.constvalue.ApiParamType;
-import neatlogic.framework.common.constvalue.systemuser.SystemUser;
 import neatlogic.framework.deploy.constvalue.BuildNoStatus;
 import neatlogic.framework.deploy.dto.job.DeployJobVo;
 import neatlogic.framework.deploy.dto.version.DeployVersionBuildNoVo;
 import neatlogic.framework.deploy.dto.version.DeployVersionVo;
 import neatlogic.framework.deploy.exception.DeployJobNotFoundException;
 import neatlogic.framework.deploy.exception.DeployVersionNotFoundException;
-import neatlogic.framework.restful.annotation.AuthUser;
 import neatlogic.framework.restful.annotation.Description;
 import neatlogic.framework.restful.annotation.Input;
 import neatlogic.framework.restful.annotation.Param;
@@ -36,7 +34,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 
 @Transactional
-@AuthUser(SystemUser.AUTOEXEC)
+
 @Component
 @AuthAction(action = NoAuth.class)
 public class ReplaceDeployAppBuildNoApi extends PrivateApiComponentBase {

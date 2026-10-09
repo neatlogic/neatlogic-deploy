@@ -3,7 +3,6 @@ package neatlogic.module.deploy.api.version;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.common.constvalue.ApiParamType;
-import neatlogic.framework.common.constvalue.systemuser.SystemUser;
 import neatlogic.framework.deploy.auth.DEPLOY_MODIFY;
 import neatlogic.framework.deploy.constvalue.VersionEnvStatus;
 import neatlogic.framework.deploy.dto.version.DeployVersionEnvVo;
@@ -22,7 +21,7 @@ import javax.annotation.Resource;
 
 @Service
 @Transactional
-@AuthUser(SystemUser.AUTOEXEC)
+
 @AuthAction(action = DEPLOY_MODIFY.class)
 @OperationType(type = OperationTypeEnum.UPDATE)
 public class UpdateDeployVersionEnvForAutoexecApi extends PrivateApiComponentBase {

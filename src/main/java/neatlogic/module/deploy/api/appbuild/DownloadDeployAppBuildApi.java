@@ -71,7 +71,7 @@ import java.util.List;
 import java.util.Objects;
 
 @Service
-@AuthUser(SystemUser.AUTOEXEC)
+
 @AuthAction(action = DEPLOY_MODIFY.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
 public class DownloadDeployAppBuildApi extends PrivateBinaryStreamApiComponentBase {

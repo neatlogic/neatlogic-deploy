@@ -37,7 +37,6 @@ import neatlogic.framework.cmdb.dto.cientity.CiEntityVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.ResourceVo;
 import neatlogic.framework.cmdb.exception.cientity.CiEntityNotFoundException;
 import neatlogic.framework.cmdb.exception.resourcecenter.AppEnvNotFoundException;
-import neatlogic.framework.common.constvalue.systemuser.SystemUser;
 import neatlogic.framework.crossover.CrossoverServiceFactory;
 import neatlogic.framework.dao.mapper.runner.RunnerMapper;
 import neatlogic.framework.deploy.auth.BATCHDEPLOY_MODIFY;
@@ -611,10 +610,11 @@ public class DeployJobSourceTypeHandler extends AutoexecJobSourceTypeHandlerBase
         environment.put("BUILD_NO", deployJobVo.getBuildNo());
     }
 
+    /** 校验批量发布管理权限或原有应用、流水线对象授权，所有身份使用相同规则。 */
     @Override
     public void myExecuteAuthCheck(AutoexecJobVo jobVo) {
-        //包含BATCHJOB_MODIFY 或 系统用户 则拥有所有应用的执行权限
-        if (Boolean.TRUE.equals(AuthActionChecker.check(BATCHDEPLOY_MODIFY.class)) || Objects.equals(UserContext.get().getUserUuid(), SystemUser.SYSTEM.getUserUuid())) {
+        // 批量发布管理权限允许执行所有应用作业。
+        if (AuthActionChecker.check(BATCHDEPLOY_MODIFY.class)) {
             return;
         }
         DeployJobVo deployJobVo;

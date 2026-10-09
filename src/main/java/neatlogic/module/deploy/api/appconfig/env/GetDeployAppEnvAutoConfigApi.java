@@ -7,7 +7,6 @@ import neatlogic.framework.autoexec.constvalue.ParamType;
 import neatlogic.framework.cmdb.crossover.IResourceCenterResourceCrossoverService;
 import neatlogic.framework.cmdb.dto.resourcecenter.ResourceVo;
 import neatlogic.framework.common.constvalue.ApiParamType;
-import neatlogic.framework.common.constvalue.systemuser.SystemUser;
 import neatlogic.framework.crossover.CrossoverServiceFactory;
 import neatlogic.framework.deploy.auth.DEPLOY_BASE;
 import neatlogic.framework.deploy.dto.app.DeployAppEnvAutoConfigKeyValueVo;
@@ -24,7 +23,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
-@AuthUser(SystemUser.AUTOEXEC)
+
 @AuthAction(action = DEPLOY_BASE.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
 public class GetDeployAppEnvAutoConfigApi extends PrivateApiComponentBase {

@@ -48,7 +48,7 @@ import java.util.stream.Collectors;
 
 @Service
 @Transactional
-@AuthUser(SystemUser.ANONYMOUS)
+
 @AuthAction(action = DEPLOY_BASE.class)
 @OperationType(type = OperationTypeEnum.OPERATE)
 public class CallbackDeployCiSvnEventApi extends PrivateApiComponentBase {

@@ -4,7 +4,6 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.common.constvalue.ApiParamType;
-import neatlogic.framework.common.constvalue.systemuser.SystemUser;
 import neatlogic.framework.deploy.auth.DEPLOY_MODIFY;
 import neatlogic.framework.deploy.dto.DeployPackageVo;
 import neatlogic.framework.deploy.dto.version.DeployVersionDependencyVo;
@@ -28,7 +27,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-@AuthUser(SystemUser.AUTOEXEC)
+
 @Transactional
 @AuthAction(action = DEPLOY_MODIFY.class)
 @OperationType(type = OperationTypeEnum.OPERATE)

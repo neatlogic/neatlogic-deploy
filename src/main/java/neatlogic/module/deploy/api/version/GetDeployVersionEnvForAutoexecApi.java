@@ -13,7 +13,7 @@ import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.common.constvalue.ResponseCode;
 import neatlogic.framework.common.constvalue.systemuser.SystemUser;
 import neatlogic.framework.crossover.CrossoverServiceFactory;
-import neatlogic.framework.deploy.auth.DEPLOY_MODIFY;
+import neatlogic.framework.deploy.auth.DEPLOY_BASE;
 import neatlogic.framework.deploy.dto.version.DeployVersionEnvVo;
 import neatlogic.framework.deploy.dto.version.DeployVersionVo;
 import neatlogic.framework.deploy.exception.DeployVersionEnvNotFoundException;
@@ -21,7 +21,10 @@ import neatlogic.framework.deploy.exception.DeployVersionNotFoundException;
 import neatlogic.framework.exception.core.ApiRuntimeException;
 import neatlogic.framework.filter.core.LoginAuthHandlerBase;
 import neatlogic.framework.integration.authentication.enums.AuthenticateType;
-import neatlogic.framework.restful.annotation.*;
+import neatlogic.framework.restful.annotation.Description;
+import neatlogic.framework.restful.annotation.Input;
+import neatlogic.framework.restful.annotation.OperationType;
+import neatlogic.framework.restful.annotation.Param;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.framework.util.HttpRequestUtil;
@@ -33,8 +36,8 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 
 @Service
-@AuthUser(SystemUser.AUTOEXEC)
-@AuthAction(action = DEPLOY_MODIFY.class)
+
+@AuthAction(action = DEPLOY_BASE.class)
 @OperationType(type = OperationTypeEnum.UPDATE)
 public class GetDeployVersionEnvForAutoexecApi extends PrivateApiComponentBase {
 
