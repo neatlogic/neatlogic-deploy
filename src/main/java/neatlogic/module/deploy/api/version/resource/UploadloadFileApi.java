@@ -11,6 +11,7 @@
  */
 package neatlogic.module.deploy.api.version.resource;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.common.constvalue.ApiParamType;
@@ -143,7 +144,7 @@ public class UploadloadFileApi extends PrivateBinaryStreamApiComponentBase {
             String error = httpRequestUtil.getError();
             if (StringUtils.isNotBlank(error)) {
                 if (responseCode == ResponseCode.API_RUNTIME.getCode()) {
-                    throw new UploadFileFailedException(JSONObject.parseObject(error).getString("Message"));
+                    throw new UploadFileFailedException(JSON.parseObject(error).getString("Message"));
                 } else {
                     throw new UploadFileFailedException(error);
                 }
