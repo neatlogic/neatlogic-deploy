@@ -27,6 +27,7 @@ import neatlogic.framework.integration.authentication.enums.AuthenticateType;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.binarystream.PrivateBinaryStreamApiComponentBase;
+import neatlogic.framework.util.FileSafeUtil;
 import neatlogic.framework.util.HttpRequestUtil;
 import neatlogic.module.deploy.dao.mapper.DeployVersionMapper;
 import neatlogic.module.deploy.service.DeployAppAuthorityService;
@@ -132,25 +133,26 @@ public class UploadloadFileApi extends PrivateBinaryStreamApiComponentBase {
         MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) request;
         MultipartFile multipartFile = multipartRequest.getFile(fileParamName);
         if (multipartFile != null && multipartFile.getName() != null) {
-            String filename = multipartFile.getOriginalFilename();
-            InputStream inputStream = multipartFile.getInputStream();
-            Map<String, InputStream> fileStreamMap = new HashMap<>();
-            fileStreamMap.put(filename, inputStream);
-            JSONObject paramJson = new JSONObject();
-            paramJson.put("path", fullPath + "/" + filename);
-            paramJson.put("unpack", unpack);
-            HttpRequestUtil httpRequestUtil = HttpRequestUtil.post(url).setContentType(HttpRequestUtil.ContentType.CONTENT_TYPE_MULTIPART_FORM_DATA_FILE_STREAM).setFormData(paramJson).setFileStreamMap(fileStreamMap).setAuthType(AuthenticateType.BUILDIN).sendRequest();
-            int responseCode = httpRequestUtil.getResponseCode();
-            String error = httpRequestUtil.getError();
-            if (StringUtils.isNotBlank(error)) {
-                if (responseCode == ResponseCode.API_RUNTIME.getCode()) {
-                    throw new UploadFileFailedException(JSON.parseObject(error).getString("Message"));
-                } else {
-                    throw new UploadFileFailedException(error);
+            // 客户端文件名只保留名称，避免目录片段越过已授权的制品目录。
+            String filename = FileSafeUtil.getUploadFileName(multipartFile.getOriginalFilename());
+            try (InputStream inputStream = multipartFile.getInputStream()) {
+                Map<String, InputStream> fileStreamMap = new HashMap<>();
+                fileStreamMap.put(filename, inputStream);
+                JSONObject paramJson = new JSONObject();
+                paramJson.put("path", fullPath + "/" + filename);
+                paramJson.put("unpack", unpack);
+                HttpRequestUtil httpRequestUtil = HttpRequestUtil.post(url).setContentType(HttpRequestUtil.ContentType.CONTENT_TYPE_MULTIPART_FORM_DATA_FILE_STREAM).setFormData(paramJson).setFileStreamMap(fileStreamMap).setAuthType(AuthenticateType.BUILDIN).sendRequest();
+                int responseCode = httpRequestUtil.getResponseCode();
+                String error = httpRequestUtil.getError();
+                if (StringUtils.isNotBlank(error)) {
+                    if (responseCode == ResponseCode.API_RUNTIME.getCode()) {
+                        throw new UploadFileFailedException(JSON.parseObject(error).getString("Message"));
+                    } else {
+                        throw new UploadFileFailedException(error);
+                    }
                 }
+                deployVersionService.syncProjectFile(version, runnerUrl, Collections.singletonList(fullPath + "/" + filename));
             }
-            deployVersionService.syncProjectFile(version, runnerUrl, Collections.singletonList(fullPath + "/" + filename));
-
         }
 
         return null;
