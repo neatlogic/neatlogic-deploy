@@ -17,6 +17,7 @@ import neatlogic.framework.asynchronization.threadlocal.UserContext;
 import neatlogic.framework.autoexec.constvalue.JobAction;
 import neatlogic.framework.autoexec.constvalue.JobStatus;
 import neatlogic.framework.autoexec.constvalue.ReviewStatus;
+import neatlogic.framework.common.config.Config;
 import neatlogic.framework.dao.mapper.UserMapper;
 import neatlogic.framework.deploy.constvalue.JobSource;
 import neatlogic.framework.deploy.constvalue.ScheduleType;
@@ -112,6 +113,7 @@ public class DeployJobScheduleJob extends JobBase {
     public void initJob(String tenantUuid) {
         DeployScheduleSearchVo searchVo = new DeployScheduleSearchVo();
         searchVo.setIsActive(1);
+        searchVo.setSourceServerGroup(Config.SCHEDULE_SERVER_GROUP());
         int rowNum = deployScheduleMapper.getScheduleCount(searchVo);
         if (rowNum > 0) {
             searchVo.setRowNum(rowNum);
