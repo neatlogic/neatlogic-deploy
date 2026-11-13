@@ -19,6 +19,10 @@ import neatlogic.framework.deploy.dto.app.DeployAppEnvAutoConfigVo;
 import neatlogic.framework.deploy.dto.app.DeployResourceSearchVo;
 import neatlogic.framework.sqlgenerator.$sql;
 import neatlogic.framework.sqlgenerator.ExpressionVo;
+import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.expression.Parenthesis;
+import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.Statement;
@@ -32,6 +36,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.*;
 
+/** 根据资源定义构建发布配置查询 SQL，统一处理候选的环境兼容性。 */
 @Service
 public class DeployResourceBuildSqlServiceImpl implements DeployResourceBuildSqlService {
     private final Logger logger = LoggerFactory.getLogger(DeployResourceBuildSqlServiceImpl.class);
@@ -622,6 +627,23 @@ public class DeployResourceBuildSqlServiceImpl implements DeployResourceBuildSql
         return null;
     }
 
+    /** 在分页前按实际全局属性关联过滤候选，统计和列表使用相同条件。 */
+    void addSelectableDatabaseFilter(PlainSelect plainSelect, Column databaseId, DeployResourceSearchVo searchVo) throws JSQLParserException {
+        if (!Boolean.TRUE.equals(searchVo.getOnlySelectable()) || searchVo.getEnvId() == null) {
+            return;
+        }
+        // 列来自资源 SQL 构建器，环境 ID 为 Long；不接受调用方传入 SQL 片段。
+        String conflictSql = "SELECT 1 FROM cmdb_cientity_globalattritem db_env "
+                + "JOIN cmdb_global_attr env_attr ON env_attr.id = db_env.attr_id "
+                + "AND env_attr.name = 'app_environment' AND env_attr.is_active = 1 AND env_attr.is_multiple = 0 "
+                + "JOIN cmdb_global_attritem env_item ON env_item.id = db_env.item_id AND env_item.attr_id = env_attr.id "
+                + "WHERE db_env.cientity_id = " + databaseId + " AND db_env.item_id != " + searchVo.getEnvId();
+        Expression filter = CCJSqlParserUtil.parseCondExpression("NOT EXISTS (" + conflictSql + ")");
+        Expression where = plainSelect.getWhere();
+        plainSelect.setWhere(where == null ? filter : new AndExpression(new Parenthesis(where), filter));
+    }
+
+    /** 构建数据库候选数量 SQL，保留未启用候选过滤时的查询语义。 */
     @Override
     public String buildGetAppConfigEnvDatabaseCountSql(DeployResourceSearchVo searchVo) {
         IResourceEntityCrossoverMapper resourceEntityCrossoverMapper = CrossoverServiceFactory.getApi(IResourceEntityCrossoverMapper.class);
@@ -656,6 +678,7 @@ public class DeployResourceBuildSqlServiceImpl implements DeployResourceBuildSql
                         $sql.exp("(", orExp, ")"));
             }
             Column idColumn = fieldName2ColumnMap.get("id");
+            addSelectableDatabaseFilter(plainSelect, idColumn, searchVo);
             $sql.setSelectColumn(plainSelect, $sql.fun("COUNT", idColumn.toString()).withDistinct(true));
             return plainSelect.toString();
         } catch (Exception e) {
@@ -665,6 +688,7 @@ public class DeployResourceBuildSqlServiceImpl implements DeployResourceBuildSql
     }
 
 
+    /** 构建数据库候选列表 SQL，在分页前执行环境兼容性过滤。 */
     @Override
     public String buildGetAppConfigEnvDatabaseResourceIdListSql(DeployResourceSearchVo searchVo) {
         IResourceEntityCrossoverMapper resourceEntityCrossoverMapper = CrossoverServiceFactory.getApi(IResourceEntityCrossoverMapper.class);
@@ -698,6 +722,7 @@ public class DeployResourceBuildSqlServiceImpl implements DeployResourceBuildSql
                 $sql.addWhereExpression(plainSelect, $sql.exp("(", orExp, ")"));
             }
             Column idColumn = fieldName2ColumnMap.get("id");
+            addSelectableDatabaseFilter(plainSelect, idColumn, searchVo);
             $sql.setSelectColumn(plainSelect, idColumn.toString());
             $sql.setDistinct(plainSelect, true);
             if (searchVo.getNeedPage()) {

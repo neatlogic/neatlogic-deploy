@@ -47,14 +47,16 @@ public class SearchDeployAppConfigEnvDatabaseApi extends PrivateApiComponentBase
         return null;
     }
 
+    /** 查询数据库候选或历史回显，候选过滤在统计与分页前执行。 */
     @Input({
             @Param(name = "keyword", type = ApiParamType.STRING, desc = "common.keyword", xss = true),
             @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "common.currentpage"),
             @Param(name = "defaultValue", type = ApiParamType.JSONARRAY, desc = "term.autoexec.defaultvalue"),
             @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "common.pagesize"),
-            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.appsystemid"),
-            @Param(name = "appModuleId", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.appmoduleid"),
+            @Param(name = "appSystemId", type = ApiParamType.LONG, desc = "term.cmdb.appsystemid"),
+            @Param(name = "appModuleId", type = ApiParamType.LONG, desc = "term.cmdb.appmoduleid"),
             @Param(name = "envId", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.envid"),
+            @Param(name = "onlySelectable", type = ApiParamType.BOOLEAN, desc = "nmdaae.searchdeployappconfigenvdatabaseapi.input.param.desc.onlyselectable", help = "nmdaae.searchdeployappconfigenvdatabaseapi.input.param.help.onlyselectable"),
     })
     @Output({
             @Param(name = "tbodyList", type = ApiParamType.JSONARRAY, explode = ResourceVo[].class, desc = "nmdaae.searchdeployappconfigenvdatabaseapi.output.param.desc.tbodylist"),

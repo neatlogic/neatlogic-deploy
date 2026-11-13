@@ -202,6 +202,10 @@
           and `env_id` = #{envId}
     </select>
 
+    <select id="lockRootConfig" resultType="long" useCache="false" flushCache="true">
+        SELECT IF(config IS NULL, NULL, id) FROM deploy_app_config WHERE app_system_id = #{value} AND app_module_id = 0 AND env_id = 0 FOR UPDATE
+    </select>
+
     <select id="getAppConfigVo" parameterType="neatlogic.framework.deploy.dto.app.DeployAppConfigVo"
             resultType="neatlogic.framework.deploy.dto.app.DeployAppConfigVo" useCache="false">
         SELECT `id`            as id,
@@ -770,11 +774,18 @@
         WHERE
         (( a.`app_module_id` IS NULL AND a.`env_id` IS NULL )
         OR ( a.`app_module_id` IS NULL AND a.`env_id` = #{envId} )
-        OR (a.`app_module_id` = #{appModuleId} AND a.`env_id` IS NULL))
+        <if test="appModuleId != null">
+            OR (a.`app_module_id` = #{appModuleId} AND a.`env_id` IS NULL)
+        </if>
+        )
         <if test="keyword != null and keyword != ''">
             AND (a.`ip` LIKE concat('%', #{keyword}, '%') or a.`port` LIKE concat('%', #{keyword},'%'))
         </if>
     </sql>
+
+    <select id="isInstanceAvailable" resultType="boolean" useCache="false">
+        SELECT EXISTS(SELECT 1 <include refid="searchAppConfigEnvInstance"/> AND a.id = #{id})
+    </select>
 
     <select id="getAppConfigEnvInstanceCount" parameterType="neatlogic.framework.deploy.dto.app.DeployAppConfigInstanceVo" resultType="int" useCache="false">
         SELECT count(DISTINCT a.`id`)
@@ -796,7 +807,9 @@
         a.`id`,
         a.`ip`,
         a.`port`,
-        a.`name`
+        a.`name`,
+        a.`type_id` AS typeId,
+        a.`type_label` AS typeLabel
         FROM @{DATA_SCHEMA}.`scence_appinstance_env_appmodule_appsystem` a
         WHERE a.`id` IN
         <foreach collection="list" item="id" open="(" separator="," close=")">
@@ -1036,9 +1049,33 @@
         SELECT COUNT(DISTINCT a.`id`)
         <include refid="searchDatabase"></include>
     </select>
+    <!-- 候选过滤与保存校验共用实际全局属性关联，不依赖资源视图中的环境投影。 -->
+    <sql id="databaseEnvironmentConflict">
+        SELECT DISTINCT env_item.id AS envId, env_item.value AS envName
+        FROM cmdb_cientity_globalattritem db_env
+        JOIN cmdb_global_attr env_attr ON env_attr.id = db_env.attr_id
+            AND env_attr.name = 'app_environment' AND env_attr.is_active = 1 AND env_attr.is_multiple = 0
+        JOIN cmdb_global_attritem env_item ON env_item.id = db_env.item_id AND env_item.attr_id = env_attr.id
+        WHERE db_env.cientity_id = ${databaseId} AND db_env.item_id != #{envId}
+    </sql>
+
+    <select id="getDatabaseConflictingEnvList" resultType="neatlogic.framework.cmdb.dto.resourcecenter.ResourceVo" useCache="false">
+        <include refid="databaseEnvironmentConflict">
+            <property name="databaseId" value="#{dbResourceId}"/>
+        </include>
+        ORDER BY envId
+    </select>
+
     <sql id="searchDatabase">
         FROM @{DATA_SCHEMA}.`scence_database_ip_port_env_appmodule` a
         <where>
+            <if test="onlySelectable == true">
+                AND NOT EXISTS (
+                    <include refid="databaseEnvironmentConflict">
+                        <property name="databaseId" value="a.id"/>
+                    </include>
+                )
+            </if>
             <if test="defaultValue != null and defaultValue.size() > 0">
                 AND a.`id` IN
                 <foreach collection="defaultValue" item="id" open="(" separator="," close=")">

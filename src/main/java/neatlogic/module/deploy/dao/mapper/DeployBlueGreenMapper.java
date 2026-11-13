@@ -26,6 +26,9 @@ import java.util.List;
 public interface DeployBlueGreenMapper {
 
 
+    /** 只读检查引用的蓝绿分组是否仍启用。 */
+    boolean isBlueGreenAvailable(Long id);
+
     Integer getBlueGreenCount(DeployBlueGreenVo deployBlueGreenVo);
 
     List<DeployBlueGreenVo> searchBlueGreen(DeployBlueGreenVo deployBlueGreenVo);

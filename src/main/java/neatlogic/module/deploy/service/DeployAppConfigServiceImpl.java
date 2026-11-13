@@ -217,6 +217,18 @@ public class DeployAppConfigServiceImpl implements DeployAppConfigService {
         return runnerMapList;
     }
 
+    /** 按发布原有字段转换构造局部事务副本，交由 CMDB 自身校验类型、格式与唯一约束。 */
+    @Override
+    public void validateModelFields(Long ciId, Long resourceId, JSONObject values, List<String> fields) {
+        CiEntityTransactionVo transaction = new CiEntityTransactionVo();
+        transaction.setCiId(ciId);
+        transaction.setCiEntityId(resourceId);
+        transaction.setEditMode(EditModeType.PARTIAL.getValue());
+        transaction.setAction(resourceId == null ? TransactionActionType.INSERT.getValue() : TransactionActionType.UPDATE.getValue());
+        addAttrEntityDataAndRelEntityData(transaction, ciId, values, fields, new ArrayList<>(), new ArrayList<>());
+        CrossoverServiceFactory.<ICiEntityCrossoverService>getApi(ICiEntityCrossoverService.class).validateCiEntityTransactionReadOnly(transaction);
+    }
+
     @Override
     public Long saveDeployAppModule(DeployAppModuleVo deployAppModuleVo, int isAdd) {
         //校验应用系统id是否存在

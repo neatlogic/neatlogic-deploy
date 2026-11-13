@@ -44,6 +44,9 @@ public interface DeployAppConfigMapper extends IDeployAppConfigCrossoverMapper {
 
     String getAppConfig(DeployAppConfigVo deployAppConfigVo);
 
+    /** 首次接入时锁定应用根配置，仅在已有生效流水线时返回记录 ID。 */
+    Long lockRootConfig(Long appSystemId);
+
     DeployAppConfigVo getAppConfigVo(DeployAppConfigVo deployAppConfigVo);
 
     DeployAppConfigVo getAppConfigByAppSystemIdAndAppModuleIdAndEnvId(@Param("appSystemId") Long appSystemId, @Param("appModuleId") Long appModuleId, @Param("envId") Long envId);
@@ -68,6 +71,9 @@ public interface DeployAppConfigMapper extends IDeployAppConfigCrossoverMapper {
      * @param searchVo searchVo
      * @return count
      */
+    /** 入库前按与选择器相同的范围核对单个实例是否仍可关联。 */
+    boolean isInstanceAvailable(DeployAppConfigInstanceVo scope);
+
     int getAppConfigEnvInstanceCount(DeployAppConfigInstanceVo searchVo);
 
     List<Long> searchAppConfigEnvInstanceIdList(DeployAppConfigInstanceVo searchVo);
@@ -240,6 +246,9 @@ public interface DeployAppConfigMapper extends IDeployAppConfigCrossoverMapper {
      * @return count
      */
     int getAppConfigEnvDatabaseCount(DeployResourceSearchVo searchVo);
+
+    /** 查询数据库在启用的单选应用环境属性中与目标环境冲突的关联。 */
+    List<ResourceVo> getDatabaseConflictingEnvList(@Param("dbResourceId") Long dbResourceId, @Param("envId") Long envId);
 
     /**
      * 查询发布应用配置DB库下的无模块无环境、无模块同环境、同模块无环境、同模块同环境且发布没配置的数据库

@@ -30,6 +30,9 @@ public interface DeployCiMapper {
 
     int insertDeployCi(DeployCiVo vo);
 
+    /** 同步结果只更新本项 Webhook ID。 */
+    void updateHook(@Param("id") Long id, @Param("hookId") String hookId);
+
     int insertDeployCiAudit(DeployCiAuditVo vo);
 
     int deleteDeployCiById(Long id);

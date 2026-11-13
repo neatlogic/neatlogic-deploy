@@ -274,4 +274,5 @@
         where ci_id = #{value}
     </delete>
 
+    <update id="updateHook">UPDATE deploy_ci SET hook_id=#{hookId} WHERE id=#{id}</update>
 </mapper>

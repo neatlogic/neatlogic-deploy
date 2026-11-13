@@ -64,6 +64,14 @@ public class DeployPipelineConfigManager {
         autoexecToolMapper = _autoexecToolMapper;
     }
 
+    /** 使用已有三层合并规则解析内存配置，调用方传入独立副本；不加载或保存正式应用配置。 */
+    public static DeployPipelineConfigVo resolveEnvironment(DeployPipelineConfigVo application,
+            DeployPipelineConfigVo module, DeployPipelineConfigVo environment) {
+        DeployPipelineConfigVo result = mergeDeployPipelineConfig(application, module, environment, "环境", true, null);
+        deleteDisabledPhase(result);
+        return result;
+    }
+
     public static Builder init(Long appSystemId) {
         return new Builder(appSystemId);
     }

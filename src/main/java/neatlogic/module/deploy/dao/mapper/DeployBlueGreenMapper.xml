@@ -3,6 +3,9 @@
 
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="neatlogic.module.deploy.dao.mapper.DeployBlueGreenMapper">
+    <select id="isBlueGreenAvailable" resultType="boolean" useCache="false">
+        SELECT EXISTS(SELECT 1 FROM deploy_blue_green WHERE id = #{value} AND is_active = 1)
+    </select>
     <select id="getBlueGreenCount" resultType="java.lang.Integer">
         select count(`id`) from `deploy_blue_green`
         <where>

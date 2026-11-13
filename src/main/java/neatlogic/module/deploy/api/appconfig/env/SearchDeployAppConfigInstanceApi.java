@@ -48,8 +48,8 @@ public class SearchDeployAppConfigInstanceApi extends PrivateApiComponentBase {
 
     @Input({
             @Param(name = "keyword", type = ApiParamType.STRING, desc = "nmdaae.searchdeployappconfiginstanceapi.input.param.desc.keyword"),
-            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.appsystemid"),
-            @Param(name = "appModuleId", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.appmoduleid"),
+            @Param(name = "appSystemId", type = ApiParamType.LONG, desc = "term.cmdb.appsystemid"),
+            @Param(name = "appModuleId", type = ApiParamType.LONG, desc = "term.cmdb.appmoduleid"),
             @Param(name = "envId", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.envid"),
             @Param(name = "currentPage", desc = "common.currentpage", type = ApiParamType.INTEGER),
             @Param(name = "needPage", desc = "nmdaae.searchdeployappconfiginstanceapi.input.param.desc.needpage", type = ApiParamType.BOOLEAN),

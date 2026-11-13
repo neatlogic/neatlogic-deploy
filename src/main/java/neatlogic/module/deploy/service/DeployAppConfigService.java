@@ -22,6 +22,9 @@ import java.util.List;
  */
 public interface DeployAppConfigService {
 
+    /** 校验发布表单中的模型字段，引用原配置项时保留其唯一性上下文。 */
+    void validateModelFields(Long ciId, Long resourceId, JSONObject values, List<String> fields);
+
     /**
      * 删除发布配置
      *

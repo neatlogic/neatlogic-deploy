@@ -15,24 +15,18 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 
 package neatlogic.module.deploy.api.appconfig.env;
 
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import neatlogic.module.deploy.service.DeployEnvironmentWriter;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.deploy.auth.DEPLOY_BASE;
-import neatlogic.framework.deploy.constvalue.DeployAppConfigAction;
-import neatlogic.framework.deploy.dto.app.DeployAppConfigEnvAttrVo;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
-import neatlogic.module.deploy.dao.mapper.DeployAppConfigMapper;
-import neatlogic.module.deploy.service.DeployAppAuthorityService;
-import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.util.Date;
 
 /**
  * @author lvzk
@@ -45,10 +39,7 @@ import java.util.Date;
 public class SaveDeployAppConfigEnvAttrApi extends PrivateApiComponentBase {
 
     @Resource
-    private DeployAppConfigMapper deployAppConfigMapper;
-
-    @Resource
-    DeployAppAuthorityService deployAppAuthorityService;
+    private DeployEnvironmentWriter writer;
 
     @Override
     public String getToken() {
@@ -76,17 +67,6 @@ public class SaveDeployAppConfigEnvAttrApi extends PrivateApiComponentBase {
     @Description(desc = "nmdaae.savedeployappconfigenvattrapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj) {
-        //校验环境权限、编辑配置的操作权限
-        deployAppAuthorityService.checkEnvAuth(paramObj.getLong("appSystemId"), paramObj.getLong("envId"));
-        deployAppAuthorityService.checkOperationAuth(paramObj.getLong("appSystemId"), DeployAppConfigAction.EDIT);
-        DeployAppConfigEnvAttrVo appEnvAttrVo = JSON.toJavaObject(paramObj, DeployAppConfigEnvAttrVo.class);
-        Long nowDate = System.currentTimeMillis();
-        appEnvAttrVo.setUpdateTime(nowDate);
-        appEnvAttrVo.setLcd(new Date());
-        if (CollectionUtils.isNotEmpty(appEnvAttrVo.getKeyValueList())) {
-            deployAppConfigMapper.insertAppConfigEnvAttr(appEnvAttrVo);
-        }
-        deployAppConfigMapper.deleteAppConfigEnvAttr(appEnvAttrVo);
-        return null;
+        return writer.saveAttributes(paramObj);
     }
 }

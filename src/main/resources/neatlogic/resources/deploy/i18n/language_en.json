@@ -596,7 +596,11 @@
             "defaultvalue": "Default Value",
             "envid": "Environment ID",
             "keyword": "Keyword",
+            "onlyselectable": "Selectable Databases Only",
             "pagesize": "Items Per Page"
+          },
+          "help": {
+            "onlyselectable": "Defaults to false for read-only display and historical values. Pass true when selecting a database. If the Application Environment global attribute is active and single-select, databases associated with other environments are excluded. Databases with no environment, only the current environment, or an attribute allowing multiple values remain selectable. Filtering applies to keyword searches, default values, and pagination."
           }
         }
       },
